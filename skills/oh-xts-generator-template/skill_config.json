@@ -1,0 +1,438 @@
+{
+  "skill_name": "oh-xts-generator-template",
+  "version": "1.12.0",
+  "description": "OpenHarmony XTS测试用例通用生成模板，适用于各个子系统。支持子系统特有配置扩展，灵活配置测试生成策略。支持 Linux 和 Windows 双平台编译。Linux 环境必须使用 build.sh 脚本编译（不要使用 hvigorw）。Linux 编译工作流升级至 v2.0.0，采用模块化架构，拆分为 5 个独立模块（主工作流 + 环境准备 + 预编译清理 + BUILD.gn配置 + 问题排查），支持按需加载，主文件减少 49%。Windows 编译工作流升级至 v2.1.0，支持 DevEco Studio IDE 和命令行两种编译方式，提供完整测试执行、结果解析和自动化脚本。",
+  "references": [
+    {
+      "name": "子系统配置",
+      "path": "references/subsystems",
+      "description": "各子系统特有配置，采用文件夹结构组织，支持模块级配置继承",
+      "subsystems": [
+        {
+          "name": "通用配置",
+          "path": "references/subsystems/_common.md",
+          "description": "所有子系统共享的通用配置"
+        },
+        {
+          "name": "ArkUI",
+          "path": "references/subsystems/ArkUI",
+          "description": "ArkUI 子系统配置",
+          "modules": [
+            {
+              "name": "通用配置",
+              "file": "_common.md",
+              "description": "ArkUI 子系统通用配置"
+            },
+            {
+              "name": "Component",
+              "file": "Component.md",
+              "description": "Component 模块配置"
+            },
+            {
+              "name": "Animator",
+              "file": "Animator.md",
+              "description": "Animator 模块配置"
+            },
+            {
+              "name": "Router",
+              "file": "Router.md",
+              "description": "Router 模块配置"
+            }
+          ]
+        },
+        {
+          "name": "ArkWeb",
+          "path": "references/subsystems/ArkWeb",
+          "description": "ArkWeb 子系统配置",
+          "modules": [
+            {
+              "name": "通用配置",
+              "file": "_common.md",
+              "description": "ArkWeb 子系统通用配置"
+            },
+            {
+              "name": "Web",
+              "file": "Web.md",
+              "description": "Web 模块配置"
+            },
+            {
+              "name": "WebViewController",
+              "file": "WebViewController.md",
+              "description": "WebViewController 模块配置"
+            }
+          ]
+        },
+        {
+          "name": "testfwk",
+          "path": "references/subsystems/testfwk",
+          "description": "测试框架子系统配置（OpenHarmony 测试框架）",
+          "special_rules": {
+            "string_empty_parameter": {
+              "rule": "空字符串是合法参数，不会抛出错误码 401",
+              "test_generation": "生成空字符串合法参数测试，不生成 ERROR_401 测试用例"
+            }
+          },
+          "modules": [
+            {
+              "name": "通用配置",
+              "file": "_common.md",
+              "description": "测试框架子系统通用配置，包含 string 空字符串特殊规则，三个子模块均归属 TestKit"
+            }
+          ],
+          "submodules": [
+            {
+              "name": "UiTest",
+              "description": "UI 测试框架",
+              "api_file": "@ohos.uitest.d.ts",
+              "reference": "docs/zh-cn/application-dev/reference/apis-test-kit/uitest.md"
+            },
+            {
+              "name": "PerfTest",
+              "description": "性能测试框架",
+              "api_file": "@ohos.perftest.d.ts",
+              "reference": "docs/zh-cn/application-dev/reference/apis-test-kit/perftest.md"
+            },
+            {
+              "name": "JsUnit",
+              "description": "单元测试框架",
+              "api_file": "@ohos.javascript.d.ts",
+              "reference": "docs/zh-cn/application-dev/reference/apis-test-kit/jsunit.md"
+            }
+          ],
+          "reference_docs": {
+            "api_reference": "/mnt/data/c00810129/oh_0130/docs/zh-cn/application-dev/reference/apis-test-kit",
+            "guide": "/mnt/data/c00810129/oh_0130/docs/zh-cn/application-dev/application-test"
+          }
+        }
+      ]
+    }
+  ],
+  "layers": {
+    "L1_Framework": {
+      "description": "框架和规范层 - 所有测试的基础",
+      "required": [
+        "modules/L1_Framework/hypium_framework.md",
+        "modules/L1_Framework/arkts_standards.md",
+        "modules/L1_Framework/test_conventions.md"
+      ],
+      "optional": [
+        "modules/L1_Framework/uitest_framework.md"
+      ],
+      "path": "modules/L1_Framework/"
+    },
+    "L2_Analysis": {
+      "description": "分析层 - API解析、测试覆盖分析、工程配置解析、编译工作流",
+      "api_parser": {
+        "description": "API定义解析器，支持 .d.ts 文件解析、模块级解析、API语法类型判断",
+        "file": "modules/L2_Analysis/api_parser.md"
+      },
+      "project_parser": {
+        "description": "工程配置解析器，支持工程语法类型识别（静态/动态）、工程结构识别、配置信息提取",
+        "file": "modules/L2_Analysis/project_parser.md"
+      },
+      "build_workflow_linux": {
+        "description": "Linux 编译工作流 v2.0.0（模块化架构）。主工作流文件（365行），包含完整编译流程指导、编译命令说明、编译输出管理。采用模块化设计，支持按需加载功能模块。重要：Linux环境下必须使用build.sh脚本进行编译，不要使用hvigorw命令",
+        "file": "modules/L2_Analysis/build_workflow_linux.md",
+        "platform": "Linux",
+        "version": "2.0.0",
+        "update_date": "2026-02-06",
+        "important_note": "Linux环境下必须使用build.sh脚本进行编译，不要使用hvigorw命令（hvigorw是Windows/DevEco Studio的编译工具，不适用于Linux环境）",
+        "features": [
+          "模块化架构（5个独立模块）",
+          "工作流程图可视化",
+          "快速参考表",
+          "按需加载机制",
+          "主文件减少49%"
+        ],
+        "modules": [
+          {
+            "name": "主工作流",
+            "file": "modules/L2_Analysis/build_workflow_linux.md",
+            "lines": 365,
+            "description": "核心编译工作流，包含编译命令、输出验证、完整示例",
+            "required": true
+          },
+          {
+            "name": "环境准备",
+            "file": "modules/L2_Analysis/linux_compile_env_setup.md",
+            "lines": 476,
+            "description": "编译环境准备（操作系统要求、工具链安装、SDK下载、环境验证）",
+            "required": "首次编译",
+            "load_trigger": "用户要求准备 Linux 编译环境时"
+          },
+          {
+            "name": "预编译清理",
+            "file": "modules/L2_Analysis/linux_prebuild_cleanup.md",
+            "lines": 278,
+            "description": "预编译清理指南（清理必要性、清理步骤、清理验证、故障排查）",
+            "required": "每次编译前",
+            "load_trigger": "编译前必须执行"
+          },
+          {
+            "name": "BUILD.gn 配置",
+            "file": "modules/L2_Analysis/build_gn_config.md",
+            "lines": 521,
+            "description": "BUILD.gn 配置指南（基本结构、关键配置字段、Stage/FA模型配置、辅助工程配置）",
+            "required": "配置 BUILD.gn 时",
+            "load_trigger": "用户要求配置 BUILD.gn 时"
+          },
+          {
+            "name": "问题排查",
+            "file": "modules/L2_Analysis/linux_compile_troubleshooting.md",
+            "lines": 418,
+            "description": "编译问题排查指南（常见错误、编译优化、日志分析、高级排查）",
+            "required": "编译失败时",
+            "load_trigger": "用户遇到编译错误时"
+          }
+        ]
+      },
+      "build_workflow_windows": {
+        "description": "Windows 编译与测试工作流（v2.1.0），包含环境准备、DevEco Studio IDE 编译（推荐）、命令行编译（hvigorw.bat）、HAP 自动安装、测试执行、Hypium 结果解析、多测试套批量执行、自动化脚本（run_all_tests.ps1）、故障排除和最佳实践",
+        "file": "modules/L2_Analysis/build_workflow_windows.md",
+        "platform": "Windows",
+        "version": "2.1.0",
+        "update_date": "2025-02-02",
+        "features": [
+          "DevEco Studio IDE 编译方式（推荐新手）",
+          "命令行编译方式 hvigorw.bat（推荐自动化）",
+          "HAP 自动安装和测试执行",
+          "Hypium 测试框架结果解析",
+          "多测试套批量执行和汇总统计",
+          "完整自动化脚本 run_all_tests.ps1",
+          "测试结果 JSON 报告生成",
+          "故障排除和最佳实践指南"
+        ]
+      },
+      "coverage_analyzer": {
+        "description": "测试覆盖分析器",
+        "file": "modules/L2_Analysis/coverage_analyzer.md"
+      },
+      "doc_reader": {
+        "description": "文档阅读器",
+        "file": "modules/L2_Analysis/doc_reader.md"
+      },
+      "path": "modules/L2_Analysis/"
+    },
+    "L3_Generation": {
+      "description": "生成层 - 测试用例生成和模板",
+      "test_generator": {
+        "description": "测试用例生成器",
+        "file": "modules/L3_Generation/test_generator.md"
+      },
+      "templates": {
+        "description": "代码模板库",
+        "file": "modules/L3_Generation/templates.md"
+      },
+      "path": "modules/L3_Generation/"
+    }
+  },
+  "loading_rules": {
+    "sequential": true,
+    "merge_strategy": "append",
+    "conflict_resolution": "last_wins",
+    "layer_priority": ["L1_Framework", "L2_Analysis", "L3_Generation"],
+    "config_priority": ["module", "subsystem", "global"]
+  },
+  "usage_patterns": {
+    "subsystem_test_generation": {
+      "trigger_keywords": ["XTS_TEMPLATE", "子系统测试", "API测试模板", "测试生成", "OpenHarmony测试"],
+      "description": "为指定子系统生成测试用例，使用子系统特有配置",
+      "load_layers": ["L1_Framework", "L2_Analysis", "L3_Generation"],
+      "required_configs": [
+        "references/subsystems/_common.md"
+      ],
+      "optional_configs": [
+        "references/subsystems/{SubsystemName}/_common.md",
+        "references/subsystems/{SubsystemName}/{ModuleName}.md"
+      ],
+      "required_modules": [
+        "modules/L1_Framework/hypium_framework.md",
+        "modules/L1_Framework/arkts_standards.md",
+        "modules/L1_Framework/test_conventions.md",
+        "modules/L2_Analysis/api_parser.md",
+        "modules/L2_Analysis/project_parser.md",
+        "modules/L3_Generation/test_generator.md",
+        "modules/L3_Generation/templates.md"
+      ]
+    },
+    "api_syntax_check": {
+      "trigger_keywords": ["API类型", "动静态", "语法类型", "arkTSVersion"],
+      "description": "识别 API 类型（动态/静态）和工程类型（动态/静态语法工程）",
+      "load_layers": ["L2_Analysis"],
+      "required_modules": [
+        "modules/L2_Analysis/api_parser.md",
+        "modules/L2_Analysis/project_parser.md"
+      ]
+    },
+    "module_level_parsing": {
+      "trigger_keywords": ["模块解析", "模块级解析", "批量解析", "模块映射"],
+      "description": "解析整个模块的所有 API",
+      "load_layers": ["L1_Framework", "L2_Analysis"],
+      "required_modules": [
+        "modules/L1_Framework/hypium_framework.md",
+        "modules/L2_Analysis/api_parser.md"
+      ]
+    },
+    "basic_api_test": {
+      "trigger_keywords": ["API测试", "接口测试", "生成测试用例", "API"],
+      "description": "基本的 API 测试用例生成",
+      "load_layers": ["L1_Framework", "L3_Generation"],
+      "required_modules": [
+        "modules/L1_Framework/hypium_framework.md",
+        "modules/L1_Framework/arkts_standards.md",
+        "modules/L1_Framework/test_conventions.md",
+        "modules/L3_Generation/test_generator.md",
+        "modules/L3_Generation/templates.md"
+      ]
+    },
+    "ui_api_test": {
+      "trigger_keywords": ["UiTest", "UI测试", "组件测试", "界面测试", "Driver", "ON", "控件"],
+      "description": "UI 组件测试用例生成",
+      "load_layers": ["L1_Framework", "L3_Generation"],
+      "required_modules": [
+        "modules/L1_Framework/hypium_framework.md",
+        "modules/L1_Framework/arkts_standards.md",
+        "modules/L1_Framework/test_conventions.md",
+        "modules/L1_Framework/uitest_framework.md",
+        "modules/L3_Generation/test_generator.md",
+        "modules/L3_Generation/templates.md"
+      ]
+    },
+    "coverage_analysis": {
+      "trigger_keywords": ["测试覆盖", "覆盖率分析", "测试分析"],
+      "description": "测试覆盖率分析",
+      "load_layers": ["L1_Framework", "L2_Analysis"],
+      "required_modules": [
+        "modules/L1_Framework/hypium_framework.md",
+        "modules/L1_Framework/test_conventions.md",
+        "modules/L2_Analysis/api_parser.md",
+        "modules/L2_Analysis/coverage_analyzer.md"
+      ]
+    },
+    "build_and_compile": {
+      "trigger_keywords": ["编译", "BUILD.gn", "build.sh", "build_hap.ps1", "编译测试套", "多目标编译", "辅助工程", "编译错误"],
+      "description": "XTS 测试工程编译指导，包含 BUILD.gn 配置、编译命令、多目标编译策略、辅助工程配置",
+      "load_layers": ["L2_Analysis"],
+      "platform_specific": {
+        "linux": {
+          "required_modules": ["modules/L2_Analysis/build_workflow_linux.md"]
+        },
+        "windows": {
+          "required_modules": ["modules/L2_Analysis/build_workflow_windows.md"]
+        }
+      }
+    },
+    "complete_generation": {
+      "trigger_keywords": ["完整测试", "全面测试", "生成测试套件"],
+      "description": "完整的测试用例生成，包含 API 解析、覆盖分析和测试生成",
+      "load_layers": ["L1_Framework", "L2_Analysis", "L3_Generation"],
+      "required_modules": "all"
+    }
+  },
+  "template_mapping": {
+    "api_test": "modules/L3_Generation/templates.md",
+    "parameter_test": "modules/L3_Generation/test_generator.md",
+    "error_code_test": "modules/L3_Generation/test_generator.md",
+    "return_value_test": "modules/L3_Generation/test_generator.md",
+    "uitest_test": "modules/L3_Generation/templates.md",
+    "component_test": "references/subsystems/ArkUI/_common.md",
+    "web_test": "references/subsystems/ArkWeb/_common.md",
+    "testfwk_test": "references/subsystems/testfwk/_common.md"
+  },
+  "api_kit_mapping": {
+    "@kit.ArkTS": "UTILS",
+    "@kit.NetworkKit": "NETWORK",
+    "@kit.ArkData": "DATA",
+    "@kit.CoreFileKit": "FILE",
+    "@kit.ArkitGraphics": "GRAPHICS",
+    "@kit.ArkUI": "ARKUI",
+    "@kit.ArkWeb": "ARKWEB",
+    "@kit.TestKit": "TESTFWK",
+    "@ohos.UiTest": "UITEST"
+  },
+  "subsystem_mapping": {
+    "ArkUI": {
+      "kit": "@kit.ArkUI",
+      "test_path": "test/xts/acts/arkui/",
+      "config_path": "references/subsystems/ArkUI/",
+      "modules": ["Component", "Animator", "Router", "UIEngine", "Window", "Display"]
+    },
+    "ArkWeb": {
+      "kit": "@kit.ArkWeb",
+      "test_path": "test/xts/acts/arkweb/",
+      "config_path": "references/subsystems/ArkWeb/",
+      "modules": ["Web", "WebViewController", "WebResourceRequest", "WebResourceResponse"]
+    },
+    "testfwk": {
+      "kit": "@kit.TestKit",
+      "test_path": "test/xts/acts/testfwk/",
+      "config_path": "references/subsystems/testfwk/",
+      "special_rule": "string_empty_parameter_valid",
+      "modules": ["UiTest", "PerfTest", "JsUnit"],
+      "reference_docs": {
+        "api_reference": "/mnt/data/c00810129/oh_0130/docs/zh-cn/application-dev/reference/apis-test-kit",
+        "guide": "/mnt/data/c00810129/oh_0130/docs/zh-cn/application-dev/application-test"
+      }
+    }
+  },
+  "config_inheritance": {
+    "description": "配置继承优先级：模块配置 > 子系统配置 > 全局配置",
+    "levels": {
+      "global": {
+        "config": "references/subsystems/_common.md",
+        "description": "全局通用配置，所有子系统共享"
+      },
+      "subsystem": {
+        "config": "references/subsystems/{SubsystemName}/_common.md",
+        "description": "子系统通用配置，适用于该子系统的所有模块"
+      },
+      "module": {
+        "config": "references/subsystems/{SubsystemName}/{ModuleName}.md",
+        "description": "模块配置，可继承子系统配置"
+      }
+    }
+  },
+  "arkts_syntax_types": {
+    "description": "ArkTS 语法类型识别和匹配规则",
+    "api_types": {
+      "dynamic_only": "动态API（ArkTS动态语法独有）",
+      "static_only": "静态API（ArkTS静态语法独有）",
+      "hybrid": "混合API（同时支持动态和静态语法）"
+    },
+    "project_types": {
+      "dynamic": "动态语法工程（无 arkTSVersion 配置）",
+      "static": "静态语法工程（arkTSVersion: 1.2）"
+    },
+    "compatibility_matrix": {
+      "static_api": {
+        "static_project": "compatible",
+        "dynamic_project": "incompatible"
+      },
+      "dynamic_api": {
+        "static_project": "incompatible",
+        "dynamic_project": "compatible"
+      },
+      "hybrid_api": {
+        "static_project": "compatible_use_static",
+        "dynamic_project": "compatible_use_dynamic"
+      }
+    },
+    "naming_rules": {
+      "static_project": {
+        "file_suffix": "无后缀",
+        "test_case_suffix": "_static"
+      },
+      "dynamic_project": {
+        "file_suffix": "无后缀",
+        "test_case_suffix": "无后缀"
+      }
+    }
+  },
+  "conventions": {
+    "test_case_number_format": "SUB_[子系统]_[模块]_[API]_[类型]_[序号]",
+    "test_types": ["PARAM", "ERROR", "RETURN", "BOUNDARY"],
+    "test_levels": ["LEVEL0", "LEVEL1", "LEVEL2", "LEVEL3", "LEVEL4"],
+    "test_sizes": ["SMALLTEST", "MEDIUMTEST", "LARGETEST"],
+    "test_categories": ["Level0", "Level1", "Level2", "Level3", "Level4"]
+  }
+}
