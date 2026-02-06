@@ -1,6 +1,6 @@
 # 子系统配置示例
 
-> **OH_XTS_GENERATOR_TEMPLATE 子系统配置示例集合**
+> **oh-xts-generator-template 子系统配置示例集合**
 
 ## 示例列表
 
@@ -56,7 +56,7 @@
 在调用技能时指定配置文件：
 
 ```
-请使用 OH_XTS_GENERATOR_TEMPLATE 生成测试用例：
+请使用 oh-xts-generator-template 生成测试用例：
 
 子系统: MySubsystem
 配置文件: references/subsystems/MySubsystem/_common.md

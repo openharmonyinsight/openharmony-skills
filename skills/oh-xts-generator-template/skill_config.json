@@ -1,5 +1,5 @@
 {
-  "skill_name": "OH_XTS_GENERATOR_TEMPLATE",
+  "skill_name": "oh-xts-generator-template",
   "version": "1.12.0",
   "description": "OpenHarmony XTS测试用例通用生成模板，适用于各个子系统。支持子系统特有配置扩展，灵活配置测试生成策略。支持 Linux 和 Windows 双平台编译。Linux 环境必须使用 build.sh 脚本编译（不要使用 hvigorw）。Linux 编译工作流升级至 v2.0.0，采用模块化架构，拆分为 5 个独立模块（主工作流 + 环境准备 + 预编译清理 + BUILD.gn配置 + 问题排查），支持按需加载，主文件减少 49%。Windows 编译工作流升级至 v2.1.0，支持 DevEco Studio IDE 和命令行两种编译方式，提供完整测试执行、结果解析和自动化脚本。",
   "references": [

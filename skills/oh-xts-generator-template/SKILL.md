@@ -8,13 +8,13 @@ allowed-tools:
   - Bash
 ---
 
-# OH_XTS_GENERATOR_TEMPLATE
+# oh-xts-generator-template
 
 > **OpenHarmony XTS 测试用例通用生成模板**
 
 ## 技能概述
 
-OH_XTS_GENERATOR_TEMPLATE 是一个通用的 OpenHarmony XTS 测试用例生成模板，设计为**可配置、可扩展**的通用框架，适用于各个子系统的测试用例生成。
+oh-xts-generator-template 是一个通用的 OpenHarmony XTS 测试用例生成模板，设计为**可配置、可扩展**的通用框架，适用于各个子系统的测试用例生成。
 
 ### 核心特性
 
@@ -46,7 +46,7 @@ OH_XTS_GENERATOR_TEMPLATE 是一个通用的 OpenHarmony XTS 测试用例生成�
 ### 方式1：使用通用模板（推荐新手）
 
 ```
-请使用 OH_XTS_GENERATOR_TEMPLATE 为以下 API 生成测试用例：
+请使用 oh-xts-generator-template 为以下 API 生成测试用例：
 
 子系统: ArkUI
 API: Component.onClick()
@@ -56,7 +56,7 @@ API: Component.onClick()
 ### 方式2：使用子系统配置（推荐）
 
 ```
-请使用 OH_XTS_GENERATOR_TEMPLATE 为 ArkUI 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 ArkUI 子系统生成测试用例：
 
 子系统: ArkUI
 配置文件: references/subsystems/ArkUI/_common.md
@@ -66,7 +66,7 @@ API: Component.onClick()
 ### 方式3：自定义配置
 
 ```
-请使用 OH_XTS_GENERATOR_TEMPLATE 生成测试用例，使用自定义配置：
+请使用 oh-xts-generator-template 生成测试用例，使用自定义配置：
 
 子系统: MySubsystem
 自定义配置:

@@ -1,6 +1,6 @@
 # 配置扩展机制详解
 
-> **OH_XTS_GENERATOR_TEMPLATE** - 配置系统使用指南
+> **oh-xts-generator-template** - 配置系统使用指南
 > **版本**: 2.0.0
 > **更新日期**: 2026-02-05
 
@@ -18,7 +18,7 @@
 
 ## 一、配置系统概述
 
-OH_XTS_GENERATOR_TEMPLATE 采用**分层配置系统**，支持从通用到特化的多级配置继承。
+oh-xts-generator-template 采用**分层配置系统**，支持从通用到特化的多级配置继承。
 
 ### 1.1 设计理念
 
@@ -60,7 +60,7 @@ OH_XTS_GENERATOR_TEMPLATE 采用**分层配置系统**，支持从通用到特�
 ### 2.1 目录结构
 
 ```
-OH_XTS_GENERATOR_TEMPLATE/
+oh-xts-generator-template/
 └── references/
     └── subsystems/
         ├── _common.md                      # 通用配置（所有子系统共享）
@@ -520,7 +520,7 @@ echo "✅ $SUBSYSTEM 子系统配置创建完成"
 **文档版本**: 2.0.0
 **创建日期**: 2026-02-05
 **最后更新**: 2026-02-05
-**维护者**: OH_XTS_GENERATOR_TEMPLATE Team
+**维护者**: oh-xts-generator-template Team
 
 ## 更新历史
 

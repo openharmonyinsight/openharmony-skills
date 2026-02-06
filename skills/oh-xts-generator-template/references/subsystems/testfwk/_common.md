@@ -475,7 +475,7 @@ ${OH_ROOT}/test/xts/acts/testfwk/
 - 方便用户快速查找测试套名称
 
 **更新文件**：
-- `/mnt/data/c00810129/.claude/skills/OH_XTS_GENERATOR_TEMPLATE/references/subsystems/testfwk/_common.md`
+- `/mnt/data/c00810129/.claude/skills/oh-xts-generator-template/references/subsystems/testfwk/_common.md`
 - 更新日期：2026-02-06
 
 ---

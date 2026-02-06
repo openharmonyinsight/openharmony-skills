@@ -7,7 +7,7 @@
 本 Template 采用三层模块化架构，可根据任务需求按需加载：
 
 ```
-OH_XTS_GENERATOR_TEMPLATE/
+oh-xts-generator-template/
 ├── modules/
 │   ├── L1_Framework/            # 框架层（必须加载）
 │   │   ├── hypium_framework.md  # Hypium框架知识
@@ -159,7 +159,7 @@ Windows 编译工作流，包括：
 用户可以明确指定需要加载的模块：
 
 ```
-请使用 OH_XTS_GENERATOR_TEMPLATE 生成测试用例：
+请使用 oh-xts-generator-template 生成测试用例：
 
 任务类型: 基础API测试
 加载模块: L1_Framework + L3_Generation

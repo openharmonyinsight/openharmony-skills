@@ -1,6 +1,6 @@
 # 使用方式详解
 
-> **OH_XTS_GENERATOR_TEMPLATE** - 完整使用指南
+> **oh-xts-generator-template** - 完整使用指南
 
 ## 目录
 
@@ -14,7 +14,7 @@
 
 ## 一、概述
 
-OH_XTS_GENERATOR_TEMPLATE 提供 3 种使用方式，从简单到复杂，满足不同用户的需求。
+oh-xts-generator-template 提供 3 种使用方式，从简单到复杂，满足不同用户的需求。
 
 ### 1.1 使用方式对比
 
@@ -48,7 +48,7 @@ OH_XTS_GENERATOR_TEMPLATE 提供 3 种使用方式，从简单到复杂，满足
 #### 2.1.2 使用格式
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为以下 API 生成测试用例：
+请使用 oh-xts-generator-template 为以下 API 生成测试用例：
 
 子系统: {子系统名称}
 API: {API名称}
@@ -60,7 +60,7 @@ API: {API名称}
 **示例1：为 ArkUI Component 生成测试**
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为以下 API 生成测试用例：
+请使用 oh-xts-generator-template 为以下 API 生成测试用例：
 
 子系统: ArkUI
 API: Component.onClick()
@@ -70,7 +70,7 @@ API: Component.onClick()
 **示例2：为 Audio 模块生成测试**
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为以下 API 生成测试用例：
+请使用 oh-xts-generator-template 为以下 API 生成测试用例：
 
 子系统: Multimedia
 API: AudioRenderer.create()
@@ -80,7 +80,7 @@ API: AudioRenderer.create()
 **示例3：为 Web 模块生成测试**
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为以下 API 生成测试用例：
+请使用 oh-xts-generator-template 为以下 API 生成测试用例：
 
 子系统: ArkWeb
 API: Web.runJavaScript()
@@ -120,7 +120,7 @@ API: Web.runJavaScript()
 #### 2.2.2 使用格式
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为 {子系统名称} 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 {子系统名称} 子系统生成测试用例：
 
 子系统: {子系统名称}
 配置文件: {配置文件路径}
@@ -132,7 +132,7 @@ API: {API名称}
 **示例1：使用 ArkUI 子系统配置**
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为 ArkUI 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 ArkUI 子系统生成测试用例：
 
 子系统: ArkUI
 配置文件: references/subsystems/ArkUI/_common.md
@@ -142,7 +142,7 @@ API: Component.onClick()
 **示例2：使用 ArkWeb 子系统配置**
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为 ArkWeb 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 ArkWeb 子系统生成测试用例：
 
 子系统: ArkWeb
 配置文件: references/subsystems/ArkWeb/_common.md
@@ -152,7 +152,7 @@ API: Web.runJavaScript()
 **示例3：使用 ArkTS 子系统配置（特殊规则）**
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为 ArkTS 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 ArkTS 子系统生成测试用例：
 
 子系统: ArkTS
 配置文件: references/subsystems/ArkTS/_common.md
@@ -213,7 +213,7 @@ API: ArkTS 特有语法
 #### 2.3.2 使用格式
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 生成测试用例，使用自定义配置：
+请使用 oh-xts-generator-template 生成测试用例，使用自定义配置：
 
 子系统: {子系统名称}
 自定义配置:
@@ -230,7 +230,7 @@ API: {API名称}
 **示例1：自定义测试路径**
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 生成测试用例，使用自定义配置：
+请使用 oh-xts-generator-template 生成测试用例，使用自定义配置：
 
 子系统: CustomSubsystem
 自定义配置:
@@ -244,7 +244,7 @@ API: customAPI.method()
 **示例2：自定义测试规则**
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 生成测试用例，使用自定义配置：
+请使用 oh-xts-generator-template 生成测试用例，使用自定义配置：
 
 子系统: MySubsystem
 自定义配置:
@@ -261,7 +261,7 @@ API: myAPI.method()
 **示例3：完全自定义**
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 生成测试用例，使用自定义配置：
+请使用 oh-xts-generator-template 生成测试用例，使用自定义配置：
 
 子系统: NewSubsystem
 自定义配置:
@@ -328,7 +328,7 @@ API: newAPI.method()
 
 **示例**:
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为 ArkUI 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 ArkUI 子系统生成测试用例：
 
 子系统: ArkUI
 配置文件: references/subsystems/ArkUI/_common.md
@@ -348,7 +348,7 @@ API: Component.onAppear()
 
 **示例**:
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 分析 ArkUI 子系统的测试覆盖情况：
+请使用 oh-xts-generator-template 分析 ArkUI 子系统的测试覆盖情况：
 
 子系统: ArkUI
 配置文件: references/subsystems/ArkUI/_common.md
@@ -368,7 +368,7 @@ API: Component.onAppear()
 
 **示例**:
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 检查以下测试文件是否符合规范：
+请使用 oh-xts-generator-template 检查以下测试文件是否符合规范：
 
 测试文件: test/xts/acts/arkui/uitest/Component.test.ets
 子系统: ArkUI
@@ -389,7 +389,7 @@ API: Component.onAppear()
 
 **示例**:
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为以下 API 批量生成测试用例：
+请使用 oh-xts-generator-template 为以下 API 批量生成测试用例：
 
 子系统: ArkUI
 配置文件: references/subsystems/ArkUI/_common.md
@@ -412,7 +412,7 @@ API 列表:
 
 **示例** (ArkTS 子系统):
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为 ArkTS 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 ArkTS 子系统生成测试用例：
 
 子系统: ArkTS
 配置文件: references/subsystems/ArkTS/_common.md
@@ -429,7 +429,7 @@ API: ArkTS 特有语法
 
 **示例**:
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 修复以下测试用例：
+请使用 oh-xts-generator-template 修复以下测试用例：
 
 测试文件: test/xts/acts/arkui/uitest/Component.test.ets
 子系统: ArkUI
@@ -493,7 +493,7 @@ API: ArkTS 特有语法
 
 **示例**:
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为 ArkUI 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 ArkUI 子系统生成测试用例：
 
 子系统: ArkUI
 配置文件: references/subsystems/ArkUI/_common.md
@@ -515,7 +515,7 @@ API: Component.onClick()
 
 **示例**:
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为 ArkUI 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 ArkUI 子系统生成测试用例：
 
 子系统: ArkUI
 配置文件: references/subsystems/ArkUI/_common.md
@@ -575,7 +575,7 @@ hvigorw.bat --mode module -p product=default assembleHap
 **A**: 在使用方式中添加"测试套路径"参数：
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为 ArkUI 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 ArkUI 子系统生成测试用例：
 
 子系统: ArkUI
 配置文件: references/subsystems/ArkUI/_common.md
@@ -588,7 +588,7 @@ API: Component.onClick()
 **A**: 添加"测试覆盖分析"要求：
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 分析 ArkUI 子系统的测试覆盖情况：
+请使用 oh-xts-generator-template 分析 ArkUI 子系统的测试覆盖情况：
 
 子系统: ArkUI
 配置文件: references/subsystems/ArkUI/_common.md
@@ -605,7 +605,7 @@ API: Component.onClick()
 **A**: 指定测试文件和修复要求：
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 修复以下测试用例：
+请使用 oh-xts-generator-template 修复以下测试用例：
 
 测试文件: test/xts/acts/arkui/uitest/Component.test.ets
 子系统: ArkUI
@@ -625,7 +625,7 @@ API: Component.onClick()
 **A**: 提供 API 列表：
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为以下 API 批量生成测试用例：
+请使用 oh-xts-generator-template 为以下 API 批量生成测试用例：
 
 子系统: ArkUI
 配置文件: references/subsystems/ArkUI/_common.md
@@ -649,7 +649,7 @@ API 列表:
 
 **示例**:
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为 ArkUI 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 ArkUI 子系统生成测试用例：
 
 子系统: ArkUI
 配置文件: references/subsystems/ArkUI/_common.md
@@ -662,7 +662,7 @@ API: Component.onClick()
 **A**: 在使用方式中添加"测试级别"和"测试类型"参数：
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为 ArkUI 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 ArkUI 子系统生成测试用例：
 
 子系统: ArkUI
 配置文件: references/subsystems/ArkUI/_common.md
@@ -676,7 +676,7 @@ API: Component.onClick()
 **A**: 在"要求"中明确说明：
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为 ArkUI 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 ArkUI 子系统生成测试用例：
 
 子系统: ArkUI
 配置文件: references/subsystems/ArkUI/_common.md
@@ -699,7 +699,7 @@ API: Component.onClick()
 
 **示例**:
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为 ArkUI 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 ArkUI 子系统生成测试用例：
 
 子系统: ArkUI
 配置文件: references/subsystems/ArkUI/_common.md
@@ -718,7 +718,7 @@ API: Component.onClick()
 
 **选项1：使用通用模板（方式1）**
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为以下 API 生成测试用例：
+请使用 oh-xts-generator-template 为以下 API 生成测试用例：
 
 子系统: NewSubsystem
 API: newAPI.method()
@@ -727,7 +727,7 @@ API: newAPI.method()
 
 **选项2：使用自定义配置（方式3）**
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 生成测试用例，使用自定义配置：
+请使用 oh-xts-generator-template 生成测试用例，使用自定义配置：
 
 子系统: NewSubsystem
 自定义配置:
@@ -772,7 +772,7 @@ API: newAPI.method()
 #### 模板1：简单测试生成
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为以下 API 生成测试用例：
+请使用 oh-xts-generator-template 为以下 API 生成测试用例：
 
 子系统: {子系统名称}
 API: {API名称}
@@ -782,7 +782,7 @@ API: {API名称}
 #### 模板2：使用子系统配置
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为 {子系统名称} 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 {子系统名称} 子系统生成测试用例：
 
 子系统: {子系统名称}
 配置文件: references/subsystems/{子系统名称}/_common.md
@@ -792,7 +792,7 @@ API: {API名称}
 #### 模板3：自定义配置
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 生成测试用例，使用自定义配置：
+请使用 oh-xts-generator-template 生成测试用例，使用自定义配置：
 
 子系统: {子系统名称}
 自定义配置:
@@ -806,7 +806,7 @@ API: {API名称}
 #### 模板4：完整需求
 
 ```markdown
-请使用 OH_XTS_GENERATOR_TEMPLATE 为 {子系统名称} 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 {子系统名称} 子系统生成测试用例：
 
 子系统: {子系统名称}
 配置文件: references/subsystems/{子系统名称}/_common.md
@@ -829,4 +829,4 @@ API: {API名称}
 **文档版本**: 1.0.0
 **创建日期**: 2026-02-05
 **最后更新**: 2026-02-05
-**维护者**: OH_XTS_GENERATOR_TEMPLATE Team
+**维护者**: oh-xts-generator-template Team
