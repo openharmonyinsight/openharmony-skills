@@ -48,9 +48,14 @@ openharmony-skills/
 ├── skills/                                    # 技能根目录
 │   └── openharmony-security-review/          # 安全审查技能
 │       └── SKILL.md                          # 技能定义文件
+│   └── oh-pdd-prd-analysis/                  # 优化已有的PRD文档
+│       └── SKILL.md                          # 技能定义文件
+│   └── oh-pdd-design-doc-generator/          # 根据PRD文档生成架构设计和功能设计文档
+│       └── SKILL.md                          # 技能定义文件
+│   └── oh-pdd-code-generator/                # 根据架构设计和功能设计生成功能代码
+│       └── SKILL.md                          # 技能定义文件
 └── README.md                                 # 本文件
 ```
-
 
 ## 贡献
 
