@@ -1,0 +1,1 @@
+If `hb build` fails. Try to update the `build` repository with `repo sync -c build`. If that still doesn't work, `rm -rf binarys/`, then `bash build/prebuilts_config.sh`, then `rm -rf ../.hpm/.hpmcache` 
