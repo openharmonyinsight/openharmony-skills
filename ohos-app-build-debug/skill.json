@@ -1,0 +1,43 @@
+{
+  "name": "ohos-app-build-debug",
+  "description": "HarmonyOS/OpenHarmony应用自动化编译、推送及调试工具。自动检测DevEco Studio并使用其内置工具链进行编译调试。支持编译应用、安装到设备、启动应用、截图、日志查看和崩溃堆栈解析等功能。自动发现并配置LLVM、Profiler、HDC、hvigorw、java等开发工具。使用Python实现，跨平台支持Windows、macOS和Linux。",
+  "version": "2.1.0",
+  "author": "Claude Code",
+  "parameters": {
+    "projectPath": {
+      "type": "string",
+      "description": "HarmonyOS/OpenHarmony项目根目录路径",
+      "default": "."
+    },
+    "bundleName": {
+      "type": "string",
+      "description": "应用包名（从AppScope/app.json5自动读取）",
+      "default": null
+    },
+    "deviceId": {
+      "type": "string",
+      "description": "目标设备ID（自动检测）",
+      "default": null
+    },
+    "buildMode": {
+      "type": "string",
+      "enum": ["debug", "release"],
+      "description": "编译模式",
+      "default": "debug"
+    },
+    "moduleName": {
+      "type": "string",
+      "description": "模块名称",
+      "default": "entry"
+    }
+  },
+  "tools": [
+    "tools/build.py",
+    "tools/install.py",
+    "tools/launch.py",
+    "tools/screenshot.py",
+    "tools/parse_crash.py",
+    "tools/ohos_utils.py",
+    "tools/env_detector.py"
+  ]
+}
