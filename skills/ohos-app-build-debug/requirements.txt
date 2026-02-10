@@ -1,7 +1,0 @@
-# OHOS App Build & Debug - Dependencies
-# 本工具不依赖任何外部 Python 包，使用 Python 标准库
-
-# 如果将来需要添加依赖，请在此处列出
-# 例如：
-# requests>=2.25.0
-# beautifulsoup4>=4.9.0

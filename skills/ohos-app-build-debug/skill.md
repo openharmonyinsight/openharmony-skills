@@ -1,329 +1,162 @@
 # name: ohos-app-build-debug
-# description: HarmonyOS/OpenHarmony application automation build, deployment, and debugging tool for DevEco Studio users. Automatically detects DevEco Studio installation and SDK, then uses the bundled toolchain (hdc, java, hvigorw, llvm, profiler, etc.) for building, installing, and debugging applications. Supports Windows, macOS, and Linux.
+# description: Build, install, launch, and debug HarmonyOS/OpenHarmony applications using DevEco Studio toolchain. Use when Claude needs to: (1) Build OHOS apps with hvigorw, (2) Install HAP files to devices via hdc, (3) Launch or debug OHOS applications, (4) Parse crash stacks with hstack, (5) Take device screenshots, or (6) Detect DevEco Studio environment and SDK tools. Automatically detects DevEco Studio installation and configures JAVA_HOME, PATH, and toolchain.
 
 ---
 
-# OHOS App Build & Debug - HarmonyOS/OpenHarmony
+# OHOS App Build & Debug
 
-## 📦 Installation
+## When to Use This Skill
 
-### No Installation (Recommended)
+Use this skill when the user needs to work with HarmonyOS/OpenHarmony applications:
 
-Direct usage without installation:
+- **Building**: "Build my OHOS app", "Compile the project", "Run hvigorw"
+- **Installing**: "Install this HAP", "Deploy to device", "Install app to device"
+- **Launching**: "Launch the app", "Start the application", "Run on device"
+- **Debugging**: "Take screenshot", "Parse crash stack", "Debug crash"
+- **Environment**: "Check DevEco Studio", "Show SDK path", "Verify tools", "Detect environment"
 
-```bash
-cd ~/.claude/skills/ohos-app-build-debug
-./ohos-app-build-debug build
-```
+## Quick Start
 
-### System Wide Installation (Optional)
-
-Install to system for global access:
-
-```bash
-cd ~/.claude/skills/ohos-app-build-debug
-pip install -e .
-
-# Available from any directory after installation
-ohos-app-build-debug build
-```
-
-**Note**: This documentation uses `ohos-app-build-debug` command. If not installed system-wide, first `cd` to the directory and use `./ohos-app-build-debug`.
-
----
-
-## 📋 Prerequisites
-
-### ✅ DevEco Studio (Required)
-
-**Purpose**: Official IDE for HarmonyOS/OpenHarmony application development. This skill automatically detects DevEco Studio installation and uses its bundled toolchain.
-
-**Download**: [DevEco Studio](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/ide-download)
-
-**Minimum Version**: DevEco Studio 3.1+ (4.0+ recommended)
-
-**What's Included in DevEco Studio**:
-- ✅ Java Runtime (JBR/JDK) - No separate Java installation needed
-- ✅ HarmonyOS/OpenHarmony SDK - Including hdc, hvigorw, hstack, ohpm
-- ✅ LLVM Toolchain - clang, clang++, lld, and more
-- ✅ Profiler Tools - hiprofiler, hiperf
-- ✅ Build Tools - hvigorw for compiling applications
-- ✅ Device Tools - hdc for device communication
-
-**This Skill Automatically Detects**:
-- DevEco Studio installation path
-- SDK location within DevEco Studio
-- Java Runtime (JBR) path
-- All available tool executables (hdc, hvigorw, clang, idl, restool, etc.)
-
-**No Manual Configuration Required** - Just install DevEco Studio and use!
-
----
-
-### ✅ Device Requirements
-
-**Device Setup**:
-1. Enable **Developer Options** on your HarmonyOS/OpenHarmony device
-   - Settings > About Phone > Tap "Build Number" 7 times
-2. Enable **USB Debugging**
-   - Settings > System & Updates > Developer Options > USB Debugging
-3. Connect device to computer via USB
-4. Authorize USB debugging on device when prompted
-
----
-
-## 🚀 Quick Start
+Build, install, and launch an OHOS application:
 
 ```bash
-# Show help
-ohos-app-build-debug
-
-# View environment information
-ohos-app-build-debug env
-
-# Build application
-ohos-app-build-debug build
-
-# Install to device
-ohos-app-build-debug install -f app.hap
-
-# Launch application
-ohos-app-build-debug launch
+# Run scripts from skill directory
+python3 $SKILL_DIR/scripts/build.py
+python3 $SKILL_DIR/scripts/install.py -f entry/build/default/outputs/default/entry-default-signed.hap
+python3 $SKILL_DIR/scripts/launch.py
 ```
 
----
+## Bundled Resources
 
-## 💡 Common Workflows
+This skill includes executable scripts in `scripts/` that automatically detect DevEco Studio environment:
 
-### Build, Install, and Launch
+| Script | Purpose |
+|--------|---------|
+| `build.py` | Build OHOS application using hvigorw |
+| `install.py` | Install HAP file to connected device |
+| `launch.py` | Launch installed application |
+| `screenshot.py` | Capture device screenshot |
+| `parse_crash.py` | Parse crash stack using hstack |
+| `env_detector.py` | Detect DevEco Studio and tools |
+| `ohos_utils.py` | Shared utility functions |
+
+For detailed command reference, see [references/command-reference.md](references/command-reference.md).
+
+## Common Workflows
+
+### Build and Install
 
 ```bash
-# Build the application
-ohos-app-build-debug build
+# 1. Check environment
+python3 $SKILL_DIR/scripts/env_detector.py
 
-# Install to device
-ohos-app-build-debug install -f entry/build/default/outputs/default/entry-default-signed.hap
+# 2. Build the application
+python3 $SKILL_DIR/scripts/build.py
 
-# Launch the app
-ohos-app-build-debug launch
+# 3. Install to device (output from build.py shows HAP path)
+python3 $SKILL_DIR/scripts/install.py -f entry/build/default/outputs/default/entry-default-signed.hap
+
+# 4. Launch the app
+python3 $SKILL_DIR/scripts/launch.py
 ```
 
-### One-line Command
+### One-line Build, Install, Launch
 
 ```bash
-ohos-app-build-debug build && \
-ohos-app-build-debug install -f entry/build/default/outputs/default/entry-default-signed.hap && \
-ohos-app-build-debug launch
+python3 $SKILL_DIR/scripts/build.py && \
+python3 $SKILL_DIR/scripts/install.py -f $(find entry/build -name "*.hap" | head -1) && \
+python3 $SKILL_DIR/scripts/launch.py
 ```
 
-### View Environment
+### Debug Workflow
 
 ```bash
-ohos-app-build-debug env                      # Show environment info
-ohos-app-build-debug env --refresh            # Force refresh cache
+# Launch app
+python3 $SKILL_DIR/scripts/launch.py
+
+# Take screenshot to verify
+python3 $SKILL_DIR/scripts/screenshot.py -o ./screenshots
 ```
 
-### Debug with Screenshot
+### Crash Analysis
 
 ```bash
-ohos-app-build-debug launch                   # Launch app
-ohos-app-build-debug screenshot               # Take screenshot
+# Parse crash stack from file
+python3 $SKILL_DIR/scripts/parse_crash.py -f crash.txt
+
+# Parse from string
+python3 $SKILL_DIR/scripts/parse_crash.py -c "stack trace here"
 ```
 
----
-
-## 📖 Command Reference
-
-### build - Build Application
-
-```bash
-ohos-app-build-debug build                              # Build debug version
-ohos-app-build-debug build -m release                   # Build release version
-ohos-app-build-debug build --show-env                   # Show environment info while building
-ohos-app-build-debug build --dir /path/to/project       # Specify project directory
-```
-
-### install - Install HAP to Device
-
-```bash
-ohos-app-build-debug install -f app.hap                  # Install HAP file
-ohos-app-build-debug install -f app.hap -d DEVICE_ID     # Install to specific device
-```
-
-### launch - Launch Application
-
-```bash
-ohos-app-build-debug launch                              # Launch app (auto-detect)
-ohos-app-build-debug launch -b com.example.app          # Launch specific bundle name
-ohos-app-build-debug launch --dir .                      # Launch from project directory
-```
-
-### screenshot - Take Screenshot
-
-```bash
-ohos-app-build-debug screenshot                          # Take device screenshot
-ohos-app-build-debug screenshot -o ./screenshots        # Save to specific directory
-```
-
-### parse-crash - Parse Crash Stack
-
-```bash
-ohos-app-build-debug parse-crash -f crash.txt           # Parse from file
-ohos-app-build-debug parse-crash -c "stack..."          # Parse from string
-```
-
-### env - Environment Information
-
-```bash
-ohos-app-build-debug env                                 # Show environment info
-ohos-app-build-debug env --refresh                       # Refresh cache and show
-```
-
----
-
-## 🔧 How It Works
+## How It Works
 
 ### Automatic Environment Detection
 
-When you run any command, the skill automatically:
+All scripts automatically detect DevEco Studio installation and configure the environment:
 
-1. **Detects DevEco Studio Installation**
+1. **DevEco Studio Detection**
    - Windows: `C:\Program Files\Huawei\DevEco Studio\`
    - macOS: `/Applications/DevEco-Studio.app/`
    - Linux: `~/DevEco-Studio/` or `/opt/DevEco-Studio/`
 
-2. **Extracts Toolchain Paths**
-   - Java: `{DevEco}/jbr/`
-   - SDK: `{DevEco}/sdk/`
-   - Tools: `{SDK}/openharmony/toolchains/`
-   - LLVM: `{SDK}/openharmony/toolchains/llvm/`
-   - Profiler: `{SDK}/openharmony/toolchains/profiler/`
+2. **Toolchain Configuration**
+   - Sets `JAVA_HOME` to DevEco's bundled JBR
+   - Adds SDK tools to `PATH`
+   - Configures `HDC_SERVER_PORT=7035`
+   - Caches detection result for 24 hours
 
-3. **Configures Build Environment**
-   - Sets `JAVA_HOME`
-   - Adds all tool directories to `PATH`
-   - Sets `HDC_SERVER_PORT=7035`
-   - Sets `LLVM_HOME` (if LLVM available)
+3. **Auto-Detected Tools**
+   - **Core**: hdc, hvigorw, java
+   - **LLVM**: clang, clang++, lld, llvm-*
+   - **Profiler**: hiprofiler, hiperf
+   - **Other**: hstack, ohpm, idl, restool, syscap_tool
 
-4. **Caches Detection Result**
-   - Stores in `~/.ohos_build_debug_cache.json`
-   - Speeds up subsequent builds
-   - Auto-refreshes every 24 hours
+## Response Guidelines
 
-### Detection Result Example
+When helping users with OHOS development:
 
-```
-============================================================
-Environment Detection Result
-============================================================
+1. **Locate Skill Directory**
+   - Replace `$SKILL_DIR` with the actual skill installation path
+   - Common locations: `~/.claude/skills/ohos-app-build-debug` or project-specific paths
 
-✓ Detection Source: DevEco Studio
-  Installation: /Applications/DevEco-Studio.app
+2. **Execute Scripts**
+   - Call Python scripts in `scripts/` directory using absolute or relative paths
+   - Always change to the OHOS project directory before running scripts
 
-✓ Java Home: /Applications/DevEco-Studio.app/Contents/jbr/Contents/Home
-✓ SDK Path: /Applications/DevEco-Studio.app/Contents/sdk
-✓ Available Tools:
-    hdc: .../toolchains/hdc
-    hvigorw: .../tools/hvigor/bin/hvigorw
-    java: .../jbr/Contents/Home/bin/java
-    clang: .../llvm/bin/clang
-    idl: .../toolchains/idl
-    restool: .../toolchains/restool
+3. **Show Environment First**
+   - Run `env_detector.py` when first building to show tool availability
 
-============================================================
-```
+4. **Provide One-liners**
+   - Combine build, install, launch when appropriate for user convenience
 
----
+5. **Show Actual Commands**
+   - Display the hvigorw/hdc commands being executed for transparency
 
-## 🛠️ Auto-Detected Tools
+6. **Handle Errors Gracefully**
+   - Provide troubleshooting guidance when commands fail
+   - Reference [references/troubleshooting.md](references/troubleshooting.md) for detailed help
 
-### Core Tools
-- **hdc** - Device connector tool
-- **hvigorw** - Build tool (HarmonyOS Gradle wrapper)
-- **java** - Java runtime (JBR)
+7. **Use Project Context**
+   - Auto-detect bundle names and paths from project structure
 
-### LLVM Toolchain (if available)
-- **clang** - C/C++ compiler
-- **clang++** - C++ compiler
-- **lld** - Linker
-- **llvm-ar** - Archiver
-- **llvm-nm** - Symbol lister
-- **llvm-objdump** - Object dumper
-- **llvm-strip** - Strip symbols
-- **llvm-objcopy** - Object copy utility
+## Error Handling
 
-### Profiler Tools (if available)
-- **hiprofiler** - Profiler tool
-- **hiperf** - Performance counter tool
+If DevEco Studio is not detected:
+- Verify DevEco Studio is installed
+- Check standard installation paths
+- Set `DEVECO_STUDIO_PATH` environment variable
 
-### Other Tools
-- **hstack** - Stack parser for release builds
-- **ohpm** - Package manager
-- **idl** - IDL compiler
-- **restool** - Resource tool
-- **syscap_tool** - System capability tool
+If device is not connected:
+- Check USB cable connection
+- Verify USB debugging is enabled on device
+- Authorize USB debugging on device when prompted
 
----
+For detailed troubleshooting, see [references/troubleshooting.md](references/troubleshooting.md).
 
-## 🎯 Response Style
+## Prerequisites
 
-When helping users with HarmonyOS/OpenHarmony development:
+- **DevEco Studio** 3.1+ (4.0+ recommended)
+- **OHOS Device** with USB debugging enabled
+- **Python** 3.7+ (for running scripts)
 
-1. **Use `ohos-app-build-debug` command** - Always use `ohos-app-build-debug <command>` in examples
-2. **Mention installation options** - Briefly explain no-install vs system-wide installation when first introducing the tool
-3. **Show detection results** - Display environment info when first building
-4. **Use numbered steps** - For multi-step operations
-5. **Provide one-liners** - Combine build, install, launch when appropriate
-6. **Bold key information** - Highlight important paths and commands
-7. **Show actual paths** - Display detected tool paths
-
----
-
-## 🔍 Error Handling
-
-### DevEco Studio Not Found
-
-**Error**: `✗ 未检测到 DevEco Studio`
-
-**Solutions**:
-1. Verify DevEco Studio is installed
-2. Check if installed in standard location
-3. Set environment variable:
-   ```bash
-   export DEVECO_STUDIO_PATH="/path/to/DevEco Studio"
-   ```
-4. Reinstall from official source
-
-### SDK Not Found
-
-**Error**: `✗ SDK components not found`
-
-**Solutions**:
-1. Open DevEco Studio
-2. Go to **Settings > SDK**
-3. Install **HarmonyOS SDK** or **OpenHarmony SDK**
-4. Ensure SDK is installed (not just downloaded)
-
-### Device Not Connected
-
-**Error**: `✗ 未检测到已连接的设备`
-
-**Check**:
-1. USB cable connection
-2. USB debugging enabled on device
-3. Device authorization (click trust)
-4. macOS: Accept connection prompt
-
-### Command Not Found After pip install
-
-**Error**: `command not found: ohos-app-build-debug`
-
-**Check**:
-1. Verify installation: `pip show ohos-app-build-debug`
-2. Check if pip bin directory is in PATH: `echo $PATH`
-3. Find installation location: `pip show -f ohos-app-build-debug | grep ohos-app-build-debug`
-4. Add to PATH manually or use full path
-
----
-
-Now help users build, install, and debug HarmonyOS/OpenHarmony applications using `ohos-app-build-debug` command!
+Download DevEco Studio: https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/ide-download
