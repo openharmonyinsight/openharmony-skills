@@ -3,7 +3,7 @@
 ## 标准构建命令
 
 ```bash
-wsl bash -c "cd /root/OpenHarmony/ && ./build.sh --product-name=rk3568 --build-target <TARGET_NAME>"
+cd ${OH_ROOT}/ && ${BUILD_CMD} <TARGET_NAME>
 ```
 
 ## 快速重建
@@ -11,16 +11,16 @@ wsl bash -c "cd /root/OpenHarmony/ && ./build.sh --product-name=rk3568 --build-t
 首次编译后，如果仅修改代码但未修改 GN 文件，使用 `--fast-rebuild` 显著提升编译效率：
 
 ```bash
-wsl bash -c "cd /root/OpenHarmony/ && ./build.sh --product-name=rk3568 --build-target <TARGET_NAME> --fast-rebuild"
+cd ${OH_ROOT}/ && ./build.sh --product-name=rk3568 --build-target <TARGET_NAME> --fast-rebuild
 ```
 
 **注意**: 首次编译或修改了 BUILD.gn 文件时不能使用 `--fast-rebuild`。
 
 ## 编译产物
 
-测试用例编译产物位于 WSL 路径：
+测试用例编译产物位于：
 ```
-/root/OpenHarmony/out/rk3568/tests/
+${OH_OUTPUT}/
 ```
 
 ## 编译失败处理
