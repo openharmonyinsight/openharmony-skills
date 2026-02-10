@@ -1,0 +1,55 @@
+/*
+ * Copyright (c) {YEAR} Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ */
+
+#ifndef {MODULE_NAME_UPPER}_ADAPTER_H
+#define {MODULE_NAME_UPPER}_ADAPTER_H
+
+#include <string>
+#include <functional>
+#include <unordered_map>
+
+namespace OHOS {{
+namespace {ModuleName}Adapter {{
+
+/**
+ * @brief Platform-independent adapter interface for {ModuleName}
+ *
+ * This interface abstracts platform-specific {ModuleName} operations.
+ * Designed for ZERO overhead on OHOS platform (100% forwarding).
+ */
+class I{ModuleName}Adapter {{
+public:
+    virtual ~I{ModuleName}Adapter() = default;
+
+    /**
+     * @brief Initialize the adapter
+     * @param config Configuration parameters
+     * @return Returns 0 for success, error code for failure
+     */
+    virtual int Initialize(const std::string& config) = 0;
+
+    // Add more interface methods as needed
+    // virtual int Operation(const std::string& param) = 0;
+}};
+
+// Platform selection macro (compile-time, ZERO runtime overhead)
+#ifdef IS_ARKUI_X_TARGET
+    #ifdef ANDROID_PLATFORM
+        extern I{ModuleName}Adapter* Get{ModuleName}AdapterAndroid();
+        #define {MODULE_NAME_UPPER}_ADAPTER() (Get{ModuleName}AdapterAndroid())
+    #elif defined(IOS_PLATFORM)
+        extern I{ModuleName}Adapter* Get{ModuleName}AdapterIOS();
+        #define {MODULE_NAME_UPPER}_ADAPTER() (Get{ModuleName}AdapterIOS())
+    #endif
+#else
+    extern I{ModuleName}Adapter* Get{ModuleName}AdapterOHOS();
+    #define {MODULE_NAME_UPPER}_ADAPTER() (Get{ModuleName}AdapterOHOS())
+#endif
+
+}} // namespace {ModuleName}Adapter
+}} // namespace OHOS
+
+#endif // {MODULE_NAME_UPPER}_ADAPTER_H
