@@ -4,7 +4,7 @@
 
 ## ⚠️ 使用原则（重要）
 
-在使用 oh-xts-generator-template skill 生成 ArkTS 静态 XTS 用例并参考 arkts-static-spec 时，**必须严格遵守**以下原则：
+在使用 oh-oh-xts-generator-template-template skill 生成 ArkTS 静态 XTS 用例并参考 arkts-static-spec 时，**必须严格遵守**以下原则：
 
 1. **严格按照 skill 文档内容回答**
    - 所有回答必须基于 spec/ 和 cookbook/ 目录下的文档内容

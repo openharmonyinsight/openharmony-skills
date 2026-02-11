@@ -1,5 +1,5 @@
 {
-  "skill_name": "xts-generator",
+  "skill_name": "oh-xts-generator-template",
   "version": "3.0.0",
   "description": "OpenHarmony XTS 测试用例生成模板，支持API解析、测试生成、设计文档生成、覆盖率分析、ArkTS 静态语言语法规范校验（规范文档路径：references/arkts-static-spec/），编译工作流重构为动态静态拆分",
   "keywords": ["XTS", "测试生成", "用例生成", "测试用例", "测试设计", "arkts-static", "arkts静态", "静态语法检查", "静态语法校验", "arkts-sta", "静态xts", "静态编译", "Windows静态", "静态ArkTS", "arkts static"],
@@ -32,7 +32,7 @@
         "cookbook/recipes.md",
         "cookbook/compatibility.md"
       ],
-      "important_note": "在使用 oh-xts-generator-template skill 生成 ArkTS 静态 XTS 用例并参考 arkts-static-spec 时，必须严格遵守以下原则：1. 所有回答必须基于 spec/ 和 cookbook/ 目录下的文档内容；2. 不添加文档之外的假设或推断；3. 将 ArkTS 视为独立的静态语言，不是 TypeScript 的超集；4. ArkTS 官方规范文档（spec/ 目录）为最高优先级"
+      "important_note": "在使用 oh-oh-xts-generator-template-template skill 生成 ArkTS 静态 XTS 用例并参考 arkts-static-spec 时，必须严格遵守以下原则：1. 所有回答必须基于 spec/ 和 cookbook/ 目录下的文档内容；2. 不添加文档之外的假设或推断；3. 将 ArkTS 视为独立的静态语言，不是 TypeScript 的超集；4. ArkTS 官方规范文档（spec/ 目录）为最高优先级"
     },
     {
       "name": "子系统配置",

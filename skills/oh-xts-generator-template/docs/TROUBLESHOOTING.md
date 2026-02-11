@@ -1,6 +1,6 @@
-# xts-generator 故障排除
+# oh-xts-generator-template 故障排除
 
-> **xts-generator** - 常见问题解决方案
+> **oh-xts-generator-template** - 常见问题解决方案
 
 ## 目录
 
@@ -105,7 +105,7 @@
    ```markdown
    | 版本 | 日期 | 变更内容 | 作者 |
    |------|------|---------|------|
-   | 1.0 | 2026-02-10 | 初始版本 | xts-generator |
+   | 1.0 | 2026-02-10 | 初始版本 | oh-xts-generator-template |
    | 1.1 | 2026-02-11 | 修改场景3的预期结果 | User |
    ```
 
@@ -255,7 +255,7 @@
 
 ### 4. 联系支持
 
-- 技能维护者：xts-generator Team
+- 技能维护者：oh-xts-generator-template Team
 - 文档版本：v1.0.0
 
 ---
@@ -263,4 +263,4 @@
 **文档版本**: 1.0.0
 **创建日期**: 2026-02-10
 **最后更新**: 2026-02-10
-**维护者**: xts-generator Team
+**维护者**: oh-xts-generator-template Team

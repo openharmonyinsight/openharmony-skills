@@ -1,5 +1,5 @@
 ---
-name: xts-generator
+name: oh-xts-generator-template
 description: OpenHarmony XTS 测试用例通用生成模板。支持各子系统测试用例生成，API 定义解析，测试覆盖率分析，代码规范检查。触发关键词：XTS、测试生成、用例生成、测试用例。
 allowed-tools:
   - Read
@@ -9,13 +9,13 @@ allowed-tools:
   - Bash
 ---
 
-# xts-generator
+# oh-xts-generator-template
 
 > **OpenHarmony XTS 测试用例通用生成模板**
 
 ## 技能概述
 
-xts-generator 是一个通用的 OpenHarmony XTS 测试用例生成模板，设计为**可配置、可扩展**的通用框架，适用于各个子系统的测试用例生成。
+oh-xts-generator-template 是一个通用的 OpenHarmony XTS 测试用例生成模板，设计为**可配置、可扩展**的通用框架，适用于各个子系统的测试用例生成。
 
 ### 核心特性
 
@@ -50,7 +50,7 @@ xts-generator 是一个通用的 OpenHarmony XTS 测试用例生成模板，设�
 ### 方式1：使用通用模板（推荐新手）
 
 ```
-请使用 xts-generator 为以下 API 生成测试用例：
+请使用 oh-xts-generator-template 为以下 API 生成测试用例：
 
 子系统: ArkUI
 API: Component.onClick()
@@ -60,7 +60,7 @@ API: Component.onClick()
 ### 方式2：使用子系统配置（推荐）
 
 ```
-请使用 xts-generator 为 ArkUI 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 ArkUI 子系统生成测试用例：
 
 子系统: ArkUI
 配置文件: references/subsystems/ArkUI/_common.md
@@ -70,7 +70,7 @@ API: Component.onClick()
 ### 方式3：自定义配置
 
 ```
-请使用 xts-generator 生成测试用例，使用自定义配置：
+请使用 oh-xts-generator-template 生成测试用例，使用自定义配置：
 
 子系统: MySubsystem
 自定义配置:
@@ -372,7 +372,7 @@ references/subsystems/
 - 标注不符合规范的代码位置
 
 **规范文档**：
-- 规范文档路径：`/mnt/data/c00810129/.opencode/skills/oh-xts-generator-template/references/arkts-static-spec/`
+- 规范文档路径：`/mnt/data/c00810129/.opencode/skills/oh-oh-xts-generator-template-template/references/arkts-static-spec/`
 - 包含 16 个 ArkTS 语言规范文件（spec/ 目录）
 - 包含 3 个 TypeScript 迁移指南文件（cookbook/ 目录）
 - 校验时必须严格按照该目录下的文档内容进行
@@ -497,7 +497,7 @@ Windows 环境支持两种编译模式，根据用户需求自动选择：
 - Q6: 子系统配置文件未找到
 - Q7: 测试覆盖率分析不准确
 
-> ⚠️ **静态语法检查参考文档**：在进行 ArkTS 静态语言语法规范校验时，请严格参考 `/mnt/data/c00810129/.opencode/skills/oh-xts-generator-template/references/arkts-static-spec` 目录下的规范文档。
+> ⚠️ **静态语法检查参考文档**：在进行 ArkTS 静态语言语法规范校验时，请严格参考 `/mnt/data/c00810129/.opencode/skills/oh-oh-xts-generator-template-template/references/arkts-static-spec` 目录下的规范文档。
 
 ## 版本信息
 

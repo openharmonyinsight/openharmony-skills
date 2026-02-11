@@ -1,11 +1,11 @@
-# xts-generator
+# oh-xts-generator-template
 
 > **OpenHarmony XTS 测试用例通用生成模板**
 
 ## 快速开始
 
 ```bash
-请使用 xts-generator 为以下 API 生成测试用例：
+请使用 oh-xts-generator-template 为以下 API 生成测试用例：
 
 子系统: ArkUI
 API: Component.onClick()
@@ -49,7 +49,7 @@ API: Component.onClick()
 ### 方式1：通用模板（新手）
 
 ```
-请使用 xts-generator 为以下 API 生成测试用例：
+请使用 oh-xts-generator-template 为以下 API 生成测试用例：
 
 子系统: ArkUI
 API: Component.onClick()
@@ -58,7 +58,7 @@ API: Component.onClick()
 ### 方式2：子系统配置（推荐）
 
 ```
-请使用 xts-generator 为 ArkUI 子系统生成测试用例：
+请使用 oh-xts-generator-template 为 ArkUI 子系统生成测试用例：
 
 子系统: ArkUI
 配置文件: references/subsystems/ArkUI/_common.md
@@ -68,7 +68,7 @@ API: Component.onClick()
 ### 方式3：自定义配置（高级）
 
 ```
-请使用 xts-generator 生成测试用例，使用自定义配置：
+请使用 oh-xts-generator-template 生成测试用例，使用自定义配置：
 
 子系统: MySubsystem
 自定义配置:
@@ -224,7 +224,7 @@ MIT License
 
 ## 联系方式
 
-- 技能维护者：xts-generator Team
+- 技能维护者：oh-xts-generator-template Team
 - 文档版本：v1.2.0
 - 最后更新：2026-02-12
 
