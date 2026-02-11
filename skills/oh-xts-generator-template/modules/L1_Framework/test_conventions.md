@@ -20,10 +20,10 @@ SUB_[子系统]_[模块]_[API]_[类型]_[序号]
 
 | 标识 | 说明 | 示例 |
 |------|------|------|
-| PARAM | 参数测试 | SUB_UTILS_UTIL_TREESET_ADD_PARAM_001 |
-| ERROR | 错误码测试 | SUB_UTILS_UTIL_TREESET_POPFIRST_ERROR_401_001 |
-| RETURN | 返回值测试 | SUB_UTILS_UTIL_TREESET_GETFIRST_RETURN_001 |
-| BOUNDARY | 边界值测试 | SUB_UTILS_UTIL_TREESET_ADD_BOUNDARY_001 |
+| PARAM | 参数测试 | SUB_UTILS_UTIL_TREESET_ADD_PARAM_0001 |
+| ERROR | 错误码测试 | SUB_UTILS_UTIL_TREESET_POPFIRST_ERROR_401_0001 |
+| RETURN | 返回值测试 | SUB_UTILS_UTIL_TREESET_GETFIRST_RETURN_0001 |
+| BOUNDARY | 边界值测试 | SUB_UTILS_UTIL_TREESET_ADD_BOUNDARY_0001 |
 
 ### 1.3 子系统和模块识别
 
@@ -94,7 +94,7 @@ it('test001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, () => {
 | 字段 | 说明 | 示例 |
 |------|------|------|
 | @tc.name | 测试用例名称 | testAdd001 |
-| @tc.number | 测试用例编号 | SUB_UTILS_UTIL_TREESET_ADD_001 |
+| @tc.number | 测试用例编号 | SUB_UTILS_UTIL_TREESET_ADD_0001 |
 | @tc.desc | 测试描述 | 测试TreeSet的add方法在正常场景下的行为 |
 | @tc.type | 测试类型 | FUNCTION, PERFORMANCE, RELIABILITY |
 | @tc.size | 测试粒度 | SMALLTEST, MEDIUMTEST, LARGETEST |
@@ -208,6 +208,7 @@ export default function APINameTest() {
 import {describe, it, expect, Level} from '@ohos/hypium';
 
 // 2. 测试框架相关导入（如 UiTest）
+// ⚠️ 重要：UiTest 导入必须使用大写的 @ohos.UiTest，使用小写 @ohos.uitest 会导致编译错误
 import {Driver, ON} from '@ohos.UiTest';
 
 // 3. 公共模块导入
@@ -220,6 +221,12 @@ import {APIName} from '@kit.BaseKitName';
 // 5. 工具类导入
 import Utils from '../common/Utils';
 ```
+
+> **⚠️ UiTest 导入规范**
+>
+> - ✅ **正确**：`import {Driver, ON} from '@ohos.UiTest';`（大写的 T）
+> - ❌ **错误**：`import {Driver, ON} from '@ohos.uitest';`（小写的 t）会导致编译失败
+> - **编译错误**：`Cannot find module '@ohos.uitest' or its corresponding type declarations.`
 
 ### 7.3 测试文件头部版权
 

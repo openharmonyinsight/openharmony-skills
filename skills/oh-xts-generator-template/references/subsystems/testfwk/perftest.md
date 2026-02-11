@@ -4,7 +4,7 @@
 > - 模块名称: PerfTest（性能测试框架）
 > - 所属子系统: testfwk
 > - Kit包: @kit.TestKit
-> - API 声明文件: @ohos.perftest.d.ts
+> - API 声明文件:@ohos.test.PerfTest.d.ts
 > - 版本: 1.0.0
 > - 更新日期: 2026-02-05
 

@@ -4,7 +4,7 @@
 > - 模块名称: UiTest（UI 自动化测试框架）
 > - 所属子系统: testfwk
 > - Kit包: @kit.TestKit
-> - API 声明文件: @ohos.uitest.d.ts
+> - API 声明文件: ${OH_ROOT}/interface/sdk-js/api/@ohos.UiTest.d.ts
 > - 版本: 1.0.0
 > - 更新日期: 2026-02-05
 
@@ -396,9 +396,21 @@ it('testAssertComponentExistFail17000003', TestType.FUNCTION | Size.MEDIUMTEST |
 #### 9. 测试编号规则
 - 按错误码组织测试文件（如 UitestMiscErrorCode.test.ets）
 - describe 名称反映错误码类型（如 UitestMiscErrorTest）
-- @tc.number 格式：`{describe名}_{序号}`，序号从 001 开始
+- @tc.number 格式：`{describe名}_{序号}`，序号从 0001 开始
 
 ## 代码模板
+
+> **⚠️ 重要提示：UiTest 导入格式规范**
+>
+> - ✅ **正确格式**：`import {Driver, ON} from '@ohos.UiTest';`（大写的 T）
+> - ❌ **错误格式**：`import {Driver, ON} from '@ohos.uitest';`（小写的 t）
+>
+> **编译错误**：使用小写的 `@ohos.uitest` 会导致以下编译错误：
+> ```
+> Cannot find module '@ohos.uitest' or its corresponding type declarations.
+> ```
+>
+> **原因**：OpenHarmony SDK 中 UiTest 模块的正确导入路径为 `@ohos.UiTest`（大写 T），不是 `@ohos.uitest`（小写 t）。
 
 ### 基础 UiTest 测试模板
 

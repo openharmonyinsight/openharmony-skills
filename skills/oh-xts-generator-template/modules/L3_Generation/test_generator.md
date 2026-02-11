@@ -31,14 +31,14 @@
 
 ```typescript
 /**
- * @tc.name {MethodName}{ParamType}{Scenario}001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_{PARAM}_{SCENARIO}_001
+ * @tc.name {MethodName}{ParamType}{Scenario}0001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_{PARAM}_{SCENARIO}_0001
  * @tc.desc 测试 {API} 的 {method} 方法 - {scenario}场景
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL1
  */
-it('test{MethodName}{ParamType}{Scenario}001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, () => {
+it('test{MethodName}{ParamType}{Scenario}0001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, () => {
   // 1. 准备测试数据
   let apiObject = new APIName();
   let paramValue = /* 根据场景设置 */;
@@ -165,14 +165,14 @@ method(param: ParamType): ReturnType;
 
 ```typescript
 /**
- * @tc.name test{MethodName}Error{Code}001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_ERROR_{CODE}_001
+ * @tc.name test{MethodName}Error{Code}0001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_ERROR_{CODE}_0001
  * @tc.desc 测试 {API} 的 {method} 方法 - 错误码 {code}：{触发条件}
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL2
  */
-it('test{MethodName}Error{Code}001', Level.LEVEL2, () => {
+it('test{MethodName}Error{Code}0001', Level.LEVEL2, () => {
   try {
     // 1. 准备会触发错误码的条件
     let apiObject = new APIName();
@@ -476,9 +476,251 @@ export default function APINameTest() {
 
 ---
 
-## 七、生成输出格式
+## 七、测试设计文档生成
 
-### 7.1 完整测试文件
+### 7.1 测试设计文档同步生成原则
+
+在生成测试用例的同时，**必须**同步生成测试设计文档，确保：
+
+1. **一一对应关系**：每个测试用例都有对应的测试设计文档
+2. **内容一致性**：设计文档内容必须与测试用例实现保持一致
+3. **版本同步**：测试用例修改时，设计文档必须同步更新
+4. **命名规范**：设计文档文件名为 `{测试文件名}.design.md`
+
+### 7.2 测试设计文档生成流程
+
+```
+生成测试用例
+    ↓
+提取测试用例关键信息
+    ├─ 测试用例编号
+    ├─ 测试用例名称
+    ├─ 测试类型和级别
+    ├─ 测试步骤
+    └─ 预期结果
+    ↓
+生成测试设计文档
+    ├─ 填充测试场景描述
+    ├─ 补充前置条件
+    ├─ 详述测试步骤
+    ├─ 明确预期结果
+    └─ 生成变更记录
+    ↓
+输出测试设计文档
+    └─ 保存为 {测试文件名}.design.md
+```
+
+### 7.3 测试设计文档生成模板
+
+```markdown
+# {API名称} 测试设计文档
+
+## 测试概述
+
+### 测试对象
+- **API名称**: {完整API路径}
+- **API类型**: {类/接口/函数}
+- **测试文件**: {测试文件路径}
+- **测试设计文档**: {设计文档路径}
+
+### 测试目标
+[测试目标和预期成果说明]
+
+## 测试场景设计
+
+### 场景1: {场景名称}
+
+| 项目 | 内容 |
+|------|------|
+| **场景描述** | {场景详细描述} |
+| **测试用例编号** | SUB_{子系统}_{模块}_{API}_{METHOD}_{TYPE}_{序号} |
+| **测试用例名称** | {testCaseName} |
+| **前置条件** | {前置条件说明} |
+| **测试步骤** | 1. 步骤1<br>2. 步骤2<br>3. 步骤3 |
+| **预期结果** | {预期结果说明} |
+| **测试类型** | {FUNCTION/PERFORMANCE/SECURITY/COMPATIBILITY} |
+| **测试级别** | {Level0/Level1/Level2/Level3/Level4} |
+| **测试数据** | {测试输入数据说明} |
+
+### 场景2: {场景名称}
+[重复上述格式]
+
+## 测试覆盖分析
+
+| 测试类型 | 测试用例数 | 覆盖说明 |
+|---------|-----------|---------|
+| 参数测试 | XX | {说明} |
+| 错误码测试 | XX | {说明} |
+| 返回值测试 | XX | {说明} |
+| 边界值测试 | XX | {说明} |
+
+## 测试依赖关系
+
+### 依赖的测试用例
+- [ ] {依赖用例1}
+- [ ] {依赖用例2}
+
+### 被依赖的测试用例
+- [ ] {被依赖用例1}
+
+## 测试环境要求
+
+- **系统版本**: OpenHarmony API {版本}
+- **子系统**: {子系统名称}
+- **设备类型**: {设备类型}
+- **网络环境**: {网络环境说明}
+
+## 注意事项
+
+[测试执行过程中的注意事项和风险说明]
+
+## 变更记录
+
+| 版本 | 日期 | 变更内容 | 作者 |
+|------|------|---------|------|
+| 1.0 | YYYY-MM-DD | 初始版本 | {作者} |
+```
+
+### 7.4 测试设计文档内容生成规则
+
+#### 7.4.1 场景描述生成规则
+
+根据测试用例类型生成场景描述：
+
+| 测试类型 | 场景描述模板 |
+|---------|------------|
+| **参数测试** | 测试 {API} 的 {method} 方法在 {参数类型}={参数值} 场景下的行为 |
+| **错误码测试** | 测试 {API} 的 {method} 方法在 {触发条件} 时抛出错误码 {code} |
+| **返回值测试** | 测试 {API} 的 {method} 方法的返回值类型和值 |
+| **边界值测试** | 测试 {API} 的 {method} 方法在 {边界值} 边界下的行为 |
+
+#### 7.4.2 测试步骤生成规则
+
+从测试用例代码中提取测试步骤：
+
+```typescript
+// 示例测试用例代码
+it('testAddStringNormal001', Level.LEVEL1, () => {
+  let treeSet = new TreeSet<string>();
+  let result = treeSet.add("hello");
+  expect(result).assertTrue();
+});
+```
+
+生成测试步骤：
+
+```
+1. 创建 TreeSet<string> 实例
+2. 调用 add() 方法，参数为 "hello"
+3. 验证返回值为 true
+```
+
+#### 7.4.3 预期结果生成规则
+
+从测试用例代码中提取预期结果：
+
+```typescript
+expect(result).assertTrue();  // 预期结果：返回值为 true
+expect(error.code).assertEqual(401);  // 预期结果：抛出错误码 401
+expect(typeof result).assertEqual('string');  // 预期结果：返回值类型为 string
+```
+
+### 7.5 测试设计文档生成示例
+
+#### 7.5.1 示例 1：参数测试设计文档
+
+```markdown
+### 场景1: 正常字符串参数
+
+| 项目 | 内容 |
+|------|------|
+| **场景描述** | 测试 TreeSet 的 add 方法在参数为正常字符串时的行为 |
+| **测试用例编号** | SUB_UTILS_UTIL_TREESET_ADD_PARAM_001 |
+| **测试用例名称** | testAddStringNormal001 |
+| **前置条件** | TreeSet 实例已创建，容器为空 |
+| **测试步骤** | 1. 创建 TreeSet<string> 实例<br>2. 调用 add() 方法，参数为 "hello"<br>3. 验证返回值为 true |
+| **预期结果** | 方法执行成功，返回值为 true，元素成功添加到集合中 |
+| **测试类型** | FUNCTION |
+| **测试级别** | Level1 |
+| **测试数据** | 参数: "hello" |
+```
+
+#### 7.5.2 示例 2：错误码测试设计文档
+
+```markdown
+### 场景2: 容器为空时调用 popFirst
+
+| 项目 | 内容 |
+|------|------|
+| **场景描述** | 测试 TreeSet 的 popFirst 方法在容器为空时抛出错误码 401 |
+| **测试用例编号** | SUB_UTILS_UTIL_TREESET_POPFIRST_ERROR_401_001 |
+| **测试用例名称** | testPopFirstError401001 |
+| **前置条件** | TreeSet 实例已创建，容器为空 |
+| **测试步骤** | 1. 创建 TreeSet<number> 实例<br>2. 调用 popFirst() 方法<br>3. 捕获异常并验证错误码 |
+| **预期结果** | 抛出 BusinessError 异常，错误码为 401 |
+| **测试类型** | FUNCTION |
+| **测试级别** | Level2 |
+| **测试数据** | 无需参数 |
+```
+
+### 7.6 测试设计文档更新机制
+
+#### 7.6.1 初始生成
+
+- 版本号：1.0
+- 日期：当前日期
+- 变更内容：初始版本
+- 作者：生成者
+
+#### 7.6.2 测试用例修改时更新
+
+当测试用例修改时，必须更新测试设计文档：
+
+```markdown
+## 变更记录
+
+| 版本 | 日期 | 变更内容 | 作者 |
+|------|------|---------|------|
+| 1.0 | 2026-02-10 | 初始版本 | System |
+| 1.1 | 2026-02-11 | 修改场景2的测试步骤，增加参数验证步骤 | User |
+```
+
+#### 7.6.3 新增测试用例时更新
+
+当新增测试用例时，在测试设计文档中添加新的场景：
+
+```markdown
+### 场景3: 新增的测试场景
+
+| 项目 | 内容 |
+|------|------|
+| **场景描述** | ... |
+| **测试用例编号** | ... |
+| ... | ... |
+```
+
+同时在变更记录中添加：
+
+```markdown
+| 1.1 | 2026-02-11 | 新增场景3：xxx测试 | User |
+```
+
+### 7.7 测试设计文档质量检查
+
+在生成测试设计文档后，必须进行质量检查：
+
+- ✅ 所有测试用例都有对应的设计文档
+- ✅ 设计文档内容与测试用例实现一致
+- ✅ 测试步骤清晰、可执行
+- ✅ 预期结果明确、可验证
+- ✅ 文档格式符合模板要求
+- ✅ 变更记录完整
+
+---
+
+## 八、生成输出格式
+
+### 8.1 完整测试文件
 
 ```typescript
 /*
@@ -514,7 +756,7 @@ export default function APINameTest() {
 }
 ```
 
-### 7.2 测试用例清单
+### 8.2 测试用例清单
 
 生成测试用例后，应输出清单：
 
@@ -538,4 +780,34 @@ export default function APINameTest() {
 - SUB_UTILS_UTIL_TREESET_GETFIRST_RETURN_003 - 返回值类型验证
 
 总计: 10 个测试用例
+```
+
+### 8.3 测试设计文档输出
+
+生成测试用例的同时，必须生成测试设计文档：
+
+```markdown
+# 生成的测试设计文档
+
+## 测试文件: TreeSet.test.ets
+## 设计文档: TreeSet.test.design.md
+
+### 测试场景统计
+
+| 场景类型 | 场景数 | 对应测试用例数 |
+|---------|-------|--------------|
+| 参数测试场景 | 5 | 5 |
+| 错误码测试场景 | 2 | 2 |
+| 返回值测试场景 | 3 | 3 |
+
+### 测试设计文档内容
+
+文档包含以下章节：
+- 测试概述（测试对象、测试目标）
+- 测试场景设计（所有场景的详细说明）
+- 测试覆盖分析（覆盖统计）
+- 测试依赖关系
+- 测试环境要求
+- 注意事项
+- 变更记录
 ```

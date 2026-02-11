@@ -5,7 +5,7 @@
 > - 测试路径: test/xts/acts/arkts/
 > - 版本: 1.0.0
 > - 更新日期: 2025-02-02
-> - 参考文档: `.claude/skills/oh-xts-generator-template/references/ArkTS_Dynamic_Syntax_Rules.md`
+> - 参考文档: `.claude/skills/xts-generator/references/ArkTS_Dynamic_Syntax_Rules.md`
 
 ## 一、子系统通用配置
 

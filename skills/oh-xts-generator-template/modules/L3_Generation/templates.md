@@ -83,14 +83,14 @@ export default function APINameTest() {
 
 ```typescript
 /**
- * @tc.name test{MethodName}{ParamType}{Scenario}001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_{PARAM}_{SCENARIO}_001
+ * @tc.name test{MethodName}{ParamType}{Scenario}0001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_{PARAM}_{SCENARIO}_0001
  * @tc.desc 测试 {API} 的 {method} 方法 - {scenario}场景
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL1
  */
-it('test{MethodName}{ParamType}{Scenario}001', Level.LEVEL1, () => {
+it('test{MethodName}{ParamType}{Scenario}0001', Level.LEVEL1, () => {
   // 1. 准备测试数据
   let apiObject = new APIName();
   let paramValue: ParamType = normalValue;
@@ -159,14 +159,14 @@ it('test{MethodName}Undefined001', Level.LEVEL2, () => {
 
 ```typescript
 /**
- * @tc.name test{MethodName}Error{Code}001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_ERROR_{CODE}_001
+ * @tc.name test{MethodName}Error{Code}0001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_ERROR_{CODE}_0001
  * @tc.desc 测试 {API} 的 {method} 方法 - 错误码 {Code}：{触发条件}
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL2
  */
-it('test{MethodName}Error{Code}001', Level.LEVEL2, () => {
+it('test{MethodName}Error{Code}0001', Level.LEVEL2, () => {
   let apiObject = new APIName();
 
   // 准备触发错误码的条件
@@ -238,14 +238,14 @@ it('test{MethodName}ReturnUnion001', Level.LEVEL1, () => {
 
 ```typescript
 /**
- * @tc.name test{AsyncMethod}001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_001
+ * @tc.name test{AsyncMethod}0001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_0001
  * @tc.desc 测试 {API} 的 {asyncMethod} 方法 - 正常场景
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL1
  */
-it('test{AsyncMethod}001', Level.LEVEL1, async (done: Function) => {
+it('test{AsyncMethod}0001', Level.LEVEL1, async (done: Function) => {
   let apiObject = new APIName();
   let param: ParamType = validParam;
 
@@ -267,14 +267,14 @@ it('test{AsyncMethod}001', Level.LEVEL1, async (done: Function) => {
 
 ```typescript
 /**
- * @tc.name test{AsyncMethod}Error{Code}001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_ERROR_{CODE}_001
+ * @tc.name test{AsyncMethod}Error{Code}0001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_ERROR_{CODE}_0001
  * @tc.desc 测试 {API} 的 {asyncMethod} 方法 - 错误码 {code}
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL2
  */
-it('test{AsyncMethod}Error{Code}001', Level.LEVEL2, async (done: Function) => {
+it('test{AsyncMethod}Error{Code}0001', Level.LEVEL2, async (done: Function) => {
   let apiObject = new APIName();
   let invalidParam: ParamType = invalidValue;
 
@@ -415,7 +415,7 @@ it('testAddStringNormal001', Level.LEVEL1, () => {
  */
 
 import {describe, beforeAll, afterAll, it, expect, Level} from '@ohos/hypium';
-import {Driver, ON} from '@ohos.UiTest';
+import {Driver, ON} from '@ohos.UiTest';  // ⚠️ 注意：必须使用大写 T
 import Utils from '../common/Utils';
 
 export default function UiTestApiTest() {

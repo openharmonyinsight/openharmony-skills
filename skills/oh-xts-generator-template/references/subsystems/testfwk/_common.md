@@ -51,8 +51,8 @@ testfwk 子系统包含三个测试子模块：
 
 | 模块名称 | API 声明文件 | 主要 API | 说明 |
 |---------|-------------|---------|------|
-| **UiTest** | @ohos.uitest.d.ts | Driver, DriverStatic, UiComponent, UiDriver | UI 测试框架（详见 `uitest.md`） |
-| **PerfTest** | @ohos.perftest.d.ts | perfSuite, perfLog, finishBenchmark | 性能测试框架（详见 `perftest.md`） |
+| **UiTest** | @ohos.UiTest.d.ts| Driver, DriverStatic, UiComponent, UiDriver | UI 测试框架（详见 `uitest.md`） |
+| **PerfTest** | @ohos.test.PerfTest.d.ts | perfSuite, perfLog, finishBenchmark | 性能测试框架（详见 `perftest.md`） |
 | **JsUnit** | test/testfwk/arkxtest/jsunit/index.d.ts | describe, it, expect, beforeAll, MockKit, SysTestKit, Hypium | 单元测试框架（详见 `JsUnit.md`） |
 
 **模块解析说明**：
@@ -475,7 +475,7 @@ ${OH_ROOT}/test/xts/acts/testfwk/
 - 方便用户快速查找测试套名称
 
 **更新文件**：
-- `/mnt/data/c00810129/.claude/skills/oh-xts-generator-template/references/subsystems/testfwk/_common.md`
+- `/mnt/data/c00810129/.claude/skills/xts-generator/references/subsystems/testfwk/_common.md`
 - 更新日期：2026-02-06
 
 ---

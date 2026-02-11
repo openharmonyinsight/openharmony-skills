@@ -1,8 +1,39 @@
 {
-  "skill_name": "oh-xts-generator-template",
-  "version": "1.12.0",
-  "description": "OpenHarmony XTS测试用例通用生成模板，适用于各个子系统。支持子系统特有配置扩展，灵活配置测试生成策略。支持 Linux 和 Windows 双平台编译。Linux 环境必须使用 build.sh 脚本编译（不要使用 hvigorw）。Linux 编译工作流升级至 v2.0.0，采用模块化架构，拆分为 5 个独立模块（主工作流 + 环境准备 + 预编译清理 + BUILD.gn配置 + 问题排查），支持按需加载，主文件减少 49%。Windows 编译工作流升级至 v2.1.0，支持 DevEco Studio IDE 和命令行两种编译方式，提供完整测试执行、结果解析和自动化脚本。",
+  "skill_name": "xts-generator",
+  "version": "3.0.0",
+  "description": "OpenHarmony XTS 测试用例生成模板，支持API解析、测试生成、设计文档生成、覆盖率分析、ArkTS 静态语言语法规范校验（规范文档路径：references/arkts-static-spec/），编译工作流重构为动态静态拆分",
+  "keywords": ["XTS", "测试生成", "用例生成", "测试用例", "测试设计", "arkts-static", "arkts静态", "静态语法检查", "静态语法校验", "arkts-sta", "静态xts", "静态编译", "Windows静态", "静态ArkTS", "arkts static"],
+  "detailed_description": "详见 README.md",
   "references": [
+    {
+      "name": "ArkTS 静态语言语法规范文档",
+      "path": "references/arkts-static-spec",
+      "description": "ArkTS 静态语言规范参考，包含 16 个 ArkTS 语言规范文件（spec/ 目录）和 3 个 TypeScript 迁移指南文件（cookbook/ 目录）。在进行 ArkTS 静态语言语法规范校验时，必须严格参考该目录下的规范文档",
+      "spec_files": [
+        "spec/types.md",
+        "spec/classes.md",
+        "spec/expressions.md",
+        "spec/statements.md",
+        "spec/generics.md",
+        "spec/annotations.md",
+        "spec/modules.md",
+        "spec/lexical.md",
+        "spec/names.md",
+        "spec/conversions.md",
+        "spec/interfaces.md",
+        "spec/enums.md",
+        "spec/errors.md",
+        "spec/concurrency.md",
+        "spec/stdlib.md",
+        "spec/experimental.md"
+      ],
+      "cookbook_files": [
+        "cookbook/index.md",
+        "cookbook/recipes.md",
+        "cookbook/compatibility.md"
+      ],
+      "important_note": "在使用 oh-xts-generator-template skill 生成 ArkTS 静态 XTS 用例并参考 arkts-static-spec 时，必须严格遵守以下原则：1. 所有回答必须基于 spec/ 和 cookbook/ 目录下的文档内容；2. 不添加文档之外的假设或推断；3. 将 ArkTS 视为独立的静态语言，不是 TypeScript 的超集；4. ArkTS 官方规范文档（spec/ 目录）为最高优先级"
+    },
     {
       "name": "子系统配置",
       "path": "references/subsystems",
@@ -83,19 +114,19 @@
             {
               "name": "UiTest",
               "description": "UI 测试框架",
-              "api_file": "@ohos.uitest.d.ts",
+              "api_file": "@ohos.UiTest.d.ts",
               "reference": "docs/zh-cn/application-dev/reference/apis-test-kit/uitest.md"
             },
             {
               "name": "PerfTest",
               "description": "性能测试框架",
-              "api_file": "@ohos.perftest.d.ts",
+              "api_file": "@ohos.test.PerfTest.d.ts",
               "reference": "docs/zh-cn/application-dev/reference/apis-test-kit/perftest.md"
             },
             {
               "name": "JsUnit",
               "description": "单元测试框架",
-              "api_file": "@ohos.javascript.d.ts",
+              "api_file": "test/testfwk/arkxtest/jsunit/index.d.ts",
               "reference": "docs/zh-cn/application-dev/reference/apis-test-kit/jsunit.md"
             }
           ],
@@ -121,7 +152,7 @@
       "path": "modules/L1_Framework/"
     },
     "L2_Analysis": {
-      "description": "分析层 - API解析、测试覆盖分析、工程配置解析、编译工作流",
+      "description": "分析层 - API解析、测试覆盖分析、工程配置解析、文档阅读",
       "api_parser": {
         "description": "API定义解析器，支持 .d.ts 文件解析、模块级解析、API语法类型判断",
         "file": "modules/L2_Analysis/api_parser.md"
@@ -130,9 +161,46 @@
         "description": "工程配置解析器，支持工程语法类型识别（静态/动态）、工程结构识别、配置信息提取",
         "file": "modules/L2_Analysis/project_parser.md"
       },
+      "coverage_analyzer": {
+        "description": "测试覆盖分析器",
+        "file": "modules/L2_Analysis/coverage_analyzer.md"
+      },
+      "doc_reader": {
+        "description": "文档阅读器",
+        "file": "modules/L2_Analysis/doc_reader.md"
+      },
+      "path": "modules/L2_Analysis/"
+    },
+    "L3_Generation": {
+      "description": "生成层 - 测试用例生成、测试设计文档生成和模板",
+      "test_generator": {
+        "description": "测试用例生成器",
+        "file": "modules/L3_Generation/test_generator.md"
+      },
+      "design_doc_generator": {
+        "description": "测试设计文档生成器（v1.14.0新增）- 在生成测试用例的同时生成结构化的测试设计文档，包含测试场景、测试步骤、预期结果、覆盖分析等",
+        "file": "modules/L3_Generation/design_doc_generator.md",
+        "version": "1.0.0",
+        "update_date": "2026-02-10",
+        "features": [
+          "同步生成测试设计文档",
+          "测试用例与设计文档一一对应",
+          "完整的文档结构（测试概述、测试场景设计、测试覆盖分析、测试依赖关系、测试环境要求、注意事项、变更记录）",
+          "自动提取测试用例信息生成测试场景",
+          "支持文档版本管理和变更记录"
+        ]
+      },
+      "templates": {
+        "description": "代码模板库",
+        "file": "modules/L3_Generation/templates.md"
+      },
+      "path": "modules/L3_Generation/"
+    },
+    "L4_Build": {
+      "description": "构建层 - 编译工作流、BUILD.gn配置、编译环境准备、问题排查",
       "build_workflow_linux": {
         "description": "Linux 编译工作流 v2.0.0（模块化架构）。主工作流文件（365行），包含完整编译流程指导、编译命令说明、编译输出管理。采用模块化设计，支持按需加载功能模块。重要：Linux环境下必须使用build.sh脚本进行编译，不要使用hvigorw命令",
-        "file": "modules/L2_Analysis/build_workflow_linux.md",
+        "file": "modules/L4_Build/build_workflow_linux.md",
         "platform": "Linux",
         "version": "2.0.0",
         "update_date": "2026-02-06",
@@ -147,14 +215,37 @@
         "modules": [
           {
             "name": "主工作流",
-            "file": "modules/L2_Analysis/build_workflow_linux.md",
+            "file": "modules/L4_Build/build_workflow_linux.md",
             "lines": 365,
-            "description": "核心编译工作流，包含编译命令、输出验证、完整示例",
-            "required": true
+            "description": "核心编译工作流，提供编译类型选择指导，包含编译命令、输出验证、完整示例",
+            "required": true,
+            "version": "3.0.0",
+            "update_date": "2026-02-10",
+            "features": [
+              "编译类型选择（动态/静态）",
+              "新增动态和静态测试套编译子文档",
+              "模块化架构优化"
+            ]
+          },
+          {
+            "name": "动态测试套编译",
+            "file": "modules/L4_Build/linux_compile_dynamic_suite.md",
+            "lines": 410,
+            "description": "动态测试套编译流程文档，专注于动态测试套的编译方法和命令",
+            "required": "编译动态测试套时",
+            "load_trigger": "用户选择动态测试套编译时"
+          },
+          {
+            "name": "静态测试套编译",
+            "file": "modules/L4_Build/linux_compile_static_suite.md",
+            "lines": 520,
+            "description": "静态测试套编译流程文档，包含清理 SDK 缓存、添加 hap_static 参数、静态 SDK 编译说明",
+            "required": "编译静态测试套时",
+            "load_trigger": "用户选择静态测试套编译时"
           },
           {
             "name": "环境准备",
-            "file": "modules/L2_Analysis/linux_compile_env_setup.md",
+            "file": "modules/L4_Build/linux_compile_env_setup.md",
             "lines": 476,
             "description": "编译环境准备（操作系统要求、工具链安装、SDK下载、环境验证）",
             "required": "首次编译",
@@ -162,7 +253,7 @@
           },
           {
             "name": "预编译清理",
-            "file": "modules/L2_Analysis/linux_prebuild_cleanup.md",
+            "file": "modules/L4_Build/linux_prebuild_cleanup.md",
             "lines": 278,
             "description": "预编译清理指南（清理必要性、清理步骤、清理验证、故障排查）",
             "required": "每次编译前",
@@ -170,7 +261,7 @@
           },
           {
             "name": "BUILD.gn 配置",
-            "file": "modules/L2_Analysis/build_gn_config.md",
+            "file": "modules/L4_Build/build_gn_config.md",
             "lines": 521,
             "description": "BUILD.gn 配置指南（基本结构、关键配置字段、Stage/FA模型配置、辅助工程配置）",
             "required": "配置 BUILD.gn 时",
@@ -178,7 +269,7 @@
           },
           {
             "name": "问题排查",
-            "file": "modules/L2_Analysis/linux_compile_troubleshooting.md",
+            "file": "modules/L4_Build/linux_compile_troubleshooting.md",
             "lines": 418,
             "description": "编译问题排查指南（常见错误、编译优化、日志分析、高级排查）",
             "required": "编译失败时",
@@ -188,7 +279,7 @@
       },
       "build_workflow_windows": {
         "description": "Windows 编译与测试工作流（v2.1.0），包含环境准备、DevEco Studio IDE 编译（推荐）、命令行编译（hvigorw.bat）、HAP 自动安装、测试执行、Hypium 结果解析、多测试套批量执行、自动化脚本（run_all_tests.ps1）、故障排除和最佳实践",
-        "file": "modules/L2_Analysis/build_workflow_windows.md",
+        "file": "modules/L4_Build/build_workflow_windows.md",
         "platform": "Windows",
         "version": "2.1.0",
         "update_date": "2025-02-02",
@@ -203,40 +294,36 @@
           "故障排除和最佳实践指南"
         ]
       },
-      "coverage_analyzer": {
-        "description": "测试覆盖分析器",
-        "file": "modules/L2_Analysis/coverage_analyzer.md"
+      "build_gn_config": {
+        "description": "BUILD.gn 配置指南",
+        "file": "modules/L4_Build/build_gn_config.md"
       },
-      "doc_reader": {
-        "description": "文档阅读器",
-        "file": "modules/L2_Analysis/doc_reader.md"
+      "linux_compile_env_setup": {
+        "description": "Linux 编译环境准备",
+        "file": "modules/L4_Build/linux_compile_env_setup.md"
       },
-      "path": "modules/L2_Analysis/"
-    },
-    "L3_Generation": {
-      "description": "生成层 - 测试用例生成和模板",
-      "test_generator": {
-        "description": "测试用例生成器",
-        "file": "modules/L3_Generation/test_generator.md"
+      "linux_prebuild_cleanup": {
+        "description": "预编译清理指南",
+        "file": "modules/L4_Build/linux_prebuild_cleanup.md"
       },
-      "templates": {
-        "description": "代码模板库",
-        "file": "modules/L3_Generation/templates.md"
+      "linux_compile_troubleshooting": {
+        "description": "编译问题排查指南",
+        "file": "modules/L4_Build/linux_compile_troubleshooting.md"
       },
-      "path": "modules/L3_Generation/"
+      "path": "modules/L4_Build/"
     }
   },
   "loading_rules": {
     "sequential": true,
     "merge_strategy": "append",
     "conflict_resolution": "last_wins",
-    "layer_priority": ["L1_Framework", "L2_Analysis", "L3_Generation"],
+    "layer_priority": ["L1_Framework", "L2_Analysis", "L3_Generation", "L4_Build"],
     "config_priority": ["module", "subsystem", "global"]
   },
   "usage_patterns": {
     "subsystem_test_generation": {
-      "trigger_keywords": ["XTS_TEMPLATE", "子系统测试", "API测试模板", "测试生成", "OpenHarmony测试"],
-      "description": "为指定子系统生成测试用例，使用子系统特有配置",
+      "trigger_keywords": ["XTS_TEMPLATE", "子系统测试", "API测试模板", "测试生成", "OpenHarmony测试", "测试设计文档"],
+      "description": "为指定子系统生成测试用例和测试设计文档，使用子系统特有配置",
       "load_layers": ["L1_Framework", "L2_Analysis", "L3_Generation"],
       "required_configs": [
         "references/subsystems/_common.md"
@@ -252,11 +339,12 @@
         "modules/L2_Analysis/api_parser.md",
         "modules/L2_Analysis/project_parser.md",
         "modules/L3_Generation/test_generator.md",
+        "modules/L3_Generation/design_doc_generator.md",
         "modules/L3_Generation/templates.md"
       ]
     },
     "api_syntax_check": {
-      "trigger_keywords": ["API类型", "动静态", "语法类型", "arkTSVersion"],
+      "trigger_keywords": ["API类型", "动静态", "语法类型", "arkTSVersion", "arkts静态", "arkts-static", "静态语法检查", "静态语法校验"],
       "description": "识别 API 类型（动态/静态）和工程类型（动态/静态语法工程）",
       "load_layers": ["L2_Analysis"],
       "required_modules": [
@@ -274,14 +362,15 @@
       ]
     },
     "basic_api_test": {
-      "trigger_keywords": ["API测试", "接口测试", "生成测试用例", "API"],
-      "description": "基本的 API 测试用例生成",
+      "trigger_keywords": ["API测试", "接口测试", "生成测试用例", "API", "测试设计文档"],
+      "description": "基本的 API 测试用例生成，同时生成测试设计文档",
       "load_layers": ["L1_Framework", "L3_Generation"],
       "required_modules": [
         "modules/L1_Framework/hypium_framework.md",
         "modules/L1_Framework/arkts_standards.md",
         "modules/L1_Framework/test_conventions.md",
         "modules/L3_Generation/test_generator.md",
+        "modules/L3_Generation/design_doc_generator.md",
         "modules/L3_Generation/templates.md"
       ]
     },
@@ -312,19 +401,19 @@
     "build_and_compile": {
       "trigger_keywords": ["编译", "BUILD.gn", "build.sh", "build_hap.ps1", "编译测试套", "多目标编译", "辅助工程", "编译错误"],
       "description": "XTS 测试工程编译指导，包含 BUILD.gn 配置、编译命令、多目标编译策略、辅助工程配置",
-      "load_layers": ["L2_Analysis"],
+      "load_layers": ["L4_Build"],
       "platform_specific": {
         "linux": {
-          "required_modules": ["modules/L2_Analysis/build_workflow_linux.md"]
+          "required_modules": ["modules/L4_Build/build_workflow_linux.md"]
         },
         "windows": {
-          "required_modules": ["modules/L2_Analysis/build_workflow_windows.md"]
+          "required_modules": ["modules/L4_Build/build_workflow_windows.md"]
         }
       }
     },
     "complete_generation": {
-      "trigger_keywords": ["完整测试", "全面测试", "生成测试套件"],
-      "description": "完整的测试用例生成，包含 API 解析、覆盖分析和测试生成",
+      "trigger_keywords": ["完整测试", "全面测试", "生成测试套件", "测试设计文档"],
+      "description": "完整的测试用例生成，包含 API 解析、覆盖分析、测试生成和测试设计文档生成",
       "load_layers": ["L1_Framework", "L2_Analysis", "L3_Generation"],
       "required_modules": "all"
     }

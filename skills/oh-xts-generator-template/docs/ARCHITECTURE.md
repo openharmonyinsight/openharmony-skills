@@ -2,12 +2,12 @@
 
 > **OpenHarmony XTS 测试用例通用生成模板 - 模块化架构**
 
-## 三层模块化架构
+## 四层模块化架构
 
-本 Template 采用三层模块化架构，可根据任务需求按需加载：
+本 Template 采用四层模块化架构，可根据任务需求按需加载：
 
 ```
-oh-xts-generator-template/
+xts-generator/
 ├── modules/
 │   ├── L1_Framework/            # 框架层（必须加载）
 │   │   ├── hypium_framework.md  # Hypium框架知识
@@ -17,15 +17,20 @@ oh-xts-generator-template/
 │   ├── L2_Analysis/             # 分析层（按需加载）
 │   │   ├── api_parser.md        # API定义解析
 │   │   ├── project_parser.md    # 工程配置解析
-│   ├── L2_Analysis/
-│   │   ├── build_workflow_linux.md    # Linux编译工作流
-│   │   ├── build_workflow_windows.md  # Windows编译工作流
 │   │   ├── coverage_analyzer.md # 测试覆盖分析
 │   │   └── doc_reader.md        # 文档阅读
-│   └── L3_Generation/           # 生成层（按需加载）
-│       ├── test_generator.md    # 测试生成策略
-│       ├── code_formatter.md    # 代码格式化
-│       └── templates.md         # 代码模板库
+│   ├── L3_Generation/           # 生成层（按需加载）
+│   │   ├── test_generator.md    # 测试生成策略
+│   │   ├── design_doc_generator.md # 测试设计文档生成
+│   │   ├── templates.md         # 代码模板库
+│   │   └── examples/           # 示例文件
+│   └── L4_Build/                # 构建层（按需加载）
+│       ├── build_workflow_linux.md    # Linux编译工作流
+│       ├── build_workflow_windows.md  # Windows编译工作流
+│       ├── build_gn_config.md   # BUILD.gn配置
+│       ├── linux_compile_env_setup.md  # Linux环境准备
+│       ├── linux_prebuild_cleanup.md   # 预编译清理
+│       └── linux_compile_troubleshooting.md # 问题排查
 └── references/
     └── subsystems/              # 子系统配置 ⭐
         ├── _common.md           # 通用配置
@@ -159,7 +164,7 @@ Windows 编译工作流，包括：
 用户可以明确指定需要加载的模块：
 
 ```
-请使用 oh-xts-generator-template 生成测试用例：
+请使用 xts-generator 生成测试用例：
 
 任务类型: 基础API测试
 加载模块: L1_Framework + L3_Generation
