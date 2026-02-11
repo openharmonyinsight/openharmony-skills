@@ -44,7 +44,7 @@
 
 ```bash
 # 测试文件通常位于
-${ohRoot}/test/xts/acts/
+${OH_ROOT}/test/xts/acts/
 
 # 示例路径
 test/xts/acts/util/test/TreeSet.test.ets

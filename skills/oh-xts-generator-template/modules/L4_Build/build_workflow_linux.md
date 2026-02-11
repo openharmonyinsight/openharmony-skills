@@ -716,7 +716,7 @@ cp ./signature/default.p7b ./signature/test.p7b
 # 步骤3：预编译清理（每次编译前必需）
 # 参考：linux_prebuild_cleanup.md
 # 使用统一的 cleanup_group.sh 脚本
-./cleanup_group.sh /mnt/data/c00810129/oh_0130 testfwk
+./cleanup_group.sh {OH_ROOT} testfwk
 
 # 步骤4：执行编译
 cd /mnt/data/c00810129/oh_0130

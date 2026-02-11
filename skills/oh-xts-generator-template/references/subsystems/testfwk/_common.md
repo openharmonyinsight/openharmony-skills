@@ -62,7 +62,7 @@ testfwk 子系统包含三个测试子模块：
 
 **重要说明 - JsUnit 模块**：
 - **API 特殊性**：JsUnit 的 API **不随 interface 仓发布**
-- **声明文件位置**：`/mnt/data/c00810129/oh_0130/test/testfwk/arkxtest/jsunit/index.d.ts`
+- **声明文件位置**：`{OH_ROOT}/test/testfwk/arkxtest/jsunit/index.d.ts`
 - **完整 API 列表**：
   - **测试组织**：describe, it, xdescribe, xit
   - **生命周期**：beforeAll, afterAll, beforeEach, beforeEachIt, afterEach, afterEachIt
@@ -475,7 +475,7 @@ ${OH_ROOT}/test/xts/acts/testfwk/
 - 方便用户快速查找测试套名称
 
 **更新文件**：
-- `/mnt/data/c00810129/.claude/skills/oh-xts-generator-template/references/subsystems/testfwk/_common.md`
+- `references/subsystems/testfwk/_common.md`
 - 更新日期：2026-02-06
 
 ---

@@ -338,7 +338,7 @@ oh-xts-generator-template 是一个通用的 OpenHarmony XTS 测试用例生成�
 - 标注不符合规范的代码位置
 
 **规范文档**：
-- 规范文档路径：`/mnt/data/c00810129/.opencode/skills/oh-oh-xts-generator-template-template/references/arkts-static-spec/`
+- 规范文档路径：`references/arkts-static-spec/`
 - 包含 16 个 ArkTS 语言规范文件（spec/ 目录）
 - 包含 3 个 TypeScript 迁移指南文件（cookbook/ 目录）
 - 校验时必须严格按照该目录下的文档内容进行
@@ -463,7 +463,7 @@ Windows 环境支持两种编译模式，根据用户需求自动选择：
 - Q6: 子系统配置文件未找到
 - Q7: 测试覆盖率分析不准确
 
-> ⚠️ **静态语法检查参考文档**：在进行 ArkTS 静态语言语法规范校验时，请严格参考 `/mnt/data/c00810129/.opencode/skills/oh-oh-xts-generator-template-template/references/arkts-static-spec` 目录下的规范文档。
+> ⚠️ **静态语法检查参考文档**：在进行 ArkTS 静态语言语法规范校验时，请严格参考 `references/arkts-static-spec` 目录下的规范文档。
 
 ## 版本信息
 

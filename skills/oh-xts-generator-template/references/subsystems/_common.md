@@ -646,7 +646,7 @@ API声明文件: ${OH_ROOT}/interface/sdk-js/api/@ohos.{子系统}.d.ts
 **文档路径配置**：
 ```
 主文档路径: ${OH_ROOT}/docs/
-备用文档路径: /mnt/data/c00810129/oh_0130/docs/
+备用文档路径: {OH_ROOT}/docs/
 当前工作目录: ./docs/
 ```
 
@@ -896,7 +896,7 @@ grep -r "@kit.ArkUI" ${OH_ROOT}/docs/ --include="*.md" | grep "Column"
        - 查找包含目标 API 的文档章节
    - **文档路径**：
      - 主路径：`${OH_ROOT}/docs/`
-     - 备用路径：`/mnt/data/c00810129/oh_0130/docs/`
+     - 备用路径：`{OH_ROOT}/docs/`
      - 当前目录：`./docs/`
    - **路径优先级**：OH_ROOT 文档路径 > 备用文档路径 > 当前目录文档路径
    - **参考内容**：

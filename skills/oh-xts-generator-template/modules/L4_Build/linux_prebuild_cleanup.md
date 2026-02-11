@@ -48,7 +48,7 @@
 **安全清理步骤**：
 1. **确认当前目录**：在执行清理命令前，必须先确认当前工作目录
    ```bash
-   cd /mnt/data/c00810129/oh_0130/test/xts/acts/testfwk/uitestStatic
+   cd {OH_ROOT}/test/xts/acts/testfwk/uitestStatic
    pwd  # 确认在测试套目录
    ```
 
@@ -230,7 +230,7 @@ echo "🎉 Group 清理完成！"
 
 ```bash
 # 步骤1：切换到测试套目录并确认
-cd /mnt/data/c00810129/oh_0130/test/xts/acts/testfwk/<test_suite_name>
+cd {OH_ROOT}/test/xts/acts/testfwk/<test_suite_name>
 pwd  # 必须确认当前目录
 
 # 步骤2：删除缓存目录和文件（使用显式路径）

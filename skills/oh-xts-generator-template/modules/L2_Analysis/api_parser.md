@@ -50,7 +50,7 @@ API 定义解析器用于从 `.d.ts` 文件中提取 API 的完整定义信息�
 
 ```bash
 # API 定义文件通常位于
-${ohRoot}/interface/sdk-js/api/
+${OH_ROOT}/interface/sdk-js/api/
 
 # 常见路径示例
 interface/sdk-js/api/@ohos.util.d.ts
@@ -64,7 +64,7 @@ interface/sdk-js/api/@ohos.file.d.ts
 
 ```
 请读取并分析以下文件：
-${ohRoot}/interface/sdk-js/api/@ohos.util.d.ts
+${OH_ROOT}/interface/sdk-js/api/@ohos.util.d.ts
 
 提取 TreeSet 接口的完整定义
 ```
