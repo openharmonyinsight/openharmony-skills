@@ -47,39 +47,15 @@ oh-xts-generator-template 是一个通用的 OpenHarmony XTS 测试用例生成�
 
 ## 快速开始
 
-### 方式1：使用通用模板（推荐新手）
+> 📖 **详细使用方式**: [docs/USAGE.md](./docs/USAGE.md)
 
-```
-请使用 oh-xts-generator-template 为以下 API 生成测试用例：
+### 三种使用方式概览
 
-子系统: ArkUI
-API: Component.onClick()
-定义文件: interface/sdk-js/api/@ohos.arkui.d.ts
-```
-
-### 方式2：使用子系统配置（推荐）
-
-```
-请使用 oh-xts-generator-template 为 ArkUI 子系统生成测试用例：
-
-子系统: ArkUI
-配置文件: references/subsystems/ArkUI/_common.md
-API: Component.onClick()
-```
-
-### 方式3：自定义配置
-
-```
-请使用 oh-xts-generator-template 生成测试用例，使用自定义配置：
-
-子系统: MySubsystem
-自定义配置:
-  Kit包: @kit.MyKit
-  测试路径: test/xts/acts/mysubsystem/
-  API声明: interface/sdk-js/api/@ohos.mysubsystem.d.ts
-
-API: myAPI.method()
-```
+| 方式 | 适用场景 | 链接 |
+|------|---------|------|
+| 方式1：通用模板 | 新手、简单任务 | [USAGE.md](./docs/USAGE.md#方式1通用模板推荐新手) |
+| 方式2：子系统配置 | 大多数任务（推荐） | [USAGE.md](./docs/USAGE.md#方式2子系统配置推荐) |
+| 方式3：自定义配置 | 高级用户、特殊需求 | [USAGE.md](./docs/USAGE.md#方式3自定义配置) |
 
 ## 核心工作流程
 
@@ -178,23 +154,13 @@ API: myAPI.method()
 
 ## 配置扩展
 
+> 📖 **详细配置说明**: [docs/CONFIG.md](./docs/CONFIG.md)
+
 ### 配置优先级
 
 ```
 用户自定义配置 > 子系统配置 > 通用配置
 ```
-
-### 配置文件组织
-
-```
-references/subsystems/
-├── _common.md           # 全局通用配置
-├── {Subsystem}/        # 子系统文件夹
-│   ├── _common.md       # 子系统通用配置
-│   └── {Module}.md      # 模块配置
-```
-
-> 📖 **详细的配置说明请查看**: [docs/CONFIG.md](./docs/.md)
 
 ## 输出规范
 

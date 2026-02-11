@@ -46,40 +46,15 @@ API: Component.onClick()
 
 ## 快速使用
 
-### 方式1：通用模板（新手）
-
-```
+```markdown
 请使用 oh-xts-generator-template 为以下 API 生成测试用例：
 
 子系统: ArkUI
 API: Component.onClick()
 ```
 
-### 方式2：子系统配置（推荐）
-
-```
-请使用 oh-xts-generator-template 为 ArkUI 子系统生成测试用例：
-
-子系统: ArkUI
-配置文件: references/subsystems/ArkUI/_common.md
-API: Component.onClick()
-```
-
-### 方式3：自定义配置（高级）
-
-```
-请使用 oh-xts-generator-template 生成测试用例，使用自定义配置：
-
-子系统: MySubsystem
-自定义配置:
-  Kit包: @kit.MyKit
-  测试路径: test/xts/acts/mysubsystem/
-  API声明: interface/sdk-js/api/@ohos.mysubsystem.d.ts
-
-API: myAPI.method()
-```
-
 > 📖 **详细使用方式**: [docs/USAGE.md](./docs/USAGE.md)
+> 📖 **三种使用方式对比**: [SKILL.md](./SKILL.md#快速开始)
 
 ## 最佳实践
 
