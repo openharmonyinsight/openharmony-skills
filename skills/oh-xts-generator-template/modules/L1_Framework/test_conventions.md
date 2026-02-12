@@ -204,11 +204,10 @@ export default function APINameTest() {
 ### 7.2 导入语句顺序
 
 ```typescript
-// 1. 测试框架导入
+// 1. 单元测试框架导入
 import {describe, it, expect, Level} from '@ohos/hypium';
 
 // 2. 测试框架相关导入（如 UiTest）
-// ⚠️ 重要：UiTest 导入必须使用大写的 @ohos.UiTest，使用小写 @ohos.uitest 会导致编译错误
 import {Driver, ON} from '@ohos.UiTest';
 
 // 3. 公共模块导入
@@ -221,13 +220,6 @@ import {APIName} from '@kit.BaseKitName';
 // 5. 工具类导入
 import Utils from '../common/Utils';
 ```
-
-> **⚠️ UiTest 导入规范**
->
-> - ✅ **正确**：`import {Driver, ON} from '@ohos.UiTest';`（大写的 T）
-> - ❌ **错误**：`import {Driver, ON} from '@ohos.uitest';`（小写的 t）会导致编译失败
-> - **编译错误**：`Cannot find module '@ohos.uitest' or its corresponding type declarations.`
-
 ### 7.3 测试文件头部版权
 
 每个测试文件必须包含 Apache 2.0 许可证头部：
