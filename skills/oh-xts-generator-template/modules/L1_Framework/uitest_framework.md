@@ -37,6 +37,16 @@ UiTest 通过简洁易用的API提供查找和操作界面控件的能力，支�
 import { Driver, ON, BY, Component } from '@ohos.UiTest';
 ```
 
+> **⚠️ 重要提示：导入格式规范**
+>
+> - ✅ **正确格式**：`'@ohos.UiTest'`（大写的 T）
+> - ❌ **错误格式**：`'@ohos.uitest'`（小写的 t）会导致编译错误
+>
+> **说明**：UiTest 模块的导入必须使用大写的 `@ohos.UiTest`，使用小写 `@ohos.uitest` 会导致以下编译错误：
+> ```
+> Cannot find module '@ohos.uitest' or its corresponding type declarations.
+> ```
+
 ### 2.2 模块说明
 
 | 类/接口 | 说明 |

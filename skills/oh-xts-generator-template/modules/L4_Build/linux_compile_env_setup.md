@@ -1,7 +1,7 @@
 # Linux 编译环境准备
 
 > **模块信息**
-> - 层级：L2_Analysis
+> - 层级：L4_Build
 > - 优先级：按需加载（用户要求准备 Linux 编译环境时加载）
 > - 适用范围：Linux 环境下的 OpenHarmony XTS 测试工程编译
 > - 平台：Linux
@@ -172,7 +172,7 @@ OpenHarmony 提供了 `prebuilts_download.sh` 脚本来下载必要的 SDK 和�
 ```bash
 # 在 OpenHarmony 代码根目录执行
 cd /path/to/openharmony
-./prebuilts_download.sh
+./build/prebuilts_download.sh
 ```
 
 ### 4.2 脚本说明
@@ -374,7 +374,7 @@ ping -c 4 google.com
 df -h
 
 # 重新下载
-./prebuilts_download.sh
+./build/prebuilts_download.sh
 ```
 
 ### 7.4 工具链不兼容

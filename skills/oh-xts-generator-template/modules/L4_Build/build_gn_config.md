@@ -1,11 +1,11 @@
 # BUILD.gn 配置指南
 
 > **模块信息**
-> - 层级：L2_Analysis
+> - 层级：L4_Build
 > - 优先级：按需加载（配置 BUILD.gn 时加载）
 > - 适用范围：Linux 环境下的 XTS 测试工程编译
 > - 平台：Linux
-> - 依赖：无
+> - 依赖：L1_Framework, L2_Analysis, L3_Generation
 > - 相关：`build_workflow_linux.md`（完整的编译工作流）
 
 > **使用说明**

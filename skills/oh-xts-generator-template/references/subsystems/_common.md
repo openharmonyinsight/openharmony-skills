@@ -38,7 +38,7 @@ SUB_ARKUI_COMPONENT_ONCLICK_RETURN_001
    **错误示例**：
    - ❌ `UiTest_On_text_401`（大写下划线）
    - ❌ `testScrollToTop_17000002`（下划线分隔）
-   - ❌ `test[MethodName].Param.001`（特殊标点）
+   - ❌ `test[MethodName].Param.0001`（特殊标点）
 
 2. **it() 函数第二个参数（测试类型）**：
    - ✅ **必须使用**：`TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3`
@@ -384,14 +384,14 @@ import {BusinessError} from '@kit.BasicServicesKit';
 
 ```typescript
 /**
- * @tc.name {MethodName}{ParamType}{Scenario}001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_{PARAM}_{SCENARIO}_001
+ * @tc.name {MethodName}{ParamType}{Scenario}0001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_{PARAM}_{SCENARIO}_0001
  * @tc.desc 测试 {API} 的 {method} 方法 - {scenario}场景
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL1
  */
-it('test{MethodName}{ParamType}{Scenario}001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
+it('test{MethodName}{ParamType}{Scenario}0001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
   // 1. 准备测试数据
   let apiObject = new APIName();
   let paramValue = /* 根据场景设置 */;
@@ -408,14 +408,14 @@ it('test{MethodName}{ParamType}{Scenario}001', TestType.FUNCTION | Size.MEDIUMTE
 
 ```typescript
 /**
- * @tc.name {MethodName}Error{ErrorCode}001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_ERROR_{ErrorCode}_001
+ * @tc.name {MethodName}Error{ErrorCode}0001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_ERROR_{ErrorCode}_0001
  * @tc.desc 测试 {API} 的 {method} 方法 - 错误码{errorCode}场景
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL2
  */
-it('test{MethodName}Error{ErrorCode}001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
+it('test{MethodName}Error{ErrorCode}0001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   // 1. 准备测试数据
   let apiObject = new APIName();
   let invalidParam = /* 触发错误的参数 */;
@@ -646,7 +646,7 @@ API声明文件: ${OH_ROOT}/interface/sdk-js/api/@ohos.{子系统}.d.ts
 **文档路径配置**：
 ```
 主文档路径: ${OH_ROOT}/docs/
-备用文档路径: /mnt/data/c00810129/oh_0130/docs/
+备用文档路径: {OH_ROOT}/docs/
 当前工作目录: ./docs/
 ```
 
@@ -896,7 +896,7 @@ grep -r "@kit.ArkUI" ${OH_ROOT}/docs/ --include="*.md" | grep "Column"
        - 查找包含目标 API 的文档章节
    - **文档路径**：
      - 主路径：`${OH_ROOT}/docs/`
-     - 备用路径：`/mnt/data/c00810129/oh_0130/docs/`
+     - 备用路径：`{OH_ROOT}/docs/`
      - 当前目录：`./docs/`
    - **路径优先级**：OH_ROOT 文档路径 > 备用文档路径 > 当前目录文档路径
    - **参考内容**：
@@ -994,7 +994,7 @@ it('testDelayMs17000002', ...)  // ❌ @tc.name 使用了大写开头
 **格式**：`{describe名}_{序号}`
 
 **规则**：
-- 序号从 001 开始，依次递增
+- 序号从 0001 开始，依次递增
 - 序号必须补零对齐（3位数字）
 - describe 名通常与 `describe()` 函数的第一个参数一致
 

@@ -20,10 +20,10 @@ SUB_[子系统]_[模块]_[API]_[类型]_[序号]
 
 | 标识 | 说明 | 示例 |
 |------|------|------|
-| PARAM | 参数测试 | SUB_UTILS_UTIL_TREESET_ADD_PARAM_001 |
-| ERROR | 错误码测试 | SUB_UTILS_UTIL_TREESET_POPFIRST_ERROR_401_001 |
-| RETURN | 返回值测试 | SUB_UTILS_UTIL_TREESET_GETFIRST_RETURN_001 |
-| BOUNDARY | 边界值测试 | SUB_UTILS_UTIL_TREESET_ADD_BOUNDARY_001 |
+| PARAM | 参数测试 | SUB_UTILS_UTIL_TREESET_ADD_PARAM_0001 |
+| ERROR | 错误码测试 | SUB_UTILS_UTIL_TREESET_POPFIRST_ERROR_401_0001 |
+| RETURN | 返回值测试 | SUB_UTILS_UTIL_TREESET_GETFIRST_RETURN_0001 |
+| BOUNDARY | 边界值测试 | SUB_UTILS_UTIL_TREESET_ADD_BOUNDARY_0001 |
 
 ### 1.3 子系统和模块识别
 
@@ -94,7 +94,7 @@ it('test001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, () => {
 | 字段 | 说明 | 示例 |
 |------|------|------|
 | @tc.name | 测试用例名称 | testAdd001 |
-| @tc.number | 测试用例编号 | SUB_UTILS_UTIL_TREESET_ADD_001 |
+| @tc.number | 测试用例编号 | SUB_UTILS_UTIL_TREESET_ADD_0001 |
 | @tc.desc | 测试描述 | 测试TreeSet的add方法在正常场景下的行为 |
 | @tc.type | 测试类型 | FUNCTION, PERFORMANCE, RELIABILITY |
 | @tc.size | 测试粒度 | SMALLTEST, MEDIUMTEST, LARGETEST |
@@ -204,7 +204,7 @@ export default function APINameTest() {
 ### 7.2 导入语句顺序
 
 ```typescript
-// 1. 测试框架导入
+// 1. 单元测试框架导入
 import {describe, it, expect, Level} from '@ohos/hypium';
 
 // 2. 测试框架相关导入（如 UiTest）
@@ -220,7 +220,6 @@ import {APIName} from '@kit.BaseKitName';
 // 5. 工具类导入
 import Utils from '../common/Utils';
 ```
-
 ### 7.3 测试文件头部版权
 
 每个测试文件必须包含 Apache 2.0 许可证头部：
