@@ -7,41 +7,25 @@ description: Comprehensive code review system for ACE Engine (OpenHarmony ArkUI 
 
 ## Quick Start
 
-Perform comprehensive code review analysis:
+Perform comprehensive code review analysis directly with AI:
 
-```bash
-# Analyze C++ code
-python scripts/analyze_code.py path/to/code.cpp --output results.json
+```
+"Review the code in frameworks/core/components_ng for memory management issues"
 
-# Analyze directory recursively
-python scripts/analyze_code.py frameworks/core/components_ng --recursive --output analysis.json
+"Analyze this pull request focusing on security vulnerabilities"
 
-# Generate review report
-python scripts/generate_report.py --analysis analysis.json --output review_report.md
-
-# Filter by severity
-python scripts/analyze_code.py path/to/code --severity CRITICAL --output critical.json
-
-# Filter by dimension
-python scripts/analyze_code.py path/to/code --dimension Memory --output memory_issues.json
+"Check path/to/code.cpp for ACE Engine architecture compliance"
 ```
 
 ## Review Workflow
 
-### Phase 1: Automated Analysis
+### Phase 1: Code Analysis
 
-Run language-specific analysis:
+AI will analyze code across all relevant dimensions based on:
 
-```bash
-# C++ analysis
-python scripts/analyze_code.py <path> --recursive --output results.json
-
-# TypeScript/ArkTS analysis
-python scripts/analyze_code.py <path> --recursive --output results.json
-
-# Architecture compliance check
-python scripts/analyze_code.py <directory> --recursive
-```
+1. **Reading the code files** - Understanding implementation details
+2. **Applying reference standards** - Using criteria from references/ directory
+3. **Checking against ACE Engine patterns** - Validating project-specific conventions
 
 ### Phase 2: Dimension-Based Review
 
@@ -61,13 +45,7 @@ Review code across 19+ dimensions. See [DIMENSIONS.md](references/DIMENSIONS.md)
 
 ### Phase 3: Report Generation
 
-Generate comprehensive review report:
-
-```bash
-python scripts/generate_report.py --analysis results.json --output review_report.md
-```
-
-Report includes:
+AI generates comprehensive review report including:
 - **Executive Summary** - Issue counts by severity
 - **Critical Issues** (🔴) - Must fix before merge
 - **High Priority Issues** (🟠) - Should fix before merge
@@ -75,7 +53,7 @@ Report includes:
 - **Low Priority Issues** (🟢) - Nice to have
 - **Dimension Breakdown** - Issues grouped by category
 - **File-by-File Details** - Specific line numbers and code snippets
-- **Recommendations** - Prioritized action items
+- **Recommendations** - Prioritized action items with before/after examples
 - **Review Checklist** - Pre-merge verification
 
 ## Dimension Reference
@@ -223,48 +201,57 @@ constexpr int MAX_MENU_ITEMS = 100;  // UPPER_CASE
 
 ### Review a Pull Request
 
-```bash
-# Analyze PR code
-python scripts/analyze_code.py path/to/pr/code --recursive --output pr_analysis.json
-
-# Generate PR review report
-python scripts/generate_report.py --analysis pr_analysis.json --output pr_review.md
-
-# Check for critical issues
-cat pr_review.md | grep -A 10 "CRITICAL"
 ```
+"Review the changes in this PR with focus on memory management and threading safety"
+```
+
+AI will:
+- Analyze all changed files
+- Check memory management (RefPtr, WeakPtr, raw pointers)
+- Verify threading safety (callback captures, PostTask usage)
+- Report issues with line numbers and severity
 
 ### Security Audit
 
-```bash
-# Security-focused review
-python scripts/analyze_code.py . --dimension Security --recursive --output security_audit.json
-python scripts/generate_report.py --analysis security_audit.json --output security_report.md
 ```
+"Perform a security audit of path/to/code, focusing on input validation and potential vulnerabilities"
+```
+
+AI will check for:
+- Command injection risks (system() calls)
+- Buffer overflow vulnerabilities (strcpy, sprintf)
+- Unvalidated user input
+- Unsafe type casts
 
 ### Memory Leak Detection
 
-```bash
-# Find memory issues
-python scripts/analyze_code.py . --dimension Memory --recursive --output memory_check.json
-
-# View memory issues
-cat memory_check.json | jq '.[].issues[] | select(.dimension == "Memory")'
 ```
+"Analyze frameworks/core/components for potential memory leaks and improper RefPtr usage"
+```
+
+AI will identify:
+- Raw new/delete without smart pointers
+- Circular references without WeakPtr
+- Missing null checks after DynamicCast
+- Improper ownership semantics
 
 ### Architecture Compliance Check
 
-```bash
-# Validate architecture
-python scripts/analyze_code.py frameworks/core --recursive --output framework_analysis.json
-
-# Look for architecture violations
-cat framework_analysis.json | jq '.[].issues[] | select(.dimension == "Architecture")'
 ```
+"Verify that components_ng/menu follows the four-layer architecture and Pattern/Model/Property separation"
+```
+
+AI will validate:
+- Four-layer architecture compliance
+- Pattern/Model/Property separation
+- No layer boundary violations
+- Component lifecycle methods (OnModifyDone, etc.)
 
 ## Integration Examples
 
 ### Pre-commit Hook
+
+For pre-commit hooks, consider using traditional static analysis tools:
 
 ```bash
 #!/bin/bash
@@ -273,52 +260,27 @@ cat framework_analysis.json | jq '.[].issues[] | select(.dimension == "Architect
 CHANGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(cpp|cc|cxx|h|hpp|ts|tsx)$')
 
 if [ -n "$CHANGED_FILES" ]; then
-    echo "Running code review..."
-    python scripts/analyze_code.py $CHANGED_FILES --output commit_review.json
-
-    CRITICAL_COUNT=$(grep -o '"severity": "CRITICAL"' commit_review.json | wc -l)
-
-    if [ $CRITICAL_COUNT -gt 0 ]; then
-        echo "❌ Found $CRITICAL_COUNT CRITICAL issues. Please fix before committing."
-        exit 1
-    fi
+    echo "Running basic static analysis..."
+    # Use clang-tidy, cppcheck, eslint, etc.
+    for file in $CHANGED_FILES; do
+        if [[ $file == *.cpp || $file == *.h ]]; then
+            clang-tidy $file --checks='*' || true
+        elif [[ $file == *.ts ]]; then
+            eslint $file || true
+        fi
+    done
 fi
 ```
 
-### CI/CD Pipeline
+### Manual Review Workflow
 
-```yaml
-code_review:
-  stage: test
-  script:
-    - python scripts/analyze_code.py frameworks/core --recursive --output review_results.json
-    - python scripts/generate_report.py --analysis review_results.json --output review_report.md
-    - |
-      if grep -q '"severity": "CRITICAL"' review_results.json; then
-        echo "CRITICAL issues found!"
-        exit 1
-      fi
-  artifacts:
-    paths:
-      - review_results.json
-      - review_report.md
-```
-
-## Scripts
-
-**analyze_code.py** - Automated static analysis
-- Detects raw pointers, unsafe casts
-- Finds security vulnerabilities
-- Checks RefPtr usage
-- Validates naming conventions
-- Supports C++ and TypeScript/ArkTS
-
-**generate_report.py** - Report generation
-- Executive summary
-- Issues grouped by severity
-- Dimension breakdown
-- File-by-file details
-- Recommendations and checklist
+For comprehensive AI-powered review:
+1. Identify code to review (PR, specific files, directory)
+2. Request review with specific focus areas
+3. AI analyzes code using reference standards
+4. Review results with severity-tagged issues
+5. Address critical and high-priority issues
+6. Re-request review for verification
 
 ## References
 
@@ -333,8 +295,7 @@ Detailed documentation for all dimensions in `references/`:
 
 ## Assets
 
-- [report_template.md](assets/report_template.md) - Customizable report template
-- [QUICKSTART.md](assets/QUICKSTART.md) - Detailed usage guide with examples
+- [report_template.md](assets/report_template.md) - Customizable report template for AI-generated reviews
 
 ## Review Checklist
 
