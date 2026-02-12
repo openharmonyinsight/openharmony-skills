@@ -5,6 +5,30 @@ All notable changes to `oh-xts-generator-template` will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.20.2] - 2026-02-12
+
+### Changed
+- **内容简化**：移除多处重复内容，提高文档简洁性
+- **结构优化**：
+  * 第8步：简化静态语法检查，只保留参考文档
+  * 注意事项第7条：简化静态语法校验内容，只保留触发条件和规范路径
+  * 编译模块化架构：简化为目录引用
+  * 故障排除：移除重复的静态语法检查警告
+- **编号修正**：修正注意事项第3节编号问题（3.1 → 4），统一编号逻辑
+
+### Optimized
+- **文档可读性**：减少冗余信息，提高查找效率
+- **信息一致性**：统一在不同章节引用详细文档的方式
+
+## [1.20.1] - 2026-02-12
+
+### Changed
+- **内容优化**：优化核心工作流程第10步和注意事项第7条的重复内容
+- **结构优化**：
+  * 工作流程第10步：简化为简洁的流程描述，引用详细文档
+  * 注意事项第7条：整合重复内容，结构化展示编译环境检测要求
+- **可读性提升**：减少文档长度，提高信息查找效率
+
 ## [1.20.0] - 2026-02-11
 
 ### Added

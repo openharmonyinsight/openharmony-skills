@@ -97,56 +97,27 @@ oh-xts-generator-template 是一个通用的 OpenHarmony XTS 测试用例生成�
     ├─ @tc.desc：{API名} {错误码/场景} test.
     └─ 验证字段值与 it() 参数的一致性
 
-8. 格式化和验证
-    ├─ 应用代码模板
-    ├─ 检查语法规范
-    │   ├─ 8.1 动态语法检查（生成动态 XTS 用例时）
-    │   │   └─ 参考规范文档：`references/ArkTS_Dynamic_Syntax_Rules.md`
-    │   └─ 8.2 静态语法检查（生成静态 XTS 用例时）   
-    │       ├─ 参考规范文档：`references/arkts-static-spec/`
-    │       └─ 检查点：
-    |           ├─ 类型注解完整性（禁止 any/unknown）
-    |           ├─ 字段初始化（所有字段必须初始化）
-    |           ├─ 语法兼容性（禁止 var、禁止对象解构等）
-    |           ├─ 类型转换规则（显式转换 vs 隐式转换）
-    |           └─ 静态语言特性（对象布局固定、null 安全等）
-    ├─ 验证断言方法
-    └─ 输出校验结果和修改建议
+ 8. 格式化和验证
+     ├─ 应用代码模板
+     ├─ 检查语法规范
+     │   ├─ 8.1 动态语法检查（生成动态 XTS 用例时）
+     │   │   └─ 参考规范文档：`references/ArkTS_Dynamic_Syntax_Rules.md`
+     │   └─ 8.2 静态语法检查（生成静态 XTS 用例时）
+     │       └─ 参考规范文档：`references/arkts-static-spec/`
+     ├─ 验证断言方法
+     └─ 输出校验结果和修改建议
 
 9. 注册测试套（新增文件时必须）
     ├─ 查找 List.test.ets 文件
     ├─ 添加 import 语句
     └─ 在 testsuite() 函数中调用
 
-10. 编译验证（重要）
-    ├─ 检测运行环境（Linux/Windows）
-    ├─ 根据环境选择编译方案
-    ├─ **Linux 环境编译流程**：
-    │   ├─ **预置条件检查（静态测试套编译必需）**：
-    │   │   ├─ 检测是否为静态测试套编译
-    │   │   ├─ 校验 hvigor 工具版本：
-    │   │   │   ├─ 读取版本：`cat ./prebuilts/command-line-tools/hvigor/hvigor/package.json | grep '"version"'`
-    │   │   │   ├─ 判断版本：是否为 `"6.0.0-arkts1.2-ohosTest-25072102"`
-    │   │   │   └─ 决策：
-    │   │   │       ├─ 是静态工具版本 → 跳过清理替换
-    │   │   │       └─ 非静态工具版本 → 执行清理替换
-    │   │   └─ 如需替换 hvigor 工具：
-    │   │       ├─ 说明：prebuilts 中默认配置的是编译动态测试套的编译工具
-    │   │       ├─ 清理 SDK 缓存：`rm -rf ./prebuilts/ohos-sdk/linux`
-    │   │       ├─ 清理旧工具：`rm -rf ./prebuilts/command-line-tools`
-    │   │       ├─ 下载新工具：`git clone https://gitee.com/laoji-fuli/hvigor0702.git -b debug2 command-line-tools`
-    │   │       └─ 移动到预置目录：`mv -f command-line-tools ./prebuilts/`
-    │   ├─ 使用 general subagent 执行编译任务（避免主流程中断）
-    │   ├─ 监听编译进程直至完成（防止编译异常中断）
-    │   ├─ 编译成功：输出编译结果
-    │   └─ 编译失败：自动修复语法错误并重试
-    │       ├─ 分析编译错误日志
-    │       ├─ 识别语法问题并修复
-    │       └─ 重新触发编译
-    └─ **工程配置问题处理**：
-        ├─ 检测到工程配置问题时暂停
-        ├─ 向用户确认是否需要修改
-        └─ 用户确认后才执行配置修改
+ 10. 编译验证（重要）
+     ├─ 检测运行环境（Linux/Windows）
+     ├─ 根据环境选择编译方案
+     ├─ Linux 环境：使用 subagent 执行编译，监听进程，自动修复语法错误
+     ├─ Windows 环境：根据关键词自动选择动态或静态编译模式
+     └─ **详细编译流程**：参见注意事项第7条"编译环境检测"
 
 11. 输出更新文件列表、测试设计文档和覆盖率对比
 
@@ -261,7 +232,7 @@ oh-xts-generator-template 是一个通用的 OpenHarmony XTS 测试用例生成�
 - **仅允许修改**：`entry/src/ohosTest/ets/test/` 目录中的测试文件
 - **违反限制的后果**：可能导致工程结构被破坏、编译失败
 
-### 3.1 清理操作安全注意事项（强制）
+### 4. 清理操作安全注意事项（强制）
 
 **⚠️ 关键警告**：预编译清理操作必须谨慎执行，避免误删系统编译环境。
 
@@ -294,110 +265,58 @@ oh-xts-generator-template 是一个通用的 OpenHarmony XTS 测试用例生成�
 
 **参考文档**：`modules/L4_Build/linux_prebuild_cleanup.md` 1.3 节
 
-### 4. XTS Wiki 文档参考（强制）
+### 5. XTS Wiki 文档参考（强制）
 
 - 生成 XTS 测试用例时，**必须**参考 Wiki 文档中的规范
 - Wiki 文档规范 > Template 配置 > 通用模板
 
-### 5. ArkTS 语法类型识别（重要）
+### 6. ArkTS 语法类型识别（重要）
 
 - **API 类型判断**：必须读取 `.d.ts` 文件中**最后一段 JSDOC** 的 `@since` 标签
 - **工程类型识别**：读取 `build-profile.json5` 检查 `arkTSVersion` 字段
 - **兼容性检查**：生成测试用例前，必须检查工程语法类型与 API 类型是否匹配
 
-### 6. ArkTS 静态语言语法规范校验（新增，可选）
+### 7. ArkTS 静态语言语法规范校验（可选）
 
-**触发条件**：当用户明确要求生成 arkts 静态用例、arkts-static 等静态相关内容时，自动进行语法规范校验
+**触发条件**：用户明确要求生成静态 XTS 用例时自动启用
 
-**校验内容**：
-1. **类型注解完整性**
-   - 禁止使用 `any` 和 `unknown` 类型
-   - 所有参数必须显式声明类型
+**规范文档**：`references/arkts-static-spec/`
 
-2. **字段初始化**
-   - 所有字段必须初始化
-   - 构造函数中必须初始化所有字段
+### 8. 编译环境检测（强制）
 
-3. **语法兼容性**
-   - 禁止使用 `var` 声明变量
-   - 禁止对象解构
-   - 禁止可选链操作符
+#### 7.1 Linux 环境编译
 
-4. **类型转换规则**
-   - 优先使用显式类型转换
-   - 严格区分显式转换与隐式转换
+**基础要求**：
+- 使用 `build.sh` 脚本编译，**不要使用 `hvigorw`**
+- 环境检测：`uname -s`
 
-5. **静态语言特性**
-   - 对象布局固定
-   - null 安全机制
-   - 类型守卫
+**编译流程**：
+1. **预编译清理**（强制）：
+   - 使用 `cleanup_group.sh` 脚本
+   - 清理目的：确保编译结果包含所有最新代码
+   - ⚠️ 安全注意事项：见第 3.1 节清理操作安全说明
 
-**校验输出**：
-- 提供详细的校验结果
-- 给出具体的修改建议
-- 标注不符合规范的代码位置
+2. **静态测试套预置条件**（编译静态套时）：
+   - 校验 hvigor 版本：`"6.0.0-arkts1.2-ohosTest-25072102"`
+   - 版本匹配：跳过工具替换；版本不匹配：执行替换流程
+   - 工具替换：清理 SDK 缓存 → 清理旧工具 → 下载新工具 → 移动到预置目录
 
-**规范文档**：
-- 规范文档路径：`references/arkts-static-spec/`
-- 包含 16 个 ArkTS 语言规范文件（spec/ 目录）
-- 包含 3 个 TypeScript 迁移指南文件（cookbook/ 目录）
-- 校验时必须严格按照该目录下的文档内容进行
-### 7. 编译环境检测（强制）
-
-
-#### 7.1.1 Linux 环境编译
-
-- **Linux 环境**：必须使用 `build.sh` 脚本编译，**不要使用 `hvigorw`**
-
-- **环境检测方法**：`uname -s`（Linux）或 `$env:OS`（Windows）
-
-#### 7.1.2 **静态测试套编译预置条件**：
-- **编译前版本校验**（每次编译静态测试套时）：
-  - 读取 hvigor 工具版本：`cat ./prebuilts/command-line-tools/hvigor/hvigor/package.json | grep '"version"'`
-  - 静态工具版本标识：`"6.0.0-arkts1.2-ohosTest-25072102"`
-  - 决策逻辑：
-    - 版本匹配 → 跳过工具替换
-    - 版本不匹配 → 执行工具替换流程
-- **如需替换 hvigor 工具**：
-  - 清理 SDK 缓存：`rm -rf ./prebuilts/ohos-sdk/linux`
-  - 清理旧工具：`rm -rf ./prebuilts/command-line-tools`
-  - 下载静态编译工具：`git clone https://gitee.com/laoji-fuli/hvigor0702.git -b debug2 command-line-tools`
-  - 移动到预置目录：`mv -f command-line-tools ./prebuilts/`
-  - 执行位置：必须在 `{OH_ROOT}` 目录下执行上述命令
-- **预编译清理**（每次编译前强制执行）：
-  - **⚠️ 重要**：无论版本是否匹配，都必须在编译前执行预编译清理
-  - 清理目的：确保编译结果包含所有最新代码
-  - 参考文档：`modules/L4_Build/linux_prebuild_cleanup.md`
-
-#### 7.1.3 **Linux 编译流程要求**：
-- **预编译清理**：**无论是动态还是静态测试套，每次编译前都必须执行预编译清理**
-  - 清理目的：确保编译结果包含所有最新代码
-  - 清理步骤：参考 `modules/L4_Build/linux_prebuild_cleanup.md`
-  - 使用统一的 `cleanup_group.sh` 脚本
-  - **⚠️ 安全注意事项**：
-     * 必须确认当前目录再执行清理
-     * 必须使用显式路径删除（`./` 前缀）
-     * 禁止在 OH_ROOT 目录执行 `rm -rf build`
-     * 详见注意事项第 3.1 节
-- **subagent 执行**：必须使用 general subagent 执行编译任务，避免主流程中断
-- **监听机制**：必须监听编译进程直至完成，确保编译状态正确返回
-- **错误处理**：
-  - **语法错误**：自动分析错误日志，修复语法问题并重试编译
-  - **配置错误**：检测到工程配置问题时，暂停编译，向用户确认后才修改
-- **编译结果**：必须输出详细的编译结果和错误信息
+3. **编译执行**：
+   - 使用 general subagent 执行（避免主流程中断）
+   - 监听编译进程直至完成
+   - **语法错误**：自动分析并修复，重试编译
+   - **配置错误**：暂停并向用户确认后才修改
 
 #### 7.2 Windows 环境编译
 
-Windows 环境支持两种编译模式，根据用户需求自动选择：
+根据关键词自动选择编译模式：
 
-##### 7.2.1 ArkTS 动态 XTS 编译模式（默认）
-
-- **适用场景**：标准的 ArkTS 动态语法 XTS 测试工程
+##### 7.2.1 ArkTS 动态 XTS 编译（默认）
 - **编译方式**：DevEco Studio IDE 或 `hvigorw.bat`
 - **编译目标**：`Build → Build OhosTest Hap(s)`
 - **参考文档**：`modules/L4_Build/build_workflow_windows.md` 第三章
 
-##### 7.2.2 ArkTS 静态 XTS 编译模式（arkts-sta）
+##### 7.2.2 ArkTS 静态 XTS 编译（arkts-sta）
 - **适用场景**：基于 ArkTS 静态强类型语法的 XTS 测试 工程
 - **触发关键词**：当用户提到以下任一关键词时自动启用：
   - **技术术语**：`arkts-sta`、`ArkTS静态`、`arkts static`、`ArkTS static`
@@ -417,21 +336,7 @@ Windows 环境支持两种编译模式，根据用户需求自动选择：
 > - 仅在用户明确提到静态相关关键词时启用静态编译模式
 > - 静态编译需要配置 Java 环境变量（JAVA_HOME）
 
-**编译模块化架构**（v2.2.0+）：
-**Linux 编译**：
-- **主工作流**：`modules/L4_Build/build_workflow_linux.md`（主入口，按需加载）
-- **动态测试套编译**：`modules/L4_Build/linux_compile_dynamic_suite.md`（按需加载）
-- **静态测试套编译**：`modules/L4_Build/linux_compile_static_suite.md`（按需加载）
-- **环境准备**：`modules/L4_Build/linux_compile_env_setup.md`（按需加载）
-- **预编译清理**：`modules/L4_Build/linux_prebuild_cleanup.md`（按需加载）
-- **BUILD.gn 配置**：`modules/L4_Build/build_gn_config.md`（按需加载）
-- **问题排查**：`modules/L4_Build/linux_compile_troubleshooting.md`（按需加载）
-
-**Windows 编译**：
-- **Windows 动态编译**：`modules/L4_Build/build_workflow_windows.md` 第三章
-- **Windows 静态编译**：`modules/L4_Build/build_workflow_windows.md` 第十章
-
-> 📖 **完整的注意事项请查看**: `references/subsystems/_common.md` 第七章和第八章
+> 📖 **详细的编译文档**: [modules/L4_Build/](./modules/L4_Build/)
 
 ## 故障排除
 
@@ -446,13 +351,11 @@ Windows 环境支持两种编译模式，根据用户需求自动选择：
 - Q6: 子系统配置文件未找到
 - Q7: 测试覆盖率分析不准确
 
-> ⚠️ **静态语法检查参考文档**：在进行 ArkTS 静态语言语法规范校验时，请严格参考 `references/arkts-static-spec` 目录下的规范文档。
-
 ## 版本信息
 
-- **当前版本**: 1.20.0
+- **当前版本**: 1.20.2
 - **创建日期**: 2025-01-31
-- **最后更新**: 2026-02-11
+- **最后更新**: 2026-02-12
 - **兼容性**: OpenHarmony API 10+
 - **基于**: OH_XTS_GENERATOR v1.7.0
 
@@ -461,6 +364,8 @@ Windows 环境支持两种编译模式，根据用户需求自动选择：
 详细的版本历史记录请查看 [CHANGELOG.md](./CHANGELOG.md)
 
 **最近更新**：
+- v1.20.2 (2026-02-12): 简化重复内容，优化文档结构
+- v1.20.1 (2026-02-12): 优化核心工作流程和注意事项的重复内容
 - v1.20.0 (2026-02-11): 强化清理操作安全注意事项
 - v1.19.0 (2026-02-11): 强化预编译清理的强制执行
 - v1.18.0 (2026-02-11): 添加 hvigor 工具版本校验机制
