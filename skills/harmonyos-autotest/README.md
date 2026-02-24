@@ -17,6 +17,8 @@
 - **HDC 工具**: 已安装并配置到 PATH
 - **Hypium 框架**: 版本 >= 6.0.7.210
 - **HarmonyOS 设备**: 已通过 USB 连接并授权调试
+- **HarmonyOS 设备**: 设置好长亮屏，防止自动熄屏
+
 
 安装 Hypium:
 ```bash
