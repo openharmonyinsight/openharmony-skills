@@ -203,28 +203,66 @@ void Function() {
 }
 ```
 
-## 8. Container Pointer Fixes
+## 8. Container Pointer Issues
 
-### Container Cleanup Missing
-```cpp
-//`
+### Detection
+```bash
+# Container with raw pointers
+grep -rn "std::vector<.*\*>" frameworks/ --include="*.cpp" --include="*.h"
+
+# Missing destructor cleanup
+grep -rn "~" frameworks/ --include="*.cpp" | while read line; do
+    file=$(echo $line | cut -d: -f1)
+    class_name=$(echo $line | sed 's/.*class //;s/.*struct //;s/{.*//')
+    # Check if class has container member
+    grep -q "std::vector.*class_name" $file && \
+    # Check if destructor cleans up
+    grep "~$class_name" -A 20 "$file" | grep -q "delete" || \
+    echo "Potential leak: $file - container not cleaned in destructor"
+done
+
+# iterator invalidation
+grep -rn "std::vector.*erase" frameworks/ --include="*.cpp" | \
+    grep -B5 -A5 "delete"
+```
 
 ### Example
 ```cpp
-// ❌ Wrong
-void Function() {
-    MyClass* ptr = new MyClass();
-    if (condition) {
-        return;  // ptr leaked
+// ❌ Wrong - Missing cleanup
+class MyClass {
+public:
+    void AddItem(Item* item) {
+        items_.push_back(item);
     }
-    delete ptr;
-}
+    // Destructor missing - items leaked
+private:
+    std::vector<Item*> items_;
+};
 
-// ✅ Correct
-void Function() {
-    auto ptr = std::make_unique<MyClass>();
-    if (condition) {
-        return;  // Auto-cleanup
+// ✅ Correct - Proper cleanup
+class MyClass {
+public:
+    void AddItem(Item* item) {
+        items_.push_back(item);
     }
-}
+    ~MyClass() {
+        for (auto* item : items_) {
+            delete item;
+        }
+        items_.clear();
+    }
+private:
+    std::vector<Item*> items_;
+};
+
+// ✅ Better - Use smart pointers
+class MyClass {
+public:
+    void AddItem(Item* item) {
+        items_.push_back(AceType::MakeRefPtr<Item>(item));
+    }
+private:
+    std::vector<RefPtr<Item>> items_;
+};
+```
 ```

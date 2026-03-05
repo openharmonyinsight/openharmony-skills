@@ -9,17 +9,19 @@ Comprehensive memory management analysis for ace_engine codebase covering 17 cri
 
 ## Quick Start
 
-Run full analysis:
-```bash
-# Statistical analysis
-bash scripts/stats.sh
+Use this skill to analyze memory management in ace_engine codebase:
 
-# Pattern detection
-bash scripts/detect_patterns.sh
+1. **Statistical Analysis** - Get overview metrics
+   - Run: `bash scripts/stats.sh <target-directory>`
+   - Review the output statistics
 
-# Generate report
-python scripts/generate_report.py
-```
+2. **Pattern Detection** - Identify specific issues
+   - See [PATTERNS.md](references/PATTERNS.md) for detection rules
+   - Execute relevant grep/awk commands from the patterns
+
+3. **Generate Report** - Document findings
+   - Use [REPORT_TEMPLATE.md](references/REPORT_TEMPLATE.md) as guide
+   - Apply recommendations from [FIXES.md](references/FIXES.md)
 
 ## Core Scenarios
 

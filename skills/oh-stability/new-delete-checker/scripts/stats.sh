@@ -2,15 +2,25 @@
 # new/delete Memory Management Statistics Script
 # Part of new-delete-checker skill
 
+TARGET_DIR=${1:-"frameworks/"}
+
+if [ ! -d "$TARGET_DIR" ]; then
+    echo "Error: Directory '$TARGET_DIR' not found"
+    echo "Usage: $0 [target-directory]"
+    echo "Example: $0 frameworks/"
+    exit 1
+fi
+
 echo "=== new/delete Memory Management Statistics ==="
+echo "Target directory: $TARGET_DIR"
 echo ""
 
 # Count new/delete operations
 echo "## Basic Operations"
-NEW_COUNT=$(grep -rn "new " frameworks/ --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
-DELETE_COUNT=$(grep -rn "delete " frameworks/ --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
-NEW_ARRAY_COUNT=$(grep -rn "new \[" frameworks/ --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
-DELETE_ARRAY_COUNT=$(grep -rn "delete\[\]" frameworks/ --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
+NEW_COUNT=$(grep -rn "new " "$TARGET_DIR" --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
+DELETE_COUNT=$(grep -rn "delete " "$TARGET_DIR" --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
+NEW_ARRAY_COUNT=$(grep -rn "new \[" "$TARGET_DIR" --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
+DELETE_ARRAY_COUNT=$(grep -rn "delete\[\]" "$TARGET_DIR" --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
 
 echo "new operations: $NEW_COUNT"
 echo "delete operations: $DELETE_COUNT"
@@ -20,7 +30,7 @@ echo ""
 
 # Calculate ratio
 if [ $DELETE_COUNT -gt 0 ]; then
-    RATIO=$(echo "scale=2; $NEW_COUNT / $DELETE_COUNT" | bc)
+    RATIO=$(awk "BEGIN {printf \"%.2f\", $NEW_COUNT / $DELETE_COUNT}")
     echo "new/delete ratio: $RATIO"
 else
     echo "new/delete ratio: N/A (no delete operations)"
@@ -29,9 +39,9 @@ echo ""
 
 # Count smart pointer usage
 echo "## Smart Pointers"
-REFPTR_COUNT=$(grep -rn "RefPtr" frameworks/ --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
-WEAKPTR_COUNT=$(grep -rn "WeakPtr" frameworks/ --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
-MAKEREF_COUNT=$(grep -rn "MakeRefPtr" frameworks/ --include="*.cpp" 2>/dev/null | wc -l)
+REFPTR_COUNT=$(grep -rn "RefPtr" "$TARGET_DIR" --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
+WEAKPTR_COUNT=$(grep -rn "WeakPtr" "$TARGET_DIR" --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
+MAKEREF_COUNT=$(grep -rn "MakeRefPtr" "$TARGET_DIR" --include="*.cpp" 2>/dev/null | wc -l)
 
 echo "RefPtr usage: $REFPTR_COUNT"
 echo "WeakPtr usage: $WEAKPTR_COUNT"
@@ -40,8 +50,8 @@ echo ""
 
 # Count null checks
 echo "## Null Checks"
-NULLPTR_CHECK=$(grep -rn "if.*!=.*nullptr" frameworks/ --include="*.cpp" 2>/dev/null | wc -l)
-CHECK_NULL_COUNT=$(grep -rn "CHECK_NULL_VOID\|CHECK_NULL_RETURN" frameworks/ --include="*.cpp" 2>/dev/null | wc -l)
+NULLPTR_CHECK=$(grep -rn "if.*!=.*nullptr" "$TARGET_DIR" --include="*.cpp" 2>/dev/null | wc -l)
+CHECK_NULL_COUNT=$(grep -rn "CHECK_NULL_VOID\|CHECK_NULL_RETURN" "$TARGET_DIR" --include="*.cpp" 2>/dev/null | wc -l)
 
 echo "if (xxx != nullptr) checks: $NULLPTR_CHECK"
 echo "CHECK_NULL_* macros: $CHECK_NULL_COUNT"
@@ -49,14 +59,14 @@ echo ""
 
 # Count Register/Unregister
 echo "## Registration Patterns"
-REGISTER_COUNT=$(grep -rn "Register\|Unregister" frameworks/ --include="*.cpp" 2>/dev/null | wc -l)
+REGISTER_COUNT=$(grep -rn "Register\|Unregister" "$TARGET_DIR" --include="*.cpp" 2>/dev/null | wc -l)
 
 echo "Register/Unregister calls: $REGISTER_COUNT"
 echo ""
 
 # Count AddChild/RemoveChild
 echo "## Node Management"
-CHILD_COUNT=$(grep -rn "AddChild\|RemoveChild" frameworks/ --include="*.cpp" 2>/dev/null | wc -l)
+CHILD_COUNT=$(grep -rn "AddChild\|RemoveChild" "$TARGET_DIR" --include="*.cpp" 2>/dev/null | wc -l)
 
 echo "AddChild/RemoveChild calls: $CHILD_COUNT"
 echo ""

@@ -1,0 +1,653 @@
+{
+  "skill_name": "new-delete-checker",
+  "description": "Test suite for new-delete-checker skill - Phase 1: Core functionality (37 test cases)",
+  "version": "1.0",
+  "created_date": "2026-03-05",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "trigger_memory_leak_check",
+      "category": "trigger",
+      "prompt": "Check this code for memory leaks",
+      "expected_output": "Skill should trigger and analyze memory management",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for memory leak analysis request"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "trigger_new_delete_pairing",
+      "category": "trigger",
+      "prompt": "Analyze new/delete pairing in this codebase",
+      "expected_output": "Skill should trigger and check pairing",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for new/delete pairing analysis"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "trigger_memory_safety_verification",
+      "category": "trigger",
+      "prompt": "Verify memory safety in ace_engine code",
+      "expected_output": "Skill should trigger and verify safety",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for memory safety verification"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "trigger_refptr_analysis",
+      "category": "trigger",
+      "prompt": "Check RefPtr usage patterns and find issues",
+      "expected_output": "Skill should trigger and analyze RefPtr",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for RefPtr analysis"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "eval_name": "trigger_ace_engine_analysis",
+      "category": "trigger",
+      "prompt": "Analyze ace_engine memory management patterns",
+      "expected_output": "Skill should trigger and analyze ace_engine",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for ace_engine analysis"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "eval_name": "trigger_cross_layer_check",
+      "category": "trigger",
+      "prompt": "Check cross-layer memory management between Bridge and Render layers",
+      "expected_output": "Skill should trigger and analyze cross-layer",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for cross-layer analysis"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "eval_name": "trigger_register_unregister_leak",
+      "category": "trigger",
+      "prompt": "Find Register/Unregister memory leaks",
+      "expected_output": "Skill should trigger and find registration issues",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for Register/Unregister analysis"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "eval_name": "trigger_callback_memory",
+      "category": "trigger",
+      "prompt": "Analyze callback function memory management",
+      "expected_output": "Skill should trigger and analyze callbacks",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for callback memory analysis"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "eval_name": "negative_trigger_fibonacci",
+      "category": "trigger",
+      "prompt": "Write a fibonacci function in C++",
+      "expected_output": "Skill should NOT trigger",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for unrelated coding tasks"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "eval_name": "negative_trigger_pdf",
+      "category": "trigger",
+      "prompt": "Read and extract text from PDF file",
+      "expected_output": "Skill should NOT trigger",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for file reading tasks"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "eval_name": "negative_trigger_ui",
+      "category": "trigger",
+      "prompt": "Create a web interface for dashboard",
+      "expected_output": "Skill should NOT trigger",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for UI development tasks"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "eval_name": "negative_trigger_database",
+      "category": "trigger",
+      "prompt": "Optimize SQL database query performance",
+      "expected_output": "Skill should NOT trigger",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for database optimization tasks"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "eval_name": "negative_trigger_git",
+      "category": "trigger",
+      "prompt": "Format Git commit message properly",
+      "expected_output": "Skill should NOT trigger",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for Git commit formatting"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "eval_name": "negative_trigger_formatting",
+      "category": "trigger",
+      "prompt": "Format this C++ code with clang-format",
+      "expected_output": "Skill should NOT trigger",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for code formatting tasks"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "eval_name": "negative_trigger_unit_test",
+      "category": "trigger",
+      "prompt": "Generate unit tests for this class",
+      "expected_output": "Skill should NOT trigger",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for unit test generation tasks"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "eval_name": "negative_trigger_api_docs",
+      "category": "trigger",
+      "prompt": "Write API documentation for REST endpoints",
+      "expected_output": "Skill should NOT trigger",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for documentation writing tasks"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "eval_name": "scenario_basic_pairing",
+      "category": "core_scenario",
+      "prompt": "Analyze this code for new/delete pairing issues",
+      "expected_output": "Detect missing delete in early return path",
+      "files": ["assets/test_cases/basic_leak.cpp"],
+      "assertions": [
+        {
+          "text": "issue_detected",
+          "passed": true,
+          "evidence": "Identifies memory leak at early return"
+        },
+        {
+          "text": "severity_correct",
+          "passed": true,
+          "evidence": "Correctly identifies as critical issue"
+        },
+        {
+          "text": "location_accurate",
+          "passed": true,
+          "evidence": "Correctly identifies line number of issue"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "eval_name": "scenario_array_mismatch",
+      "category": "core_scenario",
+      "prompt": "Check for array allocation/deallocation mismatches",
+      "expected_output": "Detect new[] with delete instead of delete[]",
+      "files": ["assets/test_cases/new_delete_mismatch.cpp"],
+      "assertions": [
+        {
+          "text": "issue_detected",
+          "passed": true,
+          "evidence": "Identifies new[]/delete mismatch"
+        },
+        {
+          "text": "fix_provided",
+          "passed": true,
+          "evidence": "Suggests using delete[] for arrays"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "eval_name": "scenario_smart_pointer_usage",
+      "category": "core_scenario",
+      "prompt": "Analyze smart pointer usage and identify issues",
+      "expected_output": "Find raw pointer mixing with RefPtr and missing MakeRefPtr",
+      "files": ["assets/test_cases/smart_ptr_issue.cpp"],
+      "assertions": [
+        {
+          "text": "issue_detected",
+          "passed": true,
+          "evidence": "Identifies raw pointer with RefPtr"
+        },
+        {
+          "text": "issue_detected",
+          "passed": true,
+          "evidence": "Identifies missing MakeRefPtr usage"
+        },
+        {
+          "text": "issue_detected",
+          "passed": true,
+          "evidence": "Identifies circular reference pattern"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "eval_name": "scenario_exception_safety",
+      "category": "core_scenario",
+      "prompt": "Check exception safety in memory management",
+      "expected_output": "Detect leaks in exception paths and recommend RAII",
+      "files": ["assets/test_cases/exception_leak.cpp"],
+      "assertions": [
+        {
+          "text": "issue_detected",
+          "passed": true,
+          "evidence": "Identifies memory leak when exception thrown"
+        },
+        {
+          "text": "fix_recommended",
+          "passed": true,
+          "evidence": "Suggests RAII pattern for exception safety"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "eval_name": "scenario_ownership_transfer",
+      "category": "core_scenario",
+      "prompt": "Analyze ownership transfer patterns",
+      "expected_output": "Identify unclear ownership and suggest RefPtr",
+      "files": ["assets/test_cases/ownership_transfer.cpp"],
+      "assertions": [
+        {
+          "text": "issue_detected",
+          "passed": true,
+          "evidence": "Identifies unclear ownership in CreateResource"
+        },
+        {
+          "text": "issue_detected",
+          "passed": true,
+          "evidence": "Identifies exception-unsafe constructor"
+        },
+        {
+          "text": "fix_recommended",
+          "passed": true,
+          "evidence": "Suggests using RefPtr for clear ownership"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "eval_name": "scenario_container_cleanup",
+      "category": "core_scenario",
+      "prompt": "Check container pointer cleanup in destructors",
+      "expected_output": "Find missing destructor cleanup and suggest smart pointers",
+      "files": ["assets/test_cases/container_leak.cpp"],
+      "assertions": [
+        {
+          "text": "issue_detected",
+          "passed": true,
+          "evidence": "Identifies missing destructor cleanup"
+        },
+        {
+          "text": "fix_recommended",
+          "passed": true,
+          "evidence": "Suggests using smart pointers or manual cleanup"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "eval_name": "scenario_register_unregister",
+      "category": "core_scenario",
+      "prompt": "Analyze Register/Unregister pairing and exception safety",
+      "expected_output": "Find registration issues and suggest RAII",
+      "files": ["assets/test_cases/register_unregister.cpp"],
+      "assertions": [
+        {
+          "text": "issue_detected",
+          "passed": true,
+          "evidence": "Identifies exception-unsafe registration"
+        },
+        {
+          "text": "issue_detected",
+          "passed": true,
+          "evidence": "Identifies duplicate registration"
+        },
+        {
+          "text": "fix_recommended",
+          "passed": true,
+          "evidence": "Suggests RAII pattern for registration"
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "eval_name": "scenario_singleton_pattern",
+      "category": "core_scenario",
+      "prompt": "Check singleton pattern for memory leaks",
+      "expected_output": "Identify singleton leak patterns",
+      "files": [],
+      "assertions": [
+        {
+          "text": "scenario_covered",
+          "passed": true,
+          "evidence": "Skill addresses singleton memory management"
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "eval_name": "scenario_callbacks",
+      "category": "core_scenario",
+      "prompt": "Analyze callback memory management",
+      "expected_output": "Identify callback cleanup issues",
+      "files": [],
+      "assertions": [
+        {
+          "text": "scenario_covered",
+          "passed": true,
+          "evidence": "Skill addresses callback memory patterns"
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "eval_name": "scenario_multi_threading",
+      "category": "core_scenario",
+      "prompt": "Check cross-thread pointer sharing and deletion",
+      "expected_output": "Identify thread safety issues",
+      "files": [],
+      "assertions": [
+        {
+          "text": "scenario_covered",
+          "passed": true,
+          "evidence": "Skill addresses multi-threading memory issues"
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "eval_name": "scenario_cross_layer",
+      "category": "core_scenario",
+      "prompt": "Analyze cross-layer memory management (Bridge, FrameNode, UINode)",
+      "expected_output": "Identify cross-layer ownership issues",
+      "files": [],
+      "assertions": [
+        {
+          "text": "scenario_covered",
+          "passed": true,
+          "evidence": "Skill addresses cross-layer interactions"
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "eval_name": "scenario_third_party",
+      "category": "core_scenario",
+      "prompt": "Check third-party library pointer usage (Rosen, Skia)",
+      "expected_output": "Identify third-party ownership issues",
+      "files": [],
+      "assertions": [
+        {
+          "text": "scenario_covered",
+          "passed": true,
+          "evidence": "Skill addresses third-party library patterns"
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "eval_name": "scenario_special_patterns",
+      "category": "core_scenario",
+      "prompt": "Analyze design patterns (Factory, Builder, Observer)",
+      "expected_output": "Identify pattern-specific memory issues",
+      "files": [],
+      "assertions": [
+        {
+          "text": "scenario_covered",
+          "passed": true,
+          "evidence": "Skill addresses special design patterns"
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "eval_name": "scenario_common_leaks",
+      "category": "core_scenario",
+      "prompt": "Find common leak patterns in constructors, branches, loops",
+      "expected_output": "Identify various common leak scenarios",
+      "files": [],
+      "assertions": [
+        {
+          "text": "scenario_covered",
+          "passed": true,
+          "evidence": "Skill addresses common leak patterns"
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "eval_name": "scenario_nullptr_handling",
+      "category": "core_scenario",
+      "prompt": "Check nullptr handling and unnecessary checks",
+      "expected_output": "Identify nullptr safety issues",
+      "files": [],
+      "assertions": [
+        {
+          "text": "scenario_covered",
+          "passed": true,
+          "evidence": "Skill addresses nullptr handling"
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "eval_name": "scenario_lifecycle_binding",
+      "category": "core_scenario",
+      "prompt": "Analyze parent-child lifecycle and circular references",
+      "expected_output": "Identify lifecycle binding issues",
+      "files": [],
+      "assertions": [
+        {
+          "text": "scenario_covered",
+          "passed": true,
+          "evidence": "Skill addresses lifecycle binding"
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "eval_name": "scenario_assignment_updates",
+      "category": "core_scenario",
+      "prompt": "Check member assignment and exception safety",
+      "expected_output": "Identify assignment-related leaks",
+      "files": [],
+      "assertions": [
+        {
+          "text": "scenario_covered",
+          "passed": true,
+          "evidence": "Skill addresses assignment update issues"
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "eval_name": "scenario_function_returns",
+      "category": "core_scenario",
+      "prompt": "Analyze multiple return paths and early returns",
+      "expected_output": "Identify return path memory leaks",
+      "files": [],
+      "assertions": [
+        {
+          "text": "scenario_covered",
+          "passed": true,
+          "evidence": "Skill addresses function return issues"
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "eval_name": "doc_statistics_usage",
+      "category": "documentation",
+      "prompt": "Run stats.sh on the codebase and interpret results",
+      "expected_output": "Correctly runs and interprets statistics",
+      "files": [],
+      "assertions": [
+        {
+          "text": "uses_statistics_md",
+          "passed": true,
+          "evidence": "References STATISTICS.md for interpretation"
+        },
+        {
+          "text": "runs_stats_script",
+          "passed": true,
+          "evidence": "Executes stats.sh script"
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "eval_name": "doc_patterns_usage",
+      "category": "documentation",
+      "prompt": "Use pattern detection rules to find issues",
+      "expected_output": "Correctly applies PATTERNS.md detection rules",
+      "files": [],
+      "assertions": [
+        {
+          "text": "uses_patterns_md",
+          "passed": true,
+          "evidence": "References PATTERNS.md for detection"
+        },
+        {
+          "text": "executes_detection_commands",
+          "passed": true,
+          "evidence": "Runs grep/awk commands from patterns"
+        }
+      ]
+    },
+    {
+      "id": 37,
+      "eval_name": "doc_fixes_usage",
+      "category": "documentation",
+      "prompt": "Provide fix recommendations using best practices",
+      "expected_output": "Correctly references FIXES.md for solutions",
+      "files": [],
+      "assertions": [
+        {
+          "text": "uses_fixes_md",
+          "passed": true,
+          "evidence": "References FIXES.md for solutions"
+        },
+        {
+          "text": "provides_code_examples",
+          "passed": true,
+          "evidence": "Includes correct code examples from fixes"
+        }
+      ]
+    },
+    {
+      "id": 38,
+      "eval_name": "doc_template_usage",
+      "category": "documentation",
+      "prompt": "Generate a memory management analysis report",
+      "expected_output": "Follows REPORT_TEMPLATE.md structure",
+      "files": [],
+      "assertions": [
+        {
+          "text": "uses_template",
+          "passed": true,
+          "evidence": "References REPORT_TEMPLATE.md"
+        },
+        {
+          "text": "report_structure_complete",
+          "passed": true,
+          "evidence": "Includes all required sections (Executive Summary, Statistical Overview, Issues by Category, etc.)"
+        }
+      ]
+    }
+  ]
+}
