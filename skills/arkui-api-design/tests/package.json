@@ -1,0 +1,19 @@
+{
+  "name": "arkui-api-design-tests",
+  "version": "1.0.0",
+  "description": "Evaluation test suite for ArkUI API Design Skill",
+  "scripts": {
+    "test": "ts-node test-runner.ts",
+    "test:watch": "nodemon --exec ts-node test-runner.ts",
+    "report": "ts-node test-runner.ts && cat results/*.txt | tail -50",
+    "clean": "rm -rf results/*.json results/*.txt"
+  },
+  "dependencies": {
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "nodemon": "^3.0.0"
+  }
+}

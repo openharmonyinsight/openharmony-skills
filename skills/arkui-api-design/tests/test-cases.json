@@ -1,0 +1,251 @@
+{
+  "version": "1.0.0",
+  "description": "Test cases for ArkUI API Design Skill evaluation",
+  "categories": {
+    "jsdoc_terminology": {
+      "name": "JSDOC Terminology",
+      "description": "Tests for correct use of 'Called when' and other JSDOC terminology",
+      "test_cases": [
+        {
+          "id": "JSDOC-001",
+          "name": "Event Callback Correct Wording",
+          "type": "positive",
+          "description": "Event callback should use 'Called when' phrasing",
+          "input": {
+            "code": "/**\n * Callback invoked when the paste button is clicked.\n *\n * @param callback - Callback function for the click event.\n * @syscap SystemCapability.ArkUI.ArkUI.Full\n * @since 10 dynamic\n */\nonClick(callback: Callback<ClickEvent>): PasteButtonAttribute;",
+            "api_type": "event_callback"
+          },
+          "expected": {
+            "uses_correct_terminology": true,
+            "wording_pattern": "Called when"
+          }
+        },
+        {
+          "id": "JSDOC-002",
+          "name": "Property Setter Incorrect Wording",
+          "type": "negative",
+          "description": "Property setter should NOT use 'Called when' phrasing",
+          "input": {
+            "code": "/**\n * Called when the font size is set.\n */\nfontSize(value: number | string | Resource): TextAttribute;",
+            "api_type": "property_setter"
+          },
+          "expected": {
+            "uses_correct_terminology": false,
+            "should_be_corrected_to": "Sets the font size"
+          }
+        },
+        {
+          "id": "JSDOC-003",
+          "name": "Property Setter Correct Wording",
+          "type": "positive",
+          "description": "Property setter should use action verbs",
+          "input": {
+            "code": "/**\n * Sets the font size for the text component.\n *\n * @param value - Font size in fp. Valid range: 0-1000fp.\n * @unit fp\n * @syscap SystemCapability.ArkUI.ArkUI.Full\n * @since 7 dynamic\n */\nfontSize(value: number | string | Length | Resource): TextAttribute;",
+            "api_type": "property_setter"
+          },
+          "expected": {
+            "uses_correct_terminology": true,
+            "wording_pattern": "Sets the"
+          }
+        },
+        {
+          "id": "JSDOC-004",
+          "name": "Layout Property Correct Wording",
+          "type": "positive",
+          "description": "Layout property should use 'Sets the' phrasing",
+          "input": {
+            "code": "/**\n * Sets the vertical alignment of child components.\n *\n * @param value - Alignment mode for child components.\n * @syscap SystemCapability.ArkUI.ArkUI.Full\n * @since 7 dynamic\n */\nalignItems(value: AlignItems): RowAttribute;",
+            "api_type": "layout_property"
+          },
+          "expected": {
+            "uses_correct_terminology": true,
+            "wording_pattern": "Sets the"
+          }
+        },
+        {
+          "id": "JSDOC-005",
+          "name": "Lifecycle Method Correct Wording",
+          "type": "positive",
+          "description": "Lifecycle method should use 'Called when' phrasing",
+          "input": {
+            "code": "/**\n * Callback invoked when the component appears.\n *\n * @param callback - Callback function.\n * @syscap SystemCapability.ArkUI.ArkUI.Full\n * @since 7 dynamic\n */\nonAppear(callback: () => void): CommonMethod;",
+            "api_type": "lifecycle_method"
+          },
+          "expected": {
+            "uses_correct_terminology": true,
+            "wording_pattern": "Called when"
+          }
+        }
+      ]
+    },
+    "static_dynamic_sync": {
+      "name": "Static/Dynamic API Synchronization",
+      "description": "Tests for static and dynamic API consistency",
+      "test_cases": [
+        {
+          "id": "SYNC-001",
+          "name": "Matching Property Types",
+          "type": "positive",
+          "description": "Static and dynamic APIs should have matching parameter types",
+          "input": {
+            "static_api": "iconSize: number | string;",
+            "dynamic_api": "iconSize(value: number | string): ButtonAttribute;"
+          },
+          "expected": {
+            "types_match": true
+          }
+        },
+        {
+          "id": "SYNC-002",
+          "name": "Mismatched Property Types",
+          "type": "negative",
+          "description": "Static and dynamic APIs should not have different parameter types",
+          "input": {
+            "static_api": "iconSize: number;",
+            "dynamic_api": "iconSize(value: number | string | Resource): ButtonAttribute;"
+          },
+          "expected": {
+            "types_match": false,
+            "issue": "Parameter types don't match"
+          }
+        },
+        {
+          "id": "SYNC-003",
+          "name": "Correct Version Tags",
+          "type": "positive",
+          "description": "Static API should use @since X static, dynamic should use @since X dynamic",
+          "input": {
+            "static_tags": ["@since 12 static"],
+            "dynamic_tags": ["@since 12 dynamic"]
+          },
+          "expected": {
+            "version_tags_correct": true
+          }
+        },
+        {
+          "id": "SYNC-004",
+          "name": "Incorrect Version Tags",
+          "type": "negative",
+          "description": "Version tags should specify static/dynamic",
+          "input": {
+            "static_tags": ["@since 12"],
+            "dynamic_tags": ["@since 12"]
+          },
+          "expected": {
+            "version_tags_correct": false,
+            "issue": "Missing static/dynamic specification"
+          }
+        }
+      ]
+    },
+    "resource_type_support": {
+      "name": "Resource Type Support",
+      "description": "Tests for correct Resource/ResourceStr type usage",
+      "test_cases": [
+        {
+          "id": "RESOURCE-001",
+          "name": "API 12 Should Use Resource",
+          "type": "positive",
+          "description": "API 12 and earlier should use string | Resource for compatibility",
+          "input": {
+            "api_version": 12,
+            "code": "fontSize(value: number | string | Length | Resource): TextAttribute;"
+          },
+          "expected": {
+            "correct_type_usage": true
+          }
+        },
+        {
+          "id": "RESOURCE-002",
+          "name": "API 13 Should Use ResourceStr",
+          "type": "positive",
+          "description": "New APIs (API 13+) should use ResourceStr for simplified type",
+          "input": {
+            "api_version": 13,
+            "is_new_property": true,
+            "code": "fontSize(value: number | string | Length | ResourceStr): TextAttribute;"
+          },
+          "expected": {
+            "correct_type_usage": true
+          }
+        },
+        {
+          "id": "RESOURCE-003",
+          "name": "API 12 Should Not Use ResourceStr",
+          "type": "negative",
+          "description": "API 12 should not be modified to use ResourceStr",
+          "input": {
+            "api_version": 12,
+            "is_new_property": false,
+            "code": "fontSize(value: number | string | Length | ResourceStr): TextAttribute;"
+          },
+          "expected": {
+            "correct_type_usage": false,
+            "issue": "Should maintain backward compatibility with string | Resource"
+          }
+        },
+        {
+          "id": "RESOURCE-004",
+          "name": "State Flags Should Not Support Resource",
+          "type": "positive",
+          "description": "State flags and booleans should not support Resource type",
+          "input": {
+            "code": "stateEffect(value: boolean): ButtonAttribute;"
+          },
+          "expected": {
+            "correct_type_usage": true
+          }
+        }
+      ]
+    },
+    "complete_jsdoc": {
+      "name": "Complete JSDOC Documentation",
+      "description": "Tests for complete and accurate JSDOC comments",
+      "test_cases": [
+        {
+          "id": "JSDOC-COMP-001",
+          "name": "Complete JSDOC with All Tags",
+          "type": "positive",
+          "description": "JSDOC should include @param, @unit, @since, @syscap",
+          "input": {
+            "code": "/**\n * Sets the font size.\n *\n * @param value - Font size in fp. Valid range: 0-1000fp.\n * @unit fp\n * @since 7 dynamic\n * @syscap SystemCapability.ArkUI.ArkUI.Full\n */"
+          },
+          "expected": {
+            "has_param": true,
+            "has_unit": true,
+            "has_since": true,
+            "has_syscap": true,
+            "complete": true
+          }
+        },
+        {
+          "id": "JSDOC-COMP-002",
+          "name": "Missing Unit Tag",
+          "type": "negative",
+          "description": "Length values should have @unit tag",
+          "input": {
+            "code": "/**\n * Sets the font size.\n *\n * @param value - Font size in fp.\n * @since 7 dynamic\n * @syscap SystemCapability.ArkUI.ArkUI.Full\n */"
+          },
+          "expected": {
+            "has_param": true,
+            "has_unit": false,
+            "complete": false
+          }
+        },
+        {
+          "id": "JSDOC-COMP-003",
+          "name": "Undefined/null Documentation",
+          "type": "positive",
+          "description": "JSDOC should document undefined/null behavior",
+          "input": {
+            "code": "/**\n * Sets the component width.\n * @param value Width value in vp. If undefined, restores default width.\n * @unit vp\n * @since 8 dynamic\n */"
+          },
+          "expected": {
+            "documents_undefined": true,
+            "complete": true
+          }
+        }
+      ]
+    }
+  }
+}
