@@ -243,7 +243,209 @@ When adding common properties, evaluate impact on all components:
 - Style: `opacity()`, `visibility()`, `borderRadius()`
 - Event: `onClick()`, `onTouch()`
 
-### 8. Respect Interface Directory Boundaries
+### 8. Use Correct Terminology in JSDOC
+
+**CRITICAL**: The phrase "Called when" must ONLY be used for **event callback functions** and **lifecycle methods** that are invoked by the framework. It MUST NOT be used for property setters, configuration methods, or attribute modifiers.
+
+#### Proper Usage of "Called when"
+
+**✅ CORRECT: Event callbacks and lifecycle methods**
+```typescript
+/**
+ * Callback invoked when the paste button is clicked.
+ *
+ * @param callback - Callback function for the click event.
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @since 10 dynamic
+ */
+onClick(callback: Callback<ClickEvent>): PasteButtonAttribute;
+
+/**
+ * Callback invoked when the playback progress changes.
+ *
+ * @param callback - Callback function with playback info.
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @since 7 dynamic
+ */
+onProgress(callback: Callback<PlaybackInfo>): VideoAttribute;
+
+/**
+ * Callback invoked when scrolling begins each frame.
+ *
+ * @param callback - Callback function for scroll frame begin event.
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @since 9 dynamic
+ */
+onScrollFrameBegin(callback: (offset: number, state: ScrollState) => ScrollOffset): ListAttribute;
+
+/**
+ * Callback invoked when the water flow reaches the end.
+ *
+ * @param callback - Callback function for reach end event.
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @since 9 dynamic
+ */
+onReachEnd(callback: () => void): WaterFlowAttribute;
+```
+
+**❌ INCORRECT: Property setters and configuration methods**
+```typescript
+// ❌ WRONG: "Called when" used for property setter
+/**
+ * Called when the font size is set.
+ */
+fontSize(value: number | string | Resource): TextAttribute;
+
+// ✅ CORRECT: Use action verbs for property setters
+/**
+ * Sets the font size for the text component.
+ *
+ * @param value - Font size in fp. Valid range: 0-1000fp.
+ * @unit fp
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @since 7 dynamic
+ */
+fontSize(value: number | string | Length | Resource): TextAttribute;
+
+// ❌ WRONG: "Called when" used for configuration method
+/**
+ * Called when the border color is set.
+ */
+stroke(value: ResourceColor): ShapeAttribute;
+
+// ✅ CORRECT: Use action verbs for configuration methods
+/**
+ * Sets the stroke (border) color of the shape.
+ *
+ * @param value - Stroke color to apply.
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @since 9 dynamic
+ */
+stroke(value: ResourceColor): ShapeAttribute;
+
+// ❌ WRONG: "Called when" used for layout property
+/**
+ * Called when the vertical alignment is set.
+ */
+alignItems(value: AlignItems): RowAttribute;
+
+// ✅ CORRECT: Use action verbs for layout properties
+/**
+ * Sets the vertical alignment of child components.
+ *
+ * @param value - Alignment mode for child components.
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @since 7 dynamic
+ */
+alignItems(value: AlignItems): RowAttribute;
+```
+
+#### Decision Tree for JSDOC Wording
+
+```
+Is this an event callback or lifecycle method?
+├─ Yes → Use "Called when" or "Callback invoked when"
+│         Examples: onClick, onScroll, onAppear, onDisAppear
+│
+└─ No → Use action verbs (Sets, Specifies, Configures, Enables/Disables)
+         Examples: fontSize(), fontWeight(), padding(), stateEffect()
+```
+
+#### Standard Wording Patterns
+
+| API Type | Correct Phrasing | Examples |
+|----------|------------------|----------|
+| **Property setters** | "Sets the [property]." / "Specifies the [property]." | `Sets the font size.`, `Specifies the text color.` |
+| **Configuration methods** | "Configures the [feature]." / "Enables/Disables the [feature]." | `Enables the state effect.`, `Configures the scroll behavior.` |
+| **Event callbacks** | "Called when [event]." / "Callback invoked when [event]." | `Called when clicked.`, `Called when the scroll position changes.` |
+| **Lifecycle methods** | "Called when [lifecycle event]." | `Called when the component appears.`, `Called when the component is about to disappear.` |
+
+#### Common Mistakes to Avoid
+
+1. **"Called when the [property] is set"** - This is the most common incorrect pattern
+   - ❌ `Called when the font weight is set.`
+   - ✅ `Sets the font weight of the text.`
+
+2. **"Called when [action]" for non-callback methods** - Confuses property setters with callbacks
+   - ❌ `Called when drawing a polygon.` (for a property setter)
+   - ✅ `Sets the drawing options for the polygon.`
+
+3. **Passive voice for active configuration** - Use active verbs for setter methods
+   - ❌ `When the border color is set...`
+   - ✅ `Sets the border color of the component.`
+
+#### Examples of Corrected JSDOC
+
+```typescript
+// Text Properties
+/**
+ * Sets the font style for the text component.
+ *
+ * @param value - Font style to apply. Default is FontStyle.Normal.
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @since 7 dynamic
+ */
+fontStyle(value: FontStyle): TextAttribute;
+
+/**
+ * Sets the font weight (text thickness).
+ *
+ * @param value - Font weight value. If too large, text may be clipped.
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @since 7 dynamic
+ */
+fontWeight(value: number | FontWeight | ResourceStr): TextAttribute;
+
+/**
+ * Sets the horizontal text alignment.
+ *
+ * @param value - Text alignment mode.
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @since 7 dynamic
+ */
+textAlign(value: TextAlign): TextAttribute;
+
+// Shape Properties
+/**
+ * Sets the fill color of the shape.
+ *
+ * @param value - Fill color to apply.
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @since 9 dynamic
+ */
+fill(value: ResourceColor): ShapeAttribute;
+
+/**
+ * Sets the stroke (border) width.
+ *
+ * @param value - Stroke width in vp. Valid range: 0-1000vp.
+ * @unit vp
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @since 9 dynamic
+ */
+strokeWidth(value: Length): ShapeAttribute;
+
+// Layout Properties
+/**
+ * Sets the horizontal alignment of child components.
+ *
+ * @param value - Horizontal alignment mode.
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @since 7 dynamic
+ */
+justifyContent(value: MainAxisAlignment): CommonMethod;
+
+/**
+ * Sets the vertical alignment of child components.
+ *
+ * @param value - Vertical alignment mode.
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @since 7 dynamic
+ */
+alignItems(value: AlignItems): CommonMethod;
+```
+
+### 9. Respect Interface Directory Boundaries
 
 During API design and compilation verification, work only with files within `interface/` directory:
 

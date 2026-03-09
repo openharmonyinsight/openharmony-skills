@@ -1,0 +1,222 @@
+{
+  "timestamp": "2025-03-07T12:00:00.000Z",
+  "total_categories": 4,
+  "total_tests": 16,
+  "total_passed": 14,
+  "total_failed": 2,
+  "overall_score": 87.5,
+  "categories": [
+    {
+      "category_name": "JSDOC Terminology",
+      "total_tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "score": 100.0,
+      "results": [
+        {
+          "case_id": "JSDOC-001",
+          "case_name": "Event Callback Correct Wording",
+          "passed": true,
+          "score": 100,
+          "details": "AI correctly validated event callback wording",
+          "expected": {
+            "uses_correct_terminology": true,
+            "wording_pattern": "Called when"
+          }
+        },
+        {
+          "case_id": "JSDOC-002",
+          "case_name": "Property Setter Incorrect Wording",
+          "passed": true,
+          "score": 100,
+          "details": "AI identified misuse and suggested correct wording: 'Sets the font size'",
+          "expected": {
+            "uses_correct_terminology": false,
+            "should_be_corrected_to": "Sets the font size"
+          }
+        },
+        {
+          "case_id": "JSDOC-003",
+          "case_name": "Property Setter Correct Wording",
+          "passed": true,
+          "score": 100,
+          "details": "AI correctly validated property setter wording",
+          "expected": {
+            "uses_correct_terminology": true,
+            "wording_pattern": "Sets the"
+          }
+        },
+        {
+          "case_id": "JSDOC-004",
+          "case_name": "Layout Property Correct Wording",
+          "passed": true,
+          "score": 100,
+          "details": "AI correctly validated layout property wording",
+          "expected": {
+            "uses_correct_terminology": true,
+            "wording_pattern": "Sets the"
+          }
+        },
+        {
+          "case_id": "JSDOC-005",
+          "case_name": "Lifecycle Method Correct Wording",
+          "passed": true,
+          "score": 100,
+          "details": "AI correctly validated lifecycle method wording",
+          "expected": {
+            "uses_correct_terminology": true,
+            "wording_pattern": "Called when"
+          }
+        }
+      ]
+    },
+    {
+      "category_name": "Static/Dynamic API Synchronization",
+      "total_tests": 4,
+      "passed": 4,
+      "failed": 0,
+      "score": 100.0,
+      "results": [
+        {
+          "case_id": "SYNC-001",
+          "case_name": "Matching Property Types",
+          "passed": true,
+          "score": 100,
+          "details": "AI correctly validated type matching",
+          "expected": {
+            "types_match": true
+          }
+        },
+        {
+          "case_id": "SYNC-002",
+          "case_name": "Mismatched Property Types",
+          "passed": true,
+          "score": 100,
+          "details": "AI identified type mismatch between static and dynamic APIs",
+          "expected": {
+            "types_match": false,
+            "issue": "Parameter types don't match"
+          }
+        },
+        {
+          "case_id": "SYNC-003",
+          "case_name": "Correct Version Tags",
+          "passed": true,
+          "score": 100,
+          "details": "AI validated correct version tag format",
+          "expected": {
+            "version_tags_correct": true
+          }
+        },
+        {
+          "case_id": "SYNC-004",
+          "case_name": "Incorrect Version Tags",
+          "passed": true,
+          "score": 100,
+          "details": "AI identified missing static/dynamic specification",
+          "expected": {
+            "version_tags_correct": false,
+            "issue": "Missing static/dynamic specification"
+          }
+        }
+      ]
+    },
+    {
+      "category_name": "Resource Type Support",
+      "total_tests": 4,
+      "passed": 2,
+      "failed": 2,
+      "score": 50.0,
+      "results": [
+        {
+          "case_id": "RESOURCE-001",
+          "case_name": "API 12 Should Use Resource",
+          "passed": true,
+          "score": 100,
+          "details": "AI correctly validated API 12 Resource usage",
+          "expected": {
+            "correct_type_usage": true
+          }
+        },
+        {
+          "case_id": "RESOURCE-002",
+          "case_name": "API 13 Should Use ResourceStr",
+          "passed": true,
+          "score": 100,
+          "details": "AI correctly validated API 13 ResourceStr usage",
+          "expected": {
+            "correct_type_usage": true
+          }
+        },
+        {
+          "case_id": "RESOURCE-003",
+          "case_name": "API 12 Should Not Use ResourceStr",
+          "passed": false,
+          "score": 0,
+          "details": "AI did not identify that API 12 should maintain backward compatibility",
+          "expected": {
+            "correct_type_usage": false,
+            "issue": "Should maintain backward compatibility with string | Resource"
+          }
+        },
+        {
+          "case_id": "RESOURCE-004",
+          "case_name": "State Flags Should Not Support Resource",
+          "passed": false,
+          "score": 0,
+          "details": "AI incorrectly suggested adding Resource type to boolean property",
+          "expected": {
+            "correct_type_usage": true
+          }
+        }
+      ]
+    },
+    {
+      "category_name": "Complete JSDOC Documentation",
+      "total_tests": 3,
+      "passed": 3,
+      "failed": 0,
+      "score": 100.0,
+      "results": [
+        {
+          "case_id": "JSDOC-COMP-001",
+          "case_name": "Complete JSDOC with All Tags",
+          "passed": true,
+          "score": 100,
+          "details": "AI validated complete JSDOC with all required tags",
+          "expected": {
+            "has_param": true,
+            "has_unit": true,
+            "has_since": true,
+            "has_syscap": true,
+            "complete": true
+          }
+        },
+        {
+          "case_id": "JSDOC-COMP-002",
+          "case_name": "Missing Unit Tag",
+          "passed": true,
+          "score": 100,
+          "details": "AI identified missing @unit tag for length value",
+          "expected": {
+            "has_param": true,
+            "has_unit": false,
+            "complete": false
+          }
+        },
+        {
+          "case_id": "JSDOC-COMP-003",
+          "case_name": "Undefined/null Documentation",
+          "passed": true,
+          "score": 100,
+          "details": "AI validated undefined/null behavior documentation",
+          "expected": {
+            "documents_undefined": true,
+            "complete": true
+          }
+        }
+      ]
+    }
+  ],
+  "summary": "Grade: B (87.5%) - Good! The skill has a solid understanding with room for improvement. Consider strengthening Resource type support rules."
+}
