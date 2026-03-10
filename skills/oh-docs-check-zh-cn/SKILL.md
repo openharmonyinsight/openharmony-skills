@@ -135,13 +135,26 @@ Use `scripts/check_api_doc_consistency.py` whenever the user provides a d.ts fil
 
 - d.ts tag extraction and `@throws` parsing
 - public/system placement and direction-of-link checks
-- field presence for `@syscap`, `@permission`, `@atomicservice`, model-only tags, `@deprecated`, and `@useinstead`
+- structured field checks for `@syscap`, `@permission`, `@atomicservice`, `@systemapi`, model-only tags, `@deprecated`, and `@useinstead`
 - section-level and document-level error-code coverage
 - `-sys.md` naming, title, and `Readme-CN.md` entry checks
 - mixed-module note checks for system docs
 - required block checks in error-code documents
 - basic version-marker checks such as module since notes and `<sup>x+</sup>` presence
 - in-page and relative Markdown link resolution
+
+For field-style checks, prefer the script result over manual keyword search. The current script parses labeled documentation fields such as `系统接口`, `模型约束`, and `需要权限`, which reduces noise from unrelated prose matches.
+
+For `@since` handling, interpret tags from the dynamic-API documentation perspective only:
+
+- `@since x` means the dynamic API starts at version `x`
+- `@since x dynamic` means the dynamic API starts at version `x`
+- `@since x dynamic&static` means both dynamic and static forms start at version `x`; for the current checker, use `x` as the dynamic version
+- `@since x static` is ignored by the current doc checker
+- `@since x dynamiconly` means the API is dynamic-only and starts at version `x`
+- `@since x staticonly` is ignored by the current doc checker
+
+Do not treat static-only version tags as documentation-version requirements for the current checks.
 
 Do not hardcode evolving template wording in `SKILL.md`. The script reads its change-prone literals from `scripts/doc_check_rules.json`.
 

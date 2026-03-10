@@ -52,6 +52,9 @@ class Symbol:
     tags: dict[str, list[str]] = field(default_factory=dict)
     throws: list[int] = field(default_factory=list)
     line: int = 0
+    overload_index: int = 0
+    primary_since_tags: list[str] = field(default_factory=list)
+    declaration_text: str = ""
 
 
 @dataclass
@@ -122,7 +125,8 @@ def parse_comment_block(lines: list[str]) -> tuple[dict[str, list[str]], list[in
 def parse_dts(path: Path) -> list[Symbol]:
     lines = path.read_text(encoding="utf-8").splitlines()
     symbols: list[Symbol] = []
-    pending_comments: list[str] = []
+    pending_comment_blocks: list[list[str]] = []
+    current_comment_lines: list[str] = []
     in_comment = False
     scope_stack: list[tuple[str, int]] = []
     brace_depth = 0
@@ -131,13 +135,14 @@ def parse_dts(path: Path) -> list[Symbol]:
         stripped = line.strip()
         if stripped.startswith("/**"):
             in_comment = True
-            pending_comments = []
+            current_comment_lines = []
             continue
         if in_comment:
             if "*/" in stripped:
                 in_comment = False
+                pending_comment_blocks.append(current_comment_lines[:])
             else:
-                pending_comments.append(stripped)
+                current_comment_lines.append(stripped)
             continue
 
         open_count = line.count("{")
@@ -148,12 +153,28 @@ def parse_dts(path: Path) -> list[Symbol]:
             kind = decl.group(1)
             name = decl.group(2)
             full_name = ".".join([item[0] for item in scope_stack] + [name])
-            symbol = Symbol(full_name=full_name, short_name=name.split(".")[-1], kind=kind, line=lineno)
-            tags, throws = parse_comment_block(pending_comments)
-            symbol.tags = tags
-            symbol.throws = throws
+            symbol = Symbol(
+                full_name=full_name,
+                short_name=name.split(".")[-1],
+                kind=kind,
+                line=lineno,
+                declaration_text=stripped,
+            )
+            merged_tags: dict[str, list[str]] = {}
+            merged_throws: list[int] = []
+            if pending_comment_blocks:
+                primary_tags, _ = parse_comment_block(pending_comment_blocks[0])
+                symbol.primary_since_tags = primary_tags.get("since", [])[:]
+                _, last_throws = parse_comment_block(pending_comment_blocks[-1])
+                merged_throws = last_throws[:]
+            for block in pending_comment_blocks:
+                tags, throws = parse_comment_block(block)
+                for key, values in tags.items():
+                    merged_tags.setdefault(key, []).extend(values)
+            symbol.tags = merged_tags
+            symbol.throws = merged_throws
             symbols.append(symbol)
-            pending_comments = []
+            pending_comment_blocks = []
             if kind in {"namespace", "class", "interface", "enum"} and "{" in line:
                 scope_stack.append((name, brace_depth + open_count - close_count))
         else:
@@ -163,23 +184,44 @@ def parse_dts(path: Path) -> list[Symbol]:
                 kind = "method"
                 name = method.group(1)
                 full_name = ".".join([item[0] for item in scope_stack] + [name])
-                tags, throws = parse_comment_block(pending_comments)
-                if tags or throws:
+                merged_tags: dict[str, list[str]] = {}
+                merged_throws: list[int] = []
+                primary_since_tags: list[str] = []
+                if pending_comment_blocks:
+                    primary_tags, _ = parse_comment_block(pending_comment_blocks[0])
+                    primary_since_tags = primary_tags.get("since", [])[:]
+                    _, last_throws = parse_comment_block(pending_comment_blocks[-1])
+                    merged_throws = last_throws[:]
+                for block in pending_comment_blocks:
+                    tags, throws = parse_comment_block(block)
+                    for key, values in tags.items():
+                        merged_tags.setdefault(key, []).extend(values)
+                if merged_tags or merged_throws:
                     symbols.append(
                         Symbol(
                             full_name=full_name,
                             short_name=name,
                             kind=kind,
-                            tags=tags,
-                            throws=throws,
+                            tags=merged_tags,
+                            throws=merged_throws,
                             line=lineno,
+                            primary_since_tags=primary_since_tags,
+                            declaration_text=stripped,
                         )
                     )
-                pending_comments = []
+                pending_comment_blocks = []
+            elif stripped:
+                pending_comment_blocks = []
 
         brace_depth += open_count - close_count
         while scope_stack and brace_depth < scope_stack[-1][1]:
             scope_stack.pop()
+
+    overload_counts: dict[tuple[str, str], int] = {}
+    for symbol in symbols:
+        key = (symbol.full_name, symbol.kind)
+        symbol.overload_index = overload_counts.get(key, 0)
+        overload_counts[key] = symbol.overload_index + 1
 
     return symbols
 
@@ -266,10 +308,23 @@ def extract_sup_versions(text: str) -> set[int]:
 
 def parse_symbol_since_versions(symbol: Symbol) -> list[int]:
     versions: list[int] = []
-    for raw in symbol.tags.get("since", []):
-        match = re.match(r"(\d+)", raw.strip())
-        if match:
-            versions.append(int(match.group(1)))
+    since_values = symbol.primary_since_tags or symbol.tags.get("since", [])
+    for raw in since_values:
+        value = raw.strip().lower()
+        match = re.match(r"(\d+)", value)
+        if not match:
+            continue
+        version = int(match.group(1))
+        # The current documentation checks target dynamic APIs only.
+        # Interpret @since tags from the dynamic-doc perspective:
+        # - "@since x" -> dynamic since x
+        # - "@since x dynamic" / "@since x dynamiconly" -> dynamic since x
+        # - "@since x dynamic&static" -> dynamic since x
+        # - "@since x static" / "@since x staticonly" -> ignore here
+        if "staticonly" in value or re.search(r"\bstatic\b", value):
+            if "dynamic" not in value:
+                continue
+        versions.append(version)
     return versions
 
 
@@ -332,9 +387,20 @@ def normalize_anchor(text: str) -> str:
     return lowered
 
 
+def normalize_anchor_with_sup_text(text: str) -> str:
+    lowered = text.lower()
+    lowered = re.sub(r"<sup>\s*(\d+)\+\s*</sup>", r"\1", lowered)
+    lowered = re.sub(r"<sup>\s*\((deprecated)\)\s*</sup>", r"\1", lowered)
+    lowered = re.sub(r"<sup>(.*?)</sup>", r"\1", lowered)
+    lowered = re.sub(r"[^a-z0-9\u4e00-\u9fff-]+", "", lowered)
+    return lowered
+
+
 def normalize_link_anchor(text: str) -> str:
     normalized = normalize_anchor(text)
-    normalized = re.sub(r"\d+$", "", normalized)
+    if not re.search(r"-\d+$", normalized):
+        normalized = re.sub(r"\d+$", "", normalized)
+    normalized = re.sub(r"(\d+)(对象说明)$", r"\2", normalized)
     return normalized
 
 
@@ -342,8 +408,14 @@ def build_anchor_index(path: Path | None) -> set[str]:
     if not path or not path.exists():
         return set()
     anchors: set[str] = set()
+    anchor_counts: dict[str, int] = {}
     for section in parse_sections(path):
-        anchors.add(normalize_anchor(section.heading))
+        for base in {normalize_anchor(section.heading), normalize_anchor_with_sup_text(section.heading)}:
+            if not base:
+                continue
+            count = anchor_counts.get(base, 0)
+            anchors.add(base if count == 0 else f"{base}-{count}")
+            anchor_counts[base] = count + 1
     return anchors
 
 
@@ -416,13 +488,189 @@ def heading_matches(section: Section, name: str) -> bool:
     return bool(re.search(rf"(^|[^a-z0-9_]){target}([^a-z0-9_]|$)", heading))
 
 
-def find_sections_for_symbol(sections: list[Section], symbol: Symbol) -> list[Section]:
+def get_container_name(symbol: Symbol) -> str:
+    parts = symbol.full_name.split(".")
+    if len(parts) >= 2:
+        return parts[-2]
+    return ""
+
+
+def decode_doc_text(text: str) -> str:
+    return text.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
+
+
+def extract_section_signature_line(section: Section) -> str:
+    for line in section.body.splitlines():
+        stripped = decode_doc_text(line.strip())
+        if not stripped or HEADING_RE.match(stripped):
+            continue
+        if re.match(r"^[A-Za-z_][A-Za-z0-9_]*\s*\(", stripped):
+            return stripped.rstrip(";")
+    return ""
+
+
+def extract_signature_literals(text: str) -> list[str]:
+    return re.findall(r"'([^']+)'|\"([^\"]+)\"", text)
+
+
+def flatten_signature_literals(text: str) -> list[str]:
+    flattened: list[str] = []
+    for first, second in extract_signature_literals(text):
+        flattened.append(first or second)
+    return flattened
+
+
+def extract_param_count(text: str) -> int | None:
+    match = re.search(r"\((.*)\)", text)
+    if not match:
+        return None
+    params = match.group(1).strip()
+    if not params:
+        return 0
+    return params.count(",") + 1
+
+
+def extract_param_type_tokens(text: str) -> set[str]:
+    match = re.search(r"\((.*)\)", decode_doc_text(text))
+    if not match:
+        return set()
+    params = match.group(1).strip()
+    if not params:
+        return set()
+
+    normalized = re.sub(r"<[^>]+>", " ", params)
+    normalized = re.sub(r"\[[^\]]+\]\([^)]+\)", lambda m: m.group(0).split("](", 1)[0].lstrip("["), normalized)
+    tokens: set[str] = set()
+    for raw_param in normalized.split(","):
+        if ":" not in raw_param:
+            continue
+        _, type_part = raw_param.split(":", 1)
+        type_text = type_part.strip()
+        type_text = type_text.replace("?", " ")
+        type_text = re.sub(r"[^A-Za-z0-9_.$]+", " ", type_text)
+        for token in re.findall(r"\b[A-Za-z_][A-Za-z0-9_]*\b", type_text):
+            lowered = token.lower()
+            if lowered in {"promise", "callback", "array"}:
+                continue
+            if lowered in {"int", "long", "double", "float"}:
+                tokens.add("number")
+                continue
+            if lowered in {"uint8array", "int8array", "uint16array", "uint32array", "int16array", "int32array"}:
+                tokens.add(lowered)
+                continue
+            tokens.add(lowered)
+    return tokens
+
+
+def extract_return_kind(text: str) -> str:
+    match = re.search(r"\)\s*:\s*([^;]+)", text)
+    if not match:
+        return ""
+    return_type = match.group(1).strip().lower()
+    if "promise" in return_type:
+        return "promise"
+    if return_type == "void":
+        return "void"
+    if "callback" in return_type:
+        return "callback"
+    return return_type
+
+
+def find_parent_heading(sections: list[Section], target: Section) -> str:
+    try:
+        index = sections.index(target)
+    except ValueError:
+        return ""
+    for cursor in range(index - 1, -1, -1):
+        candidate = sections[cursor]
+        if candidate.level < target.level:
+            return candidate.heading
+    return ""
+
+
+def score_section_signature_match(symbol: Symbol, section: Section, all_sections: list[Section]) -> int:
+    if not symbol.declaration_text:
+        return 0
+    symbol_sig = symbol.declaration_text.rstrip(";")
+    section_sig = extract_section_signature_line(section)
+    if not section_sig:
+        return 0
+
+    score = 0
+    symbol_literals = flatten_signature_literals(symbol_sig)
+    section_literals = flatten_signature_literals(section_sig)
+    if symbol_literals and section_literals and symbol_literals == section_literals:
+        score += 5
+    elif symbol_literals and not set(symbol_literals).intersection(section_literals):
+        score -= 2
+
+    symbol_param_count = extract_param_count(symbol_sig)
+    section_param_count = extract_param_count(section_sig)
+    if symbol_param_count is not None and section_param_count is not None and symbol_param_count == section_param_count:
+        score += 3
+
+    symbol_param_types = extract_param_type_tokens(symbol_sig)
+    section_param_types = extract_param_type_tokens(section_sig)
+    if symbol_param_types and section_param_types:
+        if symbol_param_types == section_param_types:
+            score += 6
+        else:
+            overlap = symbol_param_types & section_param_types
+            if overlap:
+                score += len(overlap) * 2
+            else:
+                score -= 4
+
+    symbol_return_kind = extract_return_kind(symbol_sig)
+    section_return_kind = extract_return_kind(section_sig)
+    if symbol_return_kind and section_return_kind and symbol_return_kind == section_return_kind:
+        score += 2
+
+    symbol_has_callback = "callback" in symbol_sig.lower()
+    section_has_callback = "callback" in section_sig.lower()
+    if symbol_has_callback == section_has_callback:
+        score += 1
+
+    container_name = get_container_name(symbol)
+    parent_heading = find_parent_heading(all_sections, section)
+    if container_name and parent_heading and heading_matches(Section(parent_heading, 0, 0, ""), container_name):
+        score += 3
+
+    return score
+
+
+def find_candidate_sections_for_symbol(sections: list[Section], symbol: Symbol) -> list[Section]:
     matched = [section for section in sections if heading_matches(section, symbol.short_name)]
     if matched:
         return matched
     if symbol.kind in {"enum", "interface", "class", "type"}:
         return [section for section in sections if heading_matches(section, symbol.full_name.split(".")[-1])]
     return []
+
+
+def find_sections_for_symbol(sections: list[Section], symbol: Symbol) -> list[Section]:
+    matched = find_candidate_sections_for_symbol(sections, symbol)
+    if len(matched) <= 1:
+        return matched
+    scored = [(score_section_signature_match(symbol, section, sections), index, section) for index, section in enumerate(matched)]
+    max_score = max(score for score, _, _ in scored)
+    best = [item for item in scored if item[0] == max_score]
+    if max_score > 0:
+        if symbol.overload_index < len(best):
+            return [best[symbol.overload_index][2]]
+        return [best[-1][2]]
+    if symbol.overload_index < len(matched):
+        return [matched[symbol.overload_index]]
+    return [matched[-1]]
+
+
+def get_section_match_score(sections: list[Section], symbol: Symbol) -> int:
+    if len(sections) != 1:
+        return 0
+    candidates = find_candidate_sections_for_symbol(sections, symbol)
+    if not candidates:
+        return 0
+    return score_section_signature_match(symbol, sections[0], candidates)
 
 
 def section_text(sections: list[Section]) -> str:
@@ -434,23 +682,208 @@ def contains_any(text: str, needles: list[str]) -> bool:
     return any(needle.lower() in lowered for needle in needles)
 
 
+def build_replacement_needles(replacements: list[str]) -> list[str]:
+    normalized: list[str] = []
+    for item in replacements:
+        value = item.strip()
+        if not value:
+            continue
+        normalized.append(value)
+        if "#" in value:
+            normalized.append(value.split("#", 1)[1])
+        normalized.append(value.split(".")[-1])
+    return normalized
+
+
+def normalize_markdown_text(text: str) -> str:
+    normalized = text.replace("**", "").replace("__", "").strip()
+    normalized = re.sub(r"\s+", " ", normalized)
+    return normalized
+
+
+def extract_labeled_field_values(sections: list[Section], labels: list[str]) -> list[str]:
+    values: list[str] = []
+    if not sections:
+        return values
+    for section in sections:
+        for raw_line in section.body.splitlines():
+            line = raw_line.strip()
+            if not line:
+                continue
+            compact = normalize_markdown_text(line)
+            for label in labels:
+                for prefix in (f"{label}：", f"{label}:"):
+                    if compact.startswith(prefix):
+                        values.append(compact[len(prefix) :].strip())
+                        break
+    return values
+
+
+def normalize_permission_text(text: str) -> str:
+    normalized = normalize_markdown_text(text)
+    normalized = normalized.replace("（", "(").replace("）", ")")
+    normalized = re.sub(r"\s+", " ", normalized)
+    return normalized
+
+
+def normalize_model_constraint_literal(text: str) -> str:
+    normalized = normalize_markdown_text(text)
+    normalized = re.sub(r"^模型约束[:：]\s*", "", normalized)
+    return normalized
+
+
+def parse_permission_expression(text: str) -> tuple[set[str], str | None]:
+    normalized = normalize_permission_text(text)
+    normalized = re.sub(r"^\*+\s*需要权限[:：]\*+\s*", "", normalized)
+    normalized = re.sub(r"[，,。].*$", "", normalized)
+    tokens = set(re.findall(r"ohos\.permission\.[A-Z0-9_]+", normalized))
+    connector = None
+    lowered = normalized.lower()
+    if " or " in lowered or "或" in normalized:
+        connector = "or"
+    elif " and " in lowered or "和" in normalized:
+        connector = "and"
+    return tokens, connector
+
+
+def extract_required_permission_lines(sections: list[Section]) -> list[str]:
+    return [normalize_permission_text(line) for line in extract_labeled_field_values(sections, ["需要权限"])]
+
+
 def check_system_placement(
     symbol: Symbol,
     public_sections: list[Section],
     system_sections: list[Section],
-    overloaded_names: set[str],
+    overloaded_symbols: set[str],
 ) -> list[Finding]:
     findings: list[Finding] = []
-    if symbol.short_name in overloaded_names:
+    if symbol.full_name in overloaded_symbols:
         return findings
-    in_public = bool(find_sections_for_symbol(public_sections, symbol))
-    in_system = bool(find_sections_for_symbol(system_sections, symbol))
+    in_public = bool(find_candidate_sections_for_symbol(public_sections, symbol))
+    in_system = bool(find_candidate_sections_for_symbol(system_sections, symbol))
     is_system = "systemapi" in symbol.tags
 
     if is_system and in_public:
         findings.append(Finding("error", f"{symbol.full_name}:{symbol.line}", "System API appears in public API documentation."))
     if not is_system and in_system and not in_public:
         findings.append(Finding("error", f"{symbol.full_name}:{symbol.line}", "Public symbol appears only in system API documentation."))
+    return findings
+
+
+def check_system_field_rule(symbol: Symbol, sections: list[Section]) -> list[Finding]:
+    findings: list[Finding] = []
+    if not sections or symbol.kind not in {"function", "method", "type", "enum"}:
+        return findings
+    system_fields = extract_labeled_field_values(sections, ["系统接口"])
+    has_system_field = bool(system_fields)
+    if "systemapi" in symbol.tags and not has_system_field:
+        findings.append(Finding("error", f"{symbol.full_name}:{symbol.line}", "Missing `系统接口` field for a @systemapi symbol."))
+    if "systemapi" not in symbol.tags and has_system_field:
+        findings.append(Finding("warning", f"{symbol.full_name}:{symbol.line}", "Documentation section contains `系统接口` field, but the matched d.ts symbol is not marked with @systemapi."))
+    return findings
+
+
+def check_model_only_field_rule(symbol: Symbol, sections: list[Section], rules: Rules) -> list[Finding]:
+    findings: list[Finding] = []
+    if not sections or symbol.kind not in {"function", "method", "type"}:
+        return findings
+    model_fields = extract_labeled_field_values(sections, ["模型约束"])
+    combined_model_fields = "\n".join(model_fields)
+    fa_literals = [normalize_model_constraint_literal(item) for item in rules.model_text.get("famodelonly", [])]
+    stage_literals = [normalize_model_constraint_literal(item) for item in rules.model_text.get("stagemodelonly", [])]
+    expected_fa = contains_any(combined_model_fields, fa_literals)
+    expected_stage = contains_any(combined_model_fields, stage_literals)
+
+    if expected_fa and expected_stage:
+        findings.append(Finding("error", f"{symbol.full_name}:{symbol.line}", "Documentation section contains conflicting FA and Stage model constraint text."))
+
+    if "famodelonly" in symbol.tags and not expected_fa:
+        findings.append(Finding("error", f"{symbol.full_name}:{symbol.line}", "Missing FA model constraint field for a @famodelonly symbol."))
+    if "stagemodelonly" in symbol.tags and not expected_stage:
+        findings.append(Finding("error", f"{symbol.full_name}:{symbol.line}", "Missing Stage model constraint field for a @stagemodelonly symbol."))
+    if "famodelonly" not in symbol.tags and expected_fa:
+        findings.append(Finding("warning", f"{symbol.full_name}:{symbol.line}", "Documentation section contains FA model constraint text, but the matched d.ts symbol is not marked with @famodelonly."))
+    if "stagemodelonly" not in symbol.tags and expected_stage:
+        findings.append(Finding("warning", f"{symbol.full_name}:{symbol.line}", "Documentation section contains Stage model constraint text, but the matched d.ts symbol is not marked with @stagemodelonly."))
+    return findings
+
+
+def check_permission_field_rule(symbol: Symbol, sections: list[Section]) -> list[Finding]:
+    findings: list[Finding] = []
+    if not sections or symbol.kind not in {"function", "method"}:
+        return findings
+    declared_permissions = [normalize_permission_text(value) for value in symbol.tags.get("permission", []) if value.strip()]
+    doc_permission_lines = extract_required_permission_lines(sections)
+
+    if declared_permissions and not doc_permission_lines:
+        findings.append(Finding("error", f"{symbol.full_name}:{symbol.line}", "d.ts declares @permission, but the documentation section has no `需要权限` field."))
+        return findings
+    if not declared_permissions:
+        if doc_permission_lines:
+            findings.append(
+                Finding(
+                    "warning",
+                    f"{symbol.full_name}:{symbol.line}",
+                    "Documentation section contains a `需要权限` field, but the matched d.ts symbol does not declare @permission.",
+                )
+            )
+        return findings
+
+    expected_expressions = [(permission, *parse_permission_expression(permission)) for permission in declared_permissions]
+    actual_expressions: list[tuple[str, set[str], str | None]] = []
+    seen_actual_keys: set[tuple[tuple[str, ...], str | None]] = set()
+    for line in doc_permission_lines:
+        actual_tokens, actual_connector = parse_permission_expression(line)
+        key = (tuple(sorted(actual_tokens)), actual_connector)
+        if key in seen_actual_keys:
+            continue
+        seen_actual_keys.add(key)
+        actual_expressions.append((line, actual_tokens, actual_connector))
+    matched_actual_indexes: set[int] = set()
+
+    for permission, expected_tokens, expected_connector in expected_expressions:
+        matched = False
+        for index, (line, actual_tokens, actual_connector) in enumerate(actual_expressions):
+            if expected_tokens and (expected_tokens == actual_tokens or expected_tokens.issubset(actual_tokens)):
+                matched = True
+                matched_actual_indexes.add(index)
+                if expected_connector and actual_connector and expected_connector != actual_connector:
+                    findings.append(
+                        Finding(
+                            "warning",
+                            f"{symbol.full_name}:{symbol.line}",
+                            f"Permission connector mismatch: d.ts uses `{expected_connector}` but the documentation uses `{actual_connector}`.",
+                        )
+                    )
+                if expected_connector and not actual_connector and len(actual_tokens) > 1:
+                    findings.append(
+                        Finding(
+                            "warning",
+                            f"{symbol.full_name}:{symbol.line}",
+                            "Documentation `需要权限` field lists multiple permissions but does not express the expected connector relationship.",
+                        )
+                    )
+                break
+        if not matched:
+            findings.append(
+                Finding(
+                    "warning",
+                    f"{symbol.full_name}:{symbol.line}",
+                    f"Declared permission set `{sorted(expected_tokens)}` was not found in the documentation `需要权限` field.",
+                )
+            )
+
+    for index, (line, actual_tokens, _) in enumerate(actual_expressions):
+        if index in matched_actual_indexes:
+            continue
+        if actual_tokens:
+            findings.append(
+                Finding(
+                    "warning",
+                    f"{symbol.full_name}:{symbol.line}",
+                    f"Documentation `需要权限` field contains an extra permission set not declared in d.ts: `{sorted(actual_tokens)}`.",
+                )
+            )
     return findings
 
 
@@ -479,12 +912,7 @@ def check_section_fields(symbol: Symbol, sections: list[Section], rules: Rules) 
             findings.append(Finding("error", f"{symbol.full_name}:{symbol.line}", "Missing deprecated marker in documentation section."))
         if "useinstead" in symbol.tags:
             replacements = symbol.tags["useinstead"]
-            normalized = []
-            for item in replacements:
-                normalized.append(item)
-                if "#" in item:
-                    normalized.append(item.split("#", 1)[1])
-                normalized.append(item.split(".")[-1])
+            normalized = build_replacement_needles(replacements)
             if not contains_any(combined, normalized):
                 findings.append(Finding("error", f"{symbol.full_name}:{symbol.line}", "Missing replacement reference required by @useinstead."))
     return findings
@@ -503,6 +931,9 @@ def check_replacement_link_targets(
     public_anchors = build_anchor_index(public_doc)
     system_anchors = build_anchor_index(system_doc)
     available_anchors = public_anchors | system_anchors
+    replacement_needles = build_replacement_needles(symbol.tags["useinstead"])
+    combined = section_text(sections)
+    mentions_replacement = contains_any(combined, replacement_needles)
 
     found_any_link = False
     seen: set[str] = set()
@@ -524,9 +955,11 @@ def check_replacement_link_targets(
     if not found_any_link:
         findings.append(
             Finding(
-                "warning",
+                "warning" if mentions_replacement else "error",
                 f"{symbol.full_name}:{symbol.line}",
-                "Deprecated section includes no explicit replacement link target.",
+                "Deprecated section includes no explicit replacement link target."
+                if mentions_replacement
+                else "Deprecated section includes neither an explicit replacement link target nor a clear replacement method mention.",
             )
         )
     return findings
@@ -626,39 +1059,70 @@ def check_error_doc_structure(error_doc: Path | None, rules: Rules) -> list[Find
     return findings
 
 
-def check_since_rules(
-    symbol: Symbol,
-    sections: list[Section],
-    module_since: int | None,
-) -> list[Finding]:
-    findings: list[Finding] = []
+def should_check_symbol_since(symbol: Symbol, sections: list[Section]) -> bool:
     if not sections:
-        return findings
+        return False
     if symbol.kind not in {"function", "method", "enum"}:
-        return findings
+        return False
     if "atomicservice" in symbol.tags or "crossplatform" in symbol.tags:
-        return findings
+        return False
+    if "deprecated" in symbol.tags:
+        return False
+    combined = section_text(sections).lower()
+    headings = " ".join(section.heading.lower() for section in sections)
+    if "(deprecated)" in combined or "(deprecated)" in headings or "废弃" in combined or "废弃" in headings:
+        return False
+    if get_section_match_score(sections, symbol) < 5:
+        return False
+    return True
+
+
+def get_symbol_dynamic_since(symbol: Symbol) -> int | None:
     since_versions = parse_symbol_since_versions(symbol)
     if not since_versions:
-        return findings
+        return None
     if len(set(since_versions)) != 1:
-        return findings
+        return None
+    return min(since_versions)
 
-    min_since = min(since_versions)
-    combined = section_text(sections)
+
+def get_heading_sup_versions(sections: list[Section]) -> set[int]:
     heading_versions: set[int] = set()
     for section in sections:
         heading_versions |= extract_sup_versions(section.heading)
+    return heading_versions
 
-    if module_since is not None and min_since > module_since and min_since not in heading_versions:
+
+def check_module_since_rule(
+    symbol: Symbol,
+    symbol_since: int,
+    module_since: int | None,
+    heading_versions: set[int],
+) -> list[Finding]:
+    findings: list[Finding] = []
+    if module_since is None:
+        return findings
+    if symbol_since > module_since and symbol_since not in heading_versions:
         findings.append(
             Finding(
                 "warning",
                 f"{symbol.full_name}:{symbol.line}",
-                f"Symbol since version {min_since} is newer than module since {module_since}, but the matched heading is missing <sup>{min_since}+</sup>.",
+                f"Symbol since version {symbol_since} is newer than module since {module_since}, but the matched heading is missing <sup>{symbol_since}+</sup>.",
             )
         )
-    if module_since is not None and min_since == module_since and heading_versions:
+    return findings
+
+
+def check_heading_sup_rule(
+    symbol: Symbol,
+    symbol_since: int,
+    module_since: int | None,
+    heading_versions: set[int],
+) -> list[Finding]:
+    findings: list[Finding] = []
+    if module_since is None:
+        return findings
+    if symbol_since == module_since and heading_versions:
         findings.append(
             Finding(
                 "warning",
@@ -666,8 +1130,39 @@ def check_since_rules(
                 f"Symbol since version equals module since {module_since}, but the matched heading includes explicit version markers {sorted(heading_versions)}.",
             )
         )
-    if "deprecated" in symbol.tags and "(deprecated)" not in combined.lower():
+    return findings
+
+
+def check_deprecated_marker_rule(symbol: Symbol, combined_section_text: str) -> list[Finding]:
+    findings: list[Finding] = []
+    if "deprecated" in symbol.tags and "(deprecated)" not in combined_section_text.lower():
         findings.append(Finding("warning", f"{symbol.full_name}:{symbol.line}", "Deprecated symbol section is missing a deprecated marker."))
+    return findings
+
+
+def check_deprecation_rules(symbol: Symbol, sections: list[Section]) -> list[Finding]:
+    findings: list[Finding] = []
+    if not sections:
+        return findings
+    combined = section_text(sections)
+    findings.extend(check_deprecated_marker_rule(symbol, combined))
+    return findings
+
+
+def check_since_rules(
+    symbol: Symbol,
+    sections: list[Section],
+    module_since: int | None,
+) -> list[Finding]:
+    findings: list[Finding] = []
+    if not should_check_symbol_since(symbol, sections):
+        return findings
+    symbol_since = get_symbol_dynamic_since(symbol)
+    if symbol_since is None:
+        return findings
+    heading_versions = get_heading_sup_versions(sections)
+    findings.extend(check_module_since_rule(symbol, symbol_since, module_since, heading_versions))
+    findings.extend(check_heading_sup_rule(symbol, symbol_since, module_since, heading_versions))
     return findings
 
 
@@ -753,8 +1248,8 @@ def main() -> int:
     system_module_since = parse_module_since_from_doc(system_doc)
     name_counts: dict[str, int] = {}
     for symbol in symbols:
-        name_counts[symbol.short_name] = name_counts.get(symbol.short_name, 0) + 1
-    overloaded_names = {name for name, count in name_counts.items() if count > 1}
+        name_counts[symbol.full_name] = name_counts.get(symbol.full_name, 0) + 1
+    overloaded_symbols = {name for name, count in name_counts.items() if count > 1}
 
     findings: list[Finding] = []
     findings.extend(validate_rules_against_templates(rules, js_template, ts_template, error_template))
@@ -769,10 +1264,14 @@ def main() -> int:
         doc_sections = find_sections_for_symbol(public_sections, symbol) + find_sections_for_symbol(system_sections, symbol)
         if primary_namespace and "." not in symbol.full_name and not doc_sections:
             continue
-        findings.extend(check_system_placement(symbol, public_sections, system_sections, overloaded_names))
+        findings.extend(check_system_placement(symbol, public_sections, system_sections, overloaded_symbols))
         target_sections = system_sections if "systemapi" in symbol.tags else public_sections
         matched_sections = find_sections_for_symbol(target_sections, symbol)
         findings.extend(check_section_fields(symbol, matched_sections, rules))
+        findings.extend(check_system_field_rule(symbol, matched_sections))
+        findings.extend(check_model_only_field_rule(symbol, matched_sections, rules))
+        findings.extend(check_permission_field_rule(symbol, matched_sections))
+        findings.extend(check_deprecation_rules(symbol, matched_sections))
         findings.extend(check_replacement_link_targets(symbol, matched_sections, public_doc, system_doc))
         findings.extend(check_section_error_tables(symbol, matched_sections))
         findings.extend(check_section_style_rules(symbol, matched_sections, rules))
