@@ -1,9 +1,9 @@
 ---
-name: new-delete-checker
-description: Comprehensive new/delete memory management checking for ace_engine codebase. Covers 17 critical scenarios: basic pairing, smart pointers (RefPtr/WeakPtr), exception safety, ownership transfer, container pointers, singletons, callbacks, multi-threading, cross-layer interaction, third-party libraries, special patterns, common leaks, nullptr handling, Register/Unregister, lifecycle binding, assignment updates, and function returns. Use when checking memory leaks, verifying memory safety, or analyzing new/delete patterns in ace_engine.
+name: dynamic-memory-analyzer
+description: Comprehensive dynamic memory management analysis for ace_engine codebase. Covers 17 critical scenarios: basic pairing, smart pointers (RefPtr/WeakPtr), exception safety, ownership transfer, container pointers, singletons, callbacks, multi-threading, cross-layer interaction, third-party libraries, special patterns, common leaks, nullptr handling, Register/Unregister, lifecycle binding, assignment updates, and function returns. Use when checking memory leaks, verifying memory safety, or analyzing new/delete patterns in ace_engine.
 ---
 
-# new/delete Memory Management Checker
+# Dynamic Memory Analyzer
 
 Comprehensive memory management analysis for ace_engine codebase covering 17 critical scenarios.
 
