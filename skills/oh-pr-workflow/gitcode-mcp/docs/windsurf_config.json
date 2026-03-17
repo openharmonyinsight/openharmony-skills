@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "gitcode": {
+      "command": "gitcode-mcp",
+      "args": [],
+      "env": {
+        "GITCODE_TOKEN": "<您的GitCode访问令牌>",
+        "GITCODE_API_URL": "https://api.gitcode.com/api/v5"
+      }
+    }
+  }
+} 
