@@ -97,23 +97,6 @@ API 参考: ${OH_ROOT}/docs/zh-cn/application-dev/reference/apis-test-kit/UiTest
 辅助包文档: ${OH_ROOT}/test/xts/acts/testfwk/uitestScene/README.md
 ```
 
-**查找方式**：
-```bash
-# 方式1：从配置读取
-使用本配置文件中指定的参考资料路径
-
-# 方式2：在 docs 仓中查找
-grep -r "Driver" ${OH_ROOT}/docs/ | grep -i "test"
-grep -r "UiComponent" ${OH_ROOT}/docs/
-grep -r "UiDriver" ${OH_ROOT}/docs/
-grep -r "uitestScene" ${OH_ROOT}/test/ | grep -i "uitest"
-
-# 方式3：查找辅助包方法
-grep -r "stopApplication" ${OH_ROOT}/test/xts/acts/testfwk/ | grep -i "test"
-grep -r "startAbility" ${OH_ROOT}/test/xts/acts/testfwk/ | grep -i "test"
-grep -r "delegator.executeShellCommand" ${OH_ROOT}/test/xts/acts/testfwk/ | grep -i "test"
-```
-
 ## UiTest 错误码测试经验总结
 
 ### UiTest 模块特有错误码

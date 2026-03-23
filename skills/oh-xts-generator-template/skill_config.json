@@ -497,56 +497,6 @@
      "path": "scripts/",
      "tools": [
         {
-          "name": "read_excel",
-          "file": "scripts/read_excel.py",
-          "description": "Excel文件读取工具，支持读取覆盖率报告Excel文件",
-          "version": "1.0.0",
-          "features": [
-            "读取Excel文件所有行数据",
-            "转换为CSV格式输出",
-            "转换为JSON格式输出",
-            "命令行接口支持",
-            "支持输出到文件或控制台"
-          ],
-          "usage": {
-            "python_command": "python3 scripts/read_excel.py <file_path> [options]",
-            "options": {
-              "-f, --format": "输出格式 (table/csv/json, 默认: table)",
-              "-o, --output": "输出文件路径 (可选，默认输出到控制台)"
-            },
-            "examples": [
-              "python3 scripts/read_excel.py Book1.xlsx",
-              "python3 scripts/read_excel.py Book1.xlsx -f csv",
-              "python3 scripts/read_excel.py Book1.xlsx -f json -o output.json"
-            ]
-          },
-          "api": {
-            "read_excel_file": {
-              "description": "读取Excel文件的所有行数据",
-              "returns": "List[Tuple[Any, ...]] - 包含所有行数据的列表，每行是一个元组"
-            },
-            "read_excel_as_csv": {
-              "description": "读取Excel文件并转换为CSV格式字符串",
-              "returns": "str - CSV格式的字符串"
-            },
-            "read_excel_as_json": {
-              "description": "读取Excel文件并转换为JSON格式",
-              "returns": "List[dict] - 包含所有行数据的字典列表，第一行作为键"
-            },
-            "print_excel_content": {
-              "description": "打印Excel文件内容",
-              "parameters": {
-                "file_path": "Excel文件路径",
-                "format": "输出格式 (table/csv/json, 默认: table)"
-              }
-            }
-          },
-          "requirements": {
-            "python_version": ">= 3.6",
-            "dependencies": ["openpyxl"]
-          }
-        },
-        {
           "name": "cleanup_group",
           "file": "scripts/cleanup_group.sh",
           "description": "Group编译对象清理脚本，用于清理测试套的编译缓存",

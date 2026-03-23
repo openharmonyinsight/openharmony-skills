@@ -26,7 +26,7 @@ uitestScene/
 │   │   │   ├── ets/
 │   │   │   │   ├── entryability/   # 能力入口
 │   │   │   │   │   └── EntryAbility.ts
-│   │   │   │   └── pages/          # 页面文件
+│   │   │   │   └── pages/          # 页面文件 **重点**
 │   │   │   │       ├── Index.ets   # 主页面（主要测试界面）
 │   │   │   │       ├── second.ets  # 第二页面
 │   │   │   │       ├── third.ets   # 第三页面
@@ -37,13 +37,9 @@ uitestScene/
 │   │   │   │       ├── wearList.ets  # 穿戴设备列表页面
 │   │   │   │       └── five.ets    # 并行测试页面
 │   │   │   ├── resources/         # 资源文件
-│   │   │   │   └── base/
-│   │   │   │       ├── element/    # 字符串资源
-│   │   │   │       ├── media/      # 媒体资源
-│   │   │   │       └── profile/    # 配置文件
 │   │   │   └── module.json5       # 模块配置
 │   │   └── ohosTest/
-│   │       └── ets/test/         # 测试代码
+│   │       └── ets/test/         # 测试代码（无需修改）
 │   ├── hvigor/                   # 构建配置
 │   └── signature/                # 签名文件
 └── BUILD.gn                      # 构建脚本
