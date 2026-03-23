@@ -70,15 +70,6 @@ oh-xts-generator-template/
         │   ├── ability_base.md             # Ability Base 模块配置
         │   ├── uiextension_cross_component.md  # UIExtension 跨组件测试
         │   └── fa_serviceability_testing.md    # FA 模型 ServiceAbility 测试
-        ├── ArkUI/                          # ArkUI 子系统配置
-        │   ├── _common.md                  # ArkUI 子系统通用配置
-        │   ├── Component.md                # Component 模块配置
-        │   ├── Animator.md                 # Animator 模块配置
-        │   └── Router.md                   # Router 模块配置
-        ├── ArkWeb/                         # ArkWeb 子系统配置
-        │   ├── _common.md                  # ArkWeb 子系统通用配置
-        │   ├── Web.md                      # Web 模块配置
-        │   └── WebViewController.md        # WebViewController 模块配置
         ├── testfwk/                        # 测试框架子系统配置
         │   ├── _common.md                  # 测试框架通用配置
         │   ├── UiTest.md                   # UiTest 模块
@@ -169,7 +160,7 @@ oh-xts-generator-template/
 
 ### 3.2 优先级示例
 
-**场景**: 为 ArkUI 子系统生成测试用例
+**场景**: 为 testfwk 子系统生成测试用例
 
 **通用配置** (`_common.md`):
 - 测试用例编号格式: `SUB_[子系统]_[模块]_[API]_[类型]_[序号]`
@@ -191,10 +182,10 @@ oh-xts-generator-template/
 
 | 配置项 | 通用配置 | 子系统配置 | 用户配置 | 最终值 |
 |-------|---------|-----------|---------|--------|
-| 测试路径 | `test/xts/acts/` | `test/xts/acts/arkui/` | `test/xts/acts/arkui_custom/` | `test/xts/acts/arkui_custom/` |
-| Kit包名 | - | `@kit.ArkUI` | `@kit.ArkUI` | `@kit.ArkUI` |
+| 测试路径 | `test/xts/acts/` | `test/xts/acts/testfwk/` | `test/xts/acts/testfwk/` | `test/xts/acts/testfwk/` |
+| Kit包名 | - | `@kit.TestKit` | `@kit.TestKit` | `@kit.TestKit` |
 | 编号格式 | `SUB_...` | - | - | `SUB_...` |
-| 测试规则 | 基础规则 | ArkUI规则 | - | ArkUI规则（覆盖） |
+| 测试规则 | 基础规则 | testfwk规则 | - | testfwk规则（覆盖） |
 
 ---
 
@@ -225,38 +216,8 @@ oh-xts-generator-template/
 API: startAbility(), getWant()
 ```
 
-### 4.2 ArkUI 子系统
 
-**位置**: `references/subsystems/ArkUI/`
-
-**配置文件**:
-- `_common.md` - ArkUI 子系统通用配置
-- `Component.md` - Component 模块配置
-- `Animator.md` - Animator 模块配置
-- `Router.md` - Router 模块配置
-
-**使用方式**:
-```
-子系统: ArkUI
-API: Component.onClick()
-```
-
-### 4.3 ArkWeb 子系统
-
-**位置**: `references/subsystems/ArkWeb/`
-
-**配置文件**:
-- `_common.md` - ArkWeb 子系统通用配置
-- `Web.md` - Web 模块配置
-- `WebViewController.md` - WebViewController 模块配置
-
-**使用方式**:
-```
-子系统: ArkWeb
-API: Web.runJavaScript()
-```
-
-### 4.4 测试框架(testfwk)子系统
+### 4.2 测试框架(testfwk)子系统
 
 **位置**: `references/subsystems/testfwk/`
 
@@ -273,7 +234,7 @@ API: Web.runJavaScript()
 API: Driver.create()
 ```
 
-### 4.5 ArkTS 子系统
+### 4.3 ArkTS 子系统
 
 **位置**: `references/subsystems/ArkTS/`
 
@@ -460,7 +421,7 @@ echo "✅ $SUBSYSTEM 子系统配置创建完成"
 
 **示例**:
 ```markdown
-详见 `ArkUI/_common.md` 第 1.2 节
+详见 `Ability/_common.md` 第 1.2 节
 ```
 
 **配置继承说明**:

@@ -22,55 +22,6 @@
           "description": "所有子系统共享的通用配置"
         },
         {
-          "name": "ArkUI",
-          "path": "references/subsystems/ArkUI",
-          "description": "ArkUI 子系统配置",
-          "modules": [
-            {
-              "name": "通用配置",
-              "file": "_common.md",
-              "description": "ArkUI 子系统通用配置"
-            },
-            {
-              "name": "Component",
-              "file": "Component.md",
-              "description": "Component 模块配置"
-            },
-            {
-              "name": "Animator",
-              "file": "Animator.md",
-              "description": "Animator 模块配置"
-            },
-            {
-              "name": "Router",
-              "file": "Router.md",
-              "description": "Router 模块配置"
-            }
-          ]
-        },
-        {
-          "name": "ArkWeb",
-          "path": "references/subsystems/ArkWeb",
-          "description": "ArkWeb 子系统配置",
-          "modules": [
-            {
-              "name": "通用配置",
-              "file": "_common.md",
-              "description": "ArkWeb 子系统通用配置"
-            },
-            {
-              "name": "Web",
-              "file": "Web.md",
-              "description": "Web 模块配置"
-            },
-            {
-              "name": "WebViewController",
-              "file": "WebViewController.md",
-              "description": "WebViewController 模块配置"
-            }
-          ]
-        },
-        {
           "name": "Ability",
           "path": "references/subsystems/ability",
           "description": "Ability 子系统配置（能力框架）",
@@ -440,8 +391,6 @@
     "error_code_test": "modules/L3_Generation/test_generator.md",
     "return_value_test": "modules/L3_Generation/test_generator.md",
     "uitest_test": "modules/L3_Generation/templates.md",
-    "component_test": "references/subsystems/ArkUI/_common.md",
-    "web_test": "references/subsystems/ArkWeb/_common.md",
     "testfwk_test": "references/subsystems/testfwk/_common.md",
     "ability_test": "references/subsystems/ability/_common.md"
   },
@@ -467,18 +416,6 @@
         "api_reference": "https://gitcode.com/openharmony/docs/tree/master/zh-cn/application-dev/reference/apis-ability-kit",
         "guide": "https://gitcode.com/openharmony/docs/blob/master/zh-cn/application-dev/application-models/Readme-CN.md"
       }
-    },
-    "ArkUI": {
-      "kit": "@kit.ArkUI",
-      "test_path": "test/xts/acts/arkui/",
-      "config_path": "references/subsystems/ArkUI/",
-      "modules": ["Component", "Animator", "Router", "UIEngine", "Window", "Display"]
-    },
-    "ArkWeb": {
-      "kit": "@kit.ArkWeb",
-      "test_path": "test/xts/acts/arkweb/",
-      "config_path": "references/subsystems/ArkWeb/",
-      "modules": ["Web", "WebViewController", "WebResourceRequest", "WebResourceResponse"]
     },
     "testfwk": {
       "kit": "@kit.TestKit",

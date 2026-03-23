@@ -203,8 +203,8 @@
    ```
 
 4. **参考现有子系统配置示例**：
-   - ArkUI: `references/subsystems/ArkUI/_common.md`
-   - ArkWeb: `references/subsystems/ArkWeb/_common.md`
+   - Ability: `references/subsystems/ability/_common.md`
+   - testfwk: `references/subsystems/testfwk/_common.md`
 
 ---
 
