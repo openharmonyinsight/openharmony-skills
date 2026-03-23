@@ -339,12 +339,3 @@ it('testArkTSAsyncFeature001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL
 |---------|------|------|
 | ArkTS 语法规则 | `/mnt/data/c00810129/.claude/skills/ArkTS_Dyn_Syntax_Rules_Complete.md` | 完整的 ArkTS 语法规则 |
 | 通用配置 | `references/subsystems/_common.md` | 全局通用配置 |
-
-## 五、版本历史
-
-- **v1.0.0** (2025-02-02):
-  - 初始版本
-  - 定义 ArkTS 子系统通用配置
-  - 整理 ArkTS 编译错误级别规则（共 70+ 条规则）
-  - 明确无需生成测试用例的场景
-  - 提供 ArkTS 特有代码模板

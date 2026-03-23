@@ -14,22 +14,65 @@
 
 ---
 
-## 二、生成原则
+## 二、生成模式
 
-### 2.1 同步生成原则
+### 2.1 生成模式选择
+
+本生成器支持两种模式：
+
+| 模式 | 描述 | 适用场景 | 详细程度 |
+|------|------|----------|----------|
+| **完整模式** | 生成包含所有章节的完整测试设计文档 | 重要API、新功能开发 | 详细、全面 |
+| **简化模式** | 生成核心章节的简化测试设计文档 | 快速迭代、辅助功能 | 精简、高效 |
+
+### 2.2 模式切换
+
+```typescript
+// 使用完整模式（默认）
+generateDesignDoc(testCases, { mode: 'full' });
+
+// 使用简化模式
+generateDesignDoc(testCases, { mode: 'simplified' });
+```
+
+### 2.3 同步生成原则
 
 - **一一对应**：每个测试用例都有对应的测试设计文档场景
 - **内容一致**：设计文档内容必须与测试用例实现保持一致
 - **版本同步**：测试用例修改时，设计文档必须同步更新
 - **完整覆盖**：设计文档必须涵盖所有测试场景
 
-### 2.2 命名规范
+### 2.4 命名规范
 
 ```
 格式: {测试文件名}.design.md
 示例:
   - TreeSet.test.ets -> TreeSet.test.design.md
   - Component.onClick.test.ets -> Component.onClick.test.design.md
+```
+
+### 2.4 TypeScript 类型断言规范（重要！）
+
+> **重要**：生成测试用例时，**禁止使用** `as any` 类型断言。
+
+| 规则 | 说明 |
+|------|------|
+| **禁止 as any** | 不要使用 `as any` 绕过类型检查 |
+| **直接传入 null/undefined** | null 和 undefined 可以直接传入，不需要类型转换 |
+| **严格类型检查** | 遵循 TypeScript 严格类型检查 |
+
+**错误示例**：
+```typescript
+// ❌ 错误：使用 as any
+await driver.swipeBetween(startPoint, endPoint, null as any);
+await driver.dragBetween(startPoint, endPoint, 1000, undefined as any);
+```
+
+**正确示例**：
+```typescript
+// ✅ 正确：直接传入
+await driver.swipeBetween(startPoint, endPoint, null);
+await driver.dragBetween(startPoint, endPoint, 1000, undefined);
 ```
 
 ---
@@ -245,7 +288,7 @@ it('testAddStringNormal001', Level.LEVEL1, () => {
 | `assertEqual(value)` | 返回值等于 {value} | 返回值等于 true |
 | `assertLarger(0)` | 返回值大于 0 | 返回值大于 0 |
 | `assertLess(value)` | 返回值小于 {value} | 返回值小于 {value} |
-| `error.code` | 抛出 BusinessError 异常，错误码为 {code} | 抛出 BusinessError 异常，错误码为 401 |
+| `error.code` | 抛出 BusinessError 异常，错误码为 {code}（必须明确，不要使用"或"表达） | 抛出 BusinessError 异常，错误码为 401 |
 
 ---
 
@@ -269,9 +312,11 @@ it('testAddStringNormal001', Level.LEVEL1, () => {
 ### 6.2 覆盖说明生成规则
 
 - **参数测试**：列出测试的参数类型和具体场景
-- **错误码测试**：列出测试的错误码和触发条件
+- **错误码测试**：列出测试的错误码和触发条件，每个错误码必须明确声明
 - **返回值测试**：列出测试的返回值类型和场景
 - **边界值测试**：列出测试的边界值类型
+
+> **重要**：错误码测试说明中，必须明确每个测试用例抛出的特定错误码，不要使用"或"表达多个可能的错误码。
 
 ---
 
@@ -469,12 +514,96 @@ it('testAddStringNormal001', Level.LEVEL1, () => {
 
 ---
 
-## 十四、示例文档
+## 十四、简化模式模板
 
-### 14.1 完整示例
+### 14.1 简化模式模板结构
+
+```markdown
+# {API名称} 测试设计文档（简化模式）
+
+## 测试概述
+- **API**: {API路径}
+- **测试文件**: {测试文件路径}
+- **测试设计文档**: {设计文档路径}
+- **测试目标**: {测试目标说明}
+
+## 测试场景
+
+### 场景1: {场景名称}
+
+| 项目 | 内容 |
+|------|------|
+| **场景描述** | {场景详细描述} |
+| **测试用例编号** | SUB_{子系统}_{模块}_{API}_{类型}_{序号} |
+| **测试用例名称** | {testCaseName} |
+| **前置条件** | {前置条件说明} |
+| **测试步骤** | 1. 步骤1<br>2. 步骤2<br>3. 步骤3 |
+| **预期结果** | {预期结果说明} |
+| **测试类型** | {FUNCTION/PERFORMANCE/SECURITY/COMPATIBILITY} |
+| **测试级别** | {Level0/Level1/Level2/Level3/Level4} |
+| **测试数据** | {测试输入数据说明} |
+
+### 场景2: {场景名称}
+[重复上述格式]
+
+## 覆盖统计
+
+| 测试类型 | 测试用例数 | 覆盖说明 |
+|---------|-----------|---------|
+| 参数测试 | {数量} 个 | {说明} |
+| 错误码测试 | {数量} 个 | {说明} |
+| 返回值测试 | {数量} 个 | {说明} |
+| 边界值测试 | {数量} 个 | {说明} |
+
+## 版本历史
+
+| 版本 | 日期 | 变更内容 | 作者 |
+|------|------|---------|------|
+| 1.0 | {日期} | 初始版本 | {作者} |
+```
+
+### 14.2 简化模式使用场景
+
+**适用简化模式的场景**：
+- ✅ 快速生成测试设计文档
+- ✅ 测试场景相对简单
+- ✅ 不需要详细的依赖关系分析
+- ✅ 不需要详细的环境要求说明
+- ✅ 迭代开发和快速验证
+
+**适用完整模式的场景**：
+- ✅ 测试场景复杂
+- ✅ 需要详细的依赖关系分析
+- ✅ 需要详细的环境要求说明
+- ✅ 需要详细的注意事项和风险说明
+- ✅ 正式发布和版本管理
+
+### 14.3 模式切换示例
+
+```typescript
+// 简化模式生成
+const simplifiedDoc = generateDesignDoc(testCases, {
+  mode: 'simplified',
+  includeDependencies: false,
+  includeEnvironment: false,
+  includeNotes: false
+});
+
+// 完整模式生成（默认）
+const fullDoc = generateDesignDoc(testCases, {
+  mode: 'full',
+  includeDependencies: true,
+  includeEnvironment: true,
+  includeNotes: true
+});
+```
+
+## 十五、示例文档
+
+### 15.1 完整示例
 
 参见 `examples/TreeSet.test.design.md` 查看完整的测试设计文档示例。
 
-### 14.2 场景示例
+### 15.2 场景示例
 
 参见 `examples/scenarios/` 查看各种测试场景的设计文档示例。

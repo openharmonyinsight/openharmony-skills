@@ -470,7 +470,3 @@ nvm use --lts
 - [OpenHarmony 社区](https://www.openharmony.cn/)
 
 ---
-
-## 十一、版本历史
-
-- **v1.0.0** (2026-02-06): 从 `build_workflow_linux.md` 中抽取环境准备相关内容，创建独立模块

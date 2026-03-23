@@ -57,7 +57,7 @@
  * limitations under the License.
  */
 
-import {describe, it, expect, Level} from '@ohos/hypium';
+import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, TestType, Size, Level} from '@ohos/hypium';
 import {APIName} from '@kit.BaseKitName'; // 根据实际模块修改
 
 export default function APINameTest() {

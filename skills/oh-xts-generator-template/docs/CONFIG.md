@@ -75,9 +75,9 @@ oh-xts-generator-template/
         │   └── WebViewController.md        # WebViewController 模块配置
         ├── testfwk/                        # 测试框架子系统配置
         │   ├── _common.md                  # 测试框架通用配置
-        │   ├── uitest.md                   # UiTest 模块
+        │   ├── UiTest.md                   # UiTest 模块
         │   ├── JsUnit.md                   # JsUnit 模块
-        │   └── perftest.md                 # PerfTest 模块
+        │   └── PerfTest.md                 # PerfTest 模块
         └── {SubsystemName}/                # 其他子系统
             ├── _common.md                  # 子系统通用配置
             └── {ModuleName}.md             # 模块配置
@@ -153,7 +153,9 @@ oh-xts-generator-template/
 ```
 用户自定义配置（使用时指定）
     ↓ 优先级最高
-子系统配置 ({Subsystem}/_common.md, {Subsystem}/{Module}.md)
+子系统配置 ({Subsystem}/_common.md)
+    ↓ 优先级中等
+模块配置（{Subsystem}/{Module}.md）
     ↓ 优先级中等
 通用配置 (_common.md)
     ↓ 优先级最低（默认值）
@@ -166,8 +168,11 @@ oh-xts-generator-template/
 **通用配置** (`_common.md`):
 - 测试用例编号格式: `SUB_[子系统]_[模块]_[API]_[类型]_[序号]`
 
-**子系统配置** (`ArkUI/_common.md`):
-- 测试路径: `test/xts/acts/arkui/test/`
+**子系统配置** (`testfwk/_common.md`):
+- 测试路径: `test/xts/acts/testfwk/`
+
+**模块配置** (`testfwk/{Module}.md`):
+- 测试路径: `test/xts/acts/testfwk/{Module}`
 
 **用户配置** (使用时指定):
 - 测试路径: `test/xts/acts/arkui_custom/`
@@ -226,9 +231,9 @@ API: Web.runJavaScript()
 
 **配置文件**:
 - `_common.md` - 测试框架(testfwk)通用配置
-- `uitest.md` - UiTest 模块
+- `UiTest.md` - UiTest 模块
 - `JsUnit.md` - JsUnit 模块
-- `perftest.md` - PerfTest 模块
+- `PerfTest.md` - PerfTest 模块
 
 **使用方式**:
 ```

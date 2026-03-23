@@ -1,38 +1,15 @@
 {
   "skill_name": "oh-xts-generator-template",
   "version": "3.0.0",
-  "description": "OpenHarmony XTS 测试用例生成模板，支持API解析、测试生成、设计文档生成、覆盖率分析、ArkTS 静态语言语法规范校验（规范文档路径：references/arkts-static-spec/），编译工作流重构为动态静态拆分",
+  "description": "OpenHarmony XTS 测试用例生成模板，支持API解析、测试生成、设计文档生成、覆盖率分析、ArkTS 静态语言语法规范校验（通过调用专门的 arkts-static-spec 技能），编译工作流重构为动态静态拆分",
   "keywords": ["XTS", "测试生成", "用例生成", "测试用例", "测试设计", "arkts-static", "arkts静态", "静态语法检查", "静态语法校验", "arkts-sta", "静态xts", "静态编译", "Windows静态", "静态ArkTS", "arkts static"],
   "detailed_description": "详见 README.md",
   "references": [
     {
       "name": "ArkTS 静态语言语法规范文档",
-      "path": "references/arkts-static-spec",
-      "description": "ArkTS 静态语言规范参考，包含 16 个 ArkTS 语言规范文件（spec/ 目录）和 3 个 TypeScript 迁移指南文件（cookbook/ 目录）。在进行 ArkTS 静态语言语法规范校验时，必须严格参考该目录下的规范文档",
-      "spec_files": [
-        "spec/types.md",
-        "spec/classes.md",
-        "spec/expressions.md",
-        "spec/statements.md",
-        "spec/generics.md",
-        "spec/annotations.md",
-        "spec/modules.md",
-        "spec/lexical.md",
-        "spec/names.md",
-        "spec/conversions.md",
-        "spec/interfaces.md",
-        "spec/enums.md",
-        "spec/errors.md",
-        "spec/concurrency.md",
-        "spec/stdlib.md",
-        "spec/experimental.md"
-      ],
-      "cookbook_files": [
-        "cookbook/index.md",
-        "cookbook/recipes.md",
-        "cookbook/compatibility.md"
-      ],
-      "important_note": "在使用 oh-xts-generator-template skill 生成 ArkTS 静态 XTS 用例并参考 arkts-static-spec 时，必须严格遵守以下原则：1. 所有回答必须基于 spec/ 和 cookbook/ 目录下的文档内容；2. 不添加文档之外的假设或推断；3. 将 ArkTS 视为独立的静态语言，不是 TypeScript 的超集；4. ArkTS 官方规范文档（spec/ 目录）为最高优先级"
+      "path": "skills/arkts-static-spec",
+      "description": "调用专门的 arkts-static-spec 技能进行 ArkTS 静态语言规范校验",
+      "important_note": "在进行 ArkTS 静态语言语法规范校验时，必须调用专门的 arkts-static-spec 技能，严格遵守该技能的使用原则：1. 所有回答必须基于该技能的 spec/ 和 cookbook/ 目录下的文档内容；2. 不添加文档之外的假设或推断；3. 将 ArkTS 视为独立的静态语言，不是 TypeScript 的超集；4. 以 ArkTS 官方规范文档为准"
     },
     {
       "name": "子系统配置",
@@ -115,13 +92,13 @@
               "name": "UiTest",
               "description": "UI 测试框架",
               "api_file": "@ohos.UiTest.d.ts",
-              "reference": "docs/zh-cn/application-dev/reference/apis-test-kit/uitest.md"
+              "reference": "docs/zh-cn/application-dev/reference/apis-test-kit/UiTest.md"
             },
             {
               "name": "PerfTest",
               "description": "性能测试框架",
               "api_file": "@ohos.test.PerfTest.d.ts",
-              "reference": "docs/zh-cn/application-dev/reference/apis-test-kit/perftest.md"
+              "reference": "docs/zh-cn/application-dev/reference/apis-test-kit/PerfTest.md"
             },
             {
               "name": "JsUnit",
@@ -197,7 +174,7 @@
       "path": "modules/L3_Generation/"
     },
     "L4_Build": {
-      "description": "构建层 - 编译工作流、BUILD.gn配置、编译环境准备、问题排查",
+      "description": "构建层 - 编译工作流、编译环境准备、问题排查",
       "build_workflow_linux": {
         "description": "Linux 编译工作流 v2.0.0（模块化架构）。主工作流文件（365行），包含完整编译流程指导、编译命令说明、编译输出管理。采用模块化设计，支持按需加载功能模块。重要：Linux环境下必须使用build.sh脚本进行编译，不要使用hvigorw命令",
         "file": "modules/L4_Build/build_workflow_linux.md",
@@ -259,14 +236,7 @@
             "required": "每次编译前",
             "load_trigger": "编译前必须执行"
           },
-          {
-            "name": "BUILD.gn 配置",
-            "file": "modules/L4_Build/build_gn_config.md",
-            "lines": 521,
-            "description": "BUILD.gn 配置指南（基本结构、关键配置字段、Stage/FA模型配置、辅助工程配置）",
-            "required": "配置 BUILD.gn 时",
-            "load_trigger": "用户要求配置 BUILD.gn 时"
-          },
+
           {
             "name": "问题排查",
             "file": "modules/L4_Build/linux_compile_troubleshooting.md",
@@ -294,10 +264,7 @@
           "故障排除和最佳实践指南"
         ]
       },
-      "build_gn_config": {
-        "description": "BUILD.gn 配置指南",
-        "file": "modules/L4_Build/build_gn_config.md"
-      },
+
       "linux_compile_env_setup": {
         "description": "Linux 编译环境准备",
         "file": "modules/L4_Build/linux_compile_env_setup.md"
@@ -321,6 +288,7 @@
     "config_priority": ["module", "subsystem", "global"]
   },
   "usage_patterns": {
+
     "subsystem_test_generation": {
       "trigger_keywords": ["XTS_TEMPLATE", "子系统测试", "API测试模板", "测试生成", "OpenHarmony测试", "测试设计文档"],
       "description": "为指定子系统生成测试用例和测试设计文档，使用子系统特有配置",
@@ -399,8 +367,8 @@
       ]
     },
     "build_and_compile": {
-      "trigger_keywords": ["编译", "BUILD.gn", "build.sh", "build_hap.ps1", "编译测试套", "多目标编译", "辅助工程", "编译错误"],
-      "description": "XTS 测试工程编译指导，包含 BUILD.gn 配置、编译命令、多目标编译策略、辅助工程配置",
+      "trigger_keywords": ["编译", "build.sh", "build_hap.ps1", "编译测试套", "多目标编译", "辅助工程", "编译错误"],
+      "description": "XTS 测试工程编译指导，包含 BUILD.gn 编译目标确认、编译命令、多目标编译策略、辅助工程配置",
       "load_layers": ["L4_Build"],
       "platform_specific": {
         "linux": {
@@ -517,11 +485,98 @@
       }
     }
   },
-  "conventions": {
-    "test_case_number_format": "SUB_[子系统]_[模块]_[API]_[类型]_[序号]",
-    "test_types": ["PARAM", "ERROR", "RETURN", "BOUNDARY"],
-    "test_levels": ["LEVEL0", "LEVEL1", "LEVEL2", "LEVEL3", "LEVEL4"],
-    "test_sizes": ["SMALLTEST", "MEDIUMTEST", "LARGETEST"],
-    "test_categories": ["Level0", "Level1", "Level2", "Level3", "Level4"]
-  }
+   "conventions": {
+     "test_case_number_format": "SUB_[子系统]_[模块]_[API]_[类型]_[序号]",
+     "test_types": ["PARAM", "ERROR", "RETURN", "BOUNDARY"],
+     "test_levels": ["LEVEL0", "LEVEL1", "LEVEL2", "LEVEL3", "LEVEL4"],
+     "test_sizes": ["SMALLTEST", "MEDIUMTEST", "LARGETEST"],
+     "test_categories": ["Level0", "Level1", "Level2", "Level3", "Level4"]
+   },
+   "tools": {
+     "description": "辅助工具集，提供数据处理和文件读取功能",
+     "path": "scripts/",
+     "tools": [
+        {
+          "name": "read_excel",
+          "file": "scripts/read_excel.py",
+          "description": "Excel文件读取工具，支持读取覆盖率报告Excel文件",
+          "version": "1.0.0",
+          "features": [
+            "读取Excel文件所有行数据",
+            "转换为CSV格式输出",
+            "转换为JSON格式输出",
+            "命令行接口支持",
+            "支持输出到文件或控制台"
+          ],
+          "usage": {
+            "python_command": "python3 scripts/read_excel.py <file_path> [options]",
+            "options": {
+              "-f, --format": "输出格式 (table/csv/json, 默认: table)",
+              "-o, --output": "输出文件路径 (可选，默认输出到控制台)"
+            },
+            "examples": [
+              "python3 scripts/read_excel.py Book1.xlsx",
+              "python3 scripts/read_excel.py Book1.xlsx -f csv",
+              "python3 scripts/read_excel.py Book1.xlsx -f json -o output.json"
+            ]
+          },
+          "api": {
+            "read_excel_file": {
+              "description": "读取Excel文件的所有行数据",
+              "returns": "List[Tuple[Any, ...]] - 包含所有行数据的列表，每行是一个元组"
+            },
+            "read_excel_as_csv": {
+              "description": "读取Excel文件并转换为CSV格式字符串",
+              "returns": "str - CSV格式的字符串"
+            },
+            "read_excel_as_json": {
+              "description": "读取Excel文件并转换为JSON格式",
+              "returns": "List[dict] - 包含所有行数据的字典列表，第一行作为键"
+            },
+            "print_excel_content": {
+              "description": "打印Excel文件内容",
+              "parameters": {
+                "file_path": "Excel文件路径",
+                "format": "输出格式 (table/csv/json, 默认: table)"
+              }
+            }
+          },
+          "requirements": {
+            "python_version": ">= 3.6",
+            "dependencies": ["openpyxl"]
+          }
+        },
+        {
+          "name": "cleanup_group",
+          "file": "scripts/cleanup_group.sh",
+          "description": "Group编译对象清理脚本，用于清理测试套的编译缓存",
+          "version": "1.0.0",
+          "features": [
+            "解析BUILD.gn获取测试套列表",
+            "逐个清理测试套缓存",
+            "清理.hvigor, build, entry/build, oh_modules",
+            "清理oh-package-lock.json5, local.properties",
+            "清理OH_ROOT/out目录",
+            "提供清理统计信息",
+            "支持Group和单个测试套清理"
+          ],
+          "usage": {
+            "bash_command": "~/.opencode/skills/oh-xts-generator-template/scripts/cleanup_group.sh <OH_ROOT> <subsystem>",
+            "parameters": {
+              "OH_ROOT": "OpenHarmony工程根目录路径（默认: /mnt/data/c00810129/oh_0130）",
+              "subsystem": "子系统名称（默认: testfwk），可选值: testfwk, arkui等"
+            },
+            "examples": [
+              "~/.opencode/skills/oh-xts-generator-template/scripts/cleanup_group.sh /mnt/data/c00810129/oh_0130 testfwk",
+              "~/.opencode/skills/oh-xts-generator-template/scripts/cleanup_group.sh /mnt/data/c00810129/oh_0130 arkui",
+              "~/.opencode/skills/oh-xts-generator-template/scripts/cleanup_group.sh"
+            ]
+          },
+          "requirements": {
+            "bash": "bash",
+            "dependencies": ["grep", "sed", "cut", "sort", "uniq"]
+          }
+        }
+     ]
+   }
 }

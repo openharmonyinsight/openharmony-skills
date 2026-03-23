@@ -109,4 +109,3 @@ API: myAPI.method()
 
 - **通用配置**: [references/subsystems/_common.md](../references/subsystems/_common.md)
 - **主技能文件**: [../SKILL.md](../SKILL.md)
-- **架构文档**: [../docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md)

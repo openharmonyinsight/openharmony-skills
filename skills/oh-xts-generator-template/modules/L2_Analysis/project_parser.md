@@ -5,7 +5,7 @@
 > - 优先级：按需加载
 > - 适用范围：工程配置解析和识别
 > - 依赖：L1_Framework
-> - 相关模块：build_workflow.md（BUILD.gn 配置和编译流程）
+> - 相关模块：build_workflow.md（BUILD.gn 编译目标确认和编译流程）
 
 ---
 
@@ -29,7 +29,7 @@
 
 ### 1.3 与其他模块的关系
 
-- **build_workflow.md**：BUILD.gn 配置和编译流程的详细指导
+- **build_workflow.md**：BUILD.gn 编译目标确认和编译流程的详细指导
 - **api_parser.md**：API 类型判断与工程类型匹配
 
 ---
@@ -315,7 +315,7 @@ function checkCompatibility(apiType, projectType) {
 │   │       │   └── ...
 │   │       └── resources/
 │   ├── build-profile.json5   # 工程配置
-│   └── BUILD.gn              # 编译配置
+│   └── BUILD.gn              # 编译目标配置
 └── {测试套名}Scene/          # 辅助工程（可选）
     └── ...
 ```
@@ -325,7 +325,7 @@ function checkCompatibility(apiType, projectType) {
 | 文件 | 作用 | 提取信息 |
 |------|------|---------|
 | `build-profile.json5` | 工程配置 | 语法类型、SDK 版本 |
-| `BUILD.gn` | 编译配置 | 测试套名、依赖关系 |
+| `BUILD.gn` | 编译目标配置 | 测试套名、依赖关系 |
 | `module.json5` 或 `config.json` | 模块配置 | Bundle 名称、权限 |
 | `List.test.ets` | 测试列表 | 已注册的测试文件 |
 
@@ -513,13 +513,3 @@ if (projectInfo.type === 'UNKNOWN') {
 
 - **BUILD.gN 配置和编译流程**：`modules/L2_Analysis/build_workflow.md`
 - **通用配置**：`references/subsystems/_common.md`
-
----
-
-## 九、版本历史
-
-- **v1.1.0** (2025-01-31):
-  - **重构**：将 BUILD.gn 配置解析、辅助工程识别、编译命令等内容移至 build_workflow.md
-  - **优化**：专注于工程配置解析，包括语法类型识别、工程结构识别、配置信息提取
-  - **改进**：明确与 build_workflow.md 的职责划分
-- **v1.0.0** (2025-01-31): 初始版本，定义工程配置解析器的完整功能

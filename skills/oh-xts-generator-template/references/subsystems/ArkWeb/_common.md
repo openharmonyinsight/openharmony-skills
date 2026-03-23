@@ -181,7 +181,3 @@ ${OH_ROOT}/test/xts/acts/arkweb/test/
 </body>
 </html>
 ```
-
-## 五、版本历史
-
-- **v1.0.0** (2025-01-31): 初始版本，定义 ArkWeb 子系统通用配置

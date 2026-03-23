@@ -413,7 +413,7 @@ it('testTextInput001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async
 
 ```
 docs/zh-cn/application-dev/application-test/uitest-guidelines.md
-docs/zh-cn/application-dev/reference/apis-test-kit/js-apis-uitest.md
+docs/zh-cn/application-dev/reference/apis-test-kit/js-apis-UiTest.md
 ```
 
 ### 11.2 文档阅读建议
@@ -423,7 +423,7 @@ docs/zh-cn/application-dev/reference/apis-test-kit/js-apis-uitest.md
    - 测试用例编写规范
    - 测试最佳实践
 
-2. **js-apis-uitest.md** - UiTest API 参考
+2. **js-apis-UiTest.md** - UiTest API 参考
    - Driver API 详细说明
    - ON 定位器完整列表
    - Component 操作方法参考

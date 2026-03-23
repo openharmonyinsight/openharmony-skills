@@ -6,8 +6,8 @@
  * 测试环境: OpenHarmony API 10+
  */
 
-import { describe, it, expect } from '@ohos/hypium';
-import { TestType, Level, Size } from '@ohos/hypium';
+import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, TestType, Size, Level} from '@ohos/hypium';
+
 import { Component } from '@kit.ArkUI';
 
 export default function testSuite() {

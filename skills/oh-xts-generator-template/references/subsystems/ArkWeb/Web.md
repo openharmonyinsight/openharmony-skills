@@ -183,7 +183,3 @@ it('testWebJsAccess001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () 
    - 远程 URL 测试需要网络
    - 需要处理网络异常
    - 考虑离线测试场景
-
-## 六、版本历史
-
-- **v1.0.0** (2025-01-31): 初始版本，定义 Web 模块配置

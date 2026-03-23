@@ -279,7 +279,3 @@ it('testNavigation001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () =
    - 测试前准备页面栈
    - 测试后清理页面栈
    - 注意边界条件（栈底、栈顶）
-
-## 六、版本历史
-
-- **v1.0.0** (2025-01-31): 初始版本，定义 WebViewController 模块配置
