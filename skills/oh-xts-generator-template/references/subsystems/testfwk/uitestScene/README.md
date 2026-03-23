@@ -8,10 +8,12 @@ UiTestScene 是专为 OpenHarmony UiTest 接口功能验证设计的辅助包，
 
 ## 基本信息
 
-- **包名**: `com.uitestScene.acts`
-- **启动能力**: `com.uitestScene.acts.MainAbility`
-- **版本**: 1.0.0
-- **用途**: 为 uitest 接口提供标准化的 UI 界面进行功能验证
+| 属性 | 值 |
+|------|-----|
+| 包名 | `com.uitestScene.acts` |
+| 启动能力 | `com.uitestScene.acts.MainAbility` |
+| 版本 | 1.0.0 |
+| 用途 | 为 uitest 接口提供标准化的 UI 界面进行功能验证 |
 
 ## 目录结构
 
@@ -31,10 +33,10 @@ uitestScene/
 │   │   │   │       ├── second.ets  # 第二页面
 │   │   │   │       ├── third.ets   # 第三页面
 │   │   │   │       ├── fourth.ets  # 第四页面
-│   │   │   │       ├── scroll.ets   # 滚动测试页面
-│   │   │   │       ├── drag.ets     # 拖拽测试页面
-│   │   │   │       ├── pinch.ets    # 捏合测试页面
-│   │   │   │       ├── wearList.ets  # 穿戴设备列表页面
+│   │   │   │       ├── scroll.ets  # 滚动测试页面
+│   │   │   │       ├── drag.ets    # 拖拽测试页面
+│   │   │   │       ├── pinch.ets   # 捏合测试页面
+│   │   │   │       ├── wearList.ets # 穿戴设备列表页面
 │   │   │   │       └── five.ets    # 并行测试页面
 │   │   │   ├── resources/         # 资源文件
 │   │   │   └── module.json5       # 模块配置
@@ -45,76 +47,134 @@ uitestScene/
 └── BUILD.gn                      # 构建脚本
 ```
 
-## 当前界面内容
+## 界面内容详情
 
-### 1. 主页面 (Index.ets)
+### 主页面 (Index.ets)
 
-**主要测试元素：**
-- **Toast 测试按钮**: `id='toastBtn'` - 测试 toast 显示功能
-- **Dialog 测试按钮**: `id='dialogBtn'` - 测试 dialog 弹窗功能
-- **下一页按钮**: `key='my-key'` - 跳转到第二页面
-- **双击测试按钮**: `id='twiceBtn'` - 双击跳转测试
-- **悬停测试按钮**: `key='jump'` - 悬停状态变化测试
-- **滚动测试按钮**: `id='scrollBtn'` - 跳转到滚动测试页面
-- **并行测试按钮**: `id='to5'` - 跳转到并行测试页面
+#### 主要测试元素
 
-**输入框测试：**
-- **文本输入框**: `id='changTest'` - 可编辑的文本输入框
-- **上下文输入框**: `id='changContext'` - 另一个文本输入框
+| 元素类型 | ID/Key | 用途 |
+|---------|--------|------|
+| Toast 测试按钮 | `id='toastBtn'` | 测试 toast 显示功能 |
+| Dialog 测试按钮 | `id='dialogBtn'` | 测试 dialog 弹窗功能 |
+| 下一页按钮 | `key='my-key'` | 跳转到第二页面 |
+| 双击测试按钮 | `id='twiceBtn'` | 双击跳转测试 |
+| 悬停测试按钮 | `key='jump'` | 悬停状态变化测试 |
+| 滚动测试按钮 | `id='scrollBtn'` | 跳转到滚动测试页面 |
+| 并行测试按钮 | `id='to5'` | 跳转到并行测试页面 |
 
-**复选框测试：**
-- **复选框1**: `id='hi'` - 未选中的复选框
-- **复选框2**: `id='go'` - 已选中的复选框
+#### 输入框测试
 
-**禁用元素测试：**
-- **禁用按钮**: `id='enableFalse'` - 禁用状态的按钮
+| 元素类型 | ID | 用途 |
+|---------|-----|------|
+| 文本输入框 | `id='changTest'` | 可编辑的文本输入框 |
+| 上下文输入框 | `id='changContext'` | 另一个文本输入框 |
 
-**滚动容器：**
-- **滚动区域**: `id='parentScroll'` - 垂直滚动容器
+#### 复选框测试
 
-### 2. 第二页面 (second.ets)
+| 元素类型 | ID | 状态 |
+|---------|-----|------|
+| 复选框1 | `id='hi'` | 未选中 |
+| 复选框2 | `id='go'` | 已选中 |
 
-**主要测试元素：**
-- **返回按钮**: 返回主页面
-- **文本输入框**: `id='changTest'` - 可编辑文本框
-- **上下文输入框**: `id='changContext'` - 另一个文本输入框
+#### 禁用元素测试
 
-### 3. 其他功能页面
+| 元素类型 | ID | 状态 |
+|---------|-----|------|
+| 禁用按钮 | `id='enableFalse'` | 禁用状态 |
 
-- **第三页面**: 长按双击跳转测试
-- **第四页面**: 长按跳转测试
-- **滚动页面**: 滚动功能测试
-- **拖拽页面**: 拖拽操作测试
-- **捏合页面**: 捏合手势测试
-- **穿戴列表页面**: 穿戴设备界面测试
-- **并行测试页面**: 并行测试场景
+#### 滚动容器
+
+| 元素类型 | ID | 用途 |
+|---------|-----|------|
+| 滚动区域 | `id='parentScroll'` | 垂直滚动容器 |
+
+### 第二页面 (second.ets)
+
+| 元素类型 | ID | 用途 |
+|---------|-----|------|
+| 返回按钮 | - | 返回主页面 |
+| 文本输入框 | `id='changTest'` | 可编辑文本框 |
+| 上下文输入框 | `id='changContext'` | 另一个文本输入框 |
+
+### 其他功能页面
+
+| 页面文件 | 功能描述 |
+|---------|---------|
+| third.ets | 长按双击跳转测试 |
+| fourth.ets | 长按跳转测试 |
+| scroll.ets | 滚动功能测试 |
+| drag.ets | 拖拽操作测试 |
+| pinch.ets | 捏合手势测试 |
+| wearList.ets | 穿戴设备界面测试 |
+| five.ets | 并行测试场景 |
+
+## 辅助包使用方法
+
+### 启动辅助包
+
+```typescript
+await startAbility('com.uitestScene.acts', 'com.uitestScene.acts.MainAbility')
+```
+
+### 关闭辅助包
+
+```typescript
+await stopApplication('com.uitestScene.acts')
+```
+
+### 完整使用示例
+
+```typescript
+/**
+ * @tc.name testUiTestHelperExample
+ * @tc.number SUB_TESTFWK_UITEST_HELPER_001
+ * @tc.desc 辅助包使用示例
+ * @tc.type FUNCTION
+ * @tc.size MEDIUMTEST
+ * @tc.level LEVEL1
+ */
+it('testUiTestHelperExample', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async () => {
+  console.log(`${TestTag}, test start`);
+  try {
+    // 1. 创建 Driver 实例
+    let driver = Driver.create();
+    
+    // 2. 启动辅助包
+    await startAbility('com.uitestScene.acts', 'com.uitestScene.acts.MainAbility');
+    
+    // 3. 等待界面加载
+    await driver.delayMs(2000);
+    
+    // 4. 查找控件
+    let toastBtn = await driver.findComponent(ON.id('toastBtn'));
+    expect(toastBtn).assertNotNull();
+    
+    // 5. 执行操作
+    await toastBtn.click();
+    
+    // 6. 验证结果
+    let enabled = await toastBtn.isEnabled();
+    expect(enabled).assertTrue();
+    
+  } catch (error) {
+    console.log(`${TestTag}, error: ${JSON.stringify(error)}`);
+    expect().assertFail();
+  } finally {
+    // 7. 关闭辅助包
+    await stopApplication('com.uitestScene.acts');
+  }
+  console.log(`${TestTag}, test end`);
+});
+```
 
 ## 辅助包扩展指南
 
-### 添加新页面的方式和思路
+### 添加新页面
 
-#### 1. 确定测试需求
-
-在添加新页面之前，需要明确：
-- 需要测试的 uitest 接口功能
-- 需要验证的 UI 组件类型
-- 需要测试的交互场景
-- 特定设备的适配需求
-
-#### 2. 创建新页面文件
+#### 1. 创建页面文件
 
 在 `entry/src/main/ets/pages/` 目录下创建新的页面文件：
-
-```
-entry/src/main/ets/pages/
-├── Index.ets          # 主页面
-├── second.ets         # 第二页面
-├── NewFeaturePage.ets  # 新功能页面（示例）
-```
-
-#### 3. 页面文件结构
-
-新页面文件应遵循以下结构：
 
 ```typescript
 /**
@@ -136,31 +196,27 @@ import router from '@system.router';
 @Entry
 @Component
 struct NewFeaturePage {
-  // 状态变量
   @State featureText: string = '初始文本'
 
   build() {
-    // 页面布局
     Flex({ direction: FlexDirection.Column, alignItems: ItemAlign.Center }) {
       Text('新功能测试页面')
         .fontWeight(FontWeight.Bold)
         .margin({ top: 20 })
 
-      // 测试组件
       Button('测试按钮')
-        .id('testButton')  // 重要：为测试添加唯一的ID
+        .id('testButton')
         .margin({ top: 10 })
         .onClick(() => {
           // 按钮点击处理
         })
 
       TextInput({ placeholder: '请输入', text: '' })
-        .id('testInput')   // 重要：为测试添加唯一的ID
+        .id('testInput')
         .width(200)
         .height(50)
         .margin({ top: 10 })
 
-      // 返回按钮
       Button('返回')
         .margin({ top: 20 })
         .onClick(() => {
@@ -173,9 +229,9 @@ struct NewFeaturePage {
 }
 ```
 
-#### 4. 注册新页面
+#### 2. 注册新页面
 
-在 `entry/src/main/resources/base/profile/main_pages.json` 中注册新页面：
+在 `entry/src/main/resources/base/profile/main_pages.json` 中注册：
 
 ```json
 {
@@ -183,14 +239,14 @@ struct NewFeaturePage {
     "pages/Index",
     "pages/second",
     "pages/third",
-    "pages/NewFeaturePage"  // 添加新页面
+    "pages/NewFeaturePage"
   ]
 }
 ```
 
-#### 5. 在主页面添加跳转按钮
+#### 3. 添加跳转入口
 
-在 `Index.ets` 中添加跳转到新页面的按钮：
+在 `Index.ets` 中添加跳转按钮：
 
 ```typescript
 Button() {
@@ -203,11 +259,10 @@ Button() {
 .onClick(() => {
   console.info('jump to new feature page')
   router.push({ uri: 'pages/NewFeaturePage' })
-  console.info('jump to new feature page over')
 })
 ```
 
-#### 6. ID 命名规范
+### ID 命名规范
 
 为测试元素添加 ID 时，应遵循以下规范：
 
@@ -229,21 +284,9 @@ TextInput({}).id('input2')
 Checkbox({}).id('cb3')
 ```
 
-### 添加新组件的方式和思路
+### 添加新组件
 
-#### 1. 确定组件类型
-
-根据测试需求，确定需要添加的组件类型：
-
-- **基础组件**: Button, Text, TextInput, Checkbox, Radio, etc.
-- **容器组件**: Flex, Column, Row, Stack, Grid, List, etc.
-- **媒体组件**: Image, Video, etc.
-- **画布组件**: Canvas, etc.
-- **高级组件**: Web, XComponent, etc.
-
-#### 2. 组件属性设置
-
-为测试组件设置必要的属性：
+#### 组件属性设置
 
 ```typescript
 Button('测试按钮')
@@ -257,9 +300,7 @@ Button('测试按钮')
   })
 ```
 
-#### 3. 状态管理
-
-使用 `@State` 装饰器管理组件状态：
+#### 状态管理
 
 ```typescript
 @Entry
@@ -287,29 +328,7 @@ struct TestPage {
 }
 ```
 
-#### 4. 交互事件处理
-
-为组件添加交互事件，以便测试验证：
-
-```typescript
-Button('点击测试')
-  .id('clickTestButton')
-  .onClick(() => {
-    console.info('Button clicked')
-    // 触发状态变化
-    this.clickCount++
-  })
-  .onHover((isHover: boolean) => {
-    console.info(`Button hover: ${isHover}`)
-  })
-  .onTouch((event: TouchEvent) => {
-    console.info(`Button touch: ${event.type}`)
-  })
-```
-
-#### 5. 手势支持
-
-为需要手势测试的组件添加手势支持：
+#### 手势支持
 
 ```typescript
 Text('手势测试')
@@ -318,184 +337,87 @@ Text('手势测试')
   .height(200)
   .backgroundColor(Color.Blue)
   .gesture(
-    // 点击手势
     TapGesture()
       .onAction(() => {
         console.info('Tap detected')
       })
   )
   .gesture(
-    // 长按手势
     LongPressGesture()
       .onAction(() => {
         console.info('Long press detected')
       })
   )
-  .gesture(
-    // 滑动手势
-    SwipeGesture({ direction: SwipeDirection.Horizontal })
-      .onAction(() => {
-        console.info('Swipe detected')
-      })
-  )
 ```
 
-#### 6. 复杂布局示例
+## 常见测试场景
 
-对于复杂的测试场景，可以创建复杂的布局：
+### 基础点击测试
 
 ```typescript
-Column() {
-  // 标题
-  Text('复杂布局测试')
-    .fontSize(20)
-    .margin({ bottom: 10 })
-
-  // 行布局
-  Row() {
-    Button('按钮1').id('button1').margin({ right: 10 })
-    Button('按钮2').id('button2').margin({ right: 10 })
-    Button('按钮3').id('button3')
-  }
-  .margin({ bottom: 10 })
-
-  // 网格布局
-  Grid() {
-    ForEach([1, 2, 3, 4, 5, 6], (item: number) => {
-      GridItem() {
-        Text(`Item ${item}`)
-          .id(`gridItem${item}`)
-      }
-    })
-  }
-  .columnsTemplate('1fr 1fr 1fr')
-  .rowsTemplate('1fr 1fr')
-  .columnsGap(10)
-  .rowsGap(10)
-  .margin({ bottom: 10 })
-
-  // 列表布局
-  List() {
-    ForEach(['Item 1', 'Item 2', 'Item 3'], (item: string) => {
-      ListItem() {
-        Text(item)
-          .id(`listItem${item.replace(' ', '')}`)
-      }
-    })
-  }
-  .width('100%')
-  .height(200)
-}
+let button = await driver.findComponent(ON.id('toastBtn'))
+expect(button).assertNotNull()
+await button.click()
 ```
 
-### 辅助包测试支持
-
-#### 1. 设备适配
-
-针对不同设备类型进行适配：
+### 文本输入测试
 
 ```typescript
-// 平板设备适配
-@Entry
-@Component
-struct TestPage {
-  @State deviceType: string = 'default'
-
-  aboutToAppear() {
-    // 检测设备类型
-    this.deviceType = this.detectDeviceType()
-  }
-
-  build() {
-    if (this.deviceType === 'tablet') {
-      TabletLayout()
-    } else {
-      PhoneLayout()
-    }
-  }
-
-  detectDeviceType(): string {
-    // 设备检测逻辑
-    return 'phone'
-  }
-}
+let input = await driver.findComponent(ON.id('changTest'))
+expect(input).assertNotNull()
+await input.setInputText('测试输入文本')
+let text = await input.getText()
+expect(text).assertEqual('测试输入文本')
 ```
 
-#### 2. 状态记录
-
-为测试提供状态记录功能：
+### 禁用状态验证
 
 ```typescript
-@Entry
-@Component
-struct TestPage {
-  @State testLogs: string[] = []
-
-  private addLog(message: string) {
-    this.testLogs.push(`${new Date().toLocaleTimeString()}: ${message}`)
-    console.info(`[TEST LOG] ${message}`)
-  }
-
-  build() {
-    Column() {
-      Button('测试操作')
-        .id('testButton')
-        .onClick(() => {
-          this.addLog('Button clicked')
-        })
-
-      // 显示测试日志
-      ForEach(this.testLogs, (log: string) => {
-        Text(log).fontSize(12).margin({ top: 2 })
-      })
-    }
-  }
-}
+let disabledBtn = await driver.findComponent(ON.id('enableFalse'))
+expect(disabledBtn).assertNotNull()
+let enabled = await disabledBtn.isEnabled()
+expect(enabled).assertFalse()
 ```
 
-#### 3. 测试数据重置
-
-提供测试数据重置功能：
+### 页面跳转测试
 
 ```typescript
-@Entry
-@Component
-struct TestPage {
-  @State testCounter: number = 0
-  @State testText: string = ''
-
-  resetTestData() {
-    this.testCounter = 0
-    this.testText = ''
-    console.info('Test data reset')
-  }
-
-  build() {
-    Column() {
-      Text(`计数: ${this.testCounter}`)
-        .id('counterText')
-
-      Button('增加计数')
-        .id('incrementButton')
-        .onClick(() => {
-          this.testCounter++
-        })
-
-      Button('重置数据')
-        .id('resetButton')
-        .onClick(() => {
-          this.resetTestData()
-        })
-    }
-  }
-}
+let nextBtn = await driver.findComponent(ON.key('my-key'))
+expect(nextBtn).assertNotNull()
+await nextBtn.click()
+await driver.delayMs(1000)
+// 验证新页面
+let newPageElement = await driver.findComponent(ON.text('新页面'))
+expect(newPageElement).assertNotNull()
 ```
+
+## 注意事项
+
+### 界面加载时间
+
+- 辅助包启动后需要等待界面完全加载
+- 建议使用 `driver.delayMs(2000)` 确保界面稳定
+- 避免立即操作未加载完成的元素
+
+### 元素查找
+
+- 始终检查 `findComponent` 返回值是否为空
+- 使用合适的定位策略（ID、文本、类型等）
+- 组合定位可以提高定位准确性
+
+### 资源清理
+
+- 测试完成后必须关闭辅助包
+- 避免多个辅助包同时运行
+- 确保系统资源正确释放
 
 ## 版本信息
 
-- **当前版本**: 1.0.0
-- **兼容性**: OpenHarmony API 10+
-- **更新日期**: 2026-02-26
+| 属性 | 值 |
+|------|-----|
+| 当前版本 | 1.0.0 |
+| 兼容性 | OpenHarmony API 10+ |
+| 更新日期 | 2026-03-23 |
 
 ## 相关文档
 

@@ -79,18 +79,21 @@
           "submodules": [
             {
               "name": "UiTest",
+              "file": "UiTest.md",
               "description": "UI 测试框架",
               "api_file": "@ohos.UiTest.d.ts",
               "reference": "docs/zh-cn/application-dev/reference/apis-test-kit/UiTest.md"
             },
             {
               "name": "PerfTest",
+              "file": "PerfTest.md",
               "description": "性能测试框架",
               "api_file": "@ohos.test.PerfTest.d.ts",
               "reference": "docs/zh-cn/application-dev/reference/apis-test-kit/PerfTest.md"
             },
             {
               "name": "JsUnit",
+              "file": "JsUnit.md",
               "description": "单元测试框架",
               "api_file": "test/testfwk/arkxtest/jsunit/index.d.ts",
               "reference": "docs/zh-cn/application-dev/reference/apis-test-kit/jsunit.md"
