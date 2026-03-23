@@ -587,24 +587,6 @@ if (want.action == 'Sub_UIExtensionContentSession_errorCode_0500') {
 - 验证两种模型的 API 差异
 - 确保迁移路径的兼容性
 
-### 6.5 编码规范
-
-**重要：参数传递规范**
-
-- ✅ **正确做法**：直接传递 null/undefined
-  ```typescript
-  session.setWindowPrivacyMode(undefined, callback);
-  session.loadContent(null);
-  ```
-
-- ❌ **错误做法**：使用 as any
-  ```typescript
-  session.setWindowPrivacyMode(undefined as any, callback);
-  session.loadContent(null as any);
-  ```
-
-**原因**：undefined 和 null 是 JavaScript/TypeScript 的基本类型值，本身就是合法的参数类型，不需要强制类型转换。
-
 ## 七、AppServiceExtensionAbility 启动规范
 
 ### 7.1 模式概述

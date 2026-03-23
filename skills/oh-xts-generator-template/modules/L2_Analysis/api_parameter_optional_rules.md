@@ -37,7 +37,7 @@
 
 2. **编译前进行语法类型检查**：
    ```bash
-   node /mnt/data/c00810129/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
+   node ~/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
      --syntax-type static \
      --test-dir ./test/
    ```
@@ -709,7 +709,7 @@ it('testOptionalParamNull', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, 
 // ❌ 错误：假设所有参数错误都抛出401
 it('testMandatoryParamError', async () => {
   try {
-    await component.method(null as any);
+    await component.method(null);
     expect().assertFail();
   } catch (e) {
     expect(e.code).assertEqual(401); // ❌ 未从 @throws 提取实际错误码
@@ -723,7 +723,7 @@ it('testMandatoryParamError', async () => {
 // 假设 @throws { BusinessError } 17000007 - Invalid parameter value.
 it('testMandatoryParamError', async () => {
   try {
-    await component.method(null as any);
+    await component.method(null);
     expect().assertFail();
   } catch (e) {
     expect(e.code).assertEqual(17000007); // ✅ 使用提取的错误码

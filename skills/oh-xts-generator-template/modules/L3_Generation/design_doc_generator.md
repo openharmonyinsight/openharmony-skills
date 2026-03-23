@@ -51,32 +51,6 @@ generateDesignDoc(testCases, { mode: 'simplified' });
   - Component.onClick.test.ets -> Component.onClick.test.design.md
 ```
 
-### 2.4 TypeScript 类型断言规范（重要！）
-
-> **重要**：生成测试用例时，**禁止使用** `as any` 类型断言。
-
-| 规则 | 说明 |
-|------|------|
-| **禁止 as any** | 不要使用 `as any` 绕过类型检查 |
-| **直接传入 null/undefined** | null 和 undefined 可以直接传入，不需要类型转换 |
-| **严格类型检查** | 遵循 TypeScript 严格类型检查 |
-
-**错误示例**：
-```typescript
-// ❌ 错误：使用 as any
-await driver.swipeBetween(startPoint, endPoint, null as any);
-await driver.dragBetween(startPoint, endPoint, 1000, undefined as any);
-```
-
-**正确示例**：
-```typescript
-// ✅ 正确：直接传入
-await driver.swipeBetween(startPoint, endPoint, null);
-await driver.dragBetween(startPoint, endPoint, 1000, undefined);
-```
-
----
-
 ## 三、生成流程
 
 ### 3.1 完整生成流程

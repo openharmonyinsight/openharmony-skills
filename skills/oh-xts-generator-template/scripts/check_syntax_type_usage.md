@@ -28,7 +28,7 @@ node check_syntax_type.js --syntax-type static --test-dir ./test/ --verbose
 # 检查静态语法测试用例
 cd /mnt/data/c00810129/oh_0130/test/xts/acts/testfwk/uitest_errorcode_static/entry/src/main/src/test/
 
-node /mnt/data/c00810129/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
+node ~/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
   --syntax-type static \
   --test-dir ./
 ```
@@ -63,7 +63,7 @@ API 信息文件: /tmp/api_info_and_style_with_syntax.json
 # 检查动态语法测试用例
 cd /mnt/data/c00810129/oh_0130/test/xts/acts/testfwk/uitest/entry/src/ohosTest/ets/test/
 
-node /mnt/data/c00810129/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
+node ~/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
   --syntax-type dynamic \
   --test-dir ./
 ```
@@ -91,7 +91,7 @@ node /mnt/data/c00810129/.opencode/skills/oh-xts-generator-template/scripts/chec
 cd /mnt/data/c00810129/oh_0130/test/xts/acts/testfwk/uitest_errorcode_static/entry/src/main/src/test/
 
 # 2. 检查测试用例
-node /mnt/data/c00810129/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
+node ~/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
   --syntax-type static \
   --test-dir ./
 
@@ -110,7 +110,7 @@ fi
 ```bash
 # 检查使用了 On.text API 的测试用例
 grep -l "ON.text(" UitestOnTextErrorStatic.test.ets | \
-  xargs node /mnt/data/c00810129/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
+  xargs node ~/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
     --syntax-type static
 ```
 
@@ -122,7 +122,7 @@ syntax_type="static"
 test_dir="/mnt/data/c00810129/oh_0130/test/xts/acts/testfwk/uitest_errorcode_static/entry/src/main/src/test/"
 
 # 检查语法类型
-node /mnt/data/c00810129/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
+node ~/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
   --syntax-type "$syntax_type" \
   --test-dir "$test_dir"
 
@@ -257,7 +257,7 @@ function check_syntax_type() {
   local test_dir=$2
   
   echo "检查 API 语法类型..."
-  node /mnt/data/c00810129/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
+  node ~/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
     --syntax-type "$syntax_type" \
     --test-dir "$test_dir"
   
@@ -323,7 +323,7 @@ fi
 
 ```bash
 # 生成测试用例后，立即检查
-node /mnt/data/c00810129/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
+node ~/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
   --syntax-type static \
   --test-cases UitestOnTextErrorStatic.test.ets UitestOnIdErrorStatic.test.ets
 
@@ -342,7 +342,7 @@ node /mnt/data/c00810129/.opencode/skills/oh-xts-generator-template/scripts/chec
 # 检查整个测试目录
 cd /mnt/data/c00810129/oh_0130/test/xts/acts/testfwk/uitest_errorcode_static/entry/src/main/src/test/
 
-node /mnt/data/c00810129/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
+node ~/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
   --syntax-type static \
   --test-dir ./
 
@@ -361,7 +361,7 @@ node /mnt/data/c00810129/.opencode/skills/oh-xts-generator-template/scripts/chec
 
 ```bash
 # 使用详细模式检查
-node /mnt/data/c00810129/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
+node ~/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
   --syntax-type static \
   --test-cases UitestOnTextErrorStatic.test.ets \
   --verbose

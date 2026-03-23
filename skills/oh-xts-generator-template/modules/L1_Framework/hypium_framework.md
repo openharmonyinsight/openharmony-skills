@@ -223,7 +223,7 @@ it('testMethodUndefined002', Level.LEVEL2, async () => {
 it('testMethodError401001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async () => {
     try {
         const driver = Driver.create();
-        await driver.method(param, null as any);
+        await driver.method(param, null);
         expect().assertFail();
     } catch (e) {
         console.log(`error is: ${JSON.stringify(e)}`);
@@ -239,7 +239,7 @@ it('testMethodError401001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, 
 it('testMethodError001', Level.LEVEL2, async () => {
     try {
         const driver = Driver.create();
-        await driver.method(param, null as any);
+        await driver.method(param, null);
         expect().assertFail();
     } catch (e) {
         expect(e.code).assertLessThanOrEqual(401); // ❌ 错误：方法不存在
@@ -254,7 +254,7 @@ it('testMethodError001', Level.LEVEL2, async () => {
 it('testMethodError002', Level.LEVEL2, async () => {
     try {
         const driver = Driver.create();
-        await driver.method(param, null as any);
+        await driver.method(param, null);
         expect().assertFail();
     } catch (e) {
         // 未明确断言特定错误码
