@@ -169,17 +169,19 @@ it('testAddNumberBoundary004', Level.LEVEL2, () => {
 
 ## 三、错误码测试用例生成
 
-### 3.1 错误码触发条件
+### 8.1 错误码断言必须遵循的规则
 
-> **重要**：必须从 API 的 `@throws` 标记中提取**实际的错误码**，而不是假设所有参数错误都抛出 401。
-
-从 `@throws` 标记中提取错误码及其触发条件：
-
-> **重要：使用正确的 hypium 断言方法**
-> - ✅ 必须使用 `expect(error.code).assertEqual(actualErrorCode)` 明确断言特定错误码
-> - ❌ 不要使用 `expect(error.code).assertLessThanOrEqual(401)` 这种不存在的断言方法
-> - ❌ hypium 中不存在 `assertLessThanOrEqual` 方法
+> **重要**：
+> - 错误码测试时，必须明确断言特定的错误码，而不是使用范围判断或"或"表达。
+> - 必须从 API 的 `@throws` 标记中提取**实际的错误码**，而不是假设所有参数错误都抛出 401。
 > - ✅ 参考断言方法列表：`modules/L1_Framework/hypium_framework.md` 第二章
+
+| 规则 | 说明 | 示例 |
+|------|------|------|
+| **使用 assertEqual** | 必须使用 `assertEqual` 明确断言特定错误码 | `expect(e.code).assertEqual(401)` |
+| **不要使用范围断言** | 不要使用 `assertLessThanOrEqual`、`assertLarger` 等范围断言 | ❌ `expect(e.code).assertLessThanOrEqual(401)` |
+| **不要使用"或"表达** | 不要在测试描述中使用"或"表达多个错误码 | ❌ "预期结果: 抛出 401 或 17000007" |
+| **明确错误码** | 必须从 @throws 标记中提取并明确声明错误码 | ✅ "预期结果: 抛出错误码 401" |
 
 ```typescript
 /**
