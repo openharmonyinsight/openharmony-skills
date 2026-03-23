@@ -300,10 +300,10 @@ API: Component.onClick()
 
 | 参数 | 说明 | 示例 |
 |------|------|------|
-| `子系统` | 子系统名称 | `ArkUI`, `ArkWeb`, `Multimedia` |
-| `配置文件` | 配置文件路径 | `references/subsystems/ArkUI/_common.md` |
+| `子系统` | 子系统名称 | `ArkTS`, `Ability`, `testfwk` |
+| `配置文件` | 配置文件路径 | `references/subsystems/testfwk/_common.md` |
 | `API` | API 名称 | `Component.onClick()` |
-| `定义文件` | API 声明文件 | `interface/sdk-js/api/@ohos.arkui.d.ts` |
+| `定义文件` | API 声明文件 | `interface/sdk-js/api/@ohos.UiTest.d.ts` |
 | `测试套路径` | 测试套路径 | `test/xts/acts/arkui/uitest/` |
 | `测试级别` | 测试级别 | `Level0` - `Level4` |
 | `测试类型` | 测试类型 | `Function`, `Performance`, `Reliability`, `Security` |

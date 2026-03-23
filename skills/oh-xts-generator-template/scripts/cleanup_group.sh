@@ -38,7 +38,7 @@ TEST_SUITES=$(grep -A 50 "group(\"$SUBSYSTEM\")" "$BUILD_GN_FILE" | \
 TEST_SUITES=$(echo "$TEST_SUITES" | grep -v "^[[:space:]]*#" | grep -v "^$")
 
 if [ -z "$TEST_SUITES" ]; then
-    echo "❌ 未找到测试套配置，请检查 BUILD.gn 文件格式"
+    echo "❌ 未找到测试套目标，请检查 BUILD.gn 文件格式"
     exit 1
 fi
 

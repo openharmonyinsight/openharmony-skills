@@ -15,7 +15,7 @@
 > 1. **版本校验** - 每次编译静态测试套前，必须校验 hvigor 工具版本（详见第二章）
 > 2. **强制清理** - **每次编译前必须执行预编译清理**，确保包含所有最新代码（详见第三章）
 > 3. **添加 hap_static 参数** - 编译时必须指定 `xts_suitetype=hap_static` 参数
-> 4. **BUILD.gn 配置** - 使用 `ohos_js_app_static_suite()` 而非 `ohos_js_app_suite()`
+> 4. **BUILD.gn 编译目标** - 确认使用 `ohos_js_app_static_suite()` 而非 `ohos_js_app_suite()`
 
 ## 一、模块概述
 
@@ -32,7 +32,7 @@
 ### 1.2 应用场景
 
 1. 编译静态 XTS 测试套（需要 arkTS 静态语法）
-2. 配置 BUILD.gn 文件为静态测试套
+2. 确认 BUILD.gn 中的编译目标为静态测试套
 3. 每次编译前校验 hvigor 工具版本
 4. 按需清理 SDK 缓存和替换 hvigor 编译工具
 5. 编译测试套并验证
@@ -42,7 +42,7 @@
 | 任务类型 | 加载模块 |
 |---------|---------|
 | **环境准备** | [linux_compile_env_setup.md](./linux_compile_env_setup.md) |
-| **BUILD.gn 配置** | [build_gn_config.md](./build_gn_config.md) |
+
 | **预编译清理** | [linux_prebuild_cleanup.md](./linux_prebuild_cleanup.md) |
 | **问题排查** | [linux_compile_troubleshooting.md](./linux_compile_troubleshooting.md) |
 | **动态测试套编译** | [linux_compile_dynamic_suite.md](./linux_compile_dynamic_suite.md) |
@@ -90,8 +90,7 @@
                                │
                                ▼
            ┌───────────────────────────────┐
-           │  步骤3：配置 BUILD.gn          │
-           │  模块：build_gn_config         │
+             │  步骤3：确认 BUILD.gn 编译目标  │
            └───────────────────────────────┘
                               │
                                ▼
@@ -156,9 +155,9 @@
 | 1. 环境准备 | 安装 Node.js、npm 等 | 参考 [linux_compile_env_setup.md](./linux_compile_env_setup.md) | 首次必需 |
 | 2. 版本校验 | 检查 hvigor 版本 | 见第四章详细说明 | **每次编译静态套前必需** |
 | 2.5. 替换 hvigor | 清理、下载、移动工具 | 见第四章详细说明 | **仅在需要时执行** |
-| 3. 配置 BUILD.gn | 创建/修改 BUILD.gn | 参考 [build_gn_config.md](./build_gn_config.md) | 使用 `ohos_js_app_static_suite()` |
+| 3. 确认 BUILD.gn 编译目标 | 确认 BUILD.gn 中的编译目标 | 使用 `ohos_js_app_static_suite()` |
 | 4. 预编译清理 | 清理缓存 | 参考 [linux_prebuild_cleanup.md](./linux_prebuild_cleanup.md) | **每次编译前强制执行**，确保包含最新代码 |
-| 5. 执行编译 | 运行 build.sh | `./test/xts/acts/build.sh ... xts_suitetype=hap_static` | **必须添加 hap_static 参数** |
+| 5. 执行编译 | 运行 build.sh | `./test/xts/acts/build.sh product_name=rk3568 system_size=standard suite={测试套名称} xts_suitetype=hap_static` | **必须添加 hap_static 参数** |
 | 6. 验证产物 | 检查 HAP 包 | `test -f out/.../testcases/.../*.hap` | 验证编译产物 |
 | 7. 问题排查 | 解决编译错误 | 参考 [linux_compile_troubleshooting.md](./linux_compile_troubleshooting.md) | 查看编译日志 |
 
@@ -236,9 +235,9 @@ suite=ActsUiStaticTest  # ✅ 正确：与 BUILD.gn 中的名称一致
 ./test/xts/acts/build.sh product_name=rk3568 system_size=standard xts_suitetype=hap_static suite=ActsUiStaticTest suite=ActsArkUIStaticTest
 ```
 
-#### 3.3.2 替代方案：编译 group（按 BUILD.gn 配置）
+#### 3.3.2 替代方案：编译 group（按 BUILD.gn 中的目标）
 
-**重要说明**：虽然 `suite` 参数不支持指定多个具体的测试套，但可以**按照 BUILD.gn 中的 group 配置**来编译多个相关目标。每个子系统的 BUILD.gn 文件中定义了 `group()`，可以一次性编译该 group 下的所有依赖测试套。
+**重要说明**：虽然 `suite` 参数不支持指定多个具体的测试套，但可以**按照 BUILD.gn 中的 group 目标**来编译多个相关测试套。每个子系统的 BUILD.gn 文件中定义了 `group()`，可以一次性编译该 group 下的所有依赖测试套。
 
 **查找 group 名称的方法**：
 
@@ -255,7 +254,7 @@ cd {OH_ROOT}
 ./test/xts/acts/build.sh product_name=rk3568 system_size=standard xts_suitetype=hap_static suite=testfwk
 ```
 
-**配置依据**：
+**编译目标依据**：
 ```bash
 # BUILD.gn 文件位置
 /test/xts/acts/testfwk/BUILD.gn
@@ -469,8 +468,7 @@ else
     echo "跳过替换，直接编译"
 fi
 
-# 步骤3：配置 BUILD.gn（首次必需）
-# 参考：build_gn_config.md
+# 步骤3：确认 BUILD.gn 编译目标（首次必需）
 
 # 步骤4：预编译清理（每次编译前必需）
 # 参考：linux_prebuild_cleanup.md
@@ -674,15 +672,13 @@ else
     echo "跳过替换，直接编译"
 fi
 
-# 步骤3：配置 BUILD.gn（首次必需）
-# 参考：build_gn_config.md
-# 确保使用 ohos_js_app_static_suite() 而非 ohos_js_app_suite()
+# 步骤3：确认 BUILD.gn 编译目标（首次必需）
+# 确认使用 ohos_js_app_static_suite() 而非 ohos_js_app_suite()
 
 # 步骤4：预编译清理（每次编译前强制执行）
 # 参考：linux_prebuild_cleanup.md
 # ⚠️ 重要：确保清理所有缓存，以便编译结果包含所有最新代码
-cd {OH_ROOT}
-./test/xts/acts/cleanup_group.sh {OH_ROOT} testfwk
+~/.opencode/skills/oh-xts-generator-template/scripts/cleanup_group.sh  {OH_ROOT} testfwk
 
 # 步骤5：执行编译（必须添加 hap_static 参数）
 cd {OH_ROOT}
@@ -711,94 +707,8 @@ test -d prebuilts/ohos-sdk/linux && echo "✅ SDK 编译成功" || echo "❌ SDK
 | 问题 | 原因 | 解决方案 |
 |------|------|--------|
 | 编译失败：找不到 SDK | 首次编译未清理 prebuilts | 清理 `prebuilts/ohos-sdk/linux` 后重新编译 |
-| 编译失败：hap_static 参数无效 | BUILD.gn 配置错误 | 检查是否使用 `ohos_js_app_static_suite()` |
+| 编译失败：hap_static 参数无效 | BUILD.gn 编译目标错误 | 检查是否使用 `ohos_js_app_static_suite()` |
 | 编译失败：编译工具错误 | 未替换 hvigor 工具 | 执行版本校验，如版本不匹配则替换 |
 | 编译失败：版本校验失败 | 无法读取 package.json | 检查工具目录是否存在，如不存在则下载 |
 | 编译超时 | SDK 编译时间过长 | 检查系统资源，或使用缓存加速 |
 | HAP 包不正确 | 使用了动态编译方式 | 检查命令是否包含 `xts_suitetype=hap_static` |
-
----
-
-## 八、版本历史
-
-- **v1.4.0** (2026-02-11): **强化预编译清理的强制执行**
-   - **核心更新**：
-     * 更新重要提示：将"按需替换"改为"强制清理"
-     * 明确预编译清理步骤必须每次编译前执行
-     * 强调清理的目的是确保编译结果包含所有最新代码
-   - **工作流程更新**：
-     * 更新工作流程图，步骤4明确标注"清理测试套缓存"、"清理 out 目录"、"确保包含最新代码"
-     * 更新快速参考表格，将"每次编译前必需"改为"每次编译前强制执行"，并添加说明
-     * 更新完整编译示例，在预编译清理步骤添加"⚠️ 重要"提示
-   - **章节调整**：
-     * 不改动其他章节的序号
-   - **优化效果**：
-     * 确保无论是动态还是静态测试套，编译前都执行清理
-     * 避免缓存导致编译结果不包含最新代码的问题
-     * 提高编译结果的可靠性
-   - 版本号升级至 v1.4.0
-
-- **v1.3.0** (2026-02-11): **添加 hvigor 工具版本校验机制**
-   - **核心更新**：
-     * 更新第四章标题："hvigor 工具版本校验和替换流程"
-     * 新增 4.1 节：版本校验逻辑
-     * 新增版本校验步骤和决策流程
-     * 更新 4.2 节：仅在需要时执行替换
-     * 更新 4.3 节：完整的准备流程（带版本校验）
-     * 更新 4.4 节：验证工具版本
-     * 更新 4.5 节：注意事项（强调按需替换）
-   - **工作流程更新**：
-     * 更新工作流程图，新增步骤2版本校验
-     * 步骤2.5改为"仅在需要时执行"
-     * 更新快速参考表格，添加版本校验步骤
-   - **优化效果**：
-     * 避免不必要的工具替换操作
-     * 提高编译流程效率
-     * 减少网络请求和磁盘操作
-   - 版本号升级至 v1.3.0
-
-- **v1.2.0** (2026-02-11): **添加 hvigor 工具替换流程**
-  - **核心更新**：
-    * 新增第四章"hvigor 工具替换流程"
-    * 说明为何需要替换 hvigor 工具
-    * 提供完整的替换步骤（清理、下载、移动）
-    * 提供完整的命令序列
-    * 添加验证工具替换的方法
-    * 添加注意事项和常见问题
-  - **工作流程更新**：
-    * 更新工作流程图，新增步骤2.5
-    * 更新重要提示（三点改为四点）
-    * 更新应用场景说明
-    * 更新快速参考表格
-    * 更新完整编译示例，添加步骤2.5
-    * 更新参考路径，添加 hvigor 工具路径
-    * 更新常见问题排查，添加编译工具错误
-  - **章节调整**：
-    * 原第五章改为第六章（编译输出管理）
-    * 原第六章改为第七章（参考示例）
-    * 原第七章改为第八章（版本历史）
-  - 版本号升级至 v1.2.0
-
-- **v1.1.0** (2026-02-11): **添加 subagent 执行和错误处理机制**
-  - **核心更新**：
-    * 新增 subagent 执行编译任务说明
-    * 新增编译进程监听机制
-    * 新增自动错误处理流程
-    * 新增 SDK 错误处理说明
-  - **工作流程图更新**：
-    * 添加 subagent 执行步骤
-    * 添加监听编译进程步骤
-    * 添加编译结果处理步骤
-    * 添加自动错误处理步骤（包含 SDK 错误处理）
-  - **核心功能更新**：
-    * 添加 subagent 执行功能
-    * 添加监听机制功能
-    * 添加错误处理功能
-  - 版本号升级至 v1.1.0
-
-- **v1.0.0** (2026-02-10): 从 build_workflow_linux.md 拆分出的静态测试套编译流程文档
-  - 专注于静态测试套编译流程
-  - 强调首次编译前清理 SDK 缓存
-  - 明确 hap_static 参数的必要性
-  - 说明静态 SDK 的编译机制
-  - 提供完整的编译示例和注意事项

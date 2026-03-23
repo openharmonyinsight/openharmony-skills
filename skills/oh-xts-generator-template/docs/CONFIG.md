@@ -64,20 +64,17 @@ oh-xts-generator-template/
 └── references/
     └── subsystems/
         ├── _common.md                      # 通用配置（所有子系统共享）
-        ├── ArkUI/                          # ArkUI 子系统配置
-        │   ├── _common.md                  # ArkUI 子系统通用配置
-        │   ├── Component.md                # Component 模块配置
-        │   ├── Animator.md                 # Animator 模块配置
-        │   └── Router.md                   # Router 模块配置
-        ├── ArkWeb/                         # ArkWeb 子系统配置
-        │   ├── _common.md                  # ArkWeb 子系统通用配置
-        │   ├── Web.md                      # Web 模块配置
-        │   └── WebViewController.md        # WebViewController 模块配置
+        ├── ability/                        # Ability 子系统配置（能力框架）
+        │   ├── _common.md                  # Ability 子系统通用配置
+        │   ├── ability_runtime.md          # Ability Runtime 模块配置
+        │   ├── ability_base.md             # Ability Base 模块配置
+        │   ├── uiextension_cross_component.md  # UIExtension 跨组件测试
+        │   └── fa_serviceability_testing.md    # FA 模型 ServiceAbility 测试
         ├── testfwk/                        # 测试框架子系统配置
         │   ├── _common.md                  # 测试框架通用配置
-        │   ├── uitest.md                   # UiTest 模块
+        │   ├── UiTest.md                   # UiTest 模块
         │   ├── JsUnit.md                   # JsUnit 模块
-        │   └── perftest.md                 # PerfTest 模块
+        │   └── PerfTest.md                 # PerfTest 模块
         └── {SubsystemName}/                # 其他子系统
             ├── _common.md                  # 子系统通用配置
             └── {ModuleName}.md             # 模块配置
@@ -153,7 +150,9 @@ oh-xts-generator-template/
 ```
 用户自定义配置（使用时指定）
     ↓ 优先级最高
-子系统配置 ({Subsystem}/_common.md, {Subsystem}/{Module}.md)
+子系统配置 ({Subsystem}/_common.md)
+    ↓ 优先级中等
+模块配置（{Subsystem}/{Module}.md）
     ↓ 优先级中等
 通用配置 (_common.md)
     ↓ 优先级最低（默认值）
@@ -161,13 +160,16 @@ oh-xts-generator-template/
 
 ### 3.2 优先级示例
 
-**场景**: 为 ArkUI 子系统生成测试用例
+**场景**: 为 testfwk 子系统生成测试用例
 
 **通用配置** (`_common.md`):
 - 测试用例编号格式: `SUB_[子系统]_[模块]_[API]_[类型]_[序号]`
 
-**子系统配置** (`ArkUI/_common.md`):
-- 测试路径: `test/xts/acts/arkui/test/`
+**子系统配置** (`testfwk/_common.md`):
+- 测试路径: `test/xts/acts/testfwk/`
+
+**模块配置** (`testfwk/{Module}.md`):
+- 测试路径: `test/xts/acts/testfwk/{Module}`
 
 **用户配置** (使用时指定):
 - 测试路径: `test/xts/acts/arkui_custom/`
@@ -180,55 +182,50 @@ oh-xts-generator-template/
 
 | 配置项 | 通用配置 | 子系统配置 | 用户配置 | 最终值 |
 |-------|---------|-----------|---------|--------|
-| 测试路径 | `test/xts/acts/` | `test/xts/acts/arkui/` | `test/xts/acts/arkui_custom/` | `test/xts/acts/arkui_custom/` |
-| Kit包名 | - | `@kit.ArkUI` | `@kit.ArkUI` | `@kit.ArkUI` |
+| 测试路径 | `test/xts/acts/` | `test/xts/acts/testfwk/` | `test/xts/acts/testfwk/` | `test/xts/acts/testfwk/` |
+| Kit包名 | - | `@kit.TestKit` | `@kit.TestKit` | `@kit.TestKit` |
 | 编号格式 | `SUB_...` | - | - | `SUB_...` |
-| 测试规则 | 基础规则 | ArkUI规则 | - | ArkUI规则（覆盖） |
+| 测试规则 | 基础规则 | testfwk规则 | - | testfwk规则（覆盖） |
 
 ---
 
 ## 四、已有子系统配置
 
-### 4.1 ArkUI 子系统
+### 4.1 Ability 子系统
 
-**位置**: `references/subsystems/ArkUI/`
+**位置**: `references/subsystems/ability/`
 
 **配置文件**:
-- `_common.md` - ArkUI 子系统通用配置
-- `Component.md` - Component 模块配置
-- `Animator.md` - Animator 模块配置
-- `Router.md` - Router 模块配置
+- `_common.md` - Ability 子系统通用配置（能力框架）
+- `ability_runtime.md` - Ability Runtime 模块配置（FA 模型 + Stage 模型）
+- `ability_base.md` - Ability Base 模块配置（Context、Want、WantAgent 等）
+- `uiextension_cross_component.md` - UIExtension 跨组件调用测试规范
+- `fa_serviceability_testing.md` - FA 模型 ServiceAbility 测试规范
+
+**强制规则**（重要）:
+- **接口调用方式覆盖**: 必须根据 API 定义考虑 callback 和 promise 两种调用方式
+- **测试用例编号**: 每次递增 100（0100、0200、0300...），Callback 版本使用 50 后缀（0150、0250...）
+- **异常断言**: callback/promise 中必须使用 try-catch 包裹
+- **错误码断言**: 必须使用 `assertEqual(-1)`，禁止使用 `code !== undefined`
+- **参数异常测试**: 不考虑 callback 是 null/undefined
 
 **使用方式**:
 ```
-子系统: ArkUI
-API: Component.onClick()
+子系统: Ability
+模块: ability_runtime
+API: startAbility(), getWant()
 ```
 
-### 4.2 ArkWeb 子系统
 
-**位置**: `references/subsystems/ArkWeb/`
-
-**配置文件**:
-- `_common.md` - ArkWeb 子系统通用配置
-- `Web.md` - Web 模块配置
-- `WebViewController.md` - WebViewController 模块配置
-
-**使用方式**:
-```
-子系统: ArkWeb
-API: Web.runJavaScript()
-```
-
-### 4.3 测试框架(testfwk)子系统
+### 4.2 测试框架(testfwk)子系统
 
 **位置**: `references/subsystems/testfwk/`
 
 **配置文件**:
 - `_common.md` - 测试框架(testfwk)通用配置
-- `uitest.md` - UiTest 模块
+- `UiTest.md` - UiTest 模块
 - `JsUnit.md` - JsUnit 模块
-- `perftest.md` - PerfTest 模块
+- `PerfTest.md` - PerfTest 模块
 
 **使用方式**:
 ```
@@ -237,7 +234,7 @@ API: Web.runJavaScript()
 API: Driver.create()
 ```
 
-### 4.4 ArkTS 子系统
+### 4.3 ArkTS 子系统
 
 **位置**: `references/subsystems/ArkTS/`
 
@@ -424,7 +421,7 @@ echo "✅ $SUBSYSTEM 子系统配置创建完成"
 
 **示例**:
 ```markdown
-详见 `ArkUI/_common.md` 第 1.2 节
+详见 `Ability/_common.md` 第 1.2 节
 ```
 
 **配置继承说明**:
@@ -517,12 +514,17 @@ echo "✅ $SUBSYSTEM 子系统配置创建完成"
 
 ---
 
-**文档版本**: 2.0.0
+**文档版本**: 2.1.0
 **创建日期**: 2026-02-05
-**最后更新**: 2026-02-05
+**最后更新**: 2026-03-23
 **维护者**: oh-xts-generator-template Team
 
 ## 更新历史
+
+- **v2.1.0** (2026-03-23): 新增 Ability 子系统配置说明
+  - 添加 Ability 子系统目录结构
+  - 添加 Ability 子系统强制规则说明
+  - 包含 ability_runtime、ability_base、uiextension_cross_component、fa_serviceability_testing 模块
 
 - **v2.0.0** (2026-02-05): 重新整理文件结构，删除重复内容
   - 简化配置文件类型说明，删除重复示例

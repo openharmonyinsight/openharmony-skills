@@ -22,7 +22,7 @@
 ### 1.2 应用场景
 
 1. 编译动态 XTS 测试套（默认编译方式）
-2. 配置 BUILD.gn 文件为动态测试套
+2. 确认 BUILD.gn 中的编译目标为动态测试套
 3. 执行预编译清理
 4. 编译测试套并验证
 
@@ -31,7 +31,7 @@
 | 任务类型 | 加载模块 |
 |---------|---------|
 | **环境准备** | [linux_compile_env_setup.md](./linux_compile_env_setup.md) |
-| **BUILD.gn 配置** | [build_gn_config.md](./build_gn_config.md) |
+
 | **预编译清理** | [linux_prebuild_cleanup.md](./linux_prebuild_cleanup.md) |
 | **问题排查** | [linux_compile_troubleshooting.md](./linux_compile_troubleshooting.md) |
 | **静态测试套编译** | [linux_compile_static_suite.md](./linux_compile_static_suite.md) |
@@ -55,8 +55,7 @@
                              │
                              ▼
          ┌───────────────────────────────┐
-         │  步骤2：配置 BUILD.gn          │
-         │  模块：build_gn_config         │
+           │  步骤2：确认 BUILD.gn 编译目标  │
          └───────────────────────────────┘
                              │
                              ▼
@@ -115,9 +114,9 @@
 | 步骤 | 操作 | 命令/文档 |
 |------|------|----------|
 | 1. 环境准备 | 安装 Node.js、npm 等 | 参考 [linux_compile_env_setup.md](./linux_compile_env_setup.md) |
-| 2. 配置 BUILD.gn | 创建/修改 BUILD.gn | 参考 [build_gn_config.md](./build_gn_config.md) |
+| 2. 确认 BUILD.gn 编译目标 | 确认 BUILD.gn 中的编译目标 |
 | 3. 预编译清理 | 清理缓存 | 参考 [linux_prebuild_cleanup.md](./linux_prebuild_cleanup.md) |
-| 4. 执行编译 | 运行 build.sh | `./test/xts/acts/build.sh ...` （见第三章） |
+| 4. 执行编译 | 运行 build.sh | `./test/xts/acts/build.sh product_name=rk3568 system_size=standard suite={测试套名称}` （见第三章） |
 | 5. 验证产物 | 检查 HAP 包 | `test -f out/.../testcases/.../*.hap` |
 | 6. 问题排查 | 解决编译错误 | 参考 [linux_compile_troubleshooting.md](./linux_compile_troubleshooting.md) |
 
@@ -189,9 +188,9 @@ suite=ActsUiTest  # ✅ 正确：与 BUILD.gn 中的名称一致
 ./test/xts/acts/build.sh product_name=rk3568 system_size=standard suite=ActsUiTest suite=ActsArkUITest
 ```
 
-#### 3.3.2 替代方案：编译 group（按 BUILD.gn 配置）
+#### 3.3.2 替代方案：编译 group（按 BUILD.gn 中的目标）
 
-**重要说明**：虽然 `suite` 参数不支持指定多个具体的测试套，但可以**按照 BUILD.gn 中的 group 配置**来编译多个相关目标。每个子系统的 BUILD.gn 文件中定义了 `group()`，可以一次性编译该 group 下的所有依赖测试套。
+**重要说明**：虽然 `suite` 参数不支持指定多个具体的测试套，但可以**按照 BUILD.gn 中的 group 目标**来编译多个相关测试套。每个子系统的 BUILD.gn 文件中定义了 `group()`，可以一次性编译该 group 下的所有依赖测试套。
 
 **查找 group 名称的方法**：
 
@@ -250,8 +249,8 @@ group("testfwk") {
 |--------|-----------|---------|--------------|----------------|
 | **测试框架** | `testfwk` | `suite=testfwk` | `/test/xts/acts/testfwk/BUILD.gn` | 8-10 个 |
 | **ArkUI** | `arkui` | `suite=arkui` | `/test/xts/acts/arkui/BUILD.gn` | 30+ 个 |
-| **multimedia** | `multimedia` | `suite=multimedia` | `/test/xts/acts/multimedia/BUILD.gn` | 根据配置 |
-| **其他子系统** | 见对应 BUILD.gn | `suite={子系统名}` | `/test/xts/acts/{子系统}/BUILD.gn` | 根据配置 |
+| **multimedia** | `multimedia` | `suite=multimedia` | `/test/xts/acts/multimedia/BUILD.gn` | 根据其定义 |
+| **其他子系统** | 见对应 BUILD.gn | `suite={子系统名}` | `/test/xts/acts/{子系统}/BUILD.gn` | 根据其定义 |
 
 **使用建议**：
 1. **编译单个测试套**：使用 `suite=测试套名称`（如 `suite=ActsUiTest`）
@@ -303,15 +302,13 @@ du -sh out/rk3568/suites/acts/acts/testcases/
 # 步骤1：准备编译环境（首次必需）
 # 参考：linux_compile_env_setup.md
 
-# 步骤2：配置 BUILD.gn（首次必需）
-# 参考：build_gn_config.md
+# 步骤2：确认 BUILD.gn 编译目标（首次必需）
 
 # 步骤3：预编译清理（每次编译前强制执行）
 # 参考：linux_prebuild_cleanup.md
 # ⚠️ 重要：确保清理所有缓存，以便编译结果包含所有最新代码
-# 使用统一的 cleanup_group.sh 脚本
-cd {OH_ROOT}
-./test/xts/acts/cleanup_group.sh {OH_ROOT} testfwk
+# 使用统一的 `~/.opencode/skills/oh-xts-generator-template/scripts/cleanup_group.sh` 脚本
+~/.opencode/skills/oh-xts-generator-template/scripts/cleanup_group.sh {OH_ROOT} testfwk
 
 # 步骤4：执行编译
 cd {OH_ROOT}
@@ -329,45 +326,3 @@ test -f out/rk3568/suites/acts/acts/testcases/ActsUiTest/ActsUiTest.hap && echo 
 | 模板文件 | `./test/xts/tools/build/suite.gni` |
 | 测试框架 | `./test/xts/acts/` |
 | 编译输出 | `out/{product_name}/suites/acts/acts/testcases/` |
-
----
-
-## 六、版本历史
-
-- **v1.2.0** (2026-02-11): **强化预编译清理的强制执行**
-  - **核心更新**：
-     * 强化预编译清理步骤的强制性要求
-     * 明确清理的目的是确保编译结果包含所有最新代码
-  - **快速参考更新**：
-     * 在快速参考表格后添加"⚠️ 重要提示"
-     * 强调预编译清理必须每次编译前执行
-  - **完整示例更新**：
-     * 在预编译清理步骤添加"⚠️ 重要"提示
-     * 说明清理的目的是确保编译结果包含所有最新代码
-  - **优化效果**：
-     * 确保动态测试套编译前都执行清理
-     * 避免缓存导致编译结果不包含最新代码的问题
-     * 提高编译结果的可靠性
-  - 版本号升级至 v1.2.0
-
-- **v1.1.0** (2026-02-11): **添加 subagent 执行和错误处理机制**
-  - **核心更新**：
-    * 新增 subagent 执行编译任务说明
-    * 新增编译进程监听机制
-    * 新增自动错误处理流程
-  - **工作流程图更新**：
-    * 添加 subagent 执行步骤
-    * 添加监听编译进程步骤
-    * 添加编译结果处理步骤
-    * 添加自动错误处理步骤
-  - **核心功能更新**：
-    * 添加 subagent 执行功能
-    * 添加监听机制功能
-    * 添加错误处理功能
-  - 版本号升级至 v1.1.0
-
-- **v1.0.0** (2026-02-10): 从 build_workflow_linux.md 拆分出的动态测试套编译流程文档
-  - 专注于动态测试套编译流程
-  - 提供完整的编译命令和参数说明
-  - 包含编译多个目标的方法
-  - 提供编译产物验证方法

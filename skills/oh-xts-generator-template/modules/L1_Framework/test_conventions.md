@@ -205,7 +205,7 @@ export default function APINameTest() {
 
 ```typescript
 // 1. 单元测试框架导入
-import {describe, it, expect, Level} from '@ohos/hypium';
+import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, TestType, Size, Level} from '@ohos/hypium';
 
 // 2. 测试框架相关导入（如 UiTest）
 import {Driver, ON} from '@ohos.UiTest';
