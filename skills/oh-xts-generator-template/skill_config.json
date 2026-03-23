@@ -71,6 +71,44 @@
           ]
         },
         {
+          "name": "Ability",
+          "path": "references/subsystems/ability",
+          "description": "Ability 子系统配置（能力框架）",
+          "kit": "@kit.AbilityKit",
+          "modules": [
+            {
+              "name": "通用配置",
+              "file": "_common.md",
+              "description": "Ability 子系统通用配置，包含接口调用方式覆盖规范、测试用例编号规范、异常断言规范等强制规则"
+            },
+            {
+              "name": "Ability Runtime",
+              "file": "ability_runtime.md",
+              "description": "Ability Runtime 模块配置，包含 FA 模型和 Stage 模型的测试规范"
+            },
+            {
+              "name": "Ability Base",
+              "file": "ability_base.md",
+              "description": "Ability Base 模块配置，包含 Context、Want、WantAgent 等基础能力测试规范"
+            },
+            {
+              "name": "UIExtension 跨组件测试",
+              "file": "uiextension_cross_component.md",
+              "description": "UIExtension 相关接口的跨进程测试规范"
+            },
+            {
+              "name": "FA 模型 ServiceAbility 测试",
+              "file": "fa_serviceability_testing.md",
+              "description": "FA 模型 ServiceAbility 相关接口的测试规范，包含事件驱动测试模式"
+            }
+          ],
+          "reference_docs": {
+            "api_reference": "https://gitcode.com/openharmony/docs/tree/master/zh-cn/application-dev/reference/apis-ability-kit",
+            "guide": "https://gitcode.com/openharmony/docs/blob/master/zh-cn/application-dev/application-models/Readme-CN.md",
+            "common_event_reference": "https://gitcode.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis-basic-services-kit/js-apis-commonEventManager.md"
+          }
+        },
+        {
           "name": "testfwk",
           "path": "references/subsystems/testfwk",
           "description": "测试框架子系统配置（OpenHarmony 测试框架）",
@@ -165,6 +203,16 @@
           "完整的文档结构（测试概述、测试场景设计、测试覆盖分析、测试依赖关系、测试环境要求、注意事项、变更记录）",
           "自动提取测试用例信息生成测试场景",
           "支持文档版本管理和变更记录"
+        ]
+      },
+      "test_case_generation_flow": {
+        "description": "定义测试用例生成流程",
+        "file": "modules/L3_Generation/test_case_generation_flow.md",
+        "version": "1.0.0",
+        "update_date": "2026-02-10",
+        "features": [
+          "定义测试用例生成流程",
+          "本文档定义了从 API 声明生成测试用例的完整流程，涵盖了从解析 .d.ts 文件到生成测试用例代码的各个步骤。"
         ]
       },
       "templates": {
@@ -394,7 +442,8 @@
     "uitest_test": "modules/L3_Generation/templates.md",
     "component_test": "references/subsystems/ArkUI/_common.md",
     "web_test": "references/subsystems/ArkWeb/_common.md",
-    "testfwk_test": "references/subsystems/testfwk/_common.md"
+    "testfwk_test": "references/subsystems/testfwk/_common.md",
+    "ability_test": "references/subsystems/ability/_common.md"
   },
   "api_kit_mapping": {
     "@kit.ArkTS": "UTILS",
@@ -404,10 +453,21 @@
     "@kit.ArkitGraphics": "GRAPHICS",
     "@kit.ArkUI": "ARKUI",
     "@kit.ArkWeb": "ARKWEB",
+    "@kit.AbilityKit": "ABILITY",
     "@kit.TestKit": "TESTFWK",
     "@ohos.UiTest": "UITEST"
   },
   "subsystem_mapping": {
+    "Ability": {
+      "kit": "@kit.AbilityKit",
+      "test_path": "test/xts/acts/ability/",
+      "config_path": "references/subsystems/ability/",
+      "modules": ["ability_runtime", "ability_base", "uiextension_cross_component", "fa_serviceability_testing"],
+      "reference_docs": {
+        "api_reference": "https://gitcode.com/openharmony/docs/tree/master/zh-cn/application-dev/reference/apis-ability-kit",
+        "guide": "https://gitcode.com/openharmony/docs/blob/master/zh-cn/application-dev/application-models/Readme-CN.md"
+      }
+    },
     "ArkUI": {
       "kit": "@kit.ArkUI",
       "test_path": "test/xts/acts/arkui/",

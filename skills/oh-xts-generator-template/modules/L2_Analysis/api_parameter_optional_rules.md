@@ -4,63 +4,6 @@
 > **更新日期**: 2026-03-03
 > **适用范围**: oh-xts-generator-template - L2_Analysis 模块 - API 参数和语法规则
 
-## 八、API 语法类型快速参考
-
-> 📘 **详细规则和流程**：API 语法类型识别、过滤和验证的完整流程请参阅 [unified_api_parser.md 第十章：API 语法类型过滤](# 十、api-语法类型过滤)
-
-### 8.1 快速查找指南
-
-| 需要查找 | 查阅位置 |
-|---------|---------|--------|
-| 语法类型标识 | 3.1.1.1 @since 标识 | 1-100 行 |
-| API 语法类型分类 | 3.1.3 API 语法类型分类 | 101-250 行 |
-| 语法类型过滤逻辑 | 第十章 | 1215-1220 行 |
-| 自动化验证 | check_syntax_type.js 脚本和文档 | scripts/ 目录 |
-
-### 8.2 相关文件
-
-| 文件 | 路径 | 说明 |
-|------|------|------|
-| 统一 API 解析器 | unified_api_parser.md | 主要文档，包含第十章语法类型过滤 |
-| API 解析器脚本 | api_parser.js | API 解析实现 |
-| 检查脚本 | scripts/check_syntax_type.js | 语法类型检查工具 |
-| 检查文档 | scripts/check_syntax_type_usage.md | 使用文档和示例 |
-| 测试用例生成流程 | L3_Generation/test_case_generation_flow.md | 第 3.1.5 节 |
-| 参数规则 | api_parameter_optional_rules.md | 本文件，详细的语法类型规则 |
-
-### 8.3 使用建议
-
-1. **在测试用例生成时集成语法类型过滤**：
-   - 根据任务语法类型（动态/静态）过滤 API
-   - 验证生成的测试用例使用的 API 是否支持目标语法类型
-   - 避免使用不支持目标语法的 API
-
-2. **编译前进行语法类型检查**：
-   ```bash
-   node ~/.opencode/skills/oh-xts-generator-template/scripts/check_syntax_type.js \
-     --syntax-type static \
-     --test-dir ./test/
-   ```
-
-3. **查阅详细规则**：
-   - 需要了解特定规则的实现细节？查看 api_parameter_optional_rules.md 的对应小节
-   - 需要了解验证逻辑？查看 unified_api_parser.md 第十章
-   - 需要了解 API 语法类型过滤逻辑？查看 unified_api_parser.md 第十章
-
-4. **避免重复**：
-   - unified_api_parser.md 第十章已经提供了统一的语法类型过滤说明
-   - 其他文档中避免重复说明，通过交叉引用指向详细规则
-
----
-
-## 九、参考文档
-
-> **文档版本**: 6.0.0
-> **更新日期**: 2026-03-03
-> **适用范围**: oh-xts-generator-template - L2_Analysis 模块 - API 参数和语法规则
-
----
-
 ## 一、概述
 
 本文档定义了 OpenHarmony API 的参数相关规则和语法类型判断规则，为测试用例生成提供详细的规范说明。
@@ -355,7 +298,22 @@ function parseApiSyntaxType(sinceTags) {
 - 测试用例生成：只需要生成空字符串的合法参数测试用例，不生成 ERROR 测试用例
 - 详细配置：参见 `testfwk/_common.md` 中的 `parameterRules` 和 `parameterTestingRules`
 
----
+**关键要点**：
+1. ✅ **必填参数**传入 null/undefined 时，**会抛出错误码**（错误码从 @throws 标记提取）
+2. ✅ **可选参数（显式）**传入 null/undefined 时，**不会抛出错误码**，使用默认值
+3. ✅ **可选参数（隐式）**传入 null/undefined 时，**不会抛出错误码**，调用旧版本重载
+4. ✅ **可选参数（显式和隐式）都需要生成 null/undefined 测试用例**，但测试预期是**不会抛出错误码**
+5. ✅ 可选参数有两种类型：显式（带 `?` 标记）和隐式（方法重载/API 版本演进）
+6. ✅ testfwk 子系统的空字符串是合法参数，不会抛出错误码
+7. ✅ **必须从 @throws 标记提取错误码**，不能假设所有参数错误都抛出 401
+
+**测试用例生成原则**：
+- **所有参数**（必填、可选）都需要生成 null/undefined 测试用例（ArkTS-Static 的必填参数除外）
+- 必填参数：生成 null/undefined 测试（验证错误码，从 @throws 提取）
+- 可选参数（显式/隐式）：生成 null/undefined 测试（验证不抛出错误码，使用默认值/调用重载）
+- 数值参数：生成边界值测试
+- testfwk 字符串参数：生成空字符串测试（合法参数）
+- **从 @throws 提取实际错误码**，不要假设固定值
 
 ## 六、边界值测试规则
 
@@ -402,100 +360,14 @@ await driver.swipeBetween(point, toPoint, speed);
 
 ## 八、子系统特殊规则
 
-**testfwk 子系统特殊规则**：
+- 详细配置：参见 `{subsystem}/_common.md` 中的 `parameterRules` 和 `parameterTestingRules`
+
+**示例：testfwk 子系统特殊规则**：
 - testfwk 子系统字符串参数的特殊规则已在子系统配置文件中详细说明
 - 配置位置：`references/subsystems/testfwk/_common.md`
 - **空字符串规则**：testfwk 子系统的字符串参数，空字符串 `''` 是合法参数，不会抛出错误码 401
 - 测试用例生成：只需要生成空字符串的合法参数测试用例，不生成 ERROR 测试用例
 - 详细配置：参见 `testfwk/_common.md` 中的 `parameterRules` 和 `parameterTestingRules`
-
----
-
-## 九、总结
-
-**关键要点**：
-1. ✅ **必填参数**传入 null/undefined 时，**会抛出错误码**（错误码从 @throws 标记提取）
-2. ✅ **可选参数（显式）**传入 null/undefined 时，**不会抛出错误码**，使用默认值
-3. ✅ **可选参数（隐式）**传入 null/undefined 时，**不会抛出错误码**，调用旧版本重载
-4. ✅ **可选参数（显式和隐式）都需要生成 null/undefined 测试用例**，但测试预期是**不会抛出错误码**
-5. ✅ 可选参数有两种类型：显式（带 `?` 标记）和隐式（方法重载/API 版本演进）
-6. ✅ testfwk 子系统的空字符串是合法参数，不会抛出错误码
-7. ✅ **必须从 @throws 标记提取错误码**，不能假设所有参数错误都抛出 401
-
-**测试用例生成原则**：
-- **所有参数**（必填、可选）都需要生成 null/undefined 测试用例（ArkTS-Static 的必填参数除外）
-- 必填参数：生成 null/undefined 测试（验证错误码，从 @throws 提取）
-- 可选参数（显式/隐式）：生成 null/undefined 测试（验证不抛出错误码，使用默认值/调用重载）
-- 数值参数：生成边界值测试
-- testfwk 字符串参数：生成空字符串测试（合法参数）
-- **从 @throws 提取实际错误码**，不要假设固定值
-
----
-
-## 八、测试用例生成流程
-
-### 8.1 步骤1：解析 .d.ts 文件
-
-读取 API 声明文件，提取：
-1. 方法签名和参数列表
-2. `@throws` 标记中的错误码和触发条件
-3. `@since` 标签判断 API 语法类型（动态/静态）
-4. 是否存在方法重载
-
-### 8.2 步骤2：检查方法重载
-
-查找同一方法是否存在多个重载版本：
-```typescript
-// 存在两个重载
-inputText(text: string): Promise<void>;
-inputText(text: string, mode: InputTextMode): Promise<void>;
-
-// 结论：mode 是隐式可选参数
-```
-
-### 8.3 步骤3：确定参数类型
-
-对每个参数进行分类：
-1. **显式可选**：参数名带 `?` 标记
-2. **隐式可选**：通过方法重载判断
-3. **必填参数**：不属于上述两种情况
-
-### 8.4 步骤4：提取错误码
-
-从 `@throws` 标记中提取该 API 声明的错误码：
-- 记录错误码列表
-- 记录每个错误码的触发条件
-- 确定哪些错误码与参数相关
-
-### 8.5 步骤5：生成测试用例
-
-根据参数类型和 API 语法类型生成相应的测试用例：
-
-#### 对于必填参数：
-- ✅ 生成 null 测试（预期抛出错误码，从 @throws 提取）
-- ✅ 生成 undefined 测试（预期抛出错误码，从 @throws 提取）
-- ✅ 生成边界值测试（如适用）
-- ✅ 生成空字符串测试（如果是 string 类型且是 testfwk 子系统）
-
-#### 对于可选参数（显式和隐式）：
-- ✅ 生成 null 测试（预期不抛出错误码，使用默认值/调用重载）
-- ✅ 生成 undefined 测试（预期不抛出错误码，使用默认值/调用重载）
-- ✅ 生成边界值测试（验证可选参数功能）
-- ✅ 生成功能测试（验证新增参数的作用）
-
-**ArkTS-Dynamic 语法规则**：
-- ⚠️ 禁止使用类型断言：`null as unknown as Type`、`undefined as unknown as Type`
-- ✅ 直接传入 `null` 或 `undefined`
-- ✅ ArkTS-Dynamic 不会因此发生类型错误
-
-**ArkTS-Static 语法规则**：
-- ⚠️ 必填参数无需生成 null/undefined 测试（编译时检查）
-- ✅ 可选参数仍需生成测试用例
-- ✅ 所有类型必须有显式注解
-
----
-
-## 九、示例
 
 ### 示例1：Component.inputText()
 
@@ -650,8 +522,6 @@ describe('UiTest Module Test', () => {
 });
 ```
 
----
-
 ## 十一、常见错误
 
 ### 错误1：为可选参数生成错误测试预期
@@ -744,32 +614,7 @@ it('testMandatoryParamError', async () => {
 - 仅对可选参数生成 null/undefined 测试
 - 必填参数的类型错误在编译时检查
 
----
-
-## 十二、总结
-
-**关键要点**：
-1. ✅ **必填参数**传入 null/undefined 时，**会抛出错误码**（错误码从 @throws 标记提取）
-2. ✅ **可选参数（显式）**传入 null/undefined 时，**不会抛出错误码**，使用默认值
-3. ✅ **可选参数（隐式）**传入 null/undefined 时，**不会抛出错误码**，调用旧版本重载
-4. ✅ **可选参数（显式和隐式）都需要生成 null/undefined 测试用例**，但测试预期是**不会抛出错误码**
-5. ✅ 可选参数有两种类型：显式（带 `?` 标记）和隐式（方法重载/API 版本演进）
-6. ✅ testfwk 子系统的空字符串是合法参数，不会抛出错误码
-7. ✅ **必须从 @throws 标记提取错误码**，不能假设所有参数错误都抛出 401
-8. ✅ 需要识别 API 语法类型（动态/静态），确定工程兼容性
-9. ✅ ArkTS-Static 编译时进行类型检查，必填参数无需生成 null/undefined 测试
-
-**测试用例生成原则**：
-- **所有参数**（必填、可选）都需要生成 null/undefined 测试用例（ArkTS-Static 的必填参数除外）
-- 必填参数：生成 null/undefined 测试（验证错误码，从 @throws 提取）
-- 可选参数（显式/隐式）：生成 null/undefined 测试（验证不抛出错误码，使用默认值/调用重载）
-- 数值参数：生成边界值测试
-- testfwk 字符串参数：生成空字符串测试（合法参数）
-- **从 @throws 提取实际错误码**，不要假设固定值
-
----
-
-## 八、参考文档
+## 十二、参考文档
 
 - **统一API解析器**: `modules/L2_Analysis/unified_api_parser.md`
 - **API 解析器**: `modules/L2_Analysis/api_parser.md`
