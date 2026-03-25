@@ -1,0 +1,242 @@
+{
+  "version": "1.0.0",
+  "description": "拼写检查规则，包括鸿蒙专有名词校验",
+  "commonMisspellings": {
+    "Javscript": "JavaScript",
+    "javscript": "JavaScript",
+    "recieve": "receive",
+    "recive": "receive",
+    "seperate": "separate",
+    "separate": "separate",
+    "occurance": "occurrence",
+    "occurence": "occurrence",
+    "authentification": "authentication",
+    "autherization": "authorization",
+    "refernce": "reference",
+    "referene": "reference",
+    "paramter": "parameter",
+    "paramter": "parameter",
+    "retreive": "retrieve",
+    "retrive": "retrieve",
+    "initalize": "initialize",
+    "initialze": "initialize",
+    "defualt": "default",
+    "defaut": "default",
+    "configration": "configuration",
+    "configuraton": "configuration",
+    "enviroment": "environment",
+    "enviroment": "environment",
+    "successfull": "successful",
+    "succesful": "successful",
+    "asyc": "async",
+    "aync": "async",
+    "fucntion": "function",
+    "funtion": "function",
+    "vlaue": "value",
+    "vaue": "value",
+    "calback": "callback",
+    "callbak": "callback",
+    "instace": "instance",
+    "instnce": "instance",
+    "propery": "property",
+    "propert": "property",
+    "methd": "method",
+    "mehtod": "method",
+    "destory": "destroy",
+    "destory": "destroy",
+    "destoryed": "destroyed"
+  },
+  "harmonyOSGlossary": {
+    "AbilityFramework": {
+      "UIAbility": {
+        "correct": "UIAbility",
+        "variants": ["UiAbility", "uiAbility", "UIability", "uiability"]
+      },
+      "AbilityStage": {
+        "correct": "AbilityStage",
+        "variants": ["Abilitystage", "abilityStage", "abilitystage"]
+      },
+      "ExtensionAbility": {
+        "correct": "ExtensionAbility",
+        "variants": ["Extensionability", "extensionAbility", "extensionability"]
+      },
+      "WindowStage": {
+        "correct": "WindowStage",
+        "variants": ["Windowstage", "windowStage", "windowstage"]
+      },
+      "EntryAbility": {
+        "correct": "EntryAbility",
+        "variants": ["Entryability", "entryAbility", "entryability"]
+      }
+    },
+    "ContextTypes": {
+      "UIAbilityContext": {
+        "correct": "UIAbilityContext",
+        "variants": ["UiAbilityContext", "uiAbilityContext", "UIabilityContext"]
+      },
+      "AbilityStageContext": {
+        "correct": "AbilityStageContext",
+        "variants": ["AbilitystageContext", "abilityStageContext"]
+      },
+      "ApplicationContext": {
+        "correct": "ApplicationContext",
+        "variants": ["Applicationcontext", "applicationContext"]
+      },
+      "BaseContext": {
+        "correct": "BaseContext",
+        "variants": ["Basecontext", "baseContext"]
+      },
+      "ExtensionAbilityContext": {
+        "correct": "ExtensionAbilityContext",
+        "variants": ["ExtensionabilityContext", "extensionAbilityContext"]
+      }
+    },
+    "ModuleSystem": {
+      "HAP": {
+        "correct": "HAP",
+        "variants": ["hap", "Hap"]
+      },
+      "HSP": {
+        "correct": "HSP",
+        "variants": ["hsp", "Hsp"]
+      },
+      "HAR": {
+        "correct": "HAR",
+        "variants": ["har", "Har"]
+      }
+    },
+    "Decorators": {
+      "@Entry": {
+        "correct": "@Entry",
+        "variants": ["@entry", "@ENTRY"]
+      },
+      "@Component": {
+        "correct": "@Component",
+        "variants": ["@component", "@COMPONENT"]
+      },
+      "@State": {
+        "correct": "@State",
+        "variants": ["@state", "@STATE"]
+      },
+      "@Prop": {
+        "correct": "@Prop",
+        "variants": ["@prop", "@PROP"]
+      },
+      "@Link": {
+        "correct": "@Link",
+        "variants": ["@link", "@LINK"]
+      },
+      "@Provide": {
+        "correct": "@Provide",
+        "variants": ["@provide", "@PROVIDE"]
+      },
+      "@Consume": {
+        "correct": "@Consume",
+        "variants": ["@consume", "@CONSUME"]
+      },
+      "@Watch": {
+        "correct": "@Watch",
+        "variants": ["@watch", "@WATCH"]
+      },
+      "@Builder": {
+        "correct": "@Builder",
+        "variants": ["@builder", "@BUILDER"]
+      }
+    },
+    "CommonTypes": {
+      "AsyncCallback": {
+        "correct": "AsyncCallback",
+        "variants": ["Asynccallback", "asyncCallback", "asynccallback"]
+      },
+      "Callback": {
+        "correct": "Callback",
+        "variants": ["callback", "CALLBACK"]
+      },
+      "ESObject": {
+        "correct": "ESObject",
+        "variants": ["Esobject", "esObject", "esobject", "ESobject"]
+      },
+      "BusinessError": {
+        "correct": "BusinessError",
+        "variants": ["Businesserror", "businessError", "businesserror"]
+      },
+      "Resource": {
+        "correct": "Resource",
+        "variants": ["resource"]
+      },
+      "Want": {
+        "correct": "Want",
+        "variants": ["want", "WANT"]
+      }
+    },
+    "ConfigurationFiles": {
+      "module.json5": {
+        "correct": "module.json5",
+        "variants": ["module.json", "Module.json5"]
+      },
+      "oh-package.json5": {
+        "correct": "oh-package.json5",
+        "variants": ["oh-package.json", "ohPackage.json5"]
+      },
+      "build-profile.json5": {
+        "correct": "build-profile.json5",
+        "variants": ["buildProfile.json5", "build_profile.json5"]
+      }
+    },
+    "Kits": {
+      "@kit.ArkTS": {
+        "correct": "@kit.ArkTS",
+        "variants": ["@kit.arkts", "@ohos.arkts"]
+      },
+      "@kit.ArkUI": {
+        "correct": "@kit.ArkUI",
+        "variants": ["@kit.arkui", "@ohos.arkui"]
+      },
+      "@kit.AbilityKit": {
+        "correct": "@kit.AbilityKit",
+        "variants": ["@kit.abilitykit", "@ohos.abilitykit"]
+      }
+    }
+  },
+  "rules": [
+    {
+      "id": "spelling-001",
+      "name": "common-misspelling",
+      "description": "常见英文单词拼写错误",
+      "type": "spelling",
+      "priority": "medium",
+      "confidence": 95,
+      "enabled": true,
+      "checkInCodeBlocks": false,
+      "message": "\"{wrong}\" 拼写错误，应为 \"{correct}\"",
+      "autoFixable": true
+    },
+    {
+      "id": "spelling-002",
+      "name": "harmonyos-glossary",
+      "description": "鸿蒙专有名词大小写错误",
+      "type": "spelling",
+      "priority": "high",
+      "confidence": 95,
+      "enabled": true,
+      "checkInCodeBlocks": true,
+      "message": "\"{wrong}\" 应为 \"{correct}\"",
+      "explanation": "鸿蒙专有名词应使用标准大小写形式",
+      "autoFixable": true
+    },
+    {
+      "id": "spelling-003",
+      "name": "unknown-decorator",
+      "description": "未知的装饰器",
+      "type": "spelling",
+      "priority": "medium",
+      "confidence": 70,
+      "enabled": true,
+      "checkInCodeBlocks": true,
+      "pattern": "@([A-Za-z]+)",
+      "validDecorators": ["Entry", "Component", "State", "Prop", "Link", "Provide", "Consume", "Watch", "Builder", "CustomDialog", "Extend", "Styles", "Animate", "StorageLink", "StorageProp", "ObjectLink", "Observed"],
+      "message": "未知装饰器 \"@{decorator}\"，请检查拼写",
+      "autoFixable": false
+    }
+  ]
+}
