@@ -1,0 +1,4 @@
+interface:
+  display_name: "OpenHarmony CI"
+  short_description: "Inspect OpenHarmony PR CI and logs"
+  default_prompt: "Use $openharmony-ci to inspect OpenHarmony PR CI from a PR number, PR URL, or DCP event id, and fetch logs only for failed jobs."
