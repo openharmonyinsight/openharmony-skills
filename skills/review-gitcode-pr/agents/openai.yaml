@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review GitCode PR"
+  short_description: "Review GitCode PRs with oh-gc"
+  default_prompt: "Use $review-gitcode-pr to inspect GitCode PR 123 with oh-gc, review the local code, and prepare comments for submission."
