@@ -1,0 +1,293 @@
+{
+  "version": "1.0.0",
+  "description": "能力有效性/易用性/丰富性检查规则 - 确保API设计合理且易于使用",
+  "categories": {
+    "validity": "能力有效性",
+    "usability": "能力易用性",
+    "richness": "能力丰富性"
+  },
+  "rules": [
+    {
+      "id": "capability-001",
+      "name": "constraint-missing",
+      "description": "约束条件缺失（能力有效性）",
+      "type": "capability",
+      "subType": "validity",
+      "priority": "high",
+      "confidence": 85,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "device-constraint",
+          "description": "设备类型限制",
+          "check": "检查是否说明支持的设备类型"
+        },
+        {
+          "name": "api-level-constraint",
+          "description": "API级别限制",
+          "check": "检查是否说明最低API版本"
+        },
+        {
+          "name": "permission-constraint",
+          "description": "权限要求",
+          "check": "检查是否说明需要的权限"
+        },
+        {
+          "name": "system-capability-constraint",
+          "description": "系统能力要求",
+          "check": "检查是否声明SystemCapability"
+        },
+        {
+          "name": "performance-constraint",
+          "description": "性能限制",
+          "check": "检查是否说明性能相关限制"
+        }
+      ],
+      "requiredConstraints": {
+        "systemApi": ["SystemCapability", "权限", "设备限制"],
+        "newApi": ["@since", "API version"],
+        "performanceSensitive": ["性能影响", "资源占用", "调用频率限制"]
+      },
+      "message": "API缺少必要的约束条件说明，开发者可能在不适用场景下误用",
+      "suggestedFix": "添加约束条件说明章节，明确设备、版本、权限、性能限制"
+    },
+    {
+      "id": "capability-002",
+      "name": "known-issues-missing",
+      "description": "系统bug/已知问题缺失（能力有效性）",
+      "type": "capability",
+      "subType": "validity",
+      "priority": "high",
+      "confidence": 80,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "known-issues-section",
+          "description": "应有已知问题说明",
+          "check": "复杂API应说明已知问题和限制"
+        },
+        {
+          "name": "workaround-provided",
+          "description": "应提供规避方案",
+          "check": "已知问题应附带规避方法"
+        }
+      ],
+      "keywords": {
+        "knownIssues": ["已知问题", "限制", "暂不支持", "当前版本"],
+        "workaround": ["规避方案", "临时方案", "建议", "替代方法"]
+      },
+      "message": "文档未说明已知问题或系统限制",
+      "suggestedFix": "添加'已知问题'或'限制'章节，说明当前版本的限制和规避方案"
+    },
+    {
+      "id": "capability-003",
+      "name": "outdated-documentation",
+      "description": "资料过时未更新（能力有效性）",
+      "type": "capability",
+      "subType": "validity",
+      "priority": "high",
+      "confidence": 85,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "deprecation-mark",
+          "description": "废弃API应明确标记",
+          "check": "废弃的API应有@deprecated标记"
+        },
+        {
+          "name": "alternative-provided",
+          "description": "应提供替代方案",
+          "check": "废弃API应说明替代方案"
+        },
+        {
+          "name": "version-sync",
+          "description": "版本信息应同步",
+          "check": "文档版本应与代码实现一致"
+        }
+      ],
+      "deprecationIndicators": [
+        "@deprecated",
+        "废弃",
+        "不再推荐",
+        "即将删除",
+        "请使用",
+        "替代"
+      ],
+      "message": "文档内容可能已过时，与最新实现不符",
+      "suggestedFix": "核对文档与最新代码实现，更新废弃标记和替代方案"
+    },
+    {
+      "id": "capability-004",
+      "name": "naming-ambiguity",
+      "description": "命名存在歧义（能力易用性）",
+      "type": "capability",
+      "subType": "usability",
+      "priority": "medium",
+      "confidence": 75,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "api-name-clarity",
+          "description": "API名称应清晰无歧义",
+          "check": "API名称应准确表达其功能"
+        },
+        {
+          "name": "parameter-name-clarity",
+          "description": "参数名应清晰",
+          "check": "参数名应准确表达其含义"
+        },
+        {
+          "name": "consistent-naming",
+          "description": "命名应保持一致性",
+          "check": "相似功能的API应使用一致的命名风格"
+        }
+      ],
+      "ambiguousPatterns": [
+        {
+          "pattern": "doSomething|processData|handleEvent",
+          "issue": "过于通用的动词，无法表达具体功能"
+        },
+        {
+          "pattern": "param1|arg2|value",
+          "issue": "无意义的参数名"
+        }
+      ],
+      "message": "API或参数命名可能存在歧义，影响开发者理解",
+      "suggestedFix": "使用更精确、描述性更强的命名"
+    },
+    {
+      "id": "capability-005",
+      "name": "example-not-practical",
+      "description": "示例代码不实用（能力易用性）",
+      "type": "capability",
+      "subType": "usability",
+      "priority": "high",
+      "confidence": 80,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "real-world-scenario",
+          "description": "示例应贴近实际场景",
+          "check": "示例应展示真实的使用场景"
+        },
+        {
+          "name": "complete-workflow",
+          "description": "应展示完整流程",
+          "check": "示例应包含完整的调用流程"
+        },
+        {
+          "name": "error-handling",
+          "description": "应包含错误处理",
+          "check": "示例应展示错误处理"
+        },
+        {
+          "name": "best-practice",
+          "description": "应体现最佳实践",
+          "check": "示例代码应符合最佳实践"
+        }
+      ],
+      "indicators": {
+        "badExamples": [
+          "示例仅打印日志，无实际业务逻辑",
+          "示例缺少错误处理",
+          "示例使用硬编码值而非动态获取",
+          "示例过于简化，无法用于生产环境"
+        ],
+        "goodExamples": [
+          "示例展示完整的业务流程",
+          "包含输入验证和错误处理",
+          "使用合理的默认值",
+          "代码可直接用于生产环境"
+        ]
+      },
+      "message": "示例代码不够实用，无法指导开发者完成实际开发",
+      "suggestedFix": "提供贴近实际场景的完整示例，包含错误处理和最佳实践"
+    },
+    {
+      "id": "capability-006",
+      "name": "alternative-missing",
+      "description": "替代方案缺失（能力丰富性）",
+      "type": "capability",
+      "subType": "richness",
+      "priority": "medium",
+      "confidence": 70,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "alternative-api",
+          "description": "应提供替代API",
+          "check": "对于复杂场景应提供替代方案"
+        },
+        {
+          "name": "comparison-provided",
+          "description": "应提供方案对比",
+          "check": "多方案时应说明各自适用场景"
+        }
+      ],
+      "keywords": {
+        "alternative": [" alternatively", "或者", "另一种方式", "替代方案"],
+        "comparison": ["相比", "vs", "versus", "推荐使用", "适用场景"]
+      },
+      "message": "文档未提供替代方案，限制开发者选择",
+      "suggestedFix": "对于有多种实现方式的场景，提供替代方案及适用场景对比"
+    },
+    {
+      "id": "capability-007",
+      "name": "system-capability-missing",
+      "description": "系统能力缺失（能力丰富性）",
+      "type": "capability",
+      "subType": "richness",
+      "priority": "medium",
+      "confidence": 75,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "capability-declaration",
+          "description": "必须声明系统能力",
+          "check": "API必须声明所需的SystemCapability"
+        },
+        {
+          "name": "capability-explanation",
+          "description": "应解释系统能力含义",
+          "check": "应说明SystemCapability代表的能力"
+        }
+      ],
+      "requiredPattern": "SystemCapability\\.[A-Za-z.]+",
+      "message": "API未声明所需的系统能力",
+      "suggestedFix": "添加SystemCapability声明，并解释其含义"
+    },
+    {
+      "id": "capability-008",
+      "name": "debugging-support-missing",
+      "description": "稳定性定位手段缺失（能力丰富性）",
+      "type": "capability",
+      "subType": "richness",
+      "priority": "medium",
+      "confidence": 70,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "error-code-clarity",
+          "description": "错误码应清晰可定位",
+          "check": "错误码应有明确含义和解决方案"
+        },
+        {
+          "name": "logging-guidance",
+          "description": "应提供日志指导",
+          "check": "复杂场景应说明如何查看日志"
+        },
+        {
+          "name": "debug-method",
+          "description": "应提供调试方法",
+          "check": "应说明如何调试和定位问题"
+        }
+      ],
+      "keywords": {
+        "errorHandling": ["错误码", "异常", "错误处理", "try-catch"],
+        "debugging": ["日志", "调试", "定位", "排查", "hilog", "console"]
+      },
+      "message": "文档缺少问题定位和调试手段的说明",
+      "suggestedFix": "添加错误码说明、日志查看方法和调试指导"
+    }
+  ]
+}

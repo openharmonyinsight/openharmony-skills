@@ -1,0 +1,307 @@
+{
+  "version": "1.1.0",
+  "description": "资料正确性检查规则 - 确保文档内容准确无误",
+  "category": "资料正确性",
+  "sdkSourceCheck": {
+    "enabled": true,
+    "description": "文档与SDK源码一致性检查",
+    "sdkRepository": {
+      "gitcode": "https://gitcode.com/openharmony/interface_sdk-js",
+      "gitee": "https://gitee.com/openharmony/interface_sdk-js",
+      "localPath": "${INTERFACE_SDK_JS_PATH}"
+    },
+    "mappingRules": {
+      "filePattern": "js-apis(-inner-)?{module}(-{name})?(-sys)?\\.md",
+      "sdkFileMapping": {
+        "js-apis-app-ability-{name}.md": "api/@ohos.app.ability.{name}.d.ts",
+        "js-apis-{name}.md": "api/@ohos.{name}.d.ts",
+        "js-apis-inner-{module}-{name}.md": "api/{module}/{name}.d.ts",
+        "js-apis-inner-{module}-{name}-sys.md": "api/{module}/{name}.d.ts",
+        "capi-{name}.md": "api/{name}.h"
+      }
+    }
+  },
+  "rules": [
+    {
+      "id": "correctness-001",
+      "name": "version-update-lag",
+      "description": "变更未及时更新",
+      "type": "correctness",
+      "priority": "high",
+      "confidence": 85,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "api-version-mark",
+          "description": "API版本标记应准确",
+          "check": "检查@since标记是否与实现一致"
+        },
+        {
+          "name": "changelog-sync",
+          "description": "变更日志应与实现同步",
+          "check": "文档描述应与最新代码实现一致"
+        },
+        {
+          "name": "deprecation-mark",
+          "description": "废弃API应明确标记",
+          "check": "废弃的API应有明确标记和替代方案"
+        }
+      ],
+      "validation": {
+        "versionPatterns": [
+          "@since\\s+\\d+",
+          "API version\\s+\\d+",
+          "<sup>\\d+\\+?</sup>"
+        ],
+        "deprecationPatterns": [
+          "@deprecated",
+          "废弃",
+          "即将删除",
+          "不再推荐使用"
+        ]
+      },
+      "message": "文档版本信息可能未及时更新，与实现不一致",
+      "suggestedFix": "核对文档与代码实现，更新版本标记和变更说明"
+    },
+    {
+      "id": "correctness-002",
+      "name": "example-code-broken",
+      "description": "示例代码不完整/不可用",
+      "type": "correctness",
+      "priority": "critical",
+      "confidence": 95,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "syntax-validity",
+          "description": "示例代码语法必须正确",
+          "check": "代码应符合ArkTS/TypeScript语法"
+        },
+        {
+          "name": "import-completeness",
+          "description": "导入语句必须完整",
+          "check": "所有使用的模块都应有导入"
+        },
+        {
+          "name": "variable-definition",
+          "description": "变量必须先定义后使用",
+          "check": "使用的变量应在代码中定义"
+        },
+        {
+          "name": "api-availability",
+          "description": "使用的API必须存在",
+          "check": "代码中调用的API应存在且可访问"
+        }
+      ],
+      "syntaxChecks": {
+        "typescript": [
+          "unclosed-braces",
+          "unclosed-parentheses",
+          "unclosed-brackets",
+          "invalid-template-string",
+          "missing-imports"
+        ]
+      },
+      "message": "示例代码存在语法错误或无法运行",
+      "suggestedFix": "修正代码语法错误，确保示例可编译运行"
+    },
+    {
+      "id": "correctness-003",
+      "name": "jsdoc-description-error",
+      "description": "JSDOC描述错误",
+      "type": "correctness",
+      "priority": "high",
+      "confidence": 85,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "param-type-match",
+          "description": "参数类型描述应匹配",
+          "check": "JSDOC中的@param类型应与实现一致"
+        },
+        {
+          "name": "return-type-match",
+          "description": "返回值类型描述应匹配",
+          "check": "JSDOC中的@return类型应与实现一致"
+        },
+        {
+          "name": "description-accuracy",
+          "description": "功能描述应准确",
+          "check": "描述应与实际行为一致"
+        }
+      ],
+      "validation": {
+        "jsdocTags": ["@param", "@returns", "@throws", "@since", "@deprecated"],
+        "requireDescription": true,
+        "requireType": true
+      },
+      "message": "JSDOC描述与实现不一致",
+      "suggestedFix": "核对JSDOC与实际代码，修正不准确的描述"
+    },
+    {
+      "id": "correctness-004",
+      "name": "path-consistency-across-doc",
+      "description": "文档内部路径一致性",
+      "type": "correctness",
+      "priority": "high",
+      "confidence": 90,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "step-path-match",
+          "description": "步骤创建的目录应与配置引用一致",
+          "check": "检查步骤1创建的目录名与module.json5中的srcEntry是否匹配"
+        },
+        {
+          "name": "sample-path-match",
+          "description": "文档路径应与Sample代码一致",
+          "check": "检查文档描述与GitCode Sample的路径是否一致"
+        }
+      ],
+      "patterns": {
+        "creationPattern": "新建.*目录.*命名为\\s*(\\w+)",
+        "srcEntryPattern": "srcEntry.*:\\s*['\"]([^'\"]+)['\"]",
+        "samplePattern": "gitcode\\.com.*\\/ets\\/(\\w+)\\/"
+      },
+      "message": "文档内部路径描述不一致",
+      "suggestedFix": "统一文档中所有路径引用，确保与Sample代码一致"
+    },
+    {
+      "id": "correctness-005",
+      "name": "link-validity",
+      "description": "链接有效性检查",
+      "type": "correctness",
+      "priority": "medium",
+      "confidence": 80,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "internal-link-valid",
+          "description": "内部链接应有效",
+          "check": "相对路径链接应指向存在的文档"
+        },
+        {
+          "name": "anchor-validity",
+          "description": "锚点链接应有效",
+          "check": "文档内锚点(#id)应存在"
+        }
+      ],
+      "indicators": {
+        "brokenLinkPatterns": [
+          "404",
+          "页面不存在",
+          "Page not found"
+        ]
+      },
+      "message": "文档中包含无效链接",
+      "suggestedFix": "修复或更新无效链接"
+    },
+    {
+      "id": "correctness-006",
+      "name": "sdk-source-consistency",
+      "description": "文档与SDK源码不一致",
+      "type": "correctness",
+      "priority": "critical",
+      "confidence": 90,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "api-since-version-match",
+          "description": "API起始版本应与SDK一致",
+          "check": "对比文档中的<sup>X+</sup>与SDK中的@since标签"
+        },
+        {
+          "name": "param-count-match",
+          "description": "入参数量应与SDK一致",
+          "check": "对比文档表格中的参数数量与SDK中@param标签数量"
+        },
+        {
+          "name": "param-name-match",
+          "description": "入参名称应与SDK一致",
+          "check": "对比文档中的参数名与SDK中的@param参数名"
+        },
+        {
+          "name": "param-type-match",
+          "description": "入参类型应与SDK一致",
+          "check": "对比文档中的参数类型与SDK中的参数类型"
+        },
+        {
+          "name": "return-type-match",
+          "description": "返回值类型应与SDK一致",
+          "check": "对比文档中的返回值类型与SDK中的@return/@returns类型"
+        },
+        {
+          "name": "systemapi-mark-match",
+          "description": "系统接口标记应与SDK一致",
+          "check": "文档中的系统接口标记(-sys)应与SDK中的@systemapi标记一致"
+        },
+        {
+          "name": "stagemodelonly-mark-match",
+          "description": "模型约束标记应与SDK一致",
+          "check": "文档中的Stage模型约束应与SDK中的@stagemodelonly标记一致"
+        },
+        {
+          "name": "error-code-match",
+          "description": "错误码应与SDK一致",
+          "check": "对比文档中的错误码与SDK中的@throws BusinessError错误码"
+        },
+        {
+          "name": "enum-values-complete",
+          "description": "枚举值应完整",
+          "check": "对比文档中的枚举值与SDK中的枚举定义，确保无遗漏"
+        },
+        {
+          "name": "interface-fields-complete",
+          "description": "接口字段应完整",
+          "check": "对比文档中的属性/字段与SDK中的interface定义"
+        }
+      ],
+      "validation": {
+        "versionPatterns": {
+          "doc": "<sup>(\\d+)\\+?</sup>",
+          "sdk": "@since\\s+(?:arkts\\s*\\{[^}]*\\])?\\s*(\\d+)"
+        },
+        "paramPatterns": {
+          "doc": "\\|\\s*(\\w+)\\s*\\|\\s*([^|]+)\\s*\\|",
+          "sdk": "@param\\s+(?:\\{[^}]+\\})?\\s*(\\w+)"
+        },
+        "returnPatterns": {
+          "doc": "returns?\\s*\\{?([^}]+)\\}?",
+          "sdk": "@returns?\\s*\\{([^}]+)\\}"
+        },
+        "errorCodePatterns": {
+          "doc": "(\\d{6,})\\s*[-—]",
+          "sdk": "@throws\\s+\\{[^}]+\\}\\s+(\\d{6,})"
+        },
+        "systemapiIndicators": {
+          "doc": ["系统接口", "-sys.md", "@systemapi"],
+          "sdk": ["@systemapi"]
+        },
+        "stagemodelIndicators": {
+          "doc": ["Stage模型", "stagemodelonly"],
+          "sdk": ["@stagemodelonly"]
+        }
+      },
+      "message": "文档内容与SDK源码不一致：{detail}",
+      "suggestedFix": "核对SDK源码中的JSDOC，更新文档中的{field}信息",
+      "examples": {
+        "versionMismatch": {
+          "issue": "文档标注为 22+，但SDK中为 @since 20",
+          "fix": "将文档版本标记改为 20+"
+        },
+        "paramMismatch": {
+          "issue": "文档缺少 userId 参数",
+          "fix": "补充 userId 参数及其类型说明"
+        },
+        "enumMissing": {
+          "issue": "文档缺少 START_SERVICE_EXTENSION 枚举值",
+          "fix": "补充系统接口枚举值"
+        },
+        "systemapiMismatch": {
+          "issue": "SDK标记为@systemapi，但文档未标记-sys",
+          "fix": "确认文档命名和标记是否符合系统接口规范"
+        }
+      }
+    }
+  ]
+}

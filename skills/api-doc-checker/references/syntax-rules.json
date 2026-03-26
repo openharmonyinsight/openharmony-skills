@@ -1,0 +1,121 @@
+{
+  "version": "1.0.0",
+  "description": "代码语法检查规则",
+  "rules": [
+    {
+      "id": "syntax-001",
+      "name": "template-string-invalid-space",
+      "description": "模板字符串 ${ 之间有空格",
+      "type": "syntax",
+      "priority": "high",
+      "confidence": 100,
+      "enabled": true,
+      "languages": ["typescript", "arkts", "ets", "javascript"],
+      "pattern": {
+        "type": "regex",
+        "value": "\\$\\s*\\{",
+        "flags": "g"
+      },
+      "message": "模板字符串语法错误：`${` 之间不能有空格",
+      "explanation": "ArkTS/TypeScript 中模板字符串必须使用 `${expression}` 格式，`$` 和 `{` 必须紧连",
+      "fix": {
+        "type": "replace",
+        "pattern": "\\$\\s*\\{",
+        "replacement": "${"
+      },
+      "examples": {
+        "bad": [
+          "`${ error.message }`",
+          "`${error.message }`",
+          "`$  {error.message}`"
+        ],
+        "good": [
+          "`${error.message}`",
+          "`${value}`"
+        ]
+      }
+    },
+    {
+      "id": "syntax-002",
+      "name": "unclosed-brace",
+      "description": "未闭合的大括号",
+      "type": "syntax",
+      "priority": "high",
+      "confidence": 90,
+      "enabled": true,
+      "languages": ["typescript", "arkts", "ets", "javascript", "json", "json5"],
+      "pattern": {
+        "type": "function",
+        "name": "checkUnclosedBraces"
+      },
+      "message": "检测到未闭合的大括号",
+      "explanation": "代码块中 `{` 和 `}` 数量不匹配，可能导致语法错误"
+    },
+    {
+      "id": "syntax-003",
+      "name": "unclosed-parenthesis",
+      "description": "未闭合的圆括号",
+      "type": "syntax",
+      "priority": "high",
+      "confidence": 90,
+      "enabled": true,
+      "languages": ["typescript", "arkts", "ets", "javascript"],
+      "pattern": {
+        "type": "function",
+        "name": "checkUnclosedParentheses"
+      },
+      "message": "检测到未闭合的圆括号",
+      "explanation": "代码中 `(` 和 `)` 数量不匹配，可能导致语法错误"
+    },
+    {
+      "id": "syntax-004",
+      "name": "unclosed-bracket",
+      "description": "未闭合的方括号",
+      "type": "syntax",
+      "priority": "high",
+      "confidence": 90,
+      "enabled": true,
+      "languages": ["typescript", "arkts", "ets", "javascript", "json", "json5"],
+      "pattern": {
+        "type": "function",
+        "name": "checkUnclosedBrackets"
+      },
+      "message": "检测到未闭合的方括号",
+      "explanation": "代码中 `[` 和 `]` 数量不匹配，可能导致语法错误"
+    },
+    {
+      "id": "syntax-005",
+      "name": "mismatched-quotes",
+      "description": "引号不匹配",
+      "type": "syntax",
+      "priority": "high",
+      "confidence": 95,
+      "enabled": true,
+      "languages": ["typescript", "arkts", "ets", "javascript", "json", "json5"],
+      "pattern": {
+        "type": "regex",
+        "value": "(?<![\\])['\"](?![\\])[^'\"]*$",
+        "flags": "gm"
+      },
+      "message": "检测到可能未闭合的字符串引号",
+      "explanation": "字符串引号可能没有正确闭合"
+    },
+    {
+      "id": "syntax-006",
+      "name": "missing-semicolon",
+      "description": "缺少分号",
+      "type": "syntax",
+      "priority": "low",
+      "confidence": 60,
+      "enabled": false,
+      "languages": ["typescript", "arkts", "ets"],
+      "pattern": {
+        "type": "regex",
+        "value": "(?<!;)(?<!{)\\s*\\n(?=\\s*(?:let|const|var|import|export|function|class|interface|type|enum))",
+        "flags": "g"
+      },
+      "message": "语句末尾可能缺少分号",
+      "explanation": "虽然 ArkTS 支持自动分号插入，但显式添加分号可以避免歧义"
+    }
+  ]
+}
