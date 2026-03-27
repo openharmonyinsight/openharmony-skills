@@ -133,7 +133,7 @@ func (api *IssueAPI) UpdateIssue(owner, repo string, issueNumber int, options Up
 	return &issue, nil
 }
 
-// CloseIssue 关闭Issue
+// CloseIssue 关闭Issue (与CLI保持一致使用state字段)
 func (api *IssueAPI) CloseIssue(owner, repo string, issueNumber int) (*Issue, error) {
 	return api.UpdateIssue(owner, repo, issueNumber, UpdateIssueOptions{
 		State: "closed",
@@ -189,17 +189,22 @@ func (api *IssueAPI) EditComment(owner, repo string, commentID int, body string)
 	options := map[string]string{
 		"body": body,
 	}
-	
+
 	resp, err := api.Client.PATCH(path, nil, options)
 	if err != nil {
 		return nil, err
 	}
-	
+
+	// GitCode PATCH may return empty body on success
+	if len(resp) == 0 {
+		return &Comment{ID: json.RawMessage(fmt.Sprintf("%d", commentID)), Body: body}, nil
+	}
+
 	var comment Comment
 	if err := json.Unmarshal(resp, &comment); err != nil {
 		return nil, fmt.Errorf("解析更新后的评论信息失败: %w", err)
 	}
-	
+
 	return &comment, nil
 }
 
@@ -267,24 +272,51 @@ func (api *IssueAPI) RemoveLabelFromIssue(owner, repo string, issueNumber int, l
 
 // SearchIssues 搜索Issues
 func (api *IssueAPI) SearchIssues(query string) ([]Issue, error) {
-	// 搜索API是通过SearchAPI处理的
-	// 这里提供一个便捷方法
 	values := url.Values{}
 	values.Set("q", query)
-	
+
 	resp, err := api.Client.GET("/search/issues", values)
 	if err != nil {
 		return nil, err
 	}
-	
-	var searchResult struct {
-		TotalCount int     `json:"total_count"`
-		Items      []Issue `json:"items"`
-	}
-	
-	if err := json.Unmarshal(resp, &searchResult); err != nil {
+
+	// GitCode API returns array directly
+	var issues []Issue
+	if err := json.Unmarshal(resp, &issues); err != nil {
 		return nil, fmt.Errorf("解析搜索结果失败: %w", err)
 	}
-	
-	return searchResult.Items, nil
-} 
+
+	return issues, nil
+}
+
+// ListIssueReactions 列出Issue的表情回应
+func (api *IssueAPI) ListIssueReactions(owner, repo string, issueNumber int) ([]interface{}, error) {
+	path := fmt.Sprintf("/repos/%s/%s/issues/%d/reactions", owner, repo, issueNumber)
+	resp, err := api.Client.GET(path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var reactions []interface{}
+	if err := json.Unmarshal(resp, &reactions); err != nil {
+		return nil, fmt.Errorf("解析Issue回应列表失败: %w", err)
+	}
+	return reactions, nil
+}
+
+// CreateIssueReaction 为Issue添加表情回应
+func (api *IssueAPI) CreateIssueReaction(owner, repo string, issueNumber int, content string) (interface{}, error) {
+	path := fmt.Sprintf("/repos/%s/%s/issues/%d/reactions", owner, repo, issueNumber)
+	body := map[string]string{"content": content}
+
+	resp, err := api.Client.POST(path, nil, body)
+	if err != nil {
+		return nil, err
+	}
+
+	var reaction interface{}
+	if err := json.Unmarshal(resp, &reaction); err != nil {
+		return nil, fmt.Errorf("解析Issue回应失败: %w", err)
+	}
+	return reaction, nil
+}

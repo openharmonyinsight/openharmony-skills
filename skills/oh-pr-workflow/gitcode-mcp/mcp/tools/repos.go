@@ -72,4 +72,29 @@ func AddRepositoryTools(s *server.MCPServer, apiClient *api.GitCodeAPI) {
 		}
 		return FormatJSONResult(repo)
 	})
-} 
+
+	// 创建Release
+	createReleaseTool := mcp.NewTool("create_release",
+		mcp.WithDescription("创建仓库Release"),
+		mcp.WithString("owner", mcp.Required(), mcp.Description("仓库所有者")),
+		mcp.WithString("repo", mcp.Required(), mcp.Description("仓库名称")),
+		mcp.WithString("tag_name", mcp.Required(), mcp.Description("标签名称（如 v1.0.0）")),
+		mcp.WithString("name", mcp.Description("Release名称")),
+		mcp.WithString("body", mcp.Description("Release说明")),
+		mcp.WithBoolean("prerelease", mcp.Description("是否为预发布版本")),
+	)
+	s.AddTool(createReleaseTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		owner, _ := request.Params.Arguments["owner"].(string)
+		repo, _ := request.Params.Arguments["repo"].(string)
+		tagName, _ := request.Params.Arguments["tag_name"].(string)
+		name, _ := request.Params.Arguments["name"].(string)
+		body, _ := request.Params.Arguments["body"].(string)
+		prerelease, _ := request.Params.Arguments["prerelease"].(bool)
+
+		release, err := apiClient.Repos.CreateRelease(owner, repo, tagName, name, body, prerelease)
+		if err != nil {
+			return nil, fmt.Errorf("创建Release失败: %w", err)
+		}
+		return FormatJSONResult(release)
+	})
+}

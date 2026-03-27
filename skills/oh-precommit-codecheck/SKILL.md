@@ -5,7 +5,10 @@ description: |
   (copyright, CodeArts C/C++) plus additional local checks (pylint/flake8,
   shellcheck/bashate, gn format). Use before committing to reduce gate failures.
   Triggers on: /oh-precommit-codecheck, "门禁检查", "门禁预检", "检查代码",
-  "run codecheck", or after completing code implementation.
+  "run codecheck", "check code quality", "lint my code", "代码检查",
+  or after completing code implementation.
+  WHEN to use: before git commit, before creating PR, after modifying C/C++/Python/Shell/GN files,
+  when gate CI fails with codecheck defects, or when you want to preview what gate will flag.
 argument-hint: "[--fix] [<commit>] [<file> ...]"
 ---
 
@@ -15,7 +18,8 @@ Run local code quality checks. Includes gate CI checks and additional local-only
 
 **Gate CI checks** (same as OpenHarmony gate):
 - **Copyright**: Header presence, year correctness, comment style (`/**` for C/C++)
-- **C/C++**: CodeArts Check (codecheck-ide-engine + Huawei clang-tidy: clangtidy + secfinder + fixbot)
+- **C/C++ format**: clang-format (clang-format-14 preferred, fallback to clang-format)
+- **C/C++ quality**: CodeArts Check (codecheck-ide-engine + Huawei clang-tidy: clangtidy + secfinder + fixbot)
 
 **Additional local checks** (NOT part of gate CI, for extra quality):
 - **Python**: pylint + flake8
@@ -37,6 +41,15 @@ This skill covers a **subset** of the full OpenHarmony gate CI checks:
 - **C++ rules**: ~114 of ~163 gate G.* rules are covered (~70%). Missing rules are mainly C-language variants without `-CPP` suffix.
 - **Not covered at all**: WordsTool sensitive-word checks (~200+ rules), OAT open-source compliance (~10 rules), security-specific checks (weak crypto, unsafe IPSI), code metrics (oversized functions/files/complexity, redundant/duplicate code).
 - Local pass does NOT guarantee gate pass — this is a best-effort pre-filter.
+
+## Quick Reference
+
+| Invocation | Mode | Behavior |
+|-----------|------|----------|
+| `/oh-precommit-codecheck` (standalone) | Mode 1 | Check specified files, report results, ask before fixing |
+| `/oh-precommit-codecheck --fix` | Mode 1 | Check and auto-fix up to 3 rounds |
+| Auto-triggered by oh-pr-workflow | Mode 2 | Silent check + auto-fix, report only if defects remain |
+| Pre-commit hook | Mode 2 | Same as auto-trigger |
 
 ## Determine trigger mode
 
@@ -92,15 +105,27 @@ When you have just finished writing or modifying code files, automatically check
 4. If **defects found**:
    a. Auto-fix each defect:
       - For **copyright**: Add/update copyright header.
-      - For **C/C++ / Python / Shell**: Read the file, understand the violation, fix with Edit tool.
+      - For **C/C++ mechanical fixes** (G.FMT.11-CPP braces, G.EXP.35-CPP nullptr, G.FMT.05-CPP line width): Fix directly.
+      - For **C/C++ judgment-required** (G.NAM.03-CPP naming, G.FUN.01-CPP size): Do NOT auto-fix — report to user.
+      - For **Python / Shell**: Fix standard rules directly, report ambiguous ones.
       - For **GN format**: Run `gn format <file>`.
    b. Re-run checks to verify fixes.
    c. Repeat up to **3 rounds** total.
    d. If defects remain after 3 rounds, report the unfixable ones to the user.
 
+**Mode 2 and CLAUDE.md interaction**: When triggered as pre-commit hook or by
+oh-pr-workflow, Mode 2 auto-fixes to streamline the commit flow. This overrides
+the CLAUDE.md "show report first" convention because the user has already expressed
+intent to commit. If invoked standalone (`/oh-precommit-codecheck` without commit
+context), default to report-only and ask before fixing.
+
+---
+> **Below: Reference sections** — consult when fixing specific defect types.
+> Skip to "Common Mistakes" if you just need guardrails.
+
 ## Fix guidelines
 
-When auto-fixing defects, follow these rules:
+When auto-fixing defects, match the rule to the fix below. If the rule is not listed, read the defect message and apply best judgment.
 
 ### Copyright
 - **no-copyright**: Add the full Apache 2.0 copyright header (see CLAUDE.md for template)
@@ -116,17 +141,49 @@ When auto-fixing defects, follow these rules:
 
 ### Python
 - **C0304** (final newline): Add trailing newline
-- **C0305** (trailing newlines): Remove extra trailing newlines
-- **C0321** (multiple statements): Split to separate lines
-- **C0410** (multiple imports): Split to one import per line
-- **C0411** (import order): Reorder: stdlib → third-party → local
-- Other rules: Read the pylint/flake8 message and fix accordingly
+- **C0305** (trailing newline): Remove extra trailing blank lines
+- **C0321** (multiple statements): Split into separate lines
+- **C0410** (multiple imports): One import per line
+- **C0411** (import order): Reorder to stdlib → third-party → local
+- Other pylint/flake8 rules: Read the message and fix accordingly
 
 ### Shell
-- **SC2086** (unquoted variable): Add double quotes around variable expansions
-- **SC2164** (unsafe cd): Add `|| exit` after `cd`
-- **SC2148** (missing shebang): Add `#!/usr/bin/env bash`
-- Other rules: Read the shellcheck/bashate message and fix accordingly
+- **SC2086** (double-quote): Add double quotes around variable expansions
+- **SC2164** (cd failure): Add `|| exit` after `cd` commands
+- **SC2148** (shebang): Add `#!/usr/bin/env bash` at top
+- Other shellcheck rules: Read the message and fix accordingly
 
 ### GN
 - Run `gn format <file>` — fully automatic, no manual intervention needed
+
+## Common Mistakes — NEVER Do
+
+- **NEVER run `gn format` on files that fail `gn parse`** — it corrupts the file. Run `gn parse` first; if it fails, fix syntax manually before formatting.
+- **NEVER auto-fix G.FUN.01-CPP (function too long)** — requires architectural judgment. Always report to user.
+- **NEVER auto-fix G.NAM.03-CPP naming without reading surrounding code** — naming conventions depend on context (member variables, global variables, function params have different rules).
+- **NEVER trust 0 defects from CodeArts if the engine log shows startup errors** — check `defects.json` is non-empty AND engine exited normally.
+- **NEVER assume local tool versions match gate CI** — version mismatch causes false negatives. If results differ from gate, check: `java -version`, `clang-tidy --version`, `pylint --version`.
+- **NEVER re-run the full check suite if only one checker failed** — re-run only the failed checker to save time.
+
+## Error Recovery
+
+- **CodeArts engine fails to start**: Check `java -version` (requires 11+). Check download integrity: `md5sum codecheck-ide-engine.jar`. Re-run setup: `bash scripts/setup_codecheck.sh --force`.
+- **compile_commands.json missing**: C++ checks will have ~30% false negative rate. Generate with: `gn gen out/default --export-compile-commands` or proceed with reduced accuracy.
+- **pylint/flake8 version mismatch**: Gate uses specific versions. Check with `pylint --version` and compare with gate CI logs.
+
+## Example Output
+
+Typical Mode 1 result:
+
+```
+Codecheck Results (12 defects):
+| Rule | Count | File | Auto-fixable |
+|------|-------|------|-------------|
+| G.FMT.11-CPP | 5 | token_test.cpp | Yes |
+| G.NAM.03-CPP | 3 | token_test.cpp | Yes (with context) |
+| G.EXP.35-CPP | 2 | token_test.cpp | Yes |
+| G.FUN.01-CPP | 1 | token_test.cpp | No — report to user |
+| G.FMT.05-CPP | 1 | token_test.cpp | Yes |
+
+发现 12 个告警，其中 11 个可自动修复。是否修复？
+```

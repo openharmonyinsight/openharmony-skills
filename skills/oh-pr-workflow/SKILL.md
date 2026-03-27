@@ -12,7 +12,7 @@ description: |
   "review pr", "review这个pr", "看下这个pr", "检视pr",
   "修复review", "修复检视意见", "fix review",
   or a GitCode PR URL with fix/review intent.
-argument-hint: "[commit|pr|fix-codecheck|review <PR_URL>] [--issue N] [--target branch]"
+argument-hint: "[commit|pr|fix-codecheck|review|fix-review <PR_URL>] [--issue N] [--target branch]"
 ---
 
 # oh-pr-workflow: OpenHarmony PR Lifecycle Workflow
@@ -23,6 +23,18 @@ Unified workflow for OpenHarmony GitCode repositories. Five modes:
 - **Fix Codecheck**: user says "修复告警", "修复门禁", "修复codecheck" or provides a PR URL → fetch gate codecheck defects and auto-fix
 - **Review PR**: user says "review pr", "检视pr", "看下这个pr" + PR URL → fetch PR changes to local for review
 - **Fix Review**: user says "修复review", "修复检视意见", "fix review" + PR URL → fetch unresolved review comments and auto-fix
+
+## Mode Selection (Quick Reference)
+
+| User Intent | Mode | Skip to |
+|---|---|---|
+| "提交", "commit" | **Mode 1: Commit Only** | [Mode 1](#mode-1-commit-only) |
+| "创建PR", "提个PR" | **Mode 2: Full PR** | [Mode 2](#mode-2-full-pr) |
+| "修复告警", "修复门禁", "fix codecheck" + PR URL | **Mode 3: Fix Codecheck** | [Mode 3](#mode-3-fix-codecheck) |
+| "review pr", "检视pr" + PR URL | **Mode 4: Review PR** | [Mode 4](#mode-4-review-pr) |
+| "修复review", "fix review" + PR URL | **Mode 5: Fix Review** | [Mode 5](#mode-5-fix-review) |
+
+After identifying the mode, verify prerequisites below, then jump directly to the relevant mode section.
 
 **Prerequisite**: Before executing any mode:
 1. GitCode Token must be configured. Check: `git config --get gitcode.token`
@@ -50,25 +62,16 @@ repo to /tmp for a PR), the same rules MUST be followed:
 
 ## Commit Message Format
 
-See `references/commit-format.md` for full spec. Summary:
+See `references/commit-format.md` for full spec (format, types, rules, examples).
 
-```
-type(scope): 描述（≤49字符）
-
-Issue: https://gitcode.com/{owner}/{repo}/issues/{number}
-Signed-off-by: Name <email>
-Co-Authored-By: Agent
-```
+**HARD LIMIT**: The first line (title) of the commit message MUST NOT exceed 49 characters
+(including `type(scope): ` prefix). Count characters BEFORE committing. If over 49, shorten it.
+Example: `fix(aptool): add ABC metadata checks` (37 chars) ✓
+Counter-example: `fix(aptool): add defensive checks for ABC metadata lookup` (58 chars) ✗
 
 ## Remote Detection
 
-Never assume remote names. Parse all remotes:
-
-```bash
-git remote -v
-```
-
-Classify by owner:
+Never assume remote names. Run `git remote -v` and classify by owner:
 - `openharmony` → **UPSTREAM** (PR target, Issue creation)
 - Other → **FORK** (push target, PR head)
 
@@ -107,7 +110,6 @@ Trigger: user wants to commit without creating PR.
 ```
 Step 1: Check uncommitted changes
   git status --porcelain
-  No changes → inform user, stop
 
 Step 2: Resolve email
   Follow Email Resolution above
@@ -116,7 +118,7 @@ Step 3: Determine Issue
   Follow Issue Detection above (target_branch defaults to master)
 
 Step 4: Generate commit message
-  - Title: ≤49 chars, Claude generates from diff or user provides
+  - Title: MUST be ≤49 chars (count before committing!), Claude generates from diff or user provides
   - Body: Issue URL + Signed-off-by + Co-Authored-By: Agent
 
 Step 5: Stage files
@@ -178,7 +180,6 @@ Step 1: Check status & detect remotes
 Step 2: Handle uncommitted changes
   git status --porcelain
   Has changes → execute Commit Only mode (Steps 2-7)
-  No changes → skip
 
 Step 3: Push to fork
   git push -u {fork_remote} {current_branch}
@@ -193,19 +194,24 @@ Step 5: Determine Issue
   Follow Issue Detection above
 
 Step 6: Create PR
-  Read .gitee/PULL_REQUEST_TEMPLATE.zh-CN.md from repo
-  Fill template:
-    - 关联的Issue: #{issue_number}
-    - 修改原因: summarized from commit messages
-    - 修改描述: file change summary from git diff --stat
+  Read .gitee/PULL_REQUEST_TEMPLATE.zh-CN.md from repo (prioritize repo template if exists)
+  Fill template with bilingual content (Chinese + English per item, NOT repeated blocks):
+    - Issue: full URL https://gitcode.com/{upstream_owner}/{upstream_repo}/issues/{number}
+      (NEVER use #{number} shorthand — always use the full Issue URL)
+    - 描述/Description, 原因/Reason, 修改方案/Scheme: write bilingual per item.
+      Format each point as "中文 / English" on the same bullet, e.g.:
+        - `FindRecordByName` 匹配失败时无日志 / No log output when match fails
+      Do NOT write all Chinese first then repeat all English — interleave per item.
     - Checklist: intelligently check items based on change scope
+  If no template found in repo, use a simple bilingual structure with Issue URL,
+  Description, Reason, Scheme sections.
   MCP create_pull_request:
     owner: {upstream_owner}
     repo: {upstream_repo}
-    title: same as first commit title or summarized
+    title: concise summary from commit messages
     head: {fork_owner}:{current_branch}
     base: {target_branch}
-    body: filled template content
+    body: filled template content (bilingual)
   Output: PR URL, linked Issue number
 
 Step 7: Trigger gate CI
@@ -216,6 +222,17 @@ Step 7: Trigger gate CI
     pull_number: {pr_number from Step 6}
     body: "start build"
   Output: inform user that gate CI has been triggered
+```
+
+**Example successful run**:
+```
+git remote -v → openharmony (upstream), origin (fork)
+git status → 2 files changed
+→ Commit: fix(napi): add null check [32 chars] ✓
+→ Push: origin/fix-null-check
+→ Issue: #1985 created on openharmony/arkui_napi
+→ PR: !2610 created (zhuheng_z:fix-null-check → master)
+→ Comment: "start build" posted, gate CI triggered
 ```
 
 ## Mode 3: Fix Codecheck
@@ -249,8 +266,7 @@ Step 2: Ensure PR code is checked out locally
   d. Record original branch for later return
 
 Step 3: Get PR comments and find failed gate check
-  Fetch PR comments via API (MCP list_pr_comments or direct curl):
-    GET /repos/{owner}/{repo}/pulls/{pull_number}/comments
+  MCP list_pr_comments(owner, repo, pull_number, per_page=100)
   Search for the first comment containing "代码门禁未通过"
   If not found → inform user "No failed gate check found", stop
 
@@ -348,6 +364,10 @@ Step 6: Perform code review
     b. Read full file from local checkout when deeper context is needed
     c. Identify issues: bugs, style, security, performance, logic errors
     d. Present review comments organized by file with line references
+  After presenting all review findings, ask the user which comments (if any)
+  should be posted as line-level diff comments on the PR.
+  If the user confirms specific comments → post them using the Line-Level
+  Review Comment API described below.
 
 Step 7: Keep local branch, inform user
   After review, switch back to original branch but DO NOT delete the review branch:
@@ -375,41 +395,60 @@ Step 2: Ensure PR code is checked out locally
     - Check head SHA exists locally + current branch matches
     - If not → fetch and checkout
 
-Step 3: Fetch all PR comments and filter review comments
-  Fetch via API:
-    GET /repos/{owner}/{repo}/pulls/{pull_number}/comments?per_page=100
-  Filter for:
-    - comment_type == "diff_comment" (line-level review comments)
-    - resolved == false (unresolved only)
-  Extract from each:
-    - user.login: reviewer name
-    - body: review comment content
-    - diff_position.start_new_line / end_new_line: original diff line number
-    - discussion_id: for grouping replies
+Step 3: Fetch diff data and review comments
+  a. Get PR changed files with diff hunks (needed for file path mapping):
+     MCP list_pr_files(owner, repo, pull_number)
+     For each file, parse hunk headers from patch.diff:
+       Regex: @@ -(\d+),?(\d*) \+(\d+),?(\d*) @@
+     Build a line-to-file mapping:
+       For each file, each hunk defines a new_line range:
+         new_start to new_start + new_count - 1 → filename
 
-  Outdated detection (after force-push, diff line numbers shift):
-    Get current PR diff via list_pr_files, extract the new-file lines from patch.
-    For each review comment, compare its diff_position line against the current
-    diff's content at that same line number:
-      - Content matches → comment is still ACTIVE
-      - Content differs or line out of range → comment is OUTDATED
-    Present outdated comments separately (greyed out) so user can confirm skipping.
+     Worked example:
+       A review comment has diff_position.start_new_line = 2650.
+       list_pr_files returns ark_native_engine.cpp with hunk header:
+         @@ -2638,15 +2640,31 @@
+       Parse: new_start=2640, new_count=31 → range is [2640, 2670].
+       Check: 2650 falls within [2640, 2670].
+       Result: comment maps to ark_native_engine.cpp, line 2650 in the new file.
 
-Step 4: Get PR changed files for context
-  MCP list_pr_files(owner, repo, pull_number)
-    → file list with patches, to map line numbers to actual file paths
+       If another file utils.cpp has hunk @@ -100,10 +100,12 @@ (range [100, 111]),
+       2650 does NOT fall in [100, 111], so utils.cpp is ruled out.
 
-Step 5: Present review comments and proposed fixes to user
-  Group comments into ACTIVE and OUTDATED based on Step 3 outdated detection.
+  b. Get review comments:
+     MCP list_pr_comments(owner, repo, pull_number, comment_type="diff_comment", per_page=100)
+     Filter for unresolved only: resolved == false
+     Extract from each:
+       - user.login: reviewer name
+       - body: review comment content
+       - diff_position.start_new_line / end_new_line: line number in new file
+       - discussion_id: for grouping replies
+
+  c. Map each comment to its file:
+     IMPORTANT: GitCode API does NOT return a `path` field in diff_comment JSON.
+     Use the line-to-file mapping from step (a) to determine the file:
+       For each comment, find the file whose hunk range contains
+       diff_position.start_new_line → that is the file the comment belongs to.
+
+  d. Outdated detection (after force-push, diff line numbers shift):
+     For each review comment, compare its diff_position line against the current
+     diff's hunk ranges:
+       - Line falls within a current hunk range → comment is still ACTIVE
+       - Line out of range for all hunks → comment is OUTDATED
+     Present outdated comments separately (greyed out) so user can confirm skipping.
+
+Step 4: Present review comments and proposed fixes to user
+  Group comments into ACTIVE and OUTDATED based on Step 3(d) outdated detection.
 
   For OUTDATED comments:
     Show as "~~已过期~~" with original content, no fix proposed.
 
   For ACTIVE comments:
     - Reviewer: {user.login}
+    - File: {mapped filename from Step 3(c)}
+    - Line: {diff_position.start_new_line}
     - Comment: {body}
-    - Location: search current code for the function/variable mentioned in comment
-    - Proposed fix: Claude reads the file, analyzes the comment, shows before/after diff
+    - Proposed fix: Claude reads the file at that line, analyzes the comment, shows before/after diff
 
   *** HARD GATE: STOP HERE AND WAIT FOR USER CONFIRMATION ***
   Do NOT proceed to Step 6 until the user explicitly confirms.
@@ -419,19 +458,24 @@ Step 5: Present review comments and proposed fixes to user
     - Confirm some, reject others → adjust and re-present
     - Reject all → stop
 
-Step 6: Apply confirmed fixes
+Step 5: Apply confirmed fixes
   Only apply fixes the user confirmed:
     a. Read the target file
     b. Apply the fix at the indicated line
     c. Edit the file
 
-Step 7: Squash into original commit and push
+Step 6: Squash into original commit and push
   IMPORTANT: Always squash fix into original commit, never create separate commit.
     git add {fixed files}
     git commit --amend --no-edit
+
+  *** CONFIRM BEFORE FORCE-PUSH ***
+  Inform user: "将 squash 进原始 commit 并 force-push 到 {fork_remote}/{branch}。确认？"
+  Wait for user confirmation before proceeding. Do NOT force-push without explicit approval.
+
     git push --force {fork_remote} {branch}
 
-Step 8: Trigger rebuild
+Step 7: Trigger rebuild
   MCP create_pr_comment(owner, repo, pull_number, body="start build")
 ```
 
@@ -467,19 +511,76 @@ Step 8: Trigger rebuild
 - **PR already exists**: only push, inform user with PR number
 - **Issue creation fails**: warn, continue with commit (Issue line omitted)
 - **Push fails**: show error, suggest checking remote/permissions
-- **Commit title > 49 chars**: Claude auto-shortens
+- **Commit message title > 49 chars**: MUST shorten before committing — this is a HARD LIMIT (applies to commit message title only, NOT PR title). Always count characters including the `type(scope): ` prefix before running git commit
 - **No changes to commit**: skip commit in PR mode, stop in commit mode
 - **Email not found**: prompt user to configure git email or GitCode token
 
+## Common Mistakes (Anti-Patterns)
+
+These are critical errors that have caused real failures. NEVER make these mistakes:
+
+1. **NEVER confuse ciEventId with codecheckEventId** (Mode 3)
+   The defect detail API needs the UUID from `codeCheckSummary[0].uuid`, NOT the CI event ID extracted from the gate comment URL. The CI event ID (from `/detail/{id}/runlist`) is only used to *fetch* the codecheck summary — the actual defect query requires the `uuid` field returned inside `codeCheckSummary`.
+
+2. **NEVER use best-effort fix for rules you do not recognize** (Mode 3)
+   If a codecheck rule is not listed in Step 8's known rules (G.FMT.04-CPP, G.FMT.11-CPP, etc.), do NOT attempt a speculative fix. Instead, report the defect to the user with the rule ID, file:line, and defectContent so they can decide how to handle it.
+
+3. **NEVER assume diff_position.start_new_line is a global offset** (Mode 5)
+   `diff_position.start_new_line` is a line number within the specific file's new version, not a global position across all files. You MUST use the line-to-file mapping from `list_pr_files` hunk headers to determine which file the line belongs to.
+
+4. **NEVER force-push without user confirmation** (Mode 5)
+   `git push --force` is destructive. Always show the user what will be pushed and to where, then wait for explicit confirmation.
+
+5. **NEVER create a separate commit for review fixes** (Mode 5)
+   Review fixes must always be squashed into the original commit via `git commit --amend --no-edit`. Creating a new commit pollutes the PR history and may violate upstream merge policies.
+
 ## GitCode MCP Tools Used
 
+> **Note**: This section is a reference catalog. You do not need to read it during normal execution — the specific MCP tools to call are listed inline within each mode's steps above.
+
+**Core workflow tools:**
 - `get_authenticated_user` — get current user email for Signed-off-by
 - `create_issue` — create Issue on upstream repo
 - `get_issue` — validate user-specified Issue exists
 - `list_pull_requests` — check for existing PR
 - `create_pull_request` — create PR from fork to upstream
-- `list_pr_comments` — get PR comments (Mode 3: Fix Codecheck)
-- `get_pull_request` — get PR details including head.ref, head.sha, head.repo, base.ref, base.sha
+- `get_pull_request` — get PR details (head.ref, head.sha, head.repo, base.ref, base.sha)
 - `list_pr_commits` — list exact commits in a PR
-- `list_pr_files` — list exact changed files in a PR with additions/deletions/patch
-- `create_pr_comment` — post comment on PR (used to trigger gate CI with "start build")
+- `list_pr_files` — list changed files with additions/deletions/patch
+- `list_pr_comments` — list PR comments with optional comment_type filter (diff_comment/pr_comment)
+- `create_pr_comment` — post comment on PR (general or line-level with path+position)
+- `delete_pr_comment` — delete a PR comment by note_id
+
+**Additional tools available:**
+- `update_pull_request` — update PR title/body/state/base
+- `merge_pull_request` — merge PR (merge/squash/rebase)
+- `submit_pr_review` — approve PR review
+- `submit_pr_test` — mark PR test passed
+- `update_pr_reviewers` — assign reviewers
+- `update_pr_testers` — assign testers
+- `update_pr_labels` — add/remove PR labels
+- `pr_link_issues` — link issues to PR
+- `list_pr_operation_logs` — PR operation history
+- `update_issue` / `close_issue` / `reopen_issue` — issue state management
+- `add_issue_comment` / `list_issue_comments` / `edit_issue_comment` / `delete_issue_comment` — issue comments
+- `add_issue_labels` / `remove_issue_label` / `list_labels` — label management
+- `list_pr_reactions` / `create_pr_reaction` — PR emoji reactions
+- `list_issue_reactions` / `create_issue_reaction` — issue emoji reactions
+- `create_release` — create repository release
+
+## Line-Level Review Comment
+
+The MCP `create_pr_comment` tool supports both general and line-level comments:
+
+**General comment**: `create_pr_comment(owner, repo, pull_number, body="...")`
+**Line-level comment**: `create_pr_comment(owner, repo, pull_number, body="...", path="file.cpp", position=N)`
+
+**Determining `position`**:
+- `position` is the line number in the **unified diff**, NOT the file line number.
+- For **new files** (100% addition): diff line number == file line number.
+- For **modified files**: count lines sequentially within the file's unified diff
+  (the `@@` header line is not counted; first content line after `@@` is position 1;
+  positions are cumulative across all hunks in the file).
+- Use the `patch` field from `list_pr_files` to compute the correct position.
+
+**Deleting a comment**: `delete_pr_comment(owner, repo, comment_id=NOTE_ID)`

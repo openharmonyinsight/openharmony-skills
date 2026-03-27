@@ -3,6 +3,8 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"strings"
 )
 
 // PullRequest 表示Pull Request信息
@@ -169,78 +171,171 @@ func (api *PullRequestAPI) MergePullRequest(owner, repo string, pullNumber int, 
 	return result.Merged, nil
 }
 
-// ListPRReviews 列出PR的代码审查
-func (api *PullRequestAPI) ListPRReviews(owner, repo string, pullNumber int) ([]interface{}, error) {
-	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews", owner, repo, pullNumber)
-	resp, err := api.Client.GET(path, nil)
+// SubmitPRReview 提交PR审查通过 (GitCode: POST /pulls/{n}/review)
+func (api *PullRequestAPI) SubmitPRReview(owner, repo string, pullNumber int, force bool) (interface{}, error) {
+	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/review", owner, repo, pullNumber)
+	body := map[string]interface{}{
+		"force": force,
+	}
+
+	resp, err := api.Client.POST(path, nil, body)
 	if err != nil {
 		return nil, err
 	}
-	
-	var reviews []interface{}
-	if err := json.Unmarshal(resp, &reviews); err != nil {
-		return nil, fmt.Errorf("解析代码审查列表失败: %w", err)
+
+	var result interface{}
+	if err := json.Unmarshal(resp, &result); err != nil {
+		return nil, fmt.Errorf("解析审查结果失败: %w", err)
 	}
-	
-	return reviews, nil
+
+	return result, nil
 }
 
-// CreatePRReview 创建PR代码审查
-func (api *PullRequestAPI) CreatePRReview(owner, repo string, pullNumber int, body, event string, comments []interface{}) (interface{}, error) {
-	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews", owner, repo, pullNumber)
-	options := map[string]interface{}{
-		"body":     body,
-		"event":    event,
-		"comments": comments,
+// SubmitPRTest 提交PR测试通过 (GitCode: POST /pulls/{n}/test)
+func (api *PullRequestAPI) SubmitPRTest(owner, repo string, pullNumber int, force bool) (interface{}, error) {
+	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/test", owner, repo, pullNumber)
+	body := map[string]interface{}{
+		"force": force,
 	}
-	
-	resp, err := api.Client.POST(path, nil, options)
+
+	resp, err := api.Client.POST(path, nil, body)
 	if err != nil {
 		return nil, err
 	}
-	
-	var review interface{}
-	if err := json.Unmarshal(resp, &review); err != nil {
-		return nil, fmt.Errorf("解析新代码审查信息失败: %w", err)
+
+	var result interface{}
+	if err := json.Unmarshal(resp, &result); err != nil {
+		return nil, fmt.Errorf("解析测试结果失败: %w", err)
 	}
-	
-	return review, nil
+
+	return result, nil
 }
 
-// ListPRComments 列出PR的评论
-func (api *PullRequestAPI) ListPRComments(owner, repo string, pullNumber int) ([]Comment, error) {
+func mapToValues(m map[string]string) url.Values {
+	v := url.Values{}
+	for key, val := range m {
+		v.Set(key, val)
+	}
+	return v
+}
+
+// DiffPosition 表示diff评论的位置信息
+type DiffPosition struct {
+	StartNewLine int `json:"start_new_line,omitempty"`
+	EndNewLine   int `json:"end_new_line,omitempty"`
+	StartOldLine int `json:"start_old_line,omitempty"`
+	EndOldLine   int `json:"end_old_line,omitempty"`
+}
+
+// PRComment 表示PR评论（包含diff评论的完整字段）
+type PRComment struct {
+	ID           json.RawMessage `json:"id"`
+	DiscussionID string          `json:"discussion_id,omitempty"`
+	Body         string          `json:"body"`
+	CreatedAt    string          `json:"created_at"`
+	UpdatedAt    string          `json:"updated_at"`
+	User         User            `json:"user"`
+	CommentType  string          `json:"comment_type,omitempty"`
+	Resolved     *bool           `json:"resolved,omitempty"`
+	DiffPosition *DiffPosition   `json:"diff_position,omitempty"`
+	Reply        []PRComment     `json:"reply,omitempty"`
+}
+
+// ListPRComments 列出PR的评论（支持comment_type过滤和per_page参数）
+func (api *PullRequestAPI) ListPRComments(owner, repo string, pullNumber int, commentType string, perPage int) ([]PRComment, error) {
 	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/comments", owner, repo, pullNumber)
-	resp, err := api.Client.GET(path, nil)
+	params := make(map[string]string)
+	if perPage > 0 {
+		params["per_page"] = fmt.Sprintf("%d", perPage)
+	}
+
+	resp, err := api.Client.GET(path, mapToValues(params))
 	if err != nil {
 		return nil, err
 	}
-	
-	var comments []Comment
+
+	var comments []PRComment
 	if err := json.Unmarshal(resp, &comments); err != nil {
 		return nil, fmt.Errorf("解析PR评论列表失败: %w", err)
 	}
-	
+
+	// 客户端过滤 comment_type（API 不一定支持该参数）
+	if commentType != "" {
+		var filtered []PRComment
+		for _, c := range comments {
+			if c.CommentType == commentType {
+				filtered = append(filtered, c)
+			}
+		}
+		return filtered, nil
+	}
+
 	return comments, nil
 }
 
-// CreatePRComment 创建PR评论
-func (api *PullRequestAPI) CreatePRComment(owner, repo string, pullNumber int, body string) (*Comment, error) {
-	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/comments", owner, repo, pullNumber)
-	options := map[string]string{
+// DeletePRComment 删除PR评论
+func (api *PullRequestAPI) DeletePRComment(owner, repo string, commentID int) error {
+	path := fmt.Sprintf("/repos/%s/%s/pulls/comments/%d", owner, repo, commentID)
+	_, err := api.Client.DELETE(path, nil)
+	return err
+}
+
+// CreatePRComment 创建PR评论（支持行级评论：传入 filePath 和 position）
+func (api *PullRequestAPI) CreatePRComment(owner, repo string, pullNumber int, body, filePath string, position int) (*PRComment, error) {
+	apiPath := fmt.Sprintf("/repos/%s/%s/pulls/%d/comments", owner, repo, pullNumber)
+	options := map[string]interface{}{
 		"body": body,
 	}
+	if filePath != "" {
+		options["path"] = filePath
+	}
+	if position > 0 {
+		options["position"] = position
+	}
 
-	resp, err := api.Client.POST(path, nil, options)
+	resp, err := api.Client.POST(apiPath, nil, options)
 	if err != nil {
 		return nil, err
 	}
 
-	var comment Comment
+	var comment PRComment
 	if err := json.Unmarshal(resp, &comment); err != nil {
 		return nil, fmt.Errorf("解析PR评论失败: %w", err)
 	}
 
 	return &comment, nil
+}
+
+// ListPRReactions 列出PR的表情回应
+func (api *PullRequestAPI) ListPRReactions(owner, repo string, pullNumber int) ([]interface{}, error) {
+	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/reactions", owner, repo, pullNumber)
+	resp, err := api.Client.GET(path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var reactions []interface{}
+	if err := json.Unmarshal(resp, &reactions); err != nil {
+		return nil, fmt.Errorf("解析PR回应列表失败: %w", err)
+	}
+	return reactions, nil
+}
+
+// CreatePRReaction 为PR添加表情回应
+func (api *PullRequestAPI) CreatePRReaction(owner, repo string, pullNumber int, content string) (interface{}, error) {
+	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/reactions", owner, repo, pullNumber)
+	body := map[string]string{"content": content}
+
+	resp, err := api.Client.POST(path, nil, body)
+	if err != nil {
+		return nil, err
+	}
+
+	var reaction interface{}
+	if err := json.Unmarshal(resp, &reaction); err != nil {
+		return nil, fmt.Errorf("解析PR回应失败: %w", err)
+	}
+	return reaction, nil
 }
 
 // IsPRMergeable 检查PR是否可合并
@@ -276,11 +371,125 @@ func (api *PullRequestAPI) ListCommits(owner, repo string, pullNumber int) ([]in
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var commits []interface{}
 	if err := json.Unmarshal(resp, &commits); err != nil {
 		return nil, fmt.Errorf("解析PR提交列表失败: %w", err)
 	}
-	
+
 	return commits, nil
+}
+
+// UpdatePRReviewers 分配PR审查人员 (GitCode: POST /pulls/{n}/reviewers)
+func (api *PullRequestAPI) UpdatePRReviewers(owner, repo string, pullNumber int, reviewers string) (interface{}, error) {
+	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/reviewers", owner, repo, pullNumber)
+	reviewerList := strings.Split(reviewers, ",")
+	for i := range reviewerList {
+		reviewerList[i] = strings.TrimSpace(reviewerList[i])
+	}
+	body := map[string]interface{}{
+		"reviewers": reviewerList,
+	}
+
+	resp, err := api.Client.POST(path, nil, body)
+	if err != nil {
+		return nil, err
+	}
+
+	var result interface{}
+	if err := json.Unmarshal(resp, &result); err != nil {
+		return nil, fmt.Errorf("解析更新审查人员结果失败: %w", err)
+	}
+
+	return result, nil
+}
+
+// UpdatePRTesters 分配PR测试人员 (GitCode: POST /pulls/{n}/testers)
+func (api *PullRequestAPI) UpdatePRTesters(owner, repo string, pullNumber int, testers string) (interface{}, error) {
+	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/testers", owner, repo, pullNumber)
+	testerList := strings.Split(testers, ",")
+	for i := range testerList {
+		testerList[i] = strings.TrimSpace(testerList[i])
+	}
+	body := map[string]interface{}{
+		"testers": testerList,
+	}
+
+	resp, err := api.Client.POST(path, nil, body)
+	if err != nil {
+		return nil, err
+	}
+
+	var result interface{}
+	if err := json.Unmarshal(resp, &result); err != nil {
+		return nil, fmt.Errorf("解析更新测试人员结果失败: %w", err)
+	}
+
+	return result, nil
+}
+
+// AddPRLabels 为PR添加标签
+func (api *PullRequestAPI) AddPRLabels(owner, repo string, pullNumber int, labels string) (interface{}, error) {
+	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/labels", owner, repo, pullNumber)
+	labelList := strings.Split(labels, ",")
+	for i := range labelList {
+		labelList[i] = strings.TrimSpace(labelList[i])
+	}
+
+	resp, err := api.Client.POST(path, nil, labelList)
+	if err != nil {
+		return nil, err
+	}
+
+	var result interface{}
+	if err := json.Unmarshal(resp, &result); err != nil {
+		return nil, fmt.Errorf("解析添加标签结果失败: %w", err)
+	}
+
+	return result, nil
+}
+
+// RemovePRLabel 移除PR的单个标签
+func (api *PullRequestAPI) RemovePRLabel(owner, repo string, pullNumber int, label string) error {
+	label = strings.TrimSpace(label)
+	encodedLabel := url.PathEscape(label)
+	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/labels/%s", owner, repo, pullNumber, encodedLabel)
+	_, err := api.Client.DELETE(path, nil)
+	return err
+}
+
+// PRLinkIssues 关联/取消关联Issue到PR
+func (api *PullRequestAPI) PRLinkIssues(owner, repo string, pullNumber int, issues string) (interface{}, error) {
+	path := fmt.Sprintf("/repos/%s/%s/pulls/%d", owner, repo, pullNumber)
+	body := map[string]interface{}{
+		"issue_nums": issues,
+	}
+
+	resp, err := api.Client.PATCH(path, nil, body)
+	if err != nil {
+		return nil, err
+	}
+
+	var result interface{}
+	if err := json.Unmarshal(resp, &result); err != nil {
+		return nil, fmt.Errorf("解析关联Issue结果失败: %w", err)
+	}
+
+	return result, nil
+}
+
+// ListPROperationLogs 列出PR的操作日志
+func (api *PullRequestAPI) ListPROperationLogs(owner, repo string, pullNumber int) ([]interface{}, error) {
+	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/operate_logs", owner, repo, pullNumber)
+	resp, err := api.Client.GET(path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var logs []interface{}
+	if err := json.Unmarshal(resp, &logs); err != nil {
+		return nil, fmt.Errorf("解析PR操作日志失败: %w", err)
+	}
+
+	return logs, nil
 } 
