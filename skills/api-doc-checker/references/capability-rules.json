@@ -225,8 +225,19 @@
         }
       ],
       "keywords": {
-        "alternative": [" alternatively", "或者", "另一种方式", "替代方案"],
-        "comparison": ["相比", "vs", "versus", "推荐使用", "适用场景"]
+        "alternative": [
+          " alternatively",
+          "或者",
+          "另一种方式",
+          "替代方案"
+        ],
+        "comparison": [
+          "相比",
+          "vs",
+          "versus",
+          "推荐使用",
+          "适用场景"
+        ]
       },
       "message": "文档未提供替代方案，限制开发者选择",
       "suggestedFix": "对于有多种实现方式的场景，提供替代方案及适用场景对比"
@@ -283,11 +294,106 @@
         }
       ],
       "keywords": {
-        "errorHandling": ["错误码", "异常", "错误处理", "try-catch"],
-        "debugging": ["日志", "调试", "定位", "排查", "hilog", "console"]
+        "errorHandling": [
+          "错误码",
+          "异常",
+          "错误处理",
+          "try-catch"
+        ],
+        "debugging": [
+          "日志",
+          "调试",
+          "定位",
+          "排查",
+          "hilog",
+          "console"
+        ]
       },
       "message": "文档缺少问题定位和调试手段的说明",
       "suggestedFix": "添加错误码说明、日志查看方法和调试指导"
+    },
+    {
+      "id": "capability-009",
+      "name": "scenario-coverage",
+      "description": "场景覆盖缺失（能力易用性）",
+      "type": "capability",
+      "subType": "usability",
+      "priority": "high",
+      "confidence": 85,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "typical-scenarios",
+          "description": "需覆盖典型复杂场景",
+          "check": "除了基础CRUD，还需覆盖异常恢复、性能调优等典型场景"
+        },
+        {
+          "name": "step-completeness",
+          "description": "步骤需包含完整上下文",
+          "check": "提供step by step的完整指导，无操作断点"
+        }
+      ],
+      "indicators": {
+        "badPatterns": [
+          "仅包含创建、销毁等基础操作示例",
+          "缺少实际开发中常用的复杂场景（如并发、异常处理）"
+        ]
+      },
+      "message": "文档可能仅包含基础操作，未覆盖开发者实际开发中的典型复杂场景",
+      "suggestedFix": "补充典型复杂场景（如异常处理、性能优化）的开发指导和示例"
+    },
+    {
+      "id": "capability-010",
+      "name": "step-imperative-missing",
+      "description": "操作步骤非祈使句（能力易用性）",
+      "type": "capability",
+      "subType": "usability",
+      "priority": "medium",
+      "confidence": 75,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "imperative-style",
+          "description": "步骤应使用祈使句",
+          "check": "操作步骤应直接使用动词开头（如'点击'、'输入'），而非描述性语句"
+        }
+      ],
+      "message": "操作步骤未使用祈使句风格，可能影响开发者执行效率",
+      "suggestedFix": "将步骤描述修改为祈使句，明确操作目的（Why）、内容（What）和方法（How）"
+    },
+    {
+      "id": "capability-011",
+      "name": "missing-precautions",
+      "description": "缺少防错/纠错信息（能力有效性）",
+      "type": "capability",
+      "subType": "validity",
+      "priority": "high",
+      "confidence": 80,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "pre-operation-notes",
+          "description": "关键步骤前需有注意事项",
+          "check": "对可能造成数据丢失、性能影响的操作需提前警示"
+        },
+        {
+          "name": "branch-principles",
+          "description": "需说明分支/参数选取原则",
+          "check": "说明何时选择某场景或某参数"
+        }
+      ],
+      "keywords": {
+        "precautions": [
+          "注意",
+          "警告",
+          "须知",
+          "重要",
+          "前提条件",
+          "前置操作"
+        ]
+      },
+      "message": "关键步骤缺少防错/纠错信息或注意事项，可能导致开发者操作失误",
+      "suggestedFix": "在相关步骤前添加注意事项或警告框，说明操作后果及规避方法"
     }
   ]
 }

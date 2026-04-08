@@ -1,21 +1,48 @@
 ---
 name: api-doc-checker
-description: Activates when the user requests "API review", "check doc", "review", "文档检视", or needs to check API documentation for spelling errors, code syntax errors, API consistency issues, and basic formatting problems. This skill performs comprehensive API documentation quality checks including parameter type validation, error code completeness, and example code verification.
-
+description: Comprehensive API documentation quality checker supporting 7 quality dimensions, SDK source consistency validation, and multi-format reporting. Use for API review, documentation quality assessment, error detection, and consistency checks.
 ---
 
-# 角色
+# 快速开始
 
-鸿蒙 API 文档质量检查专家。核心任务是自动检查 API 文档内容，通过加载和执行 references 目录下的规则文件，按照**7大质量维度**精确识别并报告多维度质量问题，提供高置信度的可操作建议。
+检查API文档质量的基本步骤：
 
-本工具支持**文档与 SDK 源码一致性检查**，能够自动：
-1. 根据文档文件名找到对应的 SDK 源码文件（.d.ts）
-2. 对比 JSDOC 与文档中的 API 信息（起始版本、入参、返回值、错误码等）
-3. 检查接口、组件、参数等写法的准确性
+1. **判断文档类型** - 确定是API文档还是开发指南
+2. **加载规则** - 从 `references/index.json` 加载规则模块
+3. **解析文档** - 提取文档结构信息（代码块、表格、链接、标题、方法签名等）
+4. **执行检查** - 根据文档类型执行相应的检查项
+5. **生成报告** - 生成Excel报告和可选的Markdown汇总
 
-> **规则管理说明**：本 SKILL 的具体检查规则存储在 `references/` 目录下的 JSON 文件中，按**7大维度分类**组织。新增或修改检查规则时，只需编辑对应的规则文件，无需修改 SKILL.md。
+详细实现见：[references/workflow-details.md](references/workflow-details.md)
 
-# 7大质量维度
+# 文档类型判断
+
+## API文档特征
+- 文件名匹配模式：`js-apis-*.md`、`js-apis-app-ability-*.md`、`js-apis-inner-*.md`、`capi-*.md`
+- 包含API方法签名、接口定义、参数说明
+- 示例：`js-apis-geolocation.md`、`js-apis-app-ability-wantAgent.md`
+
+## 开发指南特征
+- 文件名包含：`guide`、`tutorial`、`overview`、`getting-started`等关键词
+- 主要包含概念说明、使用场景、最佳实践
+- 示例：`application-dev-guide.md`、`getting-started.md`
+
+# 检查查项选择
+
+## API文档（全部必选）
+- 所有10个规则模块全部执行
+- 包括SDK源码一致性检查（如果SDK可用）
+
+## 开发指南（选择性执行）
+- **必选模块**：spelling、syntax、path-consistency、clarity、semantics、project-structure、findability、correctness
+- **可选模块**：completeness、capability
+- **不执行**：SDK源码一致性检查（不适用）
+
+# 核心功能
+
+## 7大质量维度检查
+
+通过加载 `references/` 目录下的规则文件，按以下维度执行检查：
 
 | 维度 | 规则文件 | 核心关注点 | 细分问题 |
 |------|---------|-----------|---------|
@@ -23,15 +50,13 @@ description: Activates when the user requests "API review", "check doc", "review
 | **资源丰富性/完整性** | `completeness-rules.json` | 内容完整性 | 示例代码/解决方案缺失；关键说明缺失；规格约束说明缺失；默认效果说明缺失；关联信息说明缺失 |
 | **资料正确性** | `correctness-rules.json` | 内容准确性 | 变更未及时更新；示例代码不完整/不可用；JSDOC描述错误 |
 | **资源清晰易懂** | `clarity-rules.json` | 表达清晰度 | 标题与内容不符；功能描述不准确；关联文档链接缺失；机制原理说明缺失 |
-|**能力有效性** | `capability-rules.json` | API有效性 | 约束条件缺失；系统bug；资料过时未更新 |
+| **能力有效性** | `capability-rules.json` | API有效性 | 约束条件缺失；系统bug；资料过时未更新 |
 | **能力易用性** | `capability-rules.json` | API易用性 | 命名存在歧义；示例代码不实用 |
 | **能力丰富性** | `capability-rules.json` | API丰富度 | 替代方案缺失；系统能力缺失；稳定性定位手段缺失 |
 
-# 检查范围
+## 规则模块
 
-本 Skill 通过加载 `references/index.json` 中定义的10个规则模块，执行以下检查：
-
-## 基础检查模块（V1.0）
+本 Skill 通过加载 `references/index.json` 中定义的规则模块执行检查：
 
 | 规则模块 | 规则文件 | 所属维度 | 检查内容 |
 |---------|---------|---------|---------|
@@ -40,28 +65,13 @@ description: Activates when the user requests "API review", "check doc", "review
 | `path-consistency` | `path-consistency-rules.json` | 资料正确性 | 文档内部路径一致性、与Sample代码一致性 |
 | `semantics` | `semantics-rules.json` | 能力易用性 | 示例代码语义清晰度（bundleName占位符等） |
 | `project-structure` | `project-structure.json` | 资料正确性 | 与官方工程结构规范的符合性 |
-
-## 7大维度检查模块（V2.0 新增）
-
-| 规则模块 | 规则文件 | 所属维度 | 检查内容 |
-|---------|---------|---------|---------|
 | `findability` | `findability-rules.json` | 资源易找性 | 关键词准确性、外部引用完整性、文档可发现性 |
 | `completeness` | `completeness-rules.json` | 资源丰富性/完整性 | 示例完整性、关键说明、约束条件、默认行为、关联信息 |
 | `correctness` | `correctness-rules.json` | 资料正确性 | 版本同步、代码可执行性、JSDOC准确性、路径一致性 |
 | `clarity` | `clarity-rules.json` | 资源清晰易懂 | 标题-内容匹配、描述准确性、链接完整性、机制说明 |
 | `capability` | `capability-rules.json` | 能力有效性/易用性/丰富性 | 约束条件、已知问题、命名规范、实用性、替代方案 |
 
-# 工作流程
-
-检查流程按以下5个步骤执行：
-
-1. **加载规则** - 按7大维度分类加载 `references/` 目录下的规则文件
-2. **解析文档** - 提取文档结构信息（代码块、表格、链接、标题、方法签名等）
-3. **执行检查** - 按7大维度依次执行规则检查
-4. **生成报告** - 将检查结果转换为 Excel 格式数据
-5. **输出结果** - 生成 Excel 报告文件和可选的 Markdown 汇总
-
-详细实现代码见：[references/workflow-details.md](references/workflow-details.md)
+> **规则管理说明**：本 SKILL 的具体检查规则存储在 `references/` 目录下的 JSON 文件中。新增或修改检查规则时，只需编辑对应的规则文件，无需修改 SKILL.md。
 
 # 报告格式
 
@@ -71,7 +81,8 @@ description: Activates when the user requests "API review", "check doc", "review
 
 | 列名 | 说明 |
 |------|------|
-| **文件名** | 被检查的文件路径 |
+| **文件名** | 被检查的文件路径（只保留最后一个/后的字符） |
+| **Designer** | 被检查的文件的设计人<!--Designer: xxx--> |
 | **问题类型** | 问题所属的质量维度 |
 | **问题行号** | 问题所在的具体行号 |
 | **问题原因** | 问题的详细描述 |
@@ -92,7 +103,11 @@ Excel 报告支持：
 - 问题分布（按维度统计）
 - Excel 文件链接
 
-# SDK 源码一致性检查
+## 置信度与优先级说明
+
+置信度和优先级的定义和处理建议见：[references/scoring-guide.md](references/scoring-guide.md)
+
+# SDK 源码一致性检查（仅API文档）
 
 ## 功能说明
 
@@ -167,23 +182,3 @@ export INTERFACE_SDK_JS_PATH=/path/to/interface_sdk-js
 ```
 
 详细扩展指南和示例见：[references/rule-extensions.md](references/rule-extensions.md)
-
-# 置信度与优先级
-
-## 置信度等级
-
-| 置信度 | 含义 | 建议操作 |
-|--------|------|----------|
-| 95%+ | 确定 | 立即修复 |
-| 85-94% | 高 | 大概率需要修复 |
-| 70-84% | 中等 | 建议人工确认 |
-| <70% | 低 | 仅供参考 |
-
-## 优先级等级
-
-| 优先级 | 含义 | 处理建议 |
-|--------|------|----------|
-| Critical | 严重 | 合并前必须修复 |
-| High | 高 | 强烈建议修复 |
-| Medium | 中 | 建议修复 |
-| Low | 低 | 可选改进 |
