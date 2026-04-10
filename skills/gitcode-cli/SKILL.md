@@ -1,47 +1,27 @@
 ---
 name: gitcode-cli
-description: Use when managing GitCode repositories from the terminal with oh-gc CLI — auth, issues, PRs, reviewers, testers, labels, releases, and repo config. TRIGGERS on: oh-gc commands, GitCode issue/PR management, "提交pr", "提交PR", "生成pr", "生成PR", "创建pr", "创建PR", "提交并生成pr", "提交并生成PR", "commit and create PR", "push and create PR", "创建一笔pr", "创建一笔PR", or when user wants to interact with GitCode without a browser.
+description: Use when managing GitCode repositories from the terminal with oh-gc CLI — auth, issues, PRs, reviewers, testers, labels, releases, and repo config. Triggers on oh-gc commands, GitCode issue/PR management, or when user wants to interact with GitCode without a browser.
 ---
 
 # oh-gc CLI — GitCode Command Line Tool
 
-**Version:** 0.7.3 | **Updated:** 2026-04-09
+**Version:** 0.7.4 | **Updated:** 2026-04-10
 
 `oh-gc` is a CLI for [GitCode](https://gitcode.com), modeled after GitHub CLI (`gh`). Manages authentication, issues, pull requests, releases, and repo configuration from the terminal.
 
 **Package:** `npm install -g @oh-gc/cli` (requires Node.js 18+)
 
-## Rules
+## ⚠️ MANDATORY FIRST STEP — DO NOT SKIP
 
-When executing gitcode-cli operations, follow these rules:
+**Run `oh-gc --version` as the VERY FIRST command before ANY other oh-gc command.**
 
-1. **"当前改动"定义**: 当用户说"当前的改动"、"当前文件的改动"时，指的是**当前文件所在 git 仓库的改动**，使用 `git status` 和 `git diff` 查看。
-
-2. **Remote 命名规范**:
-   | Remote 名称 | 用途 |
-   |-------------|------|
-   | `gitcode` | 上游原始仓库 |
-   | `personal` | 个人 Fork 仓库 |
-
-3. **Fork 地址自动拼接**: 如果 `personal` remote 不存在，根据 `gitcode` remote 自动拼接：
-   ```bash
-   UPSTREAM_URL=$(git remote get-url gitcode)
-   REPO_NAME=$(echo "$UPSTREAM_URL" | sed -E 's|.*/([^/]+/[^/]+)(\.git)?|\1|')
-   PERSONAL_URL="https://${USERNAME}:${TOKEN}@gitcode.com/${USERNAME}/${REPO_NAME#*/}.git"
-   ```
-
-4. **Commit Message 格式** (DCO 标准):
-   ```
-   具体的改动说明
-
-   Co-Authored-By:Agent
-
-   Signed-off-by: 用户名 <邮箱>
-   ```
+- If not found → `npm install -g @oh-gc/cli@{version}` (use the version shown at the top of this document)
+- If the version does not match **{version}** → `npm install -g @oh-gc/cli@{version}` to install the exact matching version
+- **Do NOT run `oh-gc auth`, `oh-gc issue`, `oh-gc pr`, or any other command until the version is confirmed matching.**
 
 ## Prerequisites
 
-Before using any command:
+After confirming the version matches, check the following:
 
 1. **Token configured?** Run `oh-gc auth status`
    - If not logged in → `oh-gc auth login` (prompts for GitCode personal access token)
@@ -328,6 +308,7 @@ oh-gc search code "keyword"                   # Search code across repos
 oh-gc user view                               # View your profile
 oh-gc user view alice                         # View another user's profile
 oh-gc user edit --name "New Name" --bio "..."  # Update your profile
+oh-gc user edit --avatar "https://..."          # Update avatar
 oh-gc user emails                             # List your email addresses
 oh-gc user followers                          # List your followers
 oh-gc user following                          # List users you follow
@@ -347,8 +328,10 @@ oh-gc user subscriptions                      # List your watched repos
 oh-gc user subscriptions alice                # List another user's watched repos
 oh-gc user issues                             # List your issues across all repos
 oh-gc user issues --state closed --filter created  # Filter user issues
+oh-gc user issues --since "2024-01-01T00:00:00Z"  # Issues updated since date
 oh-gc user prs                                # List your PRs across all repos
 oh-gc user prs --state merged --scope assigned_to_me  # Filter user PRs
+oh-gc user prs --source-branch feature --target-branch main  # Filter by branches
 oh-gc user orgs alice                         # List user's organizations
 oh-gc user membership myorg                   # View your org membership
 oh-gc user leave-org myorg                    # Leave an organization
@@ -452,7 +435,6 @@ oh-gc tag protect-delete <name>               # Delete protected tag rule
 oh-gc org list                                # List your organizations
 oh-gc org view <org>                          # Get organization details
 oh-gc org members <org>                       # List organization members
-oh-gc org repos <org>                         # List organization repositories
 ```
 
 ## Workflow: Full PR Lifecycle
@@ -527,6 +509,9 @@ Note: `--repo` targets the upstream repo. `--head` uses `owner:branch` format (c
 ```
 User wants to interact with GitCode
   ↓
+Version matches? (oh-gc --version)
+  ↓ No → npm install -g @oh-gc/cli@{version}
+  ↓ Yes
 Logged in? (oh-gc auth status)
   ↓ No → oh-gc auth login
   ↓ Yes
