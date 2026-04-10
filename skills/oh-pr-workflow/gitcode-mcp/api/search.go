@@ -62,66 +62,55 @@ func (api *SearchAPI) SearchCode(query string) (*CodeSearchResult, error) {
 func (api *SearchAPI) SearchRepositories(query string) ([]Repository, error) {
 	values := url.Values{}
 	values.Set("q", query)
-	
+
 	resp, err := api.Client.GET("/search/repositories", values)
 	if err != nil {
 		return nil, err
 	}
-	
-	var result struct {
-		TotalCount int          `json:"total_count"`
-		Items      []Repository `json:"items"`
-	}
-	
-	if err := json.Unmarshal(resp, &result); err != nil {
+
+	// GitCode API returns array directly, not {total_count, items} wrapper
+	var repos []Repository
+	if err := json.Unmarshal(resp, &repos); err != nil {
 		return nil, fmt.Errorf("解析仓库搜索结果失败: %w", err)
 	}
-	
-	return result.Items, nil
+
+	return repos, nil
 }
 
 // SearchIssues 搜索Issues
 func (api *SearchAPI) SearchIssues(query string) ([]Issue, error) {
 	values := url.Values{}
 	values.Set("q", query)
-	
+
 	resp, err := api.Client.GET("/search/issues", values)
 	if err != nil {
 		return nil, err
 	}
-	
-	var result struct {
-		TotalCount int     `json:"total_count"`
-		Items      []Issue `json:"items"`
-	}
-	
-	if err := json.Unmarshal(resp, &result); err != nil {
+
+	var issues []Issue
+	if err := json.Unmarshal(resp, &issues); err != nil {
 		return nil, fmt.Errorf("解析Issues搜索结果失败: %w", err)
 	}
-	
-	return result.Items, nil
+
+	return issues, nil
 }
 
 // SearchUsers 搜索用户
 func (api *SearchAPI) SearchUsers(query string) ([]User, error) {
 	values := url.Values{}
 	values.Set("q", query)
-	
+
 	resp, err := api.Client.GET("/search/users", values)
 	if err != nil {
 		return nil, err
 	}
-	
-	var result struct {
-		TotalCount int    `json:"total_count"`
-		Items      []User `json:"items"`
-	}
-	
-	if err := json.Unmarshal(resp, &result); err != nil {
+
+	var users []User
+	if err := json.Unmarshal(resp, &users); err != nil {
 		return nil, fmt.Errorf("解析用户搜索结果失败: %w", err)
 	}
-	
-	return result.Items, nil
+
+	return users, nil
 }
 
 // SearchCommits 搜索提交

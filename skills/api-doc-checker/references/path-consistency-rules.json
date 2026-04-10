@@ -1,0 +1,174 @@
+{
+  "version": "1.0.0",
+  "description": "路径一致性检查规则",
+  "rules": [
+    {
+      "id": "path-001",
+      "name": "step-directory-mismatch",
+      "description": "步骤创建的目录名与后续引用不一致",
+      "type": "path-consistency",
+      "priority": "high",
+      "confidence": 90,
+      "enabled": true,
+      "extraction": {
+        "creationPatterns": [
+          {
+            "name": "new-directory",
+            "pattern": "(?:新建|创建)(?:一个)?目录(?:并命名)?[为:]?[\\s`\"]*([a-zA-Z_][a-zA-Z0-9_]*)[\\s`\"]*",
+            "type": "directory",
+            "context": "creation"
+          },
+          {
+            "name": "directory-named",
+            "pattern": "目录名(?:称)?[为:]?[\\s`\"]*([a-zA-Z_][a-zA-Z0-9_]*)[\\s`\"]*",
+            "type": "directory",
+            "context": "creation"
+          }
+        ],
+        "referencePatterns": [
+          {
+            "name": "ets-path",
+            "pattern": "['\"](?:\\.)?/?ets/([a-zA-Z_][a-zA-Z0-9_]*)/",
+            "type": "directory",
+            "context": "reference"
+          },
+          {
+            "name": "src-entry-path",
+            "pattern": "srcEntry['\"\\s:]+['\"](?:\\.)?/?ets/([a-zA-Z_][a-zA-Z0-9_]*)/",
+            "type": "directory",
+            "context": "reference"
+          },
+          {
+            "name": "import-path",
+            "pattern": "from\\s+['\"](?:\\.)?/?([a-zA-Z_][a-zA-Z0-9_]*)/",
+            "type": "directory",
+            "context": "reference"
+          }
+        ]
+      },
+      "validation": {
+        "type": "cross-reference",
+        "check": "all-creations-referenced",
+        "caseSensitive": false
+      },
+      "message": "文档中创建的目录名与引用的目录名不一致",
+      "explanation": "步骤指导中创建的目录名应与配置文件中引用的路径保持一致",
+      "examples": {
+        "bad": [
+          {
+            "description": "步骤1创建 myabilitystage，但配置引用 exampleabilitystage",
+            "content": "1. 新建目录 myabilitystage\n...\n'srcEntry': './ets/exampleabilitystage/MyAbilityStage.ets'"
+          }
+        ],
+        "good": [
+          {
+            "description": "目录名前后一致",
+            "content": "1. 新建目录 exampleabilitystage\n...\n'srcEntry': './ets/exampleabilitystage/MyAbilityStage.ets'"
+          }
+        ]
+      }
+    },
+    {
+      "id": "path-002",
+      "name": "step-file-mismatch",
+      "description": "步骤创建的文件名与后续引用不一致",
+      "type": "path-consistency",
+      "priority": "high",
+      "confidence": 90,
+      "enabled": true,
+      "extraction": {
+        "creationPatterns": [
+          {
+            "name": "new-file",
+            "pattern": "新建(?:一个)?文件(?:并命名)?[为:]?[\\s`\"]*([a-zA-Z_][a-zA-Z0-9_]*\\.(?:ets|ts|json5|json))[\\s`\"]*",
+            "type": "file",
+            "context": "creation"
+          }
+        ],
+        "referencePatterns": [
+          {
+            "name": "file-reference",
+            "pattern": "['\"]([a-zA-Z_][a-zA-Z0-9_]*\\.(?:ets|ts|json5|json))['\"]",
+            "type": "file",
+            "context": "reference"
+          }
+        ]
+      },
+      "validation": {
+        "type": "cross-reference",
+        "check": "exact-match",
+        "caseSensitive": true
+      },
+      "message": "文档中创建的文件名与引用的文件名不一致",
+      "explanation": "步骤指导中创建的文件名应与代码示例和配置中引用的文件名完全一致"
+    },
+    {
+      "id": "path-003",
+      "name": "sample-code-path-mismatch",
+      "description": "文档路径与引用的Sample代码路径不一致",
+      "type": "path-consistency",
+      "priority": "high",
+      "confidence": 85,
+      "enabled": true,
+      "requiresExternalData": true,
+      "extraction": {
+        "sampleReferencePatterns": [
+          {
+            "name": "gitcode-sample",
+            "pattern": "<!--\\s*@\\[[^\\]]+\\]\\((https://gitcode\\.com/[^)]+)\\)\\s*-->",
+            "type": "sample-url"
+          },
+          {
+            "name": "gitee-sample",
+            "pattern": "<!--\\s*@\\[[^\\]]+\\]\\((https://gitee\\.com/[^)]+)\\)\\s*-->",
+            "type": "sample-url"
+          }
+        ],
+        "pathExtraction": {
+          "fromSample": {
+            "etsDirectoryPattern": "ets/([a-zA-Z_][a-zA-Z0-9_]*)/",
+            "fileNamePattern": "([a-zA-Z_][a-zA-Z0-9_]*\\.ets)"
+          }
+        }
+      },
+      "validation": {
+        "type": "external-compare",
+        "check": "directory-name-match",
+        "caseSensitive": false
+      },
+      "message": "文档中的目录/文件路径与引用的Sample代码不一致",
+      "explanation": "文档中的路径应与引用的官方Sample代码保持一致，避免开发者参考时出现配置错误",
+      "reference": "https://gitcode.com/openharmony/applications_app_samples",
+      "examples": {
+        "bad": [
+          {
+            "description": "文档用 myabilitystage，但Sample用 exampleabilitystage",
+            "docContent": "新建目录 myabilitystage",
+            "sampleUrl": "https://gitcode.com/.../exampleabilitystage/MyAbilityStage.ets"
+          }
+        ]
+      }
+    },
+    {
+      "id": "path-004",
+      "name": "module-json5-srcentry-mismatch",
+      "description": "module.json5中的srcEntry与步骤创建的目录不匹配",
+      "type": "path-consistency",
+      "priority": "critical",
+      "confidence": 95,
+      "enabled": true,
+      "scope": "module.json5",
+      "extraction": {
+        "srcEntryPattern": "srcEntry['\"\\s:]+['\"]([^'\"]+)['\"]",
+        "directoryInPathPattern": "ets/([a-zA-Z_][a-zA-Z0-9_]*)/"
+      },
+      "validation": {
+        "type": "cross-reference-with-steps",
+        "requiredMatch": true
+      },
+      "message": "module.json5中的 srcEntry 路径与步骤指导创建的目录不匹配",
+      "explanation": "srcEntry 配置的路径必须与实际创建的目录结构一致，否则会导致 AbilityStage 等组件加载失败",
+      "impact": "abilitystage-loading-failure"
+    }
+  ]
+}

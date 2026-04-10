@@ -26,6 +26,7 @@ type Repository struct {
 // User 表示用户信息
 type User struct {
 	ID        json.RawMessage `json:"id"`
+	Login     string          `json:"login"`
 	Username  string          `json:"username"`
 	Name      string          `json:"name"`
 	AvatarURL string          `json:"avatar_url"`
@@ -205,12 +206,35 @@ func (api *RepositoryAPI) CheckIfStarred(owner, repo string) (bool, error) {
 	path := fmt.Sprintf("/user/starred/%s/%s", owner, repo)
 	_, err := api.Client.GET(path, nil)
 	if err != nil {
-		// 检查是否为404错误，如果是404表示未星标
 		if apiErr, ok := err.(*APIError); ok && apiErr.Code == 404 {
 			return false, nil
 		}
 		return false, err
 	}
-	
+
 	return true, nil
+}
+
+// CreateRelease 创建Release
+func (api *RepositoryAPI) CreateRelease(owner, repo, tagName, name, body string, prerelease bool) (interface{}, error) {
+	apiPath := fmt.Sprintf("/repos/%s/%s/releases", owner, repo)
+	options := map[string]interface{}{
+		"tag_name": tagName,
+		"name":     name,
+		"body":     body,
+	}
+	if prerelease {
+		options["prerelease"] = true
+	}
+
+	resp, err := api.Client.POST(apiPath, nil, options)
+	if err != nil {
+		return nil, err
+	}
+
+	var release interface{}
+	if err := json.Unmarshal(resp, &release); err != nil {
+		return nil, fmt.Errorf("解析Release信息失败: %w", err)
+	}
+	return release, nil
 } 

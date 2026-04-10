@@ -363,8 +363,3 @@ it('testSysTestKit001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () =
 - 错误码测试规则
 
 模块级配置可以覆盖通用配置的特定部分。
-
-## 版本历史
-
-- **v1.1.0** (2026-02-05): 删除重复内容，添加对 hypium_framework.md 的引用
-- **v1.0.0** (2026-02-05): 从 _common.md 拆分，初始版本

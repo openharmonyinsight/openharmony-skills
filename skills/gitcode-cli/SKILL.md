@@ -1,6 +1,6 @@
 ---
 name: gitcode-cli
-description: Use when managing GitCode repositories from the terminal with oh-gc CLI — auth, issues, PRs, reviewers, testers, labels, releases, and repo config. Triggers on oh-gc commands, GitCode issue/PR management, or when user wants to interact with GitCode without a browser.
+description: Use when managing GitCode repositories from the terminal with oh-gc CLI — auth, issues, PRs, reviewers, testers, labels, releases, and repo config. TRIGGERS on: oh-gc commands, GitCode issue/PR management, "提交pr", "提交PR", "生成pr", "生成PR", "创建pr", "创建PR", "提交并生成pr", "提交并生成PR", "commit and create PR", "push and create PR", "创建一笔pr", "创建一笔PR", or when user wants to interact with GitCode without a browser.
 ---
 
 # oh-gc CLI — GitCode Command Line Tool
@@ -10,6 +10,34 @@ description: Use when managing GitCode repositories from the terminal with oh-gc
 `oh-gc` is a CLI for [GitCode](https://gitcode.com), modeled after GitHub CLI (`gh`). Manages authentication, issues, pull requests, releases, and repo configuration from the terminal.
 
 **Package:** `npm install -g @oh-gc/cli` (requires Node.js 18+)
+
+## Rules
+
+When executing gitcode-cli operations, follow these rules:
+
+1. **"当前改动"定义**: 当用户说"当前的改动"、"当前文件的改动"时，指的是**当前文件所在 git 仓库的改动**，使用 `git status` 和 `git diff` 查看。
+
+2. **Remote 命名规范**:
+   | Remote 名称 | 用途 |
+   |-------------|------|
+   | `gitcode` | 上游原始仓库 |
+   | `personal` | 个人 Fork 仓库 |
+
+3. **Fork 地址自动拼接**: 如果 `personal` remote 不存在，根据 `gitcode` remote 自动拼接：
+   ```bash
+   UPSTREAM_URL=$(git remote get-url gitcode)
+   REPO_NAME=$(echo "$UPSTREAM_URL" | sed -E 's|.*/([^/]+/[^/]+)(\.git)?|\1|')
+   PERSONAL_URL="https://${USERNAME}:${TOKEN}@gitcode.com/${USERNAME}/${REPO_NAME#*/}.git"
+   ```
+
+4. **Commit Message 格式** (DCO 标准):
+   ```
+   具体的改动说明
+
+   Co-Authored-By:Agent
+
+   Signed-off-by: 用户名 <邮箱>
+   ```
 
 ## Prerequisites
 
@@ -424,6 +452,7 @@ oh-gc tag protect-delete <name>               # Delete protected tag rule
 oh-gc org list                                # List your organizations
 oh-gc org view <org>                          # Get organization details
 oh-gc org members <org>                       # List organization members
+oh-gc org repos <org>                         # List organization repositories
 ```
 
 ## Workflow: Full PR Lifecycle
