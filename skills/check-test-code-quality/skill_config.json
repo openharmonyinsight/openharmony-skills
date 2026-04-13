@@ -1,0 +1,327 @@
+{
+  "name": "check-test-code-quality",
+  "description": "OpenHarmony XTS测试代码质量检查工具。检查XTS测试代码中的低级问题和编码规范违规，基于兼容性测试代码设计和编码规范2.0和用例低级问题.md。",
+  "version": "4.0.0",
+  "author": "OpenHarmony XTS Team",
+  "created": "2026-02-28",
+  "updated": "2026-04-02",
+  "license": "Apache 2.0"
+  "repository": "https://gitee.com/openharmony",
+  "keywords": [
+    "XTS",
+    "测试代码质量",
+    "代码规范",
+    "测试用例",
+    "acts",
+    "dcts",
+    "hats",
+    "OpenHarmony",
+    "Hypium",
+    "测试框架"
+  ],
+  "categories": [
+    "测试",
+    "代码质量",
+    "OpenHarmony"
+  ],
+  "tags": {
+    "level": "L1",
+    "priority": "high",
+    "scope": ["test", "quality", "compliance"]
+  },
+  "allowed_tools": [
+    "Read",
+    "Write",
+    "Edit",
+    "Glob",
+    "Grep",
+    "Bash"
+  ],
+  "dependencies": [
+    "openpyxl>=3.0.0",
+    "pandas>=1.3.0"
+  ],
+  "config": {
+    "python_version": ">=3.8.0",
+    "supported_file_types": [
+      ".test.ts",
+      ".test.js"
+      ".test.ets"
+      ".cpp"
+      ".c"
+      "Test.json"
+      "BUILD.gn"
+      ".ts"
+      ".ets"
+      ".js"
+      ".p7b"
+      "syscap.json"
+    ],
+    "excluded_dirs": [
+      "node_modules",
+      "dist",
+      "build",
+      "Static",
+      "static"
+      ".git",
+      ".idea"
+    ],
+    "excel_output": {
+      "enabled": true,
+      "filename_pattern": "{directory}_quality_report.xlsx",
+      "sheets": [
+        "代码质量检查报告",
+        "统计摘要"
+      ],
+      "max_rows_per_sheet": 1000000
+    },
+    "assertion_methods": [
+      "assertClose",
+      "assertContain"
+      "assertEqual"
+      "assertFail"
+      "assertFalse"
+      "assertTrue"
+      "assertInstanceOf"
+      "assertLarger"
+      "assertLess"
+      "assertLargerOrEqual"
+      "assertLessOrEqual"
+      "assertNull"
+      "assertThrowError"
+      "assertUndefined"
+      "assertNaN"
+      "assertNegUnlimited"
+      "assertPosUnlimited"
+      "assertDeepEquals"
+    ]
+  },
+  "rules": {
+    "critical": [
+      "R001",
+      "R002",
+      "R003",
+      "R004",
+      "R006",
+      "R007"
+      "R010",
+      "R011",
+      "R012"
+      "R014",
+      "R017",
+      "R018"
+    ],
+    "warning": [
+      "R005",
+      "R008",
+      "R009",
+      "R013",
+      "R015",
+      "R016"
+    ]
+  },
+  "rule_descriptions": {
+    "critical": {
+      "R001": "禁止使用getSync系统接口",
+      "R002": "错误码断言必须是number类型"
+      "R003": "禁止恒真断言"
+      "R004": "测试用例缺少断言"
+      "R006": "禁止基于设备类型差异化"
+      "R007": "Test.json禁止配置项"
+      "R010": "part_name/subsystem_name不匹配"
+      "R011": "testsuite重复"
+      "R012": "签名证书APL等级和app-feature配置错误"
+      "R014": "测试HAP命名不规范"
+      "R017": "syscap.json配置多个能力"
+      "R018": "testcase重复"
+    },
+    "warning": {
+      "R005": "组件尺寸使用固定值"
+      "R008": "用例声明格式不规范"
+      "R009": "@tc.number命名不规范"
+      "R013": "注释的废弃代码"
+      "R015": "Level参数缺省"
+      "R016": "testcase命名规范"
+    }
+  },
+  "rule_history": {
+    "R003": {
+      "old_type": "R003-1",
+      "description": "从原R003规则拆分出来，原R003包含恒真断言和缺少断言两种类型",
+      "change_date": "2026-03-10"
+    },
+        "R004": {
+          "issue_type": "禁止恒真断言和缺少断言",
+          "severity": "Critical"
+        "R004": {
+          "issue_type": "禁止恒真断言和缺少断言",
+          "severity": "Critical"
+        }
+      }
+    }
+  }
+  }
+  },
+  "usage": {
+    "command": "/check-test-code-quality [file_or_directory...]",
+    "options": [
+      {
+        "name": "--rules",
+        "description": "指定要扫描的规则编号",
+        "example": "--rules R001,R002,R003"
+      },
+      {
+        "name": "--skip-rules",
+        "description": "跳过指定的规则"
+        "example": "--skip-rules R009,R013"
+      },
+      {
+        "name": "--level",
+        "description": "指定扫描的严重级别"
+        "example": "--level critical"
+        "values": ["critical", "warning", "all"]
+      },
+      {
+        "name": "--fix",
+        "description": "扫描后自动调用修复脚本"
+        "example": "--fix"
+      }
+    ],
+    "examples": [
+      {
+        "description": "检查当前目录",
+        "command": "/check-test-code-quality"
+      },
+      {
+        "description": "检查特定文件",
+        "command": "/check-test-code-quality ability/ability_runtime/xxx/entry/src/ohosTest/ets/test/xxx/xxx.test.ets"
+      },
+      {
+        "description": "检查整个目录",
+        "command": "/check-test-code-quality ability/ability_runtime/"
+      },
+      {
+        "description": "检查多个目录",
+        "command": "/check-test-code-quality ability/ability_runtime/ arkui/"
+      },
+      {
+        "description": "只扫描Critical级别",
+        "command": "/check-test-code-quality /path/to/code --level critical"
+      },
+      {
+        "description": "扫描并修复R002问题",
+        "command": "/check-test-code-quality /path/to/code --rules R002 --fix"
+      }
+    ]
+  },
+  "rule_skill_files": {
+    "R001": "rules/R001/SKILL.md",
+    "R002": "rules/R002/SKILL.md",
+    "R003": "rules/R003/SKILL.md",
+    "R004": "rules/R004/SKILL.md",
+    "R005": "rules/R005/SKILL.md",
+    "R006": "rules/R006/SKILL.md",
+    "R007": "rules/R007/SKILL.md",
+    "R008": "rules/R008/SKILL.md",
+    "R009": "rules/R009/SKILL.md",
+    "R010": "rules/R010/SKILL.md",
+    "R011": "rules/R011/SKILL.md",
+    "R012": "rules/R012/SKILL.md",
+    "R013": "rules/R013/SKILL.md",
+    "R014": "rules/R014/SKILL.md",
+    "R015": "rules/R015/SKILL.md",
+    "R016": "rules/R016/SKILL.md",
+    "R017": "rules/R017/SKILL.md",
+    "R018": "rules/R018/SKILL.md"
+  },
+  "references": {
+    "main_doc": "SKILL.md",
+    "examples": "rules/",
+    "implementation": "rules/",
+    "update_log": "SKILL.md",
+    "coding_standards": "references/兼容性测试代码设计和编码规范2.0.md",
+    "low_level_issues": "references/用例低级问题.md"
+  },
+  "output": {
+    "terminal": {
+      "format": "markdown",
+      "sections": [
+        "检查结果",
+        "严重问题",
+        "警告"
+        "统计摘要"
+      ]
+    },
+    "excel": {
+      "format": "xlsx",
+      "columns": [
+        "问题ID",
+        "问题类型",
+        "严重级别",
+        "文件路径",
+        "行号",
+        "所属用例",
+        "代码片段",
+        "修复建议",
+        "所属子系统",
+        "申请报备人",
+        "报备原因",
+        "是否报备通过"
+      ],
+      "column_widths": {
+        "问题ID": 10,
+        "问题类型": 25,
+        "严重级别": 12,
+        "文件路径": 80,
+        "行号": 8,
+        "所属用例": 40,
+        "代码片段": 100,
+        "修复建议": 80,
+        "所属子系统": 20,
+        "申请报备人": 15,
+        "报备原因": 30,
+        "是否报备通过": 15
+      }
+    }
+  },
+  "features": {
+    "two_phase_scan": true,
+    "static_project_skip": true
+    "independent_project_detection": true
+    "duplicate_detection": {
+      "testsuite": "R011",
+      "testcase": "R018"
+    }
+  },
+  "file_type_detection": {
+    "test_files": [".test.ts", ".test.js", ".test.ets"],
+    "config_files": ["Test.json", "BUILD.gn", "syscap.json"],
+    "source_files": [".cpp", ".c", ".ts", ".ets", ".js"]
+    "signature_files": [".p7b"]
+  },
+  "performance": {
+    "max_files_per_batch": 1000
+    "enable_parallel_processing": true
+    "cache_enabled": true
+    "progress_report_interval": 1000
+  },
+  "implementation_notes": {
+    "file_type_recognition": "必须使用 filename.endswith() 而不是 file_path.suffix 来识别 .test.ets 等多后缀文件",
+    "regex_optimization": "使用非贪婪匹配 *? 代替贪婪匹配 *",
+    "parallel_processing": "支持多线程并行处理，提高扫描速度"
+    "error_handling": "完善的错误处理和降级策略"
+    "memory_management": "大文件分块读取,避免内存溢出"
+    "assertion_detection": {
+      "max_recursion_depth": 5,
+      "supported_patterns": [
+        "direct_assertion",
+        "callback_function",
+        "multi_layer_call_chain"
+        "variable_function_expression",
+        "helper_function_try_catch_gap",
+        "commented_assertion_detection",
+        "same_line_catch_pattern"
+      ]
+    }
+  }
+}
