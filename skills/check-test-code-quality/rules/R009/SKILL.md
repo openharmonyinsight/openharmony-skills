@@ -147,7 +147,7 @@ def check_r009(file_path: str, content: str) -> list[dict]:
 
 
 def find_nearest_testcase(lines: list[str], start_line: int) -> str:
-    for i in range(start_line - 1, min(start_line + 10, len(lines))):
+    for i in range(start_line, min(start_line + 10, len(lines))):
         match = re.search(r"\bit\s*\(\s*['\"]([^'\"]+)['\"]", lines[i])
         if match:
             return match.group(1)

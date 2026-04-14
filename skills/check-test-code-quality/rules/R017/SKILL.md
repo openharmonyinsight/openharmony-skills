@@ -173,11 +173,38 @@ def batch_scan_r017(directory: str) -> list:
 }
 ```
 
-### 关键路径
+### 关键路径（含类型约束）
 
-- `devices` - 设备配置根节点
-- `devices.custom[]` - 自定义设备配置数组
-- `devices.custom[].xts[]` - XTS syscap能力数组（**检测目标**）
+**必须严格按层级类型取值，不可跳层或混淆层级类型。**
+
+| JSON路径 | 类型 | 说明 |
+|---------|------|------|
+| `data.devices` | **dict** `{str: ...}` | 设备配置根节点，包含 `"general"` 和 `"custom"` 两个key |
+| `data.devices.custom` | **list** `[dict, ...]` | 自定义设备配置数组，每个元素是一个dict |
+| `data.devices.custom[].xts` | **list** `[str, ...]` | XTS syscap能力字符串数组（**检测目标**） |
+
+**正确取值方式**（两步，不可合并为一步）：
+```python
+# 第1步：从dict中取出custom列表
+devices = data.get('devices', {})       # → dict {"general": [], "custom": [...]}
+custom_devices = devices.get('custom', [])  # → list [dict, ...]
+
+# 第2步：遍历列表中的每个dict
+for device in custom_devices:           # device → dict {"xts": [...]}
+    xts_list = device.get('xts', [])    # → list [str, ...]
+```
+
+**常见错误**（会导致100%漏检）：
+```python
+# ✗ 错误：把devices dict直接当列表遍历，遍历的是key字符串
+for dev in data.get('devices', []):     # dev是"general"或"custom"字符串
+    dev.get('custom')                   # → AttributeError: 'str' has no 'get'
+
+# ✗ 错误：合并取值后类型丢失
+custom = data.get('devices', {}).get('custom', [])  # 正确
+for dev in custom:
+    xts = dev.get('xts', [])            # dev必须是dict，如果custom被错误赋值为list of list则会报错
+```
 
 ## 错误示例
 
@@ -339,6 +366,16 @@ def batch_scan_r017(directory: str) -> list:
 ### 4. JSON解析失败
 
 如果`syscap.json`文件格式错误（非有效JSON），解析会抛出异常，此时报告为解析错误，便于用户定位和修复。
+
+### 5. devices层级类型混淆（已知陷阱）
+
+`data['devices']` 是 **dict**（包含 `"general"` 和 `"custom"` 两个key），不是设备列表。必须通过 `.get('custom', [])` 再取一层才能得到设备列表。如果直接遍历 `data['devices']`，遍历的是dict的key字符串（`"general"`、`"custom"`），对字符串调用 `.get()` 会导致 `AttributeError`，异常被静默捕获后所有文件全部跳过，造成100%漏检。
+
+**验证方法**：实现完成后，用以下命令快速验证是否漏检：
+```bash
+grep -r '"SystemCapability' --include='syscap.json' -l | xargs grep -c '"SystemCapability' | grep -v ':1$' | wc -l
+```
+如果该命令输出的数量远大于扫描结果数量，说明存在漏检。
 
 ## 错误/正确示例
 

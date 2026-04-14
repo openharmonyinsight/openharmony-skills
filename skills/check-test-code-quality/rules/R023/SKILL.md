@@ -83,8 +83,41 @@ def extract_it_blocks(content):
 ```python
 import re
 
-# 匹配 Number(...) 内包含 .code 的模式
-NUMBER_CODE_PATTERN = re.compile(r'\bNumber\s*\([^)]*\.code\s*\)')
+# 匹配 Number(...) 内包含 .code 的模式（支持嵌套括号）
+def find_number_code_matches(line):
+    """匹配 Number(...) 内包含 .code 的模式，使用括号计数处理嵌套。
+    
+    支持嵌套括号如: Number((error as BusinessError).code)
+    """
+    results = []
+    pattern = re.compile(r'\bNumber\s*\(')
+    for m in pattern.finditer(line):
+        start = m.end()
+        depth = 1
+        i = start
+        in_single = in_double = in_backtick = False
+        while i < len(line) and depth > 0:
+            c = line[i]
+            if c == '\\' and (in_single or in_double or in_backtick):
+                i += 2
+                continue
+            if c == '`' and not in_single and not in_double:
+                in_backtick = not in_backtick
+            elif c == "'" and not in_double and not in_backtick:
+                in_single = not in_single
+            elif c == '"' and not in_single and not in_backtick:
+                in_double = not in_double
+            elif not in_single and not in_double and not in_backtick:
+                if c == '(':
+                    depth += 1
+                elif c == ')':
+                    depth -= 1
+            i += 1
+        if depth == 0:
+            inner = line[start:i - 1]
+            if '.code' in inner:
+                results.append(line[m.start():i])
+    return results
 
 def scan_r023(file_path, base_dir):
     issues = []
@@ -95,16 +128,14 @@ def scan_r023(file_path, base_dir):
     it_blocks = extract_it_blocks(content)
 
     for line_idx, line in enumerate(lines):
-        if not NUMBER_CODE_PATTERN.search(line):
-            continue
-
         stripped = line.strip()
         if stripped.startswith('//'):
             continue
         code_part = stripped
         if '//' in stripped:
             code_part = stripped[:stripped.index('//')].strip()
-        if not NUMBER_CODE_PATTERN.search(code_part):
+        matches = find_number_code_matches(code_part)
+        if not matches:
             continue
 
         line_num = line_idx + 1

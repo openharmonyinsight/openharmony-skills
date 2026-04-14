@@ -321,4 +321,108 @@ required_tags = [
     '@tc.number', '@tc.name', '@tc.desc', '@tc.type',
     '@tc.level', '@tc.size', '@tc.size', '@tc.since'
 ]
+
+---
+
+## 最新评估结果与实现状态（2026-04-14）
+
+### 实现状态
+
+**当前状态**: ❌ **未实现**（使用占位符扫描器）
+
+**技术原因**:
+- R008属于"模型生成规则"，需要根据本文档的检测逻辑动态生成扫描代码
+- 在 `scripts/main.py` 的 `load_rule_scanners()` 函数中，R008被替换为noop扫描器（空操作）
+- 当前实现返回空列表，无法检测任何问题
+
+### 改进方案
+
+**方案1：实现为预置脚本（推荐）**
+
+在 `scripts/simple_rules.py` 中添加R008的扫描实现：
+
+```python
+# ======================== R008: 用例声明格式不规范 ========================
+# Source: rules/R008/SKILL.md
+
+_R008_NO_AT_RE = re.compile(r'^\s*\*\s*(tc\.\w+)\s+\S')
+
+
+def scan_r008(files, base_dir):
+    issues = []
+    for fp in files:
+        try:
+            with open(fp, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read()
+        except Exception:
+            continue
+        lines = content.split('\n')
+        in_doc_comment = False
+        doc_start_line = 0
+        testcase_name = None
+
+        for i, line in enumerate(lines, 1):
+            stripped = line.strip()
+
+            # 检测 /** 开始
+            if stripped.startswith('/**'):
+                in_doc_comment = True
+                doc_start_line = i
+                continue
+
+            # 检测 */ 结束
+            if in_doc_comment and '*/' in stripped:
+                in_doc_comment = False
+                # 查找下一个 it() 调用
+                for j in range(i, min(i + 5, len(lines))):
+                    m = re.search(r"\bit\s*\(\s*['\"]([^'\"]+)['\"]", lines[j])
+                    if m:
+                        testcase_name = m.group(1)
+                        break
+                continue
+
+            # 在注释块内检测问题
+            if in_doc_comment:
+                # 检测缺少 @ 修饰符
+                m = _R008_NO_AT_RE.search(stripped)
+                if m:
+                    issues.append(_make_issue(
+                        'R008', '用例声明格式不规范', 'Warning',
+                        fp, base_dir, i, line,
+                        f'路径: {os.path.relpath(fp, base_dir)}, 行号: {i}, 问题描述: 参数 {m.group(1)} 缺少@修饰符',
+                        testcase=testcase_name or '-'))
+
+    return issues
+```
+
+**方案2：动态生成检测代码**
+
+修改 `scripts/main.py`，在扫描时根据本文档的检测逻辑动态生成并执行R008检测代码。
+
+**方案3：独立扫描脚本**
+
+创建独立的 `scripts/scan_r008.py` 文件，实现R008的完整检测逻辑。
+
+### 自动修复支持
+
+根据 `guides/R008_testcase_format/R008_FIX_GUIDE.md`，R008支持自动修复：
+
+**修复内容**:
+1. 将 `tc.name` 改为 `@tc.name`
+2. 将 `tc.number` 改为 `@tc.number`
+3. 删除多余空行
+
+**修复命令**:
+```bash
+python3 scripts/main.py /path/to/code --rules R008 --fix
+```
+
+### 参考文档
+
+- [SKILL.md](../../SKILL.md) - 主技能文档（规则总览和评估结果）
+- [scripts/simple_rules.py](../../scripts/simple_rules.py) - 预置扫描脚本（需添加R008实现）
+- [scripts/main.py](../../scripts/main.py) - 扫描入口（需修改noop扫描器逻辑）
+- [guides/R008_testcase_format/R008_FIX_GUIDE.md](../../guides/R008_testcase_format/R008_FIX_GUIDE.md) - 修复指南
+
+详细评估报告见：`/home/xianf/master/test/xts/evaluation_report.md`
 ```

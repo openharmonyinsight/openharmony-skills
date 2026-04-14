@@ -41,7 +41,7 @@ p7b文件是PKCS#7签名格式，包含：
        - 修改: apl → "normal", app-feature → "hos_normal_app"
        ↓
 步骤4：写入模板文件
-       - 写入 guides/signature_tools/UnsgnedReleasedProfileTemplate.json
+       - 写入 guides/R012_p7b_signature/signature_tools/UnsgnedReleasedProfileTemplate.json
        ↓
 步骤5：重新签名
        - 使用 hap-sign-tool.jar 生成新的p7b文件
@@ -74,12 +74,12 @@ openssl cms -verify -in <p7b文件路径> -inform DER -noverify
 | acls | 保留 | 如存在则保留（可选字段） |
 
 **步骤4：写入模板文件**
-- 路径：`guides/signature_tools/UnsgnedReleasedProfileTemplate.json`
+- 路径：`guides/R012_p7b_signature/signature_tools/UnsgnedReleasedProfileTemplate.json`
 - 使用JSON格式写入修改后的完整配置
 
 **步骤5：重新签名命令**
 ```bash
-cd guides/signature_tools/
+cd guides/R012_p7b_signature/signature_tools/
 
 java -jar hap-sign-tool.jar sign-profile \
   -mode "localSign" \
@@ -98,7 +98,7 @@ java -jar hap-sign-tool.jar sign-profile \
 **步骤6：替换原文件**
 ```bash
 # 替换（保持与原文件同名）
-cp guides/signature_tools/myApplication_ohos_Provision.p7b <原p7b文件>
+cp guides/R012_p7b_signature/signature_tools/myApplication_ohos_Provision.p7b <原p7b文件>
 ```
 
 ### 验证修复结果
@@ -154,7 +154,7 @@ openssl cms -verify -in openharmony_sx.p7b -inform DER -noverify > profile.json
 
 ### 步骤3：修改UnsgnedReleasedProfileTemplate.json
 
-将提取的字段写入 `guides/signature_tools/UnsgnedReleasedProfileTemplate.json`：
+将提取的字段写入 `guides/R012_p7b_signature/signature_tools/UnsgnedReleasedProfileTemplate.json`：
 
 - **修改** `apl` 和 `app-feature` 字段为正确值
 - **保留** `app-distribution-type`、`validity`、`bundle-name`、`acls` 的原始内容
@@ -188,7 +188,7 @@ openssl cms -verify -in openharmony_sx.p7b -inform DER -noverify > profile.json
 ### 步骤4：使用签名工具重新签名
 
 ```bash
-cd guides/signature_tools/
+cd guides/R012_p7b_signature/signature_tools/
 
 java -jar hap-sign-tool.jar sign-profile \
   -mode "localSign" \
@@ -403,7 +403,7 @@ java -jar hap-sign-tool.jar sign-profile \
   -signAlg "SHA256withECDSA" \
   -profileCertFile "OpenHarmonyProfileRelease.pem" \
   -validity "365" \
-  -developer-id "OpenHarmony"
+  -developer-id "ohosdeveloper"
 ```
 
 #### 步骤4：替换原文件
@@ -781,7 +781,7 @@ Error Message: Common name of certificate is empty!
 
 - [OpenHarmony权限管理](https://gitcode.com/openharmony/docs/blob/master/zh-cn/application-dev/security/AccessToken/access-token.md)
 - [应用权限列表](https://gitcode.com/openharmony/docs/blob/master/zh-cn/application-dev/security/AccessToken/permissions-for-all.md)
-- [签名工具使用指导](../signature_tools/使用指导.docx)
+- [签名工具使用指导](./signature_tools/使用指导.docx)
 
 ## 技术支持
 

@@ -14,7 +14,7 @@
 
 ## 检查规则概览
 
-### Critical级别（16条）
+### Critical级别（17条）
 | 规则 | 描述 | 扫描范围 | 典型问题 |
 |------|------|---------|----------|
 | R001 | 禁止使用getSync系统接口 | 所有源代码文件 | `systemParameter.getSync()` |
@@ -67,10 +67,10 @@
 # 跳过某些规则
 /check-test-code-quality /path/to/code --skip-rules R009,R014
 
-# 指定级别（默认critical）
-/check-test-code-quality /path/to/code --level critical
-/check-test-test-code-quality /path/to/code --level warning
+# 指定级别（默认all）
 /check-test-code-quality /path/to/code --level all
+/check-test-code-quality /path/to/code --level critical
+/check-test-code-quality /path/to/code --level warning
 
 # 扫描并自动修复
 /check-test-code-quality /path/to/code --rules R002 --fix
@@ -165,7 +165,7 @@
 - 新增R021: hypium版本号>=1.0.26
 - 新增R020: .id重复（与R019逻辑一致）
 - R002/R003/R004/R022扫描范围扩展为所有源代码文件
-- 规则总数: 23个（16 Critical + 6 Warning + 1 工程级特殊）
+- 规则总数: 23个（17 Critical + 6 Warning）
 
 ### v4.1.0 (2026-04-13)
 - 新增R019: .key重复（工程级跨文件检测）

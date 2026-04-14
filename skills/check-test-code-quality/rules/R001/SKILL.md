@@ -415,14 +415,6 @@ for fp in source_files:
 | 小写 | `@ohos.systemparameter` | 较少 |
 | **大写P** | `@ohos.systemParameterEnhance` | **主要形式（约70条）** |
 
-**错误做法**（仅匹配小写）:
-```python
-import_patterns = [
-    r'import\s+\{([^}]+)\}\s+from\s+["\']@ohos\.systemparameter(?:Enhance)?["\']',
-    # ↑ systemparameter 小写 p，无法匹配 @ohos.systemParameterEnhance（大写 P）
-]
-```
-
 **正确做法**（同时覆盖两种大小写）:
 ```python
 import_patterns = [
@@ -430,14 +422,9 @@ import_patterns = [
     r'import\s+\{([^}]+)\}\s+from\s+["\']@ohos\.systemParameterEnhance["\']',
     r'import\s+\{([^}]+)\}\s+from\s+["\']@kit\.BasicServicesKit["\']',
 ]
-# 或者使用 re.IGNORECASE 标志：
-# r'import\s+\{([^}]+)\}\s+from\s+["\']@ohos\.systemparameter(?:Enhance)?["\']'
-# 需注意 IGNORECASE 也会匹配 @ohos.SystemParameter 等不存在的大小写组合
 ```
 
-**影响**: 实际扫描中（xts_acts目录，85277个源代码文件），仅因此大小写问题就漏检70条，占R001问题总数的32%（70/220）。
-
-**验证方法**: 扫描完成后，检查结果中是否存在来自 `@ohos.systemParameterEnhance` 导入的文件。如果大量 ability_runtime 目录下的文件缺失，很可能是此问题。
+> 详见 [references/TRAPS.md](../../references/TRAPS.md) 陷阱3。
 
 ### 陷阱：默认导入（default import）未识别（导致约41个问题漏报）
 
@@ -445,72 +432,35 @@ import_patterns = [
 
 **问题描述**: 系统参数模块的导入有两种语法形式。如果只处理 named import（大括号形式），会漏检 default import 形式。
 
-| 导入形式 | 语法 | 变量提取方式 | 出现频率 |
-|---------|------|------------|---------|
-| Named import | `import { systemParameterEnhance } from '@ohos.systemParameterEnhance'` | 从 `{ }` 内提取 | 较多 |
-| **Default import** | `import parameter from '@ohos.systemparameter'` | 从 `import` 后提取变量名 | **约41条** |
-
-**典型代码**（default import，常见于 usb、bluetooth 等子系统）:
-```javascript
-import parameter from '@ohos.systemparameter';
-
-// 后续使用:
-testParam.sendData = parameter.getSync('test_usb', 'default');
-```
-
-**错误做法**（只处理 named import）:
-```python
-# 仅匹配 import { xxx } from '...' 形式
-named_import_re = re.compile(
-    r'import\s+\{([^}]+)\}\s+from\s+["\'](@ohos\.systemparameter(?:Enhance)?|@kit\.BasicServicesKit)["\']'
-)
-# ↑ 无法匹配 import parameter from '@ohos.systemparameter'
-```
+| 导入形式 | 语法 | 出现频率 |
+|---------|------|---------|
+| Named import | `import { systemParameterEnhance } from '@ohos.systemParameterEnhance'` | 较多 |
+| **Default import** | `import parameter from '@ohos.systemparameter'` | **约41条** |
 
 **正确做法**（同时处理两种导入形式）:
 ```python
-# Named import: import { systemParameterEnhance } from '...'
+# Named import: import { xxx } from '...'
 named_import_re = re.compile(
     r'import\s+\{([^}]+)\}\s+from\s+["\'](@ohos\.systemparameter(?:Enhance)?|@kit\.BasicServicesKit)["\']'
 )
 
-# Default import: import parameter from '...'
+# Default import: import xxx from '...'
 default_import_re = re.compile(
     r'import\s+(\w+)\s+from\s+["\'](@ohos\.systemparameter(?:Enhance)?|@kit\.BasicServicesKit)["\']'
 )
 
 # 使用 re.finditer（而非 re.search）以支持同一文件中的多个导入
-for m in named_import_re.finditer(content):
-    names = [n.strip() for n in m.group(1).split(',')]
-    var_names.update(names)
-
-for m in default_import_re.finditer(content):
-    var_names.add(m.group(1))  # m.group(1) 是 default import 的变量名
 ```
 
-**影响**: 实际扫描中漏检41条，主要集中在 `usb/usb_standard`、`communication/bluetooth_ble` 等子系统的测试文件中。
+> 详见 [references/TRAPS.md](../../references/TRAPS.md) 陷阱4。
 
 ### 陷阱：多行导入语句未处理
 
 **严重性**: 低
 
-**问题描述**: 部分文件的 import 语句跨多行书写，单行正则无法匹配。
+部分文件的 import 语句跨多行书写，单行正则无法匹配。扫描前将多行 import 合并为单行即可。
 
-```javascript
-// 多行 import 示例
-import {
-  systemParameterEnhance,
-  otherModule
-} from '@ohos.systemParameterEnhance';
-```
-
-**修复**: 扫描前将多行 import 合并为单行，或使用 `re.DOTALL` / `re.MULTILINE` 标志。
-
-```python
-# 将多行合并为单行后再匹配
-normalized_content = re.sub(r'\n\s*', ' ', content)
-matches = import_re.finditer(normalized_content)
-```
+> 详见 [references/TRAPS.md](../../references/TRAPS.md) 陷阱2（R001/R005/R006须扫描所有源文件）。
 
 ## 参考文档
 

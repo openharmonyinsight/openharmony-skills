@@ -54,23 +54,15 @@ expect(error.code === '14000011').assertTrue();
 expect(error.code === 14000011).assertTrue();
 ```
 
-### Pattern 4: `if` 条件中的宽松 string 比较
+### Pattern 4: `if` 条件中的 string 比较（== 和 ===）
 
 ```javascript
 // 错误
-if (error.code == "801") { ... }
+if (error.code == "801") { ... }    // 宽松相等
+if (error.code === "401") { ... }   // 严格相等
 
 // 正确
 if (error.code == 801) { ... }
-```
-
-### Pattern 5: `if` 条件中的严格 string 比较
-
-```javascript
-// 错误
-if (error.code === "401") { ... }
-
-// 正确
 if (error.code === 401) { ... }
 ```
 
@@ -144,14 +136,10 @@ r002_assertTrue_pattern = re.compile(
     r'expect\s*\(\s*\w+\.code\s*===?\s*[\'"]'
 )
 
-# 精确模式4: if (xxx.code == 'string') - if条件中的string比较
+# 精确模式4: if (xxx.code == 'string') 或 if (xxx.code === 'string') - if条件中的string比较
+# 使用 ===? 匹配 == 和 ===，避免同一行被两个正则重复报告
 r002_if_pattern = re.compile(
-    r'if\s*\(\s*\w+\.code\s*==\s*[\'"]'
-)
-
-# 精确模式5: if (xxx.code === 'string') - if条件中的严格string比较
-r002_if_strict_pattern = re.compile(
-    r'if\s*\(\s*\w+\.code\s*===\s*[\'"]'
+    r'if\s*\(\s*\w+\.code\s*===?\s*[\'"]'
 )
 ```
 
@@ -309,7 +297,7 @@ def scan_r002_line(line, line_num, string_vars=None):
         })
         return issues
 
-    # Pattern 4/5: if (xxx.code == '...') 或 if (xxx.code === '...')
+    # Pattern 4: if (xxx.code == '...') 或 if (xxx.code === '...')
     m = r002_if_pattern.search(line)
     if m:
         issues.append({

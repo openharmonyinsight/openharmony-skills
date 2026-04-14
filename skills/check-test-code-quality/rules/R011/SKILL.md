@@ -50,19 +50,46 @@ def is_group_build_gn(build_gn_path):
     return bool(re.search(r'\bgroup\s*\(', content))
 
 def find_independent_projects(scan_root):
-    projects = []
+    """识别独立XTS工程，正确处理group类型父BUILD.gn。
+    
+    group类型的BUILD.gn只是聚合入口，不阻止其子目录成为独立工程。
+    """
+    all_build_gn_dirs = set()
     for dirpath, dirnames, filenames in os.walk(scan_root):
         if 'BUILD.gn' in filenames:
-            build_gn_path = os.path.join(dirpath, 'BUILD.gn')
-            if is_group_build_gn(build_gn_path):
-                continue
+            all_build_gn_dirs.add(os.path.abspath(dirpath))
 
-            has_test_files = any(
-                fn.endswith(('.test.ets', '.test.ts', '.test.js'))
-                for fn in filenames
-            )
-            if has_test_files:
-                projects.append(os.path.abspath(dirpath))
+    # 只收集非group的BUILD.gn目录
+    non_group_dirs = set()
+    for d in all_build_gn_dirs:
+        if not is_group_build_gn(os.path.join(d, 'BUILD.gn')):
+            non_group_dirs.add(d)
+
+    # 只将"父目录是非group BUILD.gn"的子目录标记为应排除
+    parent_dirs = set()
+    for d in all_build_gn_dirs:
+        if d in parent_dirs:
+            continue
+        parent = os.path.dirname(d)
+        while parent != os.path.abspath(scan_root) and parent != '/':
+            if parent in non_group_dirs:
+                parent_dirs.add(d)
+                break
+            parent = os.path.dirname(parent)
+
+    projects = []
+    for dirpath in all_build_gn_dirs:
+        if dirpath in parent_dirs:
+            continue
+        if is_group_build_gn(os.path.join(dirpath, 'BUILD.gn')):
+            continue
+
+        has_test_files = any(
+            fn.endswith(('.test.ets', '.test.ts', '.test.js'))
+            for fn in os.listdir(dirpath)
+        )
+        if has_test_files:
+            projects.append(dirpath)
     return projects
 ```
 

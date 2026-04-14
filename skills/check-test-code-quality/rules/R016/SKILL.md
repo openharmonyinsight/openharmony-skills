@@ -332,62 +332,21 @@ it('testFunc_API_v2-001', Level.LEVEL0, () => {
 
 ### 4. 清理后名称为空
 
-如果移除所有特殊字符后名称为空（如`@#$%`），则使用`testcase`作为基础名称，再追加`Adapt`后缀。
+如果移除所有特殊字符后名称为空（如`@#$%`），则使用`unnamedTest`作为基础名称，再追加`Adapt`后缀。
 
 ### 5. 严禁使用命名格式检测代替特殊字符检测（极严重）
 
 - **严重性**: 极严重，曾导致print子系统313条R016全部误报（0%准确率）
-- **问题**: 将R016错误实现为"检查testcase名称是否符合`testXxx`或`IT_xxx`格式"，用正则 `^(test|IT|it)[A-Z]\w*$` 做格式匹配。这完全偏离了R016的规则定义——R016只检查是否包含特殊字符，不限制命名格式。
-- **错误实现**:
-```python
-# ✗ 错误：这是命名格式检测，不是特殊字符检测
-pattern = re.compile(r'^(test|IT|it)[A-Z]\w*$')
-if not pattern.match(tc_name):
-    report_issue(...)  # 大量误报！
-```
-- **正确实现**:
-```python
-# ✓ 正确：检查是否包含[a-zA-Z0-9_-]以外的字符
-TC_NAME_PATTERN = re.compile(r'^[a-zA-Z0-9_-]+$')
-if not TC_NAME_PATTERN.match(tc_name):
-    report_issue(...)
-```
-- **误报案例**: `printExtension_function_0100`、`scan_function_0100` 等名称只含字母、数字、下划线，完全合规，但被格式检测误报为R016。
-- **根因**: 实现者混淆了"命名格式建议"（如`testXxx`）与"命名规范硬性约束"（仅允许特定字符集）。R016只约束字符集，不约束格式。
-- **影响范围**: 任何使用 `^(test|IT|it)[A-Z]\w*$` 或类似格式正则的扫描脚本。
-- **验证方法**: 用以下合规名称验证，不应触发R016：
-  - `printExtension_function_0100` — 含下划线和数字，合规
-  - `scan_function_0100` — 含下划线和数字，合规
-  - `testFunc_API_v2-001` — 含字母、数字、下划线、连字符，合规
-  - `IT_SOME_TEST_001` — 含大写字母、下划线、数字，合规
+- **问题**: 将R016错误实现为"检查testcase名称是否符合`testXxx`或`IT_xxx`格式"，用正则 `^(test|IT|it)[A-Z]\w*$` 做格式匹配。
+- **正确实现**: 必须使用 `^[a-zA-Z0-9_-]+$` 做正向字符集匹配。
+
+> 详见 [references/TRAPS.md](../../references/TRAPS.md) 陷阱8。
 
 ### 6. 不得用@tc.name的值作为检测源（极严重）
 
-- **严重性**: 极严重，导致customization子系统大量误报
-- **问题**: R016的检测对象是`it()`的第一个参数，不是`@tc.name`注解的值。`@tc.name`注解格式多样，常见形式包括：
-  - `* @tc.name testFunc_001`（空格分隔，正确）
-  - `* @tc.name    : testFunc_001`（冒号+空格分隔）
-  - `* @tc.name: testFunc_001`（冒号分隔，无空格）
-  - 如果用正则 `@tc\.name\s+(.+)` 提取，会把冒号和多余空格也捕获进名称，导致合规名称被误判为包含特殊字符。
-- **典型误报**: `it("test_set_disallowed_policy_for_account_0700", ...)` 的`it()`参数完全合规，但上方`@tc.name    : test_set_disallowed_policy_for_account_0700`被提取为`: test_set_disallowed_policy_for_account_0700`，冒号触发了R016。
-- **修复**: R016只检测`it()`的第一个参数。`@tc.name`仅在修复阶段同步修改。
-- **正确实现**:
-```python
-# ✓ 正确：只检测it()参数
-IT_PATTERN = re.compile(r'\bit\s*\(\s*([\'"])([^\'"]+)\1')
-for i, line in enumerate(lines):
-    m = IT_PATTERN.search(line)
-    if m and not TC_NAME_PATTERN.match(m.group(2)):
-        report_issue(m.group(2))  # 用it()参数作为检测和报告依据
-```
-- **错误实现**:
-```python
-# ✗ 错误：用@tc.name值作为检测源
-tc_ann_pat = re.compile(r'@tc\.name\s+(.+)')  # 会捕获冒号、空格等格式字符
-final_tc_name = annotated_name  # 名称被污染
-if not TC_NAME_PATTERN.match(final_tc_name):
-    report_issue(final_tc_name)  # 误报！
-```
+R016的检测对象是`it()`的第一个参数，不是`@tc.name`注解的值。`@tc.name`仅在修复阶段同步修改。
+
+> 详见 [references/TRAPS.md](../../references/TRAPS.md) 陷阱9。
 
 ## 错误/正确示例
 

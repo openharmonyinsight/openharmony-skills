@@ -74,9 +74,7 @@
 | communication/wifi_p37p | 短距 |
 | communication/wifi_p38p | 短距 |
 | communication/wifi_p39p | 短距 |
-| communication/wifi_p3p | 短距 |
 | communication/wifi_p40p | 短距 |
-| communication/wifi_p41p | 短距 |
 | communication/wifi_p4p | 短距 |
 | communication/wifi_p5p | 短距 |
 | communication/wifi_p6p | 短距 |
@@ -178,9 +176,7 @@ SUBSYSTEM_MAPPING = {
     "communication/wifi_p37p": "短距",
     "communication/wifi_p38p": "短距",
     "communication/wifi_p39p": "短距",
-    "communication/wifi_p3p": "短距",
     "communication/wifi_p40p": "短距",
-    "communication/wifi_p41p": "短距",
     "communication/wifi_p4p": "短距",
     "communication/wifi_p5p": "短距",
     "communication/wifi_p6p": "短距",
@@ -243,4 +239,4 @@ def get_subsystem(file_path: str) -> str:
 
 - 源文件: `/home/xianf/copy/所属子系统.xlsx`
 - 更新日期: 2026-04-07
-- 总目录数: 98
+- 总目录数: 97

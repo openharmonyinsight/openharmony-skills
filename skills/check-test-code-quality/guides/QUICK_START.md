@@ -80,7 +80,7 @@ expect(error.code).assertEqual("401");
 expect(error.code).assertEqual(401);
 ```
 
-#### 3. R003 - 缺少断言
+#### 3. R004 - 缺少断言
 ```typescript
 // ❌ 错误
 it('testExample', () => {
@@ -237,7 +237,7 @@ jobs:
 ## 📚 下一步学习
 
 ### 深入了解规则
-- [rules/](../rules/) - 18个独立规则实现（含示例）
+- [rules/](../rules/) - 23个独立规则实现（含示例）
 
 ### 了解实现原理
 - [rules/](../rules/) - 各规则实现细节

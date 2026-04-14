@@ -315,78 +315,22 @@ def scan_r012(scan_root, base_dir, permission_db):
 
 **严重性**: 极严重，导致R012规则完全失效（100%漏检）
 
-**问题描述**: p7b签名文件本质是DER（Distinguished Encoding Rules）二进制格式（ASN.1结构），不是纯JSON文本。文件头两个字节为`0x30 0x82`（ASN.1 SEQUENCE标记），JSON配置数据嵌入在DER二进制内容的某个位置。直接对原始字节调用`json.loads()`必定抛出`UnicodeDecodeError`或`JSONDecodeError`，如果异常被静默捕获（`except: return`），会导致**所有p7b文件全部跳过**。
+p7b签名文件是DER（ASN.1）二进制格式，文件头为`0x30 0x82`。必须用`raw.decode('utf-8', errors='replace')`容错解码后用正则提取`"apl"`、`"app-feature"`等字段，不能使用`json.loads()`。
 
-**典型文件头**:
-```
-0x30 0x82 0x0D 0xDE 0x06 0x09 0x2A 0x86 0x48 0x86 0xF7 0x0D 0x01 0x07 0x02 ...
-^-- ASN.1 SEQUENCE标记       ^-- OID: 1.2.840.113549.1.7.2 (signedData)
-```
-
-**嵌入的JSON数据在DER中的分布**（以`security/access_token/AccessTokenTest/signature/openharmony_sx.p7b`为例）:
-- 位置约203字节处: `{"not-before": 1594865258, "not-after": 1689473258}`
-- 位置约1191字节处: `"apl":"normal","app-feature":"hos_normal_app"`
-- 位置约1245字节处: `{"allowed-acls":["ohos.permission.DISTRIBUTED_DATASYNC",...]}`
-- 位置约1397字节处: `{"restricted-permissions":[]}`
-
-**错误做法**（100%漏检）:
+**正确做法**:
 ```python
-def check_r012_wrong(p7b_path):
-    raw = open(p7b_path, 'rb').read()
-    data = json.loads(raw)       # ← 必定失败: UnicodeDecodeError
-    # 或者:
-    text = raw.decode('utf-8')   # ← 必定失败: UnicodeDecodeError (0x82不是UTF-8)
-    data = json.loads(text)      # ← 同样失败
-```
-
-**正确做法**: 先用`utf-8` + `errors='replace'`容错解码二进制为字符串，再用正则直接提取关键字段（无需解析完整JSON结构）:
-```python
-import re
-
 def extract_p7b_fields(p7b_path):
-    """
-    从DER二进制p7b文件中提取apl、app-feature等字段。
-    使用正则从UTF-8容错解码的文本中提取，不依赖json.loads()。
-    """
     with open(p7b_path, 'rb') as f:
         raw = f.read()
-
-    # 容错解码：二进制中的非UTF-8字节被替换为�，但嵌入的JSON文本保持完整
     text = raw.decode('utf-8', errors='replace')
-
-    # 直接正则提取关键字段（不依赖JSON结构层级）
-    apl = ''
-    app_feature = ''
-    acls = []
-    restricted = []
-
     m = re.search(r'"apl"\s*:\s*"([^"]*)"', text)
-    if m:
-        apl = m.group(1)
-
+    apl = m.group(1) if m else ''
     m = re.search(r'"app-feature"\s*:\s*"([^"]*)"', text)
-    if m:
-        app_feature = m.group(1)
-
-    m = re.search(r'"allowed-acls"\s*:\s*\[([^\]]*)\]', text)
-    if m:
-        acls = [p.strip().strip('"') for p in m.group(1).split(',') if p.strip()]
-
-    m = re.search(r'"restricted-permissions"\s*:\s*\[([^\]]*)\]', text)
-    if m:
-        restricted = [p.strip().strip('"') for p in m.group(1).split(',') if p.strip()]
-
-    return apl, app_feature, acls, restricted
+    app_feature = m.group(1) if m else ''
+    return apl, app_feature
 ```
 
-**关键要点**:
-1. `raw.decode('utf-8', errors='replace')` 而非 `raw.decode('utf-8')` — 必须容错
-2. 正则提取而非`json.loads()` — 无需还原完整JSON结构，直接提取目标字段
-3. `errors='replace'`不影响JSON字段值 — 非UTF-8字节（如ASN.1标签）被替换为`�`，但嵌入的ASCII/UTF-8 JSON文本保持完整
-
-**影响**: 如果扫描脚本使用`json.loads()`解析p7b且异常被静默吞掉，R012规则将完全失效，所有p7b文件都不会被检测到。实际案例：security目录71个p7b文件中存在1个`apl=system_core`问题，但因解析失败被完全漏检。
-
-**验证方法**: 扫描完成后，检查R012结果是否为0且p7b文件数量>0。如果p7b文件存在但R012为0，需确认解析逻辑是否正确处理了DER二进制格式。
+> 详见 [references/TRAPS.md](../../references/TRAPS.md) 陷阱1c。
 
 ## 输出格式
 

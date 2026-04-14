@@ -17,17 +17,9 @@ UI组件的width/height属性使用了固定像素值，导致多设备上页面
 
 ## 扫描范围
 
-**⚠️ 关键陷阱（陷阱5）**: R005必须扫描**所有源代码文件**，不是测试文件！
+**⚠️ 关键陷阱**: R005必须扫描**所有源代码文件**，不是测试文件！仅扫描`.test.ets`会漏报47226个问题（检出率0%）。
 
-| 应扫描 | 文件扩展名 |
-|--------|-----------|
-| **所有源代码文件** | `.ets`, `.ts`, `.js` |
-
-**错误做法**: 只扫描 `.test.ets` 文件 → 漏报47226个问题，检出率0%
-
-**正确做法**: 使用 `get_all_source_files()` 获取所有 `.ets`/`.ts`/`.js` 文件
-
-R005的违规代码主要存在于 `.ets` 页面文件中（如 `pages/xxx.ets`），而非 `.test.ets` 测试文件。
+> 详见 [references/TRAPS.md](../../references/TRAPS.md) 陷阱2/7。
 
 ## 检测逻辑
 
@@ -245,4 +237,90 @@ patterns = [
 exclude_patterns = [
     r'\.width\s*\(\s*["\']\d+%["\']',  # .width('50%')
 ]
+
+---
+
+## 最新评估结果与实现状态（2026-04-14）
+
+### 实现状态
+
+**当前状态**: ❌ **未实现**（使用占位符扫描器）
+
+**技术原因**:
+- R005属于"模型生成规则"，需要根据本文档的检测逻辑动态生成扫描代码
+- 在 `scripts/main.py` 的 `load_rule_scanners()` 函数中，R005被替换为noop扫描器（空操作）
+- 当前实现返回空列表，无法检测任何问题
+
+### 改进方案
+
+**方案1：实现为预置脚本（推荐）**
+
+在 `scripts/simple_rules.py` 中添加R005的扫描实现：
+
+```python
+# ======================== R005: 组件尺寸使用固定值 ========================
+# Source: rules/R005/SKILL.md
+
+_R005_NUMERIC_RE = re.compile(r'\.(width|height)\s*\(\s*(\d+)\s*\)')
+_R005_STRING_RE = re.compile(
+    r"""\.(width|height)\s*\(\s*['"]\s*(\d+)\s*(?:px|vp|fp|lpx)?\s*['"]\s*\)""",
+    re.IGNORECASE
+)
+_R005_PERCENT_RE = re.compile(r'\.(width|height)\s*\(\s*['"]?\s*\d+\.?\d*\s*%')
+_R005_VARIABLE_RE = re.compile(r'\.(width|height)\s*\(\s*[a-zA-Z_$]')
+
+
+def scan_r005(files, base_dir):
+    issues = []
+    for fp in files:
+        try:
+            with open(fp, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read()
+        except Exception:
+            continue
+        lines = content.split('\n')
+        for i, line in enumerate(lines, 1):
+            # 排除百分比和变量引用
+            if _R005_PERCENT_RE.search(line) or _R005_VARIABLE_RE.search(line):
+                continue
+
+            # 检测数值形式
+            m_num = _R005_NUMERIC_RE.search(line)
+            if m_num:
+                prop = m_num.group(1)
+                tc = _find_testcase(content, i)
+                issues.append(_make_issue(
+                    'R005', '组件尺寸使用固定值', 'Warning',
+                    fp, base_dir, i, line,
+                    f'路径: {os.path.relpath(fp, base_dir)}, 行号: {i}, 问题描述: {prop}使用了固定像素值，建议使用百分比方式实现自适应布局',
+                    testcase=tc))
+                continue
+
+            # 检测字符串形式
+            m_str = _R005_STRING_RE.search(line)
+            if m_str:
+                prop = m_str.group(1)
+                tc = _find_testcase(content, i)
+                issues.append(_make_issue(
+                    'R005', '组件尺寸使用固定值', 'Warning',
+                    fp, base_dir, i, line,
+                    f'路径: {os.path.relpath(fp, base_dir)}, 行号: {i}, 问题描述: {prop}使用了固定像素值，建议使用百分比方式实现自适应布局',
+                    testcase=tc))
+
+    return issues
+```
+
+**方案2：动态生成检测代码**
+
+修改 `scripts/main.py`，在扫描时根据本文档的检测逻辑动态生成并执行R005检测代码。
+
+**方案3：独立扫描脚本**
+
+创建独立的 `scripts/scan_r005.py` 文件，实现R005的完整检测逻辑。
+
+### 参考文档
+
+- [SKILL.md](../../SKILL.md) - 主技能文档（规则总览和评估结果）
+- [scripts/simple_rules.py](../../scripts/simple_rules.py) - 预置扫描脚本（需添加R005实现）
+- [scripts/main.py](../../scripts/main.py) - 扫描入口（需修改noop扫描器逻辑）
 ```

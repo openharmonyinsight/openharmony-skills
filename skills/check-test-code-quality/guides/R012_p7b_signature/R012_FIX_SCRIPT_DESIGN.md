@@ -120,12 +120,12 @@ EOF
 
 ### 步骤4：写入模板文件
 
-路径：`guides/signature_tools/UnsgnedReleasedProfileTemplate.json`
+路径：`guides/R012_p7b_signature/signature_tools/UnsgnedReleasedProfileTemplate.json`
 
 ### 步骤5：重新签名
 
 ```bash
-cd guides/signature_tools/
+cd guides/R012_p7b_signature/signature_tools/
 
 java -jar hap-sign-tool.jar sign-profile \
   -mode "localSign" \
@@ -145,7 +145,7 @@ java -jar hap-sign-tool.jar sign-profile \
 
 ```bash
 # 替换（保持与原文件同名）
-cp guides/signature_tools/myApplication_ohos_Provision.p7b <原p7b文件>
+cp guides/R012_p7b_signature/signature_tools/myApplication_ohos_Provision.p7b <原p7b文件>
 ```
 
 ## 批量修复流程

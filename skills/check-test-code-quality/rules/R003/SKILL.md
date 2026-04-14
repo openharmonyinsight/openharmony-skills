@@ -49,14 +49,9 @@ r003_patterns = [
 
 **问题严重性**: ⭐⭐⭐⭐ 严重
 
-**问题描述**: `expect(true).assertEqual(true)` 是恒真断言的变体，容易被遗漏。该模式虽然占比仅3.3%（128个），但遗漏会导致约2014个相关文件的问题被完全忽略。
+`expect(true).assertEqual(true)` 是恒真断言的变体，容易被遗漏。该模式虽然占比仅3.3%（128个），但遗漏会导致约2014个相关文件的问题被完全忽略。必须将所有3种模式都加入检测列表。
 
-**遗漏原因分析**:
-- 开发者通常只想到 `expect(true).assertTrue()` 这一种形式
-- `assertEqual(true)` 看起来像是"有意义的比较"，但实际上 `true == true` 恒成立
-- 该模式在实际代码中确实存在（见下方错误示例2）
-
-**正确做法**: 必须将所有3种模式都加入检测列表，不能只检测最常见的模式1。
+> 详见 [references/TRAPS.md](../../references/TRAPS.md) 陷阱6。
 
 ## 错误示例
 
@@ -185,16 +180,16 @@ it('test004', Level.LEVEL0, () => {
 it('test005', Level.LEVEL0, async (done: Function) => {
   try {
     await someAsyncFunction();
-    expect(true).assertTrue();  // ✓ 作为try块的占位断言，配合catch块中的错误码断言
+    expect(true).assertTrue();  // ✗ 仍然是R003问题（恒真断言）
     done();
   } catch (error) {
-    expect(error.code).assertEqual(401);  // ✓ 有效断言
+    expect(error.code).assertEqual(401);  // ✓ catch块中有有效断言
     done();
   }
 });
 ```
 
-> **注意**: `expect(true).assertTrue()` 在try-catch结构中如果仅出现在try块中作为占位，且catch块有有效断言（如error.code），仍然属于R003问题，因为try块中的断言本身是恒真的。
+> **注意**: 即使try-catch结构中catch块有有效断言（如error.code），try块中的`expect(true).assertTrue()`仍然属于R003问题，因为该断言本身是恒真的。正确做法是移除try块中的恒真断言，或替换为对实际返回值的有效断言。
 
 ## 扫描实现
 
@@ -356,3 +351,10 @@ it('test005', Level.LEVEL0, () => {
   expect(timeout).assertLess(10000);  // ✓ 正确：断言timeout < 10000
 });
 ```
+
+---
+
+### 参考文档
+
+- [SKILL.md](../../SKILL.md) - 主技能文档（规则总览和评估结果）
+- [scripts/simple_rules.py](../../scripts/simple_rules.py) - R003预置扫描脚本实现

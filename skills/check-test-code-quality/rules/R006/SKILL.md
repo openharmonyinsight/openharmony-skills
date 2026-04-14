@@ -117,7 +117,7 @@ def check_variable_device_type(lines: list[str], has_import: bool) -> list[dict]
                 continue
 
             # 排除: 纯赋值右侧
-            if re.match(rf'^\s*let\s+{re.escape(var_name)}\s*=', line):
+            if re.match(rf'^\s*(?:let|const|var)\s+{re.escape(var_name)}\s*=', line):
                 continue
 
             # 检测: 变量出现在条件上下文中

@@ -8,6 +8,18 @@ scan_scope: .ets, .ts, .js
 
 # R004: 测试用例缺少断言
 
+## 文档导航
+
+本文档较长（L5最复杂规则），按需阅读：
+- **快速执行**: 直接使用 [R004专用扫描脚本](#r004专用扫描脚本) `scan_r004_v3_generic.py`
+- **理解检测流程**: [检测逻辑总览](#检测逻辑总览)（8步流程图）
+- **核心实现**: [步骤1-5](#核心检测步骤详解)（it块提取、断言检查、递归间接断言）
+- **关键陷阱**: [陷阱#1](#步骤2提取函数体内容字符串感知的大括号匹配)（字符串大括号）、[陷阱#1b](#陷阱-1bcrucial反引号模板字符串中的撇号引号干扰)（反引号撇号）
+- **try-catch处理**: [步骤6-7](#步骤7try-catch-断言检测)
+- **修复建议格式**: [修复建议格式规范](#修复建议格式规范)
+
+---
+
 ## 规则概述
 
 | 属性 | 值 |
@@ -123,7 +135,7 @@ def count_braces_outside_strings(text, start_idx=0):
             if ch == '{':
                 open_count += 1
             elif ch == '}':
-                close_count -= 1
+                close_count += 1
         if ch == '`' and not in_single and not in_double:
             in_backtick = not in_backtick
         elif ch == "'" and not in_double and not in_backtick:
@@ -1530,3 +1542,10 @@ def has_business_logic(code):
 | ExpectFail | 526 | try/catch块缺少断言 |
 | callBack | 517 | try/catch块缺少断言 |
 | toNextStep | 89 | catch块缺少断言、注释断言 |
+
+---
+
+### 参考文档
+
+- [SKILL.md](../../SKILL.md) - 主技能文档（规则总览和评估结果）
+- [scripts/r004_scanner.py](../../scripts/r004_scanner.py) - R004专用扫描脚本

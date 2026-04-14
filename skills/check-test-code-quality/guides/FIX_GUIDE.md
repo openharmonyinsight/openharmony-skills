@@ -1,147 +1,19 @@
 # XTS测试代码质量检查 - 问题修复指南
 
-本文档介绍如何使用自动修复脚本修复XTS测试代码质量问题。
+本文档介绍如何修复XTS测试代码质量问题。当用户使用 `--fix` 参数时，按对应修复指南执行自动修复。
 
-## 概述
+## 支持自动修复的规则
 
-针对某些常见问题，工具提供了自动修复脚本。修复脚本可以：
-- 从Excel报告中读取问题
-- 自动修复代码中的问题
-- 输出修复统计信息
+| 规则 | 修复指南 | 修复内容 |
+|------|---------|---------|
+| R008 | `guides/R008_testcase_format/R008_FIX_GUIDE.md` | @tc.xxx冒号改空格、删除多余空行 |
+| R011 | `guides/R011_testsuite_duplicate/R011_FIX_GUIDE.md` | describe名称追加Adapt后缀 |
+| R012 | `guides/R012_p7b_signature/R012_FIX_GUIDE.md` | p7b签名证书重新生成（需hap-sign-tool.jar） |
+| R014 | `guides/R014_hap_naming/R014_HAP_NAMING_GUIDE.md` | BUILD.gn hap命名修正+Test.json同步 |
+| R016 | `guides/R016_testcase_naming/R016_FIX_GUIDE.md` | 特殊字符移除+Adapt后缀+同步@tc.name |
+| R018 | `guides/R018_testcase_duplicate/R018_FIX_GUIDE.md` | testcase名称去重+Adapt后缀+同步@tc.name |
 
 ## 使用方法
-
-### 统一修复命令（推荐）
-
-使用 `fix_issues.py` 命令进行问题修复，该命令会自动加载对应的修复脚本：
-
-```bash
-# 修复R002问题
-/fix-issues multimedia_quality_report.xlsx R002
-
-# 修复R003问题
-/fix-issues code_quality_report.xlsx R003
-```
-
-**支持的规则**:
-- R002 - 错误码断言必须是number类型
-- 更多规则敬请期待
-
-### 手动修复脚本
-
-所有修复脚本位于`fixers/`目录下：
-
-```
-fixers/
-├── fix_r002.py          # R002问题修复脚本
-└── README.md            # 修复脚本使用指南
-```
-
-## R002问题修复
-
-### 问题描述
-
-`error.code`断言使用string类型
-
-### 使用步骤
-
-1. **运行扫描生成Excel报告**:
-   ```bash
-   python3 check-test-code-quality.py /path/to/code --level critical --rules R002
-   ```
-   这将生成一个Excel报告文件，例如：`multimedia_quality_report.xlsx`
-
-2. **运行修复脚本**:
-   ```bash
-   # 推荐方式：使用统一修复命令
-   /fix-issues multimedia_quality_report.xlsx R002
-   
-   # 或者：直接运行修复脚本
-   python3 fixers/fix_r002.py /path/to/multimedia_quality_report.xlsx
-   ```
-
-3. **验证修复结果**:
-   ```bash
-   python3 check-test-code-quality.py /path/to/code --level critical --rules R002
-   ```
-   检查R002问题数量是否减少。
-
-### 修复内容
-
-该脚本会自动修复以下问题：
-
-1. **直接使用string字面量**:
-   - `expect(error.code).assertEqual("401")` → `expect(error.code).assertEqual(401)`
-   - `expect(error.code).assertEqual('401')` → `expect(error.code).assertEqual(401)`
-   - `expect(error.code == "401").assertTrue()` → `expect(error.code == 401).assertTrue()`
-   - `expect(error.code === '401').assertTrue()` → `expect(error.code === 401).assertTrue()`
-   - `expect(error.code === '401' || error.code === '402').assertTrue()` → `expect(error.code === 401 || error.code === 402).assertTrue()`
-
-2. **修改变量定义**:
-   - `const ERROR_PArameter = '23800151'` → `const ERROR_PArameter = 23800151`
-   - `errCode: string` → `errCode: number`
-   - `let errCode = '401'` → `let errCode = 401`
-
-### 注意事项
-
-- 修复脚本会直接修改原文件，建议在修复前提交代码到版本控制系统
-- 修复后建议运行测试用例验证功能正常
-- 某些复杂情况可能需要手动修复
-
-## 完整工作流程示例
-
-```bash
-# 1. 扫描R002问题
-python3 check-test-code-quality.py /path/to/code -- --rules R002
-
-# 2. 运行修复脚本
-/fix-issues /path/to/code_quality_report.xlsx R002
-
-# 3. 验证修复结果
-python3 check-test-code-quality.py /path/to/code --level critical --rules R002
-```
-
-## 问题扫描和自动修复
-
-### 命令格式
-
-```
-/check-test-code-quality <file_or_directory> --rules <rule_id> --fix
-```
-
-### 说明
-
-- 扫描指定路径下的指定规则问题
-- 自动生成Excel报告
-- 自动调用对应的修复脚本
-- 自动验证修复结果
-
-### 示例
-
-```bash
-# 扫描并修复R002问题
-/check-test-code-quality /path/to/code --rules R002 --fix
-
-# 扫描并修复R012问题
-/check-test-code-quality /path/to/code --rules R012 --fix
-
-# 扫描并修复多个规则
-/check-test-code-quality /path/to/code --rules R002,R003 --fix
-```
-
-### 支持的规则
-
-- R002 - 错误码断言必须是number类型
-- R012 - 签名证书APL等级和app-feature配置错误
-- R016 - testcase命名规范（移除特殊字符 + Adapt+三位数字后缀 + 同步@tc.name）
-- 更多规则敬请期待
-
-### 注意事项
-
-- 修复脚本会直接修改原文件，建议在修复前提交代码到版本控制系统
-- 修复后建议运行测试用例验证功能正常
-
-## R012问题修复
 
 ### 问题描述
 
@@ -168,7 +40,7 @@ python3 check-test-code-quality.py /path/to/code --level critical --rules R002
        - 修改: apl → "normal", app-feature → "hos_normal_app"
        ↓
 步骤4：写入模板文件
-       写入 guides/signature_tools/UnsgnedReleasedProfileTemplate.json
+       写入 guides/R012_p7b_signature/signature_tools/UnsgnedReleasedProfileTemplate.json
        ↓
 步骤5：重新签名
        java -jar hap-sign-tool.jar sign-profile ...
@@ -180,7 +52,7 @@ python3 check-test-code-quality.py /path/to/code --level critical --rules R002
 **关键命令：**
 ```bash
 # 重新签名
-cd guides/signature_tools/
+cd guides/R012_p7b_signature/signature_tools/
 java -jar hap-sign-tool.jar sign-profile \
   -mode "localSign" \
   -keyAlias "OpenHarmony Application Profile Release" \
@@ -229,13 +101,13 @@ openssl cms -verify -in openharmony_sx.p7b -inform DER -noverify > profile.json
 
 **步骤3：修改UnsgnedReleasedProfileTemplate.json**
 
-将提取的字段写入 `guides/signature_tools/UnsgnedReleasedProfileTemplate.json`：
+将提取的字段写入 `guides/R012_p7b_signature/signature_tools/UnsgnedReleasedProfileTemplate.json`：
 - **修改** `apl` 和 `app-feature` 字段
 - **保留** `app-distribution-type`、`validity`、`bundle-name`、`acls` 的内容
 
 **步骤4：使用签名工具重新签名**
 ```bash
-cd guides/signature_tools/
+cd guides/R012_p7b_signature/signature_tools/
 java -jar hap-sign-tool.jar sign-profile \
   -mode "localSign" \
   -keyAlias "OpenHarmony Application Profile Release" \
@@ -303,7 +175,7 @@ python3 -c "import json; c=json.load(open('UnsgnedReleasedProfileTemplate.json')
 - R012详细修复指南：`guides/R012_p7b_signature/R012_FIX_GUIDE.md`
 - R012设计文档：`guides/R012_p7b_signature/R012_FIX_SCRIPT_DESIGN.md`
 - R016修复指南：`guides/R016_testcase_naming/R016_FIX_GUIDE.md`
-- 签名工具：`guides/signature_tools/`
+- 签名工具：`guides/R012_p7b_signature/signature_tools/`
 
 ## R016问题修复
 
@@ -351,3 +223,26 @@ it('ArkUX_ohoscurves_customCurve_1000Adapt001', Level.LEVEL0, async (done: Funct
 用例声明格式不规范，主要包括@tc.xxx参数使用冒号分隔符、文档注释后多余空行等。
 
 详细修复指南请参考：`guides/R008_testcase_format/R008_FIX_GUIDE.md`
+
+## R011问题修复
+
+### 问题描述
+
+同一独立XTS工程内testsuite（describe）名称重复。
+
+详细修复指南请参考：`guides/R011_testsuite_duplicate/R011_FIX_GUIDE.md`
+
+## R014问题修复
+
+### 问题描述
+
+测试HAP命名不符合规范。
+
+详细修复指南请参考：`guides/R014_hap_naming/R014_HAP_NAMING_GUIDE.md`
+
+## 更多信息
+
+- R012详细修复指南：`guides/R012_p7b_signature/R012_FIX_GUIDE.md`
+- R012设计文档：`guides/R012_p7b_signature/R012_FIX_SCRIPT_DESIGN.md`
+- R016修复指南：`guides/R016_testcase_naming/R016_FIX_GUIDE.md`
+- 签名工具：`guides/R012_p7b_signature/signature_tools/`
