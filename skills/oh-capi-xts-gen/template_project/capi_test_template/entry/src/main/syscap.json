@@ -1,0 +1,12 @@
+{
+    "devices": {
+        "general": [],
+        "custom": [
+            {
+                "xts": [
+                    "{SYSCAP_LIST}"
+                ]
+            }
+        ]
+    }
+}

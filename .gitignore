@@ -19,3 +19,5 @@ Thumbs.db
 .idea/
 .vscode/
 .cache/
+
+.oh-capi-xts-config.json
