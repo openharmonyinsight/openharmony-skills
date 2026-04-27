@@ -1,121 +1,142 @@
-# ArkTS Error Handling Reference
+..
+    Copyright (c) 2021-2026 Huawei Device Co., Ltd.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 
-## Error Class
+.. _Error Handling:
 
-```typescript
-class Error {
-  constructor(message?: string)
-  name: string
-  message: string
-  stack?: string
-}
-```
+Error Handling
+##############
 
----
+.. meta:
+    frontend_status: Done
 
-## throw Statement
+|LANG| is designed to provide first-class support in responding to, and
+recovering from different error situations in a program. Normal program
+execution can be interrupted by the occurrence of situations of two kinds:
 
-```typescript
-class CustomError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = "CustomError"
-  }
-}
+-  Runtime errors (e.g., null pointer dereferencing, array bounds
+   checking, or division by zero);
 
-function divide(a: number, b: number): number {
-  if (b === 0) {
-    throw new CustomError("Division by zero")
-  }
-  return a / b
-}
-```
+-  Operation completion failures (e.g., the task of reading
+   and processing data from a file on disk can fail if the file does
+   not exist on a specified path, read permissions are not available,
+   or else).
 
-**Requirement:** Thrown expression must be assignable to `Error`
+The term *error* in this Specification denotes all kinds of error situations.
 
----
+.. index::
+   execution
+   null pointer dereferencing
+   runtime error
+   array bounds checking
+   completion
+   normal execution
+   normal completion
+   completion failure
+   path
+   read permission
+   error
 
-## try-catch-finally
+|
 
-```typescript
-try {
-  // Code that may throw
-  riskyOperation()
-} catch (e: Error) {
-  // Handle error
-  console.log(e.message)
-} finally {
-  // Cleanup (always runs)
-  cleanup()
-}
-```
+.. _Errors:
 
----
+Errors
+******
 
-## Catch Clause
+.. meta:
+    frontend_status: Done
 
-```typescript
-// Simple catch
-try {
-  throw new Error("error")
-} catch (e: Error) {
-  console.log(e.message)
-}
-```
+*Error* is the base class of all error situations. Defining a new
+error class is normally not required because essential error classes for
+various cases (e.g., ``RangeError``) are defined in the
+standard library (see :ref:`Standard Library`).
 
-**Catch variable type:** Always `Error`
+However, a developer can handle a new error situation by using ``Error``
+class itself, or by a subclass of ``Error``. An example of error
+handling is provided below:
 
----
+.. index::
+   error
+   base class
+   class
+   error handling
+   derived class
+   standard library
 
-## Finally Clause
 
-```typescript
-function process(): void {
-  let resource: Resource | null = null
+.. code-block:: typescript
+   :linenos:
 
-  try {
-    resource = acquireResource()
-    // Use resource
-  } finally {
-    // Always cleanup, even if error thrown
-    if (resource !== null) {
-      resource.release()
+   class UnknownError extends Error { // user-defined error class 
+      error: Error
+      constructor (error: Error) {
+         super()
+         this.error = error
+      }
     }
-  }
-}
-```
 
----
+    function get_array_element<T>(array: T[], index: int): T|undefined {
+        try {
+          return array[index] // RangeError if index < 0 or index >= array.length
+        }
+        catch (error) {
+          if (error instanceof RangeError) // invalid index detected
+             return undefined
+          throw new UnknownError (error) // unknown error occurred
+        }
+    }
 
-## Execution Flow
+    let arr = [1, 2, 3]
+    let val = get_array_element(arr, -3) // RangeError: index -3 < 0
 
-| Scenario | Flow |
-|----------|------|
-| No error | try → finally |
-| Error, catch present | try → catch → finally |
-| Error, no catch | Error propagates, finally executes |
+   console.log(val) // Output: undefined
 
----
 
-## User-Defined Errors
+In most cases, errors are raised by the |LANG| runtime system, or by the
+standard library (see :ref:`Standard Library`) code.
 
-```typescript
-class ValidationError extends Error {
-  constructor(public field: string, message: string) {
-    super(message)
-    this.name = "ValidationError"
-  }
-}
+New error situations can be created and raised by ``throw`` statements (see
+:ref:`Throw Statements`) .
 
-function validate(value: string): void {
-  if (value.length === 0) {
-    throw new ValidationError("value", "Cannot be empty")
-  }
-}
-```
+Errors are handled by using ``try`` statements (see :ref:`Try Statements`).
 
----
+.. note::
+   Some errors cannot be recovered.
 
-## Uncaught Errors
+.. index::
+   runtime system
+   standard library
+   generic class
+   subclass
+   error situation
+   throw statement
+   error
+   try statement
 
-If an error is not caught, `UncaughtExceptionError` is thrown and the program may terminate.
+.. code-block:: typescript
+   :linenos:
+
+    function handleAll(
+      actions : () => void,
+      handling_actions : () => void)
+    {
+      try {
+        actions()
+      }
+      catch (x) { // Type of x is Error
+          handling_actions()
+      }
+    }
+
+.. raw:: pdf
+
+   PageBreak
