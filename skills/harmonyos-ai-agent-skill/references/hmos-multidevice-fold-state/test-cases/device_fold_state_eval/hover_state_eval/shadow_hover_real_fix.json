@@ -1,0 +1,51 @@
+{
+  "case_id": "HOVER-SHADOW-REAL-001",
+  "eval_type": "shadow",
+  "title": "真实修复表达：悬停态分屏错位与方向抖动",
+  "user_prompt": "真实反馈：视频页进悬停后上半屏应该展示内容但实际变成操作区，方向还会偶发抖动。请给可直接执行的修复与验证方案。",
+  "intent": "验证真实表达下是否仍能给出可采纳的悬停态修复输出。",
+  "expected": {
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_skill_refs",
+      "problem_profile",
+      "fix_plan",
+      "verification_matrix",
+      "evidence_requirements",
+      "pass_criteria",
+      "residual_risks"
+    ],
+    "exact": {
+      "primary_phase": "FIX",
+      "primary_scene": "FOLD-06"
+    },
+    "contains": {
+      "active_phases": ["FIX", "VAL"],
+      "next_skill_refs": [
+        "./references/hover_state_interaction.md",
+        "./references/bug-fix-cases.md"
+      ]
+    },
+    "accepted_secondary_scenes": ["FOLD-02"],
+    "forbidden_scenes": ["FOLD-05"],
+    "keyword_requirements": {
+      "fix_plan": ["FolderStack", "FoldSplitContainer", "只决策一次方向"],
+      "evidence_requirements": ["FoldStatus", "方向证据", "布局截图"],
+      "pass_criteria": ["上展示下交互", "无方向抖动", "退出悬停恢复"]
+    },
+    "forbidden_text_patterns": [
+      "拍脑袋",
+      "随便调",
+      "每次变化重选方向"
+    ]
+  },
+  "manual_review_items": [
+    "是否可直接转研发修复任务",
+    "是否覆盖了验证证据",
+    "是否声明剩余风险"
+  ]
+}

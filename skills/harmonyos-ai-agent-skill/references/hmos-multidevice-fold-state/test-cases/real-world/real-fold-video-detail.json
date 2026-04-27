@@ -1,0 +1,62 @@
+{
+  "case_id": "FOLD-REAL-001",
+  "layer": "real-world",
+  "title": "折叠屏视频详情页悬停态真实回归",
+  "phase": "FIX",
+  "user_prompt": "视频详情页在大折叠设备上展开态正常，但用户折到悬停态后出现三个问题：播放器被折痕切到一半、评论区滚动位置丢失、恢复展开态后播放器重新加载。请给出修复方案，并定义工程验证要求。",
+  "intent": "验证真实业务折叠态故障下，FOLD-02 和 FOLD-03 能协同输出修复与验证契约。",
+  "expected": {
+    "primary_phase": "FIX",
+    "primary_scene": "FOLD-02",
+    "secondary_scenes": ["FOLD-03", "FOLD-06"],
+    "next_scene_refs": ["./SKILL.md"],
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "problem_profile",
+      "root_cause_hypothesis",
+      "fix_plan",
+      "regression_watchlist"
+    ],
+    "forbidden_scenes": ["FOLD-05"]
+  },
+  "solution_contract": {
+    "must_cover": [
+      "必须区分悬停态布局错误、折痕避让错误和状态连续性错误。",
+      "必须给出播放器状态保留策略。",
+      "必须定义展开态与悬停态双向切换的回归用例。"
+    ],
+    "should_reuse_resources": [
+      "./references/hover_state_interaction.md",
+      "./references/crease_avoidance.md",
+      "./references/fold_continuity.md",
+      "./assets/HoverStateInteractionExample.ets",
+      "./assets/CreaseAvoidance.ets"
+    ],
+    "forbidden_patterns": [
+      "通过固定 padding 回避折痕而不读取真实边界。",
+      "切换状态时重新创建整个页面导致状态丢失。"
+    ]
+  },
+  "execution_contract": {
+    "execution_type": "harmonyos_project",
+    "target_project_type": "HarmonyOS NEXT 折叠屏工程",
+    "compile_command_template": "./hvigorw assembleHap",
+    "test_command_template": "./hvigorw test",
+    "runtime_assertions": [
+      "折叠为 HALF_FOLD 时播放器完整停留在折痕上方。",
+      "评论列表滚动位置在 HALF_FOLD 与 FULL_FOLD 切换后保持连续。",
+      "播放器实例不被重建，播放进度连续。"
+    ],
+    "pass_evidence": [
+      "编译成功日志",
+      "切换前后截图",
+      "播放器状态日志",
+      "FoldStatus 与折痕边界日志"
+    ]
+  }
+}

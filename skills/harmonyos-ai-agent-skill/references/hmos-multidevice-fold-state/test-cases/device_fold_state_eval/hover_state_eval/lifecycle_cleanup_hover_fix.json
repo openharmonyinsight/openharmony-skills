@@ -1,0 +1,51 @@
+{
+  "case_id": "HOVER-LIFECYCLE-CLEANUP-FIX-001",
+  "eval_type": "composite",
+  "title": "生命周期回收：监听解绑与方向恢复防串态",
+  "user_prompt": "存量页面在悬停态修复后仍出现串态：离开页面后方向没恢复、监听残留。请给 FIX 方案并列出回归关注项。",
+  "intent": "验证是否覆盖 aboutToAppear/aboutToDisappear 的监听与方向回收链路。",
+  "expected": {
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_skill_refs",
+      "problem_profile",
+      "root_cause_hypothesis",
+      "fix_plan",
+      "verification_matrix",
+      "evidence_requirements",
+      "regression_watchlist"
+    ],
+    "exact": {
+      "primary_phase": "FIX",
+      "primary_scene": "FOLD-06"
+    },
+    "contains": {
+      "active_phases": ["FIX", "VAL"],
+      "next_skill_refs": [
+        "./references/hover_state_interaction.md",
+        "./references/bug-fix-cases.md"
+      ]
+    },
+    "accepted_secondary_scenes": ["FOLD-02"],
+    "forbidden_scenes": [],
+    "keyword_requirements": {
+      "fix_plan": ["aboutToAppear", "aboutToDisappear", "bind", "off", "AUTO_ROTATION"],
+      "regression_watchlist": ["监听残留", "方向未恢复", "串态"],
+      "evidence_requirements": ["离场后日志", "方向恢复证据"]
+    },
+    "forbidden_text_patterns": [
+      "不需要回收",
+      "离场无需处理",
+      "只在进入时处理"
+    ]
+  },
+  "manual_review_items": [
+    "是否明确了监听注册/解绑成对处理",
+    "是否包含离场恢复 AUTO_ROTATION",
+    "是否给出串态回归项"
+  ]
+}

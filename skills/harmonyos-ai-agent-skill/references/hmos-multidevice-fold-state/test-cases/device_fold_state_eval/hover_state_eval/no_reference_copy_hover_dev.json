@@ -1,0 +1,50 @@
+{
+  "case_id": "HOVER-NO-REFERENCE-COPY-DEV-001",
+  "eval_type": "smoke",
+  "title": "约束开发：禁止参考 GoodCase，要求从场景规则独立落地",
+  "user_prompt": "请基于折叠场景规则做悬停态适配开发方案：上半屏展示、下半屏操作。明确说明不允许引用或拷贝 GoodCase 代码。",
+  "intent": "验证输出能在无 GoodCase 依赖下给出完整开发策略与接线点。",
+  "expected": {
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_skill_refs",
+      "hover_layout_rule",
+      "orientation_lock_rule",
+      "container_strategy",
+      "implementation_notes",
+      "verification_matrix"
+    ],
+    "exact": {
+      "primary_phase": "DEV",
+      "primary_scene": "FOLD-02"
+    },
+    "contains": {
+      "active_phases": ["DEV"],
+      "next_skill_refs": [
+        "./references/hover_state_interaction.md"
+      ]
+    },
+    "accepted_secondary_scenes": [],
+    "forbidden_scenes": ["FOLD-05"],
+    "keyword_requirements": {
+      "hover_layout_rule": ["上半屏", "下半屏", "职责"],
+      "orientation_lock_rule": ["进入悬停", "只决策一次", "退出悬停恢复"],
+      "implementation_notes": ["foldStatusChange", "foldDisplayModeChange", "监听入口"]
+    },
+    "forbidden_text_patterns": [
+      "GoodCase",
+      "拷贝",
+      "复制现成实现",
+      "直接照搬"
+    ]
+  },
+  "manual_review_items": [
+    "是否明确遵循场景规则而非依赖现成实现",
+    "是否给出核心监听与状态入口",
+    "是否包含退出悬停恢复策略"
+  ]
+}

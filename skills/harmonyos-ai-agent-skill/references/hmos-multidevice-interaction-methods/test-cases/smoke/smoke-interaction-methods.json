@@ -1,0 +1,27 @@
+{
+  "case_id": "SMOKE-SCENE-04-001",
+  "layer": "smoke",
+  "title": "鼠标与键盘焦点交互",
+  "phase": "DEV",
+  "user_prompt": "桌面端页面需要同时支持鼠标 hover、右键菜单和键盘焦点导航，并确保触摸和鼠标的交互一致。请给出开发阶段方案。",
+  "intent": "验证 interaction-methods 是否稳定命中 INPUT-03，并把鼠标交互作为联动场景。",
+  "expected": {
+    "primary_phase": "DEV",
+    "primary_scene": "INPUT-03",
+    "primary_scene_ref": "./SKILL.md",
+    "secondary_scenes": ["INPUT-01"],
+    "next_scene_refs": ["./SKILL.md"],
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "primary_code_domain",
+      "secondary_code_domains",
+      "integration_edges"
+    ],
+    "forbidden_scenes": ["INPUT-04"]
+  }
+}

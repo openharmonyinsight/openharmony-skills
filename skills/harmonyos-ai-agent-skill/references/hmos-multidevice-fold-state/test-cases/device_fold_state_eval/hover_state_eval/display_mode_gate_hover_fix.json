@@ -1,0 +1,52 @@
+{
+  "case_id": "HOVER-DISPLAYMODE-GATE-FIX-001",
+  "eval_type": "shadow",
+  "title": "单屏模式兜底：MAIN/SUB 下禁止误进悬停分屏",
+  "user_prompt": "真实问题：设备切到 MAIN/SUB 单屏模式时页面仍误进悬停分屏。请给修复方案，要求保留 HALF_FOLD 正常分屏行为。",
+  "intent": "验证是否识别 display mode gating 缺失，并补齐单屏模式兜底判断。",
+  "expected": {
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_skill_refs",
+      "problem_profile",
+      "root_cause_hypothesis",
+      "fix_plan",
+      "verification_matrix",
+      "evidence_requirements",
+      "pass_criteria",
+      "residual_risks"
+    ],
+    "exact": {
+      "primary_phase": "FIX",
+      "primary_scene": "FOLD-06"
+    },
+    "contains": {
+      "active_phases": ["FIX", "VAL"],
+      "next_skill_refs": [
+        "./references/hover_state_interaction.md",
+        "./references/bug-fix-cases.md"
+      ]
+    },
+    "accepted_secondary_scenes": ["FOLD-02"],
+    "forbidden_scenes": [],
+    "keyword_requirements": {
+      "root_cause_hypothesis": ["FOLD_DISPLAY_MODE_MAIN", "FOLD_DISPLAY_MODE_SUB", "误进悬停"],
+      "fix_plan": ["isSingleScreenFoldDisplayMode", "disableHoverMode", "HALF_FOLD"],
+      "pass_criteria": ["MAIN/SUB 不分屏", "HALF_FOLD 正常分屏", "退出恢复"]
+    },
+    "forbidden_text_patterns": [
+      "忽略 display mode",
+      "只看 foldStatus 即可",
+      "单屏模式沿用悬停布局"
+    ]
+  },
+  "manual_review_items": [
+    "是否包含单屏模式 gating 判断",
+    "是否同时保证 HALF_FOLD 行为不回退",
+    "是否给出 MAIN/SUB 与 HALF_FOLD 的对比验证"
+  ]
+}

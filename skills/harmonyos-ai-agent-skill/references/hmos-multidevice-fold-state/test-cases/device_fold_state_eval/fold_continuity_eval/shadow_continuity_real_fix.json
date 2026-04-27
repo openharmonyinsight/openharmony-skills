@@ -1,0 +1,51 @@
+{
+  "case_id": "CONT-SHADOW-REAL-001",
+  "eval_type": "shadow",
+  "title": "真实修复表达：开合后任务语义断档",
+  "user_prompt": "真实反馈：页面开合几次后，用户草稿没了，视频进度回跳，还要多点一次才能继续。请给可直接执行的修复与验证方案。",
+  "intent": "验证真实场景描述下是否仍输出可采纳的开合连续性方案。",
+  "expected": {
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_skill_refs",
+      "problem_profile",
+      "fix_plan",
+      "verification_matrix",
+      "evidence_requirements",
+      "pass_criteria",
+      "residual_risks"
+    ],
+    "exact": {
+      "primary_phase": "FIX",
+      "primary_scene": "FOLD-06"
+    },
+    "contains": {
+      "active_phases": ["FIX", "VAL"],
+      "next_skill_refs": [
+        "./references/fold_continuity.md",
+        "./references/bug-fix-cases.md"
+      ]
+    },
+    "accepted_secondary_scenes": ["FOLD-07"],
+    "forbidden_scenes": ["FOLD-05"],
+    "keyword_requirements": {
+      "fix_plan": ["状态快照", "双触发", "暂停态优先", "可重放"],
+      "evidence_requirements": ["FoldStatus", "播放进度", "输入草稿"],
+      "pass_criteria": ["不增加步骤", "语义一致", "时间轴连续"]
+    },
+    "forbidden_text_patterns": [
+      "拍脑袋",
+      "随便调",
+      "不做回归"
+    ]
+  },
+  "manual_review_items": [
+    "是否可直接拆解为研发任务",
+    "是否包含可复现证据要求",
+    "是否声明剩余风险"
+  ]
+}

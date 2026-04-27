@@ -1,0 +1,61 @@
+{
+  "case_id": "SIZE-FUNC-001",
+  "layer": "scene-functional",
+  "title": "窗口尺寸监听与布局同步功能验证",
+  "phase": "DEV",
+  "user_prompt": "请为平板详情页补齐窗口尺寸监听和断点同步方案，要求旋转和拖拽窗口后布局立即刷新，并给出可落到工程中的开发建议。",
+  "intent": "验证 SIZE-01 的开发方案能转成可编译、可测试的 HarmonyOS 工程改动契约。",
+  "expected": {
+    "primary_phase": "DEV",
+    "primary_scene": "SIZE-01",
+    "secondary_scenes": [],
+    "next_scene_refs": ["./SKILL.md"],
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "code_touchpoints",
+      "reuse_resources",
+      "implementation_notes",
+      "integration_risks"
+    ],
+    "forbidden_scenes": ["SIZE-03", "SIZE-04"]
+  },
+  "solution_contract": {
+    "must_cover": [
+      "必须说明窗口尺寸由谁监听，以及断点状态由谁维护。",
+      "必须说明旋转与拖拽窗口都能触发布局刷新。",
+      "必须要求布局容器与断点判断保持同一套来源。"
+    ],
+    "should_reuse_resources": [
+      "./reference/window_size_detection.md",
+      "./reference/breakpoint_system.md",
+      "./assets/WindowSizeChangeListener.ets",
+      "./assets/SystemBreakpointExample.ets"
+    ],
+    "forbidden_patterns": [
+      "只靠一次性获取屏幕宽度判断布局。",
+      "把方向语义问题误当成窗口尺寸同步。"
+    ]
+  },
+  "execution_contract": {
+    "execution_type": "harmonyos_project",
+    "target_project_type": "HarmonyOS NEXT Stage/ArkTS 工程",
+    "compile_command_template": "./hvigorw assembleHap",
+    "test_command_template": "./hvigorw test",
+    "runtime_assertions": [
+      "旋转设备后，列表和详情区在一个渲染周期内切换到正确断点布局。",
+      "拖拽自由窗口改变宽度后，断点状态同步更新。",
+      "日志中能看到窗口尺寸监听回调和断点状态变化。"
+    ],
+    "pass_evidence": [
+      "编译成功日志",
+      "窗口变化测试日志",
+      "旋转前后截图",
+      "断点状态输出"
+    ]
+  }
+}

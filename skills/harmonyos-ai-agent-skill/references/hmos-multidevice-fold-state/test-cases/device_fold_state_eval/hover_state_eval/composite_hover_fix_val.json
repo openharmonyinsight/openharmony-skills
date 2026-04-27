@@ -1,0 +1,51 @@
+{
+  "case_id": "HOVER-COMPOSITE-FIX-VAL-001",
+  "eval_type": "composite",
+  "title": "复合修复：悬停态方向反复切换 + 分区反向",
+  "user_prompt": "存量会议页在悬停态有两个问题：方向偶发反复切换，上下分区职责反了。请先给修复路径，再给验证计划。",
+  "intent": "验证是否以 FOLD-06 为主场景并联动 FOLD-02 输出 FIX+VAL。",
+  "expected": {
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_skill_refs",
+      "problem_profile",
+      "root_cause_hypothesis",
+      "fix_plan",
+      "verification_matrix",
+      "evidence_requirements",
+      "regression_watchlist"
+    ],
+    "exact": {
+      "primary_phase": "FIX",
+      "primary_scene": "FOLD-06"
+    },
+    "contains": {
+      "active_phases": ["FIX", "VAL"],
+      "next_skill_refs": [
+        "./references/hover_state_interaction.md",
+        "./references/bug-fix-cases.md"
+      ]
+    },
+    "accepted_secondary_scenes": ["FOLD-02"],
+    "forbidden_scenes": ["FOLD-05"],
+    "keyword_requirements": {
+      "root_cause_hypothesis": ["重复决策", "方向锁定", "职责错位"],
+      "fix_plan": ["监听入口", "方向决策一次", "分屏容器", "生命周期回收"],
+      "verification_matrix": ["foldStatus", "方向", "截图"]
+    },
+    "forbidden_text_patterns": [
+      "不需要验证",
+      "每次都重算方向",
+      "只改一个常量"
+    ]
+  },
+  "manual_review_items": [
+    "是否先定位到方向重复决策再定位布局问题",
+    "是否给出最小修复顺序",
+    "是否提供证据要求"
+  ]
+}
