@@ -13,7 +13,7 @@ description: Handle HarmonyOS screen and window size adaptation, including break
 | `skill_name` | `屏幕窗口尺寸适配`                                                                           |
 | `one_line_purpose` | 为多设备布局提供断点策略、结构切换策略和窗口监听策略。                                                          |
 | `device_scope` | `phone / tablet / tv / 2in1`                                                         |
-| `problem_scope` | `断点体系、响应式布局、窗口变化监听、媒体查询`                                                             |
+| `problem_scope` | `断点体系、响应式布局、窗口变化监听、媒体查询、字体缩放、显示密度`                                                             |
 | `not_in_scope` | `纯业务逻辑重构、与尺寸无关的视觉微调`                                                                 |
 | `primary_outputs` | `primary_scene`、`device_constraints`、`code_touchpoints`、`fix_plan`、`verification_matrix` |
 
@@ -28,6 +28,8 @@ description: Handle HarmonyOS screen and window size adaptation, including break
 - `FIX` 阶段必须先保护单屏基线体验，再处理多屏问题；禁止出现“多屏改善但单屏明显退化”。
 - 针对图片拉伸问题，优先修复“容器约束与渲染模式”的根因，禁止通过人为拉伸系数制造或掩盖问题。
 - 仅修复图片拉伸时，不得通过限制整页主内容宽度制造大面积留白；优先限制目标图片的渲染宽度或容器策略。
+- 涉及字体缩放或显示密度变化时，必须订阅 `onConfigurationUpdate` 并通过 `AppStorage` 全局同步，不得遗漏环境变量响应。
+- 涉及 `maxFontScale` 限制时，必须说明是应用级配置还是组件级属性，以及限制倍数的依据。
 
 ## Workflow
 
@@ -36,12 +38,13 @@ description: Handle HarmonyOS screen and window size adaptation, including break
 
 ### Process
 1. **判断问题类型**：需求设计（REQ）/ 开发实现（DEV）/ Bug 修复（FIX）/ 功能验证（VAL）。
-2. **读取规格**：先路由到 `SIZE-00`，读取多设备适配规格要求。
-3. **场景路由**：根据问题特征路由到 SIZE-01~04：
+2. **读取规格(针对REQ)**：先路由到 `SIZE-00`，读取多设备适配规格要求。
+3. **场景路由**：根据问题特征路由到 SIZE-01~05：
    - 断点 / 响应式布局 / 窗口监听 → `SIZE-01`
    - 截断 / 留白 / 溢出 / 压缩 → `SIZE-02`
    - 偏移 / 错位 / 对齐异常 / 层级错乱 → `SIZE-03`
    - 堆叠 / 遮挡 / 容器选择错误 → `SIZE-04`
+   - 字体缩放 / 显示密度 / 适老化 / 环境变量未同步 → `SIZE-05`
 4. **读取场景文档**：根据匹配到的场景和问题类型（阶段），读取该场景「文件读取」中对应的 reference 和 assets 文件。
 5. **按阶段交付**：根据匹配的阶段输出对应契约字段（见「阶段输出契约」）。
 
@@ -79,6 +82,8 @@ description: Handle HarmonyOS screen and window size adaptation, including break
 - 涉及组件截断、留白、尺寸溢出或压缩时，优先命中 `SIZE-02`。
 - 涉及组件偏移、错位、对齐异常或层级错乱时，优先命中 `SIZE-03`。
 - 涉及组件堆叠、遮挡、截断或布局容器选择错误时，优先命中 `SIZE-04`。
+- 涉及字体缩放、显示密度、适老化或环境变量未同步导致布局异常时，优先命中 `SIZE-05`。
+- 涉及应用内分屏（`startAbility` + `StartOptions` 启动另一个 UIAbility 分屏显示）时，优先命中 `SIZE-06`。
 - 当请求同时包含"怎么改"和"怎么验"时，设置 `active_phases: [DEV, VAL]`。
 - 出现以下信号时，必须主命中 `SIZE-02`，并联动 `VAL`：
   - 首图/轮播图/横幅在单屏正常，多屏拉伸或聚焦异常
@@ -96,13 +101,13 @@ description: Handle HarmonyOS screen and window size adaptation, including break
 - 需要了解 HarmonyOS 多设备适配的标准规范、设计原则和约束条件
 
 **不适用场景**
-- 已完成规格分析，直接进入开发或修复阶段（跳过此场景，直接进入 SIZE-01 至 SIZE-04）
+- 已完成规格分析，直接进入开发或修复阶段（跳过此场景，直接进入 SIZE-01 至 SIZE-05）
 - 纯业务逻辑重构，不涉及窗口尺寸适配
 
 **文件读取**
 
 **REQ 阶段**（读取 reference）
-- `./reference/adaptation-specification.md` - 多设备适配规格要求
+- `./references/adaptation-specification.md` - 多设备适配规格要求
 
 **DEV 阶段**（按最佳实践读取 assets）
 - `./assets/PipWindow.ets` ⭐ 推荐方案 - SPEC-05 画中画能力完整示例（PipManager + CustomNodeController + 页面集成）
@@ -133,10 +138,10 @@ description: Handle HarmonyOS screen and window size adaptation, including break
 **文件读取**
 
 **REQ 阶段**（读取 reference）
-- `./reference/breakpoint_system.md` - 断点系统设计原理
-- `./reference/responsive_layout.md` - 四种响应式布局（重复布局、分栏布局、挪移布局、缩进布局）
-- `./reference/adaptive_layout.md` - 七种自适应能力（拉伸、缩放、隐藏、占比、折行、均分、延伸）
-- `./reference/window_size_detection.md` - 窗口监听机制
+- `./references/breakpoint_system.md` - 断点系统设计原理
+- `./references/responsive_layout.md` - 四种响应式布局（重复布局、分栏布局、挪移布局、缩进布局）
+- `./references/adaptive_layout.md` - 七种自适应能力（拉伸、缩放、隐藏、占比、折行、均分、延伸）
+- `./references/window_size_detection.md` - 窗口监听机制
 
 **DEV 阶段**（按最佳实践读取 assets）
 
@@ -157,9 +162,9 @@ description: Handle HarmonyOS screen and window size adaptation, including break
 - `./assets/MediaQueryExample.ets` - 媒体查询示例
 
 **FIX 阶段**（读取 reference）
-- `./reference/breakpoint_system.md` - 断点系统设计原理
-- `./reference/adaptive_layout.md` - 七种自适应能力（拉伸、缩放、隐藏、占比、折行、均分、延伸）
-- `./reference/window_size_detection.md` - 窗口监听机制
+- `./references/breakpoint_system.md` - 断点系统设计原理
+- `./references/adaptive_layout.md` - 七种自适应能力（拉伸、缩放、隐藏、占比、折行、均分、延伸）
+- `./references/window_size_detection.md` - 窗口监听机制
 
 
 
@@ -208,7 +213,7 @@ description: Handle HarmonyOS screen and window size adaptation, including break
 - `./assets/alphabetindexer-autocollapse.md` - 索引器自动折叠
 
 **FIX 阶段**（读取 reference）
-- `./reference/size-anomaly.md` - 问题分类和根因分析
+- `./references/size-anomaly.md` - 问题分类和根因分析
 
 
 
@@ -234,7 +239,7 @@ description: Handle HarmonyOS screen and window size adaptation, including break
 暂无内容
 
 **FIX 阶段**（读取 reference）
-- `./reference/position-anomaly.md` - 位置异常分类和根因
+- `./references/position-anomaly.md` - 位置异常分类和根因
 
 
 
@@ -263,7 +268,79 @@ description: Handle HarmonyOS screen and window size adaptation, including break
 - `./assets/SplitScreenExample.ets` - 分屏模式下截断问题修复
 
 **FIX 阶段**（读取 reference）
-- `./reference/layout-anomaly.md` - 布局异常分类和根因
+- `./references/layout-anomaly.md` - 布局异常分类和根因
+
+
+
+#### `SIZE-05` 字体缩放与显示密度适配
+
+**阶段**：REQ / DEV / FIX | **优先级**：P1
+
+**适用场景**
+- 用户在「设置」中修改字体大小后页面布局异常（文字溢出、组件遮挡、截断）
+- 用户在「设置」中修改显示大小缩放后布局错乱
+- 需要实现适老化支持，确保字体放大后布局稳定
+- 需要全局同步字体缩放和屏幕密度环境变量
+
+**不适用场景**
+- 仅与断点或窗口尺寸变化相关（见 SIZE-01）
+- 仅组件尺寸截断且与字体/密度无关（见 SIZE-02）
+- 纯业务逻辑重构，不涉及系统环境变量
+
+**关键决策**
+- 字体限制策略：应用级 `fontSizeMaxScale` vs 组件级 `maxFontScale` vs 应用内自行管理
+- 环境变量订阅方式：`onConfigurationUpdate` + `AppStorage` 全局同步
+- 密度变化监听方式：`UIObserver.on('densityUpdate')` + `onSizeChange`
+- 组件尺寸约束策略：`constraintSize` 限制最大/最小尺寸
+
+**文件读取**
+
+**REQ 阶段**（读取 reference）
+- `./references/font_scale_display_density.md` - 字体缩放与显示密度适配原理
+
+**DEV 阶段**（读取 assets）
+暂无内容
+
+**FIX 阶段**（读取 reference）
+- `./references/font_scale_display_density.md` - 字体缩放与显示密度适配原理
+
+
+
+#### `SIZE-06` 应用内分屏
+
+**阶段**：REQ / DEV / FIX | **优先级**：P0
+
+**适用场景**
+- 通过 `startAbility` + `StartOptions` 启动另一个 UIAbility 实现系统级分屏
+- 分屏后页面截断、数据未传递、参数不更新、布局异常
+- 需要两个独立窗口并行操作
+
+**不适用场景**
+- 仅与断点响应式布局相关（见 SIZE-01）
+- 平行视界 EasyGo 分栏适配（见 SIZE-00 中 adaptation-specification SPEC-08）
+- 纯悬浮窗适配不涉及分屏（见 adaptation-specification SPEC-16）
+- 分屏后仅组件尺寸截断且与分屏窗口尺寸无直接因果（见 SIZE-02）
+
+**关键决策**
+- 分屏方向：`preferMultiWindowOrientation` 取值（`default` / `portrait` / `landscape` / `landscape_auto`）
+- 跨 Ability 数据通信架构：`Want.parameters` → `LocalStorage` → `loadContent(path, storage)` → `@LocalStorageLink`
+- 目标页面复用策略：是否复用已有 NavDestination 组件（需 Navigation 包裹），还是独立页面
+
+**文件读取**
+
+**REQ 阶段**（读取 reference）
+- `./references/split-screen.md` - 应用内分屏完整指南
+
+**DEV 阶段**（按最佳实践读取 assets）
+- `./assets/SplitScreenExample.ets` - 分屏模式下截断问题修复
+
+**FIX 阶段**（读取 reference）
+- `./references/split-screen.md` - 应用内分屏常见问题表
+
+**关键代码模式**
+
+- **数据流**：`Index.onClick(分屏)` → `startAbility(want+parameters, SPLIT_SECONDARY)` → `EntryAbility1.onCreate/onNewWant` → `writeParamsToStorage(want)` → `loadContent('DetailPage', storage)` → `@Entry({ useSharedStorage: true })` + `@LocalStorageLink` 绑定
+- **目标页面复用已有 NavDestination**：外层 Navigation 包裹 + `.hideTitleBar(true)` 隐藏外层标题栏 + `.navDestination(pageMap)` 加载已有组件
 
 ## 阶段输出契约
 

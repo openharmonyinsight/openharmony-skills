@@ -80,13 +80,9 @@ display.off('change', changeCallback);
 ### 方式二：windowSizeChange（判断横竖屏）
 
 ```arkts
-import { window, Callback } from '@kit.ArkUI';
-
-// 在 @Component 中推荐使用 this.getUIContext().px2vp()
-// 此处为独立代码片段示例，使用全局 px2vp()
 const sizeCallback: Callback<window.Size> = (size: window.Size) => {
-  const width = px2vp(size.width);
-  const height = px2vp(size.height);
+  const width = this.getUIContext().px2vp(size.width);
+  const height = this.getUIContext().px2vp(size.height);
   const isLandscape = width > height;
 };
 

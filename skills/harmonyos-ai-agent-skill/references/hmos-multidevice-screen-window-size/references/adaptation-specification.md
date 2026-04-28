@@ -19,6 +19,9 @@
    - [SPEC-13 界面图标大小合规](#spec-13-界面图标大小合规)
    - [SPEC-14 大屏设备图标文字大小适中](#spec-14-大屏设备图标文字大小适中)
    - [SPEC-15 弹出框大小适中](#spec-15-弹出框大小适中)
+   - [SPEC-16 悬浮窗适配](#spec-16-悬浮窗适配)
+   - [SPEC-17 用户手势灵活缩放布局（推荐）](#spec-17-用户手势灵活缩放布局推荐)
+   - [SPEC-18 应用内分屏适配](#spec-18-应用内分屏适配)
 
 ---
 
@@ -40,6 +43,8 @@
 ## 规格清单
 
 ### SPEC-01 宫格图片信息量适中
+
+**触发关键词**: `宫格` `瀑布流` `图片高度占比`
 
 **适用场景**
 
@@ -82,6 +87,8 @@ Image($r('app.media.startIcon'))
 ---
 
 ### SPEC-02 单图信息量适中
+
+**触发关键词**: `单图` `轮播图` `沉浸式图片`
 
 **适用场景**
 
@@ -126,6 +133,8 @@ Image(src)
 ---
 
 ### SPEC-03 上下图文信息量适中
+
+**触发关键词**: `图文` `信息流` `详情页` `放大倍数`
 
 **适用场景**
 
@@ -243,6 +252,8 @@ GridRow({ columns: { sm: 1, md: 6, lg: 12 } }) {
 
 ### SPEC-04 外屏高度较小的阔折叠底部页签左右结构适配
 
+**触发关键词**: `阔折叠外屏` `底部页签` `左右结构`
+
 **适用场景**
 
 应用主界面使用底部页签栏（TabBar）承载主导航的场景，包括但不限于：首页多 Tab 切换、底部导航 + 内容列表的经典布局。
@@ -329,6 +340,8 @@ build() {
 
 ### SPEC-05 视频类场景使用画中画能力
 
+**触发关键词**: `画中画` `视频播放` `直播`
+
 **适用场景**
 
 视频播放、视频会议、视频通话、直播等需要持续展示视频画面的场景。用户在这些场景中可能需要临时切换到其他页面或应用操作，此时应通过画中画（Picture-in-Picture）能力保持视频画面的持续可见，确保用户在执行多任务操作时不中断视频观看或通话体验。
@@ -336,11 +349,13 @@ build() {
 
 **规范要求**
 
-1. **[P1] 启用画中画能力**：在视频播放、视频会议、视频通话、直播场景中，应接入系统画中画能力，支持用户在离开当前页面时将视频画面缩小为悬浮窗继续播放/展示。
+1. **[P1] 启用画中画能力**：在视频播放、视频会议、视频通话、直播场景中，应接入系统画中画能力，支持用户在离开当前页面时将视频画面缩小为小窗继续播放/展示。
 
 ---
 
 ### SPEC-06 大屏设备上信息聚合
+
+**触发关键词**: `信息聚合` `搜索框` `播放条`
 
 **适用场景**
 
@@ -356,6 +371,8 @@ build() {
 ---
 
 ### SPEC-07 信息流边距控制
+
+**触发关键词**: `边距` `信息流` `内容收窄`
 
 **适用场景**
 
@@ -405,6 +422,8 @@ List() {
 ---
 
 ### SPEC-08 宽屏/折叠屏设备平行视界分栏适配
+
+**触发关键词**: `平行视界` `EasyGo` `分栏` `列表详情`
 
 **适用场景**
 
@@ -519,16 +538,19 @@ uiContext.getRouter().onRouterPageSizeChange((info) => { /* 大小变化回调 *
 | 分栏后 UI 截断 | 页面宽度减半但元素按全宽布局 | 开启 `enableReducedContainerSize: true` 或自适应布局 |
 | 左右页共享 UI 资源 | NodeContainer 复用机制 | 左右页面使用独立资源 |
 | 横竖屏设置不生效 | 平行视界要求左右页面方向一致 | 使用 window 接口设置窗口策略 |
+| EasyGo 分栏未生效 | `module.json5` 未声明 `easyGo` 引用，或 `easy_go.json` 配置缺失 | 在 module 级别添加 `"easyGo": "$profile:easy_go"`，并在 `resources/base/profile/` 下创建 `easy_go.json` |
+| EasyGo 分栏与手写双栏布局冲突 | 代码中用 Row 手动实现左右分栏，与 EasyGo 的系统分栏机制冲突 | 使用 EasyGo 时应移除手写双栏逻辑，统一通过 Navigation push 路由，让 EasyGo 自动接管分栏 |
+| EasyGo 分栏时 NavDestination param 为 null 崩溃 | 系统分栏场景下 param 可能为 null/undefined | pageMap 中访问 param 前须做空值保护：`param ? (param as Record<string, number>)['hotelId'] : 0` |
 
 ---
 
 ### SPEC-09 宽屏场景底部导航侧边化与能力扩展（推荐）
 
+**触发关键词**: `侧边导航` `底部导航` `导航侧边化`
+
 **适用场景**
 
 应用主界面使用底部导航（Bottom Tab）承载一级导航，且存在平板、折叠屏展开态、桌面窗口化等宽屏使用场景。
-
-适用设备：phone / tablet / 2in1。
 
 **规范要求**
 
@@ -628,11 +650,11 @@ build() {
 
 ### SPEC-10 大屏设备页面/控件留白比例约束（推荐）
 
+**触发关键词**: `留白` `空白比例` `信息密度`
+
 **适用场景**
 
 在平板、2in1、折叠屏展开态或桌面窗口化等大屏设备上，页面容器或核心业务控件出现大面积空白区域的场景。
-
-适用设备：phone / tablet / 2in1。
 
 **规范要求**
 
@@ -659,25 +681,15 @@ const contentArea = contentWidth * contentHeight;
 const whitespaceRatio = containerArea <= 0 ? 0 : (containerArea - contentArea) / containerArea;
 ```
 
-- 按 60%（推荐）与 70%（必须）阈值判定：
-
-```typescript
-if (isLargeScreen && whitespaceRatio > 0.7) {
-  // P0 不合规：必须修复
-} else if (isLargeScreen && whitespaceRatio > 0.6) {
-  // P1 建议优化：推荐修复
-}
-```
-
 ---
 
 ### SPEC-11 小高度阔折叠设备标题栏与搜索入口形态优化（推荐）
 
+**触发关键词**: `标题栏` `搜索框` `紧凑头部`
+
 **适用场景**
 
 在屏幕高度较小的阔折叠设备场景中，页面顶部标题栏与搜索入口占用较多垂直空间，导致核心内容区域被压缩的场景。
-
-适用设备：phone。
 
 **规范要求**
 
@@ -736,11 +748,11 @@ Row() {
 
 ### SPEC-12 字体大小合规
 
+**触发关键词**: `字体大小` `字号` 
+
 **适用场景**
 
-应用内所有展示文字的场景，包括但不限于：标签、按钮、列表项、正文内容、标题等文本元素。确保文字在不同设备类型上具备足够的可读性。
-
-适用设备：phone / foldable / tablet / 2in1 / tv / wearable。
+应用内所有展示文字的场景，包括但不限于：标签、按钮、列表项、正文内容、标题等文本元素。确保文字在不同设备类型上具备足够的可读性，且在用户调整系统字体缩放时不会出现过小或过大的问题。
 
 **规范要求**
 
@@ -761,7 +773,7 @@ Row() {
 
 **关键代码**
 
-- 根据设备类型获取最小字号约束：
+- 使用 `minFontSize` 约束最小字号：
 
 ```typescript
 import { deviceInfo } from '@kit.BasicServicesKit';
@@ -771,35 +783,35 @@ function getMinFontSize(): number {
   switch (deviceType) {
     case 'phone':
     case 'tablet':
-      return 12; // 推荐 12vp，最小 8vp
+      return 8; // 推荐 12vp，最小 8vp
     case '2in1':
-      return 14; // 推荐 14vp，最小 10vp
+      return 10; // 推荐 14vp，最小 10vp
     case 'tv':
-      return 16; // 推荐 16vp，最小 14vp
+      return 14; // 推荐 16vp，最小 14vp
     case 'wearable':
-      return 13; // 推荐 13vp，最小 10vp
+      return 10; // 推荐 13vp，最小 10vp
     default:
       return 12;
   }
 }
-```
 
-- 文本组件字号约束：
-
-```typescript
 Text('示例文本')
-  .fontSize(Math.max(userFontSize, getMinFontSize()))
+  .fontSize(16)
+  // SPEC-12: 约束最小字号（绝对值），确保可读性
+  .minFontSize(getMinFontSize())
 ```
+
+> **属性说明**：`minFontSize` 直接约束字号的绝对值下限（vp），`minFontScale` / `maxFontScale` 约束字号的缩放比例范围（相对于 `fontSize` 的倍数）。
 
 ---
 
 ### SPEC-13 界面图标大小合规
 
+**触发关键词**: `图标大小` `图标尺寸` `图标合规`
+
 **适用场景**
 
 应用内所有界面图标（非启动图标）的尺寸约束，包括但不限于：导航图标、工具栏图标、列表项图标、功能入口图标等。确保图标在不同设备类型上具备足够的可点击性和辨识度。
-
-适用设备：phone / foldable / tablet / 2in1 / tv / wearable。
 
 **规范要求**
 
@@ -830,13 +842,13 @@ function getMinIconSize(): number {
   switch (deviceType) {
     case 'phone':
     case 'tablet':
-      return 12; // 推荐 12vp，最小 8vp
+      return 8; // 推荐 12vp，最小 8vp
     case '2in1':
-      return 14; // 推荐 14vp，最小 10vp
+      return 10; // 推荐 14vp，最小 10vp
     case 'tv':
-      return 26; // 推荐 26vp，最小 22vp
+      return 22; // 推荐 26vp，最小 22vp
     case 'wearable':
-      return 20; // 推荐 20vp，最小 16vp
+      return 16; // 推荐 20vp，最小 16vp
     default:
       return 12;
   }
@@ -847,8 +859,10 @@ function getMinIconSize(): number {
 
 ```typescript
 Image($r('app.media.icon'))
-  .width(Math.max(iconSize, getMinIconSize()))
-  .height(Math.max(iconSize, getMinIconSize()))
+  .constraintSize({
+    minWidth: getMinIconSize(),
+    minHeight: getMinIconSize()
+  })
   .objectFit(ImageFit.Contain)
 ```
 
@@ -856,11 +870,11 @@ Image($r('app.media.icon'))
 
 ### SPEC-14 大屏设备图标文字大小适中
 
+**触发关键词**: `图标文字放大` `放大倍数` `一排图标数`
+
 **适用场景**
 
 折叠屏设备（双折叠/三折叠）展开态、平板、电脑、智慧屏等大屏设备上，文字和图标随屏幕放大时的尺寸约束。需确保展开态或大屏上的文字/图标物理大小合理，避免信息过密。
-
-适用设备：foldable / tablet / 2in1 / tv。
 
 **规范要求**
 
@@ -917,11 +931,11 @@ Grid() {
 
 ### SPEC-15 弹出框大小适中
 
+**触发关键词**: `弹窗` `Dialog` `弹出框大小`
+
 **适用场景**
 
 折叠屏设备（双折叠/三折叠）展开态、平板、电脑、智慧屏等大屏设备上弹出框（Dialog / Popup / Modal）的尺寸约束。需确保弹出框在不同设备形态下大小适中，不会因屏幕放大而过度拉伸。
-
-适用设备：foldable / tablet / 2in1 / tv。
 
 **规范要求**
 
@@ -959,9 +973,208 @@ struct DialogComponent {
     // 弹窗宽度占栅格数（4表示占4列，总共12列）
     gridCount: 4,
   })
-  
+
   build() {
     // ...
   }
 }
+```
+
+---
+
+### SPEC-16 悬浮窗适配
+
+**触发关键词**: `悬浮窗` `分屏` `多窗口`
+
+**适用场景**
+
+智慧多窗是一种多任务处理解决方案，允许用户在同一时间、同一屏幕上以悬浮窗或分屏的方式同时运行多个应用窗口。所有应用均需支持悬浮窗模式，确保用户在多任务场景下可以将应用以悬浮窗形式置顶显示，不中断当前操作。
+
+- **悬浮窗**：设备屏幕上悬浮的、非全屏的应用窗口。一般用于在已有全屏任务运行的基础上，临时处理另一个任务，或短时间多任务并行使用。如浏览网页的同时回复消息。
+- **分屏**：分屏一般用于两个应用长时间并行使用的场景。例如边看购物攻略、边浏览商品；边看视频、边玩游戏；看学习类视频的同时做笔记等。
+
+由于应用从全屏进入智慧多窗（悬浮窗/分屏）模式后，窗口尺寸、宽高比例会发生变化，往往会产生一些布局的适配问题。例如，分屏后页面内容显示不全无法滑动、视频被压缩导致宽高比不正确，应用开启悬浮窗后内容和状态栏的重叠区域无法响应用户操作等。
+
+典型场景包括：游戏、视频播放、视频会议、直播等沉浸式场景，以及即时通讯、笔记等需要持续可见的工具类场景。
+
+**规范要求**
+
+1. **[P1] 配置声明支持智慧多窗**：应用须在 `module.json5` 配置文件中 abilities 标签下添加 `supportWindowMode` 字段，声明当前 UIAbility 所支持的窗口模式（全屏、悬浮窗、分屏）。
+
+2. **[P1] 沉浸式场景适配横向悬浮窗**：游戏、视频播放、视频会议、直播等沉浸式场景，须适配横向悬浮窗（宽 > 高的横屏比例悬浮窗）。开发者须通过 `preferMultiWindowOrientation` 属性声明支持横向悬浮窗，并配合 `enableLandscapeMultiWindow` / `disableLandscapeMultiWindow` API 动态控制横向布局，确保内容在横向比例下正确显示、交互控件可正常操作，不会出现画面拉伸、黑边或控件丢失。
+
+3. **[P0] 一多布局适配**：应用进入悬浮窗/分屏后窗口尺寸变化，须通过自适应布局和响应式布局使应用自适应窗口的大小变化，避免出现页面内容截断、挤压、堆叠等问题。具体措施包括：
+   - 使用 `aspectRatio` 属性指定 XComponent/Video 组件的宽高比，使组件宽高受父容器大小限制，避免视频形变。
+   - 使用 `objectFit(ImageFit.Contain)` 使视频保持宽高比完全显示在组件边界内。
+
+**关键代码**
+
+- 在 `module.json5` 中声明悬浮窗支持的窗口模式：
+
+```json5
+{
+  "module": {
+    "abilities": [
+      {
+        "name": "EntryAbility",
+        // 声明支持的窗口模式
+        "supportWindowMode": ["fullscreen", "floating", "splitScreen"]
+      }
+    ]
+  }
+}
+```
+
+- 声明支持横向悬浮窗（沉浸式场景必须）：
+
+```json5
+{
+  "module": {
+    "abilities": [
+      {
+        "name": "EntryAbility",
+        // landscape: 固定横向悬浮窗
+        // landscape_auto: 动态可变为横向，需配合 enableLandscapeMultiWindow API 使用
+        "preferMultiWindowOrientation": "landscape_auto"
+      }
+    ]
+  }
+}
+```
+
+- 沉浸式场景动态启用/禁用横向悬浮窗：
+
+```typescript
+import { window } from '@kit.ArkUI';
+import { BusinessError } from '@kit.BasicServicesKit';
+import { common } from '@kit.AbilityKit';
+
+const TAG = 'LandscapeMultiWindow';
+
+@Component
+export struct LandscapeVideoPlayer {
+  private windowClass: window.Window | undefined = undefined;
+
+  aboutToAppear(): void {
+    try {
+      this.windowClass = (this.getUIContext().getHostContext() as common.UIAbilityContext)
+        .windowStage.getMainWindowSync();
+      // 进入视频播放页时启用横向悬浮窗
+      this.windowClass.enableLandscapeMultiWindow().catch((error: BusinessError) => {
+        console.error(TAG, `enableLandscapeMultiWindow err, code: ${error.code}, message: ${error.message}`);
+      });
+    } catch (err) {
+      let error = err as BusinessError;
+      console.error(TAG, `aboutToAppear err, code: ${error.code}, message: ${error.message}`);
+    }
+  }
+
+  aboutToDisappear(): void {
+    // 离开视频播放页时禁用横向悬浮窗
+    this.windowClass?.disableLandscapeMultiWindow().catch((error: BusinessError) => {
+      console.error(TAG, `disableLandscapeMultiWindow err, code: ${error.code}, message: ${error.message}`);
+    });
+  }
+
+  build() {
+    // 视频播放布局
+  }
+}
+```
+
+- XComponent 视频画面：使用 `aspectRatio` 约束宽高比：
+
+```typescript
+// ❌ 优化前：使用固定宽高，分屏后视频形变
+XComponent({ id: 'video_player_id', type: XComponentType.SURFACE, controller: this.xComponentController })
+  .width(this.xComponentWidth)   // 固定宽度
+  .height(this.xComponentHeight) // 固定高度
+
+// ✅ 优化后：使用 aspectRatio 自适应父容器
+XComponent({ id: 'video_player_id', type: XComponentType.SURFACE, controller: this.xComponentController })
+  .aspectRatio(this.aspect)  // 如 9/16，宽高比受父容器约束
+```
+
+- Video 组件：使用 `objectFit(ImageFit.Contain)` 避免截断：
+
+```typescript
+// ❌ 优化前：分屏后视频超出窗口显示不全
+Video({ src: $rawfile('testVideo.mp4') })
+  .height('100%')
+  .width('100%')
+
+// ✅ 优化后：保持宽高比完全显示在边界内
+Video({ src: $rawfile('testVideo.mp4') })
+  .height('100%')
+  .width('100%')
+  .objectFit(ImageFit.Contain)
+```
+
+---
+
+### SPEC-17 用户手势灵活缩放布局（推荐）
+
+**触发关键词**: `捏合缩放` `拖拽` `布局密度`
+
+**适用场景**
+
+允许用户主动缩放界面布局密度，动态调整信息展示量，以适配不同使用偏好和设备形态。典型场景包括：
+
+- **宫格图片/视频宫格**：通过捏合手势增减列数，调整每行展示的卡片数量（如相册、视频首页、商品宫格）。
+- **侧边面板宽度**：在大屏设备上，用户可通过拖拽调整侧边面板（导航栏、筛选面板、信息面板）宽度。
+- **图文列表缩放**：在信息流、新闻列表等场景中，通过缩放调整卡片尺寸或列表密度。
+
+**规范要求**
+
+1. **[P1] 缩放交互与列数/密度映射**：建议为宫格类布局提供双指捏合缩放能力，将缩放方向映射为列数或内容密度的变化——捏合缩小（pinch in）对应增加列数/密度，捏合放大（pinch out）对应减少列数/密度，交互语义与系统级缩放保持一致。
+
+2. **[P1] 断点感知初始化**：缩放的初始列数/密度应根据当前设备断点自适应设定（如 sm→2列，md→3列，lg→4列），而非硬编码固定值；用户缩放操作在断点切换后仍应保留（或复位到断点默认值）。
+
+3. **[P1] 侧边面板可拖拽调整宽度**：宽屏设备上的侧边面板（导航、筛选、信息）建议支持拖拽分隔线调整宽度，宽度变化范围受规范要求 2 约束，拖拽过程中内容区自动重排。
+
+**关键代码**
+
+```typescript
+@State columns: number = 3;
+private readonly MIN_COLUMNS: number = 2;
+private readonly MAX_COLUMNS: number = 4;
+private readonly DEFAULT_COLUMNS_MAP: Record<string, number> = { 'sm': 2, 'md': 3, 'lg': 4 };
+
+// 断点感知初始化列数
+aboutToAppear(): void {
+  const widthBp = this.getUIContext().getWindowWidthBreakpoint();
+  this.columns = this.DEFAULT_COLUMNS_MAP[String(widthBp)] ?? 3;
+}
+
+// 双指捏合缩放 → 列数变化（parallelGesture 避免阻断滚动）
+GridRow({ columns: this.columns, gutter: { x: 12, y: 12 } }) { /* ... */ }
+  .parallelGesture(
+    PinchGesture({ fingers: 2 })
+      .onActionEnd((event: GestureEvent) => {
+        if (event.scale < 1 && this.columns < this.MAX_COLUMNS) {
+          animateTo({ duration: 300 }, () => { this.columns += 1; });
+        } else if (event.scale > 1 && this.columns > this.MIN_COLUMNS) {
+          animateTo({ duration: 300 }, () => { this.columns -= 1; });
+        }
+      })
+  )
+```
+
+> **交互映射**：`event.scale < 1`（向内捏合）→ 增加列数看更多；`event.scale > 1`（向外撑开）→ 减少列数看更大。
+
+- 侧边面板拖拽调整宽度：
+
+```typescript
+@State panelWidth: number = 280;
+
+// 可拖拽分隔线，面板宽度约束在 [240vp, 40%窗口宽度]
+Column() {}
+  .width(8)
+  .gesture(
+    PanGesture()
+      .onActionUpdate((event: GestureEvent) => {
+        this.panelWidth = Math.max(240,
+          Math.min(this.screenWidthVp * 0.4, this.panelWidth + event.offsetX));
+      })
+  )
 ```

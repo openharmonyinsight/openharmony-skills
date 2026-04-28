@@ -19,6 +19,7 @@ export class BreakpointObserver {
   private currentVerticalBreakpoint: string = BreakpointConstants.VERTICAL_LG;
   private listeners: BreakpointChangeListener[] = [];
   private isInitialized: boolean = false;
+  private windowSizeChangeCallback?: (size: window.Size) => void;
 
   private constructor() {}
 
@@ -49,12 +50,14 @@ export class BreakpointObserver {
       // 初始化断点
       this.updateBreakpoint(width, height);
 
-      // 监听窗口尺寸变化
-      this.windowClass.on('windowSizeChange', (size: window.Size) => {
+      this.windowSizeChangeCallback = (size: window.Size) => {
         const newWidth = px2vp(size.width);
         const newHeight = px2vp(size.height);
         this.updateBreakpoint(newWidth, newHeight);
-      });
+      };
+
+      // 监听窗口尺寸变化
+      this.windowClass.on('windowSizeChange', this.windowSizeChangeCallback);
 
       this.isInitialized = true;
     } catch (error) {
@@ -165,8 +168,8 @@ export class BreakpointObserver {
    * 销毁观察者
    */
   destroy(): void {
-    if (this.windowClass) {
-      this.windowClass.off('windowSizeChange');
+    if (this.windowClass && this.windowSizeChangeCallback) {
+      this.windowClass.off('windowSizeChange', this.windowSizeChangeCallback);
     }
     this.listeners = [];
     this.isInitialized = false;

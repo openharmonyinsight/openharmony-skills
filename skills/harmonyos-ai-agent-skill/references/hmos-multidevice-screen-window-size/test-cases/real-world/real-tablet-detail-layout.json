@@ -31,8 +31,8 @@
       "必须给出回归矩阵，覆盖竖屏、横屏、自由窗口三类状态。"
     ],
     "should_reuse_resources": [
-      "./reference/window_size_detection.md",
-      "./reference/layout-anomaly.md",
+      "./references/window_size_detection.md",
+      "./references/layout-anomaly.md",
       "./assets/WindowSizeChangeListener.ets",
       "./assets/GridRowExample.ets"
     ],

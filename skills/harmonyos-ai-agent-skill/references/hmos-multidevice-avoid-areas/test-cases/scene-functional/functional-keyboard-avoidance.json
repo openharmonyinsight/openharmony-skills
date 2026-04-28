@@ -31,8 +31,8 @@
       "必须要求内容层和背景层分别处理。"
     ],
     "should_reuse_resources": [
-      "./reference/keyboard_handling.md",
-      "./reference/safe_area_api.md",
+      "./references/keyboard_handling.md",
+      "./references/safe_area_api.md",
       "./assets/KeyboardAvoidanceExample.ets",
       "./assets/AvoidAreaExample.ets"
     ],

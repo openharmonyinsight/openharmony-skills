@@ -31,8 +31,8 @@
       "必须说明能力检测结果如何缓存和透传。"
     ],
     "should_reuse_resources": [
-      "./reference/syscap_mechanism.md",
-      "./reference/external_devices.md",
+      "./references/syscap_mechanism.md",
+      "./references/external_devices.md",
       "./assets/SysCapChecker.ets",
       "./assets/CanIUseExample.ets"
     ],

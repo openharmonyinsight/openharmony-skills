@@ -54,11 +54,6 @@ deviceType !== 'phone' ?
 **关键代码：**
 
 ```typescript
-import { window } from '@kit.ArkUI';
-import { deviceInfo } from '@kit.BasicServicesKit';
-import { display } from '@kit.ArkUI';
-import { common } from '@kit.AbilityKit';
-
 aboutToAppear(): void {
   const ctx = this.getUIContext()?.getHostContext() as common.UIAbilityContext;
   const win = ctx.windowStage.getMainWindowSync();

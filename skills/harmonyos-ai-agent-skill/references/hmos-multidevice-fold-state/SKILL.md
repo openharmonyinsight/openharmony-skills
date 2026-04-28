@@ -43,7 +43,7 @@ description: Validate and route HarmonyOS foldable-device adaptation tasks (incl
 
 说明：
 - `FOLD-01`、`FOLD-04`、`FOLD-05`、`FOLD-06` 属于扩展场景，用于状态入口、多形态/特殊比例和问题修复。
-- 三块主线的总览入口是 `RSC_FOLD_16`（`./reference/fold_adaptation_four_blocks.md`）。
+- 三块主线的总览入口是 `RSC_FOLD_16`（`./references/fold_adaptation_four_blocks.md`）。
 
 ## 阶段标签
 
@@ -156,7 +156,7 @@ resource_refs:
   - RSC_FOLD_02
 skill_to_path:
   - skill: 折叠状态检测
-    path: ./reference/fold_status_detection.md
+    path: ./references/fold_status_detection.md
 ```
 
 #### `FOLD-02` 悬停态上下分屏与交互布局
@@ -204,7 +204,7 @@ resource_refs:
   - RSC_FOLD_04
 skill_to_path:
   - skill: 悬停态上下分屏与交互
-    path: ./reference/hover_state_interaction.md
+    path: ./references/hover_state_interaction.md
 ```
 
 #### `FOLD-03` 折痕区域避让
@@ -259,7 +259,7 @@ resource_refs:
   - RSC_FOLD_06
 skill_to_path:
   - skill: 折痕区域避让
-    path: ./reference/crease_avoidance.md
+    path: ./references/crease_avoidance.md
 ```
 
 #### `FOLD-07` 开合连续性保障
@@ -310,9 +310,9 @@ resource_refs:
   - RSC_FOLD_01
 skill_to_path:
   - skill: 开合连续性
-    path: ./reference/fold_continuity.md
+    path: ./references/fold_continuity.md
   - skill: 折叠状态检测
-    path: ./reference/fold_status_detection.md
+    path: ./references/fold_status_detection.md
 ```
 
 #### `FOLD-04` 多段折叠形态状态适配
@@ -362,9 +362,9 @@ resource_refs:
   - RSC_FOLD_01
 skill_to_path:
   - skill: 多段折叠形态状态适配
-    path: ./reference/multi_fold_states.md
+    path: ./references/multi_fold_states.md
   - skill: 折叠状态检测
-    path: ./reference/fold_status_detection.md
+    path: ./references/fold_status_detection.md
 ```
 
 #### `FOLD-05` 特殊比例折叠屏适配（内外屏差异）
@@ -416,9 +416,9 @@ resource_refs:
   - RSC_FOLD_12
 skill_to_path:
   - skill: 特殊比例折叠屏适配
-    path: ./reference/special_form_factor_foldable_adaptation.md
+    path: ./references/special_form_factor_foldable_adaptation.md
   - skill: 悬停态上下分屏与交互
-    path: ./reference/hover_state_interaction.md
+    path: ./references/hover_state_interaction.md
 ```
 
 #### `FOLD-06` 折展问题通用修复路径
@@ -469,18 +469,18 @@ resource_refs:
   - RSC_FOLD_13
 skill_to_path:
   - skill: 折叠状态检测
-    path: ./reference/fold_status_detection.md
+    path: ./references/fold_status_detection.md
   - skill: 悬停态上下分屏与交互
-    path: ./reference/hover_state_interaction.md
+    path: ./references/hover_state_interaction.md
   - skill: 折痕区域避让
-    path: ./reference/crease_avoidance.md
+    path: ./references/crease_avoidance.md
   - skill: 折展问题修复场景库
-    path: ./reference/bug-fix-cases.md
+    path: ./references/bug-fix-cases.md
 ```
 
 ## 资源索引
 
-完整资源卡片已下沉至 [`./reference/resource-index.md`](./reference/resource-index.md)，主文件仅保留检索入口与输出契约。
+完整资源卡片已下沉至 [`./references/resource-index.md`](./references/resource-index.md)，主文件仅保留检索入口与输出契约。
 
 使用顺序：
 - 优先读取 `P0` 官方路径作为主方案。

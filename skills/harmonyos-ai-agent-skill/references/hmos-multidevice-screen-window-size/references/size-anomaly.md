@@ -145,6 +145,26 @@ ReDsActionSheetContent({
 // .constraintSize({ maxHeight: this.sheetMaxHeight })
 ```
 
+**问题 D：固定 padding/margin 在容器收缩时占比过大**
+
+组件内部使用了较大固定值的 padding 或 margin，在容器高度充足时用于居中或留白效果正常；但当容器高度因键盘弹出、折叠屏切换等场景动态收缩时，固定 padding/margin 的绝对值未同步调整，挤占内容空间导致截断。
+
+```typescript
+// 问题代码：键盘弹出后容器高度动态缩小，但 padding 保持固定
+Scroll() {
+  Column() {
+    RichEditor({ controller: this.richEditorController })
+      .width('100%')
+  }
+}
+.padding({
+  bottom: 65,  // 固定 65vp，键盘弹出后容器可能仅剩 200vp
+  top: 65       // 130vp padding 占比超过 60%，正文被压缩到极小
+})
+```
+
+此问题常见于：容器通过 `constraintSize({ maxHeight })` 或 `expandSafeArea([SafeAreaType.KEYBOARD])` 动态调整高度时，内部 padding/margin 未做响应式处理。
+
 #### 修复方案
 
 根据根因选择对应的修复方案：
@@ -214,6 +234,40 @@ ReDsActionSheetContent({
 ```
 
 通用思路：当内部内容高度超过外部容器的 `maxHeight` 约束时，应调整外部容器的高度配置（增大 `maxHeight`、移除 `constraintSize` 限制、或设置百分比），而非在内部内容层做 padding/Scroll 绕过。此类问题容易误判为"缺少设备避让"，应先确认是容器高度约束不足还是避让缺失。
+
+**方案 D：动态调整固定 padding（适合键盘弹出等空间收缩场景）**
+
+适用场景：组件内部有较大固定 padding，当外部空间因键盘弹出、折叠屏切换等原因收缩时，固定 padding 占比过大导致内容区被压缩截断。
+
+典型案例：正文编辑区组件内部 Scroll 设置了 `padding({ top: 65, bottom: 65 })`，未聚焦时容器高度充足，padding 用于居中展示效果正常；但键盘弹出后容器高度通过 `constraintSize({ maxHeight })` 动态缩小，此时固定 130vp 的 padding 占据了大部分可用空间，正文被压缩到极小甚至截断。
+
+```typescript
+// 问题代码：固定 padding 在容器缩小时导致内容截断
+Scroll() {
+  Column() {
+    RichEditor({ controller: this.richEditorController })
+      .width('100%')
+  }
+}
+.padding({
+  bottom: 65,  // 固定值，键盘弹出后占容器高度比例过大
+  top: 65
+})
+
+// 修复：根据焦点状态动态调整 padding
+Scroll() {
+  Column() {
+    RichEditor({ controller: this.richEditorController })
+      .width('100%')
+  }
+}
+.padding({
+  bottom: this.textAreaOnFocus ? 16 : 65,  // 键盘弹出时缩小 padding
+  top: this.textAreaOnFocus ? 16 : 65
+})
+```
+
+通用思路：当组件内部存在大尺寸固定 padding/margin，且容器高度会因键盘弹出、折叠屏切换等场景动态收缩时，应在空间收缩时同步减小 padding/margin，为实际内容腾出空间。
 
 #### 方案选择指南
 
@@ -460,6 +514,56 @@ this.windowSizeCallback = (data: window.Size) => {
 
 ---
 
+### 场景 7：横竖屏切换后 display API 获取的尺寸未刷新导致留白或溢出
+
+#### 问题描述
+
+通过 `display.getDefaultDisplaySync()` 获取屏幕尺寸设置组件宽高，从横屏切换到竖屏后，组件仍使用横屏时的尺寸（宽度过大、高度不足），导致组件溢出可视区域或底部出现留白。
+
+#### 根因分析
+
+1. **`Math.max/Math.min` 抹掉了方向信息**：`Math.max(disp.width, disp.height)` 使宽度始终为屏幕长边，横屏切换竖屏后宽度过大导致溢出；高度同理始终为短边，竖屏高度未被使用导致留白。
+2. **未注册 `display.on('change')` 监听**：仅在 `aboutToAppear` 计算一次，旋转后不更新。
+
+```typescript
+// 问题代码：横屏启动后切换竖屏，尺寸不更新
+aboutToAppear(): void {
+  let disp = display.getDefaultDisplaySync();
+  this.compWidth = this.getUIContext().px2vp(Math.max(disp.width, disp.height));  // 横屏值，竖屏后未刷新
+  this.compHeight = this.getUIContext().px2vp(Math.min(disp.width, disp.height)); // 同上
+}
+```
+
+#### 修复方案
+
+直接使用 `disp.width` / `disp.height`，并注册 `display.on('change')` 在旋转时重新计算。
+
+```typescript
+// 修复后
+private updateDisplaySize(): void {
+  let disp = display.getDefaultDisplaySync();
+  this.compWidth = this.getUIContext().px2vp(disp.width);
+  this.compHeight = this.getUIContext().px2vp(disp.height);
+}
+
+aboutToAppear(): void {
+  this.updateDisplaySize();
+  display.on('change', () => this.updateDisplaySize());
+}
+
+aboutToDisappear(): void {
+  display.off('change');
+}
+```
+
+#### AI 判断规则
+
+1. 如果横竖屏切换后组件尺寸异常，且组件宽高通过 `display` API 获取，检查是否注册了 `display.on('change')` 并在回调中同步刷新尺寸状态变量。
+2. 如果使用了 `Math.max/Math.min` 对 `disp.width` 和 `disp.height` 取值，应改为直接使用原始值以保留方向信息。
+3. 此模式适用于所有通过 `display` API 动态设置组件宽高的场景。
+
+---
+
 ## AI 判断规则
 
 1. 如果页面主内容区通过 `RelativeContainer`、`Stack` 或其他布局被顶部区和底部区同时约束，先检查底部区是否保留固定垂直占位，不要只看 `.height(...)`。
@@ -475,6 +579,7 @@ this.windowSizeCallback = (data: window.Size) => {
 6. **检查内容截断根因**：内容被截断时，按以下顺序排查：
    - **缺少滚动容器**：单块整体内容使用 `Scroll`，多块同类内容使用 `List`
    - **外部容器高度约束不足**：逐层检查 `maxHeight`、`constraintSize`、`sheetMaxHeight` 等约束，找到限制过小的约束点并调整
+   - **固定 padding/margin 占比过大**：容器高度动态收缩时（如键盘弹出、折叠屏），组件内固定 padding/margin 的绝对值未同步调整，挤占内容空间导致截断
    - 注意区分"容器高度约束不足"与"未做系统栏避让"两类根因
 
 7. **检查旋转后尺寸状态同步**：如果组件在屏幕旋转后出现截断，且组件宽高通过状态变量存储并绑定到布局属性上，检查 `windowSizeChange` 回调中是否同步更新了所有从窗口尺寸派生的状态变量（宽度、高度等），而非仅更新横竖屏标记。

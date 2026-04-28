@@ -164,6 +164,50 @@ Image($r('app.media.background'))
   .aspectRatio(1)
 ```
 
+### 场景 5：横屏模式下相机预览偏移截断
+
+#### 问题描述
+
+相机预览使用 `XComponent` + `.position()` 定位，横屏切换后预览画面未居中，偏移到屏幕左侧导致右侧出现黑边或画面截断。
+
+#### 根因分析
+
+使用 `.position()` 绝对定位组件时，仅按短边计算了组件尺寸，横屏时未计算长边方向的居中偏移，导致组件始终贴左上角：
+
+```typescript
+// 问题代码：position 固定为 (0, 0)
+XComponent({}).position({ x: 0, y: 0 })
+```
+
+#### 修复方案
+
+获取屏幕长短边尺寸，横屏时通过 `(longSide - componentWidth) / 2` 计算居中偏移量：
+
+```typescript
+const shortSide = this.getUIContext().px2lpx(Math.min(screenWidthPx, screenHeightPx));
+const longSide = this.getUIContext().px2lpx(Math.max(screenWidthPx, screenHeightPx));
+const ratio = 9 / 16;
+ const isPortrait = screenWidthPx < screenHeightPx;
+  if (isPortrait) {
+    this.cameraWidth = shortSide;
+    this.cameraHeight = shortSide / ratio;
+    this.cameraScreenOffsetX = 0;
+    this.cameraScreenOffsetY = 0;
+  } else {
+    this.cameraWidth = shortSide / ratio;
+    this.cameraHeight = shortSide;
+    // 横屏时计算居中偏移
+    this.cameraScreenOffsetX = (longSide - this.cameraWidth) / 2;
+    this.cameraScreenOffsetY = 0;
+  }
+```
+position 使用动态偏移
+```typescript
+XComponent({}).position({ x: this.cameraScreenOffsetX + 'lpx', y: 0 })
+```
+
+---
+
 ## AI 判断规则
 
 1. **检查容器选择**：如果页面需要"轮播图/主内容 + 底部固定栏"垂直排列，使用 `Column`；如果需要"背景 + 悬浮按钮/浮层"层叠效果，使用 `Stack`。

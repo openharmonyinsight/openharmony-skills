@@ -95,13 +95,13 @@ applies_when:
 not_applies_when:
   - 存在折痕、悬停态、Pura X、键盘遮挡、状态栏遮挡、自然方向语义、`setPreferredOrientation`、`rotation` 值解释、mouse、canIUse 等更强信号
 scene_strategy: single
-primary_scene_ref: ../hmos-multidevice-screen-window-size/SKILL.md
+primary_scene_ref: ./references/hmos-multidevice-screen-window-size/SKILL.md
 secondary_scenes:
   - SCENE-02
   - SCENE-03
 secondary_scene_refs:
-  - ../hmos-multidevice-fold-state/SKILL.md
-  - ../hmos-multidevice-avoid-areas/SKILL.md
+  - ./references/hmos-multidevice-fold-state/SKILL.md
+  - ./references/hmos-multidevice-avoid-areas/SKILL.md
 ```
 
 #### `SCENE-02` 折展状态与折痕场景
@@ -126,13 +126,13 @@ applies_when:
 not_applies_when:
   - 问题只与普通横竖屏变化或普通窗口断点有关
 scene_strategy: single
-primary_scene_ref: ../hmos-multidevice-fold-state/SKILL.md
+primary_scene_ref: ./references/hmos-multidevice-fold-state/SKILL.md
 secondary_scenes:
   - SCENE-01
   - SCENE-05
 secondary_scene_refs:
-  - ../hmos-multidevice-screen-window-size/SKILL.md
-  - ../hmos-multidevice-natural-orientation/SKILL.md
+  - ./references/hmos-multidevice-screen-window-size/SKILL.md
+  - ./references/hmos-multidevice-natural-orientation/SKILL.md
 ```
 
 #### `SCENE-03` 系统区域与键盘避让场景
@@ -157,13 +157,13 @@ applies_when:
 not_applies_when:
   - 问题只是普通 margin 或栅格调整
 scene_strategy: single
-primary_scene_ref: ../hmos-multidevice-avoid-areas/SKILL.md
+primary_scene_ref: ./references/hmos-multidevice-avoid-areas/SKILL.md
 secondary_scenes:
   - SCENE-01
   - SCENE-02
 secondary_scene_refs:
-  - ../hmos-multidevice-screen-window-size/SKILL.md
-  - ../hmos-multidevice-fold-state/SKILL.md
+  - ./references/hmos-multidevice-screen-window-size/SKILL.md
+  - ./references/hmos-multidevice-fold-state/SKILL.md
 ```
 
 #### `SCENE-04` 多输入与焦点交互场景
@@ -188,11 +188,11 @@ applies_when:
 not_applies_when:
   - 问题只表现为布局变化，没有交互行为变化
 scene_strategy: single
-primary_scene_ref: ../hmos-multidevice-interaction-methods/SKILL.md
+primary_scene_ref: ./references/hmos-multidevice-interaction-methods/SKILL.md
 secondary_scenes:
   - SCENE-01
 secondary_scene_refs:
-  - ../hmos-multidevice-screen-window-size/SKILL.md
+  - ./references/hmos-multidevice-screen-window-size/SKILL.md
 ```
 
 #### `SCENE-05` 自然方向与旋转语义场景
@@ -216,13 +216,13 @@ applies_when:
 not_applies_when:
   - 只是宽度断点变化或窗口尺寸同步导致的布局切换
 scene_strategy: single
-primary_scene_ref: ../hmos-multidevice-natural-orientation/SKILL.md
+primary_scene_ref: ./references/hmos-multidevice-natural-orientation/SKILL.md
 secondary_scenes:
   - SCENE-02
   - SCENE-01
 secondary_scene_refs:
-  - ../hmos-multidevice-fold-state/SKILL.md
-  - ../hmos-multidevice-screen-window-size/SKILL.md
+  - ./references/hmos-multidevice-fold-state/SKILL.md
+  - ./references/hmos-multidevice-screen-window-size/SKILL.md
 ```
 
 #### `SCENE-06` 硬件能力与外设场景
@@ -249,11 +249,11 @@ applies_when:
 not_applies_when:
   - 问题是纯 UI 布局、方向或避让，不涉及硬件能力差异
 scene_strategy: single
-primary_scene_ref: ../hmos-multidevice-hardware-access/SKILL.md
+primary_scene_ref: ./references/hmos-multidevice-hardware-access/SKILL.md
 secondary_scenes:
   - SCENE-04
 secondary_scene_refs:
-  - ../hmos-multidevice-interaction-methods/SKILL.md
+  - ./references/hmos-multidevice-interaction-methods/SKILL.md
 ```
 
 #### `SCENE-07` 复合问题联合场景
@@ -281,12 +281,12 @@ candidate_scenes:
   - SCENE-05
   - SCENE-06
 candidate_scene_refs:
-  - ../hmos-multidevice-screen-window-size/SKILL.md
-  - ../hmos-multidevice-fold-state/SKILL.md
-  - ../hmos-multidevice-avoid-areas/SKILL.md
-  - ../hmos-multidevice-interaction-methods/SKILL.md
-  - ../hmos-multidevice-natural-orientation/SKILL.md
-  - ../hmos-multidevice-hardware-access/SKILL.md
+  - ./references/hmos-multidevice-screen-window-size/SKILL.md
+  - ./references/hmos-multidevice-fold-state/SKILL.md
+  - ./references/hmos-multidevice-avoid-areas/SKILL.md
+  - ./references/hmos-multidevice-interaction-methods/SKILL.md
+  - ./references/hmos-multidevice-natural-orientation/SKILL.md
+  - ./references/hmos-multidevice-hardware-access/SKILL.md
 ```
 
 ## 输出约定

@@ -31,9 +31,9 @@
       "必须给出不同机型的回归矩阵。"
     ],
     "should_reuse_resources": [
-      "./reference/keyboard_handling.md",
-      "./reference/immersive_layout.md",
-      "./reference/bug-fix-cases.md",
+      "./references/keyboard_handling.md",
+      "./references/immersive_layout.md",
+      "./references/bug-fix-cases.md",
       "./assets/KeyboardAvoidanceExample.ets",
       "./assets/BackgroundImmersiveExample.ets"
     ],

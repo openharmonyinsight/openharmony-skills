@@ -1,4 +1,4 @@
-﻿---
+---
 name: hmos-multidevice-hardware-access
 description: Handle HarmonyOS hardware-capability adaptation through a declarative scene and resource index. Use when the task involves camera selection, camera rotation/stride/foldable adaptation, sensor availability, canIUse or SysCap checks, hardware fallback strategy, external device access, or multi-device hardware behavior differences.
 ---
@@ -324,7 +324,7 @@ resource_refs:
 ```yaml
 resource_id: RSC_HW_01
 resource_type: reference
-path: ./reference/syscap_mechanism.md
+path: ./references/syscap_mechanism.md
 phase_tags: [REQ, DEV, FIX, VAL]
 priority: P0
 used_for:
@@ -376,7 +376,7 @@ output_fields:
 ```yaml
 resource_id: RSC_HW_03
 resource_type: reference
-path: ./reference/camera-device-selection.md
+path: ./references/camera-device-selection.md
 phase_tags: [REQ, DEV, FIX, VAL]
 priority: P0
 used_for:
@@ -428,7 +428,7 @@ output_fields:
 ```yaml
 resource_id: RSC_HW_08
 resource_type: reference
-path: ./reference/camera-foldable-display.md
+path: ./references/camera-foldable-display.md
 phase_tags: [DEV, FIX, VAL]
 priority: P0
 used_for:
@@ -453,7 +453,7 @@ output_fields:
 ```yaml
 resource_id: RSC_HW_09
 resource_type: reference
-path: ./reference/camera-stride-handling.md
+path: ./references/camera-stride-handling.md
 phase_tags: [DEV, FIX, VAL]
 priority: P0
 used_for:
@@ -477,7 +477,7 @@ output_fields:
 ```yaml
 resource_id: RSC_HW_10
 resource_type: reference
-path: ./reference/camera-rotation-adaptation.md
+path: ./references/camera-rotation-adaptation.md
 phase_tags: [DEV, FIX, VAL]
 priority: P0
 used_for:
@@ -503,7 +503,7 @@ output_fields:
 ```yaml
 resource_id: RSC_HW_11
 resource_type: reference
-path: ./reference/camera-bug-fix-cases.md
+path: ./references/camera-bug-fix-cases.md
 phase_tags: [FIX, VAL]
 priority: P0
 used_for:
@@ -528,7 +528,7 @@ output_fields:
 ```yaml
 resource_id: RSC_HW_12
 resource_type: reference
-path: ./reference/camera-rotation-terms.md
+path: ./references/camera-rotation-terms.md
 phase_tags: [REQ, DEV, FIX]
 priority: P0
 used_for:
@@ -554,7 +554,7 @@ output_fields:
 ```yaml
 resource_id: RSC_HW_05
 resource_type: reference
-path: ./reference/sensor_adaptation.md
+path: ./references/sensor_adaptation.md
 phase_tags: [REQ, DEV, FIX, VAL]
 priority: P0
 used_for:
@@ -606,7 +606,7 @@ output_fields:
 ```yaml
 resource_id: RSC_HW_07
 resource_type: reference
-path: ./reference/external_devices.md
+path: ./references/external_devices.md
 phase_tags: [REQ, DEV, FIX, VAL]
 priority: P1
 used_for:
@@ -628,7 +628,7 @@ output_fields:
 
 ## 问题修复场景库
 
-> 完整问题修复场景（含正反例代码片段）参见 [camera-bug-fix-cases.md](./reference/camera-bug-fix-cases.md)
+> 完整问题修复场景（含正反例代码片段）参见 [camera-bug-fix-cases.md](./references/camera-bug-fix-cases.md)
 
 ## 设备特定考虑
 

@@ -31,9 +31,9 @@
       "必须覆盖真机能力矩阵回归。"
     ],
     "should_reuse_resources": [
-      "./reference/syscap_mechanism.md",
-      "./reference/camera-device-selection.md",
-      "./reference/external_devices.md",
+      "./references/syscap_mechanism.md",
+      "./references/camera-device-selection.md",
+      "./references/external_devices.md",
       "./assets/SysCapChecker.ets",
       "./assets/CameraAdapter.ets"
     ],

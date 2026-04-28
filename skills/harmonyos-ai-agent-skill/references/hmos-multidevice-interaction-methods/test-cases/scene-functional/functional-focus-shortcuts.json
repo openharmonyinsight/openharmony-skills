@@ -31,8 +31,8 @@
       "必须保证触摸路径不被桌面端交互破坏。"
     ],
     "should_reuse_resources": [
-      "./reference/keyboard.md",
-      "./reference/mouse.md",
+      "./references/keyboard.md",
+      "./references/mouse.md",
       "./assets/FocusNavigationExample.ets",
       "./assets/KeyboardShortcutsExample.ets",
       "./assets/HoverEffectExample.ets"

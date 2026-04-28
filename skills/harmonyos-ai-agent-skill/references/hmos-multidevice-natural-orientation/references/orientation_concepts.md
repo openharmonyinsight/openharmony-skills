@@ -175,7 +175,7 @@ import { window } from '@kit.ArkUI';
 
 // 方式二：运行时动态设置
 async function setOrientation(context: Context, orientation: window.Orientation) {
-  const windowClass = window.findWindow(context); // 或通过 windowStage.getMainWindowSync()
+  const windowClass = context.windowStage.getMainWindowSync();
   await windowClass.setPreferredOrientation(orientation);
 }
 ```
@@ -311,10 +311,9 @@ display.on('change', changeCallback);
 // 取消时: display.off('change', changeCallback);
 
 // 方式二：监听窗口尺寸变化（判断横竖屏）
-// 在 @Component 中推荐使用 this.getUIContext().px2vp()
 const sizeCallback: Callback<window.Size> = (size: window.Size) => {
-  const width = px2vp(size.width);
-  const height = px2vp(size.height);
+  const width = this.getUIContext().px2vp(size.width);
+  const height = this.getUIContext().px2vp(size.height);
   const isLandscape = width > height;
 };
 windowClass.on('windowSizeChange', sizeCallback);

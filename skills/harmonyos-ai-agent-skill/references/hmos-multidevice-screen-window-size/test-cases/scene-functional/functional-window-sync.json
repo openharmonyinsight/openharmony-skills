@@ -31,8 +31,8 @@
       "必须要求布局容器与断点判断保持同一套来源。"
     ],
     "should_reuse_resources": [
-      "./reference/window_size_detection.md",
-      "./reference/breakpoint_system.md",
+      "./references/window_size_detection.md",
+      "./references/breakpoint_system.md",
       "./assets/WindowSizeChangeListener.ets",
       "./assets/SystemBreakpointExample.ets"
     ],

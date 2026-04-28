@@ -11,7 +11,7 @@
       "primary_scene",
       "secondary_scenes",
       "route_reason",
-      "next_skill_refs",
+      "next_scene_refs",
       "problem_profile",
       "root_cause_hypothesis",
       "fix_plan",
@@ -25,7 +25,7 @@
     },
     "contains": {
       "active_phases": ["FIX", "VAL"],
-      "next_skill_refs": [
+      "next_scene_refs": [
         "./references/fold_continuity.md",
         "./references/bug-fix-cases.md"
       ]

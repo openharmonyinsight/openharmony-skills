@@ -147,7 +147,7 @@ resource_refs:
   - RSC_ORIENT_07
 skill_to_path:
   - skill: 旋转检测与方向监听
-    path: ./reference/rotation_detection.md
+    path: ./references/rotation_detection.md
 ```
 
 #### `ORIENT-02` 多设备方向适配（一多策略）
@@ -210,9 +210,9 @@ resource_refs:
   - RSC_ORIENT_10
 skill_to_path:
   - skill: 多设备方向适配
-    path: ./reference/orientation_adaptation.md
+    path: ./references/orientation_adaptation.md
   - skill: 方向概念与API速查
-    path: ./reference/orientation_concepts.md
+    path: ./references/orientation_concepts.md
 ```
 
 #### `ORIENT-03` 视频应用横竖屏切换与自适应旋转
@@ -265,7 +265,7 @@ resource_refs:
   - RSC_ORIENT_01
 skill_to_path:
   - skill: 视频横竖屏切换
-    path: ./reference/video_rotation.md
+    path: ./references/video_rotation.md
 ```
 
 #### `ORIENT-04` 方向适配问题修复
@@ -322,14 +322,14 @@ resource_refs:
   - RSC_ORIENT_01
 skill_to_path:
   - skill: 方向适配问题修复场景库
-    path: ./reference/bug-fix-cases.md
+    path: ./references/bug-fix-cases.md
   - skill: 多设备方向适配
-    path: ./reference/orientation_adaptation.md
+    path: ./references/orientation_adaptation.md
 ```
 
 ## 资源索引
 
-完整资源卡片已下沉至 [`./reference/resource-index.md`](./reference/resource-index.md)，主文件仅保留检索入口与输出契约。
+完整资源卡片已下沉至 [`./references/resource-index.md`](./references/resource-index.md)，主文件仅保留检索入口与输出契约。
 
 使用顺序：
 - 优先读取 `P0` 官方路径作为主方案。

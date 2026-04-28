@@ -1,0 +1,27 @@
+{
+  "case_id": "SMOKE-SCENE-07-001",
+  "layer": "smoke",
+  "title": "折叠态相机切换黑屏与旋转异常",
+  "phase": "FIX",
+  "user_prompt": "折叠屏相机应用在折叠/展开切换后出现黑屏，同时预览画面方向与设备持握方向不一致。展开后拍照的照片方向也发生了 90° 旋转。请给出问题修复思路。",
+  "intent": "验证 hardware-access 是否稳定命中 HW-02，并把预览旋转作为联动子场景、拍照旋转作为次级子场景。",
+  "expected": {
+    "primary_phase": "FIX",
+    "primary_scene": "HW-02",
+    "primary_scene_ref": "./SKILL.md",
+    "secondary_scenes": ["HW-02-preview-rotation", "HW-02-capture-rotation"],
+    "next_scene_refs": ["./SKILL.md", "./references/camera-bug-fix-cases.md"],
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "suspected_root_domain",
+      "linked_regression_domains",
+      "handoff_priority"
+    ],
+    "forbidden_scenes": ["HW-02-stride", "HW-01"]
+  }
+}

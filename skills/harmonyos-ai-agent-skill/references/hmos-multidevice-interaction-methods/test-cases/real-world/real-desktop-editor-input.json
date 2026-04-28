@@ -31,9 +31,9 @@
       "必须补触摸平板模式回归项。"
     ],
     "should_reuse_resources": [
-      "./reference/keyboard.md",
-      "./reference/mouse.md",
-      "./reference/interaction_normalization.md",
+      "./references/keyboard.md",
+      "./references/mouse.md",
+      "./references/interaction_normalization.md",
       "./assets/FocusNavigationExample.ets",
       "./assets/AdaptiveNavigation.ets"
     ],

@@ -31,9 +31,9 @@
       "必须定义不同设备形态下的回归矩阵。"
     ],
     "should_reuse_resources": [
-      "./reference/orientation_concepts.md",
-      "./reference/rotation_detection.md",
-      "./reference/bug-fix-cases.md",
+      "./references/orientation_concepts.md",
+      "./references/rotation_detection.md",
+      "./references/bug-fix-cases.md",
       "./assets/OrientationDetector.ets"
     ],
     "forbidden_patterns": [

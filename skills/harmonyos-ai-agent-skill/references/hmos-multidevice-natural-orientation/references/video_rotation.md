@@ -114,7 +114,7 @@ export struct VideoPlayView {
 
   build() {
     Stack() {
-      XComponent({ id: 'video_player_id', type: XComponentType.SURFACE, controller: this.xComponentController })
+      XComponent({ id: 'video_player_id', type: XComponentType.SURFACE })
         .width(this.xComponentWidth)
         .height(this.xComponentHeight)
 
@@ -271,6 +271,8 @@ function setShortVideoOrientation(
 - **解锁时**: 设置 `AUTO_ROTATION_UNSPECIFIED`，恢复三向旋转（横屏、竖屏、反向横屏），受控制中心控制
 
 ```arkts
+import { window } from '@kit.ArkUI';
+
 // 锁定/解锁
 if (this.isVideoLock) {
   this.setOrientation(window.Orientation.AUTO_ROTATION_LANDSCAPE);

@@ -11,6 +11,8 @@
 7. [场景7：全屏应用底部内容被系统导航指示器遮挡](#场景7全屏应用底部内容被系统导航指示器遮挡)
 8. [场景8：输入法弹起导致页面内容被键盘遮挡](#场景8输入法弹起导致页面内容被键盘遮挡)
 9. [场景9：消息列表页标题栏与底部导航栏未实现沉浸式滚动隐藏](#场景9消息列表页标题栏与底部导航栏未实现沉浸式滚动隐藏)
+10. [场景10：windowSizeChange 回调中 getWindowAvoidArea 获取到旧避让值（时序问题）](#场景10windowsizechange-回调中-getwindowavoidarea-获取到旧避让值时序问题)
+11. [场景11：仅在启动时读取一次避让区域，折叠/展开后标题栏与状态栏重叠](#场景11仅在启动时读取一次避让区域折叠展开后标题栏与状态栏重叠)
 
 ---
 
@@ -1020,3 +1022,134 @@ build() {
 - 标题栏 `.alignItems(VerticalAlign.Bottom)` 让标题内容在避让区下方显示
 - 底部导航栏 `.margin({ bottom: this.barBottomMargin })` 避让系统导航指示器
 - 两者共享 `this.headerOpacity` 实现同步透明度变化
+
+---
+
+## 场景10：windowSizeChange 回调中 getWindowAvoidArea 获取到旧避让值（时序问题）
+
+**问题描述：**
+- 聊天类应用，使用 `setWindowLayoutFullScreen(true)` 开启全屏沉浸式布局
+- 顶部标题栏需要避让状态栏，底部输入栏需要避让系统导航指示器
+- 设备折叠/展开、横竖屏切换等场景下，避让区域未正确更新
+- 底部输入栏被导航指示器遮挡，或顶部标题栏被状态栏遮挡
+- 问题在折叠屏设备上尤为明显（折叠/展开时系统 UI 尺寸变化幅度大）
+
+**根因分析：**
+1. 在 `windowSizeChange` 回调中通过 `getWindowAvoidArea()` **主动查询**避让区域
+2. `windowSizeChange` 触发时机早于系统 UI（状态栏、导航指示器）布局更新完成
+3. 此时调用 `getWindowAvoidArea()` 拿到的仍是折叠/展开前的**旧值**
+4. 应使用专有的 `avoidAreaChange` 监听接口，回调中的数据由系统保证是最新的
+
+**Badcase：**
+
+```typescript
+// EntryAbility.ets
+windowClass.on('windowSizeChange', () => {
+  // ❌ windowSizeChange 回调中主动查询避让区域
+  // ❌ 折叠/展开时系统 UI 可能还没更新完，拿到的是旧值
+  const systemAvoidArea = windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM);
+  const navAvoidArea = windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR);
+  const topPadding = px2vp(systemAvoidArea.topRect.height);
+  const bottomPadding = px2vp(navAvoidArea.bottomRect.height);
+  AppStorage.setOrCreate('topPadding', topPadding);
+  AppStorage.setOrCreate('bottomPadding', bottomPadding);
+});
+```
+
+**解决方案：** 使用 **avoidAreaChange 专有监听接口**替代 windowSizeChange + getWindowAvoidArea 组合
+
+### 步骤 1：将 windowSizeChange + getWindowAvoidArea 替换为 avoidAreaChange
+
+```typescript
+// EntryAbility.ets
+// ✅ 通过 avoidAreaChange 专有监听接口获取避让区域变化
+// ✅ 回调中的数据总是最新的、准确的，不存在时序问题
+windowClass.on('avoidAreaChange', (data) => {
+  if (data.type === window.AvoidAreaType.TYPE_SYSTEM) {
+    const topPadding = windowClass.getUIContext().px2vp(data.area.topRect.height);
+    AppStorage.setOrCreate('topPadding', topPadding);
+  } else if (data.type === window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR) {
+    const bottomPadding = windowClass.getUIContext().px2vp(data.area.bottomRect.height);
+    AppStorage.setOrCreate('bottomPadding', bottomPadding);
+  }
+});
+```
+
+**关键点：**
+- `avoidAreaChange` 是系统专有的避让区域变化监听接口，回调参数 `data.area` 由系统直接提供，保证数据准确
+- `windowSizeChange` 仅表示窗口尺寸变化，不代表系统 UI 元素已完成布局更新，存在时序竞争
+- 回调中通过 `data.type` 区分避让区域类型（`TYPE_SYSTEM` / `TYPE_NAVIGATION_INDICATOR`），按需更新
+- 使用 `getUIContext().px2vp()` 而非全局 `px2vp()` 进行像素转换，确保上下文正确
+
+---
+
+## 场景11：仅在启动时读取一次避让区域，折叠/展开后标题栏与状态栏重叠
+
+**问题描述：**
+- 应用使用 `setWindowLayoutFullScreen(true)` 开启全屏沉浸式布局
+- 页面顶部标题栏需要避让系统状态栏
+- 启动时避让区域显示正常
+- 折叠屏折叠/展开后，状态栏高度发生变化，但标题栏的顶部 padding 仍是启动时的旧值
+- 导致标题栏与状态栏重叠或间距异常
+
+**根因分析：**
+1. 仅在 `onWindowStageCreate` 中通过 `getWindowAvoidArea()` 读取一次避让区域高度并存入 `AppStorage`
+2. 未注册 `avoidAreaChange` 监听，折叠/展开后状态栏高度变化无法传递到页面
+3. `@StorageLink` 变量不会自动更新，因为 `AppStorage` 中的值从未被刷新
+
+**Badcase：**
+
+```typescript
+// EntryAbility.ets
+let mainWindow = windowStage.getMainWindowSync();
+mainWindow.setWindowLayoutFullScreen(true);
+
+// ❌ 只在启动时读取一次，之后不再更新
+let avoidArea = mainWindow.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM);
+let topHeight = avoidArea.topRect.height;
+AppStorage.setOrCreate('topAvoidHeight', topHeight);
+// ❌ 缺少 avoidAreaChange 监听
+
+windowStage.loadContent('pages/Index', (err) => { /* ... */ });
+```
+
+```typescript
+// Index.ets
+@StorageLink('topAvoidHeight') topAvoidHeight: number = 0;
+
+build() {
+  Column() {
+    Row() { Text('首页') }
+      .padding({ top: this.getUIContext().px2vp(this.topAvoidHeight) })
+      // ❌ 折叠/展开后 topAvoidHeight 不变，标题栏与状态栏重叠
+
+    // ...内容区
+  }
+}
+```
+
+**解决方案：** 注册 **avoidAreaChange 监听**，实时更新避让区域高度
+
+### 步骤 1：将启动时一次性读取替换为 avoidAreaChange 持续监听
+
+```typescript
+// EntryAbility.ets
+let mainWindow = windowStage.getMainWindowSync();
+mainWindow.setWindowLayoutFullScreen(true);
+
+// ✅ 注册 avoidAreaChange 回调，实时监听避让区变化
+mainWindow.on('avoidAreaChange', (data: window.AvoidAreaOptions) => {
+  if (data.type === window.AvoidAreaType.TYPE_SYSTEM) {
+    let topHeight = data.area.topRect.height;
+    AppStorage.setOrCreate('topAvoidHeight', topHeight);
+  }
+});
+
+windowStage.loadContent('pages/Index', (err) => { /* ... */ });
+```
+
+**关键点：**
+- `getWindowAvoidArea()` 是一次性快照查询，只在调用时刻返回当前值，不会跟随设备状态变化
+- `avoidAreaChange` 是持续监听，折叠/展开、横竖屏切换等场景下自动回调最新避让区域数据
+- 页面通过 `@StorageLink` 绑定 `AppStorage`，`avoidAreaChange` 回调更新 `AppStorage` 后页面自动刷新
+- 避让区域高度存储原始 px 值，在页面中通过 `getUIContext().px2vp()` 转换为 vp 使用

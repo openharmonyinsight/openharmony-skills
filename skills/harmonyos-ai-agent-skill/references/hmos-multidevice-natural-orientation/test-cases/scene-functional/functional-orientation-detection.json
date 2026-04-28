@@ -31,8 +31,8 @@
       "必须给出不同自然方向设备上的映射表。"
     ],
     "should_reuse_resources": [
-      "./reference/orientation_concepts.md",
-      "./reference/orientation_adaptation.md",
+      "./references/orientation_concepts.md",
+      "./references/orientation_adaptation.md",
       "./assets/OrientationDetector.ets",
       "./assets/GetDeviceRotation.ets"
     ],

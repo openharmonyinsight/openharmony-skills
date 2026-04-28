@@ -251,7 +251,7 @@ resource_refs:
 ```yaml
 resource_id: RSC_AVOID_01
 resource_type: reference
-path: ./reference/avoid_area_types.md
+path: ./references/avoid_area_types.md
 phase_tags: [REQ, DEV, FIX, VAL]
 priority: P0
 used_for:
@@ -277,7 +277,7 @@ output_fields:
 ```yaml
 resource_id: RSC_AVOID_02
 resource_type: reference
-path: ./reference/safe_area_api.md
+path: ./references/safe_area_api.md
 phase_tags: [REQ, DEV, FIX, VAL]
 priority: P0
 used_for:
@@ -302,7 +302,7 @@ output_fields:
 ```yaml
 resource_id: RSC_AVOID_03
 resource_type: reference
-path: ./reference/immersive_layout.md
+path: ./references/immersive_layout.md
 phase_tags: [REQ, DEV, FIX, VAL]
 priority: P0
 used_for:
@@ -327,7 +327,7 @@ output_fields:
 ```yaml
 resource_id: RSC_AVOID_04
 resource_type: reference
-path: ./reference/keyboard_handling.md
+path: ./references/keyboard_handling.md
 phase_tags: [REQ, DEV, FIX, VAL]
 priority: P0
 used_for:
@@ -352,7 +352,7 @@ output_fields:
 ```yaml
 resource_id: RSC_AVOID_05
 resource_type: reference
-path: ./reference/bug-fix-cases.md
+path: ./references/bug-fix-cases.md
 phase_tags: [FIX]
 priority: P1
 used_for:
@@ -377,7 +377,7 @@ output_fields:
 ```yaml
 resource_id: RSC_AVOID_06
 resource_type: reference
-path: ./reference/scenario-development-cases.md
+path: ./references/scenario-development-cases.md
 phase_tags: [REQ, DEV, VAL]
 priority: P0
 used_for:

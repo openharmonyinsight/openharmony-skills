@@ -11,7 +11,7 @@
       "primary_scene",
       "secondary_scenes",
       "route_reason",
-      "next_skill_refs",
+      "next_scene_refs",
       "hover_layout_rule",
       "orientation_lock_rule",
       "container_strategy",
@@ -24,7 +24,7 @@
     },
     "contains": {
       "active_phases": ["DEV"],
-      "next_skill_refs": [
+      "next_scene_refs": [
         "./references/hover_state_interaction.md"
       ]
     },

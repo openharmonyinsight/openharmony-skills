@@ -11,7 +11,7 @@
       "primary_scene",
       "secondary_scenes",
       "route_reason",
-      "next_skill_refs",
+      "next_scene_refs",
       "state_snapshot_rule",
       "restore_trigger_rule",
       "media_state_priority_rule",
@@ -24,7 +24,7 @@
     },
     "contains": {
       "active_phases": ["DEV"],
-      "next_skill_refs": [
+      "next_scene_refs": [
         "./references/fold_continuity.md"
       ]
     },
