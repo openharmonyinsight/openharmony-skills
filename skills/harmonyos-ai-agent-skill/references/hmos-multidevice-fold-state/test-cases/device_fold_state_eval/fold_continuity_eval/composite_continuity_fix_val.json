@@ -1,0 +1,51 @@
+{
+  "case_id": "CONT-COMPOSITE-FIX-VAL-001",
+  "eval_type": "composite",
+  "title": "复合修复：草稿丢失 + 播放漂移 + 步骤增加",
+  "user_prompt": "存量会议页开合后出现三类问题：输入草稿偶发丢失、播放进度漂移、用户需要多一步才能回到原任务。请先给修复路径，再给验证计划。",
+  "intent": "验证是否以 FOLD-06 为主场景联动 FOLD-07，输出可落地 FIX+VAL。",
+  "expected": {
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "problem_profile",
+      "root_cause_hypothesis",
+      "fix_plan",
+      "verification_matrix",
+      "evidence_requirements",
+      "regression_watchlist"
+    ],
+    "exact": {
+      "primary_phase": "FIX",
+      "primary_scene": "FOLD-06"
+    },
+    "contains": {
+      "active_phases": ["FIX", "VAL"],
+      "next_scene_refs": [
+        "./references/fold_continuity.md",
+        "./references/bug-fix-cases.md"
+      ]
+    },
+    "accepted_secondary_scenes": ["FOLD-07"],
+    "forbidden_scenes": ["FOLD-05"],
+    "keyword_requirements": {
+      "root_cause_hypothesis": ["恢复链路", "恢复标记", "autoplay", "过期视口"],
+      "fix_plan": ["状态快照", "双触发恢复", "去抖", "可回收"],
+      "verification_matrix": ["y->z->y", "y->p->y", "暂停态", "播放态"]
+    },
+    "forbidden_text_patterns": [
+      "固定短超时清空",
+      "只靠 prepared",
+      "只测一条链路"
+    ]
+  },
+  "manual_review_items": [
+    "是否同时覆盖输入、滚动、媒体三条连续性",
+    "是否给出两条折展链路的验证要求",
+    "是否避免一次性恢复 token 方案"
+  ]
+}

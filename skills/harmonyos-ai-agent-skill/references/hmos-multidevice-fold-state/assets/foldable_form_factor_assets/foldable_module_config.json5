@@ -1,0 +1,36 @@
+{
+  "module": {
+    "deviceTypes": [
+      "phone"
+    ],
+    "abilities": [
+      {
+        "name": "EntryAbility",
+        "srcEntry": "./ets/entryability/EntryAbility.ets",
+        "description": "$string:entryability_desc",
+        "icon": "$media:icon",
+        "label": "$string:app_name",
+        "startWindow": {
+          "background": "$media:startup_background",
+          "icon": "$media:startup_icon",
+          "label": "$string:app_name"
+        },
+        "supportWindowMode": [
+          "fullscreen",
+          "split",
+          "floating"
+        ],
+        "orientation": [
+          "auto_rotation",
+          "portrait",
+          "landscape"
+        ]
+      }
+    ],
+    "requestPermissions": [
+      {
+        "name": "ohos.permission.GET_DISPLAY_INFO"
+      }
+    ]
+  }
+}

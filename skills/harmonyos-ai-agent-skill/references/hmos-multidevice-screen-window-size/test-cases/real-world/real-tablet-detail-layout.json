@@ -1,0 +1,61 @@
+{
+  "case_id": "SIZE-REAL-001",
+  "layer": "real-world",
+  "title": "平板商品详情页横竖屏与自由窗口回归",
+  "phase": "FIX",
+  "user_prompt": "电商平板商品详情页在竖屏时是单栏，横屏和平行窗口时应切成双栏。但线上回归发现：旋转后偶现还停留在旧布局，拖拽自由窗口缩窄后右侧推荐区也不收起。请输出修复方案，并给出工程验证要求。",
+  "intent": "验证真实页面语境下，SIZE-01 仍能产出可执行的修复与验证契约。",
+  "expected": {
+    "primary_phase": "FIX",
+    "primary_scene": "SIZE-01",
+    "secondary_scenes": ["SIZE-04"],
+    "next_scene_refs": ["./SKILL.md"],
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "problem_profile",
+      "root_cause_hypothesis",
+      "fix_plan",
+      "regression_watchlist"
+    ],
+    "forbidden_scenes": ["SIZE-03"]
+  },
+  "solution_contract": {
+    "must_cover": [
+      "必须区分监听链路问题和布局容器配置问题。",
+      "必须说明自由窗口缩放后的断点收敛策略。",
+      "必须给出回归矩阵，覆盖竖屏、横屏、自由窗口三类状态。"
+    ],
+    "should_reuse_resources": [
+      "./references/window_size_detection.md",
+      "./references/layout-anomaly.md",
+      "./assets/WindowSizeChangeListener.ets",
+      "./assets/GridRowExample.ets"
+    ],
+    "forbidden_patterns": [
+      "只改写死的宽度阈值，不补监听链路。",
+      "只给 UI 手工验证，不定义自动化验证点。"
+    ]
+  },
+  "execution_contract": {
+    "execution_type": "harmonyos_project",
+    "target_project_type": "HarmonyOS NEXT Stage/ArkTS 工程",
+    "compile_command_template": "./hvigorw assembleHap",
+    "test_command_template": "./hvigorw test",
+    "runtime_assertions": [
+      "竖屏进入页面默认单栏。",
+      "旋转为横屏后进入双栏，恢复竖屏后回到单栏。",
+      "拖拽自由窗口小于目标断点后，推荐区自动收起且无闪烁。"
+    ],
+    "pass_evidence": [
+      "编译成功日志",
+      "三种窗口状态截图",
+      "回归测试报告",
+      "断点和监听日志"
+    ]
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "case_id": "HW-FUNC-001",
+  "layer": "scene-functional",
+  "title": "能力检测与降级链路功能验证",
+  "phase": "DEV",
+  "user_prompt": "请为需要蓝牙外设接入和摄像头能力的功能补齐能力检测与降级方案，要求不支持能力的设备能给出替代路径。请输出可落到工程中的开发方案。",
+  "intent": "验证 HW-01 的开发方案能落到工程并通过能力检测与降级测试。",
+  "expected": {
+    "primary_phase": "DEV",
+    "primary_scene": "HW-01",
+    "secondary_scenes": ["HW-04"],
+    "next_scene_refs": ["./SKILL.md"],
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "code_touchpoints",
+      "reuse_resources",
+      "implementation_notes",
+      "integration_risks"
+    ],
+    "forbidden_scenes": ["HW-03"]
+  },
+  "solution_contract": {
+    "must_cover": [
+      "必须先做 SysCap 检测，再进入设备接入。",
+      "必须定义无蓝牙或无摄像头时的降级策略。",
+      "必须说明能力检测结果如何缓存和透传。"
+    ],
+    "should_reuse_resources": [
+      "./references/syscap_mechanism.md",
+      "./references/external_devices.md",
+      "./assets/SysCapChecker.ets",
+      "./assets/CanIUseExample.ets"
+    ],
+    "forbidden_patterns": [
+      "直接调用硬件接口，不做能力探测。",
+      "能力不足时静默失败，没有降级提示。"
+    ]
+  },
+  "execution_contract": {
+    "execution_type": "harmonyos_project",
+    "target_project_type": "HarmonyOS NEXT Stage/ArkTS 工程",
+    "compile_command_template": "./hvigorw assembleHap",
+    "test_command_template": "./hvigorw test",
+    "runtime_assertions": [
+      "支持能力的设备进入正常接入流程。",
+      "不支持蓝牙或摄像头的设备进入定义好的降级路径。",
+      "能力检测日志和 UI 呈现结果一致。"
+    ],
+    "pass_evidence": [
+      "编译成功日志",
+      "能力检测日志",
+      "支持/不支持设备截图",
+      "自动化测试结果"
+    ]
+  }
+}

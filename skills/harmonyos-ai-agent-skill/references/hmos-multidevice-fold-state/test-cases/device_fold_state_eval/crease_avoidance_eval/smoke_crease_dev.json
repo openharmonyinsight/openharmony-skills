@@ -1,0 +1,50 @@
+{
+  "case_id": "CREASE-SMOKE-DEV-001",
+  "eval_type": "smoke",
+  "title": "单域开发：悬停态折痕避让定位",
+  "user_prompt": "视频详情页在悬停态分界线偏下，折痕上方留白不均衡。请给出开发阶段适配方案，重点说明折痕定位和分区规则。",
+  "intent": "验证是否稳定命中 FOLD-03，并输出正确的折痕定位策略。",
+  "expected": {
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "coordinate_mapping_rule",
+      "boundary_anchor_rule",
+      "safe_margin_rule",
+      "implementation_notes",
+      "verification_matrix"
+    ],
+    "exact": {
+      "primary_phase": "DEV",
+      "primary_scene": "FOLD-03"
+    },
+    "contains": {
+      "active_phases": ["DEV"],
+      "next_scene_refs": [
+        "./references/crease_avoidance.md",
+        "./references/resource-index.md"
+      ]
+    },
+    "accepted_secondary_scenes": [],
+    "forbidden_scenes": ["FOLD-05"],
+    "keyword_requirements": {
+      "coordinate_mapping_rule": ["同一坐标系", "root", "偏移"],
+      "boundary_anchor_rule": ["折痕上边界", "折痕下边界", "边界锚定"],
+      "safe_margin_rule": ["16 vp", "40 vp", "安全间距", "不是分区边界"]
+    },
+    "forbidden_text_patterns": [
+      "经验比例",
+      "中线 + 固定偏移",
+      "0.5比例硬编码"
+    ]
+  },
+  "manual_review_items": [
+    "是否明确区分了边界定位与内容安全间距",
+    "是否要求用真实折痕矩形而不是经验比例",
+    "是否给出了可执行验证矩阵"
+  ]
+}

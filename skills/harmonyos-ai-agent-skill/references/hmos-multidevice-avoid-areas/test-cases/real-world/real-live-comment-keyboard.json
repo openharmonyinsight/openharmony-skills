@@ -1,0 +1,62 @@
+{
+  "case_id": "AVOID-REAL-001",
+  "layer": "real-world",
+  "title": "直播评论区键盘与挖孔回归",
+  "phase": "FIX",
+  "user_prompt": "直播页线上问题：用户发送评论时，软键盘弹出会把输入框完全顶出屏幕，部分机型顶部标题又被挖孔区压住。修完后还要保证沉浸式背景继续铺满。请输出修复方案和工程验证要求。",
+  "intent": "验证真实直播评论区问题下，AVOID-04 与 AVOID-01 能共同给出可执行修复与验证契约。",
+  "expected": {
+    "primary_phase": "FIX",
+    "primary_scene": "AVOID-04",
+    "secondary_scenes": ["AVOID-01", "AVOID-03"],
+    "next_scene_refs": ["./SKILL.md"],
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "problem_profile",
+      "root_cause_hypothesis",
+      "fix_plan",
+      "regression_watchlist"
+    ],
+    "forbidden_scenes": ["AVOID-02"]
+  },
+  "solution_contract": {
+    "must_cover": [
+      "必须同时处理键盘避让、安全区和沉浸式背景。",
+      "必须区分背景可延伸和内容必须避让的边界。",
+      "必须给出不同机型的回归矩阵。"
+    ],
+    "should_reuse_resources": [
+      "./references/keyboard_handling.md",
+      "./references/immersive_layout.md",
+      "./references/bug-fix-cases.md",
+      "./assets/KeyboardAvoidanceExample.ets",
+      "./assets/BackgroundImmersiveExample.ets"
+    ],
+    "forbidden_patterns": [
+      "通过关闭沉浸式来规避问题。",
+      "只验证单一设备，不做不同挖孔形态回归。"
+    ]
+  },
+  "execution_contract": {
+    "execution_type": "harmonyos_project",
+    "target_project_type": "HarmonyOS NEXT 直播/评论页面工程",
+    "compile_command_template": "./hvigorw assembleHap",
+    "test_command_template": "./hvigorw test",
+    "runtime_assertions": [
+      "键盘弹出后输入框、发送按钮和最后一条评论可见。",
+      "顶部标题不被挖孔遮挡。",
+      "沉浸式背景仍完整铺满状态栏区域。"
+    ],
+    "pass_evidence": [
+      "编译成功日志",
+      "不同机型截图",
+      "软键盘开闭自动化测试结果",
+      "安全区与沉浸式日志"
+    ]
+  }
+}

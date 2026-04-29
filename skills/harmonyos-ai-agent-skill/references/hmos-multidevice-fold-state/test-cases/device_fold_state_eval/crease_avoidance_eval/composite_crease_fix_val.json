@@ -1,0 +1,51 @@
+{
+  "case_id": "CREASE-COMPOSITE-FIX-VAL-001",
+  "eval_type": "composite",
+  "title": "复合修复：避让区偏下 + 分界线不在中线",
+  "user_prompt": "线上会议页在悬停态出现两个问题：避让区整体偏下，分界线不在折痕中线。请先给修复方案，再补验证计划，要求研发可直接按步骤落地。",
+  "intent": "验证是否以 FOLD-06 为主场景，并联动 FOLD-03 输出 FIX+VAL 的完整内容。",
+  "expected": {
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "problem_profile",
+      "root_cause_hypothesis",
+      "fix_plan",
+      "verification_matrix",
+      "evidence_requirements",
+      "regression_watchlist"
+    ],
+    "exact": {
+      "primary_phase": "FIX",
+      "primary_scene": "FOLD-06"
+    },
+    "contains": {
+      "active_phases": ["FIX", "VAL"],
+      "next_scene_refs": [
+        "./references/crease_avoidance.md",
+        "./references/bug-fix-cases.md"
+      ]
+    },
+    "accepted_secondary_scenes": ["FOLD-03"],
+    "forbidden_scenes": ["FOLD-05"],
+    "keyword_requirements": {
+      "root_cause_hypothesis": ["坐标系混用", "中线", "固定偏移"],
+      "fix_plan": ["监听入口", "边界锚定", "生命周期回收", "回归验证"],
+      "verification_matrix": ["foldStatus", "截图", "布局树"]
+    },
+    "forbidden_text_patterns": [
+      "只调一个常量",
+      "不需要验证",
+      "经验比例"
+    ]
+  },
+  "manual_review_items": [
+    "是否把偏下问题先定位到坐标系和边界策略",
+    "是否避免了只靠中线偏移量调参",
+    "是否包含证据要求而不仅是口头验证"
+  ]
+}

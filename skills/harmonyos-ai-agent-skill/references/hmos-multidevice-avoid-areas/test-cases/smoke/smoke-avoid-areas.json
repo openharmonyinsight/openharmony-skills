@@ -1,0 +1,27 @@
+{
+  "case_id": "SMOKE-SCENE-03-001",
+  "layer": "smoke",
+  "title": "软键盘与系统区域避让",
+  "phase": "FIX",
+  "user_prompt": "线上反馈：评论输入框在弹出软键盘后被完全遮住，同时顶部挖孔区域也压住了标题。请给出问题修复思路。",
+  "intent": "验证 device-avoid-areas 是否稳定命中 AVOID-04，并把顶部挖孔作为联动避让场景。",
+  "expected": {
+    "primary_phase": "FIX",
+    "primary_scene": "AVOID-04",
+    "primary_scene_ref": "./SKILL.md",
+    "secondary_scenes": ["AVOID-01"],
+    "next_scene_refs": ["./SKILL.md"],
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "suspected_root_domain",
+      "linked_regression_domains",
+      "handoff_priority"
+    ],
+    "forbidden_scenes": ["AVOID-02", "AVOID-03"]
+  }
+}

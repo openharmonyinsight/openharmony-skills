@@ -1,0 +1,51 @@
+{
+  "case_id": "CREASE-SHADOW-REAL-001",
+  "eval_type": "shadow",
+  "title": "真实修复表达：折痕避让偏移与回归风险",
+  "user_prompt": "实际反馈：折叠屏悬停时，避让区最上方没到中线，按钮偶发落进折痕。请你给出可直接执行的修复与验证方案，避免再次返工。",
+  "intent": "验证真实表达下输出是否仍可采纳，且能覆盖修复与验证闭环。",
+  "expected": {
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "problem_profile",
+      "fix_plan",
+      "verification_matrix",
+      "evidence_requirements",
+      "pass_criteria",
+      "residual_risks"
+    ],
+    "exact": {
+      "primary_phase": "FIX",
+      "primary_scene": "FOLD-06"
+    },
+    "contains": {
+      "active_phases": ["FIX", "VAL"],
+      "next_scene_refs": [
+        "./references/crease_avoidance.md",
+        "./references/resource-index.md"
+      ]
+    },
+    "accepted_secondary_scenes": ["FOLD-03"],
+    "forbidden_scenes": ["FOLD-05"],
+    "keyword_requirements": {
+      "fix_plan": ["同一坐标系", "折痕上边界", "折痕下边界", "16 vp", "40 vp"],
+      "evidence_requirements": ["display", "FoldStatus", "CurrentCreaseRects"],
+      "pass_criteria": ["边界对齐", "误差", "不落在折痕区"]
+    },
+    "forbidden_text_patterns": [
+      "拍脑袋",
+      "经验比例",
+      "随便调"
+    ]
+  },
+  "manual_review_items": [
+    "输出是否能直接转为研发任务单",
+    "是否给出可复现和可验收的证据要求",
+    "是否明确剩余风险与回归范围"
+  ]
+}

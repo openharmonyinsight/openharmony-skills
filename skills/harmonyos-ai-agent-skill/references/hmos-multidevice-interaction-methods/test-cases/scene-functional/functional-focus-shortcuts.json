@@ -1,0 +1,62 @@
+{
+  "case_id": "INPUT-FUNC-001",
+  "layer": "scene-functional",
+  "title": "桌面端焦点导航与快捷键功能验证",
+  "phase": "DEV",
+  "user_prompt": "请为桌面端内容页增加鼠标 hover、右键菜单、键盘方向键导航和快捷键，并保证触摸设备仍能正常工作。请输出可落到工程中的开发方案。",
+  "intent": "验证 INPUT-03 与 INPUT-01 的开发方案能落到工程并通过交互测试。",
+  "expected": {
+    "primary_phase": "DEV",
+    "primary_scene": "INPUT-03",
+    "secondary_scenes": ["INPUT-01"],
+    "next_scene_refs": ["./SKILL.md"],
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "code_touchpoints",
+      "reuse_resources",
+      "implementation_notes",
+      "integration_risks"
+    ],
+    "forbidden_scenes": ["INPUT-04"]
+  },
+  "solution_contract": {
+    "must_cover": [
+      "必须定义焦点顺序、方向键映射和快捷键命名空间。",
+      "必须说明鼠标 hover 与键盘焦点的优先级关系。",
+      "必须保证触摸路径不被桌面端交互破坏。"
+    ],
+    "should_reuse_resources": [
+      "./references/keyboard.md",
+      "./references/mouse.md",
+      "./assets/FocusNavigationExample.ets",
+      "./assets/KeyboardShortcutsExample.ets",
+      "./assets/HoverEffectExample.ets"
+    ],
+    "forbidden_patterns": [
+      "把 hover 态和 focus 态混成一套不可区分的视觉状态。",
+      "给桌面端加快捷键但没有焦点管理。"
+    ]
+  },
+  "execution_contract": {
+    "execution_type": "harmonyos_project",
+    "target_project_type": "HarmonyOS NEXT 平板/PC ArkTS 工程",
+    "compile_command_template": "./hvigorw assembleHap",
+    "test_command_template": "./hvigorw test",
+    "runtime_assertions": [
+      "Tab 或方向键能按预期顺序切换焦点。",
+      "鼠标 hover 时展示悬浮反馈，焦点态仍保持可区分。",
+      "快捷键触发目标动作且不影响触摸点击链路。"
+    ],
+    "pass_evidence": [
+      "编译成功日志",
+      "键盘导航测试报告",
+      "鼠标 hover 截图",
+      "快捷键触发日志"
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "case_id": "SMOKE-SCENE-02-001",
+  "layer": "smoke",
+  "title": "折叠态悬停分屏与折痕避让",
+  "phase": "REQ",
+  "user_prompt": "折叠屏应用在悬停态下，上下两个区域的内容被折痕切开，需要重新设计折叠态布局和折痕避让方式。请先给出需求分析设计。",
+  "intent": "验证 device-fold-state 是否稳定命中 FOLD-02，并把折痕避让作为联动场景。",
+  "expected": {
+    "primary_phase": "REQ",
+    "primary_scene": "FOLD-02",
+    "primary_scene_ref": "./SKILL.md",
+    "secondary_scenes": ["FOLD-03"],
+    "next_scene_refs": ["./SKILL.md"],
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "problem_frame",
+      "device_scope_summary",
+      "routing_focus"
+    ],
+    "forbidden_scenes": ["FOLD-01", "FOLD-05"]
+  }
+}

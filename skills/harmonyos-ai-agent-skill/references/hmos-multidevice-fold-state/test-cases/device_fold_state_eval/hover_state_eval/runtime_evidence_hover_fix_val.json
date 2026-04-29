@@ -1,0 +1,51 @@
+{
+  "case_id": "HOVER-RUNTIME-EVIDENCE-FIX-VAL-001",
+  "eval_type": "composite",
+  "title": "实机验证证据：悬停启用/退出与双态状态闭环",
+  "user_prompt": "会议页悬停态修复后，需要提交可执行验证方案。请给 FIX+VAL 输出，要求覆盖 HALF_FOLD 与 EXPAND 两态，并明确 hover enabled/disabled 日志证据。",
+  "intent": "验证是否输出可落地的运行证据要求，而不只是抽象口号。",
+  "expected": {
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "problem_profile",
+      "fix_plan",
+      "verification_matrix",
+      "evidence_requirements",
+      "pass_criteria",
+      "residual_risks"
+    ],
+    "exact": {
+      "primary_phase": "FIX",
+      "primary_scene": "FOLD-06"
+    },
+    "contains": {
+      "active_phases": ["FIX", "VAL"],
+      "next_scene_refs": [
+        "./references/hover_state_interaction.md",
+        "./references/bug-fix-cases.md"
+      ]
+    },
+    "accepted_secondary_scenes": ["FOLD-02"],
+    "forbidden_scenes": ["FOLD-05"],
+    "keyword_requirements": {
+      "verification_matrix": ["HALF_FOLD", "EXPAND", "截图", "日志"],
+      "evidence_requirements": ["hover enabled", "hover disabled", "FoldStatus", "display_state"],
+      "pass_criteria": ["上展示下交互", "退出悬停恢复", "无方向抖动"]
+    },
+    "forbidden_text_patterns": [
+      "不需要实机",
+      "仅凭经验判断通过",
+      "不采集日志"
+    ]
+  },
+  "manual_review_items": [
+    "是否要求了 HALF_FOLD 与 EXPAND 双态证据",
+    "是否要求了 hover enabled/disabled 日志",
+    "是否给出可执行的通过判据"
+  ]
+}

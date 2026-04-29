@@ -1,0 +1,62 @@
+{
+  "case_id": "HW-REAL-001",
+  "layer": "real-world",
+  "title": "扫码配网能力差异真实回归",
+  "phase": "FIX",
+  "user_prompt": "智能设备配网页面最近出现多起机型问题：部分平板没有后置摄像头，扫码入口直接报错；部分设备外接蓝牙设备配网按钮点击无反应。产品要求保留一套页面，但在能力不足时给出替代路径。请输出修复方案和工程验证要求。",
+  "intent": "验证真实能力差异问题下，HW-01 和 HW-04 能给出可执行修复与验证契约。",
+  "expected": {
+    "primary_phase": "FIX",
+    "primary_scene": "HW-01",
+    "secondary_scenes": ["HW-02", "HW-04"],
+    "next_scene_refs": ["./SKILL.md"],
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "problem_profile",
+      "root_cause_hypothesis",
+      "fix_plan",
+      "regression_watchlist"
+    ],
+    "forbidden_scenes": ["HW-03"]
+  },
+  "solution_contract": {
+    "must_cover": [
+      "必须给出无摄像头和无蓝牙两条降级路径。",
+      "必须保留统一页面入口而不是拆多套页面。",
+      "必须覆盖真机能力矩阵回归。"
+    ],
+    "should_reuse_resources": [
+      "./references/syscap_mechanism.md",
+      "./references/camera-device-selection.md",
+      "./references/external_devices.md",
+      "./assets/SysCapChecker.ets",
+      "./assets/CameraAdapter.ets"
+    ],
+    "forbidden_patterns": [
+      "能力不足直接隐藏功能，没有引导。",
+      "通过捕获异常兜底，不在入口做能力判定。"
+    ]
+  },
+  "execution_contract": {
+    "execution_type": "harmonyos_project",
+    "target_project_type": "HarmonyOS NEXT 配网/扫码工程",
+    "compile_command_template": "./hvigorw assembleHap",
+    "test_command_template": "./hvigorw test",
+    "runtime_assertions": [
+      "无后置摄像头设备显示替代录入或手动输入路径。",
+      "无蓝牙设备显示替代配网路径或能力提示。",
+      "支持能力的设备保持原功能不回退。"
+    ],
+    "pass_evidence": [
+      "编译成功日志",
+      "多设备能力矩阵",
+      "支持/降级路径截图",
+      "自动化或手工回归报告"
+    ]
+  }
+}

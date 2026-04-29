@@ -1,0 +1,61 @@
+{
+  "case_id": "ORIENT-REAL-001",
+  "layer": "real-world",
+  "title": "视频播放页旋转语义真实回归",
+  "phase": "FIX",
+  "user_prompt": "视频播放页在部分平板和折叠设备上有两类线上问题：用户横拿设备时页面偶尔还是竖屏，日志里 rotation=90/270 但工程师解释不一致；部分机型锁横屏后返回列表又出现方向闪烁。请输出修复方案和工程验证要求。",
+  "intent": "验证真实视频方向故障下，ORIENT-03 和 ORIENT-01 能共同给出可执行修复与验证契约。",
+  "expected": {
+    "primary_phase": "FIX",
+    "primary_scene": "ORIENT-03",
+    "secondary_scenes": ["ORIENT-01", "ORIENT-02"],
+    "next_scene_refs": ["./SKILL.md"],
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "problem_profile",
+      "root_cause_hypothesis",
+      "fix_plan",
+      "regression_watchlist"
+    ],
+    "forbidden_scenes": ["ORIENT-04"]
+  },
+  "solution_contract": {
+    "must_cover": [
+      "必须说明 rotation 解释不一致的根因。",
+      "必须给出横屏锁定与返回列表恢复的完整时序。",
+      "必须定义不同设备形态下的回归矩阵。"
+    ],
+    "should_reuse_resources": [
+      "./references/orientation_concepts.md",
+      "./references/rotation_detection.md",
+      "./references/bug-fix-cases.md",
+      "./assets/OrientationDetector.ets"
+    ],
+    "forbidden_patterns": [
+      "仅靠延时规避闪烁问题。",
+      "不解释 rotation 与自然方向的对应关系。"
+    ]
+  },
+  "execution_contract": {
+    "execution_type": "harmonyos_project",
+    "target_project_type": "HarmonyOS NEXT 视频/媒体工程",
+    "compile_command_template": "./hvigorw assembleHap",
+    "test_command_template": "./hvigorw test",
+    "runtime_assertions": [
+      "横拿设备进入播放器后方向稳定，不出现偶发竖屏。",
+      "返回列表时方向恢复平滑，无闪烁。",
+      "rotation 日志能和实际方向行为一一对应。"
+    ],
+    "pass_evidence": [
+      "编译成功日志",
+      "播放页与列表页切换录屏",
+      "rotation/方向日志",
+      "多设备回归记录"
+    ]
+  }
+}

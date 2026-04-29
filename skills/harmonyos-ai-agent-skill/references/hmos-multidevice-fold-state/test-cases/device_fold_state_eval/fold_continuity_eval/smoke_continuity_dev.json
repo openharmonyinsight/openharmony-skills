@@ -1,0 +1,49 @@
+{
+  "case_id": "CONT-SMOKE-DEV-001",
+  "eval_type": "smoke",
+  "title": "单域开发：开合连续性最小方案",
+  "user_prompt": "视频页在折叠和展开后播放进度偶发跳变，暂停态会被自动拉起。请给开发阶段的连续性适配方案。",
+  "intent": "验证是否稳定命中 FOLD-07，并输出连续性关键策略。",
+  "expected": {
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "state_snapshot_rule",
+      "restore_trigger_rule",
+      "media_state_priority_rule",
+      "implementation_notes",
+      "verification_matrix"
+    ],
+    "exact": {
+      "primary_phase": "DEV",
+      "primary_scene": "FOLD-07"
+    },
+    "contains": {
+      "active_phases": ["DEV"],
+      "next_scene_refs": [
+        "./references/fold_continuity.md"
+      ]
+    },
+    "accepted_secondary_scenes": [],
+    "forbidden_scenes": ["FOLD-05"],
+    "keyword_requirements": {
+      "state_snapshot_rule": ["状态快照", "播放进度", "滚动锚点", "输入"],
+      "restore_trigger_rule": ["双触发", "状态变化", "prepared"],
+      "media_state_priority_rule": ["暂停态", "autoplay", "优先级"]
+    },
+    "forbidden_text_patterns": [
+      "只恢复一次",
+      "固定短超时",
+      "不需要验证"
+    ]
+  },
+  "manual_review_items": [
+    "是否覆盖状态、输入、媒体连续性",
+    "是否包含双触发恢复策略",
+    "是否说明暂停态优先级"
+  ]
+}

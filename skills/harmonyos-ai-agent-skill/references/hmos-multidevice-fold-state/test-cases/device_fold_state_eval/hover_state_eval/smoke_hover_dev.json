@@ -1,0 +1,49 @@
+{
+  "case_id": "HOVER-SMOKE-DEV-001",
+  "eval_type": "smoke",
+  "title": "单域开发：悬停态分屏职责与方向策略",
+  "user_prompt": "折叠屏会议页进入悬停态后布局混乱。请给开发阶段方案：上半屏显示内容，下半屏放操作区，并保证方向策略稳定。",
+  "intent": "验证是否稳定命中 FOLD-02，并给出可落地的悬停态策略。",
+  "expected": {
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "hover_layout_rule",
+      "orientation_lock_rule",
+      "container_strategy",
+      "implementation_notes",
+      "verification_matrix"
+    ],
+    "exact": {
+      "primary_phase": "DEV",
+      "primary_scene": "FOLD-02"
+    },
+    "contains": {
+      "active_phases": ["DEV"],
+      "next_scene_refs": [
+        "./references/hover_state_interaction.md"
+      ]
+    },
+    "accepted_secondary_scenes": [],
+    "forbidden_scenes": ["FOLD-05"],
+    "keyword_requirements": {
+      "hover_layout_rule": ["上半屏", "下半屏", "职责"],
+      "orientation_lock_rule": ["进入悬停", "只决策一次", "悬停中"],
+      "container_strategy": ["FolderStack", "FoldSplitContainer"]
+    },
+    "forbidden_text_patterns": [
+      "每次变化都重新选方向",
+      "固定比例硬编码",
+      "经验比例"
+    ]
+  },
+  "manual_review_items": [
+    "是否明确了上展示下交互职责",
+    "是否给出进入/悬停中/退出三段方向策略",
+    "是否给出验证矩阵"
+  ]
+}

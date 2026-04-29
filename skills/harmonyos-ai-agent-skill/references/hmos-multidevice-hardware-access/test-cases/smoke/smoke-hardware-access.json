@@ -1,0 +1,27 @@
+{
+  "case_id": "SMOKE-SCENE-06-001",
+  "layer": "smoke",
+  "title": "硬件能力与外设接入",
+  "phase": "DEV",
+  "user_prompt": "应用需要根据设备是否支持蓝牙外设和摄像头能力做差异化接入，并在能力不足时提供降级路径。请给出开发阶段建议。",
+  "intent": "验证 hardware-access 是否稳定命中 HW-01，并把能力检测作为开发前置步骤。",
+  "expected": {
+    "primary_phase": "DEV",
+    "primary_scene": "HW-01",
+    "primary_scene_ref": "./SKILL.md",
+    "secondary_scenes": [],
+    "next_scene_refs": ["./SKILL.md"],
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "primary_code_domain",
+      "secondary_code_domains",
+      "integration_edges"
+    ],
+    "forbidden_scenes": ["HW-02", "HW-03", "HW-04"]
+  }
+}

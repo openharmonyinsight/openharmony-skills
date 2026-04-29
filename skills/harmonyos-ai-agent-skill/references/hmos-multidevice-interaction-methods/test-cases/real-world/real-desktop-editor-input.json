@@ -1,0 +1,62 @@
+{
+  "case_id": "INPUT-REAL-001",
+  "layer": "real-world",
+  "title": "桌面内容编辑器多输入回归",
+  "phase": "FIX",
+  "user_prompt": "桌面端富文本编辑器上线后收到多起反馈：鼠标悬浮工具栏按钮没有反馈，Tab 和方向键切焦点顺序混乱，右键菜单和快捷键还会互相抢焦点。请输出修复方案和工程验证要求，同时确保触摸平板模式不受影响。",
+  "intent": "验证真实桌面编辑器问题下，INPUT-03 和 INPUT-01 能共同产出修复与验证契约。",
+  "expected": {
+    "primary_phase": "FIX",
+    "primary_scene": "INPUT-03",
+    "secondary_scenes": ["INPUT-01", "INPUT-02"],
+    "next_scene_refs": ["./SKILL.md"],
+    "required_output_fields": [
+      "active_phases",
+      "primary_phase",
+      "primary_scene",
+      "secondary_scenes",
+      "route_reason",
+      "next_scene_refs",
+      "problem_profile",
+      "root_cause_hypothesis",
+      "fix_plan",
+      "regression_watchlist"
+    ],
+    "forbidden_scenes": ["INPUT-04"]
+  },
+  "solution_contract": {
+    "must_cover": [
+      "必须区分焦点链路、hover 反馈和交互归一化三条问题链。",
+      "必须给出右键菜单与快捷键冲突的优先级规则。",
+      "必须补触摸平板模式回归项。"
+    ],
+    "should_reuse_resources": [
+      "./references/keyboard.md",
+      "./references/mouse.md",
+      "./references/interaction_normalization.md",
+      "./assets/FocusNavigationExample.ets",
+      "./assets/AdaptiveNavigation.ets"
+    ],
+    "forbidden_patterns": [
+      "只修焦点顺序，不修 hover/右键冲突。",
+      "桌面修复导致平板触摸路径变化。"
+    ]
+  },
+  "execution_contract": {
+    "execution_type": "harmonyos_project",
+    "target_project_type": "HarmonyOS NEXT 桌面/平板双形态工程",
+    "compile_command_template": "./hvigorw assembleHap",
+    "test_command_template": "./hvigorw test",
+    "runtime_assertions": [
+      "Tab、Shift+Tab、方向键按设计顺序切焦点。",
+      "右键菜单打开后焦点保持在预期控件或菜单项。",
+      "触摸平板模式下点击编辑与工具栏逻辑不回退。"
+    ],
+    "pass_evidence": [
+      "编译成功日志",
+      "键盘焦点轨迹日志",
+      "鼠标与右键交互录屏",
+      "平板触摸回归结果"
+    ]
+  }
+}
