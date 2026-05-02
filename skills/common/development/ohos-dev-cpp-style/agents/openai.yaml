@@ -1,0 +1,4 @@
+interface:
+  display_name: "OpenHarmony C++"
+  short_description: "Guide OpenHarmony C++ coding, scaffolding, documentation, and review."
+  default_prompt: "Use $ohos-dev-cpp-style whenever OpenHarmony C++ code needs to be written, scaffolded, documented, or reviewed against project-specific conventions."

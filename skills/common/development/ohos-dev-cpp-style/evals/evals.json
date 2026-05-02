@@ -1,0 +1,78 @@
+{
+  "skill_name": "ohos-dev-cpp-style",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "在 OpenHarmony 服务模块里新增一个可继承的连接管理类骨架，输出配套的头文件和实现文件。要求文件名符合项目约定，公共接口要有有意义的注释，不要用 pragma once，也不要引入模板化设计。这个类会被子类继承并重写虚函数。",
+      "expected_output": "Produces a `.h/.cpp` scaffold with OpenHarmony file naming, include guards, meaningful public API comments, and safe inheritance semantics for a base class.",
+      "files": [],
+      "expectations": [
+        "The output uses `.h` and `.cpp` file names in `snake_case` that match the main type.",
+        "The header uses an include guard instead of `#pragma once`.",
+        "The base class design includes a virtual destructor and avoids unsafe public copy or move operations.",
+        "The public API comments describe behavior or constraints rather than paraphrasing the signature."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "帮我 review 这段 OpenHarmony C++ 代码是否符合规范，重点看命名、头文件写法、lambda 捕获和所有权接口风格。请按代码审查方式输出，先给 findings，再给简短结论。\\n\\n```cpp\\n#pragma once\\nusing namespace std;\\nclass SessionManager {\\npublic:\\n    virtual void Start(int mode = 0);\\n    std::function<void()> BuildTask() { return [&] { printf(\\\"%s\\\", name_.c_str()); }; }\\nprivate:\\n    std::shared_ptr<int> state_;\\n    string name_;\\n};\\n```",
+      "expected_output": "Returns a review with findings-first structure and identifies the OpenHarmony-specific convention violations in the snippet.",
+      "files": [],
+      "expectations": [
+        "The review reports findings before any summary.",
+        "The review identifies `#pragma once`, `using namespace`, default arguments on a virtual function, risky default reference capture, and the smart-pointer ownership style issue.",
+        "The review explains why the issues matter in OpenHarmony terms rather than generic style-only language."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "在 OpenHarmony 媒体服务里实现一个 `AudioDeviceMonitor` 类，用来注册外部提供的设备监听器并在设备变化时分发回调。请输出 `audio_device_monitor.h` 和 `audio_device_monitor.cpp` 的完整代码。监听器对象由调用方持有，本类不拥有它；类本身不需要被继承；不要引入模板、宏常量或 `std::shared_ptr` 参数。",
+      "expected_output": "Produces implementation code that follows OpenHarmony naming, ownership, and leaf-class semantics for a concrete service helper.",
+      "files": [],
+      "expectations": [
+        "The output uses `audio_device_monitor.h` and `audio_device_monitor.cpp` with matching include guards.",
+        "The class is marked `final` because inheritance is not requested.",
+        "Copy and move operations are explicitly deleted when the monitor stores callback or listener state.",
+        "The non-owning listener interface uses a raw pointer or reference rather than `std::shared_ptr`.",
+        "Member variables use `camelBack_` names, and no template-heavy abstraction or macro constant is introduced."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "帮我修复下面 OpenHarmony C++ 头文件里的 public API 注释。不要改函数签名，重点把空泛注释改成能说明行为、所有权、线程或失败语义的注释；内部私有函数如果签名已经清楚可以不加注释。\\n\\n```cpp\\n#ifndef FOUNDATION_ABILITY_SERVICE_INCLUDE_ABILITY_CACHE_H\\n#define FOUNDATION_ABILITY_SERVICE_INCLUDE_ABILITY_CACHE_H\\n\\n#include <string>\\n#include <vector>\\n\\nnamespace OHOS::AbilityRuntime {\\nclass AbilityRecord;\\n\\nclass AbilityCache final {\\npublic:\\n    // Add ability.\\n    void AddAbility(AbilityRecord *record);\\n\\n    // Get abilities.\\n    std::vector<AbilityRecord *> GetAbilities() const;\\n\\n    // Remove ability.\\n    bool RemoveAbility(const std::string &abilityName);\\n\\nprivate:\\n    bool IsExpired(const AbilityRecord *record) const;\\n};\\n} // namespace OHOS::AbilityRuntime\\n#endif\\n```",
+      "expected_output": "Rewrites only the public API comments so they carry OpenHarmony-relevant behavior, lifetime, thread, and return semantics without boilerplate.",
+      "files": [],
+      "expectations": [
+        "The response preserves the existing function signatures and does not perform unrelated renames or refactors.",
+        "The `AddAbility` comment states whether null is accepted and clarifies that the cache does not take ownership unless the prompt says otherwise.",
+        "The `GetAbilities` comment describes returned pointer lifetime or ownership expectations.",
+        "The `RemoveAbility` comment explains the meaning of the boolean return value.",
+        "The private helper is not burdened with a boilerplate comment unless a real hidden constraint is identified."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "下面文件来自第三方上游库，只是在 OpenHarmony 仓里做最小补丁。请帮我 review 是否应该按 OpenHarmony 风格强制改名、改 include guard 和变量命名；如果不应该，请说明哪些问题仍然值得指出。\\n\\n路径：`third_party/vendor/FastParser.hpp`\\n\\n```cpp\\n#pragma once\\n#include <map>\\nnamespace fast_parser {\\nclass fast_parser {\\npublic:\\n    int parse(const char* text);\\nprivate:\\n    std::map<int, int> cache;\\n};\\n}\\n```",
+      "expected_output": "Recognizes the third-party boundary and avoids over-applying OpenHarmony file and naming conventions while still reporting substantive risks.",
+      "files": [],
+      "expectations": [
+        "The review explicitly treats the path as third-party or imported code and recommends preserving upstream style unless the task is a migration.",
+        "The response does not demand broad renaming solely to satisfy OpenHarmony naming rules.",
+        "The response may flag substantive integration or safety issues, but separates them from OpenHarmony project-style requirements.",
+        "The review explains the exception boundary rather than blindly applying the normal `.h/.cpp`, include guard, and CamelCase rules."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "请对我刚改的 OpenHarmony C++ 文件做一次严格校验，包含格式化建议和 clang-tidy/CI 就绪检查思路。假设变更文件是 `services/audio/audio_device_monitor.h` 和 `services/audio/audio_device_monitor.cpp`，请说明应使用本 skill 附带工具的哪个流程、命令如何尽量限定到这些文件，以及哪些 OpenHarmony 规范仍需要人工检查。",
+      "expected_output": "Loads the validation/tooling path and recommends scoped bundled-tool commands plus remaining human review checks.",
+      "files": [],
+      "expectations": [
+        "The response recognizes the explicit strict validation request and recommends the bundled guard or clang-tidy flow rather than only a manual review.",
+        "The suggested commands are scoped to the two changed files instead of implying a whole-repository sweep by default.",
+        "The response separates format-only cleanup from strict clang-tidy or full guard checks.",
+        "The response lists remaining human checks that tooling cannot reliably enforce, such as ownership contract, meaningful API comments, and inheritance semantics."
+      ]
+    }
+  ]
+}
