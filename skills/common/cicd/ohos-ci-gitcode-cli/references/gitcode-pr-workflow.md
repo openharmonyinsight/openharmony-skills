@@ -93,7 +93,7 @@ fi
 GIT_LFS_SKIP_SMUDGE=1 git push -u personal ${CURRENT_BRANCH} --no-verify
 
 # 6. 创建 PR
-/home/user/.npm-global/bin/oh-gc pr:create \
+/home/user/.npm-global/bin/oh-gc pr create \
     --repo ${UPSTREAM_REPO} \
     --head ${GITCODE_USERNAME}:${CURRENT_BRANCH} \
     --base ${UPSTREAM_BRANCH} \
@@ -125,14 +125,14 @@ OH_GC="/home/user/.npm-global/bin/oh-gc"
 
 ```bash
 # 方式1：使用 oh-gc 登录（交互式）
-oh-gc auth:login
+oh-gc auth login
 
 # 方式2：直接写入配置文件（非交互式）
 mkdir -p ~/.config/gitcode-cli
 echo '{"token": "YOUR_TOKEN"}' > ~/.config/gitcode-cli/config.json
 
 # 验证认证状态
-oh-gc auth:status
+oh-gc auth status
 ```
 
 ### Step 3: 配置 Personal Remote
@@ -193,7 +193,7 @@ GIT_LFS_SKIP_SMUDGE=1 git push -u personal $(git branch --show-current) --no-ver
 
 ```bash
 # 创建issue并获取编号
-ISSUE_NUMBER=$(oh-gc issue:create \
+ISSUE_NUMBER=$(oh-gc issue create \
     --repo openharmony/arkui_ace_engine \
     --title "Issue标题" \
     --body "Issue描述内容" | grep -oP '#\d+' | head -1)
@@ -250,7 +250,7 @@ TEMPLATE_FILE=$(find . -name "PULL_REQUEST_TEMPLATE.md" 2>/dev/null | head -1)
 # 使用之前创建的Issue编号
 ISSUE_NUMBER="#12345"  # 从Step 6获取
 
-oh-gc pr:create \
+oh-gc pr create \
     --repo openharmony/arkui_ace_engine \
     --head your_username:test \
     --base master \
@@ -296,7 +296,7 @@ export PATH="$PATH:$(npm prefix -g)/bin"
 
 **解决**：重新生成 Token 并更新配置
 ```bash
-oh-gc auth:login
+oh-gc auth login
 ```
 
 ## AI Agent 执行指南
@@ -361,7 +361,7 @@ Signed-off-by: your_username <your_email@example.com>"
 GIT_LFS_SKIP_SMUDGE=1 git push -u personal ${BRANCH} --no-verify
 
 # 创建 PR 到上游
-/home/user/.npm-global/bin/oh-gc pr:create \
+/home/user/.npm-global/bin/oh-gc pr create \
     --repo ${UPSTREAM} \
     --head ${USERNAME}:${BRANCH} \
     --base master \
