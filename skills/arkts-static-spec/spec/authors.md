@@ -10,22 +10,42 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 
-.. _Standard Library:
+.. _Contributors:
 
-Standard Library
-################
+Contributors
+############
 
-.. meta:
-    frontend_status: Partly
+Language design lead:
 
-The Standard Library of the |LANG| language defines the required set of types,
-variables, constants, functions, and annotations that provide APIs for effective
-and convenient programming.
+- Nedoria Aleksei
 
-A detailed description of all elements of the standard library is covered in
-a separate document that is a part of the |LANG| distribution package. This
-document also defines a set of exported entities directly accessible
-in all |LANG| modules.
+Contributors:
+
+- Bronnikov Georgy
+- Cherkashin Vyacheslav
+- Gavrin Evgeny
+- Grebenschikov Konstantin
+- Huo Qingyi
+- Kanatov Alexey
+- Nedoria Aleksei
+- Olshevsky Vladimir
+- Pavlyuk Alexander
+- Pei Jiajun
+- Polyakov Alexander
+- Pukhov Vsevolod
+- Qiu Yu
+- Rubanov Vladimir
+- Soldatov Anton
+- Solomennikov Dmitry
+- Trubenkov Dmitrii
+- Velikanov Michael
+- Xian Yuqiang
+- Zouev Evgeniy
+
+Technical writer:
+
+- Baranov Dmitry
+
 
 .. raw:: pdf
 

@@ -1,11 +1,12 @@
 ---
 name: arkts-static-spec
-description: ArkTS (Extended TypeScript) static language specification reference for OpenHarmony. Comprehensive guide covering syntax, types, classes, expressions, statements, generics, modules, annotations, and advanced features. Use when: (1) Writing or analyzing ArkTS code (.ets files), (2) Understanding ArkTS type system and type checking, (3) Implementing ArkTS language features, (4) Debugging ArkTS compilation issues, (5) Creating ArkTS developer tools or compilers, (6) Validating ArkTS code compliance, (7) Migrating from TypeScript to ArkTS. Provides detailed language rules from the official specification including lexical structure, type system, OOP features, runtime semantics, and TypeScript migration guide.
+description: "ArkTS static language specification reference for OpenHarmony. Use this skill when reading or writing ArkTS (.ets), explaining ArkTS type-system and static-semantics rules, validating code against the ArkTS spec, investigating ArkTS compile-time behavior, or comparing ArkTS with TypeScript migration guidance."
 ---
 
 # ArkTS Static Language Specification
 
 Complete reference for the ArkTS programming language, including official specification and TypeScript migration guide.
+
 
 ## ⚠️ 使用原则（重要）
 
