@@ -47,9 +47,9 @@ Load references only when needed:
 
 | Need | Read |
 | --- | --- |
-| Common auth, repository flag, Issue, PR, reviewer, tester, label, comment, merge, and troubleshooting commands | `references/common-issue-pr-commands.md` |
-| Less common release, repository configuration, search, user, branch, commit, file, collaborator, milestone, webhook, tag, and organization commands | `references/extended-commands.md` |
-| Full GitCode PR automation from local changes to fork push and upstream PR | `references/gitcode-pr-workflow.md` |
+| Issue or PR operations: auth, repository flag, reviewer, tester, label, comment, diff, merge, and troubleshooting | Read `references/common-issue-pr-commands.md` only. Do NOT load `extended-commands.md` or `gitcode-pr-workflow.md`. |
+| Low-frequency operations: release, repository configuration, search, user, branch, commit, file, collaborator, milestone, webhook, tag, or organization | Read `references/extended-commands.md` only. Do NOT load `gitcode-pr-workflow.md`. |
+| Full local-to-upstream PR automation: commit local changes, push a fork branch, create required Issue, and open upstream PR | Read `references/gitcode-pr-workflow.md`; also read `references/common-issue-pr-commands.md` only if command syntax details are needed. |
 
 ## Default Workflow
 
@@ -58,8 +58,8 @@ For most requests:
 1. Run `oh-gc --version` and enforce `0.7.4`.
 2. Run `oh-gc auth status`.
 3. Determine repository context, using `--repo owner/repo` when not inside the target clone.
-4. Read `references/common-issue-pr-commands.md` for Issue/PR tasks.
-5. Read `references/extended-commands.md` only when the request involves low-frequency command groups.
+4. Read the minimum reference file from the table above.
+5. Do not load low-frequency references for routine Issue/PR tasks.
 6. Prefer `--json` when output will be parsed or summarized.
 
 ## Common Decisions
@@ -87,6 +87,20 @@ Before mutating remote state, state the target repository and object number or b
 For destructive operations such as delete, close, archive, transfer, force approval, merge, or resetting assignees, make sure the user request clearly authorizes the operation. If the target is ambiguous, ask a concise clarification.
 
 Do not expose tokens. Prefer `oh-gc auth login` or environment variables over embedding tokens in commands. If a remote URL contains a token, do not print it back to the user.
+
+## Never Do
+
+NEVER skip `oh-gc --version`; command syntax and behavior depend on the CLI version.
+
+NEVER run `oh-gc auth`, `oh-gc issue`, `oh-gc pr`, or any mutating command before confirming version `0.7.4`.
+
+NEVER print, persist, commit, or echo a remote URL containing a token such as `https://user:token@gitcode.com/...`. Use token-free remote URLs and `oh-gc auth login` or config-based authentication instead.
+
+NEVER use `owner/branch` for cross-repo PR `--head`; GitCode expects `owner:branch`.
+
+NEVER report a PR URL with `/pulls/`; GitCode uses singular `/pull/`.
+
+NEVER merge, close, delete, archive, transfer, force approve, force test, or reset all assignees unless the user explicitly authorized that exact target and operation.
 
 ## Error Handling
 

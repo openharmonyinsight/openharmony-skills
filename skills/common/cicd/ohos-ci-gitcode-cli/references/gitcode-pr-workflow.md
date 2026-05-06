@@ -7,20 +7,19 @@
 | Remote 名称 | 用途 | URL 格式 |
 |-------------|------|----------|
 | `gitcode` | 上游原始仓库 | `https://gitcode.com/{org}/{repo}.git` |
-| `personal` | 个人 Fork 仓库 | `https://{username}:{token}@gitcode.com/{username}/{repo}.git` |
+| `personal` | 个人 Fork 仓库 | `https://gitcode.com/{username}/{repo}.git` |
 
 **重要**：所有仓库统一使用此命名规范，便于自动化脚本识别。
 
 > ⚠️ **安全提示**
 >
-> 不要将含 Token 的 URL 提交到 git 历史记录中。如果误提交，请立即：
-> 1. 撤销相关 commit 或使用 `git filter-branch` / `BFG Repo-Cleaner` 清理历史
-> 2. 在 GitCode 设置中**立即重新生成 Token**
+> 不要把 Token 写入 remote URL、提交到 git 历史记录、输出到日志或复制到 PR 描述中。
+> 如果 Token 泄露，请立即在 GitCode 设置中重新生成 Token。
 >
 > 建议做法：
-> - 使用环境变量存储 Token，而非硬编码在脚本中
-> - 将含 Token 的配置文件添加到 `.gitignore`
-> - 使用 `git remote set-url` 时避免在终端历史中留下明文 Token
+> - 使用 `oh-gc auth login` 或 `~/.config/gitcode-cli/config.json` 保存认证信息
+> - 使用环境变量传入 Token，避免硬编码
+> - remote URL 保持无 Token 形式：`https://gitcode.com/{username}/{repo}.git`
 
 ## 前置条件
 
@@ -35,19 +34,19 @@
 
 **Fork 地址自动拼接规则**：
 - 如果 `personal` remote 不存在，自动根据上游仓库和用户名拼接
-- 格式：`https://{username}:{token}@gitcode.com/{username}/{repo_name}.git`
+- 格式：`https://gitcode.com/{username}/{repo_name}.git`
 - 例如：上游 `openharmony/arkui_ace_engine` → Fork `{username}/arkui_ace_engine`
 
 ## 一键执行脚本
 
-将以下变量替换为实际值后执行：
+将以下变量替换为实际值后执行。Token 必须通过环境变量提供，不要写入脚本文本：
 
-> ⚠️ **注意**：建议从环境变量读取 Token，避免硬编码。示例：`GITCODE_TOKEN="${GITCODE_TOKEN:-$GITCODE_TOKEN_ENV}"`
+> ⚠️ **注意**：执行前先在当前 shell 中设置 `GITCODE_TOKEN`，不要把实际 Token 保存到脚本、remote URL、提交记录或日志中。
 
 ```bash
 # ===== 配置区 =====
-# 建议：从环境变量读取，避免硬编码 Token
-GITCODE_TOKEN="${GITCODE_TOKEN:-your_token_here}"
+# 必须从环境变量读取，避免硬编码 Token
+: "${GITCODE_TOKEN:?Set GITCODE_TOKEN in the environment before running this script}"
 GITCODE_USERNAME="${GITCODE_USERNAME:-your_username}"
 UPSTREAM_BRANCH="master"
 CURRENT_BRANCH=$(git branch --show-current)
@@ -58,8 +57,8 @@ UPSTREAM_URL=$(git remote get-url gitcode 2>/dev/null || echo "")
 REPO_NAME=$(echo "$UPSTREAM_URL" | sed -E 's|.*/([^/]+/[^/]+)(\.git)?|\1|')
 UPSTREAM_REPO="$REPO_NAME"
 
-# 自动拼接 fork 地址
-PERSONAL_URL="https://${GITCODE_USERNAME}:${GITCODE_TOKEN}@gitcode.com/${GITCODE_USERNAME}/${REPO_NAME#*/}.git"
+# 自动拼接 fork 地址；remote URL 不包含 Token
+PERSONAL_URL="https://gitcode.com/${GITCODE_USERNAME}/${REPO_NAME#*/}.git"
 
 # ===== 执行步骤 =====
 # 1. 安装 oh-gc CLI（如未安装）
@@ -69,7 +68,7 @@ npm install -g @oh-gc/cli 2>/dev/null
 mkdir -p ~/.config/gitcode-cli
 echo "{\"token\": \"$GITCODE_TOKEN\"}" > ~/.config/gitcode-cli/config.json
 
-# 3. 配置 personal remote（如不存在则自动创建）
+# 3. 配置 personal remote（如不存在则自动创建，URL 不包含 Token）
 if ! git remote | grep -q "^personal$"; then
     git remote add personal "$PERSONAL_URL"
 else
@@ -146,11 +145,11 @@ UPSTREAM_URL=$(git remote get-url gitcode)
 REPO_NAME=$(echo "$UPSTREAM_URL" | sed -E 's|.*/([^/]+/[^/]+)(\.git)?|\1|')
 # REPO_NAME 例如: openharmony/arkui_ace_engine
 
-# 自动拼接 personal fork 地址
-PERSONAL_URL="https://${USERNAME}:${TOKEN}@gitcode.com/${USERNAME}/${REPO_NAME#*/}.git"
-# PERSONAL_URL 例如: https://your_username:token@gitcode.com/your_username/arkui_ace_engine.git
+# 自动拼接 personal fork 地址，URL 不包含 Token
+PERSONAL_URL="https://gitcode.com/${USERNAME}/${REPO_NAME#*/}.git"
+# PERSONAL_URL 例如: https://gitcode.com/your_username/arkui_ace_engine.git
 
-# 添加或更新 personal remote
+# 添加或更新 personal remote（不要把 Token 写入 remote URL）
 if ! git remote | grep -q "^personal$"; then
     git remote add personal "$PERSONAL_URL"
 else
@@ -333,7 +332,7 @@ oh-gc auth login
 # 场景：将 overlay_manager.cpp 的改动提交并创建 PR
 
 # 配置
-TOKEN="your_token_here"
+: "${GITCODE_TOKEN:?Set GITCODE_TOKEN in the environment before running this example}"
 USERNAME="your_username"
 BRANCH="test"
 
@@ -342,10 +341,10 @@ UPSTREAM_URL=$(git remote get-url gitcode)
 REPO_NAME=$(echo "$UPSTREAM_URL" | sed -E 's|.*/([^/]+/[^/]+)(\.git)?|\1|')
 UPSTREAM="${REPO_NAME}"  # openharmony/arkui_ace_engine
 
-# 自动拼接 personal fork 地址
-PERSONAL_URL="https://${USERNAME}:${TOKEN}@gitcode.com/${USERNAME}/${REPO_NAME#*/}.git"
+# 自动拼接 personal fork 地址，URL 不包含 Token
+PERSONAL_URL="https://gitcode.com/${USERNAME}/${REPO_NAME#*/}.git"
 
-# 配置 personal remote
+# 配置 personal remote（不要把 Token 写入 remote URL）
 git remote set-url personal "$PERSONAL_URL" 2>/dev/null || \
 git remote add personal "$PERSONAL_URL"
 
