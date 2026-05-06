@@ -1,0 +1,7 @@
+interface:
+  display_name: "AI Feedback Collector"
+  short_description: "Classify AI usage issues into structured feedback reports."
+  default_prompt: "Use $ai-feedback-collector to classify this AI usage problem and turn it into a structured feedback report."
+
+policy:
+  allow_implicit_invocation: true

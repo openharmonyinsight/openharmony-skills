@@ -1,0 +1,7 @@
+interface:
+  display_name: "AI 问题反馈收集器"
+  short_description: "将 AI 使用问题分类并整理为结构化反馈。"
+  default_prompt: "使用 $ai-feedback-collector-zh 对这个 AI 使用问题进行分类，并整理成结构化反馈报告。"
+
+policy:
+  allow_implicit_invocation: true
