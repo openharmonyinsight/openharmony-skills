@@ -9,6 +9,14 @@ metadata:
   capability: xts-generation
   version: 0.1.0
   status: draft
+  tags:
+    - xts
+    - capi
+    - napi
+    - test-generation
+  related-skills:
+    - ohos-test-arkts-xts-generation
+    - check-test-code-quality
 allowed-tools:
   - Read
   - Write
