@@ -1,0 +1,16 @@
+{
+  "for_linux": {
+    "OH_ROOT": "/path/to/ohroot"
+  },
+  "for_windows": {
+    "xts_acts_path": "D:\\path\\to\\xts_acts",
+    "sdk_path": "D:\\path\\to\\sdk\\ets",
+    "deveco_studio_path": "D:\\path\\to\\DevEco Studio",
+    "hvigor_path_1.1": "D:\\path\\to\\hvigor\\bin",
+    "hvigor_path_1.2": "D:\\path\\to\\hvigor_static\\bin",
+    "docs_path": "D:\\path\\to\\docs"
+  },
+  "scan_tool_root": "D:\\APICoverageDetector",
+  "skill_root":"{user_home}\\path\\to\\skills\\oh-xts-generator",
+  "ets_version": ["ets1.1", "ets1.2"]
+}
