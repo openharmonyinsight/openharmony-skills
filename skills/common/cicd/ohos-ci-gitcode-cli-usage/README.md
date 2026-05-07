@@ -1,4 +1,4 @@
-# ohos-ci-gitcode-cli
+# ohos-ci-gitcode-cli-usage
 
 GitCode / oh-gc CLI 通用技能，用于在终端中管理 GitCode 仓库、Issue、PR、评审人、测试人、标签、Release 和仓库配置。
 
@@ -7,8 +7,17 @@ GitCode / oh-gc CLI 通用技能，用于在终端中管理 GitCode 仓库、Iss
 该技能属于跨领域通用的 GitCode PR 与仓库协作能力，放置在：
 
 ```text
-skills/common/cicd/ohos-ci-gitcode-cli/
+skills/common/cicd/ohos-ci-gitcode-cli-usage/
 ```
+
+命名字段对应关系：
+
+| 字段 | 值 |
+| --- | --- |
+| scope | common |
+| stage | cicd |
+| domain | gitcode |
+| capability | cli-usage |
 
 ## 文件说明
 

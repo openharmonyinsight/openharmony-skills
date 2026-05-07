@@ -62,7 +62,7 @@ PERSONAL_URL="https://gitcode.com/${GITCODE_USERNAME}/${REPO_NAME#*/}.git"
 
 # ===== 执行步骤 =====
 # 1. 安装 oh-gc CLI（如未安装）
-npm install -g @oh-gc/cli 2>/dev/null
+npm install -g @oh-gc/cli@0.7.5 2>/dev/null
 
 # 2. 配置 oh-gc 认证
 mkdir -p ~/.config/gitcode-cli
@@ -114,7 +114,7 @@ GIT_LFS_SKIP_SMUDGE=1 git push -u personal ${CURRENT_BRANCH} --no-verify
 
 ```bash
 # 检查是否已安装
-which oh-gc || npm install -g @oh-gc/cli
+which oh-gc || npm install -g @oh-gc/cli@0.7.5
 
 # 如果 npm 全局路径不在 PATH 中，使用完整路径
 OH_GC="/home/user/.npm-global/bin/oh-gc"
