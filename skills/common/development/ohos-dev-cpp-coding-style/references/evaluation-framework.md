@@ -1,6 +1,6 @@
 # OpenHarmony C++ Skill Evaluation Framework
 
-Load this file when the task is to benchmark, validate, or iterate on the `ohos-dev-cpp-style` skill itself.
+Load this file when the task is to benchmark, validate, or iterate on the `ohos-dev-cpp-coding-style` skill itself.
 
 ## Goal
 
@@ -19,12 +19,12 @@ Use the prompts in [`../evals/evals.json`](../evals/evals.json) as the default s
 
 ## Workspace Layout
 
-Create a sibling workspace named `ohos-dev-cpp-style-workspace/`.
+Create a sibling workspace named `ohos-dev-cpp-coding-style-workspace/`.
 
 Within that workspace, organize iterations as:
 
 ```text
-ohos-dev-cpp-style-workspace/
+ohos-dev-cpp-coding-style-workspace/
   iteration-1/
     eval-0-implementation-with-ownership-style/
       eval_metadata.json

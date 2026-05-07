@@ -1,6 +1,14 @@
 ---
-name: ohos-dev-cpp-style
+name: ohos-dev-cpp-coding-style
 description: Guide OpenHarmony-flavored C++ work. Use whenever the task involves writing, modifying, scaffolding, documenting, or reviewing OpenHarmony C++ code, especially when file naming, include guards, ownership style, inheritance semantics, API comments, lambda capture rules, or project-specific convention checks matter. Prefer this skill over generic C++ guidance for OpenHarmony repositories even if the user only asks for a "review", "cleanup", "comment fix", or "coding style" pass.
+metadata:
+  author: openharmony
+  scope: common
+  stage: development
+  domain: cpp
+  capability: coding-style
+  version: 0.1.0
+  status: draft
 ---
 
 # OpenHarmony C++

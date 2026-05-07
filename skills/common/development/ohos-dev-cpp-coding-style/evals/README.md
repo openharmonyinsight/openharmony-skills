@@ -5,7 +5,7 @@ Use [`evals.json`](evals.json) as the seed set for the first benchmark iteration
 ## Default flow
 
 1. Snapshot the current skill if you need an `old_skill` baseline.
-2. Create a sibling workspace `ohos-dev-cpp-style-workspace/iteration-1/`.
+2. Create a sibling workspace `ohos-dev-cpp-coding-style-workspace/iteration-1/`.
 3. For each eval, create a descriptive directory such as `eval-0-scaffold-base-class/`.
 4. Save per-run outputs under `with_skill/outputs/` and `old_skill/outputs/` or `without_skill/outputs/`.
 5. Add `eval_metadata.json`, `timing.json`, and `grading.json` for each run.

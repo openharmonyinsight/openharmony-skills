@@ -1,9 +1,9 @@
 # OpenHarmony C++ Coding Style Skill
 
-This skill is registered as `ohos-dev-cpp-style` and lives under the common development namespace:
+This skill is registered as `ohos-dev-cpp-coding-style` and lives under the common development namespace:
 
 ```text
-skills/common/development/ohos-dev-cpp-style/
+skills/common/development/ohos-dev-cpp-coding-style/
 ```
 
 ## Runtime Files
