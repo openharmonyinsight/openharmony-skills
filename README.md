@@ -38,8 +38,8 @@ Skill name：ohos-<stage>-<domain>-<capability>
 示例：
 
 ```text
-skills/common/development/ohos-dev-cpp-style/
-skills/domain/arkui/development/ohos-dev-arkui-component/
+skills/common/development/ohos-dev-cpp-coding-style/
+skills/domain/arkui/development/ohos-dev-arkui-component-development/
 ```
 
 ## 新增 Skill 流程
@@ -49,7 +49,8 @@ skills/domain/arkui/development/ohos-dev-arkui-component/
 1. 跨领域通用能力放入 `skills/common/`。
 2. 强依赖具体框架、子系统或领域工具链的能力放入 `skills/domain/`。
 3. Skill 机器名必须以 `ohos-` 开头，并在仓库内全局唯一。
-4. `SKILL.md` 中的 `name`、`scope`、`stage`、`domain`、`capability` 必须与目录位置和 Skill 机器名一致。
+4. Skill 机器名中的 `capability` 必须使用动名词短语或名词短语。
+5. `SKILL.md` 顶层只放 `name` 和 `description`，`metadata.scope`、`metadata.stage`、`metadata.domain`、`metadata.capability` 必须与目录位置和 Skill 机器名一致。
 
 ## 单个 Skill 推荐结构
 
@@ -70,6 +71,7 @@ skills/domain/arkui/development/ohos-dev-arkui-component/
 
 ```text
 [ ] Skill name 是否唯一且符合 ohos-<stage>-<domain>-<capability>
+[ ] capability 是否使用动名词短语或名词短语
 [ ] Skill 目录名是否与 SKILL.md 中的 name 一致
 [ ] Skill 是否放入正确的 common 或 domain 目录
 [ ] SKILL.md 是否包含有效的 YAML Front Matter

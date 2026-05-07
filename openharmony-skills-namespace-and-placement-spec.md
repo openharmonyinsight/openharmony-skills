@@ -85,8 +85,8 @@ skills/common/<stage>/<skill-name>/
 示例：
 
 ```text
-skills/common/development/ohos-dev-cpp-style/
-skills/common/development/ohos-dev-arkts-syntax/
+skills/common/development/ohos-dev-cpp-coding-style/
+skills/common/development/ohos-dev-arkts-syntax-checking/
 skills/common/design/ohos-design-api-review/
 skills/common/testing/ohos-test-ut-generation/
 skills/common/cicd/ohos-ci-build-failure-analysis/
@@ -127,10 +127,10 @@ skills/domain/<namespace-domain>/<stage>/<skill-name>/
 示例：
 
 ```text
-skills/domain/arkui/development/ohos-dev-arkui-component/
-skills/domain/arkui/development/ohos-dev-arkui-state-v2/
-skills/domain/arkui/testing/ohos-test-arkui-interaction/
-skills/domain/kernel/troubleshooting/ohos-issue-kernel-panic/
+skills/domain/arkui/development/ohos-dev-arkui-component-development/
+skills/domain/arkui/development/ohos-dev-arkui-state-management-v2/
+skills/domain/arkui/testing/ohos-test-arkui-interaction-testing/
+skills/domain/kernel/troubleshooting/ohos-issue-kernel-panic-analysis/
 skills/domain/security/design/ohos-design-security-threat-modeling/
 ```
 
@@ -151,7 +151,7 @@ ohos-<stage>-<domain>-<capability>
 | `ohos` | OpenHarmony Skills 统一前缀 | 固定值 |
 | `stage` | 使用阶段缩写 | `req` / `design` / `dev` / `test` / `ci` / `issue` |
 | `domain` | 技术域、语言、框架、子系统或能力主题域 | `cpp` / `arkts` / `arkui` / `napi` / `dfx` |
-| `capability` | 具体能力，可由多个连字符分隔的词组成 | `style` / `syntax` / `api-review` / `log-analysis` |
+| `capability` | 具体能力，必须使用动名词短语或名词短语，可由多个连字符分隔的词组成 | `coding-style` / `syntax-checking` / `api-review` / `log-analysis` |
 
 命名要求：
 
@@ -161,6 +161,7 @@ ohos-<stage>-<domain>-<capability>
 不使用空格、下划线、点号、斜杠
 名称应稳定、清晰、可长期维护
 同一仓库内 name 必须全局唯一
+capability 必须是动名词短语或名词短语，不使用 `style`、`syntax`、`component`、`layout` 等单个宽泛名词
 ```
 
 建议校验正则：
@@ -168,6 +169,8 @@ ohos-<stage>-<domain>-<capability>
 ```text
 ^ohos-(req|design|dev|test|ci|issue)-[a-z0-9]+(-[a-z0-9]+)+$
 ```
+
+说明：正则只校验字符形态；`capability` 是否符合动名词短语或名词短语要求，需要在入库评审中人工确认。
 
 ## 7. 阶段命名规范
 
@@ -177,7 +180,7 @@ ohos-<stage>-<domain>-<capability>
 | --- | --- | --- |
 | `requirements` | `req` | `ohos-req-story-analysis` |
 | `design` | `design` | `ohos-design-api-review` |
-| `development` | `dev` | `ohos-dev-cpp-style` |
+| `development` | `dev` | `ohos-dev-cpp-coding-style` |
 | `testing` | `test` | `ohos-test-ut-generation` |
 | `cicd` | `ci` | `ohos-ci-build-failure-analysis` |
 | `troubleshooting` | `issue` | `ohos-issue-crash-log-analysis` |
@@ -200,7 +203,7 @@ ohos-<stage>-<domain>-<capability>
 推荐结构：
 
 ```text
-ohos-dev-cpp-style/
+ohos-dev-cpp-coding-style/
   SKILL.md
   README.md
 
@@ -227,50 +230,92 @@ ohos-dev-cpp-style/
 
 每个 `SKILL.md` 必须包含 YAML Front Matter。
 
+### 9.1 开放标准字段
+
+YAML Front Matter 顶层只放开放标准范围内、Agent 用于识别和触发 Skill 的字段：
+
+| 字段 | 是否必需 | 示例 |
+| --- | --- | --- |
+| `name` | 必需 | `ohos-dev-cpp-coding-style` |
+| `description` | 必需 | `Use when writing, reviewing, or fixing OpenHarmony C++ code to follow OpenHarmony C++ coding style.` |
+
+顶层字段要求：
+
+```text
+name 必须与 Skill 目录名一致
+description 必须说明何时触发该 Skill
+顶层不得放置 OpenHarmony 入库治理、归类、版本、状态、作者等非开放标准字段
+```
+
+### 9.2 OpenHarmony 扩展元数据
+
+不在开放标准范围内的信息统一放入 `metadata`。
+
 基础格式：
 
 ```yaml
 ---
-name: ohos-dev-cpp-style
-display_name: OpenHarmony C++ Coding Style
-scope: common
-stage: development
-domain: cpp
-capability: style
-version: 0.1.0
-status: draft
+name: ohos-dev-cpp-coding-style
 description: Use this skill when writing, reviewing, or fixing OpenHarmony C++ code to follow OpenHarmony C++ coding style.
+metadata:
+  author: openharmony
+  scope: common
+  stage: development
+  domain: cpp
+  capability: coding-style
+  version: 0.1.0
+  status: draft
+  tags:
+    - cpp
+    - coding-style
+  related-skills:
+    - ohos-dev-cpp-memory-safety
 ---
 ```
 
-必需字段：
+公司要求的 OpenHarmony 扩展元数据：
 
 | 字段 | 是否必需 | 示例 |
 | --- | --- | --- |
-| `name` | 必需 | `ohos-dev-cpp-style` |
-| `description` | 必需 | 描述何时触发该 Skill |
-| `scope` | 必需 | `common` / `domain` |
-| `stage` | 必需 | `development` |
-| `domain` | 必需 | `cpp` |
-| `capability` | 必需 | `style` |
+| `metadata.author` | 必需 | 固定为 `openharmony` |
+| `metadata.scope` | 必需 | `common` / `domain` |
+| `metadata.stage` | 必需 | `development` |
+| `metadata.domain` | 必需 | `cpp` |
+| `metadata.capability` | 必需 | `coding-style` |
+| `metadata.version` | 必需 | `0.1.0` |
+| `metadata.status` | 必需 | `draft` / `trial` / `stable` / `deprecated` |
 
-推荐字段：
+可选 OpenHarmony 扩展元数据：
 
-| 字段 | 示例 |
-| --- | --- |
-| `display_name` | `OpenHarmony C++ Coding Style` |
-| `version` | `0.1.0` |
-| `status` | `draft` / `trial` / `stable` / `deprecated` |
+| 字段 | 是否必需 | 示例 |
+| --- | --- | --- |
+| `metadata.tags` | 可选 | `cpp` / `coding-style` |
+| `metadata.related-skills` | 可选 | `ohos-dev-cpp-memory-safety` |
+
+与此前约定的重复关系：
+
+| 公司 metadata 字段 | 此前约定 | 处理方式 |
+| --- | --- | --- |
+| `scope` | 原必需顶层字段 | 重复，迁移到 `metadata.scope` |
+| `stage` | 原必需顶层字段 | 重复，迁移到 `metadata.stage` |
+| `domain` | 原必需顶层字段 | 重复，迁移到 `metadata.domain` |
+| `capability` | 原必需顶层字段 | 重复，迁移到 `metadata.capability` |
+| `version` | 原推荐顶层字段 | 重复，迁移到 `metadata.version` |
+| `status` | 原推荐顶层字段 | 重复，迁移到 `metadata.status` |
+| `author` | 此前未约定 | 新增，固定为 `openharmony` |
+| `tags` | 此前未约定 | 新增，可选 |
+| `related-skills` | 此前未约定 | 新增，可选 |
 
 元数据一致性要求：
 
 ```text
 name 必须与 Skill 目录名一致
-scope 必须与一级命名空间一致：common 或 domain
-stage 必须与阶段目录一致：requirements、design、development、testing、cicd、troubleshooting
-domain 必须与 Skill name 中的 <domain> 字段一致
-capability 必须与 Skill name 中的 <capability> 字段一致
-domain scope 下，domain 默认应与 namespace-domain 一致
+metadata.author 必须固定为 openharmony
+metadata.scope 必须与一级命名空间一致：common 或 domain
+metadata.stage 必须与阶段目录一致：requirements、design、development、testing、cicd、troubleshooting
+metadata.domain 必须与 Skill name 中的 <domain> 字段一致
+metadata.capability 必须与 Skill name 中的 <capability> 字段一致
+domain scope 下，metadata.domain 默认应与 namespace-domain 一致
 ```
 
 ## 10. C++ 规范 Skill 落库规则
@@ -278,13 +323,13 @@ domain scope 下，domain 默认应与 namespace-domain 一致
 C++ 编码规范 Skill 正式命名为：
 
 ```text
-ohos-dev-cpp-style
+ohos-dev-cpp-coding-style
 ```
 
 目录位置：
 
 ```text
-skills/common/development/ohos-dev-cpp-style/
+skills/common/development/ohos-dev-cpp-coding-style/
 ```
 
 字段含义：
@@ -294,7 +339,7 @@ skills/common/development/ohos-dev-cpp-style/
 | `ohos` | OpenHarmony Skills |
 | `dev` | development 阶段 |
 | `cpp` | C++ 技术域 |
-| `style` | 编码规范 / 编码风格 |
+| `coding-style` | 编码规范 / 编码风格，属于名词短语 |
 
 ## 11. ArkTS 与 ArkUI 放置规则
 
@@ -303,8 +348,8 @@ skills/common/development/ohos-dev-cpp-style/
 ArkTS 属于公共语言能力，放入 `common/development`。
 
 ```text
-skills/common/development/ohos-dev-arkts-syntax/
-skills/common/development/ohos-dev-arkts-style/
+skills/common/development/ohos-dev-arkts-syntax-checking/
+skills/common/development/ohos-dev-arkts-coding-style/
 ```
 
 ### 11.2 ArkUI
@@ -312,9 +357,9 @@ skills/common/development/ohos-dev-arkts-style/
 ArkUI 属于领域框架能力，放入 `domain/arkui`。
 
 ```text
-skills/domain/arkui/development/ohos-dev-arkui-component/
-skills/domain/arkui/development/ohos-dev-arkui-state-v2/
-skills/domain/arkui/testing/ohos-test-arkui-interaction/
+skills/domain/arkui/development/ohos-dev-arkui-component-development/
+skills/domain/arkui/development/ohos-dev-arkui-state-management-v2/
+skills/domain/arkui/testing/ohos-test-arkui-interaction-testing/
 ```
 
 ## 12. 推荐 Skill 命名示例
@@ -322,10 +367,10 @@ skills/domain/arkui/testing/ohos-test-arkui-interaction/
 ### `common/development`
 
 ```text
-ohos-dev-cpp-style
+ohos-dev-cpp-coding-style
 ohos-dev-cpp-memory-safety
-ohos-dev-arkts-syntax
-ohos-dev-arkts-style
+ohos-dev-arkts-syntax-checking
+ohos-dev-arkts-coding-style
 ohos-dev-napi-binding
 ohos-dev-hilog-usage
 ```
@@ -334,7 +379,7 @@ ohos-dev-hilog-usage
 
 ```text
 ohos-design-api-review
-ohos-design-dfx-check
+ohos-design-dfx-checking
 ohos-design-security-baseline
 ohos-design-testability-review
 ```
@@ -352,7 +397,7 @@ ohos-test-fuzz-generation
 
 ```text
 ohos-ci-build-failure-analysis
-ohos-ci-gate-check
+ohos-ci-gate-checking
 ohos-ci-log-analysis
 ohos-ci-dependency-check
 ```
@@ -369,10 +414,10 @@ ohos-issue-regression-analysis
 ### `domain/arkui`
 
 ```text
-ohos-dev-arkui-component
-ohos-dev-arkui-state-v2
-ohos-dev-arkui-layout
-ohos-test-arkui-interaction
+ohos-dev-arkui-component-development
+ohos-dev-arkui-state-management-v2
+ohos-dev-arkui-layout-development
+ohos-test-arkui-interaction-testing
 ohos-issue-arkui-rendering
 ```
 
@@ -380,7 +425,7 @@ ohos-issue-arkui-rendering
 
 ```text
 ohos-design-security-threat-modeling
-ohos-dev-security-permission-check
+ohos-dev-security-permission-checking
 ohos-test-security-fuzz-generation
 ohos-issue-security-vulnerability-analysis
 ```
@@ -418,10 +463,13 @@ ohos-issue-security-vulnerability-analysis
 生成后的 Skill 必须包含 SKILL.md
 SKILL.md 中的 name 必须与目录名一致
 name 必须符合 ohos-<stage>-<domain>-<capability>
-scope 必须与 common 或 domain 命名空间一致
-stage 必须与阶段目录一致
-domain、capability 必须与 name 中对应字段一致
-description 必须说明该 Skill 的触发场景
+capability 必须使用动名词短语或名词短语
+description 必须位于 YAML Front Matter 顶层，并说明该 Skill 的触发场景
+scope、stage、domain、capability、version、status、author 等非开放标准字段必须放入 metadata
+metadata.author 必须固定为 openharmony
+metadata.scope 必须与 common 或 domain 命名空间一致
+metadata.stage 必须与阶段目录一致
+metadata.domain、metadata.capability 必须与 name 中对应字段一致
 公共能力必须放入 common
 领域能力必须放入 domain
 ```
@@ -429,8 +477,8 @@ description 必须说明该 Skill 的触发场景
 例如：
 
 ```text
-name: ohos-dev-cpp-style
-directory: skills/common/development/ohos-dev-cpp-style/
+name: ohos-dev-cpp-coding-style
+directory: skills/common/development/ohos-dev-cpp-coding-style/
 ```
 
 其中：
@@ -439,7 +487,17 @@ directory: skills/common/development/ohos-dev-cpp-style/
 scope = common
 stage = development
 domain = cpp
-capability = style
+capability = coding-style
+```
+
+上述字段在 `SKILL.md` 中应写为：
+
+```text
+metadata.scope = common
+metadata.stage = development
+metadata.domain = cpp
+metadata.capability = coding-style
+metadata.author = openharmony
 ```
 
 ## 15. 入库检查清单
@@ -451,15 +509,19 @@ capability = style
 [ ] Skill name 是否以 ohos- 开头？
 [ ] Skill name 是否只使用小写字母、数字、连字符？
 [ ] Skill name 是否符合 ohos-<stage>-<domain>-<capability>？
+[ ] capability 是否使用动名词短语或名词短语？
 [ ] Skill 目录名是否与 name 一致？
 [ ] Skill 是否放入 common 或 domain 的正确目录？
 [ ] Skill 是否放入正确阶段目录？
 [ ] domain scope 下是否放入正确领域目录？
 [ ] SKILL.md 是否存在？
 [ ] SKILL.md 是否包含 YAML Front Matter？
+[ ] YAML Front Matter 顶层是否只包含开放标准字段 name 和 description？
 [ ] SKILL.md 是否包含 description？
 [ ] description 是否说明何时触发该 Skill？
-[ ] scope、stage、domain、capability 是否与目录和 name 一致？
+[ ] 非开放标准字段是否统一放入 metadata？
+[ ] metadata.author 是否固定为 openharmony？
+[ ] metadata.scope、metadata.stage、metadata.domain、metadata.capability 是否与目录和 name 一致？
 [ ] 是否包含 README.md？
 [ ] 是否根据需要包含 references、examples、evals？
 ```
@@ -469,8 +531,8 @@ capability = style
 当前入库规范固定为：
 
 ```text
-C++ 规范 Skill name：ohos-dev-cpp-style
-目录位置：skills/common/development/ohos-dev-cpp-style/
+C++ 规范 Skill name：ohos-dev-cpp-coding-style
+目录位置：skills/common/development/ohos-dev-cpp-coding-style/
 ```
 
 公共能力放置规则：
