@@ -35,5 +35,6 @@ skills/openharmony-security-review/SKILL.md
 
 | 文件 | 说明 |
 | --- | --- |
-| `SKILL.md` | Agent 审查 OpenHarmony C++ 系统服务安全风险时使用的主技能文件 |
+| `SKILL.md` | Agent 审查 OpenHarmony C++ 系统服务安全风险时使用的主路由文件 |
+| `references/` | 按 IPC 输入校验、并发、隐私日志、权限校验、System Ability 信任边界拆分的按需加载资料 |
 | `README.md` | 面向维护者的放置、命名和迁移说明 |
