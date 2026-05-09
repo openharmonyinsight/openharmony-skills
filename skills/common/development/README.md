@@ -4,5 +4,6 @@
 
 ## Skills
 
+- [ohos-dev-arkts-sta-playground](ohos-dev-arkts-sta-playground/)：通过 ArkTS-Sta Playground HTTP API 执行或编译 ArkTS-Sta 代码片段。
 - [ohos-dev-cpp-coding-style](ohos-dev-cpp-coding-style/)：OpenHarmony C++ 编码规范检查与修复。
 - [ohos-dev-security-code-review](ohos-dev-security-code-review/)：OpenHarmony C++ 系统服务安全代码审查，覆盖 IPC、并发、敏感日志和权限校验。
