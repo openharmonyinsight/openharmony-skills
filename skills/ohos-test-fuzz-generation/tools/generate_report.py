@@ -406,7 +406,7 @@ def generate_compliance_report(
         "| 规则012 | 目标API内部分支覆盖 | 🔴 高危 | 是否覆盖主要分支逻辑？ | [ ] 待确认 |"
     )
     report_lines.append(
-        "| 规则015 | 中间产物合法性 | 🟡 中危 | 种子数据格式是否符合预期？ | [ ] 待确认 |"
+        "| 规则015 | 中间产物合法性 | 🔴 高危 | 种子数据格式是否符合预期？ | [ ] 待确认 |"
     )
     report_lines.append(
         "| 规则016 | 类型匹配检查 | 🟡 中危 | 复杂类型参数是否与API签名一致？ | [ ] 待确认 |"
@@ -437,10 +437,10 @@ def main():
         epilog="""
 示例:
   # 基本用法
-  python generate_compliance_report.py ./test_output/TestScreen_fuzzer TestScreen_fuzzer
+  python generate_report.py ./test_output/TestScreen_fuzzer TestScreen_fuzzer
   
   # 完整参数
-  python generate_compliance_report.py ./test_output/TestScreen_fuzzer TestScreen_fuzzer \\
+  python generate_report.py ./test_output/TestScreen_fuzzer TestScreen_fuzzer \\
       --cpp-file "test/fuzztest/TestScreen_fuzzer.cpp" \\
       --namespace Rosen \\
       --header "rosen/modules/render_service_client/core/screen_manager.h" \\
