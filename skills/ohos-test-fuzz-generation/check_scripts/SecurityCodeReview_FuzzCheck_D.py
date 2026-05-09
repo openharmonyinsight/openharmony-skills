@@ -83,10 +83,7 @@ if __name__ == "__main__":
         print(f"Error: File not found: {filepath}")
         sys.exit(1)
     
-    with open(filepath, "r", encoding="utf-8") as f:
-        content = f.read()
-    
-    result = check_fuzzer_name_format(content)
+    result = check_directory_consistency(filepath)
     if result:
         print(f"Found {len(result)} issues:")
         for issue in result:

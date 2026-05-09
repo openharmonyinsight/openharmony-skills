@@ -75,6 +75,7 @@ def check_build_gn_target_name(filepath, content=None):
 
 
 if __name__ == "__main__":
+    import os
     import sys
     if len(sys.argv) < 2:
         print(f"Usage: python {sys.argv[0]} <cpp_file>")
@@ -84,11 +85,8 @@ if __name__ == "__main__":
     if not os.path.exists(filepath):
         print(f"Error: File not found: {filepath}")
         sys.exit(1)
-    
-    with open(filepath, "r", encoding="utf-8") as f:
-        content = f.read()
-    
-    result = check_fuzztest_target_name_format(content)
+
+    result = check_build_gn_target_name(filepath)
     if result:
         print(f"Found {len(result)} issues:")
         for issue in result:
