@@ -217,10 +217,17 @@ show_repo_changes() {
   print_filtered_diff_stat "$repo_root" "$label staged diff --stat" "--cached"
 }
 
-ROOT_HINT="${1:-$PWD}"
-if [[ "${2:-}" == "--show-all" || "${2:-}" == "--no-ignore" ]]; then
-  SHOW_ALL=1
-fi
+ROOT_HINT="$PWD"
+for arg in "$@"; do
+  case "$arg" in
+    --show-all|--no-ignore)
+      SHOW_ALL=1
+      ;;
+    *)
+      ROOT_HINT="$arg"
+      ;;
+  esac
+done
 
 ARKWEB_ROOT="$(find_arkweb_root "$ROOT_HINT")"
 SRC_REPO="$ARKWEB_ROOT/src"

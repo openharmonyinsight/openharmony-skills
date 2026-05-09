@@ -33,9 +33,11 @@ PRODUCT="${1:-rk3568_64}"
 LABEL="${2:-snapshot}"
 ROOT_HINT="${3:-$PWD}"
 
-if [[ $# -eq 2 && "$2" == /* ]]; then
-  LABEL="snapshot"
-  ROOT_HINT="$2"
+if [[ $# -eq 2 ]]; then
+  if [[ "$2" == /* ]] || find_arkweb_root "$2" >/dev/null 2>&1; then
+    LABEL="snapshot"
+    ROOT_HINT="$2"
+  fi
 fi
 
 if [[ "$PRODUCT" == /* || "$PRODUCT" == *"/"* || ! "$PRODUCT" =~ ^[A-Za-z0-9._-]+$ ]]; then

@@ -38,7 +38,7 @@ bash <skill-dir>/scripts/capture_resource_snapshot.sh <product> <arkweb-root>
 Rules:
 
 - `<product>` must be a product directory name such as `rk3568_64`; it must not be an absolute path or contain `/`.
-- `<arkweb-root>` is the wrapper root that contains `build_arkweb.sh`.
+- `<arkweb-root>` is the wrapper root that contains `build_arkweb.sh`; it can be absolute or relative.
 - `<label>` is optional in the short form and defaults to `snapshot`.
 - If `<label>` contains spaces, `/`, or other unsafe filename characters, the script replaces them with `_`.
 - Snapshots are written to `<arkweb-root>/src/out/<product>/resource_snapshots/`.
@@ -92,9 +92,11 @@ Use:
 
 ```bash
 bash <skill-dir>/scripts/show_relevant_changes.sh <arkweb-root>
+bash <skill-dir>/scripts/show_relevant_changes.sh <arkweb-root> --show-all
+bash <skill-dir>/scripts/show_relevant_changes.sh --show-all <arkweb-root>
 ```
 
-The script checks both `src` and `src/arkweb`, expands untracked directories with `git status --short -uall`, prints ignored default dirty entries, and filters known default dirty entries before showing relevant changes. Use `--show-all` or `--no-ignore` to disable filtering.
+The script checks both `src` and `src/arkweb`, expands untracked directories with `git status --short -uall`, prints ignored default dirty entries, and filters known default dirty entries before showing relevant changes. Use `--show-all` or `--no-ignore` to disable filtering; the flag can be placed before or after `<arkweb-root>`.
 
 ## LFS Failures
 
