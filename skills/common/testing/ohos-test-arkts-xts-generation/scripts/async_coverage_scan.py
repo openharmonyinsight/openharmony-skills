@@ -289,6 +289,27 @@ class AsyncCoverageScanner:
                 except (json.JSONDecodeError, ValueError):
                     return None
         return None
+
+    def get_log_tail(self, lines=30):
+        """读取扫描日志最后 N 行
+        
+        Args:
+            lines: 读取的行数，默认 30
+            
+        Returns:
+            str: 日志最后 N 行内容
+        """
+        log_file = self.log_dir / "arkts_runner.log"
+        if not log_file.exists():
+            return f"日志文件不存在: {log_file}"
+        
+        try:
+            with open(log_file, 'r', encoding='utf-8', errors='replace') as f:
+                all_lines = f.readlines()
+            tail_lines = all_lines[-lines:] if len(all_lines) > lines else all_lines
+            return ''.join(tail_lines)
+        except Exception as e:
+            return f"读取日志失败: {e}"
     
     def _monitor_log(self, process):
         """监控日志文件并更新进度"""
@@ -377,6 +398,8 @@ def main():
         print("  python async_coverage_scan.py stop    - 停止扫描")
         print("  python async_coverage_scan.py status  - 查看状态")
         print("  python async_coverage_scan.py results - 获取结果")
+        print("  python async_coverage_scan.py log     - 查看最近日志 (默认30行)")
+        print("  python async_coverage_scan.py log 50  - 查看最近50行日志")
         sys.exit(1)
     
     command = sys.argv[1]
@@ -400,6 +423,10 @@ def main():
     elif command == "results":
         results = scanner.get_results()
         print(json.dumps(results, indent=2, ensure_ascii=False))
+
+    elif command == "log":
+        lines = int(sys.argv[2]) if len(sys.argv) > 2 else 30
+        print(scanner.get_log_tail(lines))
     
     else:
         print(f"未知命令: {command}")
