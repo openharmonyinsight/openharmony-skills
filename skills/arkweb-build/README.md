@@ -14,8 +14,7 @@ Environment requirement: Linux build host with GNU coreutils and `/proc` availab
 bash <skill-dir>/scripts/capture_resource_snapshot.sh <product> before-build <arkweb-root>
 ```
 
-The first argument is the product name, for example `rk3568_64`; the ArkWeb root must be passed as the third argument. Do not call this script with the ArkWeb root as the first argument.
-The two-argument form is also valid: `capture_resource_snapshot.sh <product> <arkweb-root>`.
+The first argument is the product name, for example `rk3568_64`. Do not call this script with the ArkWeb root as the first argument.
 
 4. Run the configured workflow command first. Use defaults only when no workflow command is provided.
 5. On failure, inspect `src/out/<product>/build.log`, then run:
@@ -26,6 +25,32 @@ bash <skill-dir>/scripts/show_relevant_changes.sh <arkweb-root>
 ```
 
 `analyze_build_error.sh` also accepts an explicit build log path: `analyze_build_error.sh <arkweb-root>/src/out/<product>/build.log <arkweb-root>`.
+
+## Script Usage
+
+`capture_resource_snapshot.sh` supports both the full labeled form and the short form:
+
+```bash
+bash <skill-dir>/scripts/capture_resource_snapshot.sh <product> <label> <arkweb-root>
+bash <skill-dir>/scripts/capture_resource_snapshot.sh <product> <arkweb-root>
+```
+
+Rules:
+
+- `<product>` must be a product directory name such as `rk3568_64`; it must not be an absolute path or contain `/`.
+- `<arkweb-root>` is the wrapper root that contains `build_arkweb.sh`.
+- `<label>` is optional in the short form and defaults to `snapshot`.
+- If `<label>` contains spaces, `/`, or other unsafe filename characters, the script replaces them with `_`.
+- Snapshots are written to `<arkweb-root>/src/out/<product>/resource_snapshots/`.
+
+`analyze_build_error.sh` supports both product-based and log-path-based forms:
+
+```bash
+bash <skill-dir>/scripts/analyze_build_error.sh <product> <arkweb-root>
+bash <skill-dir>/scripts/analyze_build_error.sh <arkweb-root>/src/out/<product>/build.log <arkweb-root>
+```
+
+If the first argument is a `*.log` path, the script uses that log directly and derives `<product>` from its parent directory.
 
 ## Failure Stages
 
