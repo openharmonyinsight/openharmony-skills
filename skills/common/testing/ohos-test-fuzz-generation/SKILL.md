@@ -5,7 +5,6 @@ description: >
 
   **必须激活场景**：
   - 用户提及 "fuzz 测试"、"生成 fuzzer"、"创建 fuzz 用例"、"fuzz 规范检查"、"fuzz_test"、"LLVMFuzzerTestOneInput"
-  - 涉及 `*_fuzzer.cpp` 文件或 `fuzztest/` 目录操作
   - 需要为类/API 编写 FUZZ 测试
   - 需要生成或验证 FUZZ 种子数据
   - 需要检查 FUZZ 代码是否符合安全编码规范
