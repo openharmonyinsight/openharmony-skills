@@ -123,9 +123,9 @@ if [[ -f "$INSTALL_FILE" ]]; then
   done < <(sed -n 's/^[[:space:]]*prebuilts_[a-z_]*_path="\([^"]*\)".*/\1/p' "$INSTALL_FILE")
 fi
 
-add_required "build/pgo/ohos/arkweb.profdata"
-add_lfs_attr_entries "$ROOT_ATTR" "" "required"
-add_lfs_attr_entries "$SDK_ATTR" "ohos_sdk" "required"
+add_optional "build/pgo/ohos/arkweb.profdata"
+add_lfs_attr_entries "$ROOT_ATTR" "" "optional"
+add_lfs_attr_entries "$SDK_ATTR" "ohos_sdk" "optional"
 add_lfs_attr_entries "$NDK_ATTR" "third_party/ohos_ndk" "optional"
 
 echo "ArkWeb root: $ARKWEB_ROOT"

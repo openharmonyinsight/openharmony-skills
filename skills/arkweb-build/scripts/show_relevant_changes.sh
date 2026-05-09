@@ -5,6 +5,7 @@ set -euo pipefail
 
 declare -a IGNORE_PREFIXES=()
 declare -A IGNORE_EXACT_MAP=()
+SHOW_ALL=0
 declare -a BUILTIN_IGNORE_PREFIXES=(
   "third_party/rust-toolchain"
   "third_party/rust/chromium_crates_io"
@@ -99,6 +100,7 @@ load_builtin_ignores() {
 }
 
 path_is_ignored() {
+  [[ "$SHOW_ALL" -eq 1 ]] && return 1
   local path
   path="$(normalize_path "$1")"
   local prefix
@@ -132,19 +134,31 @@ status_line_is_relevant() {
 print_filtered_status() {
   local repo_root="$1"
   local label="$2"
-  local line found=0
+  local line found=0 ignored=0
   echo "$label status:"
   while IFS= read -r line; do
     [[ -z "$line" ]] && continue
     if status_line_is_relevant "$line"; then
       echo "$line"
       found=1
+    else
+      ignored=1
     fi
   done < <(git -C "$repo_root" status --short -uall)
   if [[ "$found" -eq 0 ]]; then
     echo "(no relevant status entries after ignore filtering)"
   fi
   echo
+  if [[ "$SHOW_ALL" -eq 0 && "$ignored" -eq 1 ]]; then
+    echo "$label ignored default dirty status entries:"
+    while IFS= read -r line; do
+      [[ -z "$line" ]] && continue
+      if ! status_line_is_relevant "$line"; then
+        echo "$line"
+      fi
+    done < <(git -C "$repo_root" status --short -uall)
+    echo
+  fi
 }
 
 print_filtered_diff_stat() {
@@ -153,6 +167,16 @@ print_filtered_diff_stat() {
   local diff_mode="$3"
   local -a names=()
   local path
+  if [[ "$SHOW_ALL" -eq 1 || "$diff_mode" == "--cached" ]]; then
+    echo "$label:"
+    if git -C "$repo_root" diff $diff_mode --quiet; then
+      echo "(no diff entries)"
+    else
+      git -C "$repo_root" diff $diff_mode --stat
+    fi
+    echo
+    return 0
+  fi
   while IFS= read -r path; do
     [[ -z "$path" ]] && continue
     if ! path_is_ignored "$path"; then
@@ -166,6 +190,18 @@ print_filtered_diff_stat() {
     git -C "$repo_root" diff $diff_mode --stat -- "${names[@]}"
   fi
   echo
+  local -a ignored_names=()
+  while IFS= read -r path; do
+    [[ -z "$path" ]] && continue
+    if path_is_ignored "$path"; then
+      ignored_names+=("$path")
+    fi
+  done < <(git -C "$repo_root" diff $diff_mode --name-only)
+  if [[ "${#ignored_names[@]}" -gt 0 ]]; then
+    echo "$label ignored default dirty diff entries:"
+    printf '%s\n' "${ignored_names[@]}"
+    echo
+  fi
 }
 
 show_repo_changes() {
@@ -181,7 +217,12 @@ show_repo_changes() {
   print_filtered_diff_stat "$repo_root" "$label staged diff --stat" "--cached"
 }
 
-ARKWEB_ROOT="$(find_arkweb_root "${1:-$PWD}")"
+ROOT_HINT="${1:-$PWD}"
+if [[ "${2:-}" == "--show-all" || "${2:-}" == "--no-ignore" ]]; then
+  SHOW_ALL=1
+fi
+
+ARKWEB_ROOT="$(find_arkweb_root "$ROOT_HINT")"
 SRC_REPO="$ARKWEB_ROOT/src"
 ARKWEB_REPO="$ARKWEB_ROOT/src/arkweb"
 
@@ -197,3 +238,6 @@ fi
 
 show_repo_changes "$SRC_REPO" "src repo relevant changes" "src"
 show_repo_changes "$ARKWEB_REPO" "arkweb repo relevant changes" "arkweb"
+if [[ "$SHOW_ALL" -eq 0 ]]; then
+  echo "Tip: rerun with --show-all to disable default dirty-file filtering."
+fi

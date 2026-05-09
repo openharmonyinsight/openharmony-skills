@@ -2,11 +2,14 @@
 name: arkweb-build
 description: This skill should be used when the user asks to "编译 ArkWeb", "build ArkWeb", "执行 ArkWeb 编译", "验证 ArkWeb 构建", "排查 ArkWeb build.log", "分析 ArkWeb 编译失败", or mentions build_arkweb.sh, src/out/<product>/build.log, ArkWeb native or browser build targets, or incremental ArkWeb build verification. Handles command selection, incremental build execution, success verification, and build.log-first failure diagnosis for ArkWeb projects.
 version: 0.1.3
+author: ringking0
 ---
 
 # ArkWeb Build Skill
 
 This skill supports building ArkWeb projects through `build_arkweb.sh`, verifying the result, and diagnosing failures from `src/out/<product>/build.log`.
+
+Requires a Linux build host with GNU coreutils and `/proc` available.
 
 ## When to use this skill
 
@@ -168,7 +171,8 @@ Before choosing a rerun strategy, classify the failure stage from `build.log`:
 - `gn-generation`: `ERROR at //...`, `Unable to load`, bad `BUILD.gn` or `.gni` evaluation. Fix GN configuration, then rerun GN or the configured build command.
 - `ninja-graph-or-target`: `ninja: error: unknown target`, missing `build.ninja`, or Ninja graph loading errors. Fix target selection or generated build graph, then rerun the configured target set.
 - `ninja-compile-link`: compiler or linker failures after Ninja starts, such as `FAILED:`, `fatal error:`, `undefined reference`, `multiple definition`, `ld.lld: error`, or `clang++: error`.
-- `resource-or-terminated`: `killed`, `OutOfMemory`, or silent process disappearance.
+- `resource-or-terminated`: explicit `killed` or `OutOfMemory`.
+- `resource-or-terminated-suspected`: log tail still looks like Ninja progress, with no `FAILED:`, GN error, or Ninja target error. Treat this as a resource-pressure suspicion and inspect the latest snapshot before changing code.
 
 Single-command quick verification is only for `ninja-compile-link`. After fixing that root cause, first `cd <arkweb-root>/src/out/<product>` and rerun the failed compiler or linker command shown after the first `FAILED:` line when it is available in `build.log`. The command is emitted relative to the Ninja output directory, so running it from the wrapper root or `src/` can fail incorrectly. If that command succeeds, switch back to the correct directory before broader verification: use `<arkweb-root>` for the full `build_arkweb.sh` command, or `<arkweb-root>/src` only when deliberately rerunning the same direct Ninja target set. Before that broader verification, still record a resource snapshot with `scripts/capture_resource_snapshot.sh`. Do not use single-command verification for `pre-gn/sdk-lfs`, `gn-generation`, or `ninja-graph-or-target`.
 
@@ -220,13 +224,13 @@ If that is not enough, search for:
 
 Use the bundled scripts:
 
-- `scripts/analyze_build_error.sh` for a structured summary, failure stage classification, first-error context, and failed Ninja command candidate
+- `scripts/analyze_build_error.sh` for a structured summary, failure stage classification, first-error context, and failed Ninja command candidate. It accepts either `<product> <arkweb-root>` or `<build.log> <arkweb-root>`.
 - `scripts/find_recent_errors.sh` for a quick recent-error scan
 - `scripts/inspect_build_state.sh` to inspect available output directories and recent logs
 - `scripts/check_lfs_artifacts.sh` to parse the relevant LFS attribute files, check required prebuilts, and detect missing files or LFS pointer files
-- `scripts/capture_resource_snapshot.sh` to record CPU and memory headroom before the Ninja phase, so silent build exits can be diagnosed as likely resource pressure
+- `scripts/capture_resource_snapshot.sh` to record CPU and memory headroom before the Ninja phase, so silent build exits can be diagnosed as likely resource pressure. Its first argument is the product name; the ArkWeb root is the third argument in the labeled form or the second argument in the short form.
 - `scripts/show_relevant_changes.sh` to filter expected dirty files and show the relevant git changes separately for the `src` repo and the `src/arkweb` repo
-  It uses `git status --short -uall` so untracked directories are expanded before the built-in dirty-file filter is applied.
+  It uses `git status --short -uall`, prints ignored default dirty entries, and supports `--show-all` / `--no-ignore` when the full raw view is needed.
 
 In commands below, `<skill-dir>` means the directory containing this `SKILL.md`.
 

@@ -22,13 +22,32 @@ read_cpu_totals() {
   printf '%s %s\n' "$total" "$idle_all"
 }
 
-ROOT_HINT="${3:-$PWD}"
+usage() {
+  echo "Usage: $0 [product] [label] [arkweb-root-or-subdir]" >&2
+  echo "       $0 [product] [arkweb-root-or-subdir]" >&2
+  echo "Example: $0 rk3568_64 before-build /home/renkang/test_arkweb_build" >&2
+  echo "Example: $0 rk3568_64 /home/renkang/test_arkweb_build" >&2
+}
+
 PRODUCT="${1:-rk3568_64}"
 LABEL="${2:-snapshot}"
+ROOT_HINT="${3:-$PWD}"
+
+if [[ $# -eq 2 && "$2" == /* ]]; then
+  LABEL="snapshot"
+  ROOT_HINT="$2"
+fi
+
+if [[ "$PRODUCT" == /* || "$PRODUCT" == *"/"* || ! "$PRODUCT" =~ ^[A-Za-z0-9._-]+$ ]]; then
+  echo "Invalid product: $PRODUCT" >&2
+  echo "The first argument is the product name, for example rk3568_64; it is not the ArkWeb root path." >&2
+  usage
+  exit 2
+fi
 
 if ! ARKWEB_ROOT="$(find_arkweb_root "$ROOT_HINT")"; then
   echo "ArkWeb root not found from: $ROOT_HINT" >&2
-  echo "Usage: $0 [product] [label] [arkweb-root-or-subdir]" >&2
+  usage
   exit 1
 fi
 
@@ -38,6 +57,8 @@ mkdir -p "$SNAPSHOT_DIR"
 
 timestamp="$(date +%Y%m%d%H%M%S)"
 safe_label="${LABEL// /_}"
+safe_label="${safe_label//\//_}"
+safe_label="${safe_label//[^A-Za-z0-9._-]/_}"
 SNAPSHOT_FILE="$SNAPSHOT_DIR/${timestamp}_${safe_label}.log"
 
 read -r total1 idle1 < <(read_cpu_totals)

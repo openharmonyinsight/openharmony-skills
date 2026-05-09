@@ -71,7 +71,8 @@ Use `scripts/analyze_build_error.sh` to classify the failed stage before choosin
 - `gn-generation`: `ERROR at //...`, `Unable to load`, or bad GN evaluation
 - `ninja-graph-or-target`: `ninja: error: unknown target`, missing `build.ninja`, or Ninja graph loading failure
 - `ninja-compile-link`: compiler or linker failure after Ninja starts, such as `FAILED:`, `fatal error:`, `undefined reference`, `multiple definition`, `ld.lld: error`, or `clang++: error`
-- `resource-or-terminated`: `killed`, `OutOfMemory`, or silent process disappearance
+- `resource-or-terminated`: explicit `killed` or `OutOfMemory`
+- `resource-or-terminated-suspected`: Ninja-looking progress at the log tail with no `FAILED:`, GN error, or Ninja target error. Inspect the latest resource snapshot before changing code.
 
 Only `ninja-compile-link` should use the single failed command as a quick post-fix check, and that command must run from `<arkweb-root>/src/out/<product>`. After it succeeds, switch back to `<arkweb-root>` for the full `build_arkweb.sh` command, or to `<arkweb-root>/src` only for the same direct Ninja target set. Other stages should rerun the configured build command or target set after the stage-specific fix.
 
@@ -182,7 +183,7 @@ Primary config locations to inspect:
 
 Checks:
 
-- run `bash <skill-dir>/scripts/check_lfs_artifacts.sh <arkweb-root>`; it checks packages from `src/ohos_sdk/.install`, parses LFS entries from `src/.gitattributes` and `src/ohos_sdk/.gitattributes`, and reports unmatched LFS patterns
+- run `bash <skill-dir>/scripts/check_lfs_artifacts.sh <arkweb-root>`; it treats packages from `src/ohos_sdk/.install` as current-build required and reports other `.gitattributes` LFS entries as informational
 - prioritize the packages named in `src/ohos_sdk/.install` before treating `third_party/ohos_ndk` payloads as the primary root cause
 - inspect whether the failing file exists but starts with the Git LFS pointer header:
 

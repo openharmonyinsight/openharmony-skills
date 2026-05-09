@@ -23,6 +23,7 @@ else
 fi
 
 cd "$ARKWEB_ROOT"
+bash <skill-dir>/scripts/capture_resource_snapshot.sh rk3568_64 before-build-ninja "$ARKWEB_ROOT"
 ./build_arkweb.sh rk3568_64 -t w -A
 ```
 

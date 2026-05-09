@@ -2,6 +2,8 @@
 
 This skill is for ArkWeb build execution, incremental verification, and build failure diagnosis.
 
+Environment requirement: Linux build host with GNU coreutils and `/proc` available.
+
 ## Core Flow
 
 1. Resolve the ArkWeb wrapper root. Build commands run from `<arkweb-root>`.
@@ -12,6 +14,9 @@ This skill is for ArkWeb build execution, incremental verification, and build fa
 bash <skill-dir>/scripts/capture_resource_snapshot.sh <product> before-build <arkweb-root>
 ```
 
+The first argument is the product name, for example `rk3568_64`; the ArkWeb root must be passed as the third argument. Do not call this script with the ArkWeb root as the first argument.
+The two-argument form is also valid: `capture_resource_snapshot.sh <product> <arkweb-root>`.
+
 4. Run the configured workflow command first. Use defaults only when no workflow command is provided.
 5. On failure, inspect `src/out/<product>/build.log`, then run:
 
@@ -19,6 +24,8 @@ bash <skill-dir>/scripts/capture_resource_snapshot.sh <product> before-build <ar
 bash <skill-dir>/scripts/analyze_build_error.sh <product> <arkweb-root>
 bash <skill-dir>/scripts/show_relevant_changes.sh <arkweb-root>
 ```
+
+`analyze_build_error.sh` also accepts an explicit build log path: `analyze_build_error.sh <arkweb-root>/src/out/<product>/build.log <arkweb-root>`.
 
 ## Failure Stages
 
@@ -28,7 +35,8 @@ bash <skill-dir>/scripts/show_relevant_changes.sh <arkweb-root>
 - `gn-generation`: `ERROR at //...`, `Unable to load`, or GN file evaluation failure.
 - `ninja-graph-or-target`: unknown target, missing `build.ninja`, or Ninja graph loading failure.
 - `ninja-compile-link`: compiler or linker failure after Ninja starts.
-- `resource-or-terminated`: `killed`, `OutOfMemory`, or a silent process disappearance.
+- `resource-or-terminated`: explicit `killed` or `OutOfMemory`.
+- `resource-or-terminated-suspected`: log tail still looks like Ninja progress, with no `FAILED:`, GN error, or Ninja target error. Inspect the latest resource snapshot before changing code.
 
 Only `ninja-compile-link` supports single-command quick verification.
 
@@ -61,7 +69,7 @@ Use:
 bash <skill-dir>/scripts/show_relevant_changes.sh <arkweb-root>
 ```
 
-The script checks both `src` and `src/arkweb`, expands untracked directories with `git status --short -uall`, and filters known default dirty entries before showing relevant changes.
+The script checks both `src` and `src/arkweb`, expands untracked directories with `git status --short -uall`, prints ignored default dirty entries, and filters known default dirty entries before showing relevant changes. Use `--show-all` or `--no-ignore` to disable filtering.
 
 ## LFS Failures
 
@@ -71,7 +79,7 @@ For `pre-gn/sdk-lfs` failures, use:
 bash <skill-dir>/scripts/check_lfs_artifacts.sh <arkweb-root>
 ```
 
-The script checks packages from `src/ohos_sdk/.install`, parses LFS entries from `.gitattributes` files, detects missing files and LFS pointer files, and reports unmatched LFS patterns.
+The script treats packages from `src/ohos_sdk/.install` as current-build required items. Other LFS entries from `.gitattributes`, including `arkweb.profdata`, are informational unless the failing log explicitly points to them.
 
 Typical fix:
 
@@ -87,4 +95,3 @@ git -C <arkweb-root>/src lfs pull
 ```
 
 Do not patch `src/ohos_sdk/` toolchain files or install scripts to bypass missing LFS resources.
-

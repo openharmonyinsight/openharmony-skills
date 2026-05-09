@@ -14,16 +14,39 @@ find_arkweb_root() {
   return 1
 }
 
+usage() {
+  echo "Usage: $0 [product] [arkweb-root-or-subdir]" >&2
+  echo "       $0 <build.log> [arkweb-root-or-subdir]" >&2
+}
+
 PRODUCT="${1:-rk3568_64}"
 ROOT_HINT="${2:-$PWD}"
+BUILD_LOG=""
 
-if ! ARKWEB_ROOT="$(find_arkweb_root "$ROOT_HINT")"; then
-  echo "ArkWeb root not found from: $ROOT_HINT" >&2
-  echo "Usage: $0 [product] [arkweb-root-or-subdir]" >&2
-  exit 1
+if [[ "${1:-}" == *.log ]]; then
+  BUILD_LOG="$1"
+  if [[ "$BUILD_LOG" != /* ]]; then
+    BUILD_LOG="$(cd "$(dirname "$BUILD_LOG")" && pwd)/$(basename "$BUILD_LOG")"
+  fi
+  if ! ARKWEB_ROOT="$(find_arkweb_root "$ROOT_HINT")"; then
+    if [[ "$BUILD_LOG" == */src/out/*/build.log ]]; then
+      ROOT_HINT="${BUILD_LOG%%/src/out/*/build.log}"
+    fi
+    if ! ARKWEB_ROOT="$(find_arkweb_root "$ROOT_HINT")"; then
+      echo "ArkWeb root not found from: $ROOT_HINT" >&2
+      usage
+      exit 1
+    fi
+  fi
+  PRODUCT="$(basename "$(dirname "$BUILD_LOG")")"
+else
+  if ! ARKWEB_ROOT="$(find_arkweb_root "$ROOT_HINT")"; then
+    echo "ArkWeb root not found from: $ROOT_HINT" >&2
+    usage
+    exit 1
+  fi
+  BUILD_LOG="$ARKWEB_ROOT/src/out/$PRODUCT/build.log"
 fi
-
-BUILD_LOG="$ARKWEB_ROOT/src/out/$PRODUCT/build.log"
 KEY_ERROR_REGEX='error:|fatal error|undefined reference|multiple definition|ERROR at|ninja: error|No such file|cannot find|killed|OutOfMemory|Package .* not found|Failed to extract|not in gzip format|not a tar archive|End-of-central-directory signature not found'
 
 if [[ ! -f "$BUILD_LOG" ]]; then
@@ -72,6 +95,10 @@ classify_stage() {
     echo "resource-or-terminated"
     return 0
   fi
+  if tail -80 "$BUILD_LOG" | grep -qE '^\[[0-9]+/[0-9]+\]' && ! grep -qE 'FAILED:|ERROR at //|ninja: error' "$BUILD_LOG"; then
+    echo "resource-or-terminated-suspected"
+    return 0
+  fi
   echo "unknown"
 }
 
@@ -105,6 +132,9 @@ case "$STAGE" in
     ;;
   gn-generation|pre-gn/sdk-lfs|ninja-graph-or-target)
     echo "single-command quick check: not applicable; fix this stage and rerun the configured build or target set"
+    ;;
+  resource-or-terminated-suspected)
+    echo "single-command quick check: not applicable; inspect the latest resource snapshot before changing code"
     ;;
   *)
     echo "single-command quick check: decide manually after confirming the failing stage"

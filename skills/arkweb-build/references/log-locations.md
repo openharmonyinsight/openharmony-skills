@@ -91,7 +91,10 @@ These files are produced by:
 
 ```bash
 bash <skill-dir>/scripts/capture_resource_snapshot.sh <product> <label> <arkweb-root>
+bash <skill-dir>/scripts/capture_resource_snapshot.sh <product> <arkweb-root>
 ```
+
+The first argument is a product name such as `rk3568_64`; pass the ArkWeb root as the third argument with a label, or as the second argument in the short form.
 
 Use them to correlate:
 
