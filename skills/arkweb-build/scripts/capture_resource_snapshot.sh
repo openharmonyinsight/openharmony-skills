@@ -25,8 +25,8 @@ read_cpu_totals() {
 usage() {
   echo "Usage: $0 [product] [label] [arkweb-root-or-subdir]" >&2
   echo "       $0 [product] [arkweb-root-or-subdir]" >&2
-  echo "Example: $0 rk3568_64 before-build /home/renkang/test_arkweb_build" >&2
-  echo "Example: $0 rk3568_64 /home/renkang/test_arkweb_build" >&2
+  echo "Example: $0 rk3568_64 before-build /path/to/arkweb" >&2
+  echo "Example: $0 rk3568_64 /path/to/arkweb" >&2
 }
 
 PRODUCT="${1:-rk3568_64}"
