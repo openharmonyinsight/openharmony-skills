@@ -11,6 +11,24 @@ Check in this order:
 4. `IRemoteObject`, callbacks, death recipients, and fds are validated before storage or use.
 5. Parser limits reject malformed input, zip-bomb style expansion, and excessive nesting.
 
+## Generated Stub Gate
+
+Generated IDL/Stub code and `ReadInterfaceToken()` checks prove only that the request targets the expected interface shape. They do not prove authorization, per-code parameter validity, object lifetime safety, or user/account/device binding. Review the generated or hand-written dispatch table the same way: transaction code, handler, reads, validators, and sink.
+
+## File Descriptor Ownership
+
+Treat file descriptors as capabilities, not integers. Before filing or clearing an fd issue, answer:
+- Does the fd grant read/write access to data the caller should not delegate?
+- Is ownership clear after `ReadFileDescriptor`, `DupFileDescriptor`, storage, transfer, and failure returns?
+- Does every success and error path close the fd exactly once, or intentionally transfer ownership?
+- Can the fd cross user/account/device boundaries or convert a read-only operation into a writable one?
+- Is `ContainFileDescriptors()` or equivalent rejection needed for APIs that should never accept fds?
+
+## Remote Object And Callback Lifetime
+
+Callback registration is sensitive even when the first call only stores an `IRemoteObject`.
+Check for null validation, caller authorization before storage, duplicate registration behavior, unregister symmetry, death-recipient cleanup, service-death cleanup, and removal from maps when the remote object or native environment dies. Missing cleanup is usually UAF, stale callback, resource leak, or denial-of-service risk rather than a permission bypass; calibrate severity to the reachable impact.
+
 ## High-Risk Patterns
 
 ```cpp

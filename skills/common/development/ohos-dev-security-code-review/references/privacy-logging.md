@@ -9,6 +9,7 @@ Flag public logging of:
 - Raw `KeyEvent`, touch coordinates, screen bounds, window rectangles, input timing, or gesture traces
 - File paths that expose user/account/app private data
 - Pointer addresses, object addresses, buffer addresses, or `%p` output
+- User/account/device boundary data that can link activity across local users, app twins, or distributed devices
 
 ## High-Risk Patterns
 
@@ -26,7 +27,18 @@ HILOG_INFO("Touch event received");
 HILOG_DEBUG("object id=%{public}d", objectId);
 ```
 
+## `%{private}` Gate
+
 Use `%{private}` only when the value is genuinely needed for diagnostics. Prefer complete suppression in release paths for highly sensitive values.
+
+`%{private}` is not sufficient when the log still records:
+- credentials, tokens, secrets, permission names tied to a specific caller, or authentication material;
+- account identifiers, hardware identifiers, user file names, file contents, message contents, biometric data, or precise location;
+- enough public surrounding context to reconstruct private user activity, cross-user access, or distributed-device behavior;
+- sensitive values embedded into the format string before HiLog receives them;
+- the same data through non-HiLog paths, HiSysEvent payloads, dumps, traces, or helper-generated strings without privacy marking.
+
+For such cases, require suppression, coarser event labels, counters, result codes, or stable non-reversible IDs.
 
 ## Impact Language
 

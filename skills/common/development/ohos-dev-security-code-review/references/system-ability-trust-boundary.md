@@ -12,6 +12,20 @@ Check for:
 5. Listener/callback/death recipient registration that stores remote objects without caller validation.
 6. Authorization decisions reused for a different resource, user, account, device, or operation.
 
+## Trusted-Only Path Gate
+
+A System Ability path may be a false positive only when the code proves all of these:
+- The reviewed method is reachable only from a narrow SA/native token/UID allowlist or private in-process path.
+- Lower-privilege apps cannot directly call the Stub transaction, obtain the same proxy, or influence the trusted SA to perform the action.
+- The trusted caller is authorized for this operation, not just for being a system component.
+- User/account/device/resource parameters are either inherited from the original caller or revalidated before the privileged action.
+
+SA registration, SAMgr lookup, or "internal" naming is never enough by itself.
+
+## Confused-Deputy Drift
+
+When one SA calls another, preserve or recheck the original authority if the callee performs file, hardware, account, notification, setting, fd, or callback work. Report drift when a lower-privilege caller can cause a higher-privilege SA to use its own identity for a resource the caller could not access directly.
+
 ## High-Risk Patterns
 
 ```cpp
