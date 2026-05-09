@@ -75,7 +75,9 @@ if __name__ == "__main__":
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
     
-    result = check_header_file(content)
+    filename = os.path.basename(filepath)
+    dirname = os.path.basename(os.path.dirname(filepath))
+    result = check_header_file(filename, dirname, content)
     if result:
         print(f"Found {len(result)} issues:")
         for issue in result:

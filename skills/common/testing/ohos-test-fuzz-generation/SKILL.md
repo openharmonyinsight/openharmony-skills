@@ -65,10 +65,10 @@ metadata:
 
 | 工具 | 用途 | 命令示例 |
 |------|------|----------|
-| `tools/fuzz_generator.py` | 生成 FUZZ 测试用例 | `python tools/fuzz_generator.py --class RSInterfaces` |
-| `tools/fuzz_check.py` | 规范审查（26 条规则） | `python tools/fuzz_check.py --fix` |
-| `tools/seed_generator.py` | 生成语义化种子 | `python tools/seed_generator.py --api ProcessImage` |
-| `tools/generate_report.py` | 生成合规报告 | `python tools/generate_report.py` |
+| `tools/fuzz_generator.py` | 生成 FUZZ 测试用例 | `python tools/fuzz_generator.py -n XxxXxx_fuzzer -N Namespace -c ClassName -H header.h -p output_path` |
+| `tools/fuzz_check.py` | 规范审查（26 条规则） | `python tools/fuzz_check.py --dir fuzzer_dir [--fix]` |
+| `tools/seed_generator.py` | 生成语义化种子 | `python tools/seed_generator.py --dir fuzzer_dir [--api ApiName]` |
+| `tools/generate_report.py` | 生成合规报告 | `python tools/generate_report.py --dir fuzzer_dir` |
 
 ## 关键决策
 
@@ -171,3 +171,9 @@ metadata:
 - **`templates/fuzzer.cpp`** — 代码生成模板
   - **加载时机**：需要自定义 fuzzer 代码结构时
   - **不要加载**：正常使用生成器时
+
+**官方文档：**
+
+- **OpenHarmony Fuzz测试规范** — https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/test/fuzz-test.md
+- **LLVM LibFuzzer 官方文档** — https://llvm.org/docs/LibFuzzer.html
+- **FuzzedDataProvider API** — https://llvm.org/docs/LibFuzzer.html#fuzzed-data-provider

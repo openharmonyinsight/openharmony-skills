@@ -54,10 +54,7 @@ if __name__ == "__main__":
         print(f"Error: File not found: {filepath}")
         sys.exit(1)
     
-    with open(filepath, "r", encoding="utf-8") as f:
-        content = f.read()
-    
-    result = check_project_xml(content)
+    result = check_project_xml(filepath)
     if result:
         print(f"Found {len(result)} issues:")
         for issue in result:

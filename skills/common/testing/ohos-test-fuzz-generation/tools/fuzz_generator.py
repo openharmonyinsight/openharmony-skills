@@ -2107,12 +2107,12 @@ def main():
   # 自动从头文件提取 public 方法并生成
   python3 fuzz_generator.py -n SetScreenInfo_fuzzer -N Rosen -c RSInterfaces \
       -H "rosen/modules/render_service_client/core/ui/rs_ui_director.h" \
-      --init-mode singleton -o ./test/fuzztest/
+      --init-mode singleton -p ./test/fuzztest/
 
     # 命令行生成（工厂模式）
   python3 fuzz_generator.py -n RSTransitionEffect_fuzzer -N Rosen -c RSTransitionEffect \
       -H "animation/rs_transition_effect.h" \
-      --init-mode factory -o ./test/fuzztest/
+      --init-mode factory -p ./test/fuzztest/
         """,
     )
 
