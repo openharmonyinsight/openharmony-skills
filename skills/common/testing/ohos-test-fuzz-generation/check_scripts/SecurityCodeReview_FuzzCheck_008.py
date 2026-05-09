@@ -169,7 +169,7 @@ if __name__ == "__main__":
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
     
-    result = check_seed_files(content)
+    result = check_seed_files(filepath, content)
     if result:
         print(f"Found {len(result)} issues:")
         for issue in result:

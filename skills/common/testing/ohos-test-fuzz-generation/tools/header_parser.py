@@ -62,23 +62,111 @@ class HeaderParser:
 
     def _simplify_conditional_compilation(self, content: str) -> str:
         """简化条件编译，保留主要分支"""
-        # 简单处理：移除所有条件编译指令
-        # 保留 #ifdef __cplusplus 等常见模式的内容
-        content = re.sub(r"#ifdef\s+__cplusplus.*?#endif", "", content, flags=re.DOTALL)
-        content = re.sub(r"#ifndef\s+\w+.*?#endif", "", content, flags=re.DOTALL)
-        content = re.sub(r"#if\s+0.*?#endif", "", content, flags=re.DOTALL)
-        content = re.sub(r"#if\s+1(.*?)#endif", r"\1", content, flags=re.DOTALL)
-        content = re.sub(r"#ifdef\s+\w+(.*?)#endif", r"\1", content, flags=re.DOTALL)
-
-        # 移除剩余的预处理指令
-        content = re.sub(
-            r"#\s*(ifdef|ifndef|if|elif|else|endif|pragma|error|warning|line)\b[^\n]*",
-            "",
-            content,
-        )
-        content = re.sub(r'#\s*include\s+[<"][^>"]+[>"]', "", content)
-
-        return content
+        lines = content.split("\n")
+        result_lines = []
+        i = 0
+        
+        while i < len(lines):
+            line = lines[i].strip()
+            
+            if line.startswith("#ifndef"):
+                match = re.match(r"#ifndef\s+(\w+)", line)
+                if match:
+                    guard_name = match.group(1)
+                    if i + 1 < len(lines):
+                        next_line = lines[i + 1].strip()
+                        define_match = re.match(r"#define\s+(\w+)", next_line)
+                        if define_match and define_match.group(1) == guard_name:
+                            end_idx = self._find_matching_endif(lines, i)
+                            if end_idx != -1:
+                                for j in range(i + 2, end_idx):
+                                    result_lines.append(lines[j])
+                                i = end_idx + 1
+                                continue
+            
+            if line.startswith("#ifdef"):
+                match = re.match(r"#ifdef\s+(\w+)", line)
+                if match:
+                    macro = match.group(1)
+                    end_idx = self._find_matching_endif(lines, i)
+                    if end_idx != -1:
+                        if macro == "__cplusplus":
+                            for j in range(i + 1, end_idx):
+                                result_lines.append(lines[j])
+                        else:
+                            block_content = self._extract_main_branch(lines, i, end_idx)
+                            result_lines.extend(block_content)
+                        i = end_idx + 1
+                        continue
+            
+            if line.startswith("#if"):
+                match = re.match(r"#if\s+(\d+)", line)
+                if match:
+                    val = int(match.group(1))
+                    end_idx = self._find_matching_endif(lines, i)
+                    if end_idx != -1:
+                        if val == 0:
+                            pass
+                        elif val == 1:
+                            for j in range(i + 1, end_idx):
+                                result_lines.append(lines[j])
+                        else:
+                            block_content = self._extract_main_branch(lines, i, end_idx)
+                            result_lines.extend(block_content)
+                        i = end_idx + 1
+                        continue
+            
+            if not re.match(r"#\s*(ifdef|ifndef|if|elif|else|endif|pragma|error|warning|line|include)\b", line):
+                result_lines.append(lines[i])
+            
+            i += 1
+        
+        return "\n".join(result_lines)
+    
+    def _find_matching_endif(self, lines: List[str], start_idx: int) -> int:
+        """找到匹配的endif"""
+        depth = 0
+        for i in range(start_idx, len(lines)):
+            line = lines[i].strip()
+            if re.match(r"#\s*(if|ifdef|ifndef)\b", line):
+                depth += 1
+            elif re.match(r"#\s*endif\b", line):
+                depth -= 1
+                if depth == 0:
+                    return i
+        return -1
+    
+    def _extract_main_branch(self, lines: List[str], start_idx: int, end_idx: int) -> List[str]:
+        """提取条件编译的主分支内容（优先#else分支）"""
+        result = []
+        depth = 0
+        in_else = False
+        capture = True
+        
+        for i in range(start_idx + 1, end_idx):
+            line = lines[i].strip()
+            
+            if re.match(r"#\s*(if|ifdef|ifndef)\b", line):
+                if capture and not in_else:
+                    result.append(lines[i])
+                depth += 1
+            elif re.match(r"#\s*endif\b", line):
+                depth -= 1
+                if capture and not in_else:
+                    result.append(lines[i])
+            elif re.match(r"#\s*elif\b", line):
+                if depth == 0:
+                    capture = False
+            elif re.match(r"#\s*else\b", line):
+                if depth == 0:
+                    in_else = True
+                    capture = True
+                    result = []
+            else:
+                if capture and depth == 0:
+                    result.append(lines[i])
+        
+        return result
 
     def parse_class(self, class_name: str) -> List[Tuple[str, str, str]]:
         """
