@@ -17,7 +17,7 @@ import("//build/test.gni")
 module_output_path = "{MODULE_PATH}"
 
 ohos_fuzztest("{FUZZER_TARGET_NAME}") {
-    fuzz_config_file = "//{FULL_PATH}/{FUZZER_NAME}"
+    fuzz_config_file = "{FUZZER_NAME}"
     module_out_path = module_output_path
     
     include_dirs = [

@@ -38,8 +38,8 @@ def check_build_gn(content):
         config_match = re.search(r'fuzz_config_file\s*=\s*"([^"]+)"', content)
         if config_match:
             config_path = config_match.group(1)
-            if not config_path.startswith("//"):
-                errors.append("规则B: fuzz_config_file 路径必须以 // 开头")
+            if not (config_path.startswith("//") or config_path.startswith("./") or config_path.startswith("../")):
+                errors.append("规则B: fuzz_config_file 路径应以 // 或相对路径(./../)开头")
 
     if 'group("fuzztest")' not in content:
         errors.append('规则B: BUILD.gn 必须包含 group("fuzztest") 部分')

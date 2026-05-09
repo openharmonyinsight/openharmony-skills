@@ -141,7 +141,8 @@ if __name__ == "__main__":
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
     
-    result = check_cpp_include(content)
+    filename = filepath
+    result = check_cpp_include(filename, content)
     if result:
         print(f"Found {len(result)} issues:")
         for issue in result:
