@@ -1,6 +1,8 @@
 # Review Draft Schema
 
-Use this schema when preparing comments for `prepare_review_submission.py`.
+Use this schema when preparing final comments for `prepare_review_submission.py`.
+
+For review-time issue records, prefer [`findings-schema.md`](findings-schema.md). `prepare_review_submission.py --findings findings.json --write-draft review-draft.json` converts non-skipped findings into this draft shape and validates line comments against `summary.json`.
 
 Write submitted review comments in Chinese by default, using concise Markdown that renders cleanly in GitCode.
 

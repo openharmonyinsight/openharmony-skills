@@ -25,6 +25,7 @@ skills/common/development/ohos-dev-gitcode-pr-review/
 | --- | --- |
 | `SKILL.md` | Agent 执行 GitCode PR 深度评审与提交草稿准备时使用的主流程 |
 | `agents/openai.yaml` | 面向 OpenAI Agents 展示的 Skill 元数据 |
-| `references/` | 深度评审清单、无发现输出模板、提交草稿 schema 和评审分级标准 |
+| `references/` | 深度评审清单、问题记录 schema、无发现输出模板、提交草稿 schema 和评审分级标准 |
 | `scripts/` | PR 引用规范化、PR 上下文采集和提交草稿预览/执行脚本 |
+| `tests/` | `prepare_review_submission.py` 的轻量回归测试 |
 | `README.md` | 面向维护者的放置、命名和文件说明 |

@@ -153,10 +153,11 @@ This skill uses a two-step submission flow.
 Default behavior:
 
 - Review the PR
+- Record confirmed findings in `findings.json` using `references/findings-schema.md`
 - Produce findings for the user
-- If the user wants submission, create a structured draft first
+- If the user wants submission, generate or create a structured draft first
 
-Use `references/review-draft-schema.md` for the draft shape and `scripts/prepare_review_submission.py` to validate it against the collected context.
+Use `references/findings-schema.md` for review-time issue records. Use `references/review-draft-schema.md` for the final submission draft shape. Use `scripts/prepare_review_submission.py` to convert findings, validate drafts against the collected context, and preview commands.
 
 The draft may include:
 
@@ -179,8 +180,8 @@ Never submit to GitCode implicitly.
 
 When the user explicitly asks to submit:
 
-1. Build the draft JSON
-2. Run `prepare_review_submission.py` without `--execute` to preview commands
+1. Build `findings.json` or `review-draft.json`
+2. Run `prepare_review_submission.py` without `--execute` to convert, validate, and preview commands
 3. Show the user the exact summary and comment count you plan to post
 4. After confirmation, run the same command with `--execute`
 
@@ -208,6 +209,15 @@ Depth reminder:
 4. Only then decide whether the review has zero findings
 
 Preview a draft submission:
+
+```bash
+python3 skills/common/development/ohos-dev-gitcode-pr-review/scripts/prepare_review_submission.py \
+  --context-dir .review-gitcode-pr/pr-123 \
+  --findings findings.json \
+  --write-draft review-draft.json
+```
+
+Preview an existing draft submission:
 
 ```bash
 python3 skills/common/development/ohos-dev-gitcode-pr-review/scripts/prepare_review_submission.py \

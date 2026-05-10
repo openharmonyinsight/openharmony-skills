@@ -56,6 +56,95 @@ def validate_draft(summary: dict[str, object], draft: dict[str, object]) -> list
     return errors
 
 
+def finding_text(finding: dict[str, object]) -> str:
+    body = finding.get("body")
+    if isinstance(body, str) and body.strip():
+        return body.strip()
+
+    parts = []
+    severity = finding.get("severity")
+    path = finding.get("path")
+    line = finding.get("line")
+    if isinstance(severity, str) and severity:
+        parts.append(f"**{severity}**")
+    if isinstance(path, str) and path:
+        location = f"`{path}:{line}`" if isinstance(line, int) else f"`{path}`"
+        parts.append(location)
+
+    header = " ".join(parts)
+    details = []
+    for key, label in (("problem", "问题"), ("evidence", "证据"), ("fix", "建议")):
+        value = finding.get(key)
+        if isinstance(value, str) and value.strip():
+            details.append(f"{label}：{value.strip()}")
+
+    if header and details:
+        return f"{header}\n\n" + "\n\n".join(details)
+    if details:
+        return "\n\n".join(details)
+    return ""
+
+
+def draft_from_findings(payload: dict[str, object]) -> tuple[dict[str, object], list[str]]:
+    errors: list[str] = []
+    findings = payload.get("findings")
+    if not isinstance(findings, list):
+        return {}, ["findings.findings must be a list"]
+
+    draft: dict[str, object] = {}
+    summary_parts: list[str] = []
+    line_comments: list[dict[str, object]] = []
+
+    summary = payload.get("summary")
+    if isinstance(summary, str) and summary.strip():
+        summary_parts.append(summary.strip())
+
+    approve = payload.get("approve")
+    if isinstance(approve, bool):
+        draft["approve"] = approve
+    elif approve is not None:
+        errors.append("findings.approve must be a boolean when present")
+
+    for index, finding in enumerate(findings):
+        if not isinstance(finding, dict):
+            errors.append(f"findings[{index}] must be an object")
+            continue
+
+        status = finding.get("status", "draft")
+        if status == "skipped":
+            continue
+        if status not in ("draft", "accepted", "ready"):
+            errors.append(f"findings[{index}].status must be draft, accepted, ready, or skipped")
+            continue
+
+        target = finding.get("comment_target", "line")
+        body = finding_text(finding)
+        if not body:
+            errors.append(f"findings[{index}] must provide body or problem/evidence/fix text")
+            continue
+
+        if target == "line":
+            path = finding.get("path")
+            line = finding.get("line")
+            if not isinstance(path, str) or not path:
+                errors.append(f"findings[{index}].path must be a non-empty string for line comments")
+                continue
+            if not isinstance(line, int):
+                errors.append(f"findings[{index}].line must be an integer for line comments")
+                continue
+            line_comments.append({"path": path, "line": line, "body": body})
+        elif target in ("file", "general"):
+            summary_parts.append(body)
+        else:
+            errors.append(f"findings[{index}].comment_target must be line, file, or general")
+
+    if summary_parts:
+        draft["summary"] = "\n\n".join(summary_parts)
+    if line_comments:
+        draft["line_comments"] = line_comments
+    return draft, errors
+
+
 def build_commands(pr: dict[str, object], draft: dict[str, object]) -> list[list[str]]:
     number = str(pr["number"])
     repo = pr.get("repo")
@@ -107,22 +196,38 @@ def execute(commands: list[list[str]]) -> list[dict[str, object]]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validate and optionally submit GitCode PR review comments.")
     parser.add_argument("--context-dir", required=True, help="Directory produced by collect_pr_context.py")
-    parser.add_argument("--draft", required=True, help="Draft review JSON file")
+    parser.add_argument("--draft", help="Draft review JSON file")
+    parser.add_argument("--findings", help="Structured findings JSON file to convert into a draft")
+    parser.add_argument("--write-draft", help="Write the generated draft JSON to this path when using --findings")
     parser.add_argument("--execute", action="store_true", help="Execute generated oh-gc commands")
     args = parser.parse_args()
 
     context_dir = Path(args.context_dir)
     summary = load_json(context_dir / "summary.json")
-    draft = load_json(Path(args.draft))
 
     if not isinstance(summary, dict) or summary.get("ok") is not True:
         print(json.dumps({"ok": False, "error": "summary.json is missing or invalid"}, ensure_ascii=False, indent=2))
         return 1
+
+    if bool(args.draft) == bool(args.findings):
+        print(json.dumps({"ok": False, "error": "provide exactly one of --draft or --findings"}, ensure_ascii=False, indent=2))
+        return 1
+
+    conversion_errors: list[str] = []
+    if args.findings:
+        findings = load_json(Path(args.findings))
+        if not isinstance(findings, dict):
+            print(json.dumps({"ok": False, "error": "findings file must be a JSON object"}, ensure_ascii=False, indent=2))
+            return 1
+        draft, conversion_errors = draft_from_findings(findings)
+    else:
+        draft = load_json(Path(args.draft))
+
     if not isinstance(draft, dict):
         print(json.dumps({"ok": False, "error": "draft file must be a JSON object"}, ensure_ascii=False, indent=2))
         return 1
 
-    errors = validate_draft(summary, draft)
+    errors = conversion_errors + validate_draft(summary, draft)
     commands = build_commands(summary["pr"], draft) if not errors else []
 
     response: dict[str, object] = {
@@ -131,6 +236,12 @@ def main() -> int:
         "command_count": len(commands),
         "commands": commands,
     }
+    if args.findings:
+        response["draft"] = draft
+
+    if args.write_draft and not errors:
+        Path(args.write_draft).write_text(json.dumps(draft, ensure_ascii=False, indent=2), encoding="utf-8")
+        response["draft_path"] = args.write_draft
 
     if errors or not args.execute:
         print(json.dumps(response, ensure_ascii=False, indent=2))
