@@ -189,10 +189,10 @@ If execution fails partway through, report exactly which comments succeeded and 
 
 ## Quick Flow
 
-Use these commands only as a compact reminder after reading the workflow above.
+Use these commands only as a compact reminder after reading the workflow above. Run them from the directory that contains this `SKILL.md`; script paths are relative to this skill directory, not to the repository being reviewed.
 
 ```bash
-python3 skills/common/development/ohos-dev-gitcode-pr-review/scripts/collect_pr_context.py 123
+python3 scripts/collect_pr_context.py 123
 ```
 
 Primary review artifacts:
@@ -211,7 +211,7 @@ Depth reminder:
 Preview a draft submission:
 
 ```bash
-python3 skills/common/development/ohos-dev-gitcode-pr-review/scripts/prepare_review_submission.py \
+python3 scripts/prepare_review_submission.py \
   --context-dir .review-gitcode-pr/pr-123 \
   --findings findings.json \
   --write-draft review-draft.json
@@ -220,7 +220,7 @@ python3 skills/common/development/ohos-dev-gitcode-pr-review/scripts/prepare_rev
 Preview an existing draft submission:
 
 ```bash
-python3 skills/common/development/ohos-dev-gitcode-pr-review/scripts/prepare_review_submission.py \
+python3 scripts/prepare_review_submission.py \
   --context-dir .review-gitcode-pr/pr-123 \
   --draft review-draft.json
 ```
@@ -228,7 +228,7 @@ python3 skills/common/development/ohos-dev-gitcode-pr-review/scripts/prepare_rev
 Execute only after explicit user confirmation:
 
 ```bash
-python3 skills/common/development/ohos-dev-gitcode-pr-review/scripts/prepare_review_submission.py \
+python3 scripts/prepare_review_submission.py \
   --context-dir .review-gitcode-pr/pr-123 \
   --draft review-draft.json \
   --execute

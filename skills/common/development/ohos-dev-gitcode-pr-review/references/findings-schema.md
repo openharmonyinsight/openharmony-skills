@@ -47,10 +47,10 @@ Finding fields:
 
 ## Conversion Rules
 
-Run:
+Run from the directory that contains this skill's `SKILL.md`:
 
 ```bash
-python3 skills/common/development/ohos-dev-gitcode-pr-review/scripts/prepare_review_submission.py \
+python3 scripts/prepare_review_submission.py \
   --context-dir .review-gitcode-pr/pr-123 \
   --findings findings.json \
   --write-draft review-draft.json
