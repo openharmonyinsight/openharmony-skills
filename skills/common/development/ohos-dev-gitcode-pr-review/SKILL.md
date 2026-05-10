@@ -13,6 +13,8 @@ metadata:
     - gitcode
     - pr-review
     - code-review
+  related-skills:
+    - ohos-dev-security-code-review
 ---
 
 # Review GitCode PR
@@ -58,6 +60,10 @@ Do not load every artifact by default. Start from `summary.json` and only drill 
 Do not review from the diff alone.
 
 Use `references/deep-review-checklist.md` as the required checklist for depth, stopping conditions, and risk-specific review prompts.
+
+This skill owns the GitCode PR review workflow: PR context collection, changed-file coverage, finding quality, and optional submission draft preparation. When the changed code matches a domain-specific review scenario, load the matching specialist skill as an additional review lens instead of replacing this workflow.
+
+For OpenHarmony native/C++ system-service security scenarios, use `ohos-dev-security-code-review` alongside this skill when changed code touches IPC dispatch, `MessageParcel`, remote objects, file descriptors, callbacks, `AccessTokenKit`, `IPCSkeleton`, System Ability trust boundaries, privacy-sensitive logging, or shared service state reachable from untrusted callers.
 
 For every changed file, assign exactly one review status before finishing:
 

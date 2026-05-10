@@ -86,6 +86,7 @@ For every non-trivial code file, check these axes explicitly:
 5. Security and data handling
 - permission checks still happen on the effective path
 - no accidental exposure, logging, or persistence of sensitive data
+- when reviewing OpenHarmony native/C++ system-service code that touches IPC, caller identity, permissions, System Ability boundaries, callbacks, fds, privacy logs, or shared service state, load `ohos-dev-security-code-review` and apply its security-specific evidence gates before filing or clearing security findings
 
 6. Test adequacy
 - tests cover the changed branch, not just adjacent happy paths
