@@ -104,7 +104,7 @@ OpenHarmony Skills 仓库，收集面向 OpenHarmony / HarmonyOS 开发、审查
 - `ets-runtime-dev`：`ets_runtime` 开发工作流
 - `graphic-2d-format`：graphic_2d 增量格式化
 - `oh-add-memory-trace-tags`：内存追踪标签扩展
-- `oh-graphic-pixel-tests-generator`：图形像素测试生成
+- `ohos-dev-graphics-pixel-tests-generator`：图形像素测试生成
 - `openharmony-arkts-layer`：ArkTS 分层开发支持
 - `openharmony-cpp`：OpenHarmony C++ 开发规范
 

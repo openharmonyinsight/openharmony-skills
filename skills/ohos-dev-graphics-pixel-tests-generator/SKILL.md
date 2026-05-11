@@ -1,5 +1,16 @@
 ---
-name: oh-graphic-pixel-tests-generator
+name: ohos-dev-graphics-pixel-tests-generator
+metadata:
+  author: openharmony
+  scope: domain
+  stage: development
+  domain: cpp
+  capability: coding-style
+  version: 0.1.0
+  status: trial
+  tags:
+    - cpp
+    - test case generator
 description: 务必在创建、修改、评审或调试 OpenHarmony graphic_2d graphic_test 像素比对测试时使用；只要用户提到 RSGraphicTest、GRAPHIC_TEST、GRAPHIC_TESTS、GRAPHIC_N_TEST、Rosen 渲染测试、RSCanvasNode、RSSurfaceNode、Drawing::Canvas、PixelMap、截图测试、graphic_test 目录或 /data/local/graphic_test 图片，就必须使用。
 ---
 
