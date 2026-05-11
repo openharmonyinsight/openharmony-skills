@@ -5,7 +5,7 @@ metadata:
   scope: domain
   stage: development
   domain: cpp
-  capability: coding-style
+  capability: pixel-tests-generator
   version: 0.1.0
   status: trial
   tags:
