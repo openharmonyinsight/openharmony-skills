@@ -2,6 +2,7 @@ import json
 import os
 import urllib.request
 import urllib.error
+import ast
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 json_path = os.path.join(script_dir, 'issue_output.json')
@@ -43,8 +44,7 @@ req = urllib.request.Request(
 try:
     with urllib.request.urlopen(req) as response:
         result = response.read().decode('utf-8')
-        # print(result)
-        print("Issue created successfully via webhook server.")
+        print("Issue created successfully via webhook server: " + ast.literal_eval(result)['html_url'])
 except urllib.error.HTTPError as e:
     error_body = e.read().decode('utf-8')
     print(f"Error {e.code}: {error_body}")
