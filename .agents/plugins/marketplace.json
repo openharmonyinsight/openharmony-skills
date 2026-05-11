@@ -1,0 +1,21 @@
+{
+  "name": "openharmonyinsight",
+  "interface": {
+    "displayName": "OpenHarmony Insight"
+  },
+  "plugins": [
+    {
+      "name": "openharmony-skills",
+      "source": {
+        "source": "url",
+        "url": "https://gitcode.com/openharmonyinsight/openharmony-skills.git",
+        "ref": "release"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Engineering"
+    }
+  ]
+}
