@@ -44,20 +44,14 @@ description: Use when analyzing OpenHarmony sysfreeze/appfreeze logs to diagnose
 
 # 前置检查
 
-收到分析请求后，按顺序检查：
+**确认日志完整性**
+- 检查是否存在两次抓栈信息（SERVICE_WARNING/SERVICE_BLOCK 或 THREAD_BLOCK_3S/THREAD_BLOCK_6S）
+- 确认 TIMESTAMP、TID 等关键字段存在
 
-1. **确认日志完整性**
-   - 检查是否存在两次抓栈信息（SERVICE_WARNING/SERVICE_BLOCK 或 THREAD_BLOCK_3S/THREAD_BLOCK_6S）
-   - 确认 TIMESTAMP、TID 等关键字段存在
-
-2. **确认代码和符号表**
-   - 检查 code/ 目录是否存在相关源码
-   - 检查 lib.unstripped/ 目录是否存在带符号表的 so
-
-3. **行号解析准备**
-   - 需要解析调用栈时，在 lib.unstripped/ 目录下查找对应 so
-   - 使用 `llvm-addr2line -Cfpie path/to/so offset` 解析行号
-   - 注意：`ld-musl-xxx.so` 即 `libc.so`
+**确认符号表可用**
+- 检查 lib.unstripped/ 目录是否存在带符号表的 so
+- 解析命令：`llvm-addr2line -Cfpie path/to/so offset`
+- 注意：`ld-musl-xxx.so` 即 `libc.so`
 
 # 执行策略
 
@@ -102,6 +96,11 @@ description: Use when analyzing OpenHarmony sysfreeze/appfreeze logs to diagnose
 - 任务名称
 
 ## 3. 阻塞链跟踪
+
+**分析前先问自己三个问题**：
+1. **阻塞类型是什么？** — 栈顶函数是等锁、等信号量、还是 IPC 调用？
+2. **阻塞源头在哪里？** — 资源被谁持有，IPC 对端是谁？
+3. **阻塞链是否闭合？** — 能追溯到不阻塞的最终线程吗？
 
 根据两次抓取的调用栈分析线程阻塞关系，**分析时必须解栈**。
 
@@ -231,5 +230,11 @@ description: Use when analyzing OpenHarmony sysfreeze/appfreeze logs to diagnose
 
 # 参考资料
 
-- [常见阻塞模式](references/blocking-patterns.md)：在分析调用栈阻塞函数时读取
-- [常见流水日志](references/hilog-refernce.md)：在分析 hilog 异常日志时读取
+**何时读取**：
+- [常见阻塞模式](references/blocking-patterns.md)：识别栈顶阻塞函数时读取（如 pthread_mutex_timedlock_inner、pthread_cond_timedwait）
+- [常见流水日志](references/hilog-refernce.md)：分析 hilog 异常日志时读取（如 GetSaWrap、vsync signal）
+
+**何时不要读取**：
+- 仅做基本信息分析（故障类型、整机资源），不需要加载任何参考文件
+- 阻塞链已明确且无需识别阻塞模式，不要加载 blocking-patterns.md
+- 无 hilog 文件或日志分析已完成，不要加载 hilog-refernce.md
