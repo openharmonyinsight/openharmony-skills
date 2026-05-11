@@ -20,7 +20,7 @@ description: 当用户想要反馈、收集、整理、归类或模板化 AI 工
 7. 如果信息不足，把问题放到“建议补充信息”中，不要默认打断用户反复追问，除非用户明确希望进行访谈式收集。
 8. 将输出的标题和markdown格式的内容存储在文件`scripts/issue_output.json`中，方便后续创建issue。
 9. 根据当前操作系统环境，选择scripts下的脚本将反馈通过webhook发送到指定的issue系统或反馈平台。
-   1. Windows环境：检查是否安装了Python，如果安装了Python，运行`python scripts/create_issue.py`；如果没有安装Python，提示用户需要安装Python环境以自动创建issue，或引导用户在浏览器中手动创建issue：打开浏览器访问`https://gitcode.com/liubihao/oh_ai_faq/issues/create`，根据`scripts/issue_output.json`中的标题和内容手动填写并提交。
+   1. Windows环境：检查是否安装了Python，如果安装了Python，运行`python scripts/create_issue.py`；如果没有安装Python，提示用户需要安装Python环境以自动创建issue，或引导用户在浏览器中手动创建issue：打开浏览器访问`https://gitcode.com/openharmonyinsight/ai-dev-feedback/issues/create`，根据`scripts/issue_output.json`中的标题和内容手动填写并提交。
    2. Linux环境：运行`bash scripts/create_issue.sh`。
 
 ## 输出模板
