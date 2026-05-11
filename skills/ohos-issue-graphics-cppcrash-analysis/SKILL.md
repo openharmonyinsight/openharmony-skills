@@ -50,6 +50,19 @@ description: Use when analyzing OpenHarmony cppcrash faultlogs to locate root ca
 
 # 前置检查
 
+## 开始分析前，先问自己
+
+1. **崩溃类型是什么？** → 决定优先分析路径
+   - SIGSEGV → 内存访问异常，优先地址模式匹配
+   - SIGABRT → 主动终止，优先调用栈业务分析
+   
+2. **地址模式有何特征？** → 决定是否需要深度数据流追踪
+   - `0x6b6b...`开头 → 必须做Use-After-Free分析
+   - 高位字节异常 → 必须做地址模式匹配
+   
+3. **是否有多线程上下文？** → 决定是否需要竞争分析
+   - 若有`Other thread info` → 必须检查锁竞争和竞态条件
+
 ## 1. 检查输入完整性
 
 按以下顺序检查：
@@ -74,7 +87,18 @@ description: Use when analyzing OpenHarmony cppcrash faultlogs to locate root ca
 
 # 执行策略
 
-## 分析流程（按顺序执行）
+## 分析流程
+
+根据崩溃类型选择分析路径：
+
+| 崩溃类型 | 优先路径 | 原因 |
+|----------|----------|------|
+| SIGSEGV + `0x6b6b`地址 | 解栈 → 数据流追踪 → 地址匹配 | Use-After-Free需追溯释放点 |
+| SIGSEGV + 高位字节异常 | 解栈 → 地址匹配 → 内存分析 | 踩内存需定位踩踏源 |
+| SIGABRT + abort/raise | 解栈 → 业务代码分析 | 主动退出需理解退出原因 |
+| 包含`cfi_slowpath_comm` | 优先踩内存分析路径 | CFI失败指示内存破坏 |
+
+完整流程如下（按需要执行）：
 
 1. **元数据分析**：读取Device Info、Module name、Reason、LastFatalMessage
 2. **调用栈解栈**：详见 `references/stack-unwinding.md`
@@ -165,17 +189,19 @@ description: Use when analyzing OpenHarmony cppcrash faultlogs to locate root ca
 
 按以下条件读取对应文件：
 
-| 条件 | 文件 |
-|------|------|
-| 执行解栈步骤时 | `references/stack-unwinding.md` |
-| 执行反汇编分析时 | `references/disassembly-analysis.md` |
-| 执行调用链回溯分析时 | `references/call-chain-backtrace.md` |
-| 执行数据流追踪或地址模式匹配时 | `references/memory-pattern-analysis.md` |
-| 执行多线程竞争分析时 | `references/thread-competition-analysis.md` |
-| 执行内存数据分析时 | `references/memory-data-analysis.md` |
-| 判断特殊情况时 | `references/special-cases.md` |
-| 排查代码问题时 | `references/code-review-checklist.md` |
-| 生成分析报告时 | `references/report-template.md` |
+| 条件 | 文件 | 注意 |
+|------|------|------|
+| 执行解栈步骤时 | `references/stack-unwinding.md` | 仅解栈时加载 |
+| 执行反汇编分析时 | `references/disassembly-analysis.md` | 仅需确认崩溃指令时加载 |
+| 执行调用链回溯分析时 | `references/call-chain-backtrace.md` | 仅追溯参数来源时加载 |
+| 执行数据流追踪或地址模式匹配时 | `references/memory-pattern-analysis.md` | 仅地址异常时加载 |
+| 执行多线程竞争分析时 | `references/thread-competition-analysis.md` | 仅有多线程上下文时加载 |
+| 执行内存数据分析时 | `references/memory-data-analysis.md` | 仅需分析内存dump时加载 |
+| 判断特殊情况时 | `references/special-cases.md` | 仅调用栈特征匹配时加载 |
+| 排查代码问题时 | `references/code-review-checklist.md` | 仅定位到代码后加载 |
+| 生成分析报告时 | `references/report-template.md` | 仅最后生成报告时加载 |
+
+**Do NOT Load**: 不要在分析开始时一次性加载所有references文件，按需加载以节省上下文空间。
 
 ## 前置信息
 
