@@ -1,0 +1,46 @@
+{
+  "name": "openharmony-skills",
+  "version": "0.1.0",
+  "description": "Common OpenHarmony development, CI, review, and troubleshooting skills for Codex.",
+  "author": {
+    "name": "OpenHarmony",
+    "email": "",
+    "url": "https://www.openharmony.cn/"
+  },
+  "homepage": "https://gitcode.com/openharmonyinsight/openharmony-skills",
+  "repository": "https://gitcode.com/openharmonyinsight/openharmony-skills",
+  "license": "",
+  "keywords": [
+    "openharmony",
+    "harmonyos",
+    "skills",
+    "cicd",
+    "code-review",
+    "cpp",
+    "arkts",
+    "napi"
+  ],
+  "skills": "./skills/common/",
+  "interface": {
+    "displayName": "OpenHarmony Skills",
+    "shortDescription": "Common OpenHarmony development and CI workflows for Codex",
+    "longDescription": "OpenHarmony Skills provides Codex workflows for GitCode operations, OpenHarmony CI analysis, ArkTS playground checks, C++ coding style, NAPI modules, PR review, and security code review.",
+    "developerName": "OpenHarmony",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Review this OpenHarmony PR.",
+      "Analyze this OpenHarmony CI failure.",
+      "Check this OpenHarmony C++ change."
+    ],
+    "websiteURL": "https://www.openharmony.cn/",
+    "privacyPolicyURL": "",
+    "termsOfServiceURL": "",
+    "brandColor": "#2563EB",
+    "screenshots": []
+  }
+}
