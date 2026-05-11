@@ -1,19 +1,21 @@
 ---
 name: ohos-dev-arkui-code-review
 description: >
-  Use when reviewing or analyzing C++, TypeScript, or ArkTS code in OpenHarmony ArkUI
-  (ACE Engine) projects. Triggers: reviewing PRs or code changes, checking memory management
+  Use this skill whenever reviewing, auditing, or analyzing code quality in ACE Engine
+  (OpenHarmony ArkUI) projects — even if the user doesn't explicitly say "code review."
+  Applies to all code quality analysis, bug investigation root cause analysis, and
+  architectural questions in ACE Engine codebases.
+  Triggers: reviewing PRs or code changes, checking memory management
   (RefPtr/WeakPtr/MakeRefPtr), verifying architecture compliance (four-layer, Pattern/Model/
   Property separation), auditing security vulnerabilities, detecting threading issues (data
   races, unsafe callback captures), analyzing code quality (code smells, SOLID violations),
   or generating review reports with severity levels.
   Also use when asked to "check code", "review PR", "audit security", "find memory leaks",
-  "analyze code quality", or when encountering crash-prone patterns, unsafe pointer usage,
-  or layer boundary violations.
-  Use this skill whenever reading or editing files under `components_ng/`, `frameworks/core/`,
-  `bridge/`, or `adapter/` directories, even without an explicit review request — any task
-  involving `AceType::`, `MakeRefPtr`, `DynamicCast`, `WeakClaim`, `FrameNode`, or `RefPtr`
-  warrants applying these checks.
+  "analyze code quality", "is this code safe/correct", or when encountering crash-prone
+  patterns, unsafe pointer usage, or layer boundary violations.
+  The following directory contexts and symbols reinforce relevance but do not trigger
+  this skill on their own: `components_ng/`, `frameworks/core/`, `bridge/`, `adapter/`,
+  `AceType::`, `MakeRefPtr`, `DynamicCast`, `WeakClaim`, `FrameNode`, or `RefPtr`.
 metadata:
   author: openharmony
   scope: domain
@@ -26,62 +28,54 @@ metadata:
     - arkui
     - code-review
     - ace-engine
-    - cpp
-    - arkts
+  related-skills:
+    - ohos-dev-cpp-coding-style
+    - ohos-dev-arkui-component-development
 ---
 
 # Task and Boundaries
-
-## What This Skill Solves
 
 Structured code review for ACE Engine (OpenHarmony ArkUI framework) codebases covering
 C++, TypeScript, and ArkTS. Focuses on project-specific architecture constraints, smart
 pointer conventions (RefPtr/WeakPtr/DynamicCast), component lifecycle rules, and four-layer
 boundary enforcement that generic code review cannot provide.
 
-## Input
+**Input:** Source files (.h/.cpp/.ts/.ets), diffs, PR descriptions, or directory paths. Optional focus dimension.
 
-- One or more source files (.h/.cpp/.ts/.ets)
-- A diff, PR description, or directory path
-- Optional: focus dimension (memory, security, threading, architecture, etc.)
+**Output:** Severity-tagged findings (CRITICAL / HIGH / MEDIUM / LOW) with line-specific issues and before/after fix examples.
 
-## Output
-
-- Severity-tagged findings (CRITICAL / HIGH / MEDIUM / LOW)
-- Line-specific issues with before/after fix examples
-- Prioritized action items grouped by dimension
-
-## Not Applicable
-
-- Non-ACE-Engine projects (generic C++ review should not invoke this skill)
-- Build system, GN/BUILD.gn configuration, or test infrastructure issues
-- UI/UX design review
-- Replacing static analysis tools (clang-tidy, cppcheck, eslint)
+**Not applicable:** Non-ACE-Engine projects, build system (GN/BUILD.gn), UI/UX design review, or replacing static analysis tools.
 
 # Trigger Signals
 
-Activate when any of the following appear in the task:
+Activate when the task explicitly involves code review or quality analysis AND the code is in
+an ACE Engine / OpenHarmony / ArkUI context. Do NOT activate for general development,
+debugging, or build-fix tasks unless the user explicitly asks for review.
 
-- Task verbs: "review", "audit", "check", "analyze", "inspect" in context of ACE Engine / OpenHarmony / ArkUI code
+**Primary triggers (task must match at least one):**
+- Task verbs: "review", "audit", "inspect" in context of ACE Engine code
 - Task involves PR review, pre-merge quality gate, or code quality assessment
-- Specific concern keywords: memory leak, RefPtr, WeakPtr, DynamicCast, data race, thread safety, security vulnerability, architecture compliance, code smell
-- Code contains ACE Engine identifiers: `AceType::`, `MakeRefPtr`, `DynamicCast`, `WeakClaim`, `OnModifyDone`, `OnDirtyLayoutWrapperSwap`, `FrameNode`, `Pattern`, `LayoutProperty`, `PaintProperty`, `EventHub`, `RefPtr`, `WeakPtr`
-- User asks whether code is safe, correct, or architecturally compliant
+- User asks whether code is safe, correct, or architecturally compliant in an ACE Engine project
+
+**Reinforcing signals (do not trigger alone):**
+- Specific concern keywords: memory leak, RefPtr, WeakPtr, DynamicCast, data race, thread safety, architecture compliance
+- Code contains ACE Engine identifiers: `AceType::`, `MakeRefPtr`, `OnModifyDone`, `FrameNode`, `Pattern`, `LayoutProperty`, `RefPtr`
+- Files under `components_ng/`, `frameworks/core/`, `bridge/`, `adapter/`
 
 # Initial Checks
 
-Before diving into analysis, ask yourself these questions to frame the review:
+Before diving into analysis, ask yourself:
 
-- **What changed?** Is this a new component, a bug fix, a refactor, or a performance optimization? Each type has different risk profiles.
-- **Who depends on this code?** Changes to base classes or interfaces ripple across many components; changes to a leaf component are locally scoped.
-- **What can break silently?** In ACE Engine, the most dangerous bugs are not crashes but silent behavior changes (e.g., layout not updating because MarkDirty was skipped).
+- **What changed?** New component, bug fix, refactor, or perf optimization — each has different risk profiles.
+- **Who depends on this code?** Changes to base classes ripple across many components; leaf component changes are locally scoped.
+- **What can break silently?** The most dangerous ACE Engine bugs are not crashes but silent behavior changes (e.g., layout not updating because MarkDirty was skipped).
 
-Then determine scope with these steps (if steps conflict, file type takes priority over code location):
+Determine scope (if steps conflict, file type takes priority over code location):
 
-1. **Identify file type** -- C++ files get memory/threading/architecture focus; TS/ArkTS files get security/correctness focus
-2. **Identify code location in project** -- Files under `components_ng/pattern/` require architecture compliance checks; files under `bridge/` require frontend-layer checks; files under `adapter/` require platform-abstraction checks
-3. **Check task specificity** -- If user specified focus dimensions, prioritize those; otherwise apply full review
-4. **Estimate scope** -- For >10 files, recommend phased review (critical scan first, then dimension deep-dive)
+1. **Identify file type** — C++ files get memory/threading/architecture focus; TS/ArkTS files get security/correctness focus
+2. **Identify code location** — `components_ng/pattern/` requires architecture compliance; `bridge/` requires frontend-layer checks; `adapter/` requires platform-abstraction checks
+3. **Check task specificity** — If user specified focus dimensions, prioritize those; otherwise apply full review
+4. **Estimate scope** — For >10 files, recommend phased review (critical scan first, then dimension deep-dive)
 
 # Execution Strategy
 
@@ -98,22 +92,20 @@ Before detailed analysis, check for issues that block any further review:
 | Buffer overflow | `strcpy`, `sprintf`, `gets`, unchecked array indexing with user-controlled size | CRITICAL |
 | Circular RefPtr cycle | Parent holds `RefPtr<Child>` AND Child holds `RefPtr<Parent>` | CRITICAL |
 
-\* `[this]` capture is HIGH (not CRITICAL) because the crash depends on whether the object
-is destroyed before the callback fires. In PostDelayedTask this is almost certain; in PostTask
-on the same thread it may be safe — but the risk is high enough to flag regardless.
+\* `[this]` capture is HIGH (not CRITICAL) because the crash depends on timing. In `PostDelayedTask` the object is almost certainly destroyed before the callback fires; in `PostTask` on the same thread it may be safe — but the risk is high enough to flag regardless.
 
-**Checkpoint:** If any CRITICAL issue is found, report it immediately and ask the user whether to continue with the full review or stop here to fix blockers first.
+**Checkpoint:** If any CRITICAL issue is found, report it immediately and ask whether to continue or stop to fix blockers first.
 
 ## Phase 2: Dimension Selection
 
-Apply dimensions based on file type and context. Not every dimension applies to every file.
+Not every dimension applies to every file.
 
 **Always check for C++ files:**
 
 | Priority | Dimension | ACE Engine-Specific Focus |
 |----------|-----------|---------------------------|
-| 1 | Memory | DynamicCast without null check, RefPtr vs raw pointer in member fields, MakeRefPtr missing on new objects, WeakPtr missing in child-to-parent back-references |
-| 2 | Stability | Unchecked DynamicCast return (null dereference), OnModifyDone not handling property == nullptr, constructor accessing not-yet-attached FrameNode |
+| 1 | Memory | DynamicCast without null check, RefPtr vs raw pointer in member fields, MakeRefPtr missing, WeakPtr missing in child-to-parent back-references |
+| 2 | Stability | Unchecked DynamicCast return, OnModifyDone not handling property == nullptr, constructor accessing not-yet-attached FrameNode |
 | 3 | Threading | `[this]` in PostTask/PostDelayedTask lambda, shared mutable state accessed from UI + render threads, WeakClaim missing in async callback |
 
 **Check when relevant:**
@@ -123,61 +115,35 @@ Apply dimensions based on file type and context. Not every dimension applies to 
 | Code handles external input, file paths, or credentials | Security | Injection, overflow, sensitive data exposure |
 | Code is under `components_ng/`, `bridge/`, or `adapter/` | Architecture | Four-layer compliance, Pattern/Model/Property separation |
 | Code is in layout/render/event hot paths | Performance | Unnecessary copies, missing caches, O(n^2) algorithms |
-| Comprehensive review (user says "full review", "全面审查", "all dimensions", or unspecified dimensions with >3 files) | Code Quality | Code smells, SOLID violations, design patterns |
+| Comprehensive review (user says "full review" or unspecified dimensions with >3 files) | Code Quality | Code smells, SOLID violations, design patterns |
 
-If the user's request is vague ("看看这段代码", "帮我看看"), treat it as a focused review
-of Phase 1 blocking issues + the "Always check" dimensions only. Do NOT launch a full
-comprehensive review unless explicitly requested.
+For vague requests ("看看这段代码", "帮我看看"), treat as focused review of Phase 1 blocking issues + "Always check" dimensions only.
 
-**Checkpoint:** After dimension selection, confirm with yourself: "Am I checking only what's relevant for this file type and location, or am I running every dimension indiscriminately?"
+**Checkpoint:** "Am I checking only what's relevant for this file type and location, or am I running every dimension indiscriminately?"
 
 ## Phase 3: ACE Engine Architecture Rules
 
-For files under `components_ng/`, verify against these project-specific rules:
+For files under `components_ng/`, `bridge/`, or `adapter/`, load the relevant architecture reference:
 
-**Object creation and casting:**
-- Create with `AceType::MakeRefPtr<T>()`, never `new T()` or `RefPtr<T>(new T())`
-- Cast with `AceType::DynamicCast<T>(ptr)` followed by null check, never `static_cast<T*>`
+- **MANDATORY — READ:** `references/ACE_ARCHITECTURE.md` (four-layer, component structure, naming)
+- **Load when reviewing lifecycle/property code:** `references/ACE_LIFECYCLE.md` (OnModifyDone, OnAttachToFrameNode, dirty marking, event handling)
+- **Load when reviewing tests or build files:** `references/ACE_TESTING.md` (build system, test patterns, source references, property macro internals)
 
-**Circular reference prevention:**
-- Child back-references to parent must use `WeakPtr<Parent>`, not `RefPtr<Parent>`
-
-**Async callback safety:**
-- Capture `AceType::WeakClaim(this)`, then check `weak.Upgrade()` before use
-- Never capture raw `this` in `PostTask` or any delayed/async callback
-
-**Component lifecycle:**
-- Initialization goes in `OnAttachToFrameNode()`, not constructor (frame node not ready)
-- Property change reaction goes in `OnModifyDone()`
-- Layout wrapper state transfer goes in `OnDirtyLayoutWrapperSwap()`
-
-**Property system:**
-- Mutate properties through Property objects (`GetLayoutProperty<T>()`, `GetPaintProperty<T>()`), never by directly manipulating render nodes
-- Call `MarkDirty()` only when value actually changed (compare old vs new first)
-
-**Layer separation:**
-- Frontend Bridge -> Component Framework -> Layout/Render -> Platform Adapter
-- No skipping layers (e.g., Pattern must not call platform APIs directly)
-
-**Naming conventions:**
-- Classes/Methods: `PascalCase`
-- Private members: `snake_case_` (trailing underscore)
-- Constants: `UPPER_CASE`
-- Getters: `GetXxx()`, Setters: `SetXxx()`, Boolean queries: `IsXxx()`
-
-**Checkpoint:** After architecture check, if no architecture issues are found in a file under `components_ng/`, explicitly note "Architecture rules: compliant" rather than skipping silently. This confirms you actually checked.
+**Do NOT load architecture references for:**
+- Files outside `components_ng/`, `bridge/`, `adapter/`
+- Reviews focused solely on security or threading with no architecture relevance
 
 ## Phase 4: Report Generation
 
 Structure findings as:
 
-1. **Executive Summary** -- Issue count by severity
-2. **CRITICAL issues** -- Must fix before merge; include file:line, description, before/after fix
-3. **HIGH issues** -- Should fix before merge
-4. **MEDIUM/LOW issues** -- Grouped by dimension
-5. **Action items** -- Ordered by priority with effort estimate
+1. **Executive Summary** — Issue count by severity
+2. **CRITICAL issues** — Must fix before merge; include file:line, description, before/after fix
+3. **HIGH issues** — Should fix before merge
+4. **MEDIUM/LOW issues** — Grouped by dimension
+5. **Action items** — Ordered by priority with effort estimate
 
-When generating formal reports, read `assets/report_template.md` for the complete template.
+For formal reports, read `assets/report_template.md` for the report specification.
 
 **Finding example (shows expected detail level):**
 
@@ -195,67 +161,65 @@ Why: MenuItem -> Menu -> MenuItem forms a reference cycle.
 Fix: Change to `WeakPtr<Menu> parent_menu_;` and use `Upgrade()` before access.
 ```
 
-**End-to-end flow example:**
-
-User says: "Review this PR that adds a new Menu component"
-→ Initial Checks: C++ files under `components_ng/pattern/menu/` → architecture focus
-→ Phase 1: Scan for raw `new`, `[this]` in PostTask, circular RefPtr, layer violations → found 0 CRITICAL
-→ Phase 2: Architecture (location-based) + Memory/Stability/Threading (C++ always) + Code Quality (>3 files, comprehensive)
-→ Phase 3: Check 7 rule domains against each file
-→ Phase 4: Report with 2 HIGH, 5 MEDIUM, 3 LOW findings → action items ordered by priority
-
 # Prohibited Practices
-
-The following anti-patterns are not covered by Phase 1 scan or Phase 3 rules, but are
-equally harmful. When you encounter any of these, flag them with the stated severity.
 
 | Anti-Pattern | Consequence | Severity | Correct Approach |
 |-------------|-------------|----------|------------------|
-| Bypassing property system — directly manipulating render node from Pattern | Breaks dirty marking, layout pipeline, change notification; other components unaware of change | HIGH | Always go through `GetLayoutProperty<T>()` / `GetPaintProperty<T>()` to mutate state |
-| Unconditional `MarkDirty()` without comparing old vs new value | Triggers unnecessary full relayout/recalc on every call, even when nothing changed; degrades scroll/frame performance | MEDIUM | `if (oldValue != newValue) { prop->Update(newValue); MarkDirty(); }` |
-| Initializing component state in constructor instead of `OnAttachToFrameNode()` | Frame node not yet attached; accessing layout properties or event hub crashes or returns wrong values | HIGH | Move initialization to `OnAttachToFrameNode()` |
-| `dynamic_cast` / `static_cast` on `RefPtr` types instead of `AceType::DynamicCast` | Bypasses ACE Engine type system; may return wrong pointer or leak on cross-module boundaries | HIGH | Use `AceType::DynamicCast<T>(ptr)` and check result for null |
-| Throwing exceptions for error flow (exceptions disabled in ACE Engine build) | Calls `std::terminate` at runtime; use error codes or `LOGE` + return instead | CRITICAL | Return error code or use `LOGE` + early return |
+| Bypassing property system — directly manipulating render node from Pattern | Breaks dirty marking, layout pipeline, change notification | HIGH | Go through `GetLayoutProperty<T>()` / `GetPaintProperty<T>()` |
+| Unconditional `MarkDirtyNode()` without comparing old vs new | Triggers unnecessary full relayout on every call; degrades scroll/frame performance | MEDIUM | Use macro-declared properties (auto-dedup via `NearEqual`) or compare before marking |
+| Initializing component state in constructor instead of `OnAttachToFrameNode()` | Frame node not yet attached; crashes or wrong values | HIGH | Move initialization to `OnAttachToFrameNode()` |
+| `dynamic_cast` / `static_cast` on `RefPtr` types instead of `AceType::DynamicCast` | Bypasses ACE Engine type system; wrong pointer or leak on cross-module boundaries | HIGH | Use `AceType::DynamicCast<T>(ptr)` and check for null |
+| Throwing C++ exceptions for error flow | May be caught by unexpected handlers; ACE uses error codes and `LOGE` + return | HIGH | Return error code or use `LOGE` + early return; use `CHECK_NULL_VOID` / `CHECK_NULL_RETURN` |
 
 # Exceptions and Fallbacks
 
 ## Information Insufficient
 
 - **Cannot determine file type**: Ask user; default to C++ rules
-- **Cannot determine code location in project**: Skip architecture compliance; apply language-level checks only
+- **Cannot determine code location**: Skip architecture compliance; apply language-level checks only
 - **Ambiguous severity**: Default to higher severity; explain uncertainty in finding
 
 ## Scope Too Large
 
-- **>10 files**: Recommend phased review: (1) blocking issue scan, (2) dimension deep-dive, (3) report
-- **Entire directory**: Suggest reviewing by subdirectory or by dimension
+- **>10 files**: Recommend phased review: Phase A (blocking scan on all files) → Phase B (dimension deep-dive on files with issues) → Phase C (consolidated report)
+- **Entire directory**: Review by subdirectory or by dimension
+- **Cross-component changes**: Verify component interactions — event propagation, shared property types, lifecycle ordering between parent and child patterns
+
+## ArkTS / TypeScript Files
+
+When reviewing `.ets` / `.ts` files in ACE Engine context:
+
+- **Bridge layer** (`bridge/declarative_frontend/`): Verify ArkTS property setters correctly call `ModelNG::SetXxx()` and parameter types match C++ side
+- **Type safety**: Ensure `@Component` structs use proper types, not `any` or unchecked casts
+- **Resource handling**: Verify `ResourceType` usage — raw strings should go through `$r()` or `Resource` wrapper
+- **Lifecycle**: ArkTS `aboutToAppear`/`aboutToDisappear` map to C++ Pattern lifecycle; verify alignment
+- For non-bridge ArkTS code (application-level), apply general TypeScript/ArkTS best practices
 
 ## Conflicting Rules
 
-- **Safety vs performance**: Safety wins (e.g., never skip null checks for speed)
+- **Safety vs performance**: Safety wins (never skip null checks for speed)
 - **Architecture vs backward compatibility**: Flag both; let team decide
-
-## Fallback
-
-If code is not ACE Engine code but user still requests review: Apply language-level checks (memory, security, stability), explicitly note that architecture-specific rules do not apply.
 
 # References
 
-Read these files when deeper analysis is needed. Do not load all files at once; load only what the current review scope requires.
+Read only what the current review scope requires. Do not load all files at once.
 
 | File | When to Read |
 |------|-------------|
-| `references/ACE_ENGINE_SPECIFIC.md` | Reviewing code under `components_ng/`, `bridge/`, or `adapter/`; need full architecture rules, component structure patterns, lifecycle method details, naming conventions, or build integration |
-| `references/MEMORY.md` | Found or suspect memory leaks, circular references, ownership ambiguity, or improper smart pointer usage beyond the rules in this document |
-| `references/SECURITY.md` | Code handles external input, file paths, credentials, cryptographic operations, or uses system commands; need detailed vulnerability patterns and fixes |
-| `references/STABILITY.md` | Found unchecked returns, missing error handling, boundary condition issues, or exception safety concerns |
-| `references/CODE_SMELLS.md` | Comprehensive design quality review; need detection patterns and refactoring guidance for 22 types of code smells |
-| `references/SOLID.md` | Reviewing class design, inheritance hierarchies, interface structure; need detailed violation detection and refactoring examples |
-| `references/DIMENSIONS.md` | Quick lookup for any dimension (performance, threading, modern C++, effective C++, robustness, testability, maintainability, observability, API design, technical debt, backward compatibility) not covered by dedicated reference files |
-| `assets/report_template.md` | Generating a formal review report; provides complete template with all sections |
+| `references/ACE_ARCHITECTURE.md` | Reviewing code under `components_ng/`, `bridge/`, or `adapter/` — four-layer architecture, component structure, naming |
+| `references/ACE_LIFECYCLE.md` | Reviewing lifecycle methods, property access, dirty marking, event handling patterns |
+| `references/ACE_TESTING.md` | Reviewing tests, build files, or need property macro details / source references |
+| `references/MEMORY.md` | Found or suspect memory leaks, circular references, ownership ambiguity, or improper smart pointer usage |
+| `references/SECURITY.md` | Code handles external input, file paths, credentials; need ACE Engine-specific security patterns |
+| `references/STABILITY.md` | Found unchecked DynamicCast returns, missing error handling, lifecycle timing issues |
+| `references/CODE_SMELLS.md` | Need ACE Engine-specific code smell detection (God Pattern, Property Bypass, EventHub Bypass, etc.) |
+| `references/SOLID.md` | Need ACE Engine-specific SOLID violation patterns (SRP in Pattern, DIP with platform singletons, etc.) |
+| `references/DIMENSIONS.md` | Quick lookup for dimensions without dedicated files (performance, threading, modern C++, testability, etc.) |
+| `assets/report_template.md` | Generating a formal review report |
 
 **Do NOT load unless the above condition is met:**
+- Do NOT load `ACE_LIFECYCLE.md` or `ACE_TESTING.md` for security-only or threading-only reviews
 - Do NOT load `CODE_SMELLS.md` or `SOLID.md` for single-file memory/threading-focused reviews
-- Do NOT load `SECURITY.md` for code that has no external input surface (e.g., internal layout algorithms)
-- Do NOT load `report_template.md` for informal/quick feedback — only for formal written reports
+- Do NOT load `SECURITY.md` for code with no external input surface (e.g., internal layout algorithms)
+- Do NOT load `report_template.md` for informal/quick feedback
 - Do NOT load `DIMENSIONS.md` when all relevant dimensions are covered by dedicated reference files

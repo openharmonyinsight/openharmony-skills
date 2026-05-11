@@ -1,41 +1,46 @@
-# ArkUI Code Review Skill
+# ohos-dev-arkui-code-review
 
-Code review skill for OpenHarmony ArkUI (ACE Engine) projects, covering C++, TypeScript, and ArkTS codebases.
+ACE Engine (OpenHarmony ArkUI) 领域的结构化代码审查 Skill。
 
-## Purpose
+## 定位
 
-Provides structured code review focused on ACE Engine-specific rules: RefPtr/WeakPtr conventions, four-layer architecture compliance, component lifecycle patterns, and high-risk pattern detection. Covers 19+ review dimensions with severity-tagged findings.
+面向 ACE Engine (OpenHarmony ArkUI 框架) 代码库的代码审查能力，覆盖 C++、TypeScript 和 ArkTS。聚焦项目特定的架构约束、智能指针约定 (RefPtr/WeakPtr/DynamicCast)、组件生命周期规则和四层边界校验。
 
-## Structure
+## 放置信息
 
+| 字段 | 值 |
+|------|------|
+| 命名空间 | `domain` |
+| 领域 | `arkui` |
+| 阶段 | `development` |
+| 机器名 | `ohos-dev-arkui-code-review` |
+
+## 目录结构
+
+```text
+ohos-dev-arkui-code-review/
+  SKILL.md
+  README.md
+  references/
+    ACE_ARCHITECTURE.md
+    ACE_LIFECYCLE.md
+    ACE_TESTING.md
+    CODE_SMELLS.md
+    DIMENSIONS.md
+    MEMORY.md
+    SECURITY.md
+    SOLID.md
+    STABILITY.md
+  assets/
+    report_template.md
+  examples/
+  evals/
 ```
-arkui-code-review/
-├── SKILL.md                          # Main skill document (start here)
-├── README.md                         # This file
-├── references/
-│   ├── ACE_ENGINE_SPECIFIC.md        # Architecture rules, component patterns, lifecycle, naming
-│   ├── DIMENSIONS.md                 # Quick reference for all 19+ dimensions
-│   ├── MEMORY.md                     # Smart pointer usage, ownership, leak detection
-│   ├── SECURITY.md                   # Vulnerability patterns, input validation, sensitive data
-│   ├── STABILITY.md                  # Error handling, boundary conditions, state validation
-│   ├── CODE_SMELLS.md                # 22 types of code smells with refactoring guidance
-│   └── SOLID.md                      # Five design principles with ACE Engine examples
-└── assets/
-    ├── report_template.md            # Formal review report template
-    └── QUICKSTART.md                 # Usage examples and workflows
-```
 
-## Reference Files
+## 与公共能力的关系
 
-Each reference file is loaded on demand based on review scope. SKILL.md specifies when to read each file.
+本 Skill 强依赖 ACE Engine 框架架构和 ArkUI 组件体系，属于领域特定能力。通用的 C++ 编码规范审查请使用公共 Skill `ohos-dev-cpp-coding-style`。
 
-| File | Content | When to Read |
-|------|---------|-------------|
-| `ACE_ENGINE_SPECIFIC.md` | Architecture, component structure, lifecycle, naming | Reviewing `components_ng/`, `bridge/`, `adapter/` code |
-| `MEMORY.md` | RefPtr, WeakPtr, ownership, leaks | Found memory issues or suspect improper smart pointer usage |
-| `SECURITY.md` | Injection, overflow, input validation, sensitive data | Code handles external input or credentials |
-| `STABILITY.md` | Error handling, boundaries, null safety | Found unchecked returns or missing error paths |
-| `CODE_SMELLS.md` | 22 smell types with detection and refactoring | Comprehensive design quality review |
-| `SOLID.md` | SRP, OCP, LSP, ISP, DIP with examples | Reviewing class design or inheritance |
-| `DIMENSIONS.md` | Performance, threading, modern C++, and 8 more dimensions | Quick lookup for dimensions without dedicated files |
-| `report_template.md` | Full report template | Generating formal review reports |
+## 维护者
+
+- OpenHarmony ArkUI 团队

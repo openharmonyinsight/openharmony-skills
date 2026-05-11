@@ -1,177 +1,104 @@
-# Code Review Dimensions - Quick Reference
+# Code Review Dimensions — ACE Engine Focus
 
-This file provides a quick lookup for dimensions not covered by dedicated reference files.
-For Memory, Security, Stability, Code Smells, SOLID, and ACE Engine specifics, use the dedicated files.
-
----
-
-## Dimension Severity Guide
-
-| Severity | Meaning | Action |
-|----------|---------|--------|
-| CRITICAL | Must fix before merge | Blocks merge |
-| HIGH | Should fix before merge | Strongly recommended |
-| MEDIUM | Fix soon | Track in backlog |
-| LOW | Nice to have | Address when convenient |
+Quick lookup for dimensions not covered by dedicated reference files.
+For Memory, Security, Stability, Code Smells, SOLID, and Architecture, use dedicated files.
 
 ---
 
-## 1. Performance
+## Performance
 
-**Focus:** Algorithm complexity, optimization, efficiency
+**ACE Engine hot paths:** `Measure()`/`Layout()` in LayoutAlgorithm, `OnModifyDone()` in Pattern, event dispatch. Any heap allocation or O(n^2) in these paths is HIGH severity.
 
 | Issue | Severity | Detection |
 |-------|----------|-----------|
-| O(n^2) where O(n) possible with large n | CRITICAL | Nested loops on containers |
-| Blocking UI thread | HIGH | Synchronous I/O or heavy computation in main thread |
-| Unnecessary copies | HIGH | Pass-by-value for large objects; missing `std::move` |
-| Missing caching | HIGH | Repeated expensive calculations without cache |
-| Inefficient data structure | HIGH | `std::vector` for frequent lookup; should be `std::unordered_set/map` |
+| O(n^2) in layout/render/event paths | CRITICAL | Nested loops on containers in Measure/Layout/OnModifyDone |
+| Blocking UI thread | HIGH | Synchronous I/O or heavy computation in main thread task |
+| Unnecessary copies of large objects | HIGH | Pass-by-value for RefPtr, Dimension, std::string; missing `std::move` |
+| `MarkDirtyNode(PROPERTY_UPDATE_MEASURE)` without value comparison | HIGH | Triggers full relayout even when nothing changed |
+| Missing cache for expensive lookups | HIGH | Repeated theme/style lookups in hot paths |
 
 **Decision framework:**
-- Layout/render/event dispatch paths are hot paths; any allocation or O(n^2) here is HIGH
-- One-time initialization paths can tolerate lower efficiency
+- Layout/render/event dispatch → any allocation or O(n^2) is HIGH
+- One-time initialization paths → can tolerate lower efficiency
 - When in doubt, measure before optimizing
 
 ---
 
-## 2. Threading
+## Threading
 
-**Focus:** Data races, deadlock prevention, synchronization
+ACE Engine has a UI thread and potentially a render thread. The key rule: `WeakClaim(this)` + `Upgrade()` for all async callbacks.
 
 | Issue | Severity | Detection |
 |-------|----------|-----------|
-| Unprotected shared mutable state | CRITICAL | Non-atomic variable accessed from multiple threads without lock |
-| Data races | CRITICAL | Concurrent read+write or write+write without synchronization |
-| Deadlocks | CRITICAL | Inconsistent lock ordering across code paths |
-| Unsafe callback captures | HIGH | `[this]` in PostTask/async without WeakClaim |
-| Missing synchronization | HIGH | Shared resource accessed without mutex/atomic |
-
-**ACE Engine specific rule:** Always use `WeakClaim(this)` + `Upgrade()` check for PostTask callbacks. See `ACE_ENGINE_SPECIFIC.md` for details.
+| Shared mutable state across UI + render threads without lock | CRITICAL | Non-atomic variable accessed from PostTask and main thread |
+| Data races | CRITICAL | Concurrent read+write without synchronization |
+| `[this]` in PostTask without WeakClaim | HIGH | Lambda capturing raw this in PostTask/PostDelayedTask |
+| Missing mutex for shared resource | HIGH | Container or counter accessed from multiple threads |
 
 ---
 
-## 3. Modern C++
+## Modern C++ / Effective C++
 
-**Focus:** C++11/14/17/20 idiomatic usage
+Flag these in ACE Engine code:
 
-| Issue | Severity | Detection |
-|-------|----------|-----------|
-| Raw pointers instead of smart pointers | HIGH | `T*` owning memory without RAII wrapper |
-| Missing move semantics | HIGH | Expensive copies where move is possible |
-| Not using `constexpr` for compile-time constants | MEDIUM | `const` for values known at compile time |
-| `NULL` instead of `nullptr` | MEDIUM | Legacy null pointer usage |
-| Not using `auto` where appropriate | MEDIUM | Redundant type spelling (iterators, lambdas) |
-| Not using range-based for | MEDIUM | Index-based iteration over containers |
-| Not using `std::optional` | MEDIUM | Using sentinel values or raw pointers for "no value" |
+| Issue | Severity |
+|-------|----------|
+| Raw owning pointers instead of RefPtr/unique_ptr | HIGH |
+| Missing `std::move` for expensive types | MEDIUM |
+| `NULL` instead of `nullptr` | MEDIUM |
+| `const` instead of `constexpr` for compile-time values | LOW |
+| Missing `auto` where it improves readability (iterators, lambdas) | LOW |
 
 ---
 
-## 4. Effective C++
-
-**Focus:** RAII, Rule of Five, resource management idioms
+## Testability
 
 | Issue | Severity | Detection |
 |-------|----------|-----------|
-| Violating RAII | HIGH | Resource acquisition not tied to object lifetime |
-| Rule of Three/Five violations | HIGH | Custom destructor without copy/move operations or vice versa |
-| Resource leaks | HIGH | Missing cleanup in error paths |
-| Incorrect virtual destructors | MEDIUM | Base class with virtual methods but non-virtual destructor |
-| Returning references to temporaries | MEDIUM | `return local_var;` as reference |
+| Pattern calling `SubwindowManager::GetInstance()` directly | HIGH | Tight coupling to singleton — can't test without mocking entire platform |
+| Hard-coded dependencies in Pattern | HIGH | Direct construction of concrete types instead of using Pipeline context |
+| Static mutable variables in component code | MEDIUM | Prevents parallel test execution |
+
+**ACE Engine test patterns:**
+- `MockPipelineContext::SetUp()` / `MockContainer::SetUp()` for dependency injection
+- `FrameNode::GetOrCreateFrameNode(tag, id, factory_lambda)` enables test injection
+- Theme dependencies injected via `MockThemeManager` + `EXPECT_CALL`
+- Components should not call platform singletons directly — prefer virtual methods or inject via Pipeline context
 
 ---
 
-## 5. Robustness
-
-**Focus:** Fault tolerance, graceful degradation
+## Observability
 
 | Issue | Severity | Detection |
 |-------|----------|-----------|
-| No error handling | HIGH | Ignoring return values, empty catch blocks |
-| Crashes on invalid input | HIGH | No input validation on external data |
-| No resource exhaustion handling | HIGH | Unbounded allocations, no size limits |
-| No graceful degradation | MEDIUM | All-or-nothing behavior without fallback |
-
----
-
-## 6. Testability
-
-**Focus:** Dependency injection, decoupling
-
-| Issue | Severity | Detection |
-|-------|----------|-----------|
-| Hard-coded dependencies | HIGH | Direct construction of concrete types (e.g., `Database::GetInstance()`) |
-| Tightly coupled code | HIGH | Direct access to internal state of other classes |
-| Global state | MEDIUM | Static mutable variables, singletons |
-| Static method dependencies | MEDIUM | Static calls that cannot be intercepted for testing |
-
----
-
-## 7. Maintainability
-
-**Focus:** Code complexity, readability
-
-| Issue | Severity | Detection |
-|-------|----------|-----------|
-| Cyclomatic complexity > 10 | MEDIUM | Deep nesting, many branches in single function |
-| Deep nesting > 3 levels | MEDIUM | Nested if/for/while blocks |
-| Poor naming | MEDIUM | Single-letter variables, abbreviations without context |
-| Magic numbers | MEDIUM | Unnamed numeric literals |
-
----
-
-## 8. Observability
-
-**Focus:** Logging, monitoring, debugging
-
-| Issue | Severity | Detection |
-|-------|----------|-----------|
-| Missing critical logs | MEDIUM | Entry/exit of important functions not logged |
-| Insufficient error context | MEDIUM | Error log without relevant state variables |
-| No performance monitoring | MEDIUM | Hot paths without timing instrumentation |
+| Missing logs in error paths | MEDIUM | `return false;` or `CHECK_NULL_VOID` without LOGE |
 | Wrong log level | MEDIUM | `LOGE` for expected conditions; `LOGI` for errors |
+| Sensitive data in `LOGE`/`LOGI` with `%{public}s` | HIGH | Passwords, tokens, user data logged publicly |
 
 **ACE Engine log format:** `LOGI("Component::Method called, id=%{public}d", id_);`
-Use `%{private}s` for sensitive data, `%{public}s` for safe values.
+Use `%{private}s` for sensitive data, `%{public}s` for safe values only.
 
 ---
 
-## 9. API Design
-
-**Focus:** Consistency, clarity, usability
+## API Design
 
 | Issue | Severity | Detection |
 |-------|----------|-----------|
-| Inconsistent naming | MEDIUM | `GetWidth()` vs `width()` in same codebase |
-| Unexpected side effects | HIGH | `Clear()` also resets unrelated state |
-| Missing overloads | MEDIUM | Only one way to call when common variations exist |
-| Too many parameters (>4) | MEDIUM | Should use parameter object/struct |
+| Inconsistent naming (mixing `SetXxx` and `updateXxx`) | MEDIUM | Model API follows `SetXxx()` / `GetXxx()` pattern |
+| Public methods on Pattern that should be on EventHub or Model | HIGH | Event handlers in Pattern instead of EventHub subclass |
+| Too many parameters (>4) without parameter struct | MEDIUM | Should use LayoutProperty or dedicated config struct |
 
 ---
 
-## 10. Technical Debt
+## Maintainability / Technical Debt / Backward Compatibility
 
-**Focus:** TODO/FIXME management, debt tracking
-
-| Issue | Severity | Detection |
-|-------|----------|-----------|
-| Untracked TODOs | MEDIUM | `// TODO` without issue reference |
-| Outdated TODOs | MEDIUM | `// TODO` for already-resolved issues |
-| FIXME without context | MEDIUM | `// FIXME` without explanation of what's broken |
-
-**Recommended format:** `// TODO(issue:12345): Description of what needs to be done`
-
----
-
-## 11. Backward Compatibility
-
-**Focus:** API stability, deprecation
-
-| Issue | Severity | Detection |
-|-------|----------|-----------|
-| Breaking changes without deprecation | HIGH | Removing or renaming public API without migration path |
-| Changing API behavior | HIGH | Same method signature but different semantics |
-| Missing version tags | MEDIUM | New API without since-version annotation |
+| Issue | Severity |
+|-------|----------|
+| Cyclomatic complexity >10 in Pattern method | MEDIUM |
+| Deep nesting >3 levels | MEDIUM |
+| `// TODO` without issue reference | LOW |
+| Breaking public API change without deprecation path | HIGH |
+| Same method signature but different semantics | HIGH |
 
 ---
 
@@ -184,22 +111,5 @@ Use `%{private}s` for sensitive data, `%{public}s` for safe values.
 | Stability | `STABILITY.md` |
 | Code Smells | `CODE_SMELLS.md` |
 | SOLID Principles | `SOLID.md` |
-| Architecture | `ACE_ENGINE_SPECIFIC.md` |
-| Performance, Threading, Modern C++, Effective C++, Robustness, Testability, Maintainability, Observability, API Design, Technical Debt, Backward Compatibility | This file |
-
----
-
-## Common Issue Patterns Quick Table
-
-| Pattern | Dimension | Severity | Fix |
-|---------|-----------|----------|-----|
-| Raw pointer instead of RefPtr | Memory | HIGH | Use `MakeRefPtr` |
-| No input validation | Security | CRITICAL | Add whitelist validation |
-| Nested loops on large containers | Performance | HIGH | Use hash-based lookup |
-| Method > 50 lines | Code Smell | MEDIUM | Extract smaller methods |
-| No error handling | Stability | HIGH | Check returns, add error paths |
-| Hard-coded dependency | Testability | HIGH | Dependency injection |
-| Missing logging | Observability | MEDIUM | Add contextual logs |
-| Circular RefPtr reference | Memory | CRITICAL | Use `WeakPtr` in back-reference |
-| `static_cast` on RefPtr | Memory | HIGH | Use `DynamicCast` + null check |
-| `[this]` in PostTask | Threading | HIGH | Use `WeakClaim(this)` |
+| Architecture | `ACE_ARCHITECTURE.md`, `ACE_LIFECYCLE.md`, `ACE_TESTING.md` |
+| Performance, Threading, Modern C++, Testability, Observability, API Design, Maintainability, Technical Debt, Backward Compatibility | This file |
