@@ -137,7 +137,7 @@ description: Use when analyzing OpenHarmony sysfreeze/appfreeze logs to diagnose
 - 如果阻塞线程也处于阻塞条件，继续分析阻塞其的线程
 - 直到找到不处于阻塞状态的线程，作为最终问题线程
 
-**IPC 阻塞处理**
+**如果是IPC 阻塞处理**
 - 查看 `BinderCatcher` 信息，获取源为 `当前进程号:当前线程号` 的同步调用
 - 查看阻塞时间
 - 查看 `对端进程号:对端线程号` 信息，查找 `PeerBinder Stacktrace` 中对应的进程抓栈
