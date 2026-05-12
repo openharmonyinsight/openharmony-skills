@@ -2,6 +2,8 @@
 
 OpenHarmony/HarmonyOS `hdc` 命令使用 Skill，用于设备连接、shell、文件传输、应用安装卸载、日志、端口转发、服务管理和常见连接问题排查。
 
+该 Skill 的主体强调场景判断、失败排查和安全边界；完整命令速查放在 `references/hdc-command-reference.md`，按需加载。
+
 ## 来源
 
 - 华为开发者文档：<https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/hdc>

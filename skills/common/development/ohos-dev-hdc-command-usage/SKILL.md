@@ -1,6 +1,6 @@
 ---
 name: ohos-dev-hdc-command-usage
-description: Use when using HarmonyOS hdc commands for device connection, shell execution, file transfer, app install or uninstall, logs, port forwarding, service management, or troubleshooting missing devices.
+description: Use when HarmonyOS hdc work involves device connection failures, USB or TCP targets, multiple connected devices, shell commands, sandbox access, file transfer, HAP/HSP/APP install or uninstall, hilog capture, port forwarding, hdc service logs, or errors such as Empty, Unauthorized, Offline, Connect failed, or Failed to communicate with daemon.
 metadata:
   author: openharmony
   scope: common
@@ -18,144 +18,142 @@ metadata:
 
 # hdc Command Usage
 
-Use this skill when an OpenHarmony or HarmonyOS task needs `hdc` as the host-to-device command line bridge. Treat `hdc` as a device interaction tool for connection management, shell commands, data transfer, logs, app installation, port forwarding, and basic diagnostics.
+Use this skill to choose safe, targeted `hdc` commands and diagnose common host-to-device failures. The goal is not to memorize every command; it is to avoid wrong-device operations, unstable TCP assumptions, unsupported options, and noisy trial-and-error.
 
 Source baseline: Huawei HarmonyOS guide "hdc", version `V205`, displayed update time `2026-05-07 09:37:20`, URL: `https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/hdc`.
 
-## First Checks
+For a compact command list, read [references/hdc-command-reference.md](references/hdc-command-reference.md) only when the needed command pattern is not already in this file.
 
-Before giving or running commands, identify:
-- Connection mode: USB, wireless TCP, or remote server via `-s`.
-- Target count: if more than one device may be connected, use `hdc list targets -v` and add `-t <connect-key>`.
-- Package type: `.hap`, `.hsp`, or `.app`; `hdc install` supports HAP and application HSP, and supports APP packages from API version 22.
-- Privilege need: do not assume system partitions are writable; prefer app/data paths unless the task explicitly requires remount or elevated access.
+## First Decision
+
+Before giving or running an `hdc` command, classify the task:
+
+| Task type | First command | Next decision |
+| --- | --- | --- |
+| Device not found or unstable | `hdc list targets -v` | Match the symptom table below before changing modes |
+| Multiple devices possible | `hdc list targets -v` | Require `-t <connect-key>` for install, uninstall, file, shell, reboot |
+| USB debugging | `hdc list targets -v` | Resolve `Unauthorized`, `Offline`, driver, or cable before retry loops |
+| Wireless/TCP debugging | `hdc tconn <IP:port>` | Treat as test-environment only; confirm network and port first |
+| Remote server debugging | `hdc -s <server-ip>:<port> <command>` | Confirm who owns the server and whether non-loopback exposure is acceptable |
+| App install | inspect package set | Choose single-file install, multi-package folder install, or device-side `bm install` |
+| File transfer | inspect source and destination | Prefer writable data/app paths; avoid system writes unless explicitly required |
+| Logs | decide service log vs device log | Use `hdc -l` for hdc service, `hilog` for device logs |
 
 `connect-key` is the unique device identifier. USB uses a serial-like identifier; TCP uses `IP:port`.
 
-## Command Map
+## Target Selection
 
-| Task | Command pattern |
-| --- | --- |
-| Check tool/help/version | `hdc -h [verbose]`, `hdc -v`, `hdc version`, `hdc checkserver` |
-| List devices | `hdc list targets [-v]` |
-| Wait for device | `hdc wait`, `hdc -t <connect-key> wait` |
-| Select one device | `hdc -t <connect-key> <command>` |
-| Run shell command | `hdc shell <command>`, or `hdc shell` for interactive mode |
-| Run in debuggable app sandbox | `hdc shell -b <bundleName> <command>` |
-| Connect over TCP | `hdc tconn <IP:port>`, remove with `hdc tconn <IP:port> -remove` |
-| Open/close device network channel | `hdc tmode port [port]`, `hdc tmode port close` |
-| Send file to device | `hdc file send [options] <local> <remote>` |
-| Receive file from device | `hdc file recv [options] <remote> <local>` |
-| Install app file | `hdc install [options] <src>` |
-| Uninstall bundle | `hdc uninstall [options] <bundleName>` |
-| Print device logs | `hdc hilog`, `hdc shell hilog -w start`, `hdc shell hilog -w stop` |
-| Port forwarding | `hdc fport ls`, `hdc fport <localnode> <remotenode>`, `hdc rport <remotenode> <localnode>`, `hdc fport rm <taskstr>` |
-| Restart hdc service | `hdc start -r`, `hdc kill -r` |
-| Export system info | `hdc bugreport [FILE]` |
+If more than one target can exist, never run mutating commands without `-t`.
 
-## Connection Workflow
-
-For USB:
-1. Ensure the device has USB debugging enabled in developer options.
-2. Use a data-capable cable and a direct USB port.
-3. Run `hdc list targets -v`.
-4. If the device is `Unauthorized`, ask the user to trust the host on the device.
-
-For TCP:
-1. Use TCP debugging mainly in test environments.
-2. Ensure host and device are on the same network.
-3. Enable wireless debugging on the device and record `IP:port`.
-4. Run `hdc tconn <IP:port>` and expect `Connect OK`.
-5. Confirm with `hdc list targets`.
-
-For remote host/server debugging:
-1. Start the server-side hdc service with an explicit address, for example `hdc -s <server-ip>:8710 -m`.
-2. From the client, run `hdc -s <server-ip>:8710 <command>`.
-3. Remember that an explicit `-s` ignores `OHOS_HDC_SERVER_PORT` for that command.
-4. Be careful when binding to non-loopback addresses; treat exposed hdc service ports as sensitive.
-
-## File Transfer Rules
-
-Use:
-- `hdc file send <local> <remote>` to push files to the device.
-- `hdc file recv <remote> <local>` to pull files from the device.
-- `-a` to preserve file timestamps.
-- `-sync` to transfer only files with updated mtime.
-- `-b <bundleName>` for a debuggable app sandbox; this requires a compatible hdc version and an installed debuggable app.
-
-Do not recommend `-z`; the Huawei guide marks LZ4 transfer as not open for use.
-
-For media library paths, API version 21 and later support partial operations under `/mnt/data/<uid>/media_fuse/Photo/`; do not assume arbitrary directory creation is supported there.
-
-## App Install Rules
-
-Use host-side simplified install first:
+Safe pattern:
 
 ```bash
-hdc install <path-to.hap>
-hdc install -r <path-to.hap>
-hdc install <path-to.app>
+hdc list targets -v
+hdc -t <connect-key> shell echo ok
+hdc -t <connect-key> install <path-to.hap>
 ```
 
-Important options:
-- `-r` is overwrite install behavior; the guide notes overwrite is the default when omitted.
-- `-s` is required when installing an application HSP; each specified directory should contain only one HSP.
-- `-p` can point to a folder containing multiple HAP/HSP files; from API version 22, it can also point to an APP or a folder with a single APP.
-- `"-w 180"` and `"-u 100"` style options should be quoted when passing bm options that combine a flag and value.
-- `-g` applies only to debug apps and is supported from API version 24.
+High-risk commands without `-t`: `install`, `uninstall`, `file send`, `file recv`, `target boot`, `shell rm`, `shell param set`, and any command that changes app data or device state.
+
+Do not parse transient hdc error text as stable automation logic. The Huawei guide notes command error text may be optimized later; automation should prefer stable system error codes where available.
+
+## Connection Diagnosis
+
+| Symptom | Likely causes | Action |
+| --- | --- | --- |
+| `[Empty]` from `list targets` | hdc not on PATH, debugging disabled, bad USB cable/port, missing driver, service stuck, SDK/device mismatch | Check `hdc -h`; enable USB/wireless debugging; use data cable/direct port; check HDC Device/Interface or `lsusb`; run `hdc kill -r`; update SDK/toolchains if device recently updated |
+| `Unauthorized` | Device sees host but trust is not approved | Ask user to accept trust or permanent trust prompt on device; then rerun `hdc list targets -v` |
+| `Offline` | Stale TCP target, disconnected USB, daemon restarted after mode change | Remove stale TCP with `hdc tconn <IP:port> -remove`; reconnect cable/network; rerun `hdc wait` or reconnect TCP |
+| `Connect failed` from `tconn` | Wrong IP/port, not same network, wireless debugging off, unstable network | Confirm device-displayed `IP:port`; ping or otherwise verify network path; re-enable wireless debugging; retry only after network facts change |
+| `Failed to communicate with daemon` | daemon/service mismatch, device daemon issue, hdc/SDK version mismatch, port conflict with another hdc variant | Restart hdc service; check no competing hdc/hdc_std service uses the same port; update SDK/toolchains; reconnect or reboot device if daemon stays broken |
+| `ExecuteCommand need connect-key` | No target selected or device list empty | Run `hdc list targets -v`; if multiple targets exist, add `-t`; if empty, diagnose connection first |
+| Local server connection failure with `-s` | Wrong server address/port, server not started with matching bind, firewall | On server, start foreground service with `hdc -s <server-ip>:8710 -m`; on client, use same IP/port |
+
+Use `hdc kill -r` for abnormal hdc service state. Do not use it as a substitute for fixing cable, authorization, network, or version problems.
+
+## Connection Modes
+
+USB:
+- Prefer USB for stable development and destructive operations.
+- Use a data-capable cable and a direct host USB port.
+- If Windows shows a warning on `HDC Device`, reinstall or switch the USB driver before debugging hdc commands.
+
+TCP:
+- Use mainly in test environments.
+- Prefer device UI wireless debugging. `tmode port [port]` restarts the device daemon; established connections must reconnect.
+- Close with device UI, network disconnect, `hdc tmode port close`, or remove a specific connection with `hdc tconn <IP:port> -remove`.
+
+Remote server via `-s`:
+- `-s` is per command and overrides `OHOS_HDC_SERVER_PORT` for that command.
+- Binding hdc service to a non-loopback address exposes device-control capability. Call this out before recommending `0.0.0.0` or a LAN IP.
+
+## Install Decision Tree
+
+Choose the install path from the package shape, not from habit:
+
+| Package shape | Prefer | Why |
+| --- | --- | --- |
+| One `.hap` on host | `hdc install <file.hap>` | Simplest host-side flow; overwrite is default per guide |
+| One `.app` on host | `hdc install <file.app>` | Supported from API version 22 |
+| Single HAP reinstall | `hdc install -r <file.hap>` | Explicit overwrite when communicating intent |
+| HAP with application HSP dependency | `hdc install -s <hsp-path> <hap>` or folder-based install | HSP dependency must be present; each specified HSP directory should contain one HSP |
+| Multiple HAP/HSP files | `hdc install -p <folder>` | Avoids installing only the entry HAP and missing shared modules |
+| Files already pushed to device | `hdc shell bm install -p <remote-path>` | Use when host-side `hdc install` is not the actual package location |
+| Debug package needing grants | `hdc install -g <package>` | Only for debug apps; supported from API version 24 |
+
+When passing bm options through `hdc install`, quote flag/value pairs such as `"-w 180"` and `"-u 100"` to avoid argument parsing surprises.
 
 For uninstall:
+- Use `hdc uninstall <bundleName>` for normal uninstall.
+- Add `-k` only when preserving app data is intentional.
+- Add `-s` for shared-library/HSP uninstall scenarios.
+
+If install fails with a missing dependent module, do not keep reinstalling the same HAP. Check whether required HSP files were built, signed, and included in the install folder or `-s` path.
+
+## File Transfer Decisions
+
+Prefer:
 
 ```bash
-hdc uninstall <bundleName>
-hdc uninstall -k <bundleName>
-hdc uninstall -s <bundleName>
-```
-
-Use `-k` when preserving app data matters. Use `-s` when uninstalling an HSP/shared library scenario requires it.
-
-## Logs and Diagnostics
-
-For hdc service issues:
-- Try `hdc kill -r` when hdc behaves abnormally.
-- Use `hdc -l <0-6> <command>` for current-process logging.
-- Use `hdc kill` then `hdc -l 5 start` to collect server logs.
-- Use `hdc -l 6` only when USB/libusb detail is needed; it is high-volume.
-
-Server log locations:
-- Windows: `%temp%\`
-- Linux: `/tmp/`
-- macOS: `$TMPDIR/`
-
-For device logs:
-
-```bash
-hdc hilog
-hdc shell hilog -w start
-hdc shell hilog -w stop
-hdc shell ls /data/log/hilog
+hdc file send <local> /data/local/tmp/<name>
 hdc file recv /data/log/hilog <local_path>
+hdc file send -b <bundleName> <local> <sandbox-relative-path>
 ```
 
-For system snapshots, use `hdc bugreport [FILE]`.
+Decision rules:
+- Use `/data/local/tmp` or app-specific paths for temporary files.
+- Use `-b <bundleName>` only for an installed, started, debuggable app and a compatible hdc version.
+- Use `-a` when timestamps matter; use `-sync` for mtime-based incremental transfer.
+- For media library paths under `/mnt/data/<uid>/media_fuse/Photo/`, remember API version 21 behavior and partial-operation limits; do not assume directory creation works.
+- If a write fails with read-only or permission errors, change to a writable target before considering remount.
 
-## Troubleshooting
+## Logs
 
-If `hdc list targets` returns `[Empty]`:
-- Check that `hdc -h` works and the SDK `toolchains` path is available.
-- Check USB debugging or wireless debugging is enabled.
-- On USB, check cable, direct USB port, and host driver visibility (`HDC Device` or `HDC Interface` on Windows; `lsusb` or system USB info on Unix-like systems).
-- If the device is `Unauthorized`, approve the device trust prompt.
-- Restart the service with `hdc kill -r` or `hdc start -r`.
-- If hdc or SDK version does not match a newly updated device, update SDK/toolchains.
+Pick the log source:
 
-If commands must target a specific device:
-- Always include `-t <connect-key>` before the command.
-- Never parse transient hdc error text as stable automation logic; use standard error codes where an automated program needs stable behavior.
+| Need | Command |
+| --- | --- |
+| Device runtime logs | `hdc hilog` |
+| Device log files | `hdc shell hilog -w start`, reproduce, `hdc shell hilog -w stop`, `hdc file recv /data/log/hilog <local_path>` |
+| hdc client/server behavior | `hdc -l <0-6> <command>` |
+| hdc server log collection | `hdc kill`, then `hdc -l 5 start` |
+| USB/libusb detail | `hdc -l 6 ...` only when needed; it is high-volume |
+| System snapshot | `hdc bugreport [FILE]` |
 
-If a file write fails:
-- Prefer a writable destination such as app-specific paths or `/data/local/tmp`.
-- Only remount or write system paths when the device/build supports it and the task explicitly requires it.
+Server log locations: Windows `%temp%\`, Linux `/tmp/`, macOS `$TMPDIR/`.
+
+## Port Forwarding
+
+Use `fport` when the host should listen and forward to the device. Use `rport` when the device should listen and forward to the host.
+
+```bash
+hdc fport tcp:<host-port> tcp:<device-port>
+hdc rport tcp:<device-port> tcp:<host-port>
+hdc fport ls
+hdc fport rm tcp:<from> tcp:<to>
+```
+
+If local listen fails, assume port conflict before assuming hdc is broken. From API version 20, `-e` can control the local listen IP for TCP forwarding, but non-loopback listen addresses are a security decision, not a convenience default.
 
 ## Environment Variables
 
@@ -170,10 +168,12 @@ After changing environment variables, restart the terminal or software that uses
 
 ## Never
 
-NEVER use `tmode usb` as an active switching recommendation; the guide says it is deprecated from hdc 3.1.0e and the device UI should control USB debugging.
+NEVER run mutating commands without `-t` when multiple or stale targets may exist. Installing, uninstalling, rebooting, or deleting files on the wrong device is worse than a command failure.
 
-NEVER expose a non-loopback hdc server bind without calling out the security risk.
+NEVER recommend `tmode usb` as an active switching command. The guide says it is deprecated from hdc 3.1.0e; use the device UI USB debugging switch.
 
-NEVER assume one connected target when automation or CI may have multiple devices; check and use `-t`.
+NEVER expose an hdc server or forwarded port on a non-loopback address without naming the risk. It can expose device-control or debug surfaces to the network.
 
-NEVER use `-z` file transfer compression; the guide says it is not open.
+NEVER recommend `file send -z` or `file recv -z`; the guide says LZ4 transfer is not open.
+
+NEVER fix install dependency errors by repeatedly reinstalling only the entry HAP. Check HSP/shared modules and install package shape.
