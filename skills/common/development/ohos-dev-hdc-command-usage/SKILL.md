@@ -1,6 +1,6 @@
 ---
 name: ohos-dev-hdc-command-usage
-description: Use when HarmonyOS hdc work involves device connection failures, USB or TCP targets, multiple connected devices, shell commands, sandbox access, file transfer, HAP/HSP/APP install or uninstall, hilog capture, port forwarding, hdc service logs, or errors such as Empty, Unauthorized, Offline, Connect failed, or Failed to communicate with daemon.
+description: Use when HarmonyOS hdc work involves device connection failures, USB or TCP targets, multiple connected devices, automation or CI scripts, shell commands, sandbox access, file transfer, HAP/HSP/APP install or uninstall, hilog capture, port forwarding, hdc service logs, remount/root-sensitive operations, or errors such as Empty, Unauthorized, Offline, Connect failed, or Failed to communicate with daemon.
 metadata:
   author: openharmony
   scope: common
@@ -32,6 +32,7 @@ Before giving or running an `hdc` command, classify the task:
 | --- | --- | --- |
 | Device not found or unstable | `hdc list targets -v` | Match the symptom table below before changing modes |
 | Multiple devices possible | `hdc list targets -v` | Require `-t <connect-key>` for install, uninstall, file, shell, reboot |
+| Automation or CI | `hdc list targets -v` | Prove exactly one intended target or require an explicit `connect-key` |
 | USB debugging | `hdc list targets -v` | Resolve `Unauthorized`, `Offline`, driver, or cable before retry loops |
 | Wireless/TCP debugging | `hdc tconn <IP:port>` | Treat as test-environment only; confirm network and port first |
 | Remote server debugging | `hdc -s <server-ip>:<port> <command>` | Confirm who owns the server and whether non-loopback exposure is acceptable |
@@ -57,6 +58,16 @@ High-risk commands without `-t`: `install`, `uninstall`, `file send`, `file recv
 
 Do not parse transient hdc error text as stable automation logic. The Huawei guide notes command error text may be optimized later; automation should prefer stable system error codes where available.
 
+## Automation / CI Rules
+
+Unattended `hdc` scripts must be stricter than manual debugging:
+- Require an explicit `connect-key` input for mutating commands, or fail if `hdc list targets -v` does not show exactly one `Connected` target.
+- Treat `Unauthorized`, `Offline`, `[Empty]`, and multiple targets as hard failures; do not wait indefinitely for a human trust prompt in CI.
+- Run a harmless probe such as `hdc -t <connect-key> shell echo ok` before install, uninstall, file writes, reboot, or destructive shell commands.
+- Capture hdc service context on infrastructure failures: `hdc checkserver`, `hdc list targets -v`, and when needed `hdc kill` followed by `hdc -l 5 start`.
+- Use `hdc -l 6` only for USB/libusb investigations; it is high-volume and should not be the default CI log mode.
+- Do not branch automation on exact hdc prose error strings; use target state, command exit status, and stable system/tool error codes where available.
+
 ## Connection Diagnosis
 
 | Symptom | Likely causes | Action |
@@ -70,6 +81,16 @@ Do not parse transient hdc error text as stable automation logic. The Huawei gui
 | Local server connection failure with `-s` | Wrong server address/port, server not started with matching bind, firewall | On server, start foreground service with `hdc -s <server-ip>:8710 -m`; on client, use same IP/port |
 
 Use `hdc kill -r` for abnormal hdc service state. Do not use it as a substitute for fixing cable, authorization, network, or version problems.
+
+## Layered Triage
+
+Use this order to avoid trying everything at once:
+
+1. Host tool: `hdc -h`, `hdc -v`, `hdc checkserver`; if hdc and hdc_std or multiple SDKs may coexist, confirm which binary is on PATH and whether port `8710` or `OHOS_HDC_SERVER_PORT` conflicts.
+2. Target inventory: `hdc list targets -v`; classify as `[Empty]`, `Unauthorized`, `Offline`, stale TCP, or multiple connected targets.
+3. Transport branch: for USB, check cable, direct port, driver, and trust prompt; for TCP, check same network, current device-displayed `IP:port`, and wireless debugging state; for remote `-s`, check server bind address, firewall, and matching port.
+4. Daemon/version branch: if transport exists but daemon communication fails, restart hdc service, reconnect target, then update SDK/toolchains if the device image is newer than the host tools.
+5. Evidence capture: before rebooting devices or changing modes, capture `hdc list targets -v`, `hdc checkserver`, and relevant hdc service logs.
 
 ## Connection Modes
 
@@ -127,6 +148,16 @@ Decision rules:
 - For media library paths under `/mnt/data/<uid>/media_fuse/Photo/`, remember API version 21 behavior and partial-operation limits; do not assume directory creation works.
 - If a write fails with read-only or permission errors, change to a writable target before considering remount.
 
+## Dangerous Shell And File Operations
+
+For `shell rm`, `param set`, writes under system paths, reboot, remount, root-like flows, or broad file operations:
+- Require explicit target selection with `-t <connect-key>`.
+- Prefer reversible probes first: `pwd`, `ls`, `stat`, `id`, or writing a disposable file under `/data/local/tmp`.
+- Prefer safer locations before privilege escalation: `/data/local/tmp`, app sandbox via `-b <bundleName>`, or documented log/media paths.
+- Treat permission or read-only errors as path/permission facts, not automatic permission to remount system partitions.
+- Before deleting or overwriting, verify the resolved path and scope with `ls` or `stat`; avoid glob-style destructive commands in examples.
+- Only suggest remount/root/system writes when the user explicitly needs system-partition modification and the device/build supports it.
+
 ## Logs
 
 Pick the log source:
@@ -173,6 +204,10 @@ NEVER run mutating commands without `-t` when multiple or stale targets may exis
 NEVER recommend `tmode usb` as an active switching command. The guide says it is deprecated from hdc 3.1.0e; use the device UI USB debugging switch.
 
 NEVER expose an hdc server or forwarded port on a non-loopback address without naming the risk. It can expose device-control or debug surfaces to the network.
+
+NEVER let CI wait forever for device authorization or connection recovery. Fail with target state and collected hdc diagnostics.
+
+NEVER convert a permission/read-only failure directly into remount/root advice. First verify the path, use a writable destination, or ask whether system-partition modification is actually required.
 
 NEVER recommend `file send -z` or `file recv -z`; the guide says LZ4 transfer is not open.
 
