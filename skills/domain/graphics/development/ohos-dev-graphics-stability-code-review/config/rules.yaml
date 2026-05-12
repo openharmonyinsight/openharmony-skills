@@ -1,0 +1,264 @@
+rules:
+  异常处理:
+    name: 异常处理
+    description: OpenHarmony 不允许使用异常处理机制，检测代码中的 try/catch/throw；异常分支处理不当等稳定性问题
+    enabled: true
+    rules:
+      StabilityCodeReview_ExceptionHandling_001:
+        enabled: true
+        id: StabilityCodeReview_ExceptionHandling_001
+        name: 禁止异常处理机制
+        severity: MEDIUM
+        description: OpenHarmony 不允许使用 C++ 异常处理机制，检测代码中的 try/catch/throw
+        reference: ExceptionHandling/StabilityCodeReview_ExceptionHandling_001.md
+      StabilityCodeReview_ExceptionHandling_002:
+        enabled: true
+        id: StabilityCodeReview_ExceptionHandling_002
+        name: 异常分支应正确处理
+        severity: MEDIUM
+        description: 异常处理分支应该有合适的处理方式，不能静默忽略或遗漏return，否则可能导致程序继续执行后续逻辑引发更严重问题
+        reference: ExceptionHandling/StabilityCodeReview_ExceptionHandling_002.md
+  并发稳定性:
+    name: 并发稳定性
+    description: 检测并发相关的稳定性风险（线程安全、全局变量写入等）
+    enabled: true
+    rules:
+      StabilityCodeReview_ConcurrencyStability_001:
+        enabled: true
+        id: StabilityCodeReview_ConcurrencyStability_001
+        name: RenderNodeDrawable全局变量写入
+        severity: HIGH
+        description: RenderNodeDrawable中应避免写入全局变量，若必须使用则应加锁保护避免并发。全局变量在多线程环境下并发写入会导致数据竞争、状态不一致等问题
+        reference: ConcurrencyStability/StabilityCodeReview_ConcurrencyStability_001.md
+  资源管理:
+    name: 资源管理
+    description: 检测资源泄漏导致的稳定性风险（文件句柄、数据库连接、缓存等）
+    enabled: true
+    rules:
+      StabilityCodeReview_ResourceManagement_001:
+        enabled: true
+        id: StabilityCodeReview_ResourceManagement_001
+        name: 反序列化内存泄漏
+        severity: HIGH
+        description: 在反序列化过程中申请的内存在异常分支未及时释放，造成内存泄漏。反序列化代码中常见的模式是先申请内存，然后读取数据填充，如果读取过程中发生错误，需要正确释放已申请的内存
+        reference: ResourceManagement/StabilityCodeReview_ResourceManagement_001.md
+      StabilityCodeReview_ResourceManagement_002:
+        enabled: true
+        id: StabilityCodeReview_ResourceManagement_002
+        name: dlopen需配对dlclose
+        severity: HIGH
+        description: 使用dlopen动态加载共享库函数后，需要使用dlclose进行关闭，否则存在资源泄露。未关闭的动态库会占用系统资源，多次加载但不关闭会导致资源累积，影响系统稳定性
+        reference: ResourceManagement/StabilityCodeReview_ResourceManagement_002.md
+      StabilityCodeReview_ResourceManagement_003:
+        enabled: true
+        id: StabilityCodeReview_ResourceManagement_003
+        name: 谨慎使用static_pointer_cast
+        severity: MEDIUM
+        description: 谨慎使用std::static_pointer_cast，子类转父类时几乎无需使用（shared_ptr支持隐式向上转换），父类转子类时必须要100%确定父类指针实际指向的是一个子类对象，否则会导致类型错误和未定义行为
+        reference: ResourceManagement/StabilityCodeReview_ResourceManagement_003.md
+      StabilityCodeReview_ResourceManagement_004:
+        enabled: true
+        id: StabilityCodeReview_ResourceManagement_004
+        name: 文件描述符泄漏
+        severity: HIGH
+        description: 文件描述符fd资源需要确保申请和释放一一对应，遗漏释放会造成fd泄露，重复释放会造成double free。fd泄漏会导致系统资源耗尽，影响后续文件操作
+        reference: ResourceManagement/StabilityCodeReview_ResourceManagement_004.md
+      StabilityCodeReview_ResourceManagement_005:
+        enabled: true
+        id: StabilityCodeReview_ResourceManagement_005
+        name: JSON对象未关闭泄漏
+        severity: MEDIUM
+        description: 使用json库相关操作完毕后应记得使用close释放内存，否则会造成内存泄漏。json对象占用的内存如果不及时释放，会导致内存资源累积
+        reference: ResourceManagement/StabilityCodeReview_ResourceManagement_005.md
+  边界条件:
+    name: 边界条件
+    description: 检测边界条件处理不当导致的稳定性风险（空容器、极端输入等）
+    enabled: true
+    rules:
+      StabilityCodeReview_BoundaryCondition_001:
+        enabled: true
+        id: StabilityCodeReview_BoundaryCondition_001
+        name: Parcel数据不可作为循环或递归条件
+        severity: CRITICAL
+        description: 从Parcel中读取的数据不可信，不能直接作为循环或递归的条件，必须进行上限保护处理。恶意构造的Parcel数据可能包含超大数值，导致死循环、栈溢出或拒绝服务攻击
+        reference: BoundaryCondition/StabilityCodeReview_BoundaryCondition_001.md
+      StabilityCodeReview_BoundaryCondition_002:
+        enabled: true
+        id: StabilityCodeReview_BoundaryCondition_002
+        name: Parcel数据不可直接作为数组下标
+        severity: CRITICAL
+        description: 从Parcel中读取的不可信数据不可以直接作为固定大小数组的下标值访问，否则可能造成数组越界访问，导致内存破坏、程序崩溃或安全漏洞
+        reference: BoundaryCondition/StabilityCodeReview_BoundaryCondition_002.md
+      StabilityCodeReview_BoundaryCondition_003:
+        enabled: true
+        id: StabilityCodeReview_BoundaryCondition_003
+        name: Parcel数据不可直接作为内存申请大小
+        severity: HIGH
+        description: 从Parcel中读取的数据不可信，不能直接作为内存申请大小的值，否则可能造成内存超大申请，导致内存耗尽、程序崩溃或拒绝服务攻击
+        reference: BoundaryCondition/StabilityCodeReview_BoundaryCondition_003.md
+      StabilityCodeReview_BoundaryCondition_004:
+        enabled: true
+        id: StabilityCodeReview_BoundaryCondition_004
+        name: 容器size增长的对外接口应限制上限
+        severity: HIGH
+        description: 会导致容器size增大的对外接口，应该限制容器size的上限，防止外部恶意攻击申请过大内存。外部输入可能包含恶意构造的数据，导致容器无限增长，造成内存耗尽或拒绝服务
+        reference: BoundaryCondition/StabilityCodeReview_BoundaryCondition_004.md
+      StabilityCodeReview_BoundaryCondition_005:
+        enabled: true
+        id: StabilityCodeReview_BoundaryCondition_005
+        name: Parcel整数转枚举需校验有效性
+        severity: MEDIUM
+        description: 从Parcel中读取的整数不能直接转化为枚举类，需要校验值的有效性。未经验证的枚举值转换可能导致未定义行为、程序逻辑错误或安全漏洞
+        reference: BoundaryCondition/StabilityCodeReview_BoundaryCondition_005.md
+      StabilityCodeReview_BoundaryCondition_006:
+        enabled: true
+        id: StabilityCodeReview_BoundaryCondition_006
+        name: Parcel序列化和反序列化必须匹配
+        severity: HIGH
+        description: Parcel的序列化和反序列化必须完全匹配，包括顺序、类型和数量。不匹配的序列化/反序列化会导致数据错误、内存越界读取或程序崩溃
+        reference: BoundaryCondition/StabilityCodeReview_BoundaryCondition_006.md
+      StabilityCodeReview_BoundaryCondition_007:
+        enabled: true
+        id: StabilityCodeReview_BoundaryCondition_007
+        name: 外部数据类型转换需范围检查
+        severity: HIGH
+        description: 对外部数据进行类型转换前需要进行范围检查，避免整数溢出、整数回绕。不安全的类型转换可能导致数据截断、溢出或符号错误，造成程序逻辑错误或安全漏洞
+        reference: BoundaryCondition/StabilityCodeReview_BoundaryCondition_007.md
+      StabilityCodeReview_BoundaryCondition_008:
+        enabled: true
+        id: StabilityCodeReview_BoundaryCondition_008
+        name: 加减乘除运算应避免类型溢出
+        severity: HIGH
+        description: 加减乘除运算应避免类型溢出或回绕。整数运算溢出会导致结果错误、程序逻辑异常，甚至引发安全漏洞。应使用安全的运算方式或检查运算范围
+        reference: BoundaryCondition/StabilityCodeReview_BoundaryCondition_008.md
+      StabilityCodeReview_BoundaryCondition_009:
+        enabled: true
+        id: StabilityCodeReview_BoundaryCondition_009
+        name: json库获取键值前需判断类型
+        severity: MEDIUM
+        description: 使用json库获取键值内容前应先判断类型是否匹配、键值是否存在。未判断类型直接获取可能导致类型错误、程序异常或崩溃
+        reference: BoundaryCondition/StabilityCodeReview_BoundaryCondition_009.md
+      StabilityCodeReview_BoundaryCondition_010:
+        enabled: true
+        id: StabilityCodeReview_BoundaryCondition_010
+        name: json库类型转换前需校验参数类型
+        severity: MEDIUM
+        description: 使用json库获取键值后，在进行类型转换前应先校验参数类型。类型不匹配的转换会导致数据错误、程序异常或崩溃
+        reference: BoundaryCondition/StabilityCodeReview_BoundaryCondition_010.md
+      StabilityCodeReview_BoundaryCondition_011:
+        enabled: true
+        id: StabilityCodeReview_BoundaryCondition_011
+        name: 类型强制转换需校验范围
+        severity: HIGH
+        description: 类型强制转换未校验，可能导致越界读。不安全的类型转换可能截断数据、改变符号或导致数值超出目标类型范围，造成程序错误或安全漏洞
+        reference: BoundaryCondition/StabilityCodeReview_BoundaryCondition_011.md
+      StabilityCodeReview_BoundaryCondition_012:
+        enabled: true
+        id: StabilityCodeReview_BoundaryCondition_012
+        name: 数组下标计算需避免整数回绕
+        severity: HIGH
+        description: 数组下标的计算应避免整数回绕导致内存越界访问。整数回绕可能产生负数下标或超大下标，导致数组越界访问、内存破坏或程序崩溃
+        reference: BoundaryCondition/StabilityCodeReview_BoundaryCondition_012.md
+      StabilityCodeReview_BoundaryCondition_013:
+        enabled: true
+        id: StabilityCodeReview_BoundaryCondition_013
+        name: 返回值类型不匹配风险
+        severity: MEDIUM
+        description: 函数返回值类型与接收变量类型不匹配可能导致隐式类型转换、数值截断、符号扩展错误等问题，导致数据错误、逻辑异常
+        reference: BoundaryCondition/StabilityCodeReview_BoundaryCondition_013.md
+      StabilityCodeReview_BoundaryCondition_014:
+        enabled: true
+        id: StabilityCodeReview_BoundaryCondition_014
+        name: JSON解析安全风险
+        severity: HIGH
+        description: JSON解析存在多种安全风险：解析深度过大导致栈溢出、超大JSON导致内存耗尽、未捕获解析异常、键不存在导致的空指针访问、类型不匹配导致的类型混淆
+        reference: BoundaryCondition/StabilityCodeReview_BoundaryCondition_014.md
+  图形稳定性:
+    name: 图形稳定性
+    description: 检测图形系统相关的稳定性风险（GPU资源管理、线程访问限制、RS进程安全等）
+    enabled: true
+    rules:
+      StabilityCodeReview_GraphicsStability_001:
+        enabled: true
+        id: StabilityCodeReview_GraphicsStability_001
+        name: VulkanCleanUpHelper引用计数管理
+        severity: HIGH
+        description: MakeFromBackendTexture或BuildFromTexture创建资源时应正确使用VulkanCleanUpHelper管理引用计数，即首次传入cleanUpHelper，后续传入cleanUpHelper->ref()，这样才能正确维护底层VkImage的生命周期，避免GPU发生UAF问题
+        reference: GraphicsStability/StabilityCodeReview_GraphicsStability_001.md
+      StabilityCodeReview_GraphicsStability_002:
+        enabled: true
+        id: StabilityCodeReview_GraphicsStability_002
+        name: VulkanCleanUpHelper与SharedContext引用计数混用
+        severity: HIGH
+        description: VulkanCleanUpHelper与SharedContext分属两套引用计数管理，不能混用。混用会导致引用计数混乱、GPU资源提前释放或泄漏，引发UAF或资源耗尽问题
+        reference: GraphicsStability/StabilityCodeReview_GraphicsStability_002.md
+      StabilityCodeReview_GraphicsStability_003:
+        enabled: true
+        id: StabilityCodeReview_GraphicsStability_003
+        name: RS主线程禁止使用RenderNodeDrawable
+        severity: HIGH
+        description: RS主线程不能使用RenderNodeDrawable，只能产生RenderNodeDrawable。主线程使用RenderNodeDrawable会导致线程角色混乱、数据竞争等问题
+        reference: GraphicsStability/StabilityCodeReview_GraphicsStability_003.md
+      StabilityCodeReview_GraphicsStability_004:
+        enabled: true
+        id: StabilityCodeReview_GraphicsStability_004
+        name: RSUniRenderThread禁止访问RenderNode
+        severity: HIGH
+        description: RSUniRenderThread类不能访问RenderNode。RSUniRenderThread类访问RenderNode会导致线程访问越界、数据竞争或崩溃问题
+        reference: GraphicsStability/StabilityCodeReview_GraphicsStability_004.md
+      StabilityCodeReview_GraphicsStability_005:
+        enabled: true
+        id: StabilityCodeReview_GraphicsStability_005
+        name: RS主线程禁止GPU Context操作
+        severity: HIGH
+        description: RS主线程不能做任何与GPU Context相关的操作。主线程执行GPU操作会导致线程阻塞、渲染异常或崩溃
+        reference: GraphicsStability/StabilityCodeReview_GraphicsStability_005.md
+      StabilityCodeReview_GraphicsStability_006:
+        enabled: true
+        id: StabilityCodeReview_GraphicsStability_006
+        name: Surface/Image跨线程跨Context操作风险
+        severity: HIGH
+        description: Surface/Image应尽量避免跨线程/跨Context操作，如果必须多线程访问，应首先考虑使用BackendTexture创建新的Surface/Image，否则必须要保证Surface/Image在同一把锁的保护范围内
+        reference: GraphicsStability/StabilityCodeReview_GraphicsStability_006.md
+      StabilityCodeReview_GraphicsStability_007:
+        enabled: true
+        id: StabilityCodeReview_GraphicsStability_007
+        name: Surface/Image创建释放线程一致性
+        severity: HIGH
+        description: Surface/Image涉及GPU资源，创建和释放应处于同一线程。跨线程创建释放会导致GPU资源管理混乱、资源泄漏或UAF问题
+        reference: GraphicsStability/StabilityCodeReview_GraphicsStability_007.md
+      StabilityCodeReview_GraphicsStability_008:
+        enabled: true
+        id: StabilityCodeReview_GraphicsStability_008
+        name: GetBackendTexture线程限制
+        severity: HIGH
+        description: Surface/Image只能在其创建的线程中使用GetBackendTexture。在其他线程调用GetBackendTexture会导致GPU资源访问越界、崩溃或数据损坏
+        reference: GraphicsStability/StabilityCodeReview_GraphicsStability_008.md
+      StabilityCodeReview_GraphicsStability_009:
+        enabled: true
+        id: StabilityCodeReview_GraphicsStability_009
+        name: RSRenderNodeMap线程访问限制
+        severity: HIGH
+        description: RSRenderNodeMap只能在RS主线程访问，不允许在其它线程访问。其他线程访问RSRenderNodeMap会导致数据竞争、崩溃或渲染异常
+        reference: GraphicsStability/StabilityCodeReview_GraphicsStability_009.md
+      StabilityCodeReview_GraphicsStability_010:
+        enabled: true
+        id: StabilityCodeReview_GraphicsStability_010
+        name: 回调函数执行进程限制
+        severity: HIGH
+        description: 应用进程传入的回调函数不能在RS进程中执行，只能在应用进程执行。在RS进程执行应用回调会导致进程隔离被破坏、权限越界或崩溃
+        reference: GraphicsStability/StabilityCodeReview_GraphicsStability_010.md
+      StabilityCodeReview_GraphicsStability_011:
+        enabled: true
+        id: StabilityCodeReview_GraphicsStability_011
+        name: Vulkan信号量导出fd生命周期管理
+        severity: HIGH
+        description: 使用GetFenceFdFromSemaphore、vkGetSemaphoreFdKHR等接口从vulkan信号量中导出fd后，fd由调用方负责关闭。最佳实践是在判断fd合法后，立刻用sptr<SyncFence>智能指针包裹，由该智能指针接管fd生命周期，在智能指针释放时会自动关闭fd。若实在无法使用SyncFence类型，须非常谨慎处理每一处函数/作用域出口，确保手动释放fd，避免fd泄漏。
+        reference: GraphicsStability/StabilityCodeReview_GraphicsStability_011.md
+      StabilityCodeReview_GraphicsStability_012:
+        enabled: true
+        id: StabilityCodeReview_GraphicsStability_012
+        name: SyncFence智能指针缓存管理
+        severity: HIGH
+        description: 使用GetFenceFdFromSemaphore、vkGetSemaphoreFdKHR等接口从vulkan信号量中导出的fd由智能指针sptr<SyncFence>接管生命周期后，需检验该智能指针是否被存于缓存中，若存在缓存逻辑，需确保缓存的释放逻辑完整且正确、释放时机合理，避免缓存遗漏清理导致内存泄漏与fd泄漏。
+        reference: GraphicsStability/StabilityCodeReview_GraphicsStability_012.md
