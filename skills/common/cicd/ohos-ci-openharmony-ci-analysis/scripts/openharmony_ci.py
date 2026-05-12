@@ -28,10 +28,14 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
+from collections import Counter
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 
 DCP_EVENT_URL = "https://dcp.openharmony.cn/api/codecheckAccess/ci-portal/v1/event/{event_id}"
+DCP_CODECHECK_TASK_URL = (
+    "https://dcp.openharmony.cn/api/codecheckAccess/ci-portal/v1/event/{uuid}/codecheck/task/{task_id}"
+)
 DCP_FILES_URL = "https://dcp.openharmony.cn/api/dataService/ci-portal/v1/files?directoryUrl={directory}"
 CI_DOWNLOAD_URL = "https://cidownload.openharmony.cn/{path}"
 EVENT_ID_PATTERN = re.compile(r"/detail/([0-9a-f]{24})(?:/|$)")
@@ -74,12 +78,43 @@ def parse_args() -> argparse.Namespace:
         "--download-dir",
         help="Optional directory for downloaded log archives/files",
     )
+    parser.add_argument(
+        "--codecheck-mode",
+        choices=("auto", "always", "never"),
+        default="auto",
+        help="auto: fetch static check defects when DCP/codecheck failed; always: fetch every task; never: skip",
+    )
+    parser.add_argument(
+        "--codecheck-page-size",
+        type=int,
+        default=300,
+        help="Page size for DCP static check defect details",
+    )
     parser.add_argument("--json", action="store_true", help="Print machine-readable JSON")
     return parser.parse_args()
 
 
 def http_get_json(url: str) -> Dict[str, Any]:
     request = urllib.request.Request(url, headers={"User-Agent": "openharmony-ci/1.0"})
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            content = response.read()
+    except urllib.error.URLError as exc:
+        raise ToolError(f"request failed: {url}: {exc}") from exc
+    try:
+        return json.loads(content.decode("utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ToolError(f"invalid json from {url}") from exc
+
+
+def http_post_json(url: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    data = json.dumps(payload).encode("utf-8")
+    request = urllib.request.Request(
+        url,
+        data=data,
+        headers={"Content-Type": "application/json", "User-Agent": "openharmony-ci/1.0"},
+        method="POST",
+    )
     try:
         with urllib.request.urlopen(request, timeout=30) as response:
             content = response.read()
@@ -281,6 +316,26 @@ def is_failure_result(result: str) -> bool:
     return str(result).lower() in FAILURE_RESULTS
 
 
+def is_codecheck_failure(result: Any) -> bool:
+    return str(result or "").strip().lower() in {"nopass", "failed", "fail", "error"}
+
+
+def should_fetch_codecheck(event_data: Dict[str, Any], codecheck_mode: str) -> bool:
+    if codecheck_mode == "never":
+        return False
+    summaries = event_data.get("codeCheckSummary", [])
+    if not isinstance(summaries, list) or not summaries:
+        return False
+    if codecheck_mode == "always":
+        return True
+    if is_failure_result(str(event_data.get("result", ""))):
+        return True
+    for summary in summaries:
+        if isinstance(summary, dict) and is_codecheck_failure(summary.get("result")):
+            return True
+    return False
+
+
 def should_fetch_logs(job: Dict[str, Any], log_mode: str) -> bool:
     if log_mode == "never":
         return False
@@ -427,6 +482,104 @@ def fetch_job_logs(job: Dict[str, Any], log_lines: int, download_dir: Optional[s
     }
 
 
+def normalize_codecheck_defect(detail: Dict[str, Any], defect: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "id": detail.get("id", ""),
+        "defect_id": detail.get("defectId") or defect.get("defectId", ""),
+        "task_id": detail.get("taskId", ""),
+        "file": detail.get("filepath", ""),
+        "file_name": detail.get("fileName", ""),
+        "line": detail.get("lineNumber", ""),
+        "rule": detail.get("ruleName") or detail.get("defectCheckerName", ""),
+        "rule_id": detail.get("ruleId", ""),
+        "checker": detail.get("defectCheckerName", ""),
+        "content": detail.get("defectContent", ""),
+        "level": detail.get("defectLevel", ""),
+        "status": detail.get("defectStatus", ""),
+        "tags": detail.get("ruleSystemTags", ""),
+        "result": detail.get("result", ""),
+        "created_at": detail.get("createdAt", ""),
+        "updated_at": detail.get("updateTime", ""),
+        "fragment": detail.get("fragment", []),
+        "raw": detail,
+    }
+
+
+def extract_codecheck_details(page_payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    data = page_payload.get("data", {})
+    defects = data.get("defects", []) if isinstance(data, dict) else []
+    details: List[Dict[str, Any]] = []
+    for defect in defects:
+        if not isinstance(defect, dict):
+            continue
+        for detail in defect.get("defectDetailList", []):
+            if isinstance(detail, dict):
+                details.append(normalize_codecheck_defect(detail, defect))
+    return details
+
+
+def fetch_codecheck_defects(uuid: str, task_id: str, page_size: int = 300) -> Dict[str, Any]:
+    if page_size <= 0:
+        raise ToolError("--codecheck-page-size must be greater than 0")
+    url = DCP_CODECHECK_TASK_URL.format(uuid=uuid, task_id=urllib.parse.quote(task_id, safe=""))
+    page_num = 1
+    defects: List[Dict[str, Any]] = []
+    fetched_defect_groups = 0
+    total_count: Optional[int] = None
+    while True:
+        payload = {"pageNum": page_num, "pageSize": page_size}
+        page_payload = http_post_json(url, payload)
+        data = page_payload.get("data", {})
+        if not isinstance(data, dict):
+            raise ToolError(f"unexpected codecheck response for task: {task_id}")
+        if total_count is None:
+            count = data.get("count", 0)
+            total_count = int(count) if isinstance(count, (int, str)) and str(count).isdigit() else 0
+        page_defects = data.get("defects", [])
+        fetched_defect_groups += len(page_defects) if isinstance(page_defects, list) else 0
+        defects.extend(extract_codecheck_details(page_payload))
+        if fetched_defect_groups >= total_count or not data.get("defects"):
+            break
+        page_num += 1
+    return {
+        "task_id": task_id,
+        "defect_count": total_count if total_count is not None else len(defects),
+        "defects": defects,
+    }
+
+
+def build_codecheck_report(event_data: Dict[str, Any], page_size: int) -> Dict[str, Any]:
+    uuid = event_data.get("uuid", "")
+    summaries = event_data.get("codeCheckSummary", [])
+    if not isinstance(uuid, str) or not uuid:
+        return {"uuid": uuid, "summary": summaries if isinstance(summaries, list) else [], "defect_count": 0, "tasks": []}
+    if not isinstance(summaries, list):
+        summaries = []
+
+    tasks = []
+    defect_count = 0
+    for summary in summaries:
+        if not isinstance(summary, dict):
+            continue
+        task_id = summary.get("task_id", "")
+        if not isinstance(task_id, str) or not task_id:
+            continue
+        task_report = fetch_codecheck_defects(uuid, task_id, page_size)
+        task_report["result"] = summary.get("result", "")
+        task_report["check_type"] = summary.get("check_type", "")
+        task_report["issue_count"] = summary.get("issue_count", "")
+        task_report["summary"] = summary
+        defect_count += int(task_report.get("defect_count", 0) or 0)
+        tasks.append(task_report)
+
+    return {
+        "uuid": uuid,
+        "summary": summaries,
+        "defect_count": defect_count,
+        "tasks": tasks,
+    }
+
+
 def build_output(args: argparse.Namespace) -> Dict[str, Any]:
     pr_number: Optional[int] = args.pr
     comment: Optional[Dict[str, Any]] = None
@@ -450,7 +603,11 @@ def build_output(args: argparse.Namespace) -> Dict[str, Any]:
         if should_fetch_logs(job, args.log_mode):
             job["log_detail"] = fetch_job_logs(job, args.log_lines, args.download_dir)
 
-    return {
+    codecheck = None
+    if isinstance(event_data, dict) and should_fetch_codecheck(event_data, args.codecheck_mode):
+        codecheck = build_codecheck_report(event_data, args.codecheck_page_size)
+
+    report = {
         "pr_number": pr_number,
         "repo": args.repo,
         "event_id": event_id,
@@ -462,6 +619,9 @@ def build_output(args: argparse.Namespace) -> Dict[str, Any]:
         "failed_jobs": [job["job_name"] for job in failures],
         "source_comment": comment,
     }
+    if codecheck is not None:
+        report["codecheck"] = codecheck
+    return report
 
 
 def print_text_report(report: Dict[str, Any]) -> None:
@@ -499,6 +659,50 @@ def print_text_report(report: Dict[str, Any]) -> None:
         if tail:
             print("log_tail:")
             print(tail)
+    codecheck = report.get("codecheck")
+    if isinstance(codecheck, dict):
+        print("")
+        print(f"codecheck_defects={codecheck.get('defect_count', 0)}")
+        all_defects = []
+        for task in codecheck.get("tasks", []):
+            if isinstance(task, dict):
+                all_defects.extend(item for item in task.get("defects", []) if isinstance(item, dict))
+        if all_defects:
+            rule_counts = Counter(
+                f"{detail.get('tags', '')} / {detail.get('rule', '')}".strip()
+                for detail in all_defects
+            )
+            file_counts = Counter(str(detail.get("file", "")) for detail in all_defects)
+            print("codecheck_top_rules:")
+            for rule, count in rule_counts.most_common(10):
+                print(f"- {rule}: {count}")
+            print("codecheck_top_files:")
+            for file_path, count in file_counts.most_common(10):
+                print(f"- {file_path}: {count}")
+        for task in codecheck.get("tasks", []):
+            if not isinstance(task, dict):
+                continue
+            print(
+                f"[codecheck] task_id={task.get('task_id', '')} "
+                f"result={task.get('result', '')} defects={task.get('defect_count', 0)}"
+            )
+            for detail in task.get("defects", [])[:20]:
+                if not isinstance(detail, dict):
+                    continue
+                location = detail.get("file", "")
+                line = detail.get("line", "")
+                if line:
+                    location = f"{location}:{line}"
+                print(
+                    f"- {location} level={detail.get('level', '')} "
+                    f"tags={detail.get('tags', '')} rule={detail.get('rule', '')}"
+                )
+                content = detail.get("content", "")
+                if content:
+                    print(f"  {content}")
+            omitted = int(task.get("defect_count", 0) or 0) - len(task.get("defects", [])[:20])
+            if omitted > 0:
+                print(f"  ... {omitted} more defects omitted; use --json for full details")
 
 
 def main() -> int:
