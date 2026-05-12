@@ -1,0 +1,4 @@
+interface:
+  display_name: "glslViewer Shader Debug"
+  short_description: "Headless GLSL shader preview workflow"
+  default_prompt: "Use $glslviewer-shader-debug to adapt this shader to standard GLSL, render it headlessly, and inspect the PNG output."
