@@ -1,0 +1,23 @@
+{
+  "skill_name": "ohos-issue-arkruntime-taskpool-dependency-analysis",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "My taskpool code throws 'There is a circular dependency' (10200026) when I call task3.addDependency(task1). Here's my code:\n\nlet task1 = new taskpool.Task(() => { return 1; });\nlet task2 = new taskpool.Task(() => { return 2; });\nlet task3 = new taskpool.Task(() => { return 3; });\ntask1.addDependency(task2);\ntask2.addDependency(task3);\ntask3.addDependency(task1); // <-- throws 10200026\n\nWhy is this happening and how should I fix it?",
+      "expected_output": "Should identify the circular dependency cycle task1→task2→task3→task1, explain that task3.addDependency(task1) closes the cycle, draw the dependency graph, and recommend removing the last addDependency or restructuring the tasks to eliminate the cycle.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I have a task that depends on two other tasks, but after both prerequisites finish executing, my dependent task never runs. It just hangs. Here's my code:\n\nlet task1 = new taskpool.Task(() => { console.log('task1'); return 1; });\nlet task2 = new taskpool.Task(() => { console.log('task2'); return 2; });\nlet task3 = new taskpool.Task(() => { console.log('task3'); return 3; });\ntask3.addDependency(task1);\ntask3.addDependency(task2);\ntaskpool.execute(task1);\ntaskpool.execute(task2);\ntaskpool.execute(task3);\n\nTask1 and task2 both complete successfully, but task3 never executes. What's wrong?",
+      "expected_output": "Should trace the notification path: task1 finishes → notifyDependencies → decrements task3.taskDependenciesCount from 2 to 1; task2 finishes → notifyDependencies → decrements to 0 → tryActivatePendingDependencyTask re-enqueues task3. Should identify whether the issue is in notifyDependencies not being called, dependentTasks not containing task3, or tryActivatePendingDependencyTask failing. Should recommend a minimal repro, re-checking the dependency graph and anti-patterns, and comparing with official taskpool tests (read-only). If user code matches those patterns and still hangs, should move to repro + SDK/system version + escalation—not editing stdlib.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I'm getting error 10200079 'asyncRunnerTask or seqRunnerTask or executedTask cannot be relied on' when I try to make task2 depend on task1 after task1 has already been executed by a SequenceRunner. I need task2 to wait for task1's result. How should I restructure this?",
+      "expected_output": "Should identify that the error is because task1 is now a SEQRUNNER_TASK type after runner.execute(task1), and SEQRUNNER_TASK cannot be a dependency target. Should explain that seqRunner/group/asyncRunner tasks never call notifyDependencies, so dependents would hang forever anyway. Should recommend creating a separate regular task for the dependency chain and using the seqRunner task's result via Promise/then instead of addDependency.",
+      "files": []
+    }
+  ]
+}
