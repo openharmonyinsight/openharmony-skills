@@ -1,6 +1,6 @@
 ---
 name: ohos-dev-hdc-command-usage
-description: Use when HarmonyOS hdc work involves device connection failures, USB or TCP targets, multiple connected devices, automation or CI scripts, shell commands, sandbox access, file transfer, HAP/HSP/APP install or uninstall, hilog capture, port forwarding, hdc service logs, remount/root-sensitive operations, or errors such as Empty, Unauthorized, Offline, Connect failed, or Failed to communicate with daemon.
+description: Use when HarmonyOS or OpenHarmony OS development uses hdc for remount, system partition writes, file send or recv, log collection, hilog, bugreport, crash or tombstone retrieval, device connection failures, USB or TCP targets, multiple connected devices, automation or CI scripts, shell commands, sandbox access, HAP/HSP/APP install or uninstall, port forwarding, hdc service logs, or errors such as Empty, Unauthorized, Offline, Connect failed, or Failed to communicate with daemon.
 metadata:
   author: openharmony
   scope: common
@@ -36,6 +36,8 @@ Before giving or running an `hdc` command, classify the task:
 | USB debugging | `hdc list targets -v` | Resolve `Unauthorized`, `Offline`, driver, or cable before retry loops |
 | Wireless/TCP debugging | `hdc tconn <IP:port>` | Treat as test-environment only; confirm network and port first |
 | Remote server debugging | `hdc -s <server-ip>:<port> <command>` | Confirm who owns the server and whether non-loopback exposure is acceptable |
+| OS component push | `hdc list targets -v` then probe path | Decide temp push, remount/system write, permission fix, or reboot |
+| Pull OS evidence | inspect remote path first | Estimate size, then `file recv`; avoid blind large-directory pulls |
 | App install | inspect package set | Choose single-file install, multi-package folder install, or device-side `bm install` |
 | File transfer | inspect source and destination | Prefer writable data/app paths; avoid system writes unless explicitly required |
 | Logs | decide service log vs device log | Use `hdc -l` for hdc service, `hilog` for device logs |
@@ -57,6 +59,24 @@ hdc -t <connect-key> install <path-to.hap>
 High-risk commands without `-t`: `install`, `uninstall`, `file send`, `file recv`, `target boot`, `shell rm`, `shell param set`, and any command that changes app data or device state.
 
 Do not parse transient hdc error text as stable automation logic. The Huawei guide notes command error text may be optimized later; automation should prefer stable system error codes where available.
+
+## OS Development Fast Paths
+
+For OS development, prefer these routes before application-install workflows:
+
+| Goal | Route | Guardrails |
+| --- | --- | --- |
+| Push a temporary binary/config | `hdc -t <key> file send <local> /data/local/tmp/<name>` | Probe with `shell ls -l`; run from temp path if possible before replacing system files |
+| Replace a system component | Confirm target, probe path, remount only if required, `file send`, then verify owner/mode and run `shell sync` | Do not remount from a generic permission error; confirm build/device supports it and user explicitly needs system write |
+| Pull logs or crash evidence | `shell ls`/`du` first, then `file recv <remote> <local>` | Avoid blind pulls of broad directories; preserve remote directory names in local output |
+| Capture runtime logs | Start focused `hilog`, reproduce, stop or save, then `file recv` if logs were persisted | Keep hdc service logs separate from device hilog |
+| Diagnose target instability | `list targets -v`, `checkserver`, hdc service logs, then transport-specific triage | Capture evidence before rebooting, changing mode, or killing services |
+
+After pushing OS artifacts:
+- Verify remote file exists with expected size: `hdc -t <key> shell ls -l <path>`.
+- Check execution or read permissions before running: `hdc -t <key> shell stat <path>`.
+- Run `hdc -t <key> shell sync` after important system writes.
+- Reboot only when the changed component or partition semantics require it; otherwise prefer restarting the affected service/process.
 
 ## Automation / CI Rules
 
@@ -133,7 +153,17 @@ If install fails with a missing dependent module, do not keep reinstalling the s
 
 ## File Transfer Decisions
 
-Prefer:
+Choose the transfer pattern from the remote path:
+
+| Scenario | Preferred pattern | Checks |
+| --- | --- | --- |
+| Temporary OS artifact | `hdc -t <key> file send <local> /data/local/tmp/<name>` | `shell ls -l`, `shell stat`, optional `chmod` only when execution is needed |
+| System path replacement | Probe path, backup if feasible, remount only if required, `file send`, `shell sync` | Confirm target build supports write; verify owner/mode after push |
+| App sandbox data | `hdc -t <key> file send -b <bundleName> <local> <sandbox-path>` | App must be installed, started, debuggable, and hdc version compatible |
+| Pull crash/log evidence | `shell ls` or `du`, then `hdc -t <key> file recv <remote> <local>` | Avoid pulling broad trees without size check |
+| Media files | Use `/mnt/data/<uid>/media_fuse/Photo/` carefully | API version 21 partial-operation behavior; directory creation may fail |
+
+Baseline commands:
 
 ```bash
 hdc file send <local> /data/local/tmp/<name>
@@ -146,7 +176,7 @@ Decision rules:
 - Use `-b <bundleName>` only for an installed, started, debuggable app and a compatible hdc version.
 - Use `-a` when timestamps matter; use `-sync` for mtime-based incremental transfer.
 - For media library paths under `/mnt/data/<uid>/media_fuse/Photo/`, remember API version 21 behavior and partial-operation limits; do not assume directory creation works.
-- If a write fails with read-only or permission errors, change to a writable target before considering remount.
+- If a write fails with read-only or permission errors, first switch to a writable target or verify the path; consider remount only for explicit OS component replacement.
 
 ## Dangerous Shell And File Operations
 
@@ -158,20 +188,35 @@ For `shell rm`, `param set`, writes under system paths, reboot, remount, root-li
 - Before deleting or overwriting, verify the resolved path and scope with `ls` or `stat`; avoid glob-style destructive commands in examples.
 - Only suggest remount/root/system writes when the user explicitly needs system-partition modification and the device/build supports it.
 
+When remount/system write is truly required:
+1. Confirm target: `hdc list targets -v` and use `-t <connect-key>`.
+2. Probe current state: `shell id`, `shell mount`, `shell ls -l <target>`, `shell stat <target>`.
+3. Preserve rollback when feasible: pull or copy the original file before replacement.
+4. Push the new file, then verify size, mode, owner, and ability to read/execute.
+5. Run `shell sync`; restart only the affected service when possible, reboot only when required.
+
 ## Logs
 
-Pick the log source:
+Pick the log source. OS development usually needs both device-side logs and pullable evidence files:
 
 | Need | Command |
 | --- | --- |
-| Device runtime logs | `hdc hilog` |
-| Device log files | `hdc shell hilog -w start`, reproduce, `hdc shell hilog -w stop`, `hdc file recv /data/log/hilog <local_path>` |
+| Live device runtime logs | `hdc -t <key> hilog` |
+| Persisted hilog flow | `hdc -t <key> shell hilog -w start`, reproduce, `hdc -t <key> shell hilog -w stop`, then `hdc -t <key> file recv /data/log/hilog <local_path>` |
+| Crash/tombstone/log directory pull | `hdc -t <key> shell ls <remote>`, optionally `du`, then `hdc -t <key> file recv <remote> <local_path>` |
 | hdc client/server behavior | `hdc -l <0-6> <command>` |
 | hdc server log collection | `hdc kill`, then `hdc -l 5 start` |
 | USB/libusb detail | `hdc -l 6 ...` only when needed; it is high-volume |
 | System snapshot | `hdc bugreport [FILE]` |
 
 Server log locations: Windows `%temp%\`, Linux `/tmp/`, macOS `$TMPDIR/`.
+
+Log capture rules:
+- Start log capture before reproducing; stop or snapshot after reproducing.
+- Keep output directories per device and timestamp when multiple targets are involved.
+- For broad evidence directories, check size first to avoid long or accidental pulls.
+- Use `bugreport` when the question needs system state, not just live log lines.
+- Use hdc service logs only for host/transport/debug-bridge issues; they do not replace device hilog.
 
 ## Port Forwarding
 
@@ -208,6 +253,10 @@ NEVER expose an hdc server or forwarded port on a non-loopback address without n
 NEVER let CI wait forever for device authorization or connection recovery. Fail with target state and collected hdc diagnostics.
 
 NEVER convert a permission/read-only failure directly into remount/root advice. First verify the path, use a writable destination, or ask whether system-partition modification is actually required.
+
+NEVER push over an OS component without target confirmation, path probe, rollback plan when feasible, and post-push verification.
+
+NEVER pull broad log or crash directories without first checking existence and approximate size.
 
 NEVER recommend `file send -z` or `file recv -z`; the guide says LZ4 transfer is not open.
 
