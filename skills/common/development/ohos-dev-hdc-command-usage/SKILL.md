@@ -20,8 +20,6 @@ metadata:
 
 Use this skill to choose safe, targeted `hdc` commands and diagnose common host-to-device failures. The goal is not to memorize every command; it is to avoid wrong-device operations, unstable TCP assumptions, unsupported options, and noisy trial-and-error.
 
-Source baseline: Huawei HarmonyOS guide "hdc", version `V205`, displayed update time `2026-05-07 09:37:20`, URL: `https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/hdc`.
-
 For a compact command list, read [references/hdc-command-reference.md](references/hdc-command-reference.md) only when the needed command pattern is not already in this file.
 
 ## First Decision
