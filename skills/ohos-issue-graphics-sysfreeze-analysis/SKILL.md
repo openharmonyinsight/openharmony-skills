@@ -1,6 +1,14 @@
 ---
 name: ohos-issue-graphics-sysfreeze-analysis
 description: Use when analyzing OpenHarmony sysfreeze/appfreeze logs to diagnose process freeze and thread blocking issues. Triggers on SERVICE_BLOCK, THREAD_BLOCK_6S, IPC deadlock, task queue blocking, or when user requests sysfreeze/process stuck analysis.
+metadata:
+  author: openharmony
+  scope: domain
+  stage: issue
+  domain: graphics
+  capability: sysfreeze-analysis
+  version: 0.1.0
+  status: trial
 ---
 
 # 任务与边界
