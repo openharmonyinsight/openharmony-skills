@@ -7,8 +7,8 @@
 使用Glob工具查找:
 
 ```
-**/lib.unstripped/**/librender_sevice_base.z.so
-**/lib.unstripped/**/librender_sevice.z.so
+**/lib.unstripped/**/librender_service_base.z.so
+**/lib.unstripped/**/librender_service.z.so
 ```
 
 ## 2. 验证buildId
@@ -41,7 +41,7 @@ llvm-addr2line -Cfpie path/to/so offset
 示例：
 
 ```sh
-llvm-addr2line -Cfpie librender_sevice_base.z.so 0x3fe0ec
+llvm-addr2line -Cfpie librender_service_base.z.so 0x3fe0ec
 ```
 
 输出格式：`文件路径:行号`
@@ -51,7 +51,7 @@ llvm-addr2line -Cfpie librender_sevice_base.z.so 0x3fe0ec
 记录解栈结果，格式如下：
 
 ```
-#00 pc 0000000000003fe0ec librender_sevice_base.z.so
+#00 pc 0000000000003fe0ec librender_service_base.z.so
       函数名+偏移
       -> rs_render_node_drawable_adapter.cpp:80
 ```
