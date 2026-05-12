@@ -1,0 +1,52 @@
+# OpenHarmony 稳定性扫描白名单配置
+#
+# 用途:
+#   1. 全局路径白名单：跳过特定目录或文件
+#   2. 规则级白名单：针对特定规则的误报排除
+#
+# 使用方式:
+#   1. 修改本文件添加白名单路径/模式
+#   2. 扫描时自动加载白名单配置
+
+global:
+  # 全局路径白名单（包含这些路径的文件将被跳过）
+  paths:
+    - "test/"
+    - "tests/"
+    - "unittest/"
+    - "mock/"
+    - "mocks/"
+    - "example/"
+    - "examples/"
+    - "samples/"
+    - "build/"
+    - "out/"
+    - ".git/"
+  
+  # 全局文件模式白名单
+  patterns:
+    - "*_test.cpp"
+    - "*_test.h"
+    - "*_unittest.cpp"
+    - "*_unittest.h"
+    - "*_fuzztest.cpp"
+    - "*_fuzztest.h"
+    - "*.pb.cc"
+    - "*.pb.h"
+    - "*.generated.*"
+    - "*.auto.*"
+
+# 规则级白名单
+# 格式: 
+#   rules:
+#     RULE_ID:
+#       patterns:
+#         - "pattern1"
+#         - "pattern2"
+#
+# 示例:
+# rules:
+#   StabilityCodeReview_ExceptionHandling_001:
+#     patterns:
+#       - "已知异常处理框架"
+#       - "第三方库catch块"
