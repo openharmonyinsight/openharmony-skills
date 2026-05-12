@@ -1,6 +1,14 @@
 ---
 name: ohos-issue-graphics-cppcrash-analysis
 description: Use when analyzing OpenHarmony cppcrash faultlogs to locate root cause of native process crashes, investigating SIGSEGV/SIGABRT signals, memory corruption patterns, or call stack anomalies.
+metadata:
+  author: openharmony
+  scope: domain
+  stage: issue
+  domain: graphics
+  capability: cppcrash-analysis
+  version: 0.1.0
+  status: trial
 ---
 
 # 任务与边界
