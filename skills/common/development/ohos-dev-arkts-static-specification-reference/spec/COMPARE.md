@@ -1,0 +1,29 @@
+# spec optimized comparison
+| file | original_bytes | optimized_bytes | reduction |
+|---|---:|---:|---:|
+| ambients.md | 20576 | 14446 | 29.8% |
+| annotations.md | 21201 | 16766 | 20.9% |
+| authors.md | 1144 | 551 | 51.8% |
+| binary_compatibility.md | 7488 | 6957 | 7.1% |
+| build_system.md | 12013 | 11173 | 7.0% |
+| classes.md | 84310 | 68455 | 18.8% |
+| concurrency.md | 37485 | 31797 | 15.2% |
+| conversions.md | 19846 | 15253 | 23.1% |
+| enums.md | 10903 | 9283 | 14.9% |
+| errors.md | 3628 | 2562 | 29.4% |
+| experimental.md | 92582 | 77893 | 15.9% |
+| expressions.md | 247692 | 207897 | 16.1% |
+| generics.md | 20346 | 16150 | 20.6% |
+| grammar.md | 26158 | 126 | 99.5% |
+| implementation.md | 8177 | 5968 | 27.0% |
+| interfaces.md | 16407 | 11686 | 28.8% |
+| intro.md | 22537 | 3797 | 83.2% |
+| lexical.md | 32886 | 25962 | 21.1% |
+| modules.md | 65314 | 52680 | 19.3% |
+| names.md | 45216 | 36981 | 18.2% |
+| runtime.md | 106658 | 62173 | 41.7% |
+| semantics.md | 104507 | 89260 | 14.6% |
+| statements.md | 33700 | 26184 | 22.3% |
+| stdlib.md | 1168 | 521 | 55.4% |
+| types.md | 90874 | 75672 | 16.7% |
+| TOTAL | 1132816 | 870193 | 23.2% |
