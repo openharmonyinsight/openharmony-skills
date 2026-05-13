@@ -1,18 +1,18 @@
 ---
 name: ohos-dev-arkui-code-review
 description: >
-  Use this skill whenever reviewing, auditing, or analyzing code quality in ACE Engine
-  (OpenHarmony ArkUI) projects — even if the user doesn't explicitly say "code review."
-  Applies to all code quality analysis, bug investigation root cause analysis, and
-  architectural questions in ACE Engine codebases.
+  Use this skill when the user explicitly requests a code review, quality audit, or
+  safety/correctness analysis of ACE Engine (OpenHarmony ArkUI) code.
   Triggers: reviewing PRs or code changes, checking memory management
   (RefPtr/WeakPtr/MakeRefPtr), verifying architecture compliance (four-layer, Pattern/Model/
   Property separation), auditing security vulnerabilities, detecting threading issues (data
   races, unsafe callback captures), analyzing code quality (code smells, SOLID violations),
   or generating review reports with severity levels.
-  Also use when asked to "check code", "review PR", "audit security", "find memory leaks",
-  "analyze code quality", "is this code safe/correct", or when encountering crash-prone
-  patterns, unsafe pointer usage, or layer boundary violations.
+  Activates on explicit task verbs: "check code", "review PR", "audit security",
+  "find memory leaks", "analyze code quality", "is this code safe/correct", or when asked to
+  inspect crash-prone patterns, unsafe pointer usage, or layer boundary violations.
+  Does NOT activate for general development, debugging, build-fix, or pure architectural
+  Q&A tasks unless the user explicitly asks for review.
   The following directory contexts and symbols reinforce relevance but do not trigger
   this skill on their own: `components_ng/`, `frameworks/core/`, `bridge/`, `adapter/`,
   `AceType::`, `MakeRefPtr`, `DynamicCast`, `WeakClaim`, `FrameNode`, or `RefPtr`.
@@ -30,7 +30,6 @@ metadata:
     - ace-engine
   related-skills:
     - ohos-dev-cpp-coding-style
-    - ohos-dev-arkui-component-development
 ---
 
 # Task and Boundaries
