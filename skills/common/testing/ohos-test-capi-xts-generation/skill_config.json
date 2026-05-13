@@ -1,0 +1,807 @@
+{
+  "skill_name": "oh-capi-xts-gen",
+  "version": "1.2.0",
+  "description": "OpenHarmony CAPI XTS 测试用例生成模板。支持各子系统 C 语言 API 测试用例生成，解析 .h 头文件，测试覆盖率分析，代码规范检查。新生成测试用例使用方式2（N-API封装测试）。",
+  "keywords": [
+    "CAPI",
+    "C测试",
+    "原生测试",
+    "Native测试",
+    ".h解析",
+    "N-API",
+    "napi",
+    "C语言测试",
+    "头文件解析",
+    "CAPI测试"
+  ],
+  "detailed_description": "详见 README.md",
+  "root_documents": {
+    "usage_guide": {
+      "file": "README.md",
+      "description": "完整用户文档，包含快速开始、三种使用方式、覆盖率报告模式、FAQ"
+    }
+  },
+  "references": [
+    {
+      "name": "N-API 开发指南",
+      "path": "{OH_ROOT}/docs/zh-cn/application-dev/napi",
+      "description": "N-API 官方开发指南和 API 参考，用于 N-API 封装测试开发",
+      "important_note": "新生成的测试用例必须使用方式2（N-API 封装测试），将 C 函数封装为 N-API 接口供 ETS/ArkTS 测试调用"
+    },
+    {
+      "name": "子系统配置",
+      "path": "references/subsystems",
+      "description": "各子系统特有配置，采用文件夹结构组织，支持模块级配置继承",
+      "subsystems": [
+        {
+          "name": "通用配置",
+          "path": "references/subsystems/_common.md",
+          "description": "所有子系统共享的通用配置"
+        },
+        {
+          "name": "hilog",
+          "path": "references/subsystems/hilog",
+          "description": "HiLog 日志子系统配置",
+          "modules": [
+            {
+              "name": "通用配置",
+              "file": "_common.md",
+              "description": "HiLog 子系统通用配置"
+            }
+          ],
+          "api_file": "hiviewdfx/hilog/include/hilog/log.h",
+          "reference": "{OH_ROOT}/docs/zh-cn/application-dev/reference/apis-performance-analysis-kit/capi-hilog.md"
+        },
+        {
+          "name": "multimedia",
+          "path": "references/subsystems/multimedia",
+          "description": "Multimedia 多媒体子系统配置，包含 Audio、AVCodec、AVSession、Camera、DRM、Image、Media、Media Library、MIDI 等 Kit",
+          "modules": [
+            {
+              "name": "通用配置",
+              "file": "_common.md",
+              "description": "Multimedia 子系统通用配置"
+            },
+            {
+              "name": "camera",
+              "file": "camera/_common.md",
+              "description": "Camera 相机模块配置",
+              "api_file": "multimedia/camera_framework/camera.h",
+              "reference": "{OH_ROOT}/docs/zh-cn/application-dev/reference/apis-camera-kit"
+            }
+          ],
+          "api_file": "multimedia/camera_framework/camera.h",
+          "reference": "{OH_ROOT}/docs/zh-cn/application-dev/reference/apis-camera-kit",
+          "special_rules": {
+            "test_method": {
+              "rule": "必须使用方式2（N-API 封装测试）",
+              "description": "将 C 函数封装为 N-API 接口供 ETS/ArkTS 测试调用"
+            }
+          }
+        },
+        {
+          "name": "bundlemanager",
+          "path": "references/subsystems/bundlemanager",
+          "description": "BundleManager 包管理子系统配置",
+          "modules": [
+            {
+              "name": "通用配置",
+              "file": "_common.md",
+              "description": "BundleManager 子系统通用配置"
+            },
+            {
+              "name": "zlib",
+              "file": "zlib/_common.md",
+              "description": "Zlib 数据压缩库模块配置",
+              "api_file": "third_party/zlib/zlib.h",
+              "reference": "{OH_ROOT}/docs/zh-cn/application-dev/reference/native-lib/zlib.md"
+            }
+          ],
+          "api_file": "bundlemanager/bundle_framework/bundle/include/native_interface_bundle.h",
+          "reference": "{OH_ROOT}/docs/zh-cn/application-dev/reference/apis-ability-kit/js-apis-bundle*.md",
+          "special_rules": {
+            "test_method": {
+              "rule": "必须使用方式2（N-API 封装测试）",
+              "description": "将 C 函数封装为 N-API 接口供 ETS/ArkTS 测试调用"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "layers": {
+    "conventions": {
+      "description": "框架和规范层 - C语言测试基础和规范",
+      "required": [
+        "modules/conventions/hypium_framework_c.md"
+      ],
+      "optional": [],
+      "path": "modules/conventions/",
+      "core_responsibilities": [
+        "提供测试框架基础知识和规范",
+        "定义 C 语言测试标准和要求",
+        "说明测试类型和测试策略",
+        "提供测试用例基础模板"
+      ],
+      "detailed_features": [
+        "C 语言测试基础理论",
+        "Native C 测试 vs N-API 测试对比",
+        "测试类型定义（PARAM、ERROR、RETURN、BOUNDARY、MEMORY）",
+        "测试规范和最佳实践",
+        "Hypium 测试框架介绍和核心概念",
+        "N-API 测试框架集成",
+        "测试用例基础模板"
+      ]
+    },
+    "L1_Analysis": {
+      "description": "分析层 - 头文件解析、测试覆盖分析、文档阅读",
+      "api_parser": {
+        "description": "头文件解析器，支持 .h 文件解析、函数签名提取、宏定义识别",
+        "file": "modules/L1_Analysis/parser/unified_api_parser_c.md"
+      },
+      "project_parser": {
+        "description": "工程配置解析器，支持工程结构识别、配置信息提取",
+        "file": "modules/L1_Analysis/parser/project_parser.md"
+      },
+      "coverage_analyzer": {
+        "description": "测试覆盖分析器，扫描现有测试文件、识别已覆盖和未覆盖的 API",
+        "file": "modules/L1_Analysis/analyzer/coverage_analyzer.md"
+      },
+      "doc_reader": {
+        "description": "文档读取器，解析 API 文档和配置文件",
+        "file": "modules/L1_Analysis/parser/doc_reader.md"
+      },
+      "path": "modules/L1_Analysis/",
+      "core_responsibilities": [
+        "解析 C 语言头文件（.h）",
+        "提取 API 信息（函数签名、参数、返回值）",
+        "扫描现有测试文件，分析代码风格",
+        "执行测试覆盖率分析（标准流程）",
+        "解析覆盖率报告（覆盖率报告驱动模式）",
+        "提供 API 信息结构化和测试设计文档生成"
+      ],
+      "detailed_features": [
+        "头文件解析：函数声明提取、参数类型识别、宏定义识别、注释文档提取",
+        "API 信息结构化：生成标准化的 API 信息 JSON、参数列表和类型定义、返回值类型",
+        "测试覆盖分析：现有测试文件扫描、已覆盖 API 识别、未覆盖 API 列出、参数覆盖率统计",
+        "覆盖率报告解析：提取未覆盖 API、提取缺失参数组合、提取缺失测试场景",
+        "工程配置解析：支持工程结构识别、配置信息提取",
+        "文档解析和阅读：Test.json、oh-package.json5 等配置文件解析"
+      ]
+    },
+    "L2_Generation": {
+      "description": "生成层 - 测试用例生成、测试设计文档生成和模板",
+      "test_generator": {
+        "description": "测试用例生成器（N-API 封装方式）",
+        "file": "modules/L2_Generation/generator/test_generation_c.md"
+      },
+      "design_doc_generator": {
+        "description": "测试设计文档生成器 - 在生成测试用例的同时生成结构化的测试设计文档",
+        "file": "modules/L2_Generation/generator/test_generation_c.md",
+        "version": "1.0.0",
+        "update_date": "2026-03-09",
+        "features": [
+          "同步生成测试设计文档",
+          "测试用例与设计文档一一对应",
+          "完整的文档结构（测试概述、测试场景设计、测试覆盖分析、测试依赖关系、测试环境要求、注意事项、变更记录）",
+          "自动提取测试用例信息生成测试场景",
+          "支持文档版本管理和变更记录"
+        ]
+      },
+      "templates": {
+        "description": "代码模板库（N-API 封装模板）",
+        "file": "modules/L2_Generation/generator/test_generation_c.md"
+      },
+      "path": "modules/L2_Generation/",
+      "documentation_index": {
+          "description": "L2_Generation 模块文档索引，包含所有相关文档的快速导航",
+          "documents": [
+            {
+              "name": "测试生成核心文档",
+              "file": "modules/L2_Generation/generator/test_generation_c.md",
+              "description": "测试用例生成器（N-API 封装方式）"
+            },
+            {
+              "name": "通用校验模块",
+              "file": "modules/L2_Generation/generator/verification_common.md",
+              "description": "三重Napi校验和编译前工程结构校验"
+            },
+            {
+              "name": "N-API 和 ETS 公共模式",
+              "file": "modules/L2_Generation/generator/test_patterns_napi_ets.md",
+              "description": "N-API 封装和 ETS 测试的公共模式定义"
+            },
+            {
+              "name": "N-API 高级模式（进阶版）",
+              "file": "modules/L2_Generation/generator/test_patterns_napi_ets_advance.md",
+              "description": "N-API 封装和 ETS 测试的高级模式与特殊场景"
+            },
+            {
+              "name": "N-API 常用 API 参考",
+              "file": "modules/L2_Generation/generator/napi_api_reference.md",
+              "description": "N-API 常用 API 参考文档"
+            },
+             {
+               "name": "工程配置模板",
+               "file": "modules/L2_Generation/generator/project_config_templates.md",
+               "description": "CAPI 测试套的完整工程配置指南（Test.json、oh-package.json5、测试套结构）"
+            },
+            {
+              "name": "测试套结构检查清单",
+              "file": "modules/L2_Generation/generator/test_suite_structure_checklist.md",
+              "description": "测试套工程必需文件清单，按三级优先级分类（编译失败/运行时错误/测试无法运行），含常见错误警示和推荐操作"
+            }
+          ]
+        },
+      "core_responsibilities": [
+        "根据 API 信息生成测试用例代码",
+        "生成对应的测试设计文档",
+        "应用子系统特定规则和模板",
+        "应用现有代码风格",
+        "确保代码规范和命名规范",
+        "处理 oh-package.json5 配置文件（读取、修改、扩展）",
+        "提供配置文件规范和参考示例"
+      ],
+      "detailed_features": [
+        "测试用例生成策略：PARAM 测试（参数正常值、边界值、特殊值）、ERROR 测试（错误码和异常场景）、RETURN 测试（返回值验证）、BOUNDARY 测试（边界值和极限情况）、MEMORY 测试（内存管理和泄漏检测）",
+        "N-API 封装生成：N-API 封装函数模板、napi_value 类型转换、参数提取和验证、返回值构造",
+        "ETS/ArkTS 测试生成：测试用例模板、断言和验证、异常处理、日志记录",
+        "测试设计文档同步生成：文档格式标准化、测试用例列表、详细的测试步骤和预期结果oh-package.json5 配置处理：读取现有配置文件、根据新生成的测试用例扩展配置、管理依赖关系和模块引用、处理工程级配置"
+      ]
+    },
+    "L3_Validation": {
+      "description": "构建层 - 跨平台编译工作流、CAPI编译指导、环境配置和问题排查",
+      "build_workflow_c": {
+        "description": "CAPI 跨平台编译工作流（Linux/Windows/WSL/DevEco Studio）",
+        "file": "modules/L3_Validation/builder/build_workflow_c.md",
+        "platforms": [
+          "Linux",
+          "Windows",
+          "WSL",
+          "DevEco Studio"
+        ],
+        "version": "1.0.0",
+        "update_date": "2026-03-10",
+        "important_note": "支持多平台CAPI编译，Linux使用build.sh，Windows推荐使用WSL，DevEco Studio支持有限",
+        "features": [
+          "跨平台编译支持",
+          "统一的编译工作流",
+          "CAPI测试套编译指导",
+          "编译环境配置",
+          "编译验证和故障排除"
+        ]
+      },
+      "linux_compile_workflow": {
+        "description": "Linux CAPI 编译工作流（动态/静态测试套）",
+        "file": "modules/L3_Validation/builder/linux_compile_workflow_c.md",
+        "platform": "Linux",
+        "version": "1.0.0",
+        "update_date": "2026-03-10",
+        "important_note": "支持动态和静态CAPI测试套，包含环境准备、依赖管理和编译验证",
+        "features": [
+          "动态测试套编译",
+          "静态测试套编译",
+          "环境验证",
+          "依赖准备",
+          "编译验证"
+        ]
+      },
+      "ndk_build_system": {
+        "description": "OpenHarmony NDK构建系统配置",
+        "default_build_system": "CMake",
+        "toolchain_file": "ohos.toolchain.cmake",
+        "supported_architectures": [
+          "armeabi-v7a",
+          "arm64-v8a",
+          "x86_64"
+        ],
+        "build_methods": [
+          {
+            "name": "DevEco Studio",
+            "description": "使用IDE提供的C++应用模板构建",
+            "reference": "docs/napi/build-with-ndk-ide.md"
+          },
+          {
+            "name": "命令行CMake",
+            "description": "使用命令行CMake构建",
+            "reference": "docs/napi/build-with-ndk-cmake.md"
+          },
+          {
+            "name": "预构建库",
+            "description": "使用预构建库构建",
+            "reference": "docs/napi/build-with-ndk-prebuilts.md"
+          }
+        ],
+        "toolchain_parameters": {
+          "OHOS_STL": {
+            "description": "libc++的链接方式",
+            "options": [
+              "c++_shared",
+              "c++_static"
+            ],
+            "default": "c++_shared",
+            "note": "同一应用中的全部Native库需要采用相同的链接方式"
+          },
+          "OHOS_ARCH": {
+            "description": "Native交叉编译的目标架构",
+            "options": [
+              "armeabi-v7a",
+              "arm64-v8a",
+              "x86_64"
+            ],
+            "default": "arm64-v8a"
+          },
+          "OHOS_PLATFORM": {
+            "description": "选择平台",
+            "options": [
+              "OHOS"
+            ],
+            "default": "OHOS"
+          }
+        },
+        "compiler_parameters": [
+          "--target={arch}-linux-ohos",
+          "--sysroot={ndk_root}/sysroot"
+        ]
+      },
+      "linux_compile_env_setup": {
+        "description": "Linux CAPI 编译环境准备，包含系统要求、工具链、SDK下载、环境验证",
+        "file": "modules/L3_Validation/builder/linux_compile_env_setup_c.md",
+        "platform": "Linux"
+      },
+      "quick_reference_extract_suite_name": {
+        "description": "测试套名称提取快速参考",
+        "file": "modules/L3_Validation/builder/quick_reference_extract_suite_name.md"
+      },
+      "path": "modules/L3_Validation/",
+      "documentation_index": {
+        "description": "L3_Validation 模块文档索引，包含所有相关文档的快速导航",
+        "documents": [
+          {
+            "name": "跨平台编译工作流",
+            "file": "modules/L3_Validation/builder/build_workflow_c.md",
+            "description": "跨平台编译工作流（Linux/Windows/WSL/DevEco Studio）"
+          },
+          {
+            "name": "Linux CAPI 编译工作流",
+            "file": "modules/L3_Validation/builder/linux_compile_workflow_c.md",
+            "description": "Linux CAPI 编译工作流（动态/静态）"
+          },
+          {
+            "name": "Linux 编译环境配置",
+            "file": "modules/L3_Validation/builder/linux_compile_env_setup_c.md",
+            "description": "Linux 编译环境配置"
+          },
+          {
+            "name": "测试套名称提取快速参考",
+            "file": "modules/L3_Validation/builder/quick_reference_extract_suite_name.md",
+            "description": "测试套名称提取快速参考"
+          }
+        ]
+      },
+      "core_responsibilities": [
+        "提供跨平台编译验证支持",
+        "统一的编译工作流管理",
+        "CAPI 测试套编译指导",
+        "编译错误自动修复",
+        "构建配置和环境管理"
+      ],
+      "detailed_features": [
+        "跨平台编译支持：Linux、Windows WSL、Windows DevEco Studio、Windows MinGW",
+        "编译工作流导航：统一的编译流程和环境配置指导",
+        "CAPI 测试套编译：支持动态和静态测试套的差异化编译策略",
+        "编译验证：编译产物验证和测试执行准备",
+        "Linux 环境编译：使用 ./test/xts/acts/build.sh 脚本编译",
+        "Windows 环境编译：WSL（推荐）、DevEco Studio（有限支持）、MinGW（不推荐）"
+      ]
+    }
+  },
+  "loading_rules": {
+    "sequential": true,
+    "merge_strategy": "append",
+    "conflict_resolution": "last_wins",
+    "layer_priority": [
+      "conventions",
+      "L1_Analysis",
+      "L2_Generation",
+      "L3_Validation"
+    ],
+    "config_priority": [
+      "module",
+      "subsystem",
+      "global"
+    ]
+  },
+  "usage_patterns": {
+    "subsystem_test_generation": {
+      "trigger_keywords": [
+        "CAPI",
+        "C测试",
+        "原生测试",
+        "Native测试",
+        ".h解析",
+        "子系统测试",
+        "API测试模板",
+        "测试生成",
+        "N-API测试",
+        "napi测试"
+      ],
+      "description": "为指定子系统生成 N-API 封装测试用例和测试设计文档，使用子系统特有配置",
+      "load_layers": [
+        "conventions",
+        "L1_Analysis",
+        "L2_Generation"
+      ],
+      "required_configs": [
+        "references/subsystems/_common.md"
+      ],
+      "optional_configs": [
+        "references/subsystems/{SubsystemName}/_common.md",
+        "references/subsystems/{SubsystemName}/{ModuleName}.md"
+      ],
+      "required_modules": [
+        "modules/conventions/hypium_framework_c.md",
+        "modules/L1_Analysis/parser/unified_api_parser_c.md",
+        "modules/L2_Generation/generator/test_generation_c.md"
+      ]
+    },
+    "basic_api_test": {
+      "trigger_keywords": [
+        "API测试",
+        "接口测试",
+        "生成测试用例",
+        "CAPI测试",
+        "C函数测试",
+        "测试设计文档"
+      ],
+      "description": "基本的 C API N-API 封装测试用例生成，同时生成测试设计文档",
+      "load_layers": [
+        "conventions",
+        "L2_Generation"
+      ],
+      "required_modules": [
+        "modules/conventions/hypium_framework_c.md",
+        "modules/L2_Generation/generator/test_generation_c.md"
+      ]
+    },
+    "coverage_analysis": {
+      "trigger_keywords": [
+        "测试覆盖",
+        "覆盖率分析",
+        "测试分析",
+        "C覆盖分析"
+      ],
+      "description": "C API 测试覆盖率分析",
+      "load_layers": [
+        "conventions",
+        "L1_Analysis"
+      ],
+      "required_modules": [
+        "modules/conventions/hypium_framework_c.md",
+        "modules/L1_Analysis/parser/unified_api_parser_c.md"
+      ]
+    },
+    "build_and_compile": {
+      "trigger_keywords": [
+        "编译",
+        "build.sh",
+        "编译测试套",
+        "多目标编译",
+        "N-API编译",
+        "CMake编译"
+      ],
+      "description": "CAPI N-API 测试工程编译指导，包含 BUILD.gn 编译目标确认、CMakeLists.txt 配置、编译命令",
+      "load_layers": [
+        "L3_Validation"
+      ],
+      "required_modules": [
+        "modules/L3_Validation/builder/build_workflow_c.md",
+        "modules/L3_Validation/builder/linux_compile_workflow_c.md"
+      ]
+    },
+    "nodeapi_cross_language_test": {
+      "trigger_keywords": [
+        "Node-API",
+        "跨语言",
+        "napi_value",
+        "napi_env",
+        "C交互",
+        "js交互"
+      ],
+      "description": "测试Node-API跨语言交互功能，验证ArkTS与C/C++模块之间的调用",
+      "load_layers": [
+        "conventions",
+        "L1_Analysis",
+        "L2_Generation"
+      ],
+      "required_modules": [
+        "modules/conventions/hypium_framework_c.md",
+        "modules/L1_Analysis/parser/unified_api_parser_c.md",
+        "modules/L2_Generation/generator/test_generation_c.md"
+      ]
+    },
+    "qos_priority_test": {
+      "trigger_keywords": [
+        "QoS",
+        "优先级",
+        "napi_queue_async_work_with_qos",
+        "async_work",
+        "优先级调度"
+      ],
+      "description": "测试QoS优先级控制的异步工作调度功能",
+      "load_layers": [
+        "conventions",
+        "L2_Generation"
+      ],
+      "required_modules": [
+        "modules/conventions/hypium_framework_c.md",
+        "modules/L2_Generation/generator/test_generation_c.md"
+      ]
+    },
+    "sendable_feature_test": {
+      "trigger_keywords": [
+        "Sendable",
+        "跨线程",
+        "Sendable对象",
+        "napi_define_sendable_class",
+        "线程安全"
+      ],
+      "description": "测试Sendable特性和跨线程对象传递功能",
+      "load_layers": [
+        "conventions",
+        "L2_Generation"
+      ],
+      "required_modules": [
+        "modules/conventions/hypium_framework_c.md",
+        "modules/L2_Generation/generator/test_generation_c.md"
+      ]
+    },
+    "complete_generation": {
+      "trigger_keywords": [
+        "完整测试",
+        "全面测试",
+        "生成测试套件",
+        "测试设计文档",
+        "完整CAPI测试"
+      ],
+      "description": "完整的 C API N-API 封装测试用例生成，包含头文件解析、覆盖分析、测试生成和测试设计文档生成",
+      "load_layers": [
+        "conventions",
+        "L1_Analysis",
+        "L2_Generation"
+      ],
+      "required_modules": "all"
+    }
+  },
+  "subsystem_mapping": {
+    "hilog": {
+      "api_file": "hiviewdfx/hilog/include/hilog/log.h",
+      "test_path": "test/xts/acts/hilog/",
+      "config_path": "references/subsystems/hilog/",
+      "modules": [
+        "HiLog",
+        "Log",
+        "LogFilter"
+      ],
+      "reference": "{OH_ROOT}/docs/zh-cn/application-dev/reference/apis-performance-analysis-kit"
+    },
+    "multimedia": {
+      "api_file": "multimedia/camera_framework/camera.h",
+      "test_path": "test/xts/acts/multimedia/",
+      "config_path": "references/subsystems/multimedia/",
+      "special_rule": "napi_wrapper_required",
+      "modules": [
+        "Camera"
+      ],
+      "reference": "{OH_ROOT}/docs/zh-cn/application-dev/reference/apis-camera-kit"
+    },
+    "multimedia_camera": {
+      "api_file": "multimedia/camera_framework/camera.h",
+      "test_path": "test/xts/acts/multimedia/camera/",
+      "config_path": "references/subsystems/multimedia/camera/",
+      "special_rule": "napi_wrapper_required",
+      "modules": [
+        "Camera",
+        "CameraManager",
+        "CameraInput",
+        "CameraOutput",
+        "CaptureSession",
+        "PreviewOutput",
+        "PhotoOutput",
+        "VideoOutput",
+        "Flash",
+        "Zoom"
+      ],
+      "reference": "{OH_ROOT}/docs/zh-cn/application-dev/reference/apis-camera-kit"
+    },
+    "bundlemanager": {
+      "api_file": "bundlemanager/bundle_framework/bundle/include/native_interface_bundle.h",
+      "test_path": "test/xts/acts/bundlemanager/",
+      "config_path": "references/subsystems/bundlemanager/",
+      "special_rule": "napi_wrapper_required",
+      "modules": [
+        "Bundle",
+        "AbilityResource",
+        "BundleInfo",
+        "zlib"
+      ],
+      "reference": "{OH_ROOT}/docs/zh-cn/application-dev/reference/apis-ability-kit/js-apis-bundle*.md"
+    },
+    "bundlemanager_zlib": {
+      "api_file": "third_party/zlib/zlib.h",
+      "test_path": "test/xts/acts/bundlemanager/zlib/",
+      "config_path": "references/subsystems/bundlemanager/zlib/",
+      "special_rule": "napi_wrapper_required",
+      "modules": [
+        "Zlib"
+      ],
+      "reference": "{OH_ROOT}/docs/zh-cn/application-dev/reference/native-lib/zlib.md"
+    }
+  },
+  "config_inheritance": {
+    "description": "配置继承优先级：模块配置 > 子系统配置 > 全局配置",
+    "levels": {
+      "global": {
+        "config": "references/subsystems/_common.md",
+        "description": "全局通用配置，所有子系统共享"
+      },
+      "subsystem": {
+        "config": "references/subsystems/{SubsystemName}/_common.md",
+        "description": "子系统通用配置，适用于该子系统的所有模块"
+      },
+      "module": {
+        "config": "references/subsystems/{SubsystemName}/{ModuleName}.md",
+        "description": "模块配置，可继承子系统配置"
+      }
+    }
+  },
+  "capi_features": {
+    "description": "CAPI 测试特有功能和规则",
+    "test_methods": {
+      "native_c": {
+        "name": "Native C 测试",
+        "description": "使用 gtest/HWTEST_F 测试框架，直接测试 C 函数",
+        "status": "deprecated",
+        "reason": "仅用于 Legacy 测试用例维护，新生成测试用例不推荐"
+      },
+      "napi_wrapper": {
+        "name": "N-API 封装测试",
+        "description": "将 C 函数封装为 N-API 接口供 ETS/ArkTS 测试调用",
+        "status": "recommended",
+        "reason": "新生成测试用例必需使用此方式，支持跨语言测试"
+      }
+    },
+    "napi_api_types": {
+      "napi_env": "N-API 环境",
+      "napi_value": "N-API 值类型",
+      "napi_status": "N-API 状态码",
+      "napi_callback_info": "N-API 回调信息"
+    },
+    "memory_management": {
+      "rules": [
+        "确保所有分配的内存都有对应的释放",
+        "使用断言检查指针有效性",
+        "避免内存泄漏和悬空指针",
+        "使用 napi_value 类型转换避免内存问题"
+      ]
+    }
+  },
+  "conventions": {
+    "test_case_number_format": "SUB_[子系统]_[模块]_[API]_[类型]_[序号]",
+    "test_types": [
+      "PARAM",
+      "ERROR",
+      "RETURN",
+      "BOUNDARY",
+      "MEMORY"
+    ],
+    "test_levels": [
+      "LEVEL0",
+      "LEVEL1",
+      "LEVEL2",
+      "LEVEL3",
+      "LEVEL4"
+    ],
+    "test_sizes": [
+      "SMALLTEST",
+      "MEDIUMTEST",
+      "LARGETEST"
+    ],
+    "test_categories": [
+      "Level0",
+      "Level1",
+      "Level2",
+      "Level3",
+      "Level4"
+    ],
+    "naming_conventions": {
+      "c_functions": "下划线命名法",
+      "napi_functions": "下划线命名法 + _napi 后缀",
+      "test_cases": "下划线命名法",
+      "test_files": "NapiTest.cpp (N-API 封装), *.test.ets (ETS 测试)"
+    }
+  },
+  "ndk_features": {
+    "description": "OpenHarmony NDK开发特性和规范",
+    "development_scenarios": {
+      "recommended": [
+        "性能敏感场景：游戏、物理模拟等计算密集型",
+        "复用已有C/C++库",
+        "针对CPU特性进行专项定制库，如Neon加速"
+      ],
+      "not_recommended": [
+        "纯C或C++的应用",
+        "希望在尽可能多的OpenHarmony设备上保持兼容的应用"
+      ]
+    },
+    "core_modules": [
+      "标准C库：以musl为基础提供的标准C库接口",
+      "标准C++库：C++运行时库libc++_shared",
+      "日志：打印日志到系统的HiLog接口",
+      "Node-API：ArkTS/JS和C/C++之间的交互接口",
+      "FFRT：基于任务的并发编程框架",
+      "libuv：三方异步IO库",
+      "zlib：zlib库，提供基本的数据压缩、解压接口",
+      "Rawfile：应用资源访问接口",
+      "XComponent：ArkUI XComponent组件提供surface与触屏事件等接口",
+      "Drawing：系统提供的2D图形库",
+      "OpenGL：系统提供的OpenGL 3D图形接口",
+      "OpenSL ES：用于2D、3D音频加速的接口库"
+    ]
+  },
+  "nodeapi_features": {
+    "description": "OpenHarmony Node-API特性和最新扩展",
+    "base_specification": "基于Node.js 12.x LTS规范扩展开发",
+    "architecture_components": [
+      "Native Module：开发者使用Node-API开发的模块",
+      "Node-API：实现ArkTS与C/C++交互的逻辑",
+      "ModuleManager：Native模块管理",
+      "ScopeManager：管理napi_value的生命周期",
+      "ReferenceManager：管理napi_ref的生命周期",
+      "NativeEngine：ArkTS引擎抽象层",
+      "ArkCompiler ArkTS Runtime：ArkTS运行时"
+    ],
+    "latest_extensions": {
+      "qos_priority_control": {
+        "napi_queue_async_work_with_qos": "将异步工作对象加到队列，根据QoS优先级调度",
+        "napi_qos_t": "QoS枚举：background(0), utility(1), default(2), user_initiated(3)"
+      },
+      "runtime_management": {
+        "napi_create_ark_runtime": "创建基础运行时环境",
+        "napi_destroy_ark_runtime": "销毁基础运行时环境",
+        "napi_run_event_loop": "触发底层的事件循环",
+        "napi_stop_event_loop": "停止底层的事件循环"
+      },
+      "sendable_support": {
+        "napi_define_sendable_class": "创建一个Sendable类",
+        "napi_create_sendable_object_with_properties": "创建Sendable对象",
+        "napi_create_sendable_array": "创建Sendable数组",
+        "napi_wrap_sendable": "包裹native实例到ArkTS对象中"
+      },
+      "context_management": {
+        "napi_create_ark_context": "创建新的运行时上下文环境",
+        "napi_switch_ark_context": "切换到指定的运行时上下文环境",
+        "napi_destroy_ark_context": "销毁上下文环境"
+      }
+    }
+  },
+  "api_kit_mapping": {
+    "@kit.ArkTS": "UTILS",
+    "@kit.NetworkKit": "NETWORK",
+    "@kit.ArkData": "DATA",
+    "@kit.CoreFileKit": "FILE",
+    "@kit.ArkitGraphics": "GRAPHICS",
+    "@kit.ArkUI": "ARKUI",
+    "@kit.ArkWeb": "ARKWEB",
+    "@kit.TestKit": "TESTFWK",
+    "@ohos.UiTest": "UITEST",
+    "napi": "NDK",
+    "native_api": "NDK",
+    "libace_napi.z.so": "NDK"
+  },
+  "tools": {
+    "description": "辅助工具集，提供数据处理和文件读取功能",
+    "path": "scripts/",
+    "tools": []
+  }
+}
