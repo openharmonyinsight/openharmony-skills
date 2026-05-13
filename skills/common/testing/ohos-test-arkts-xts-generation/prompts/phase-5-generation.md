@@ -1,5 +1,47 @@
 ## Phase 5: Generate Test Cases
 
+---
+
+### 📦 MANDATORY - 必须先加载以下模块
+
+**在执行本 Phase 前，你必须完整阅读以下文件**（不得设置行数限制）：
+
+```
+{skill_root}/modules/L2_Generation/generator/test_generator.md
+{skill_root}/modules/L2_Generation/generator/templates.md
+{skill_root}/modules/L2_Generation/generator/quality_constraints.md
+```
+
+---
+
+### ⚙️ 按需加载（根据任务需要）
+
+以下模块仅在你执行对应任务时才需要加载：
+
+| 任务 | 加载文件 | 说明 |
+|------|---------|------|
+| 生成参数/返回值/边界值测试 | `{skill_root}/modules/L2_Generation/generator/param_test.md` | 参数测试详细规则 |
+| 生成错误码测试 | `{skill_root}/modules/L2_Generation/generator/error_test.md` | 错误码提取和测试规则 |
+| 需要状态机/生命周期等特有场景 | `{skill_root}/modules/L2_Generation/generator/HarmonyOS_Test_Design_Spec.md` | HarmonyOS 特有测试知识 |
+| ArkTS-Sta 静态项目 | `{skill_root}/modules/L2_Generation/generator/arkts_static_constraints.md` | 静态语法约束 |
+| 需要 ArkTS 语法参考 | `{skill_root}/references/conventions/arkts_standards.md` | 语法规范 |
+| 需要命名参考 | `{skill_root}/references/conventions/test_conventions.md` | 命名规范 |
+
+> **注意**：静态项目（ArkTS-Sta）时，使用 `arkts_static_constraints.md` 约束摘要，**不要在生成阶段调用完整的** `arkts-static-spec` 技能（token 开销大）。
+
+---
+
+### 🚫 Do NOT Load - 禁止加载
+
+本 Phase 期间禁止加载以下模块：
+
+```
+所有 L1_Analysis 模块（modules/L1_Analysis/）
+所有 L3_Validation 模块（modules/L3_Validation/）
+```
+
+---
+
 **加载模块**:
 - `modules/L2_Generation/generator/test_generator.md`
 - `modules/L2_Generation/generator/templates.md`

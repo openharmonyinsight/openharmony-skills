@@ -40,85 +40,30 @@
 
 ## 二、核心强制规范（不可覆盖）
 
-### 2.1 测试用例编号格式
+以下规范由 `references/conventions/` 下的文件定义，此处仅列出规则要点和来源，具体格式、示例和反模式请参见对应文件。
 
-```
-格式: SUB_[子系统]_[模块]_[API]_[类型]_[序号]
-
-类型标识：
-- PARAM    参数测试
-- ERROR    错误码测试
-- RETURN   返回值测试
-- BOUNDARY 边界值测试
-- EVENT    事件测试（仅ArkUI）
-
-示例：
-SUB_UTILS_UTIL_TREESET_ADD_PARAM_001
-SUB_UTILS_UTIL_TREESET_POPFIRST_ERROR_401_001
-SUB_ARKUI_BUTTON_ONCLICK_EVENT_001
-```
-
-### 2.2 命名强制规范
-
-#### it() 函数第一个参数（用例名称）
-- ✅ **必须使用小驼峰命名（camelCase）**
-- ❌ **禁止使用大写下划线命名**
-- ❌ **禁止使用特殊标点符号**（如 `[]`、`.` 等）
-
-#### it() 函数第二个参数（测试类型）
-- ✅ **必须使用**：`TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3`
-- ❌ **禁止使用**：`0` 或其他简写形式
-
-### 2.3 hypium 导入规范（强制）
-
-详见：[Hypium 测试框架基础 - 导入语句规范](../../references/conventions/hypium_framework.md#四导入语句规范)
-
-### 2.4 @tc 注释块规范（强制）
-
-- `@tc.name`：必须使用小驼峰命名，必须与 `it()` 第一个参数完全一致
-- `@tc.number`：格式为 `{describe名}_{序号}`，序号从001开始补零对齐
-- `@tc.desc`：格式为 `{API名} {错误码/场景} test.`，必须以 `. ` 结尾
-- `@tc.type`、`@tc.size`、`@tc.level`：必须与 `it()` 第二个参数中的值一致
+| 规则 | 要点 | 详细定义 |
+|------|------|---------|
+| 测试用例编号 | `SUB_[子系统]_[模块]_[API]_[类型]_[序号]`，全局唯一 | [test_conventions §1](../conventions/test_conventions.md#一测试用例编号规范) |
+| it() 命名 | 小驼峰 camelCase，禁止大写下划线和特殊标点 | [test_conventions §2](../conventions/test_conventions.md#二测试用例命名规范) |
+| it() 第二参数 | 必须包含 `Level.LEVEL*`，使用枚举形式 | [test_conventions §2](../conventions/test_conventions.md#二测试用例命名规范) |
+| hypium 导入 | 从 `@ohos/hypium` 导入，按实际使用选择符号 | [hypium_framework §四](../conventions/hypium_framework.md#四导入语句规范) |
+| @tc 注释块 | 每个it()前必须包含完整JSDoc，字段与it()参数一致 | [test_conventions §3](../conventions/test_conventions.md#三jsdoc-注释规范) |
+| 断言方法 | 仅使用 Hypium 定义的23种方法，禁止编造 | [hypium_framework §二-三](../conventions/hypium_framework.md#二断言方法列表) |
+| 测试级别/类型/粒度 | Level0-4, TestType, Size 的枚举值和含义 | [hypium_framework §五-七](../conventions/hypium_framework.md#五测试级别说明) |
 
 ---
 
 ## 三、核心默认规范（可覆盖）
 
-### 3.1 测试级别定义
+测试级别（Level0-4）、测试类型（Function/Performance/Reliability/Security）、测试粒度（Small/Medium/LargeTest）的详细定义和枚举标识，见 [hypium_framework §五-七](../conventions/hypium_framework.md#五测试级别说明)。
 
-| 级别 | 名称 | 说明 | 适用场景 |
-|-----|------|------|---------|
-| Level0 | 冒烟测试 | 基本功能验证 | 核心API的基本功能 |
-| Level1 | 基础测试 | 常用输入场景 | 常用参数组合 |
-| Level2 | 主要测试 | 常用+错误场景 | 正常+异常场景 |
-| Level3 | 常规测试 | 所有功能 | 完整功能覆盖 |
-| Level4 | 罕见测试 | 极端场景 | 边界值、极端输入 |
-
-### 3.2 测试类型定义
-
-| 类型 | 说明 | 标识 |
-|-----|------|------|
-| Function | 功能测试 | TestType.FUNCTION |
-| Performance | 性能测试 | TestType.PERFORMANCE |
-| Reliability | 可靠性测试 | TestType.RELIABILITY |
-| Security | 安全测试 | TestType.SECURITY |
-
-### 3.3 测试粒度定义
-
-| 粒度 | 说明 | 执行时间 | 标识 |
-|-----|------|---------|------|
-| SmallTest | 小型测试 | < 5秒 | Size.SMALLTEST |
-| MediumTest | 中型测试 | 5-30秒 | Size.MEDIUMTEST |
-| LargeTest | 大型测试 | > 30秒 | Size.LARGETEST |
-
-### 3.4 默认 Kit 映射
+### 3.1 默认 Kit 映射
 
 ```typescript
-// 默认导入映射
 import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, TestType, Size, Level} from '@ohos/hypium';
 
 import {APIName} from '@kit.BaseKitName';
-
 ```
 
 ---

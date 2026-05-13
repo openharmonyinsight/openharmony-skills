@@ -1,278 +1,379 @@
 # 头文件解析模块
 
-## 一、模块概述
+> **Purpose**: Extract OpenHarmony CAPI function signatures from `.h` header files for N-API wrapper generation
 
-L1_Analysis 模块负责解析 C 语言头文件（`.h`），提取 API 信息，为测试用例生成提供基础数据。
+---
 
-## 二、头文件解析
+## Expert-Only Requirements
 
-### 2.1 解析目标
+### OpenHarmony Header File Patterns
 
-从头文件中提取以下信息：
-
-1. **函数声明**
-   - 函数名
-   - 返回值类型
-   - 参数列表
-   - 参数类型
-   - 参数名称
-
-2. **宏定义**
-   - 宏名
-   - 宏值
-   - 宏类型（常量、函数式宏）
-
-3. **类型定义**
-   - 结构体定义
-   - 枚举定义
-   - 类型别名
-
-4. **注释**
-   - 函数文档注释
-   - 参数说明
-   - 返回值说明
-
-### 2.2 解析流程
-
+**OpenHarmony-specific include paths**:
 ```
-读取头文件
-  ↓
-预处理（处理 #ifdef、#include 等）
-  ↓
-词法分析（分词）
-  ↓
-语法分析（构建 AST）
-  ↓
-提取 API 信息
-  ↓
-输出 API 信息结构
+{OH_ROOT}/interface/sdk_c/{Subsystem}/{Module}/include/{Header}.h
 ```
 
-### 2.3 API 信息结构
+**Typical header patterns**:
+- Camera: `#include <ohcamera/camera_manager.h>` (note `ohcamera/` prefix)
+- HiLog: `#include <hilog/log.h>`
+- BundleManager: `#include <native_interface_bundle.h>`
+
+**Expert parsing priorities**:
+1. **Function declarations** — MUST extract: return type, function name, parameters (type + name)
+2. **Error code macros** — Critical for ERROR-type test generation
+3. **Struct definitions** — Required for complex parameter types
+4. **Enum definitions** — Map to TypeScript enums in index.d.ts
+
+### Non-Obvious Extraction Rules
+
+#### Rule 1: Conditional compilation directives
+
+OpenHarmony headers use extensive `#ifdef` blocks. Extract ALL variants:
+
+```c
+#ifdef OHOS_ENABLE_CAMERA
+int32_t OH_Camera_Create(Camera **camera);
+#endif
+
+#ifdef OHOS_ENABLE_VIDEORECORDER
+int32_t OH_VideoRecorder_Create(VideoRecorder **recorder);
+#endif
+```
+
+**Expert decision**: Generate test cases for ALL variants, not just the first one. Each `#ifdef` represents a feature gate that may be enabled in different device configurations.
+
+#### Rule 2: Function pointer parameters
+
+```c
+typedef void (*CameraStatusCallback)(int32_t status, void *userData);
+int32_t OH_Camera_SetStatusCallback(Camera *camera, CameraStatusCallback callback, void *userData);
+```
+
+**Expert handling**:
+- Extract function pointer signature
+- Mark as "callback" type for special N-API handling (refer to `test_patterns_napi_ets_advance.md`)
+- Generate ERROR tests for null callback scenarios
+
+#### Rule 3: Handle-specific patterns
+
+OpenHarmony uses opaque handles extensively:
+
+```c
+typedef struct Camera Camera;
+int32_t OH_Camera_Create(Camera **camera);  // Note: double pointer
+```
+
+**Expert handling**:
+- Detect `struct TypeName` followed by `TypeName **outParam` pattern
+- Mark as "handle allocation" — requires special N-API test pattern
+- Generate MEMORY tests for handle lifecycle
+
+#### Rule 4: Attribute annotations
+
+```c
+__attribute__((visibility("default"))) int32_t OH_Camera_Start(Camera *camera);
+```
+
+**Expert decision**: Ignore visibility attributes for test generation. Focus only on function signature.
+
+#### Rule 5: Bitmask parameter patterns
+
+```c
+#define OH_CAMERA_FEATURE_PREVIEW  (1 << 0)
+#define OH_CAMERA_FEATURE_VIDEO    (1 << 1)
+int32_t OH_Camera_EnableFeature(Camera *camera, uint32_t features);
+```
+
+**Expert handling**: Extract all bitmask macros and generate PARAM tests for individual bits and combinations.
+
+#### Rule 6: Variadic functions
+
+```c
+int32_t OH_Log_Print(int32_t type, const char *format, ...);
+```
+
+**Expert handling**: Skip variadic functions for N-API wrapping. They require `va_list` handling which is error-prone. Log these as "requires manual implementation."
+
+### API Information Structure
+
+Output this exact JSON format:
 
 ```json
 {
-  "function_name": "HiLogPrint",
-  "return_type": "int",
+  "function_name": "OH_Camera_Create",
+  "return_type": "int32_t",
+  "return_meaning": "error code: 0 = success, others = failure",
   "parameters": [
     {
-      "type": "int",
-      "name": "type",
-      "description": "日志类型"
-    },
-    {
-      "type": "int",
-      "name": "level",
-      "description": "日志级别"
-    },
-    {
-      "type": "unsigned int",
-      "name": "domain",
-      "description": "日志域"
-    },
-    {
-      "type": "const char*",
-      "name": "tag",
-      "description": "日志标签"
-    },
-    {
-      "type": "const char*",
-      "name": "fmt",
-      "description": "格式化字符串"
+      "name": "camera",
+      "type": "Camera **",
+      "direction": "out",
+      "is_handle": true,
+      "requires_allocation": true
     }
+  ],
+  "macros": [
+    {"name": "OH_CAMERA_SUCCESS", "value": "0"},
+    {"name": "OH_CAMERA_ERROR_INVALID_PARAM", "value": "-1"}
+  ],
+  "test_requirements": {
+    "param_tests": ["null pointer", "valid pointer"],
+    "error_tests": ["OH_CAMERA_ERROR_INVALID_PARAM"],
+    "memory_tests": ["handle allocation", "handle release"]
+  }
+}
+```
+
+### Common Edge Cases
+
+#### Edge Case 1: Incomplete type definitions
+
+```c
+typedef struct Camera Camera;  // Forward declaration only
+```
+
+**Expert handling**: Mark as `is_opaque = true`. Don't generate tests that access struct fields directly. Test only through function interfaces.
+
+#### Edge Case 2: Anonymous enums
+
+```c
+enum {
+    CAMERA_STATUS_UNKNOWN = 0,
+    CAMERA_STATUS_ACTIVE = 1
+};
+```
+
+**Expert handling**: Extract as named enum by prefix:
+```json
+{
+  "enum_name": "CameraStatus",
+  "values": [
+    {"name": "UNKNOWN", "value": "0"},
+    {"name": "ACTIVE", "value": "1"}
   ]
 }
 ```
 
-## 三、API 信息提取
-
-### 3.1 函数声明模式
+#### Edge Case 3: Macro type aliases
 
 ```c
-// 标准函数声明
-int HiLogPrint(int type, int level, unsigned int domain, const char* tag, const char* fmt, ...);
-
-// 函数指针声明
-typedef int (*CallbackFunc)(int param);
-
-// 宏函数
-#define HILOG_DEBUG(fmt, ...) HiLogPrint(LOG_CORE, LOG_DEBUG, LOG_DOMAIN, TAG, fmt, ##__VA_ARGS__)
+#define CAMERA_HANDLE void*
 ```
 
-### 3.2 参数类型识别
+**Expert handling**: Expand macro and record mapping. Generate TypeScript as:
+```typescript
+export type CameraHandle = number;
+```
 
-| 类型 | 示例 | 说明 |
-|------|------|------|
-| 基本类型 | `int`, `char`, `float` | C 基本数据类型 |
-| 指针类型 | `int*`, `const char*` | 指针类型 |
-| 数组类型 | `int[10]`, `char[]` | 数组类型 |
-| 结构体 | `struct MyStruct` | 用户定义结构体 |
-| 枚举 | `enum MyEnum` | 枚举类型 |
-| 函数指针 | `int (*)(int)` | 函数指针 |
-
-### 3.3 宏定义识别
+#### Edge Case 4: Nested pointer types
 
 ```c
-// 常量宏
-#define LOG_CORE 0
-#define LOG_DEBUG 3
-
-// 函数式宏
-#define HILOG_DEBUG(fmt, ...) \
-    HiLogPrint(LOG_CORE, LOG_DEBUG, LOG_DOMAIN, TAG, fmt, ##__VA_ARGS__)
-
-// 条件编译宏
-#ifdef ENABLE_FEATURE
-#define FEATURE_MACRO 1
-#else
-#define FEATURE_MACRO 0
-#endif
+int32_t OH_Camera_GetFrame(Camera *camera, uint8_t **frameData, uint32_t *dataSize);
 ```
 
-## 四、测试覆盖分析
+**Expert handling**:
+- Detect `uint8_t **frameData` (double pointer) → mark as output buffer
+- Detect `uint32_t *dataSize` (single pointer) → mark as output size
+- Generate memory test for buffer allocation/deallocation
 
-### 4.1 现有测试文件扫描
-
-扫描现有测试文件，提取以下信息：
-
-1. **测试用例列表**
-   - 测试用例编号
-   - 测试用例名称
-   - 测试用例描述
-
-2. **测试覆盖的 API**
-   - API 名称
-   - 覆盖的参数组合
-   - 覆盖的测试场景
-
-3. **代码风格**
-   - 缩进风格
-   - 命名规范
-   - 注释风格
-
-### 4.2 覆盖率分析
-
-```markdown
-覆盖率分析报告：
-
-## API 覆盖情况
-
-| API | 总用例数 | 已覆盖 | 未覆盖 | 覆盖率 |
-|-----|---------|--------|--------|--------|
-| HiLogPrint | 10 | 8 | 2 | 80% |
-| HiLogPrintArgs | 5 | 3 | 2 | 60% |
-
-## 缺失测试
-
-### HiLogPrint
-- 参数测试：缺失 (LOG_CORE, LOG_DEBUG, nullptr, "%s")
-- 边界值测试：缺失超长字符串测试
-- 错误码测试：缺失错误码 401 测试
-
-### HiLogPrintArgs
-- 参数测试：缺失参数组合测试
-```
-
-## 五、代码风格提取
-
-### 5.1 缩进风格
+#### Edge Case 5: Const correctness in function signatures
 
 ```c
-// 4 空格缩进
-HWTEST_F(HilogTest, HiLogPrint_Normal, TestSize.Level1)
+int32_t OH_Camera_SetConfig(Camera *camera, const CameraConfig *config);
+```
+
+**Expert handling**: The `const` qualifier is important for TypeScript interface generation:
+```typescript
+interface CameraConfig { /* ... */ }
+export const OH_Camera_SetConfig: (camera: CameraHandle, config: CameraConfig) => number;
+```
+Note: Input parameters with `const` should be read-only in test cases.
+
+### Parameter Type Mapping
+
+| C Type | TypeScript Type | Special Handling |
+|---------|-----------------|------------------|
+| `int32_t` | `number` | — |
+| `uint32_t` | `number` | Bitmask: generate combination tests |
+| `char*` / `const char*` | `string` | Null check required |
+| `void*` | `number` (as handle) | Handle lifecycle tests |
+| `struct Name*` | `NameHandle` (custom type) | Forward declaration tests |
+| `enum Name` | `Name` (enum) | Extract all values |
+| `CallbackType*` | `(args: any[]) => void` | N-API async handling |
+
+### Macro Definition Extraction
+
+#### Constant macros (for error codes)
+
+```c
+#define OH_CAMERA_SUCCESS 0
+#define OH_CAMERA_ERROR_INVALID_PARAM (-1)
+#define OH_CAMERA_ERROR_NO_MEMORY (-2)
+```
+
+**Expert handling**: Extract as test error codes:
+```json
 {
-    int ret = HiLogPrint(LOG_CORE, LOG_INFO, LOG_DOMAIN, "TAG", "test");
-    EXPECT_GE(ret, 0);
+  "error_codes": [
+    {"name": "SUCCESS", "value": 0},
+    {"name": "ERROR_INVALID_PARAM", "value": -1},
+    {"name": "ERROR_NO_MEMORY", "value": -2}
+  ]
 }
 ```
 
-### 5.2 命名规范
+Generate ERROR test cases for each non-zero error code.
+
+#### Feature macros (conditional compilation)
 
 ```c
-// 测试套名：PascalCase + Test
-HilogTest
-
-// 测试用例名：API名 + 场景描述
-HiLogPrint_NormalParam
-HiLogPrint_NullPointer
-HiLogPrint_BoundaryValue
+#ifdef OHOS_FEATURE_CAMERA_CAPTURE
+int32_t OH_Camera_Capture(Camera *camera);
+#endif
 ```
 
-### 5.3 注释风格
+**Expert handling**: Record feature dependency:
+```json
+{
+  "function_name": "OH_Camera_Capture",
+  "feature_flag": "OHOS_FEATURE_CAMERA_CAPTURE",
+  "requires_condition": true
+}
+```
+
+### Documentation Comment Extraction
+
+OpenHarmony headers may contain documentation comments:
 
 ```c
-/* @
- * @tc.name: SUB_HILOG_HILOG_PRINT_PARAM_001
- * @tc.desc: 测试 HiLogPrint 的正常参数
- * @tc.type: FUNC
+/**
+ * @brief Create a camera instance
+ * @param camera Output parameter for camera instance
+ * @return 0 on success, error code on failure
  */
+int32_t OH_Camera_Create(Camera **camera);
 ```
 
-## 六、覆盖率报告解析
+**Expert handling**: Extract and include in test description:
+```json
+{
+  "function_name": "OH_Camera_Create",
+  "brief": "Create a camera instance",
+  "param_docs": {
+    "camera": "Output parameter for camera instance"
+  },
+  "return_doc": "0 on success, error code on failure"
+}
+```
 
-### 6.1 报告格式
+Use this documentation in `@tc.desc` field of generated test cases.
+
+### Output Format Summary
+
+After parsing a header file, output:
 
 ```markdown
-覆盖率报告：
-  未覆盖的 API:
-    - API1
-    - API2
-  缺失的参数组合:
-    - API1: (param1_value, param2_value)
-  缺失的测试场景:
-    - API1: 边界值测试
+## Header File Analysis Results
+
+**File**: `{OH_ROOT}/interface/sdk_c/camera_framework/camera.h`
+
+### Extracted Functions: N
+
+| Function | Return Type | Parameters | Test Types Required |
+|-----------|--------------|-------------|---------------------|
+| OH_Camera_Create | int32_t | Camera ** | PARAM, ERROR, MEMORY |
+| OH_Camera_Start | int32_t | Camera * | PARAM, ERROR |
+| ... | ... | ... | ... |
+
+### Extracted Macros: N
+
+| Macro Name | Value | Type |
+|------------|--------|------|
+| OH_CAMERA_SUCCESS | 0 | Error Code |
+| OH_CAMERA_ERROR_INVALID_PARAM | -1 | Error Code |
+| ... | ... | ... |
+
+### Complex Types: N
+
+| Type Name | Definition | Opaque? |
+|------------|-------------|----------|
+| Camera | struct Camera | Yes |
+| CameraConfig | ... | No |
+| ... | ... | ... |
+
+### Conditional Variants: N
+
+| Feature Flag | Functions |
+|--------------|-----------|
+| OHOS_ENABLE_CAMERA_CAPTURE | OH_Camera_Capture, ... |
+| OHOS_ENABLE_CAMERA_PREVIEW | OH_Camera_StartPreview, ... |
+| ... | ... |
+
+---
 ```
-
-### 6.2 报告解析
-
-解析覆盖率报告，提取：
-
-1. **未覆盖的 API**
-2. **缺失的参数组合**
-3. **缺失的测试场景**
-4. **需要补充的测试类型**
-
-## 七、API 语法类型过滤
-
-### 7.1 语法类型说明
-
-OpenHarmony API 支持不同的语法类型：
-
-- **C API**: 纯 C 语言 API
-- **C++ API**: C++ 语言 API
-- **Native API**: 原生 API
-
-### 7.2 语法类型过滤
-
-根据测试任务过滤 API：
-
-```c
-// 如果任务明确指定 C API，只生成 C API 测试
-// 如果任务明确指定 C++ API，只生成 C++ API 测试
-```
-
-## 八、常见问题
-
-### Q1: 头文件包含条件编译导致解析失败
-
-**解决方案**：
-- 使用预处理器展开条件编译
-- 分析所有可能的分支
-
-### Q2: 宏定义展开困难
-
-**解决方案**：
-- 识别宏定义模式
-- 递归展开宏定义
-- 处理可变参数宏
-
-### Q3: 函数指针类型识别
-
-**解决方案**：
-- 使用正则表达式匹配函数指针模式
-- 提取返回类型、参数类型
 
 ---
 
-**版本**: 1.0.0
-**更新日期**: 2026-03-06
+## Testing Coverage Analysis
+
+### Existing Test File Scanning
+
+Scan existing test files and extract:
+
+1. **Test case list** — test case ID, name, description
+2. **Covered APIs** — API name, covered parameter combinations, covered test scenarios
+3. **Code style** — indentation, naming conventions, comment style
+
+### Coverage Gap Analysis
+
+Compare extracted API list with covered APIs and generate:
+
+```markdown
+## Coverage Analysis Report
+
+### API Coverage
+
+| API | Total Functions | Covered | Uncovered | Coverage % |
+|-----|----------------|-----------|------------|-------------|
+| Camera | 20 | 15 | 5 | 75% |
+
+### Missing Tests
+
+#### OH_Camera_Create
+- [ ] PARAM test: null pointer
+- [ ] PARAM test: valid pointer
+- [ ] ERROR test: OH_CAMERA_ERROR_NO_MEMORY
+- [ ] MEMORY test: handle allocation
+
+#### OH_Camera_SetConfig
+- [ ] PARAM test: invalid config structure
+- [ ] ERROR test: OH_CAMERA_ERROR_INVALID_PARAM
+- [ ] BOUNDARY test: config size limits
+
+### Test Style Summary
+
+- Indentation: 4 spaces
+- Naming: camelCase for test functions
+- Comments: `/* @tc.name: */` format
+```
+
+### Flow A (Coverage-Report-Driven) — Style Scan Only
+
+When user provides coverage report:
+1. Parse the report to extract missing test items
+2. Scan existing test files for code style ONLY (naming patterns, comment style, test structure)
+3. Generate tests directly per report's missing items
+4. Do NOT re-analyze existing coverage
+
+### Flow B (Standard Process) — Full Coverage
+
+When no coverage report:
+1. Scan all existing test files
+2. Analyze method/param/error-code coverage
+3. Generate gap report
+4. Prefer supplementing existing project > creating new project
+
+---
+
+**版本**: 2.0.0
+**更新日期**: 2026-05-12

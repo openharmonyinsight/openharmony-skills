@@ -11,6 +11,7 @@ import signal
 import time
 import subprocess
 import threading
+import argparse
 from datetime import datetime
 from pathlib import Path
 
@@ -392,45 +393,50 @@ class AsyncCoverageScanner:
 
 def main():
     """主函数"""
-    if len(sys.argv) < 2:
-        print("用法:")
-        print("  python async_coverage_scan.py start   - 启动扫描")
-        print("  python async_coverage_scan.py stop    - 停止扫描")
-        print("  python async_coverage_scan.py status  - 查看状态")
-        print("  python async_coverage_scan.py results - 获取结果")
-        print("  python async_coverage_scan.py log     - 查看最近日志 (默认30行)")
-        print("  python async_coverage_scan.py log 50  - 查看最近50行日志")
+    parser = argparse.ArgumentParser(
+        description='ArkTS 覆盖率扫描异步执行工具',
+        usage='python async_coverage_scan.py <command> [options]'
+    )
+    subparsers = parser.add_subparsers(dest='command', help='可用命令')
+
+    subparsers.add_parser('start', help='启动异步覆盖率扫描')
+    subparsers.add_parser('stop', help='停止正在运行的扫描')
+    subparsers.add_parser('status', help='查看当前扫描状态')
+    subparsers.add_parser('results', help='获取扫描结果')
+
+    log_parser = subparsers.add_parser('log', help='查看最近扫描日志')
+    log_parser.add_argument('-n', '--lines', type=int, default=30,
+                            help='显示最后 N 行日志 (默认: 30)')
+
+    args = parser.parse_args()
+
+    if not args.command:
+        parser.print_help()
         sys.exit(1)
-    
-    command = sys.argv[1]
+
     scanner = AsyncCoverageScanner()
-    
-    if command == "start":
+
+    if args.command == "start":
         success, message, pid = scanner.start_scan()
         print(f"{'✅' if success else '❌'} {message}")
         if success:
             print(f"使用 'python {sys.argv[0]} status' 查看状态")
             print(f"使用 'python {sys.argv[0]} results' 获取结果")
-    
-    elif command == "stop":
+
+    elif args.command == "stop":
         success, message = scanner.stop_scan()
         print(f"{'✅' if success else '❌'} {message}")
-    
-    elif command == "status":
+
+    elif args.command == "status":
         status = scanner.get_status()
         print(json.dumps(status, indent=2, ensure_ascii=False))
-    
-    elif command == "results":
+
+    elif args.command == "results":
         results = scanner.get_results()
         print(json.dumps(results, indent=2, ensure_ascii=False))
 
-    elif command == "log":
-        lines = int(sys.argv[2]) if len(sys.argv) > 2 else 30
-        print(scanner.get_log_tail(lines))
-    
-    else:
-        print(f"未知命令: {command}")
-        sys.exit(1)
+    elif args.command == "log":
+        print(scanner.get_log_tail(args.lines))
 
 
 if __name__ == "__main__":

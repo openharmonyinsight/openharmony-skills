@@ -1,5 +1,40 @@
 ## Phase 3: Targeted API Info Parsing
 
+---
+
+### 📦 MANDATORY - 必须先加载以下模块
+
+**在执行本 Phase 前，你必须完整阅读以下文件**（不得设置行数限制）：
+
+```
+{skill_root}/modules/L1_Analysis/parser/unified_api_parser.md
+```
+
+---
+
+### ⚙️ 按需加载（根据任务需求）
+
+以下模块仅在你执行对应任务时才需要加载：
+
+| 任务 | 加载文件 | 说明 |
+|------|---------|------|
+| 需要判断语法类型时 | `{skill_root}/modules/L1_Analysis/parser/unified_api_parser_syntax_filter.md` | 检查 API 的支持语法类型 |
+| 需要项目特定解析时 | `{skill_root}/modules/L1_Analysis/parser/project_parser.md` | 项目特定的解析规则 |
+
+---
+
+### 🚫 Do NOT Load - 禁止加载
+
+本 Phase 期间禁止加载以下模块：
+
+```
+所有 L2_Generation 模块（modules/L2_Generation/）
+所有 L3_Validation 模块（modules/L3_Validation/）
+references/conventions/ 目录
+```
+
+---
+
 **加载模块**: `modules/L1_Analysis/parser/unified_api_parser.md`
 
 **核心目标**：深入学习未覆盖 API 的详细信息，包括方法签名、参数类型、返回值、错误码、使用场景等，为后续测试用例生成提供完整的 API 知识基础。
@@ -116,6 +151,24 @@ python extract_uncovered.py --subsystem "子系统名" [--module-name "模块名
 - 特殊的错误码处理
 - 权限相关要求
 ```
+
+#### 2.5 信息源降级策略
+
+多源信息收集过程中，可能遇到部分信息源不可用。按以下策略处理：
+
+| 不可用的信息源 | 处理方式 | 对知识库的影响 | 恢复动作 |
+|---------------|---------|---------------|---------|
+| **.d.ts 文件缺失** | **终止该 API 解析**——.d.ts 缺失意味着无法 import 接口，生成的代码无法编译，继续解析毫无意义 | 无法生成测试 | 向用户报告缺失的 .d.ts 路径，提示检查 SDK 配置（`for_windows.sdk_path` 或 `for_linux.OH_ROOT`）。用户修正后重新执行 Phase 3 |
+| **官方文档缺失** | 降级：仅使用 .d.ts + 现有测试 + 子系统配置生成知识库 | 缺少使用场景、限制条件、性能注意事项。`usage_info` 标记 `"doc_available": false`，Phase 4 设计文档中标注"缺少官方文档参考" | — |
+| **现有测试为空** | 降级：跳过测试模式参考，使用 `modules/L2_Generation/generator/templates.md` 中的通用模板 | 缺少代码风格参考和常见用法模式。`test_patterns` 填入 `"existing_patterns": []`，`"template_fallback": true` | — |
+| **子系统配置缺失** | 降级：仅使用 `references/subsystems/_common.md` 核心配置 | 缺少子系统特有规则和特殊错误码处理。标记 `"subsystem_config": "core_only"`，Phase 5 跳过子系统特有规则 | — |
+| **所有信息源均缺失** | **终止该 API 解析** | 无法生成任何有用信息 | 向用户报告，提示检查环境配置 |
+
+**降级标记与下游感知**：
+
+1. 每个降级的 API 在知识库中标记 `"degraded": true` 和 `"missing_sources": ["doc", "existing_tests"]`
+2. Phase 4 读取降级标记，对降级 API 仅生成 PARAM 和 RETURN 类型测试，不生成 ERROR 类型（缺少错误码来源时）
+3. Phase 3 结束时向用户汇总：`"X 个 API 完整解析，Y 个 API 降级解析（缺少：文档 Z 个、测试参考 W 个），K 个 API 终止（.d.ts 缺失）"`
 
 #### 3. 构建完整 API 知识库（输出结构）
 

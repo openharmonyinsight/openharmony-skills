@@ -1,8 +1,11 @@
 {
+  "_comment": "配置文件说明：[必填] 标记为必须提供，缺失会导致流程终止；[可选] 标记为可跳过，缺失时降级或跳过对应功能；[自动推导] 标记为可从其他字段计算得出",
   "for_linux": {
+    "_comment": "Linux 平台配置",
     "OH_ROOT": "/path/to/ohroot"
   },
   "for_windows": {
+    "_comment": "Windows 平台配置",
     "xts_acts_path": "D:\\path\\to\\xts_acts",
     "sdk_path": "D:\\path\\to\\sdk\\ets",
     "deveco_studio_path": "D:\\path\\to\\DevEco Studio",
@@ -11,6 +14,18 @@
     "docs_path": "D:\\path\\to\\docs"
   },
   "scan_tool_root": "D:\\APICoverageDetector",
-  "skill_root":"{user_home}\\path\\to\\skills\\oh-xts-generator",
-  "ets_version": ["ets1.1", "ets1.2"]
+  "skill_root": "{user_home}\\path\\to\\skills\\ohos-test-arkts-xts-generation",
+  "ets_version": ["ets1.1", "ets1.2"],
+  "_fields": {
+    "for_linux.OH_ROOT": "[Linux必填][Windows不需要] OpenHarmony 源码根目录。从此路径自动推导 xts_acts_path（test/xts/acts）、sdk_path（interface/sdk-js/ets）、docs_path（docs）",
+    "for_windows.xts_acts_path": "[Windows必填][Linux不需要] XTS 测试仓库路径（如 D:\\xts_acts_0414）。存放 .test.ets 测试文件的根目录",
+    "for_windows.sdk_path": "[Windows必填][Linux不需要] SDK .d.ts 接口定义路径（如 D:\\interface_sdk-js\\ets）。API 签名解析的唯一信息源",
+    "for_windows.deveco_studio_path": "[Windows可选] DevEco Studio 安装目录。提供后自动推导 Java（jbr/）、Node.js（tools/node/）、Hvigor 路径",
+    "for_windows.hvigor_path_1.1": "[Windows可选] ArkTS-Dyn 动态语法编译工具路径。未填且无 deveco_studio_path 时跳过编译验证",
+    "for_windows.hvigor_path_1.2": "[Windows可选] ArkTS-Sta 静态语法编译工具路径。仅当 ets_version 包含 ets1.2 时需要",
+    "for_windows.docs_path": "[Windows可选] OpenHarmony 文档目录。提供后 Phase 3 可查阅官方 API 文档补充知识库",
+    "scan_tool_root": "[Windows可选] APICoverageDetector 安装目录。仅 Windows 环境可用。推荐磁盘根目录（避免 260 字符路径限制）。缺失时跳过覆盖率扫描，需用户提供扫描结果",
+    "skill_root": "[全平台必填] 本技能根目录的绝对路径。所有文件引用的基准点",
+    "ets_version": "[全平台必填] 目标 ETS 版本数组。可选值：ets1.1（ArkTS-Dyn）、ets1.2（ArkTS-Sta）。格式：数组，如 [\"ets1.1\"] 或 [\"ets1.1\", \"ets1.2\"]"
+  }
 }

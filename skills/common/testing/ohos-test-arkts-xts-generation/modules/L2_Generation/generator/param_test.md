@@ -218,7 +218,51 @@ it('test{MethodName}Return003', Level.LEVEL1, async (done: Function) => {
 | 对象 | 返回 null、返回包含所有属性的对象、返回部分属性的对象 |
 | T \| undefined | 返回有效值、返回 undefined |
 
-### 3.3 异步测试 done() 使用反模式（重要！）
+### 3.3 异步模式选择（先选模式，再看反模式避坑）
+
+根据 API 的 `.d.ts` 签名直接确定测试写法：
+
+| API 特征 | 识别方式 | 测试模式 | done() 要求 |
+|----------|---------|---------|-------------|
+| 返回 `Promise<T>` | 返回类型含 Promise | `async/await`（推荐） | 不需要 done 参数 |
+| 接受 callback 参数 | 参数列表含函数类型 `(result: T) => void` | callback + done() | done() 在 callback 内部调用 |
+| 事件监听 | 方法名含 `on`/`subscribe`，或参数是 `Callback<T>` | 事件回调 + done() | done() 在事件回调内部调用 |
+| 同步方法 | 返回非 Promise 类型，无 callback 参数 | 同步 | 不使用 done，不使用 async |
+
+```typescript
+// 模式 A：返回 Promise<T> → async/await，无 done
+it('testPromise001', Level.LEVEL1, async () => {
+  let result = await api.asyncMethod(param);
+  expect(result).assertEqual(expected);
+});
+
+// 模式 B：接受 callback → done() 在 callback 内部
+it('testCallback001', Level.LEVEL1, async (done: Function) => {
+  api.method(param, (result) => {
+    expect(result).assertEqual(expected);
+    done();
+  });
+});
+
+// 模式 C：事件监听 → done() 在事件回调内部
+it('testEvent001', Level.LEVEL1, async (done: Function) => {
+  emitter.on('event', (data) => {
+    expect(data).assertEqual(expected);
+    done();
+  });
+  emitter.emit('event', testData);
+});
+
+// 模式 D：同步 → 不用 async，不用 done
+it('testSync001', Level.LEVEL1, () => {
+  let result = api.syncMethod(param);
+  expect(result).assertEqual(expected);
+});
+```
+
+> **不确定时**：按 `.d.ts` 返回类型判断——含 `Promise` 按异步处理，否则按同步处理。
+
+### 3.4 异步测试 done() 使用反模式（重要！）
 
 > **Hypium 框架的 `done()` 必须在每个异步分支中恰好调用一次。**
 > （缺少 `done()` 的分支会导致测试无限挂起直到超时，测试运行器资源被占用，且超时错误掩盖了真实的测试意图）

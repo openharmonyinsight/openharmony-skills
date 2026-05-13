@@ -541,6 +541,176 @@ bash verify_project_structure.sh /path/to/test_suite
 
 ---
 
+## 二、N-API 封装生成失败回退策略
+
+### 2.1 失败场景分类
+
+| 失败类型 | 检测方法 | 严重程度 | 常见原因 |
+|---------|---------|---------|---------|
+| **注册缺失** | C++ 函数定义已存在但未在 desc[] 中注册 | 🔴 Critical | 复制模板时忘记修改 desc[] |
+| **声明缺失** | desc[] 中已注册但 index.d.ts 中无声明 | 🔴 Critical | TypeScript 声明生成逻辑错误 |
+| **调用未定义** | ETS 中调用了不存在的 testNapi 函数 | 🟡 Medium | 测试用例与 N-API 封装不同步 |
+| **签名不匹配** | C++ 参数数量与 TypeScript 不一致 | 🟡 Medium | 参数提取错误 |
+| **类型不匹配** | napi_value 与 TypeScript 类型转换失败 | 🟡 Medium | 类型映射规则错误 |
+
+### 2.2 回退决策树
+
+```
+N-API 封装生成失败
+  ↓
+检查失败类型
+  ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ 失败类型 1: 注册缺失                                      │
+│                                                             │
+│ 症状: C++ 有 static napi_value 定义，但 desc[] 中无对应项  │
+│                                                             │
+│ 专家判断: 模板复制时忘记更新注册数组                         │
+│                                                             │
+│ 修复策略:                                                    │
+│ 1. 手动添加: DECLARE_NAPI_PROPERTY("funcName", funcName)     │
+│ 2. 或: 自动修复脚本                                          │
+│    bash scripts/auto_fix_napi_triple.sh {target_path}           │
+│                                                             │
+│ 预防措施:                                                    │
+│ - 每次生成后立即运行 verify_napi_triple.sh                   │
+│ - 在 desc[] 数组上方添加 TODO 注释                              │
+│                                                             │
+└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│ 失败类型 2: 声明缺失 (index.d.ts)                         │
+│                                                             │
+│ 症状: desc[] 中已注册，但 index.d.ts 中无 export const       │
+│                                                             │
+│ 专家判断: TypeScript 声明生成逻辑被条件编译跳过                 │
+│                                                             │
+│ 修复策略:                                                    │
+│ 1. 检查 NapiTest.cpp 中的条件编译宏                         │
+│    #ifdef OHOS_ENABLE_CAMERA                                  │
+│    static napi_value OH_Camera_Start_napi(...)                │
+│    #endif                                                   │
+│                                                             │
+│ 2. 同步更新 index.d.ts:                                      │
+│    export const OH_Camera_Start: ( ... ) => number;            │
+│                                                             │
+│ 预防措施:                                                    │
+│ - 生成时同时生成 C++ 和 TypeScript，不要分步                  │
+│ - 在 TypeScript 生成代码中添加检查:                             │
+│   // Ensure all desc[] entries have corresponding declaration   │
+│                                                             │
+└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│ 失败类型 3: 签名不匹配                                    │
+│                                                             │
+│ 症状: C++ 参数数量 ≠ TypeScript 参数数量                      │
+│                                                             │
+│ 专家判断: 参数提取逻辑遇到以下情况之一:                         │
+│ - 指针参数被错误解析 (e.g., Camera ** vs Camera *)           │
+│ - 函数指针参数被跳过                                         │
+│ - 变参函数被错误处理                                         │
+│                                                             │
+│ 修复策略:                                                    │
+│ 1. 对比原始 .h 文件中的函数签名                               │
+│ 2. 手动修正 NapiTest.cpp 参数列表                              │
+│ 3. 同步修正 index.d.ts 类型签名                               │
+│                                                             │
+│ 专家经验:                                                    │
+│ - 指针参数总是需要 napi_get_value_uint32 之类的提取            │
+│ - 函数指针参数需要特殊处理（参考 test_patterns_napi_ets_advance.md）│
+│                                                             │
+└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│ 失败类型 4: 复杂类型无法映射                                 │
+│                                                             │
+│ 症状: C++ 中的结构体/枚举无法直接映射到 TypeScript          │
+│                                                             │
+│ 专家判断: 遇到以下情况:                                      │
+│ - 前向声明的结构体 (typedef struct Camera Camera;)           │
+│ - 匿名枚举                                                  │
+│ - 宏定义的类型别名                                           │
+│                                                             │
+│ 修复策略:                                                    │
+│ 1. 前向声明结构体: 使用 OpaqueHandle 类型                    │
+│    export type OpaqueHandle = number;                          │
+│                                                             │
+│ 2. 匿名枚举: 生成命名枚举                                  │
+│    export enum CameraStatus {                                  │
+│      Unknown = 0,                                            │
+│      Active = 1,                                             │
+│      // ... extracted from header comments or usage            │
+│    }                                                        │
+│                                                             │
+│ 3. 宏定义类型: 展开 macro 并记录映射关系                      │
+│                                                             │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 2.3 自动修复脚本
+
+使用 `scripts/auto_fix_napi_triple.sh` 自动修复常见问题：
+
+```bash
+# 用法
+bash scripts/auto_fix_napi_triple.sh /path/to/test/suite
+
+# 修复内容
+1. 自动添加缺失的 N-API 函数注册
+2. 自动添加缺失的 TypeScript 声明
+3. 验证修复结果
+```
+
+### 2.4 人工修复检查清单
+
+当自动修复失败时，使用此清单进行人工修复：
+
+```markdown
+## N-API 失败人工修复检查清单
+
+- [ ] **注册完整性检查**
+  - [ ] 每个 static napi_value 函数都在 desc[] 中有对应的 DECLARE_NAPI_PROPERTY
+  - [ ] desc[] 数组以 `};` 正确结束
+  - [ ] Init 函数调用了 `napi_define_properties`
+
+- [ ] **TypeScript 声明检查**
+  - [ ] 每个 export const 名称与 desc[] 中的注册名称一致
+  - [ ] 参数类型与 C++ 参数类型匹配
+  - [ ] 返回类型正确（通常是 `Promise<void>` 或 `number`）
+
+- [ ] **ETS 测试检查**
+  - [ ] 所有 testNapi.xxx 调用都有对应的 TypeScript 声明
+  - [ ] 异步函数使用了 `await testNapi.xxx()`
+  - [ ] 错误处理使用了 try-catch 并验证错误码
+
+- [ ] **条件编译同步**
+  - [ ] #ifdef 块在 C++ 和 TypeScript 中保持一致
+  - [ ] 被跳过的函数没有生成测试用例
+
+- [ ] **复杂类型处理**
+  - [ ] 指针参数正确使用 napi_get_value_uint32 等提取函数
+  - [ ] 函数指针参数参考 test_patterns_napi_ets_advance.md
+  - [ ] 结构体参数正确转换为 TypeScript 对象
+```
+
+### 2.5 失败记录与学习
+
+每次修复失败后，记录到失败知识库：
+
+```json
+{
+  "failure_id": "NAPI-FAIL-001",
+  "timestamp": "2026-05-12T10:30:00Z",
+  "failure_type": "registration_missing",
+  "function_name": "OH_Camera_SetPreviewCallback",
+  "root_cause": "Function pointer parameter caused parameter extraction to skip function entirely",
+  "resolution": "Manually added registration and updated parameter extraction logic",
+  "prevention": "Update parameter extraction to handle function pointers correctly"
+}
+```
+
+这些记录用于持续改进参数提取逻辑，减少未来失败。
+
+---
+
 ## 四、模板工程要求
 
 ### 4.1 严格遵循模板

@@ -1,5 +1,41 @@
 ## Phase-2 覆盖率扫描
 
+---
+
+### 📦 MANDATORY - 必须先加载以下模块
+
+**在执行本 Phase 前，你必须完整阅读以下文件**（不得设置行数限制）：
+
+```
+{skill_root}/modules/L1_Analysis/tools/api_coverage_detector.md
+{skill_root}/modules/L1_Analysis/analyzer/coverage_analyzer.md
+```
+
+---
+
+### ⚙️ 按需加载（根据执行模式）
+
+以下模块仅在你执行对应任务时才需要加载：
+
+| 执行模式 | 加载文件 | 说明 |
+|---------|---------|------|
+| 异步扫描模式（Flow B） | `{skill_root}/scripts/async_coverage_scan.py` | 脚本工具，执行异步覆盖率扫描 |
+| 需要额外分析参数时 | `{skill_root}/modules/L1_Analysis/analyzer/api_parameter_optional_rules.md` | 可选参数分析规则 |
+
+---
+
+### 🚫 Do NOT Load - 禁止加载
+
+本 Phase 期间禁止加载以下模块：
+
+```
+所有 L2_Generation 模块（modules/L2_Generation/）
+所有 L3_Validation 模块（modules/L3_Validation/）
+references/conventions/ 目录
+```
+
+---
+
 根据用户是否提供覆盖率报告，选择对应的执行流程：
 
 | 条件 | 流程 | 说明 |
@@ -12,6 +48,22 @@
 ### Flow A: 基于用户提供的覆盖率报告
 
 用户已提供覆盖率报告，跳过 APICoverageDetector 扫描，仅执行以下步骤：
+
+**支持的覆盖率报告格式**：
+
+| 格式 | 扩展名 | 解析方式 |
+|------|--------|---------|
+| APICoverageDetector Excel 输出 | `.xlsx` | 通过 `scripts/convert_results.py --phase before` 转换为 CSV 后解析 |
+| CSV 数据表 | `.csv` | 直接读取，使用 `scripts/extract_uncovered.py` 提取未覆盖 API |
+| 未覆盖 API JSON 列表 | `.json` | 直接读取为 `uncovered_apis.json` 格式 |
+| Markdown 覆盖率报告 | `.md` | 手动解析，提取未覆盖 API 名称和缺失场景 |
+
+**格式不兼容时的处理**：
+
+若用户提供的报告格式不在上述列表中：
+1. 请求用户转换为 CSV 或 JSON 格式（推荐 CSV，与 Flow B 数据流一致）
+2. 若用户无法转换，尝试手动解析报告内容，提取未覆盖 API 列表
+3. 解析失败则提示用户使用 APICoverageDetector 重新扫描（切换到 Flow B）
 
 **代码风格扫描**：
 1. 快速扫描 3-5 个代表性测试文件

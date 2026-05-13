@@ -8,6 +8,7 @@
 import os
 import sys
 import io
+import argparse
 import json
 import platform
 from pathlib import Path
@@ -202,6 +203,11 @@ class ConfigValidator:
 
 def main():
     """主函数"""
+    parser = argparse.ArgumentParser(
+        description='配置验证工具 - 验证 .oh-xts-config.json 中的路径在当前平台下的有效性'
+    )
+    parser.parse_args()
+
     validator = ConfigValidator()
     is_valid = validator.validate()
     

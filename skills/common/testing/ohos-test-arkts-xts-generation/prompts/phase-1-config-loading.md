@@ -1,5 +1,40 @@
 ## Phase 1: Determine Subsystem Configuration
 
+---
+
+### 📦 MANDATORY - 必须先加载以下模块
+
+**在执行本 Phase 前，你必须完整阅读以下文件**（不得设置行数限制）：
+
+```
+{skill_root}/references/subsystems/_common.md
+```
+
+---
+
+### ⚙️ 按需加载（根据子系统）
+
+以下模块仅在你处理指定子系统时才需要加载：
+
+| 子系统 | 加载文件 | 说明 |
+|--------|---------|------|
+| 用户指定子系统时 | `{skill_root}/references/subsystems/{Subsystem}/_common.md` | 子系统特有配置 |
+| 需要模块级配置时 | `{skill_root}/references/subsystems/{Subsystem}/{Module}.md` | 模块特定规则 |
+
+---
+
+### 🚫 Do NOT Load - 禁止加载
+
+本 Phase 期间禁止加载以下模块：
+
+```
+所有 L2_Generation 模块（modules/L2_Generation/）
+所有 L3_Validation 模块（modules/L3_Validation/）
+references/conventions/ 目录
+```
+
+---
+
 ### 步骤 0: 配置文件初始化（首次使用自动触发）
 
 **检查配置文件是否存在**：

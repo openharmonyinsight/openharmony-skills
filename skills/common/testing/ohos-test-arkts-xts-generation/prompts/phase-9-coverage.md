@@ -1,5 +1,44 @@
 ## Phase 9: Coverage Verification
 
+---
+
+### 📦 MANDATORY - 必须先加载以下模块
+
+**在执行本 Phase 前，你必须完整阅读以下文件**（不得设置行数限制）：
+
+**Flow B（执行 APICoverageDetector 扫描时）**：
+```
+{skill_root}/modules/L1_Analysis/tools/api_coverage_detector.md
+{skill_root}/modules/L1_Analysis/verifier/coverage_verifier.md
+{skill_root}/scripts/async_coverage_scan.py
+```
+
+**注意**：Flow A（已提供覆盖率报告）时，无需加载这些模块。
+
+---
+
+### ⚙️ 按需加载（根据执行模式）
+
+以下模块仅在你执行对应任务时才需要加载：
+
+| 执行模式 | 加载文件 | 说明 |
+|---------|---------|------|
+| 需要对比覆盖率时 | `{skill_root}/scripts/compare_coverage.py` | 对比 before/after 覆盖率 |
+| 需要提取未覆盖项时 | `{skill_root}/scripts/extract_uncovered.py` | 提取未覆盖 API 列表 |
+
+---
+
+### 🚫 Do NOT Load - 禁止加载
+
+本 Phase 期间禁止加载以下模块：
+
+```
+所有 L2_Generation 模块（modules/L2_Generation/）
+references/conventions/ 目录
+```
+
+---
+
 在生成测试用例后，验证覆盖率的补充情况。
 
 | 条件 | 执行方式 | 说明 |

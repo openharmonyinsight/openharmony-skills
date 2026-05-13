@@ -56,6 +56,7 @@ OpenHarmony CAPI XTS 测试用例生成器 — 方式2（N-API 封装测试）
 | 编译环境配置 | `modules/L3_Validation/builder/linux_compile_env_setup_c.md` |
 | Linux 编译流程 | `modules/L3_Validation/builder/linux_compile_workflow_c.md` |
 | 提取测试套名称 | `modules/L3_Validation/builder/quick_reference_extract_suite_name.md` |
+| 自动修复 N-API 三重校验问题 | `scripts/auto_fix_napi_triple.sh` |
 
 ## Prerequisites
 
@@ -128,11 +129,67 @@ Flow B performs full coverage analysis in Phase 3 (scans all existing test files
 | 6 | Build Verification | `modules/L3_Validation/builder/build_workflow_c.md` | Recommended |
 | 7 | Output Results | — | Yes |
 
-Phase 1 config loading order: Core → Subsystem → Module (priority: User Custom > Module Config > Subsystem Config > Core Config)
+---
 
-Phase 2 info source priority: `.h` header (highest) → subsystem config → reference examples
+#### Phase 1: Determine Subsystem Config
 
-Phase 4 generated artifacts:
+**MANDATORY - READ ENTIRE FILE**: Before proceeding, you MUST read
+[`references/subsystems/_common.md`](references/subsystems/_common.md) (~150 lines)
+completely from start to finish. **NEVER set any range limits when reading this file.**
+
+**Do NOT load** subsystem-specific configs unless user explicitly provides a subsystem name.
+
+**Conditional Load** (only when user specifies a subsystem):
+- `references/subsystems/{Subsystem}/_common.md`
+- `references/subsystems/{Subsystem}/{Module}.md`
+
+**Configuration Loading Priority**:
+```
+User Custom > Module Config > Subsystem Config > Core Config
+```
+
+---
+
+#### Phase 2: Header File Parsing
+
+**MANDATORY - READ ENTIRE FILE**: Read [`modules/L1_Analysis/parser/unified_api_parser_c.md`](modules/L1_Analysis/parser/unified_api_parser_c.md) (~400 lines) completely.
+
+**Do NOT load** `doc_reader.md` or `project_parser.md` unless explicitly needed.
+
+**Conditional Load**:
+- `modules/L1_Analysis/parser/doc_reader.md` — only when parsing API documentation files
+- `modules/L1_Analysis/parser/project_parser.md` — only when analyzing existing project structure
+
+**Info Source Priority**: `.h` header (highest) → subsystem config → reference examples
+
+---
+
+#### Phase 3: Coverage Analysis / Style Scan
+
+**MANDATORY - READ ENTIRE FILE**: Read [`modules/L1_Analysis/analyzer/coverage_analyzer.md`](modules/L1_Analysis/analyzer/coverage_analyzer.md) (~600 lines) completely.
+
+**Flow A (Coverage-Report-Driven)**: Perform style scan ONLY — extract code style patterns from existing tests, do NOT re-analyze coverage.
+
+**Flow B (Standard Process)**: Perform full coverage analysis.
+
+**Do NOT load** any additional modules in this phase.
+
+---
+
+#### Phase 4: Generate Test Cases
+
+**MANDATORY - READ ENTIRE FILE**: Read both:
+1. [`modules/L2_Generation/generator/test_generation_c.md`](modules/L2_Generation/generator/test_generation_c.md) (~800 lines)
+2. [`modules/L2_Generation/generator/test_patterns_napi_ets.md`](modules/L2_Generation/generator/test_patterns_napi_ets.md) (~600 lines)
+
+**Do NOT load** `test_patterns_napi_ets_advance.md` unless dealing with callback/async/handle APIs.
+
+**Conditional Load**:
+- `modules/L2_Generation/generator/test_patterns_napi_ets_advance.md` — only for callback/async/handle class APIs
+- `modules/L2_Generation/generator/project_config_templates.md` — only when creating new project (includes full directory structure)
+- `modules/L2_Generation/generator/napi_api_reference.md` — only when using uncommon N-API functions
+
+**Generated Artifacts**:
 
 | Artifact | Path |
 |----------|------|
@@ -141,20 +198,49 @@ Phase 4 generated artifacts:
 | ETS test cases | `entry/src/ohosTest/ets/test/*.test.ets` |
 | Build config | BUILD.gn, Test.json, etc. |
 
-## Module Loading (Reference Injection Map)
+---
 
-Load modules based on the triggered usage pattern. **Only load what's needed for the current phase.**
+#### Phase 5: N-API Triple Verification
 
-| Phase | Always Load | Conditionally Load |
-|-------|-------------|-------------------|
-| 1 | `references/subsystems/_common.md` | `references/subsystems/{Subsystem}/_common.md`, `{Module}.md` |
-| 2 | `modules/L1_Analysis/parser/unified_api_parser_c.md` | `modules/L1_Analysis/parser/doc_reader.md`, `modules/L1_Analysis/parser/project_parser.md` |
-| 3 | `modules/L1_Analysis/analyzer/coverage_analyzer.md` | — |
-| 4 | `modules/L2_Generation/generator/test_generation_c.md`, `modules/L2_Generation/generator/test_patterns_napi_ets.md` | `modules/L2_Generation/generator/test_patterns_napi_ets_advance.md`（回调/异步/句柄类 API）, `modules/L2_Generation/generator/project_config_templates.md`（新建工程）, `modules/L2_Generation/generator/napi_api_reference.md`（不常用 napi 函数） |
-| 5 | `modules/L2_Generation/generator/verification_common.md` | `modules/L2_Generation/generator/test_suite_structure_checklist.md` |
-| 6 | `modules/L3_Validation/builder/build_workflow_c.md` | `modules/L3_Validation/builder/linux_compile_env_setup_c.md`（环境配置）, `modules/L3_Validation/builder/linux_compile_workflow_c.md`（Linux 详细流程）, `modules/L3_Validation/builder/quick_reference_extract_suite_name.md`（提取测试套名称） |
-| 7 | — | — |
-| Error handling | `references/error_handling.md` | All phases |
+**MANDATORY - READ ENTIRE FILE**: Read [`modules/L2_Generation/generator/verification_common.md`](modules/L2_Generation/generator/verification_common.md) (~600 lines) completely.
+
+**MANDATORY - NEVER SKIP**: This phase is core quality gate. Skipping will cause:
+- Runtime crashes
+- Missing function registrations
+- Type mismatches between C++, TypeScript, and ETS
+
+**Conditional Load**:
+- `modules/L2_Generation/generator/test_suite_structure_checklist.md` — only when validating project structure
+
+**Automated Verification Scripts** (run if target path exists):
+```bash
+bash scripts/verify_napi_triple.sh ${TARGET_PATH}
+bash scripts/check_test_suite_structure.sh ${TARGET_PATH}
+```
+
+**Auto-Fix Script** (use when verification fails):
+```bash
+bash scripts/auto_fix_napi_triple.sh ${TARGET_PATH}
+```
+
+---
+
+#### Phase 6: Build Verification
+
+**MANDATORY - READ ENTIRE FILE**: Read [`modules/L3_Validation/builder/build_workflow_c.md`](modules/L3_Validation/builder/build_workflow_c.md) (~500 lines).
+
+**Do NOT load** `linux_compile_env_setup_c.md` or `linux_compile_workflow_c.md` unless explicitly setting up environment.
+
+**Conditional Load**:
+- `modules/L3_Validation/builder/linux_compile_env_setup_c.md` — only for environment configuration
+- `modules/L3_Validation/builder/linux_compile_workflow_c.md` — only for detailed Linux compilation workflow
+- `modules/L3_Validation/builder/quick_reference_extract_suite_name.md` — only when extracting test suite names
+
+---
+
+#### Phase 7: Output Results
+
+No module loading required in this phase.
 
 ## Configuration Architecture
 
@@ -234,30 +320,6 @@ bash scripts/check_test_suite_structure.sh ${TARGET_PATH}
 | bundlemanager | `references/subsystems/bundlemanager/` | |
 | ability | `references/subsystems/ability/` | |
 | hilog | `references/subsystems/hilog/` | |
-
-## Test Suite Structure
-
-```
-{测试套名称}/
-├── AppScope/app.json5
-├── BUILD.gn
-├── Test.json
-├── build-profile.json5
-├── oh-package.json5
-├── signature/openharmony.p7b
-├── entry/
-│   └── src/
-│       ├── main/
-│       │   ├── cpp/
-│       │   │   ├── NapiTest.cpp
-│       │   │   ├── CMakeLists.txt
-│       │   │   └── types/libentry/index.d.ts
-│       │   ├── ets/entryability/EntryAbility.ts
-│       │   ├── module.json5
-│       │   └── syscap.json
-│       └── ohosTest/
-│           └── ets/test/*.test.ets
-```
 
 ---
 

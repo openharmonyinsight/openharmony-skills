@@ -1,5 +1,41 @@
 ## Phase 8: Build Verification
 
+---
+
+### 📦 MANDATORY - 必须先加载以下模块
+
+**在执行本 Phase 前，你必须完整阅读以下文件**（不得设置行数限制）：
+
+```
+{skill_root}/modules/L3_Validation/builder/build_workflow_linux.md
+```
+
+---
+
+### ⚙️ 按需加载（根据平台）
+
+以下模块仅在你运行在对应平台时才需要加载：
+
+| 平台 | 加载文件 | 说明 |
+|------|---------|------|
+| Windows 环境 | `{skill_root}/modules/L3_Validation/builder/build_workflow_windows.md` | Windows 编译流程 |
+| Windows + 静态编译 | `{skill_root}/modules/L3_Validation/builder/build_workflow_windows_compile.md` | 静态编译配置 |
+| Windows + UI 测试 | `{skill_root}/modules/L3_Validation/builder/build_workflow_windows_automation.md` | UI 自动化测试 |
+
+---
+
+### 🚫 Do NOT Load - 禁止加载
+
+本 Phase 期间禁止加载以下模块：
+
+```
+所有 L1_Analysis 模块（modules/L1_Analysis/）
+所有 L2_Generation 模块（modules/L2_Generation/）
+references/conventions/ 目录
+```
+
+---
+
 **加载模块**: 根据运行环境选择
 - Linux: `modules/L3_Validation/builder/build_workflow_linux.md`
 - Windows: `modules/L3_Validation/builder/build_workflow_windows.md`

@@ -197,7 +197,57 @@
 
 ## 测试套目录结构
 
-> 📋 **完整目录结构详见**：[测试套结构检查清单](./test_suite_structure_checklist.md)
+### 完整目录树（新建工程时参考）
+
+```
+{测试套名称}/
+├── AppScope/app.json5                 # 应用配置
+├── BUILD.gn                           # 测试套编译配置
+├── Test.json                          # Hypium 测试配置
+├── build-profile.json5                # 工程级构建配置（必须包含SDK版本）
+├── oh-package.json5                  # 工程级包配置
+├── hvigorfile.ts                      # Hvigor 构建脚本（根）
+├── hvigor/
+│   └── hvigor-config.json5            # Hvigor 配置
+├── signature/
+│   └── openharmony_sx.p7b             # 签名文件（从参考测试套复制）
+├── entry/
+│   ├── oh-package.json5               # 项目级包配置
+│   ├── build-profile.json5            # 项目级构建配置
+│   ├── hvigorfile.ts                  # Hvigor 构建脚本（entry）
+│   └── src/
+│       ├── main/
+│       │   ├── cpp/
+│       │   │   ├── NapiTest.cpp              # N-API 封装实现（根据API生成）
+│       │   │   ├── CMakeLists.txt           # CMake 构建配置
+│       │   │   └── types/
+│       │   │       └── libentry/
+│       │   │           ├── index.d.ts        # TypeScript 类型定义（根据N-API函数生成）
+│       │   │           └── oh-package.json5  # 模块级包配置
+│       │   ├── ets/
+│       │   │   ├── entryability/
+│       │   │   │   └── EntryAbility.ts      # 入口 Ability
+│       │   │   └── pages/
+│       │   │       └── Index.ets            # 主页面
+│       │   ├── resources/                    # 资源文件（base/media、base/element、base/profile）
+│       │   ├── module.json5                 # 主模块配置
+│       │   └── syscap.json                  # 系统能力配置
+│       └── ohosTest/
+│           ├── module.json5                 # 测试模块配置
+│           ├── syscap.json                  # 测试系统能力
+│           ├── resources/                   # 测试资源文件
+│           └── ets/
+│               ├── testability/
+│               │   └── TestAbility.ets       # 测试 Ability
+│               ├── testrunner/
+│               │   └── OpenHarmonyTestRunner.ts  # 测试运行器
+│               └── test/                     # ⭐ ETS 测试文件标准位置
+│                   ├── List.test.ets         # 测试套注册文件
+│                   ├── [测试套名].test.ets   # 主测试文件
+│                   └── [其他测试].test.ets   # 其他测试文件（可选）
+```
+
+> 📋 **完整文件清单和校验详见**：[测试套结构检查清单](./test_suite_structure_checklist.md)
 
 ### ETS 测试文件路径规范（⭐ 重要）
 

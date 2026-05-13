@@ -1,5 +1,44 @@
 ## Phase 7: Format & Validate (MANDATORY - NEVER SKIP)
 
+---
+
+### 📦 MANDATORY - 必须先加载以下模块
+
+**在执行本 Phase 前，你必须完整阅读以下文件**（不得设置行数限制）：
+
+```
+{skill_root}/modules/L3_Validation/validator/format_validator.md
+```
+
+---
+
+### ⚙️ 按需加载（根据验证任务）
+
+以下模块仅在你执行对应任务时才需要加载：
+
+| 任务 | 加载文件 | 说明 |
+|------|---------|------|
+| 代码质量深度扫描 | check-test-code-quality skill | 步骤B深度扫描（必选） |
+| 静态项目语法校验 | arkts-static-spec skill | 静态项目语法校验（仅 ArkTS-Sta） |
+| 需要 Hypium 断言参考 | `{skill_root}/references/conventions/hypium_framework.md` | 断言方法参考 |
+| 需要 ArkTS 语法参考 | `{skill_root}/references/conventions/arkts_standards.md` | 语法规范参考 |
+| 需要命名规范参考 | `{skill_root}/references/conventions/test_conventions.md` | 命名规范参考 |
+| UI 测试需要 | `{skill_root}/references/conventions/uitest_framework.md` | UI 测试框架参考 |
+
+---
+
+### 🚫 Do NOT Load - 禁止加载
+
+本 Phase 期间禁止加载以下模块：
+
+```
+所有 L1_Analysis 模块（modules/L1_Analysis/）
+所有 L2_Generation 模块（modules/L2_Generation/）
+覆盖率工具相关模块（modules/L1_Analysis/tools/ 等）
+```
+
+---
+
 **加载模块**:
 - `modules/L3_Validation/validator/format_validator.md`
 
