@@ -1,0 +1,45 @@
+# ohos-dev-arkts-static-spec Evaluation Cases
+# 每个用例包含 prompt（用户输入）和 expected（期望输出要点）
+
+cases:
+  - id: eval-001
+    category: type-system
+    prompt_file: prompts/eval-001.md
+    expected_file: expected/eval-001.md
+    description: "ArkTS Any 类型与 TypeScript any 的区别"
+
+  - id: eval-002
+    category: expressions
+    prompt_file: prompts/eval-002.md
+    expected_file: expected/eval-002.md
+    description: "ArkTS 整数除法行为"
+
+  - id: eval-003
+    category: type-system
+    prompt_file: prompts/eval-003.md
+    expected_file: expected/eval-003.md
+    description: "nullish 类型赋值给 Object 的编译期错误"
+
+  - id: eval-004
+    category: generics
+    prompt_file: prompts/eval-004.md
+    expected_file: expected/eval-004.md
+    description: "泛型约束默认值 extends Any 的影响"
+
+  - id: eval-005
+    category: migration
+    prompt_file: prompts/eval-005.md
+    expected_file: expected/eval-005.md
+    description: "TypeScript 到 ArkTS 的 enum 迁移"
+
+  - id: eval-006
+    category: expressions
+    prompt_file: prompts/eval-006.md
+    expected_file: expected/eval-006.md
+    description: "as cast 表达式的运行时行为"
+
+  - id: eval-007
+    category: type-system
+    prompt_file: prompts/eval-007.md
+    expected_file: expected/eval-007.md
+    description: "FixedArray 与 ResizableArray 的区别"
