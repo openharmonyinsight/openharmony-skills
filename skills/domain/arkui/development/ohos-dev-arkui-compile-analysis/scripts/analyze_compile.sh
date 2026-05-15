@@ -87,74 +87,44 @@ echo ""
 # 切换到 ace_engine 目录以获取编译命令
 cd "$ACE_ENGINE_ROOT"
 
-# 步骤 1: 获取编译命令
+# 步骤 1: 生成增强编译脚本（--save-enhanced 直接写文件，避免从 stdout 解析多行命令）
 echo "========================================"
-echo "步骤 1: 获取编译命令"
+echo "步骤 1: 生成增强编译脚本"
 echo "========================================"
 echo ""
 
-python3 "$SCRIPT_DIR/get_compile_command.py" "$SOURCE_FILE" "$OH_ROOT/out/$PRODUCT_NAME" $SAVE_SCRIPT
+SOURCE_BASENAME=$(basename "$SOURCE_FILE" .cpp)
+ENHANCED_SCRIPT="$OH_ROOT/out/$PRODUCT_NAME/compile_single_file_${SOURCE_BASENAME}.sh"
 
-if [[ $? -ne 0 ]]; then
-    echo "错误: 无法获取编译命令"
+python3 "$SCRIPT_DIR/get_compile_command.py" "$SOURCE_FILE" "$OH_ROOT/out/$PRODUCT_NAME" --save-enhanced 2>&1
+
+if [[ $? -ne 0 ]] || [[ ! -f "$ENHANCED_SCRIPT" ]]; then
+    echo "错误: 无法生成增强编译脚本"
     exit 1
 fi
 
 echo ""
-echo "编译命令已生成，准备在 out 目录执行..."
+echo "✓ 增强编译脚本已生成: $ENHANCED_SCRIPT"
 echo ""
 
-# 如果保存了脚本，显示提示信息
+# 如果用户指定了 --save-script，提示后续可复用
 if [[ -n "$SAVE_SCRIPT" ]]; then
-    SOURCE_BASENAME=$(basename "$SOURCE_FILE" .cpp)
-    SCRIPT_PATH="$OH_ROOT/out/$PRODUCT_NAME/compile_single_file_${SOURCE_BASENAME}.sh"
-    if [[ -f "$SCRIPT_PATH" ]]; then
-        echo "✓ 增强编译脚本已保存: $SCRIPT_PATH"
-        echo "  后续可独立使用该脚本进行重复编译测试:"
-        echo "    cd $OH_ROOT/out/$PRODUCT_NAME"
-        echo "    bash compile_single_file_${SOURCE_BASENAME}.sh"
-        echo ""
-    fi
+    echo "  后续可独立使用该脚本进行重复编译测试:"
+    echo "    cd $OH_ROOT/out/$PRODUCT_NAME"
+    echo "    bash compile_single_file_${SOURCE_BASENAME}.sh"
+    echo ""
 fi
 
-# 步骤 2: 在 out/{product} 目录执行增强编译并收集性能数据
+# 步骤 2: 执行增强编译脚本
 echo "========================================"
 echo "步骤 2: 在 out/$PRODUCT_NAME 目录执行编译并收集性能数据"
 echo "========================================"
 echo ""
-echo "⚠️  重要: 编译命令将在 out/$PRODUCT_NAME 目录下执行"
-echo "⚠️  这是确保相对路径正确性的必要条件"
-echo ""
 
-# 获取增强编译命令
-ENHANCED_CMD=$(python3 "$SCRIPT_DIR/get_compile_command.py" "$SOURCE_FILE" "$OH_ROOT/out/$PRODUCT_NAME" 2>/dev/null | grep -A 10000 "【2】增强编译命令" | grep -v "【2】增强编译命令" | grep -v "^===" | grep -v "^$" | grep -v "^说明:" | grep -v "^  -" | grep -v "^==" | head -1)
-
-if [[ -z "$ENHANCED_CMD" ]]; then
-    echo "错误: 无法生成增强编译命令"
-    exit 1
-fi
-
-# ⚠️ 必须在 out/{product} 目录执行编译（确保相对路径正确）
 cd "$OH_ROOT/out/$PRODUCT_NAME"
-
-# 显示即将执行的命令（调试用）
-echo "执行命令:"
-echo "$ENHANCED_CMD"
-echo ""
-echo "----------------------------------------"
-echo "编译输出:"
-echo "----------------------------------------"
-echo ""
-
-# 执行编译并捕获输出
-OUTPUT=$(eval "$ENHANCED_CMD" 2>&1)
+bash "$ENHANCED_SCRIPT"
 EXIT_CODE=$?
 
-# 显示编译输出
-echo "$OUTPUT"
-echo ""
-
-# 检查编译是否成功
 if [[ $EXIT_CODE -ne 0 ]]; then
     echo "========================================"
     echo "❌ 错误: 编译失败 (退出码: $EXIT_CODE)"
@@ -170,8 +140,6 @@ echo "========================================"
 echo "步骤 3: 查找预编译文件 (.ii)"
 echo "========================================"
 echo ""
-
-SOURCE_BASENAME=$(basename "$SOURCE_FILE" .cpp)
 
 # 在 obj 目录查找 .ii 文件
 II_FILE=$(find obj -name "${SOURCE_BASENAME}.ii" 2>/dev/null | head -1)
@@ -199,7 +167,8 @@ echo ""
 echo "⚠️  正在解析 .ii 文件，请稍候..."
 echo ""
 
-python3 "$SCRIPT_DIR/parse_ii.py" "$II_FILE"
+DEP_OUTPUT="$OH_ROOT/out/$PRODUCT_NAME/${SOURCE_BASENAME}_dependency_tree.txt"
+python3 "$SCRIPT_DIR/parse_ii.py" "$II_FILE" --output "$DEP_OUTPUT"
 
 if [[ $? -ne 0 ]]; then
     echo ""

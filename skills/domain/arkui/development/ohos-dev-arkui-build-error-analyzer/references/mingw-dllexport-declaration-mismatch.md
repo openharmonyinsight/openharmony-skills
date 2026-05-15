@@ -169,7 +169,7 @@ bool PaddingPropertyT<T>::operator!=(const PaddingPropertyT& value) const
 
 ```bash
 # 重新编译 SDK（MinGW 目标）
-./build.sh --product-name ohos-sdk --build-target ace_engine_sdk --ccache
+./build.sh --product-name ohos-sdk --ccache
 
 # 检查编译错误
 grep "cannot add 'dllexport' attribute" out/sdk/build.log
@@ -307,7 +307,7 @@ grep -B2 "void PaddingPropertyT<T>::SetEdges" "$IMPL"
 | 目标平台 | 编译命令 | 预期结果 |
 |---------|---------|---------|
 | **rk3568** (Linux) | `./build.sh --product-name rk3568 --build-target ace_engine` | ✅ 应该成功 |
-| **ohos-sdk** (MinGW) | `./build.sh --product-name ohos-sdk --build-target ace_engine_sdk` | ✅ 应该成功 |
+| **ohos-sdk** (MinGW) | `./build.sh --product-name ohos-sdk` | ✅ 应该成功 |
 | **Windows 预览** | MinGW 编译 | ✅ 应该成功 |
 
 ## 修复验证
@@ -315,21 +315,18 @@ grep -B2 "void PaddingPropertyT<T>::SetEdges" "$IMPL"
 ### 完整测试流程
 
 ```bash
-# 1. 清理构建缓存
-rm -rf out/sdk/arkui/ace_engine/
+# 1. 重新编译 SDK
+./build.sh --product-name ohos-sdk --ccache
 
-# 2. 重新编译 SDK
-./build.sh --product-name ohos-sdk --build-target ace_engine_sdk --ccache
-
-# 3. 检查 MinGW 编译错误
+# 2. 检查 MinGW 编译错误
 grep "cannot add 'dllexport' attribute" out/sdk/build.log
 # 期望: 无输出
 
-# 4. 检查其他编译错误
+# 3. 检查其他编译错误
 grep "error:" out/sdk/build.log | head -20
 # 期望: 无 dllexport 相关错误
 
-# 5. 验证生成的库文件
+# 4. 验证生成的库文件
 ls -lh out/sdk/mingw_x86_64/arkui/ace_engine/libace_compatible.z.so
 # 期望: 文件存在且大小合理
 ```

@@ -46,7 +46,7 @@ This document describes a real optimization case in ace_engine where splitting e
 Used compile-analysis skill to examine what was actually being used:
 
 ```bash
-./.claude/skills/compile-analysis/scripts/analyze_compile.sh \
+<skill_dir>/scripts/analyze_compile.sh \
   frameworks/core/components_ng/base/test_header.cpp rk3568
 ```
 

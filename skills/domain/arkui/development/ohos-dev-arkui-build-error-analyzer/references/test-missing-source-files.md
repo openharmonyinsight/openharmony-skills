@@ -320,7 +320,7 @@ cd <openharmony_root>
 
 ```bash
 # 提取最新的错误
-foundation/arkui/ace_engine/.claude/skills/build-error-analyzer/script/extract_last_error.sh out/rk3568/build.log
+<skill_dir>/scripts/extract_last_error.sh out/rk3568/build.log
 
 # 检查结果
 cat out/rk3568/last_error.log

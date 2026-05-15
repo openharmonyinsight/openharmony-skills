@@ -1,5 +1,5 @@
 ---
-name: arkui-compile-analysis
+name: ohos-dev-arkui-compile-analysis
 description: >
   Analyze compilation efficiency for individual source files in the ArkUI ACE Engine project.
   Measures compilation time, peak memory usage, and generates header file dependency trees.
@@ -10,6 +10,14 @@ description: >
   dependency tree, compilation performance, build time optimization, parse_ii, analyze_compile,
   ace_engine. Supports saving reusable compilation scripts with --save-script for benchmarking
   and before/after comparisons.
+metadata:
+  author: openharmony
+  scope: domain
+  stage: development
+  domain: arkui
+  capability: compile-analysis
+  version: 0.1.0
+  status: trial
 ---
 
 # ArkUI Compile Analysis
@@ -30,16 +38,16 @@ Analyze compilation efficiency for individual source files in the ACE Engine pro
 
 ```bash
 # From ace_engine directory:
-./.claude/skills/arkui-compile-analysis/scripts/analyze_compile.sh <source-file> [product-name]
+<skill_dir>/scripts/analyze_compile.sh <source-file> [product-name]
 
 # Example:
-./.claude/skills/arkui-compile-analysis/scripts/analyze_compile.sh frameworks/core/components_ng/base/frame_node.cpp rk3568
+<skill_dir>/scripts/analyze_compile.sh frameworks/core/components_ng/base/frame_node.cpp rk3568
 ```
 
 ### Save Reusable Script (for benchmarking)
 
 ```bash
-./.claude/skills/arkui-compile-analysis/scripts/analyze_compile.sh <source-file> [product-name] --save-script
+<skill_dir>/scripts/analyze_compile.sh <source-file> [product-name] --save-script
 # Creates: out/{product}/compile_single_file_{name}.sh
 # Execute later: cd out/{product} && bash compile_single_file_{name}.sh
 ```
@@ -77,7 +85,7 @@ compile_single_file_{name}.sh exists?
 Orchestrates full workflow: extract compile command → execute with timing/memory profiling → parse .ii → display results.
 
 ```bash
-./.claude/skills/arkui-compile-analysis/scripts/analyze_compile.sh <source-file> [product-name] [--save-script]
+<skill_dir>/scripts/analyze_compile.sh <source-file> [product-name] [--save-script]
 ```
 
 - `source-file` — path relative to ace_engine root (or absolute)
@@ -90,10 +98,10 @@ Extracts compilation command from ninja build files.
 
 ```bash
 # Display commands only:
-python3 ./.claude/skills/arkui-compile-analysis/scripts/get_compile_command.py <source-file> <out-dir>
+python3 <skill_dir>/scripts/get_compile_command.py <source-file> <out-dir>
 
 # Save enhanced command (with performance monitoring, no ccache, -save-temps):
-python3 ./.claude/skills/arkui-compile-analysis/scripts/get_compile_command.py <source-file> <out-dir> --save-enhanced
+python3 <skill_dir>/scripts/get_compile_command.py <source-file> <out-dir> --save-enhanced
 ```
 
 The enhanced command modifies the original by: removing ccache, adding `-save-temps=obj` (for .ii generation), wrapping with `/usr/bin/time` (for memory measurement).
@@ -103,7 +111,7 @@ The enhanced command modifies the original by: removing ccache, adding `-save-te
 Parses `.ii` preprocessed files to extract header dependency trees filtered to `foundation/arkui/` headers.
 
 ```bash
-python3 ./.claude/skills/arkui-compile-analysis/scripts/parse_ii.py <ii-file> [--output <output-file>]
+python3 <skill_dir>/scripts/parse_ii.py <ii-file> [--output <output-file>]
 ```
 
 Output: Unicode tree showing hierarchical include relationships under `foundation/arkui/ace_engine/`.
@@ -127,7 +135,7 @@ Output: Unicode tree showing hierarchical include relationships under `foundatio
 
 ```bash
 # 1. Generate baseline script
-./.claude/skills/arkui-compile-analysis/scripts/analyze_compile.sh <file> rk3568 --save-script
+<skill_dir>/scripts/analyze_compile.sh <file> rk3568 --save-script
 
 # 2. Run baseline
 cd out/rk3568 && bash compile_single_file_{name}.sh

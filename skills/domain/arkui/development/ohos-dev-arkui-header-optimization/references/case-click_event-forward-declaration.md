@@ -599,7 +599,7 @@ The `click_event.h` optimization demonstrates that:
 
 ## Related Documentation
 
-- **Header Optimization Skill**: `.claude/skills/header-optimization/SKILL.md`
-- **Forward Declaration Guide**: `.claude/skills/header-optimization/references/forward-declaration.md`
-- **Case Study: drag_event.h Split**: `.claude/skills/header-optimization/references/case-split-enums.md`
+- **Header Optimization Skill**: `<skill_dir>/SKILL.md`
+- **Forward Declaration Guide**: `<skill_dir>/references/forward-declaration.md`
+- **Case Study: drag_event.h Split**: `<skill_dir>/references/case-split-enums.md`
 - **test_header.cpp Analysis**: `out/rk3568/test_header_dependency_tree.txt`

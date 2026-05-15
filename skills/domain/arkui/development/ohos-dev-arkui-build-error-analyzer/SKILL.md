@@ -1,5 +1,5 @@
 ---
-name: arkui-build-error-analyzer
+name: ohos-dev-arkui-build-error-analyzer
 description: >
   Analyze OpenHarmony ArkUI (ACE Engine) build errors from last_error.log and provide fix
   recommendations for undefined symbol (ld.lld), ACE_FORCE_EXPORT, libace.map, ace_core_ng_source_set,
@@ -8,6 +8,14 @@ description: >
   check compilation errors, diagnose linker errors, fix build issues, build failures, undefined symbols,
   SDK compilation errors, or mentions last_error.log, build.log, ld.lld error, ACE_FORCE_EXPORT,
   libace.map, ace_engine. Supports regular builds and SDK builds. Analysis-only.
+metadata:
+  author: openharmony
+  scope: domain
+  stage: development
+  domain: arkui
+  capability: build-error-analyzer
+  version: 0.1.0
+  status: trial
 ---
 
 # ArkUI Build Error Analyzer
@@ -26,14 +34,15 @@ Follow this exact sequence every time:
 ### Extraction Script
 
 ```bash
+cd <openharmony_root>
 # From OpenHarmony root directory:
-foundation/arkui/ace_engine/.claude/skills/arkui-build-error-analyzer/scripts/extract_last_error.sh out/<product>/build.log
+<skill_dir>/scripts/extract_last_error.sh out/<product>/build.log
 
 # Regular build (e.g., rk3568):
-foundation/arkui/ace_engine/.claude/skills/arkui-build-error-analyzer/scripts/extract_last_error.sh out/rk3568/build.log
+<skill_dir>/scripts/extract_last_error.sh out/rk3568/build.log
 
 # SDK build (NOTE: out/sdk/ NOT out/ohos-sdk/):
-foundation/arkui/ace_engine/.claude/skills/arkui-build-error-analyzer/scripts/extract_last_error.sh out/sdk/build.log
+<skill_dir>/scripts/extract_last_error.sh out/sdk/build.log
 ```
 
 The script generates `last_error.log` in the same directory as build.log.

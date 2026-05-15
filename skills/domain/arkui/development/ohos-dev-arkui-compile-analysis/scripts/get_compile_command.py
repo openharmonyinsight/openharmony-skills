@@ -269,7 +269,7 @@ def save_command_to_file(command, source_file, out_dir):
 # 生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 # 说明: 使用原始编译命令，包含ccache加速，适合日常开发
 
-cd {os.path.dirname(os.path.abspath(out_dir))}
+cd {os.path.abspath(out_dir)}
 
 # 执行编译命令并捕获退出码
 {command}

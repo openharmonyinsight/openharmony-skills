@@ -184,8 +184,7 @@ nm -D out/rk3568/arkui/libarkui_timepicker.z.so | grep DialogTypeMargin
 ### 3. 重新构建验证
 
 ```bash
-# 清理并重新构建
-rm -rf out/rk3568/arkui/ace_engine/
+# 重新构建
 ./build.sh --product-name rk3568 --build-target ace_engine --ccache
 
 # 检查链接错误

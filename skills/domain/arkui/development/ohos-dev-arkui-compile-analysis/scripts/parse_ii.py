@@ -17,13 +17,13 @@ def parse_ii_file(file_path):
                 new_file = match.group(1)
                 if target_prefix in new_file:
                     if new_file in stack:
+                        # Returning to a parent file — pop back to it
                         index = stack.index(new_file)
-                        dependencies.append(stack[:index + 1])
-                        stack = stack[:index]
-                    stack.append(new_file)
-
-    if stack:
-        dependencies.append(stack)
+                        stack = stack[:index + 1]
+                    else:
+                        # Entering a new file — push and record the path
+                        stack.append(new_file)
+                        dependencies.append(list(stack))
 
     return dependencies
 
