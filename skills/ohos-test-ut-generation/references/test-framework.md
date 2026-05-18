@@ -241,7 +241,7 @@ OpenHarmony 定义了 5 个测试等级：
 
 - Level0 - Level4
 
-详见 [test-level.md](test-level.md)。
+详见 [test-macro.md](test-macro.md)。
 
 ### 4. 测试用例注释规范
 

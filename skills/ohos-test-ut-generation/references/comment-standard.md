@@ -218,7 +218,7 @@ HWTEST_F(DataProcessorTest, ProcessPerformance_001, TestSize.Level2)
     auto start = std::chrono::high_resolution_clock::now();
     ProcessLargeData(1000);
     auto end = std::chrono::high_resolution_clock::now();
-    
+
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     EXPECT_LT(duration.count(), 100);  // 预期小于 100ms
 }

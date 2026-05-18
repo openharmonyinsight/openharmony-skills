@@ -140,13 +140,13 @@ HWTEST_F(ModuleTest, FunctionName_001, TestSize.Level1)
 
 ### 断言规范
 
-详见 [assertion-guide.md](assertion-guide.md)
+详见 [assertion-gmock-guide.md](assertion-gmock-guide.md)
 
-涵盖：ASSERT vs EXPECT 选择、指针检查、多结果验证等。
+涵盖：ASSERT vs EXPECT 选择、指针检查、多结果验证、gmock 配置等。
 
 ### 测试等级
 
-详见 [test-level.md](test-level.md)
+详见 [test-macro.md](test-macro.md)
 
 涵盖：Level0-Level4 选择标准、等级分配原则等。
 
@@ -266,35 +266,7 @@ HWTEST_F(NetworkClientTest, Connect_001, TestSize.Level1)
 - 必须在 `TearDown` 中释放 mock 对象，避免内存泄漏
 - `EXPECT_CALL` 必须在调用被测函数之前设置
 - 避免在多个测试用例间共享 mock 对象的状态
-- 详细用法参见 [gmock-guide.md](gmock-guide.md)
-
----
-
-## 版本适配说明
-
-### 版本对应关系
-
-| OpenHarmony 版本 | API 版本    | 备注           |
-| -------------- | --------- | ------------ |
-| OH 3.2         | API 9     | 早期稳定版本       |
-| OH 4.0         | API 10    | 新增部分子系统      |
-| OH 4.1         | API 11    | 能力增强         |
-| OH 5.0         | API 12-14 | 最新版本，API 有扩展 |
-
-### 跨版本兼容性注意事项
-
-1. **API 变化**：不同 API 版本的接口签名、参数可能存在差异。编写测试时应确认目标 API 版本的接口定义。
-2. **头文件路径**：部分子系统在不同版本的头文件路径有调整（如 `include/` → `interfaces/inner_api/`），需按目标版本确认。
-3. **BUILD.gn 模板**：`ohos_unittest` 等模板在不同版本的 GN 构建系统中可能有参数变化，建议参考对应版本的构建文档。
-4. **测试宏**：`HWTEST_F` 等宏从 API 9 起可用，行为一致。但在 API 9 早期版本中，部分 `TestSize.Level` 枚举值可能未完全定义。
-5. **gmock 可用性**：`googletest:gmock` 外部依赖从 API 9 起支持，但部分旧版本可能需要手动添加源码编译。
-6. **新增特性**：API 12+ 新增了部分异步测试框架能力，如需使用需确认最低支持版本。
-
-### 适配建议
-
-- 优先适配最新稳定版（当前为 API 12-14 / OH 5.0）
-- 向下兼容时，在测试文件注释中标注最低支持版本
-- 不同版本差异较大的接口，应编写版本条件编译或独立的测试文件
+- 详细用法参见 [assertion-gmock-guide.md](assertion-gmock-guide.md)
 
 ---
 
@@ -334,10 +306,10 @@ HWTEST_F(NetworkClientTest, Connect_001, TestSize.Level1)
 | -------------------------------------------- | ------------- |
 | [naming-convention.md](naming-convention.md) | 命名规范          |
 | [comment-standard.md](comment-standard.md)   | 注释标准          |
-| [test-level.md](test-level.md)               | 测试等级详解        |
-| [assertion-guide.md](assertion-guide.md)     | 断言使用指南        |
+| [test-macro.md](test-macro.md)               | 测试框架速查表        |
+| [assertion-gmock-guide.md](assertion-gmock-guide.md)     | 断言使用指南        |
 | [test-macro.md](test-macro.md)               | 测试宏详解         |
-| [gmock-guide.md](gmock-guide.md)             | gmock 使用指南    |
+| [assertion-gmock-guide.md](assertion-gmock-guide.md)             | gmock 使用指南    |
 | [test-examples.md](test-examples.md)         | 测试用例示例集       |
 | [build-gn-config.md](build-gn-config.md)     | BUILD.gn 配置说明 |
 | [test-framework.md](test-framework.md)       | 测试框架概述        |
