@@ -1,5 +1,5 @@
 ---
-name: openharmony-ut-generator
+name: ohos-test-ut-generation
 description: "为OpenHarmony C/C++代码生成单元测试用例。Use when: (1) 用户请求为子系统/模块/文件/函数生成单元测试；(2) 编写HWTEST/HWTEST_F测试用例；(3) 创建ohos_unittest BUILD.gn配置；(4) 用户提到'生成测试用例'、'写单元测试'、HWTEST、ohos_unittest。Keywords: HWTEST, ohos_unittest,  unit test, C++ testing, 单元测试生成"
 ---
 
@@ -241,18 +241,7 @@ NEVER 做以下操作，否则会导致测试无法编译、运行：
 
 ```cpp
 /*
- * Copyright (c) 2026 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ // 添加版权信息
  */
 
 #include <gtest/gtest.h>
@@ -461,12 +450,12 @@ group("unittest") {
 
 ## 输入信息要求
 
-| 信息           | 必需性 | 说明                   |
-| ------------ | --- | -------------------- |
-| 源码位置         | 必需  | 文件路径或函数名称            |
-| 需求编号         | 可选  | @tc.require填写内容，默认留空 |
-| 测试等级         | 可选  | 默认Level1             |
-| 是否生成BUILD.gn | 可选  | 默认生成                 |
+| 信息           | 必需性 | 说明                        |
+| ------------ | --- | ------------------------- |
+| 源码位置         | 必需  | 文件路径或函数名称                 |
+| 需求编号         | 可选  | @tc.require填写内容，无需求编号时则为空 |
+| 测试等级         | 可选  | 默认Level1                  |
+| 是否生成BUILD.gn | 可选  | 默认生成                      |
 
 ---
 
