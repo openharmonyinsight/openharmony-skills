@@ -1,7 +1,7 @@
 ---
 name: ohos-test-ut-generation
 
-description: "为OpenHarmony C/C++代码生成单元测试用例。Use when: (1) 用户请求为子系统/模块/文件/函数生成单元测试；(2) 编写HWTEST/HWTEST_F测试用例；(3) 创建ohos_unittest BUILD.gn配置；(4) 用户提到'生成测试用例'、'写单元测试'、HWTEST、ohos_unittest。Keywords: HWTEST, ohos_unittest,  unit test, C++ testing, 单元测试生成"
+description: "为OpenHarmony C/C++代码生成单元测试用例。Use when: (1) 用户请求为子系统/模块/文件/函数生成单元测试；(2) 编写HWTEST/HWTEST_F测试用例；(3) 创建ohos_unittest；(4) 用户提到'生成测试用例'、'写单元测试'、HWTEST、ohos_unittest。Keywords: HWTEST, ohos_unittest,  unit test, C++ testing, 单元测试生成"
 
 ---
 
@@ -44,12 +44,14 @@ NEVER 做以下操作，否则会导致测试无法编译、运行：
 **MANDATORY - READ ENTIRE FILE**: Before环境确认，MUST read [`test-framework.md`](references/test-framework.md) completely to understand:
 
 - ohos_unittest/ohos_moduletest/ohos_fuzztest区别与选择
-
 - API版本对应关系
-
 - 测试框架目录结构
 
-**Do NOT Load**: 其他reference文件暂时不需要
+**Light Loading** (read only if needed):
+
+- [`framework-quickref.md`](references/framework-quickref.md) - 测试框架速查表（宏+等级+注释+命名）
+
+**Do NOT Load**: build-rules.md, error-matrix.md (此步骤不涉及)
 
 ### 检查清单（必完成）
 
@@ -112,13 +114,13 @@ python scripts/analyze-existing-tests.py <test_directory> --output style_report.
 
 **目标**：解析源码，提取测试所需的结构化信息。
 
-**MANDATORY - READ ENTIRE FILE**: Continue read [`test-framework.md`](references/test-framework.md) (if not completed in step 0)
-
 **Light Loading** (read only if needed):
 
-- [`test-examples.md`](references/test-examples.md) - 需要参考真实代码示例时
+- [`test-framework.md`](references/test-framework.md) - 未在步骤0完成时继续读
+- [`framework-quickref.md`](references/framework-quickref.md) - 参考命名规范时
+- [`real-patterns.md`](references/real-patterns.md) - 需要参考真实代码示例时
 
-**Do NOT Load**: build-gn-config.md, assertion-gmock-guide.md (此步骤不涉及)
+**Do NOT Load**: build-rules.md, error-matrix.md, assertion-gmock-guide.md (此步骤不涉及)
 
 ### 解析要点
 
@@ -147,13 +149,14 @@ python scripts/analyze-existing-tests.py <test_directory> --output style_report.
 
 ## 步骤二：制定测试策略
 
-**目标**：基于源码分析，制定测试范围、类型、优先级和覆盖率目标，形成完整的测试策略。
+**目标**：基于源码分析，制定测试范围、类型、优先级和覆盖率目标。
 
 **Light Loading** (read only if needed):
 
 - [`test-strategy-method.md`](references/test-strategy-method.md) - 代码特征→测试策略映射表
+- [`framework-quickref.md`](references/framework-quickref.md) - 参考测试等级选择决策树
 
-**Do NOT Load**: test-macro.md, build-gn-config.md
+**Do NOT Load**: build-rules.md, error-matrix.md, test-case-spec.md
 
 ### 策略决策表
 
@@ -187,13 +190,14 @@ python scripts/analyze-existing-tests.py <test_directory> --output style_report.
 
 ## 步骤三：进行测试设计
 
-**目标**：将测试策略转化为具体的测试场景设计（结合白盒与黑盒测试方法进行详细测试设计，覆盖场景需全面）。
+**目标**：结合黑盒与白盒测试方法将测试策略转化为具体的测试场景设计。
 
 **Light Loading** (read only if needed):
 
-- [`test-strategy-method.md`](references/test-strategy-method.md) - 代码特征→测试策略映射表
+- [`test-strategy-method.md`](references/test-strategy-method.md) - 参数边界值设计参考
+- [`framework-quickref.md`](references/framework-quickref.md) - 参考测试等级分配
 
-**Do NOT Load**: test-macro.md, build-gn-config.md
+**Do NOT Load**: build-rules.md, error-matrix.md, test-case-spec.md
 
 ### 测试场景设计模板（必使用）
 
@@ -224,15 +228,18 @@ python scripts/analyze-existing-tests.py <test_directory> --output style_report.
 
 **目标**：将测试场景映射为具体的测试用例，确定命名和等级分配。
 
-**MANDATORY - READ ENTIRE FILE**: Before规划用例，MUST read [`naming-convention.md`](references/naming-convention.md)  to understand:
+**MANDATORY - READ ENTIRE FILE**: Before规划用例，MUST read [`naming-convention.md`](references/naming-convention.md) to understand:
 
-- 测试文件命名规范：`[Module]Test.cpp`
+- 推荐新生成规则：`[FunctionName]_[001-999]`
+- 兼容历史存量风格（仅分析时参考）
+- @tc.name命名规范
 
-- 测试套命名规范：`[ModuleName]Test`
+**Light Loading** (read only if needed):
 
-- 测试用例命名规范：`[FunctionName]_[001-999]`
+- [`framework-quickref.md`](references/framework-quickref.md) - 测试等级选择决策树
+- [`real-patterns.md`](references/real-patterns.md) - 参考历史存量命名格式（分析时）
 
-**Do NOT Load**: build-gn-config.md, assertion-gmock-guide.md
+**Do NOT Load**: build-rules.md, error-matrix.md
 
 ### 用例规划模板（必使用）
 
@@ -261,66 +268,44 @@ python scripts/analyze-existing-tests.py <test_directory> --output style_report.
 
 **MANDATORY - READ ENTIRE FILE**: Before编写代码，MUST read:
 
-- [`test-macro.md`](references/test-macro.md)  - HWTEST/HWTEST_F完整用法、SetUp/TearDown实现
+- [`test-case-spec.md`](references/test-case-spec.md) - 测试文件完整结构、Anti-Patterns禁止清单
+- [`framework-quickref.md`](references/framework-quickref.md) - HWTEST宏用法、测试等级、@tc注释格式
+- [`assertion-gmock-guide.md`](references/assertion-gmock-guide.md) - Mock配置（如需使用Mock）
 
-- [`comment-standard.md`](references/comment-standard.md) - @tc.name/@tc.desc/@tc.type注释格式
+**Light Loading** (read only if needed):
 
-- [`assertion-gmock-guide.md`](references/assertion-gmock-guide.md) - ASSERT/EXPECT选择原则、断言速查表、gmock配置
+- [`real-patterns.md`](references/real-patterns.md) - 需要参考真实代码示例时
+- [`naming-convention.md`](references/naming-convention.md) - 命名规范详细说明
 
-**Do NOT Load for this step**:
+**Do NOT Load**: build-rules.md, error-matrix.md (此步骤不涉及BUILD.gn和错误排查)
 
-- `build-gn-config.md` - 此步骤不涉及BUILD.gn
+### 测试文件结构模板
 
-**Light Loading** (read only if Mock needed):
+**MANDATORY - READ ENTIRE FILE**: 参考完整模板 [`test-template.cpp`](examples/test-template.cpp)（~75行），包含：
 
-- [`assertion-gmock-guide.md`](references/assertion-gmock-guide.md) - 需要gmock配置时查看第二部分
+- 版权声明、头文件包含、命名空间声明
+- Test类定义（SetUpTestCase/TearDownTestCase/SetUp/TearDown）
+- @tc注释格式、HWTEST_F宏示例、断言使用
 
-- [`test-examples.md`](references/test-examples.md) - 需要参考完整示例代码时
+**关键要素**：
 
-### 测试文件结构模板（必遵循）
+- `using namespace testing::ext;` → MUST包含（HWTEST宏在此命名空间）
+- `SetUp()`初始化测试对象 → MUST完成（否则SEGFAULT）
+- 命名格式：推荐 `[FunctionName]_[001]`，详见 naming-convention.md
 
-```cpp
-/*
- // 添加版权信息
- */
-#include <gtest/gtest.h>
-#include "被测头文件.h"
-using namespace testing::ext;  // 必须包含，HWTEST宏在此命名空间
-class BBoxDetectorTest : public testing::Test {
-public:
-    static void SetUpTestCase();     // 所有测试前执行一次
-    static void TearDownTestCase();  // 所有测试后执行一次
-    void SetUp() override;           // 每个测试前执行
-    void TearDown() override;        // 每个测试后执行
-    BBoxDetector* detector_;         // 测试对象成员
-};
-void BBoxDetectorTest::SetUpTestCase() {}
-void BBoxDetectorTest::TearDownTestCase() {}
-void BBoxDetectorTest::SetUp() { detector_ = new BBoxDetector(); }
-void BBoxDetectorTest::TearDown() { delete detector_; }
-/*
- * @tc.name: GetSectionInfo_001
- * @tc.desc: 验证使用有效段名获取Section信息成功
- * @tc.type: FUNC
- * @tc.require: issueNumber
- * @tc.author: authorName
- */
-HWTEST_F(BBoxDetectorTest, GetSectionInfo_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "GetSectionInfo_001 start";
-    std::string sectionName = "section1";
-    SectionInfo info;
-    bool result = detector_->GetSectionInfo(sectionName, info);
-    EXPECT_TRUE(result);
-    GTEST_LOG_(INFO) << "GetSectionInfo_001 end";
-}
-```
+**命名要点**（详见 naming-convention.md）：
+
+- 推荐：`[FunctionName]_[001]`（如 `GetSectionInfo_001`）
+- 历史：`TestSuiteFunction_001`（如 `BBoxDetectorUnitTest001`，不推荐新生成模仿）
 
 ### 断言使用规则
 
-详见 [`assertion-gmock-guide.md`](references/assertion-gmock-guide.md) 第一部分。
+详见 [`test-case-spec.md`](references/test-case-spec.md) Anti-Patterns禁止清单。
 
-**核心原则**：前置条件用 `ASSERT_*`（失败终止），结果验证用 `EXPECT_*`（失败继续）。完整断言速查表见 reference 文档。
+**核心原则**：
+
+- 前置条件检查（指针非空、状态验证）→ MUST用 `ASSERT_*`（失败终止）
+- 结果验证（输出/状态验证）→ MUST用 `EXPECT_*`（失败继续）
 
 ---
 
@@ -328,71 +313,32 @@ HWTEST_F(BBoxDetectorTest, GetSectionInfo_001, TestSize.Level1)
 
 **目标**：配置测试目标编译规则。
 
-**MANDATORY - READ ENTIRE FILE**: Before编写BUILD.gn，MUST read [`build-gn-config.md`](references/build-gn-config.md) (~650 lines) to understand:
+**MANDATORY - READ ENTIRE FILE**: Before编写BUILD.gn，MUST read [`build-rules.md`](references/build-rules.md) to understand:
 
-- ohos_unittest完整配置项
+- 测试模板类型选择（ohos_unittest vs ohos_moduletest）
+- deps vs external_deps决策规则
+- cflags_cc访问控制绕过配置
+- 完整BUILD.gn模板
 
-- deps与external_deps区别
+**Do NOT Load**: framework-quickref.md, error-matrix.md, real-patterns.md (此步骤不涉及测试代码和示例)
 
-- cflags_cc访问控制绕过
+### BUILD.gn模板
 
-- module_out_path格式要求
+**MANDATORY - READ ENTIRE FILE**: 参考完整模板 [`build-template.gn`](examples/build-template.gn)（~45行），包含：
 
-**Do NOT Load for this step**:
+- import语句、module_output_path配置
+- config块、ohos_unittest定义、group定义
+- deps/external_deps/cflags_cc/defines完整示例
 
-- `test-macro.md`, `test-examples.md` - 此步骤不涉及测试代码
+**关键配置项**：
 
-### BUILD.gn模板（必遵循）
-
-```python
-import("//build/test.gni")  # 第一行必须import
-module_output_path = "hiviewdfx/hiview_test"  # 格式：子系统名/模块名
-config("module_private_config") {
-    visibility = [ ":*" ]  # 仅本BUILD.gn可见
-    include_dirs = [
-        "//base/hiviewdfx/hiview/include",
-        "//base/hiviewdfx/hiview/core",
-    ]
-}
-ohos_unittest("BBoxDetectorUnitTest") {
-    module_out_path = module_output_path
-    sources = [
-        "unittest/bbox_detector/bbox_detector_test.cpp",
-    ]
-    configs = [ ":module_private_config" ]
-    deps = [
-        "//third_party/googletest:gtest_main",  # 必须包含
-        "//base/hiviewdfx/hiview:hiview_core",  # 被测模块
-    ]
-    external_deps = [
-        "hiviewdfx_hilog_native:libhilog",  # 外部依赖
-        "googletest:gmock",  # Mock支持（如需要）
-    ]
-    # 访问控制绕过：测试private/protected成员
-    cflags_cc = [
-        "-Dprivate=public",
-        "-Dprotected=public",
-    ]
-    defines = [
-        "HILOG_ENABLE",
-        "UNIT_TEST",
-    ]
-}
-group("unittest") {
-    testonly = true
-    deps = [":BBoxDetectorUnitTest"]
-}
-```
-
-### 关键配置项说明
-
-| 配置项               | 说明                 | 必填性 |
-| ----------------- | ------------------ | --- |
-| `module_out_path` | 测试输出路径，格式 `子系统/模块` | 必填  |
-| `sources`         | 测试源文件列表            | 必填  |
-| `deps`            | 内部依赖，包含gtest_main  | 必填  |
-| `external_deps`   | 外部依赖库              | 按需  |
-| `cflags_cc`       | 访问控制绕过（测试private时） | 按需  |
+| 配置项                          | 说明               | 必填性            | 常见错误                                     |
+| ---------------------------- | ---------------- | -------------- | ---------------------------------------- |
+| `import("//build/test.gni")` | 测试模板定义           | 必填（第一行）        | 缺少→template not found                    |
+| `module_out_path`            | 输出路径，格式 `子系统/模块` | 必填             | 使用绝对路径→错误                                |
+| `deps`                       | 内部依赖，含gtest_main | 必填             | 缺少gtest_main→undefined reference to main |
+| `external_deps`              | 跨子系统依赖           | 按需             | 格式错误→链接失败                                |
+| `cflags_cc`                  | 访问控制绕过           | 按需（测试private时） | 缺少→'xxx' is private                      |
 
 ---
 
@@ -400,15 +346,14 @@ group("unittest") {
 
 **目标**：确认测试用例可以正确编译和运行。
 
-**MANDATORY - READ ENTIRE FILE**: Before验证，MUST read [`troubleshooting.md`](references/troubleshooting.md)  to understand:
+**MANDATORY - READ ENTIRE FILE**: Before验证，MUST read [`error-matrix.md`](references/error-matrix.md) to understand:
 
-- 常见编译错误与解决方案
+- 编译错误矩阵（症状→原因→修复）
+- 运行错误矩阵
+- 门禁拒绝类错误
+- 错误排查流程
 
-- 链接错误排查方法
-
-- 访问控制绕过注意事项
-
-**Do NOT Load**: 其他reference文件已在前步骤加载
+**Do NOT Load**: framework-quickref.md, build-rules.md, real-patterns.md (已在前步骤加载)
 
 ### 编译命令
 
@@ -429,11 +374,12 @@ group("unittest") {
 
 ## 快速参考
 
-测试等级、测试宏的完整速查表详见 [test-macro.md](references/test-macro.md)，包含：
+测试等级、测试宏、注释格式的完整速查表详见 [`framework-quickref.md`](references/framework-quickref.md)，包含：
 
-- Level0-Level4 等级定义、选择决策树、常见场景等级分配
-- HWTEST / HWTEST_F / HWMTEST_F / HWTEST_P 宏语法与模板
-- @tc.type 测试类型速查、命名规范速查、日志速查
+- Level0-Level4等级定义、选择决策树、常见场景等级分配
+- HWTEST/HWTEST_F宏语法与门禁强制要求
+- @tc.type测试类型速查（FUNC/PERF/RELI/SECU/FUZZ）
+- 命名规范速查（推荐新生成规则 vs 兼容历史存量风格）
 
 ---
 
@@ -441,18 +387,30 @@ group("unittest") {
 
 详细文档位于 `references/` 目录，按步骤需求加载：
 
-| 文件                         | 内容               | 加载时机                |
-| -------------------------- | ---------------- | ------------------- |
-| `test-framework.md`        | 测试框架概述、API版本对应   | **步骤0 MANDATORY**   |
-| `test-macro.md`            | 测试框架速查表（宏+等级+注释） | **步骤5 MANDATORY**   |
-| `naming-convention.md`     | 文件/用例命名规范        | **步骤4 MANDATORY**   |
-| `comment-standard.md`      | @tc注释格式          | **步骤5 MANDATORY**   |
-| `assertion-gmock-guide.md` | 断言选择原则、gmock配置   | **步骤5 MANDATORY**   |
-| `build-gn-config.md`       | BUILD.gn决策规则     | **步骤6 MANDATORY**   |
-| `troubleshooting.md`       | 编译错误排查           | **步骤7 MANDATORY**   |
-| `test-strategy-method.md`  | 代码特征→测试策略映射表     | 步骤2-3 Light Loading |
-| `test-examples.md`         | 真实测试代码示例         | 步骤1-5 Light Loading |
-| `test-case-spec.md`        | 测试用例完整规范         | 可选参考                |
+| 文件                         | 内容                      | 加载时机                      |
+| -------------------------- | ----------------------- | ------------------------- |
+| `test-framework.md`        | 测试框架概述、API版本对应          | **步骤0 MANDATORY**         |
+| `framework-quickref.md`    | 测试框架速查表（宏+等级+注释+命名）     | **步骤0-5 MANDATORY/Light** |
+| `test-case-spec.md`        | 测试文件完整结构、Anti-Patterns  | **步骤5 MANDATORY**         |
+| `naming-convention.md`     | 命名规范（推荐新规则vs历史兼容）       | **步骤4 MANDATORY**         |
+| `build-rules.md`           | BUILD.gn决策规则、完整模板       | **步骤6 MANDATORY**         |
+| `error-matrix.md`          | 错误排查矩阵（编译+运行+门禁）        | **步骤7 MANDATORY**         |
+| `assertion-gmock-guide.md` | Mock配置（BUILD.gn集成+真实示例） | **步骤5 Light**（需Mock时）     |
+| `real-patterns.md`         | 真实仓库示例（标注历史格式）          | 步骤1-5 Light Loading       |
+| `test-strategy-method.md`  | 测试策略设计方法                | 步骤2-3 Light Loading       |
+
+---
+
+## Examples导航
+
+完整模板示例位于 `examples/` 目录：
+
+| 文件                  | 内容                                        | 用途          |
+| ------------------- | ----------------------------------------- | ----------- |
+| `test-template.cpp` | 完整测试文件示例（版权+类定义+测试用例）                     | 步骤5参考完整代码结构 |
+| `build-template.gn` | 完整BUILD.gn示例（import+config+ohos_unittest） | 步骤6参考完整配置结构 |
+
+**加载时机**：MANDATORY - READ ENTIRE FILE（步骤5、步骤6）
 
 ---
 
@@ -471,18 +429,11 @@ group("unittest") {
 
 当用户请求生成测试时，按工作流程执行：
 
-1. 环境确认 → read test-framework.md
-
+1. 环境确认 → read test-framework.md + framework-quickref.md
 2. 分析源码 → 输出源码分析报告
-
-3. 测试策略 → 输出策略表格
-
+3. 测试策略 → read test-strategy-method.md + framework-quickref.md → 输出策略表格
 4. 测试设计 → 输出场景设计表格
-
-5. 用例规划 → read naming-convention.md → 输出用例规划
-
-6. 编写测试文件 → read test-macro.md + comment-standard.md + assertion-gmock-guide.md → 生成.cpp
-
-7. 编写BUILD.gn → read build-gn-config.md → 生成.gn
-
-8. 验证 → read troubleshooting.md → 提供编译命令
+5. 用例规划 → read naming-convention.md + framework-quickref.md → 输出用例规划
+6. 编写测试文件 → read test-case-spec.md + framework-quickref.md + assertion-gmock-guide.md → 生成.cpp
+7. 编写BUILD.gn → read build-rules.md → 生成.gn
+8. 验证 → read error-matrix.md → 提供编译命令

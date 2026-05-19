@@ -1,16 +1,10 @@
-# 测试用例详细规范
-
-## 概述
-
-本文档定义 OpenHarmony 单元测试用例编写的核心规范，包括代码结构、测试体编写、禁止事项及检查清单。
-
-命名、注释、断言、测试等级等详细规范以索引形式引用独立文档，避免内容重复。
+# 测试文件完整结构（OpenHarmony要求）
 
 ---
 
-## 测试文件标准结构
+## 一、测试文件标准结构
 
-### HWTEST_F 结构（带 Setup/Teardown）
+### HWTEST_F结构（带SetUp/TearDown）
 
 ```cpp
 /*
@@ -18,70 +12,54 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * ...
  */
-
 #include <gtest/gtest.h>
 #include "被测模块头文件.h"
+using namespace testing::ext;  // NEVER省略，HWTEST宏在此命名空间
 
-// 1. 测试类定义
+// 测试类定义
 class ModuleTest : public testing::Test {
 public:
-    static void SetUpTestCase();
-    static void TearDownTestCase();
-    void SetUp();
-    void TearDown();
+    static void SetUpTestCase();      // 所有测试前执行一次
+    static void TearDownTestCase();   // 所有测试后执行一次
+    void SetUp() override;            // 每个测试前执行
+    void TearDown() override;         // 每个测试后执行
 
-    // 测试辅助成员
+    Module* module_;                  // 测试对象成员（NEVER忘记初始化）
 };
 
-// 2. SetUpTestCase / TearDownTestCase 实现
-void ModuleTest::SetUpTestCase()
-{
-    // 所有测试前的一次性初始化
+void ModuleTest::SetUpTestCase() {}
+void ModuleTest::TearDownTestCase() {}
+
+void ModuleTest::SetUp() {
+    module_ = new Module();  // NEVER忘记初始化，否则SEGFAULT
 }
 
-void ModuleTest::TearDownTestCase()
-{
-    // 所有测试后的一次性清理
+void ModuleTest::TearDown() {
+    delete module_;  // 资源清理
 }
 
-// 3. SetUp / TearDown 实现
-void ModuleTest::SetUp()
-{
-    // 每个测试前的初始化
-}
-
-void ModuleTest::TearDown()
-{
-    // 每个测试后的清理
-}
-
-// 4. 测试用例
 /*
  * @tc.name: FunctionName_001
- * @tc.desc: 测试描述
+ * @tc.desc: 验证xxx功能xxx场景
  * @tc.type: FUNC
  * @tc.require: issueI56WJ7
  */
 HWTEST_F(ModuleTest, FunctionName_001, TestSize.Level1)
 {
-    // Step 1: 准备测试数据
-    // Step 2: 调用被测函数
-    // Step 3: 验证结果
+    GTEST_LOG_(INFO) << "FunctionName_001 start";
+    // 测试实现
+    GTEST_LOG_(INFO) << "FunctionName_001 end";
 }
 ```
 
-### HWTEST 结构（无 Setup/Teardown）
+### HWTEST结构（无SetUp/TearDown）
 
 ```cpp
-/*
- * Copyright (c) 2026 Huawei Device Co., Ltd.
- * ...
- */
-
 #include <gtest/gtest.h>
+using namespace testing::ext;
 
 /*
- * @tc.name: SimpleTest_001
+ * @tc.name: SimpleCheck_001
  * @tc.desc: 简单功能验证
  * @tc.type: FUNC
  * @tc.require: issueI56WJ7
@@ -94,222 +72,130 @@ HWTEST(SimpleTest, SimpleCheck_001, TestSize.Level1)
 
 ---
 
-## 测试体三步结构
+## 二、Anti-Patterns禁止清单
 
-### 推荐结构
-
-```cpp
-HWTEST_F(ModuleTest, FunctionName_001, TestSize.Level1)
-{
-    // Step 1: 准备测试数据
-    int input1 = 10;
-    int input2 = 5;
-    int expected = 15;
-
-    // Step 2: 调用被测函数
-    int result = calculator_->Add(input1, input2);
-
-    // Step 3: 验证结果
-    EXPECT_EQ(result, expected);
-}
-```
-
-### 三步说明
-
-1. **准备数据**：初始化输入、设置状态
-2. **调用函数**：执行被测操作
-3. **验证结果**：断言验证输出/状态
+| 禁止项                                         | 原因                                    | 正确做法                                           |
+| ------------------------------------------- | ------------------------------------- | ---------------------------------------------- |
+| **NEVER省略 `using namespace testing::ext;`** | HWTEST宏在此命名空间，缺失导致编译失败                | 文件头必须包含                                        |
+| **NEVER使用GTest原生 `TEST()` 或 `TEST_F()`**    | OpenHarmony门禁无法识别，缺少测试等级参数            | 统一使用 `HWTEST` 或 `HWTEST_F`                     |
+| **NEVER在HWTEST宏中忘记测试等级参数**                  | TestSize.Level1-4是门禁判断依据，缺失被拒绝        | 必须指定如 `TestSize.Level1`                        |
+| **NEVER在SetUp中忘记初始化测试对象**                   | 未初始化指针导致SEGFAULT或NULL pointer错误       | SetUp中创建detector_等对象                           |
+| **NEVER访问private成员时忘记cflags_cc绕过**          | private成员无法直接访问，报"is private"错误       | BUILD.gn添加 `-Dprivate=public`                  |
+| **NEVER省略gtest_main依赖**                     | 缺失导致链接错误"undefined reference to main" | deps必须包含 `//third_party/googletest:gtest_main` |
+| **NEVER硬编码绝对路径**                            | 不可移植，测试失败                             | 使用相对路径或配置文件                                    |
+| **NEVER使用真实外部服务**                           | 测试不稳定、依赖环境                            | 使用Mock或测试专用实现                                  |
+| **NEVER无断言测试**                              | 无法验证结果                                | 每个测试至少一个EXPECT/ASSERT                          |
 
 ---
 
-## 索引引用：详细规范
-
-以下内容已拆分为独立文档，请直接查阅：
-
-### 命名规范
-
-详见 [naming-convention.md](naming-convention.md)
-
-涵盖：文件命名、测试套命名、测试用例命名、序号规则等。
-
-### 注释规范
-
-详见 [comment-standard.md](comment-standard.md)
-
-涵盖：文件头版权注释、@tc 注释四项字段、类型编码（FUNC/PERF/RELI/SECU/FUZZ）等。
-
-### 断言规范
-
-详见 [assertion-gmock-guide.md](assertion-gmock-guide.md)
-
-涵盖：ASSERT vs EXPECT 选择、指针检查、多结果验证、gmock 配置等。
-
-### 测试等级
-
-详见 [test-macro.md](test-macro.md)
-
-涵盖：Level0-Level4 选择标准、等级分配原则等。
-
-### 测试宏详解
-
-详见 [test-macro.md](test-macro.md)
-
-涵盖：HWTEST / HWTEST_F / HWTEST_P 等宏的使用说明。
-
----
-
-## 使用 gmock 的测试用例规范
-
-### Mock 测试类命名
-
-- 命名规则：`Mock` + 原类名
-- 示例：原类 `NetworkService` → Mock 类 `MockNetworkService`
-
-### 文件组织
-
-- Mock 类定义应放在独立的 `mock/` 目录下
-- Mock 头文件命名为 `mock_原类名.h`，例如 `mock_network_service.h`
-
-### BUILD.gn 配置
-
-```gn
-import("//build/test.gni")
-
-ohos_unittest("ModuleTest") {
-    sources = [
-        "module_test.cpp",
-        "mock/mock_network_service.cpp",  # 包含 mock 的 .cpp 文件
-    ]
-
-    include_dirs = [
-        "//path/to/mock",
-    ]
-
-    external_deps = [
-        "googletest:gmock",  # 必须包含 gmock 依赖
-    ]
-
-    deps = [
-        "//path/to:target_under_test",
-    ]
-}
-```
-
-### 完整示例
-
-```cpp
-// mock/mock_network_service.h
-#ifndef MOCK_NETWORK_SERVICE_H
-#define MOCK_NETWORK_SERVICE_H
-
-#include "network_service.h"
-#include <gmock/gmock.h>
-
-class MockNetworkService : public NetworkService {
-public:
-    MOCK_METHOD(bool, Connect, (const std::string& host), (override));
-    MOCK_METHOD(void, Disconnect, (), (override));
-    MOCK_METHOD(int, SendData, (const std::vector<uint8_t>& data), (override));
-};
-
-#endif  // MOCK_NETWORK_SERVICE_H
-```
-
-```cpp
-// module_test.cpp
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
-#include "mock/mock_network_service.h"
-
-using ::testing::Return;
-using ::testing::_;
-
-class NetworkClientTest : public testing::Test {
-public:
-    void SetUp() override
-    {
-        mockService_ = std::make_unique<MockNetworkService>();
-    }
-
-    void TearDown() override
-    {
-        mockService_.reset();
-    }
-
-protected:
-    std::unique_ptr<MockNetworkService> mockService_;
-};
-
-/*
- * @tc.name: Connect_001
- * @tc.desc: 验证连接成功场景
- * @tc.type: FUNC
- * @tc.require: issueI56WJ7
- */
-HWTEST_F(NetworkClientTest, Connect_001, TestSize.Level1)
-{
-    // Step 1: 设置 mock 期望
-    EXPECT_CALL(*mockService_, Connect("127.0.0.1"))
-        .Times(1)
-        .WillOnce(Return(true));
-
-    // Step 2: 调用被测函数
-    bool result = mockService_->Connect("127.0.0.1");
-
-    // Step 3: 验证结果
-    EXPECT_TRUE(result);
-}
-```
-
-### gmock 使用注意事项
-
-- 必须在 `TearDown` 中释放 mock 对象，避免内存泄漏
-- `EXPECT_CALL` 必须在调用被测函数之前设置
-- 避免在多个测试用例间共享 mock 对象的状态
-- 详细用法参见 [assertion-gmock-guide.md](assertion-gmock-guide.md)
-
----
-
-## 禁止事项清单
-
-| 禁止项        | 原因     |
-| ---------- | ------ |
-| 无断言测试      | 无法验证结果 |
-| 空测试体       | 无意义    |
-| 硬编码路径      | 不可移植   |
-| 真实外部依赖     | 测试不稳定  |
-| 随机数据       | 结果不可预测 |
-| 多个断言验证同一结果 | 掩盖失败信息 |
-
----
-
-## 检查清单
+## 三、检查清单
 
 编写测试用例后逐项检查：
 
-- [ ] 文件命名符合规范（CamelCase，以 Test 结尾）
-- [ ] 版权注释完整且年份正确
-- [ ] @tc 注释四项完整（name/desc/type/require）
-- [ ] 测试等级选择合理
-- [ ] 测试用例命名正确（函数名_三位序号）
-- [ ] 每个测试至少一个断言
-- [ ] SetUp/TearDown 正确实现且资源释放
-- [ ] 无硬编码依赖和真实外部服务
-- [ ] Mock 对象正确配置和释放（如适用）
-- [ ] BUILD.gn 配置正确（sources、deps、external_deps）
+- [ ] 文件头包含 `using namespace testing::ext;`
+- [ ] 使用HWTEST/HWTEST_F而非TEST/TEST_F
+- [ ] HWTEST宏包含测试等级参数（TestSize.Level1-4）
+- [ ] @tc注释四项完整（name/desc/type/require）
+- [ ] @tc.name与HWTEST宏第2参数一致
+- [ ] SetUp正确初始化测试对象（new Module()）
+- [ ] TearDown正确释放资源（delete module_）
+- [ ] 每个测试至少一个断言（EXPECT_*或ASSERT_*）
+- [ ] BUILD.gn配置正确：
+  - [ ] sources包含测试文件
+  - [ ] deps包含gtest_main
+  - [ ] external_deps包含gmock（如使用Mock）
+  - [ ] cflags_cc包含 `-Dprivate=public`（如测试私有成员）
 
 ---
 
-## 相关文档索引
+## 四、命名规范要点
 
-| 文档                                           | 说明            |
-| -------------------------------------------- | ------------- |
-| [naming-convention.md](naming-convention.md) | 命名规范          |
-| [comment-standard.md](comment-standard.md)   | 注释标准          |
-| [test-macro.md](test-macro.md)               | 测试框架速查表        |
-| [assertion-gmock-guide.md](assertion-gmock-guide.md)     | 断言使用指南        |
-| [test-macro.md](test-macro.md)               | 测试宏详解         |
-| [assertion-gmock-guide.md](assertion-gmock-guide.md)             | gmock 使用指南    |
-| [test-examples.md](test-examples.md)         | 测试用例示例集       |
-| [build-gn-config.md](build-gn-config.md)     | BUILD.gn 配置说明 |
-| [test-framework.md](test-framework.md)       | 测试框架概述        |
+### 推荐新生成规则
+
+| 类型       | 格式                     | 示例                   |
+| -------- | ---------------------- | -------------------- |
+| 测试文件     | `[Module]Test.cpp`     | `CalculatorTest.cpp` |
+| 测试套/类    | `[Module]Test`         | `CalculatorTest`     |
+| 测试用例     | `[FunctionName]_[001]` | `Add_001`, `Add_002` |
+| @tc.name | 与用例名一致                 | `Add_001`            |
+
+**生成新测试时遵循**：
+
+```cpp
+class CalculatorTest : public testing::Test { };
+
+HWTEST_F(CalculatorTest, Add_001, TestSize.Level1)  // 正常
+HWTEST_F(CalculatorTest, Add_002, TestSize.Level2)  // 边界
+HWTEST_F(CalculatorTest, Add_003, TestSize.Level2)  // 异常
+```
+
+### 兼容历史存量风格（仅分析时参考）
+
+历史存量代码可能使用不同命名格式，**生成新测试时不要模仿**：
+
+- `BBoxDetectorUnitTest001`（历史hiviewdfx格式）
+- `TraceStrategyTest001`（历史trace格式）
+- `TestSysEventDaoInsert_001`（历史数据库格式）
+
+使用 `scripts/analyze-existing-tests.py` 分析存量命名风格。
+
+---
+
+## 五、BUILD.gn配置要点
+
+```python
+import("//build/test.gni")  # 第一行必须import
+
+module_output_path = "subsystem/module_test"  # 格式：子系统/模块
+
+config("test_config") {
+    visibility = [ ":*" ]
+    include_dirs = [
+        "//base/xxx/include",
+    ]
+}
+
+ohos_unittest("ModuleTest") {
+    module_out_path = module_output_path
+    sources = [ "unittest/module_test.cpp" ]
+    configs = [ ":test_config" ]
+
+    deps = [
+        "//third_party/googletest:gtest_main",  # 必填
+        "//base/xxx:module",  # 被测模块
+    ]
+
+    external_deps = [
+        "googletest:gmock",  # 使用Mock时必填
+        "hilog:libhilog",
+    ]
+
+    cflags_cc = [
+        "-Dprivate=public",  # 测试私有成员时必填
+        "-Dprotected=public",
+    ]
+}
+
+group("unittest") {
+    testonly = true
+    deps = [":ModuleTest"]
+}
+```
+
+**关键配置项**：
+| 配置项 | 说明 | 必填性 |
+|--------|------|--------|
+| `import("//build/test.gni")` | ohos_unittest模板定义 | **第一行必填** |
+| `module_out_path` | 测试输出路径（子系统/模块） | **必填** |
+| `deps` 包含gtest_main | 提供main函数入口 | **必填** |
+| `external_deps` 包含gmock | gmock库依赖 | **使用Mock时必填** |
+| `cflags_cc` | 访问控制绕过 | **测试私有成员时必填** |
+
+---
+
+## 相关文档
+
+- [framework-quickref.md](framework-quickref.md) - 测试框架速查表（宏+等级+注释）
+- [build-rules.md](build-rules.md) - BUILD.gn决策规则
+- [error-matrix.md](error-matrix.md) - 错误排查矩阵
+- [real-patterns.md](real-patterns.md) - 真实仓库示例
