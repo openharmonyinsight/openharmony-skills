@@ -1,0 +1,17 @@
+{
+  "name": "metatransformation",
+  "path": "src/MetaTransformation",
+  "files": [
+    "src/MetaTransformation/MetaTransformPluginManager.cpp",
+    "src/MetaTransformation/MetaTransformPluginBuilder.cpp"
+  ],
+  "classes": [],
+  "functions": [
+    {
+      "name": "callback",
+      "file": "src/MetaTransformation/MetaTransformPluginBuilder.cpp",
+      "line": 16
+    }
+  ],
+  "submodules": []
+}

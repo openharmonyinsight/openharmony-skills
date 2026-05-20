@@ -1,0 +1,4 @@
+# Python dependencies for cangjie_compiler_knowledge skill
+
+# Chinese word segmentation for keyword extraction
+jieba>=0.42.1

@@ -1,0 +1,1593 @@
+{
+  "name": "macro",
+  "path": "src/Macro",
+  "files": [
+    "src/Macro/InvokeUtil.cpp",
+    "src/Macro/InvokeUtilCJNative.cpp",
+    "src/Macro/ExprSerialization.cpp",
+    "src/Macro/MacroCommon.cpp",
+    "src/Macro/MacroCall.cpp",
+    "src/Macro/MacroCallResolve.cpp",
+    "src/Macro/MacroEvaluationCJNative.cpp",
+    "src/Macro/MacroEvaluation.cpp",
+    "src/Macro/MacroEvaluationClient.cpp",
+    "src/Macro/MacroEvaluationSrv.cpp",
+    "src/Macro/MacroEvalMsgSerializer.cpp",
+    "src/Macro/MacroProcess.cpp",
+    "src/Macro/MacroExpansion.cpp",
+    "src/Macro/MacroUpdateInfo.h",
+    "src/Macro/TokenSerialization.cpp",
+    "src/Macro/NodeSerialization.cpp",
+    "src/Macro/TestEntryConstructor.cpp"
+  ],
+  "classes": [
+    {
+      "name": "ResetNotify",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 27
+    },
+    {
+      "name": "MacroInvoke",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 35
+    }
+  ],
+  "functions": [
+    {
+      "name": "Errorln",
+      "file": "src/Macro/InvokeUtil.cpp",
+      "line": 29
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/InvokeUtil.cpp",
+      "line": 39
+    },
+    {
+      "name": "free",
+      "file": "src/Macro/InvokeUtil.cpp",
+      "line": 43
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/InvokeUtil.cpp",
+      "line": 46
+    },
+    {
+      "name": "dlsym",
+      "file": "src/Macro/InvokeUtil.cpp",
+      "line": 58
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Macro/InvokeUtil.cpp",
+      "line": 60
+    },
+    {
+      "name": "lock",
+      "file": "src/Macro/InvokeUtil.cpp",
+      "line": 86
+    },
+    {
+      "name": "InvokeRuntime::FinishRuntime",
+      "file": "src/Macro/InvokeUtil.cpp",
+      "line": 109
+    },
+    {
+      "name": "InvokeRuntime::CloseSymbolTable",
+      "file": "src/Macro/InvokeUtil.cpp",
+      "line": 113
+    },
+    {
+      "name": "CloseMacroDynamicLibrary",
+      "file": "src/Macro/InvokeUtil.cpp",
+      "line": 119
+    },
+    {
+      "name": "Warningln",
+      "file": "src/Macro/InvokeUtilCJNative.cpp",
+      "line": 98
+    },
+    {
+      "name": "Warningln",
+      "file": "src/Macro/InvokeUtilCJNative.cpp",
+      "line": 102
+    },
+    {
+      "name": "Warningln",
+      "file": "src/Macro/InvokeUtilCJNative.cpp",
+      "line": 122
+    },
+    {
+      "name": "Warningln",
+      "file": "src/Macro/InvokeUtilCJNative.cpp",
+      "line": 126
+    },
+    {
+      "name": "lock",
+      "file": "src/Macro/InvokeUtilCJNative.cpp",
+      "line": 135
+    },
+    {
+      "name": "lock",
+      "file": "src/Macro/InvokeUtilCJNative.cpp",
+      "line": 141
+    },
+    {
+      "name": "lock",
+      "file": "src/Macro/InvokeUtilCJNative.cpp",
+      "line": 147
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/InvokeUtilCJNative.cpp",
+      "line": 156
+    },
+    {
+      "name": "runtimeFunc",
+      "file": "src/Macro/InvokeUtilCJNative.cpp",
+      "line": 168
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/InvokeUtilCJNative.cpp",
+      "line": 175
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/InvokeUtilCJNative.cpp",
+      "line": 187
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/InvokeUtilCJNative.cpp",
+      "line": 198
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/InvokeUtilCJNative.cpp",
+      "line": 210
+    },
+    {
+      "name": "InvokeRuntime::ClearOpenedLibHandles",
+      "file": "src/Macro/InvokeUtilCJNative.cpp",
+      "line": 214
+    },
+    {
+      "name": "NodeFormat::CreateFuncArg",
+      "file": "src/Macro/ExprSerialization.cpp",
+      "line": 108
+    },
+    {
+      "name": "NodeFormat::CreateCallExpr",
+      "file": "src/Macro/ExprSerialization.cpp",
+      "line": 123
+    },
+    {
+      "name": "NodeFormat::CreateDoWhileExpr",
+      "file": "src/Macro/ExprSerialization.cpp",
+      "line": 190
+    },
+    {
+      "name": "NodeFormat::CreateAssignExpr",
+      "file": "src/Macro/ExprSerialization.cpp",
+      "line": 203
+    },
+    {
+      "name": "NodeFormat::CreateWhileExpr",
+      "file": "src/Macro/ExprSerialization.cpp",
+      "line": 289
+    },
+    {
+      "name": "NodeFormat::CreateArrayLit",
+      "file": "src/Macro/ExprSerialization.cpp",
+      "line": 303
+    },
+    {
+      "name": "NodeFormat::CreateTupleLit",
+      "file": "src/Macro/ExprSerialization.cpp",
+      "line": 317
+    },
+    {
+      "name": "NodeFormat::CreateLambdaExpr",
+      "file": "src/Macro/ExprSerialization.cpp",
+      "line": 359
+    },
+    {
+      "name": "NodeFormat::CreateTypeConvExpr",
+      "file": "src/Macro/ExprSerialization.cpp",
+      "line": 424
+    },
+    {
+      "name": "NodeFormat::CreateHandler",
+      "file": "src/Macro/ExprSerialization.cpp",
+      "line": 451
+    },
+    {
+      "name": "NodeFormat::CreateResumeExpr",
+      "file": "src/Macro/ExprSerialization.cpp",
+      "line": 491
+    },
+    {
+      "name": "NodeFormat::CreateNodeBase",
+      "file": "src/Macro/ExprSerialization.cpp",
+      "line": 531
+    },
+    {
+      "name": "NodeFormat::CreateArrayExpr",
+      "file": "src/Macro/ExprSerialization.cpp",
+      "line": 631
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/ExprSerialization.cpp",
+      "line": 695
+    },
+    {
+      "name": "CheckAddSpace",
+      "file": "src/Macro/MacroCommon.cpp",
+      "line": 127
+    },
+    {
+      "name": "RepeatString",
+      "file": "src/Macro/MacroCommon.cpp",
+      "line": 210
+    },
+    {
+      "name": "PushIntoLines",
+      "file": "src/Macro/MacroCommon.cpp",
+      "line": 244
+    },
+    {
+      "name": "LinesToString",
+      "file": "src/Macro/MacroCommon.cpp",
+      "line": 245
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroCall.cpp",
+      "line": 38
+    },
+    {
+      "name": "TraverseParentMacroNode",
+      "file": "src/Macro/MacroCall.cpp",
+      "line": 76
+    },
+    {
+      "name": "parentName",
+      "file": "src/Macro/MacroCall.cpp",
+      "line": 84
+    },
+    {
+      "name": "free",
+      "file": "src/Macro/MacroCall.cpp",
+      "line": 136
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroCall.cpp",
+      "line": 142
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroCall.cpp",
+      "line": 176
+    },
+    {
+      "name": "TraverseMacroNode",
+      "file": "src/Macro/MacroCall.cpp",
+      "line": 191
+    },
+    {
+      "name": "childName",
+      "file": "src/Macro/MacroCall.cpp",
+      "line": 210
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroCall.cpp",
+      "line": 217
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroCall.cpp",
+      "line": 224
+    },
+    {
+      "name": "CollectParentMacroName",
+      "file": "src/Macro/MacroCallResolve.cpp",
+      "line": 38
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Macro/MacroCallResolve.cpp",
+      "line": 75
+    },
+    {
+      "name": "InvokeRuntime::SetOpenedLibHandles",
+      "file": "src/Macro/MacroCallResolve.cpp",
+      "line": 206
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Macro/MacroCallResolve.cpp",
+      "line": 213
+    },
+    {
+      "name": "InvokeMethod",
+      "file": "src/Macro/MacroCallResolve.cpp",
+      "line": 220
+    },
+    {
+      "name": "InvokeMethod",
+      "file": "src/Macro/MacroCallResolve.cpp",
+      "line": 223
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Macro/MacroCallResolve.cpp",
+      "line": 228
+    },
+    {
+      "name": "lck",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 51
+    },
+    {
+      "name": "free",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 74
+    },
+    {
+      "name": "lck",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 87
+    },
+    {
+      "name": "InvokeRuntime::SetOpenedLibHandles",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 106
+    },
+    {
+      "name": "WaitMacroCallEvalResult",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 118
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 127
+    },
+    {
+      "name": "mi",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 130
+    },
+    {
+      "name": "lck",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 133
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 135
+    },
+    {
+      "name": "ReleaseThreadHandle",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 137
+    },
+    {
+      "name": "mi",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 160
+    },
+    {
+      "name": "lck",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 162
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 165
+    },
+    {
+      "name": "invokeReleaseHandleFromC",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 168
+    },
+    {
+      "name": "Warningln",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 175
+    },
+    {
+      "name": "invokeReleaseHandle",
+      "file": "src/Macro/MacroEvaluationCJNative.cpp",
+      "line": 184
+    },
+    {
+      "name": "Utils::EraseIf",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 54
+    },
+    {
+      "name": "RefreshMacroCallArgs",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 386
+    },
+    {
+      "name": "CheckMacroCallArgs",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 389
+    },
+    {
+      "name": "replaceTokens",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 434
+    },
+    {
+      "name": "ExpandBuildInMacro",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 463
+    },
+    {
+      "name": "CreateMacroCallTree",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 494
+    },
+    {
+      "name": "CreateChildMacroCall",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 563
+    },
+    {
+      "name": "refreshNewTokensPosition",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 608
+    },
+    {
+      "name": "CreateMacroCallTree",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 626
+    },
+    {
+      "name": "AST::ExtractArgumentsOfDeprecatedAnno",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 672
+    },
+    {
+      "name": "SaveUsedMacroPkgs",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 683
+    },
+    {
+      "name": "SaveUsedMacros",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 718
+    },
+    {
+      "name": "CheckDeprecatedMacrosUsage",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 719
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 760
+    },
+    {
+      "name": "ProcessTokensInQuoteExpr",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 780
+    },
+    {
+      "name": "CreateChildMacroCall",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 793
+    },
+    {
+      "name": "CreateMacroCallTree",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 830
+    },
+    {
+      "name": "Utils::ProfileRecorder::Start",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 845
+    },
+    {
+      "name": "EvalOneMacroCall",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 846
+    },
+    {
+      "name": "SetMacroCallEvalResult",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 873
+    },
+    {
+      "name": "Utils::ProfileRecorder::Stop",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 880
+    },
+    {
+      "name": "ReleaseThreadHandle",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 883
+    },
+    {
+      "name": "Utils::ProfileRecorder::Start",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 899
+    },
+    {
+      "name": "InitGlobalVariable",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 900
+    },
+    {
+      "name": "Utils::ProfileRecorder::Stop",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 901
+    },
+    {
+      "name": "Utils::ProfileRecorder::Start",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 946
+    },
+    {
+      "name": "EvalOneMacroCall",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 947
+    },
+    {
+      "name": "SetMacroCallEvalResult",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 948
+    },
+    {
+      "name": "Utils::ProfileRecorder::Stop",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 949
+    },
+    {
+      "name": "EvaluateWithRuntime",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 955
+    },
+    {
+      "name": "free",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 962
+    },
+    {
+      "name": "FreeMacroInfoVecForMacroCall",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 967
+    },
+    {
+      "name": "EvalMacroCallsOnMultiThread",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 974
+    },
+    {
+      "name": "EvalMacroCallsOnSingleThread",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 976
+    },
+    {
+      "name": "FreeMacroInfoVecForMacroCall",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 981
+    },
+    {
+      "name": "CreateMacroCallsTree",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 1001
+    },
+    {
+      "name": "RefreshBuildInMacroPostionInfo",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 1003
+    },
+    {
+      "name": "EvalMacroCalls",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 1004
+    },
+    {
+      "name": "CreateMacroCallsTree",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 1005
+    },
+    {
+      "name": "ProcessNewTokens",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 1011
+    },
+    {
+      "name": "Utils::ProfileRecorder::Start",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 1017
+    },
+    {
+      "name": "CollectMacroLibs",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 1019
+    },
+    {
+      "name": "CreateMacroCallsTree",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 1021
+    },
+    {
+      "name": "EvalMacroCalls",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 1022
+    },
+    {
+      "name": "ReEvalAfterEvalMacroCalls",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 1023
+    },
+    {
+      "name": "Utils::ProfileRecorder::Stop",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 1024
+    },
+    {
+      "name": "WaitMacroDefResult",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 1055
+    },
+    {
+      "name": "EvalMacros",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 1059
+    },
+    {
+      "name": "SendExitStgTask",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 1060
+    },
+    {
+      "name": "EvalMacros",
+      "file": "src/Macro/MacroEvaluation.cpp",
+      "line": 1069
+    },
+    {
+      "name": "_exit",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 46
+    },
+    {
+      "name": "std::signal",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 51
+    },
+    {
+      "name": "std::signal",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 52
+    },
+    {
+      "name": "std::signal",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 53
+    },
+    {
+      "name": "std::signal",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 54
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 94
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 101
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 108
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 115
+    },
+    {
+      "name": "close",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 120
+    },
+    {
+      "name": "close",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 124
+    },
+    {
+      "name": "CloseClientResource",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 152
+    },
+    {
+      "name": "perror",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 201
+    },
+    {
+      "name": "perror",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 208
+    },
+    {
+      "name": "perror",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 224
+    },
+    {
+      "name": "perror",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 229
+    },
+    {
+      "name": "perror",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 240
+    },
+    {
+      "name": "FD_ZERO",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 268
+    },
+    {
+      "name": "FD_SET",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 269
+    },
+    {
+      "name": "perror",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 273
+    },
+    {
+      "name": "perror",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 280
+    },
+    {
+      "name": "MacroEvalMsgSerializer::DeSerializeIdInfoFromResult",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 294
+    },
+    {
+      "name": "MacroEvalMsgSerializer::DeSerializeTksFromResult",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 302
+    },
+    {
+      "name": "MacroEvalMsgSerializer::DeSerializeItemsFromResult",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 304
+    },
+    {
+      "name": "MacroEvalMsgSerializer::DeSerializeAssertParentsFromResult",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 305
+    },
+    {
+      "name": "MacroEvalMsgSerializer::DeSerializeDiagsFromResult",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 307
+    },
+    {
+      "name": "Utils::ProfileRecorder::Start",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 432
+    },
+    {
+      "name": "DeserializeMacroCallsResult",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 465
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 477
+    },
+    {
+      "name": "close",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 483
+    },
+    {
+      "name": "close",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 484
+    },
+    {
+      "name": "perror",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 492
+    },
+    {
+      "name": "perror",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 526
+    },
+    {
+      "name": "perror",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 531
+    },
+    {
+      "name": "perror",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 547
+    },
+    {
+      "name": "RedirectStdOutTOStdErr",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 550
+    },
+    {
+      "name": "ExecMacroSrv",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 551
+    },
+    {
+      "name": "perror",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 553
+    },
+    {
+      "name": "RunMacroSrv",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 554
+    },
+    {
+      "name": "SetExitSignal",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 557
+    },
+    {
+      "name": "w",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 558
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 580
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 587
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 592
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 610
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 617
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 630
+    },
+    {
+      "name": "CloseSrvPipe",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 635
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 637
+    },
+    {
+      "name": "RedirectStdOutForMarcoSrv",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 672
+    },
+    {
+      "name": "CloseSrvPipe",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 678
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 680
+    },
+    {
+      "name": "w",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 684
+    },
+    {
+      "name": "CreateJobObjectForMacroSrv",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 688
+    },
+    {
+      "name": "CloseSrvPipe",
+      "file": "src/Macro/MacroEvaluationClient.cpp",
+      "line": 689
+    },
+    {
+      "name": "perror",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 99
+    },
+    {
+      "name": "perror",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 105
+    },
+    {
+      "name": "perror",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 117
+    },
+    {
+      "name": "perror",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 131
+    },
+    {
+      "name": "RenameSrvProcess",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 161
+    },
+    {
+      "name": "ExecuteEvalSrvTask",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 170
+    },
+    {
+      "name": "exit",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 174
+    },
+    {
+      "name": "MacroEvalMsgSerializer::DeSerializeDeflibMsg",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 183
+    },
+    {
+      "name": "InvokeRuntime::SetOpenedLibHandles",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 191
+    },
+    {
+      "name": "SaveUsedMacros",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 233
+    },
+    {
+      "name": "InitGlobalVariable",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 243
+    },
+    {
+      "name": "EvalOneMacroCall",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 249
+    },
+    {
+      "name": "ReleaseThreadHandle",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 264
+    },
+    {
+      "name": "MacroEvalMsgSerializer::DeSerializeRangeFromCall",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 279
+    },
+    {
+      "name": "MacroEvalMsgSerializer::DeSerializeIdInfoFromCall",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 281
+    },
+    {
+      "name": "MacroEvalMsgSerializer::DeSerializeArgsFromCall",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 282
+    },
+    {
+      "name": "MacroEvalMsgSerializer::DeSerializeAttrsFromCall",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 283
+    },
+    {
+      "name": "MacroEvalMsgSerializer::DeSerializeParentNamesFromCall",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 292
+    },
+    {
+      "name": "MacroEvalMsgSerializer::DeSerializeChildMsgesFromCall",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 293
+    },
+    {
+      "name": "EvalMacroCallsAndWaitResult",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 316
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 321
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 325
+    },
+    {
+      "name": "SaveUsedMacroPkgs",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 328
+    },
+    {
+      "name": "InitGlobalVariable",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 329
+    },
+    {
+      "name": "EvalOneMacroCall",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 330
+    },
+    {
+      "name": "SerializeAndNotifyResult",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 331
+    },
+    {
+      "name": "ResetForNextEval",
+      "file": "src/Macro/MacroEvaluationSrv.cpp",
+      "line": 368
+    },
+    {
+      "name": "GetChildMessages",
+      "file": "src/Macro/MacroEvalMsgSerializer.cpp",
+      "line": 40
+    },
+    {
+      "name": "GetChildMessages",
+      "file": "src/Macro/MacroEvalMsgSerializer.cpp",
+      "line": 108
+    },
+    {
+      "name": "free",
+      "file": "src/Macro/MacroEvalMsgSerializer.cpp",
+      "line": 142
+    },
+    {
+      "name": "free",
+      "file": "src/Macro/MacroEvalMsgSerializer.cpp",
+      "line": 150
+    },
+    {
+      "name": "free",
+      "file": "src/Macro/MacroEvalMsgSerializer.cpp",
+      "line": 175
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvalMsgSerializer.cpp",
+      "line": 258
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvalMsgSerializer.cpp",
+      "line": 285
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/MacroEvalMsgSerializer.cpp",
+      "line": 303
+    },
+    {
+      "name": "taskQueue",
+      "file": "src/Macro/MacroProcess.cpp",
+      "line": 180
+    },
+    {
+      "name": "CollectMacroDebugPosition",
+      "file": "src/Macro/MacroProcess.cpp",
+      "line": 203
+    },
+    {
+      "name": "ReportMappingFailedDiag",
+      "file": "src/Macro/MacroProcess.cpp",
+      "line": 259
+    },
+    {
+      "name": "RefreshNewTokensPos",
+      "file": "src/Macro/MacroProcess.cpp",
+      "line": 267
+    },
+    {
+      "name": "RefreshTokensPosMap",
+      "file": "src/Macro/MacroProcess.cpp",
+      "line": 334
+    },
+    {
+      "name": "RemoveMacroCallFile",
+      "file": "src/Macro/MacroProcess.cpp",
+      "line": 347
+    },
+    {
+      "name": "EraseFirstNLAndLastEndToken",
+      "file": "src/Macro/MacroProcess.cpp",
+      "line": 427
+    },
+    {
+      "name": "ProcessCombinedToken",
+      "file": "src/Macro/MacroProcess.cpp",
+      "line": 440
+    },
+    {
+      "name": "RemoveMacroCallFile",
+      "file": "src/Macro/MacroProcess.cpp",
+      "line": 515
+    },
+    {
+      "name": "GenerateMacroCallFile",
+      "file": "src/Macro/MacroProcess.cpp",
+      "line": 522
+    },
+    {
+      "name": "UpdateMacroInfo",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 80
+    },
+    {
+      "name": "macWalker",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 86
+    },
+    {
+      "name": "walker",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 131
+    },
+    {
+      "name": "CheckNodesConsistency",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 244
+    },
+    {
+      "name": "CheckReplacedEnumCaseMember",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 248
+    },
+    {
+      "name": "CheckNodesConsistency",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 283
+    },
+    {
+      "name": "CheckReplacedFuncParamList",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 291
+    },
+    {
+      "name": "ReplaceDecls",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 338
+    },
+    {
+      "name": "ReplaceParams",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 340
+    },
+    {
+      "name": "CheckWhenAfterMacroExpand",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 368
+    },
+    {
+      "name": "ReplaceEachMacroHelper",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 370
+    },
+    {
+      "name": "ReplaceEachMacro",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 379
+    },
+    {
+      "name": "ReplaceEachFileNode",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 387
+    },
+    {
+      "name": "evaluator",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 398
+    },
+    {
+      "name": "guard",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 411
+    },
+    {
+      "name": "CollectMacros",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 414
+    },
+    {
+      "name": "EvaluateMacros",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 421
+    },
+    {
+      "name": "ProcessMacros",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 423
+    },
+    {
+      "name": "ReplaceAST",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 425
+    },
+    {
+      "name": "testEntry",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 431
+    },
+    {
+      "name": "Execute",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 436
+    },
+    {
+      "name": "AddCurFile",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 446
+    },
+    {
+      "name": "CheckUnhandledMacroCall",
+      "file": "src/Macro/MacroExpansion.cpp",
+      "line": 447
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Macro/MacroUpdateInfo.h",
+      "line": 45
+    },
+    {
+      "name": "UpdateContainer",
+      "file": "src/Macro/MacroUpdateInfo.h",
+      "line": 70
+    },
+    {
+      "name": "UpdateExpr",
+      "file": "src/Macro/MacroUpdateInfo.h",
+      "line": 87
+    },
+    {
+      "name": "UpdateExpr",
+      "file": "src/Macro/MacroUpdateInfo.h",
+      "line": 118
+    },
+    {
+      "name": "UpdateExpr",
+      "file": "src/Macro/MacroUpdateInfo.h",
+      "line": 119
+    },
+    {
+      "name": "UpdateContainer",
+      "file": "src/Macro/MacroUpdateInfo.h",
+      "line": 125
+    },
+    {
+      "name": "UpdateContainer",
+      "file": "src/Macro/MacroUpdateInfo.h",
+      "line": 126
+    },
+    {
+      "name": "UpdateExpr",
+      "file": "src/Macro/MacroUpdateInfo.h",
+      "line": 132
+    },
+    {
+      "name": "UpdateExpr",
+      "file": "src/Macro/MacroUpdateInfo.h",
+      "line": 133
+    },
+    {
+      "name": "UpdateExpr",
+      "file": "src/Macro/MacroUpdateInfo.h",
+      "line": 134
+    },
+    {
+      "name": "UpdateExpr",
+      "file": "src/Macro/MacroUpdateInfo.h",
+      "line": 140
+    },
+    {
+      "name": "UpdateExpr",
+      "file": "src/Macro/MacroUpdateInfo.h",
+      "line": 141
+    },
+    {
+      "name": "UpdateExpr",
+      "file": "src/Macro/MacroUpdateInfo.h",
+      "line": 147
+    },
+    {
+      "name": "UpdateExpr",
+      "file": "src/Macro/MacroUpdateInfo.h",
+      "line": 149
+    },
+    {
+      "name": "UpdateContainer",
+      "file": "src/Macro/MacroUpdateInfo.h",
+      "line": 156
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/TokenSerialization.cpp",
+      "line": 153
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/TokenSerialization.cpp",
+      "line": 158
+    },
+    {
+      "name": "NodeFormat::Position",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 32
+    },
+    {
+      "name": "NodeFormat::CreateFeaturesDirective",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 58
+    },
+    {
+      "name": "NodeFormat::CreateFeaturesSet",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 72
+    },
+    {
+      "name": "NodeFormat::CreateFeatureId",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 87
+    },
+    {
+      "name": "NodeFormat::Position",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 97
+    },
+    {
+      "name": "NodeFormat::Position",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 132
+    },
+    {
+      "name": "NodeFormat::Position",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 140
+    },
+    {
+      "name": "NodeFormat::Position",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 158
+    },
+    {
+      "name": "NodeFormat::CreateImportSpec",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 160
+    },
+    {
+      "name": "NodeFormat::CreateFile",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 183
+    },
+    {
+      "name": "NodeFormat::Position",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 198
+    },
+    {
+      "name": "NodeFormat::CreateMatchCaseOther",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 214
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 246
+    },
+    {
+      "name": "NodeFormat::CreateTuplePattern",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 334
+    },
+    {
+      "name": "NodeFormat::CreateTypeBase",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 501
+    },
+    {
+      "name": "NodeFormat::CreateRefType",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 518
+    },
+    {
+      "name": "NodeFormat::CreatePrimitiveType",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 535
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 603
+    },
+    {
+      "name": "NodeFormat::CreateTupleType",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 606
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 672
+    },
+    {
+      "name": "NodeFormat::CreateMainDecl",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 739
+    },
+    {
+      "name": "NodeFormat::CreateMacroDecl",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 761
+    },
+    {
+      "name": "NodeFormat::CreateGenericParamDecl",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 780
+    },
+    {
+      "name": "NodeFormat::CreateGeneric",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 813
+    },
+    {
+      "name": "NodeFormat::CreateClassBody",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 827
+    },
+    {
+      "name": "NodeFormat::CreateInterfaceBody",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 853
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 909
+    },
+    {
+      "name": "NodeFormat::CreateStructBody",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 923
+    },
+    {
+      "name": "NodeFormat::CreatePropDecl",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 989
+    },
+    {
+      "name": "NodeFormat::CreateMacroExpandDecl",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 1037
+    },
+    {
+      "name": "NodeFormat::CreateModifier",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 1092
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 1195
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Macro/NodeSerialization.cpp",
+      "line": 1209
+    },
+    {
+      "name": "walker",
+      "file": "src/Macro/TestEntryConstructor.cpp",
+      "line": 102
+    },
+    {
+      "name": "GetDeclNode",
+      "file": "src/Macro/TestEntryConstructor.cpp",
+      "line": 117
+    },
+    {
+      "name": "GetMacroDecl",
+      "file": "src/Macro/TestEntryConstructor.cpp",
+      "line": 129
+    },
+    {
+      "name": "walker",
+      "file": "src/Macro/TestEntryConstructor.cpp",
+      "line": 156
+    },
+    {
+      "name": "FindMacro",
+      "file": "src/Macro/TestEntryConstructor.cpp",
+      "line": 204
+    },
+    {
+      "name": "CheckFunctionWithAtTest",
+      "file": "src/Macro/TestEntryConstructor.cpp",
+      "line": 332
+    },
+    {
+      "name": "CheckFunctionWithAtTest",
+      "file": "src/Macro/TestEntryConstructor.cpp",
+      "line": 333
+    },
+    {
+      "name": "CheckClassWithMacro",
+      "file": "src/Macro/TestEntryConstructor.cpp",
+      "line": 334
+    },
+    {
+      "name": "walker",
+      "file": "src/Macro/TestEntryConstructor.cpp",
+      "line": 340
+    },
+    {
+      "name": "GetTopLevelFuncDcl",
+      "file": "src/Macro/TestEntryConstructor.cpp",
+      "line": 349
+    },
+    {
+      "name": "CheckTestSuiteConstraints",
+      "file": "src/Macro/TestEntryConstructor.cpp",
+      "line": 353
+    },
+    {
+      "name": "ConstructTestImports",
+      "file": "src/Macro/TestEntryConstructor.cpp",
+      "line": 471
+    },
+    {
+      "name": "ConstructTestEntry",
+      "file": "src/Macro/TestEntryConstructor.cpp",
+      "line": 472
+    }
+  ],
+  "submodules": []
+}

@@ -1,0 +1,1525 @@
+{
+  "name": "lex",
+  "path": "src/Lex",
+  "files": [
+    "src/Lex/LexerDiag.cpp",
+    "src/Lex/LexerImpl.cpp",
+    "src/Lex/Lexer.cpp",
+    "src/Lex/LexerImpl.h"
+  ],
+  "classes": [
+    {
+      "name": "LexerConfig",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 23
+    },
+    {
+      "name": "LexerImpl",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 30
+    },
+    {
+      "name": "PositionHash32",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 183
+    }
+  ],
+  "functions": [
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/LexerDiag.cpp",
+      "line": 143
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Lex/LexerDiag.cpp",
+      "line": 351
+    },
+    {
+      "name": "std::move",
+      "file": "src/Lex/LexerImpl.cpp",
+      "line": 41
+    },
+    {
+      "name": "TryRegisterLineOffset",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 215
+    },
+    {
+      "name": "ReadUTF8CharFromMultiBytes",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 223
+    },
+    {
+      "name": "ReadUTF8CharFromMultiBytes",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 233
+    },
+    {
+      "name": "CheckIllegalUTF8InStringLiteral",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 245
+    },
+    {
+      "name": "CheckIllegalUTF8InStringLiteral",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 255
+    },
+    {
+      "name": "CheckIllegalUTF8InStringLiteral",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 256
+    },
+    {
+      "name": "CheckUnsecureUnicodeValue",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 259
+    },
+    {
+      "name": "CheckIllegalUTF8InStringLiteral",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 270
+    },
+    {
+      "name": "CheckUnsecureUnicodeValue",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 273
+    },
+    {
+      "name": "CheckUnsecureUnicodeValue",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 281
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 334
+    },
+    {
+      "name": "DiagUnexpectedIntegerLiteralTypeSuffix",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 357
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 361
+    },
+    {
+      "name": "DiagUnexpectedDigit",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 376
+    },
+    {
+      "name": "DiagExpectedDigit",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 397
+    },
+    {
+      "name": "DiagUnexpectedDigit",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 403
+    },
+    {
+      "name": "ProcessIntegerSuffix",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 412
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 417
+    },
+    {
+      "name": "ProcessDigits",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 447
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 449
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 453
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 459
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 465
+    },
+    {
+      "name": "DiagExpectedDigit",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 477
+    },
+    {
+      "name": "ProcessDigits",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 480
+    },
+    {
+      "name": "DiagUnexpectedDecimalPoint",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 486
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 489
+    },
+    {
+      "name": "ProcessDigits",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 490
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 496
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 499
+    },
+    {
+      "name": "DiagExpectedDigit",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 502
+    },
+    {
+      "name": "ProcessDigits",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 506
+    },
+    {
+      "name": "DiagExpectedDigit",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 508
+    },
+    {
+      "name": "DiagUnexpectedFloatLiteralTypeSuffix",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 524
+    },
+    {
+      "name": "DiagUnexpectedExponentPart",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 536
+    },
+    {
+      "name": "ScanNumberExponentPart",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 542
+    },
+    {
+      "name": "DiagExpectedExponentPart",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 544
+    },
+    {
+      "name": "ProcessFloatSuffix",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 554
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 561
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 612
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 661
+    },
+    {
+      "name": "DiagSmallExpectedDigit",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 673
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 674
+    },
+    {
+      "name": "DiagSmallExpectedDigit",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 679
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 680
+    },
+    {
+      "name": "ScanNumberDecimalPart",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 689
+    },
+    {
+      "name": "DiagSmallExpectedDigit",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 697
+    },
+    {
+      "name": "ProcessNumberExponentPart",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 700
+    },
+    {
+      "name": "ProcessNumberFloatSuffix",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 703
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 716
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 718
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 721
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 733
+    },
+    {
+      "name": "DiagIllegalUnicode",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 742
+    },
+    {
+      "name": "DiagIllegalUnicode",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 748
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 764
+    },
+    {
+      "name": "NFC",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 784
+    },
+    {
+      "name": "ScanIdentifierContinue",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 792
+    },
+    {
+      "name": "DiagIllegalUnicode",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 801
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 809
+    },
+    {
+      "name": "ScanIdentifierContinue",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 816
+    },
+    {
+      "name": "ScanUnicodeIdentifierStart",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 827
+    },
+    {
+      "name": "DiagIllegalUnicode",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 839
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 851
+    },
+    {
+      "name": "ScanUnicodeIdentifierStart",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 854
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 898
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 909
+    },
+    {
+      "name": "ConvertChar",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 921
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 930
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 939
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 941
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 959
+    },
+    {
+      "name": "DiagExpectedDigit",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 964
+    },
+    {
+      "name": "DiagExpectedRightBracket",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 968
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 969
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 972
+    },
+    {
+      "name": "DiagExpectedRightBracket",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 975
+    },
+    {
+      "name": "DiagExpectedRightBracketOrHexadecimal",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 977
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 979
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 993
+    },
+    {
+      "name": "ProcessUnicodeEscape",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 998
+    },
+    {
+      "name": "DiagUnrecognizedEscape",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1001
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1004
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1047
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1052
+    },
+    {
+      "name": "ProcessEscape",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1060
+    },
+    {
+      "name": "DiagUnterminatedSingleLineString",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1082
+    },
+    {
+      "name": "DiagUnterminatedMultiLineString",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1084
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1102
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1118
+    },
+    {
+      "name": "DiagUnterminatedInterpolation",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1124
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1127
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1157
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1167
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1225
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1226
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1245
+    },
+    {
+      "name": "ProcessEscape",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1247
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1250
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1251
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1274
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1324
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1342
+    },
+    {
+      "name": "ConsumeNChar",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1350
+    },
+    {
+      "name": "DiagUnterminatedRawString",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1363
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1380
+    },
+    {
+      "name": "DiagUnterminatedInterpolation",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1383
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1390
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1393
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1407
+    },
+    {
+      "name": "ScanMultiLineComment",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1409
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1412
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1415
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1433
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1437
+    },
+    {
+      "name": "ProcessIllegalCharValue",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1439
+    },
+    {
+      "name": "ProcessEscape",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1443
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1447
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1461
+    },
+    {
+      "name": "ScanCharDiagUnterminated",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1465
+    },
+    {
+      "name": "DiagCharactersOverflow",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1468
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1498
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1502
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1509
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1514
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1520
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1527
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1532
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1534
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1536
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1546
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1551
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1556
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1558
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1565
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1576
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1577
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1580
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1584
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1589
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1591
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1602
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1610
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1612
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1619
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1624
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1628
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1633
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1639
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1644
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1648
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1653
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1655
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1664
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1669
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1671
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1678
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1688
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1694
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1696
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1733
+    },
+    {
+      "name": "tok",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1734
+    },
+    {
+      "name": "ScanIdentifierOrKeyword",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1738
+    },
+    {
+      "name": "DiagUnexpectedDollarIdentifier",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1740
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1748
+    },
+    {
+      "name": "GetSymbolToken",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1753
+    },
+    {
+      "name": "Token",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1788
+    },
+    {
+      "name": "DiagIllegalSymbol",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1808
+    },
+    {
+      "name": "ScanByteUInt8",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1863
+    },
+    {
+      "name": "ScanSingleOrMultiLineString",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1872
+    },
+    {
+      "name": "ScanSymbol",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1874
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1881
+    },
+    {
+      "name": "Token",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1884
+    },
+    {
+      "name": "Token",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1887
+    },
+    {
+      "name": "Token",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1890
+    },
+    {
+      "name": "ScanCharOrString",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1893
+    },
+    {
+      "name": "ScanIdentifierOrKeyword",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1901
+    },
+    {
+      "name": "ScanBackquotedIdentifier",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1905
+    },
+    {
+      "name": "ScanNumberOrDotPrefixSymbol",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1908
+    },
+    {
+      "name": "ScanDivOrComment",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1911
+    },
+    {
+      "name": "Token",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1914
+    },
+    {
+      "name": "ScanSymbol",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1916
+    },
+    {
+      "name": "ScanDotPrefixSymbol",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1953
+    },
+    {
+      "name": "ScanNumber",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1955
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1961
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1972
+    },
+    {
+      "name": "Token",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 1975
+    },
+    {
+      "name": "CollectToken",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 2016
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 2067
+    },
+    {
+      "name": "ReserveToken",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 2069
+    },
+    {
+      "name": "DiagExpectedDigit",
+      "file": "src/Lex/Lexer.cpp",
+      "line": 2173
+    },
+    {
+      "name": "EnterNormalMod",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 47
+    },
+    {
+      "name": "EnterNormalMod",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 58
+    },
+    {
+      "name": "Next",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 82
+    },
+    {
+      "name": "ReserveToken",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 84
+    },
+    {
+      "name": "Seeing",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 90
+    },
+    {
+      "name": "LookAheadSkipNL",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 93
+    },
+    {
+      "name": "SetResetPoint",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 104
+    },
+    {
+      "name": "Reset",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 105
+    },
+    {
+      "name": "GetTokens",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 123
+    },
+    {
+      "name": "GetCollectTokens",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 124
+    },
+    {
+      "name": "StartCollectTokens",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 125
+    },
+    {
+      "name": "StopCollectTokens",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 126
+    },
+    {
+      "name": "GetCurrentToken",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 127
+    },
+    {
+      "name": "IsCurrentCharLineTerminator",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 132
+    },
+    {
+      "name": "ScanInterpolationString",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 133
+    },
+    {
+      "name": "ScanInterpolationStringLiteralHoleBalancedTextString",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 134
+    },
+    {
+      "name": "ScanInterpolationStringLiteralHoleBalancedText",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 135
+    },
+    {
+      "name": "GetPos",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 136
+    },
+    {
+      "name": "ScanInterpolationStringLiteralHoleComment",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 139
+    },
+    {
+      "name": "ProcessInterpolationStringLiteralLineBreak",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 140
+    },
+    {
+      "name": "CountTerminator",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 141
+    },
+    {
+      "name": "ReadUTF8Char",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 199
+    },
+    {
+      "name": "ReadUTF8CharFromMultiBytes",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 200
+    },
+    {
+      "name": "CheckUnicodeSecurity",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 201
+    },
+    {
+      "name": "ProcessXdigit",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 202
+    },
+    {
+      "name": "ProcessDigits",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 203
+    },
+    {
+      "name": "GetSuffix",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 204
+    },
+    {
+      "name": "ProcessIntegerSuffix",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 205
+    },
+    {
+      "name": "LookupKeyword",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 206
+    },
+    {
+      "name": "ProcessEscape",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 207
+    },
+    {
+      "name": "ProcessUnicodeEscape",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 208
+    },
+    {
+      "name": "ProcessIllegalToken",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 209
+    },
+    {
+      "name": "ConsumeNChar",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 212
+    },
+    {
+      "name": "ScanFromTokens",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 215
+    },
+    {
+      "name": "ScanIllegalSymbol",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 216
+    },
+    {
+      "name": "ScanDivOrComment",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 217
+    },
+    {
+      "name": "ScanCharDiagUnterminated",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 218
+    },
+    {
+      "name": "ScanSymbolPlus",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 220
+    },
+    {
+      "name": "ScanSymbolHyphen",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 221
+    },
+    {
+      "name": "ScanSymbolAsterisk",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 222
+    },
+    {
+      "name": "ScanSymbolAmpersand",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 223
+    },
+    {
+      "name": "ScanSymbolExclamation",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 224
+    },
+    {
+      "name": "ScanSymbolLessThan",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 225
+    },
+    {
+      "name": "ScanSymbolGreaterThan",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 226
+    },
+    {
+      "name": "ScanSymbolAt",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 227
+    },
+    {
+      "name": "ScanSymbolEqual",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 228
+    },
+    {
+      "name": "ScanSymbolPercentSign",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 229
+    },
+    {
+      "name": "ScanSymbolVerticalBar",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 230
+    },
+    {
+      "name": "ScanSymbolTilde",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 231
+    },
+    {
+      "name": "ScanSymbolCaret",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 232
+    },
+    {
+      "name": "ScanSymbolQuest",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 233
+    },
+    {
+      "name": "ScanSymbolColon",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 234
+    },
+    {
+      "name": "GetSymbolToken",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 235
+    },
+    {
+      "name": "ScanSymbol",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 236
+    },
+    {
+      "name": "ProcessFloatSuffix",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 240
+    },
+    {
+      "name": "ProcessNumberExponentPart",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 241
+    },
+    {
+      "name": "ProcessNumberFloatSuffix",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 247
+    },
+    {
+      "name": "ScanNumber",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 248
+    },
+    {
+      "name": "ScanNumberOrDotPrefixSymbol",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 249
+    },
+    {
+      "name": "ScanNumberIntegerPart",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 250
+    },
+    {
+      "name": "ScanNumberDecimalPart",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 251
+    },
+    {
+      "name": "ScanNumberExponentPart",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 252
+    },
+    {
+      "name": "ScanDotPrefixSymbol",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 253
+    },
+    {
+      "name": "ScanBackquotedIdentifier",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 254
+    },
+    {
+      "name": "ScanIdentifierOrKeyword",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 255
+    },
+    {
+      "name": "ScanSingleOrMultiLineString",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 256
+    },
+    {
+      "name": "IsIllegalStartDecimalPart",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 257
+    },
+    {
+      "name": "EnterQuoteMod",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 264
+    },
+    {
+      "name": "ExitQuoteMod",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 265
+    },
+    {
+      "name": "EnterNormalMod",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 266
+    },
+    {
+      "name": "ExitNormalMod",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 267
+    },
+    {
+      "name": "IsQuoteContext",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 268
+    },
+    {
+      "name": "DiagUnexpectedDecimalPoint",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 270
+    },
+    {
+      "name": "DiagExpectedDigit",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 271
+    },
+    {
+      "name": "CheckUnsecureUnicodeValue",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 274
+    },
+    {
+      "name": "DiagUnexpectedDigit",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 275
+    },
+    {
+      "name": "DiagUnexpectedExponentPart",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 276
+    },
+    {
+      "name": "DiagExpectedExponentPart",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 277
+    },
+    {
+      "name": "DiagUnexpectedDollarIdentifier",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 278
+    },
+    {
+      "name": "DiagIllegalSymbol",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 279
+    },
+    {
+      "name": "DiagUnterminatedSingleLineString",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 280
+    },
+    {
+      "name": "DiagUnterminatedMultiLineString",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 281
+    },
+    {
+      "name": "DiagUnterminatedRawString",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 282
+    },
+    {
+      "name": "DiagUnrecognizedEscape",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 283
+    },
+    {
+      "name": "DiagUnexpectedFloatLiteralTypeSuffix",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 286
+    },
+    {
+      "name": "DiagExpectedRightBracket",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 287
+    },
+    {
+      "name": "DiagExpectedRightBracketOrHexadecimal",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 288
+    },
+    {
+      "name": "DiagCharactersOverflow",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 289
+    },
+    {
+      "name": "DiagUnterminatedInterpolation",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 290
+    },
+    {
+      "name": "DiagUnknownStartOfToken",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 291
+    },
+    {
+      "name": "ConvertCurrentChar",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 294
+    },
+    {
+      "name": "TryRegisterLineOffset",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 303
+    },
+    {
+      "name": "Back",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 314
+    },
+    {
+      "name": "IsCharOrString",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 315
+    },
+    {
+      "name": "ScanCharOrString",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 316
+    },
+    {
+      "name": "ScanBase",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 317
+    },
+    {
+      "name": "Scan",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 318
+    },
+    {
+      "name": "ScanByteUInt8",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 319
+    },
+    {
+      "name": "CheckArraySize",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 333
+    },
+    {
+      "name": "CollectToken",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 334
+    },
+    {
+      "name": "ScanUnicodeIdentifierStart",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 340
+    },
+    {
+      "name": "ScanIdentifierContinue",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 345
+    },
+    {
+      "name": "DiagIllegalUnicode",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 349
+    },
+    {
+      "name": "TryConsumeIdentifierUTF8Char",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 354
+    },
+    {
+      "name": "ProcessIllegalRightQuotation",
+      "file": "src/Lex/LexerImpl.h",
+      "line": 355
+    }
+  ],
+  "submodules": []
+}

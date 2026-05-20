@@ -1,0 +1,357 @@
+{
+  "module_dependencies": {
+    "frontend": {
+      "depends_on": [
+        "cangjie"
+      ],
+      "depended_by": []
+    },
+    "desugar": {
+      "depends_on": [],
+      "depended_by": [
+        "sema"
+      ]
+    },
+    "sema": {
+      "depends_on": [
+        "cangjie",
+        "..",
+        "desugar",
+        "nativeffi",
+        "inheritancechecker",
+        "cjmp",
+        "interop",
+        "genericinstantiation",
+        "plugin"
+      ],
+      "depended_by": []
+    },
+    "lex": {
+      "depends_on": [
+        "cangjie"
+      ],
+      "depended_by": []
+    },
+    "demangler": {
+      "depends_on": [
+        "base"
+      ],
+      "depended_by": []
+    },
+    "macro": {
+      "depends_on": [
+        "cangjie",
+        "sys",
+        "flatbuffers"
+      ],
+      "depended_by": []
+    },
+    "cangjie": {
+      "depends_on": [],
+      "depended_by": [
+        "include",
+        "ast",
+        "basic",
+        "chir",
+        "codegen",
+        "conditionalcompilation",
+        "driver",
+        "frontend",
+        "frontendtool",
+        "incrementalcompilation",
+        "lex",
+        "macro",
+        "mangle",
+        "metatransformation",
+        "modules",
+        "option",
+        "parse",
+        "sema",
+        "utils",
+        "main-macrosrv.cpp",
+        "unittests",
+        "main-chir-dis.cpp",
+        "main.cpp"
+      ]
+    },
+    "codegen": {
+      "depends_on": [
+        "base",
+        "cangjie",
+        "llvm",
+        "cjnative",
+        "utils",
+        "incrementalgen"
+      ],
+      "depended_by": []
+    },
+    "main-frontend.cpp": {
+      "depends_on": [],
+      "depended_by": []
+    },
+    "frontendtool": {
+      "depends_on": [
+        "cangjie",
+        "llvm"
+      ],
+      "depended_by": []
+    },
+    "objc": {
+      "depends_on": [],
+      "depended_by": [
+        "parse"
+      ]
+    },
+    "metatransformation": {
+      "depends_on": [
+        "cangjie"
+      ],
+      "depended_by": []
+    },
+    "flatbuffers": {
+      "depends_on": [],
+      "depended_by": [
+        "include",
+        "chir",
+        "incrementalcompilation",
+        "macro",
+        "modules",
+        "unittests"
+      ]
+    },
+    "java": {
+      "depends_on": [],
+      "depended_by": [
+        "parse"
+      ]
+    },
+    "llvm": {
+      "depends_on": [],
+      "depended_by": [
+        "include",
+        "codegen",
+        "driver",
+        "frontendtool",
+        "utils"
+      ]
+    },
+    "modules": {
+      "depends_on": [
+        "cangjie",
+        "flatbuffers"
+      ],
+      "depended_by": []
+    },
+    "mach": {
+      "depends_on": [],
+      "depended_by": [
+        "utils"
+      ]
+    },
+    "unicodetables": {
+      "depends_on": [],
+      "depended_by": [
+        "utils"
+      ]
+    },
+    "ast": {
+      "depends_on": [
+        "cangjie"
+      ],
+      "depended_by": []
+    },
+    "incrementalgen": {
+      "depends_on": [],
+      "depended_by": [
+        "codegen"
+      ]
+    },
+    "utils": {
+      "depends_on": [
+        "cangjie",
+        "sys",
+        "llvm",
+        "unicodetables",
+        "mach"
+      ],
+      "depended_by": [
+        "codegen"
+      ]
+    },
+    "inheritancechecker": {
+      "depends_on": [],
+      "depended_by": [
+        "sema"
+      ]
+    },
+    "sys": {
+      "depends_on": [],
+      "depended_by": [
+        "include",
+        "driver",
+        "macro",
+        "utils",
+        "main-macrosrv.cpp"
+      ]
+    },
+    "main-macrosrv.cpp": {
+      "depends_on": [
+        "cangjie",
+        "sys"
+      ],
+      "depended_by": []
+    },
+    "gtest": {
+      "depends_on": [],
+      "depended_by": [
+        "unittests"
+      ]
+    },
+    "cjnative": {
+      "depends_on": [],
+      "depended_by": [
+        "codegen"
+      ]
+    },
+    "basic": {
+      "depends_on": [
+        "cangjie"
+      ],
+      "depended_by": []
+    },
+    "include": {
+      "depends_on": [
+        "cangjie",
+        "llvm",
+        "sys",
+        "flatbuffers"
+      ],
+      "depended_by": []
+    },
+    "chir": {
+      "depends_on": [
+        "cangjie",
+        "flatbuffers"
+      ],
+      "depended_by": []
+    },
+    "plugin": {
+      "depends_on": [],
+      "depended_by": [
+        "sema"
+      ]
+    },
+    "driver": {
+      "depends_on": [
+        "cangjie",
+        "toolchains",
+        "sys",
+        "llvm"
+      ],
+      "depended_by": []
+    },
+    "cjmp": {
+      "depends_on": [],
+      "depended_by": [
+        "sema"
+      ]
+    },
+    "genericinstantiation": {
+      "depends_on": [],
+      "depended_by": [
+        "sema"
+      ]
+    },
+    "main-chir-dis.cpp": {
+      "depends_on": [
+        "cangjie"
+      ],
+      "depended_by": []
+    },
+    "base": {
+      "depends_on": [],
+      "depended_by": [
+        "demangler",
+        "codegen"
+      ]
+    },
+    "parse": {
+      "depends_on": [
+        "cangjie",
+        "..",
+        "java",
+        "objc",
+        "nativeffi"
+      ],
+      "depended_by": []
+    },
+    "toolchains": {
+      "depends_on": [],
+      "depended_by": [
+        "driver"
+      ]
+    },
+    "conditionalcompilation": {
+      "depends_on": [
+        "cangjie"
+      ],
+      "depended_by": []
+    },
+    "main.cpp": {
+      "depends_on": [
+        "cangjie"
+      ],
+      "depended_by": []
+    },
+    "incrementalcompilation": {
+      "depends_on": [
+        "cangjie",
+        "flatbuffers"
+      ],
+      "depended_by": []
+    },
+    "nativeffi": {
+      "depends_on": [],
+      "depended_by": [
+        "parse",
+        "sema"
+      ]
+    },
+    "option": {
+      "depends_on": [
+        "cangjie"
+      ],
+      "depended_by": []
+    },
+    "mangle": {
+      "depends_on": [
+        "cangjie"
+      ],
+      "depended_by": []
+    },
+    "interop": {
+      "depends_on": [],
+      "depended_by": [
+        "sema"
+      ]
+    },
+    "unittests": {
+      "depends_on": [
+        "gtest",
+        "cangjie",
+        "flatbuffers",
+        ".."
+      ],
+      "depended_by": []
+    },
+    "..": {
+      "depends_on": [],
+      "depended_by": [
+        "parse",
+        "sema",
+        "unittests"
+      ]
+    }
+  },
+  "function_calls": {}
+}

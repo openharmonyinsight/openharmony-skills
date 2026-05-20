@@ -1,0 +1,14 @@
+sources:
+  nightly:
+    type: gitcode-latest-release
+    owner: Cangjie
+    repo: nightly_build
+    channels:
+      - nightly
+  stable:
+    type: gitcode-release-list
+    owner: zichexuelan
+    repo: ace-cangjie-release
+    channels:
+      - sts
+      - lts

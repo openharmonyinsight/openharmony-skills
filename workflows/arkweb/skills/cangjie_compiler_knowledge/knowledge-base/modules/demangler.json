@@ -1,0 +1,1360 @@
+{
+  "name": "demangler",
+  "path": "demangler",
+  "files": [
+    "demangler/Cjfilt.cpp",
+    "demangler/CangjieDemangle.cpp",
+    "demangler/CangjieDemangle.h",
+    "demangler/DeCompression.cpp",
+    "demangler/Demangler.cpp",
+    "demangler/Demangler.h",
+    "demangler/StdString.h",
+    "demangler/Utils.h",
+    "demangler/DeCompression.h"
+  ],
+  "classes": [
+    {
+      "name": "DemangleData",
+      "file": "demangler/CangjieDemangle.h",
+      "line": 15
+    },
+    {
+      "name": "DemangleInfo",
+      "file": "demangler/Demangler.h",
+      "line": 48
+    },
+    {
+      "name": "Demangler",
+      "file": "demangler/Demangler.h",
+      "line": 160
+    },
+    {
+      "name": "StdString",
+      "file": "demangler/StdString.h",
+      "line": 21
+    },
+    {
+      "name": "StdPkgCompare",
+      "file": "demangler/Utils.h",
+      "line": 32
+    },
+    {
+      "name": "StdPkgHash",
+      "file": "demangler/Utils.h",
+      "line": 39
+    },
+    {
+      "name": "DeCompression",
+      "file": "demangler/DeCompression.h",
+      "line": 19
+    }
+  ],
+  "functions": [
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 59
+    },
+    {
+      "name": "file",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 62
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 64
+    },
+    {
+      "name": "iss",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 70
+    },
+    {
+      "name": "iss",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 96
+    },
+    {
+      "name": "ReadMapFile",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 99
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 105
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 106
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 107
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 108
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 109
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 110
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 111
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 112
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 133
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 137
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 138
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 139
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 150
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 155
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 156
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 157
+    },
+    {
+      "name": "Println",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 174
+    },
+    {
+      "name": "Usage",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 179
+    },
+    {
+      "name": "ReadMapFiles",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 192
+    },
+    {
+      "name": "Demangle",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 197
+    },
+    {
+      "name": "DemangleType",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 199
+    },
+    {
+      "name": "Demangle",
+      "file": "demangler/Cjfilt.cpp",
+      "line": 201
+    },
+    {
+      "name": "DemangleData::GetPkgName",
+      "file": "demangler/CangjieDemangle.cpp",
+      "line": 18
+    },
+    {
+      "name": "DemangleData::GetFullName",
+      "file": "demangler/CangjieDemangle.cpp",
+      "line": 20
+    },
+    {
+      "name": "DemangleData::IsFunctionLike",
+      "file": "demangler/CangjieDemangle.cpp",
+      "line": 22
+    },
+    {
+      "name": "DemangleData::IsValid",
+      "file": "demangler/CangjieDemangle.cpp",
+      "line": 24
+    },
+    {
+      "name": "DemangleData::SetPrivateDeclaration",
+      "file": "demangler/CangjieDemangle.cpp",
+      "line": 26
+    },
+    {
+      "name": "DemangleData::IsPrivateDeclaration",
+      "file": "demangler/CangjieDemangle.cpp",
+      "line": 28
+    },
+    {
+      "name": "Demangle",
+      "file": "demangler/CangjieDemangle.cpp",
+      "line": 40
+    },
+    {
+      "name": "Demangle",
+      "file": "demangler/CangjieDemangle.cpp",
+      "line": 56
+    },
+    {
+      "name": "DemangleType",
+      "file": "demangler/CangjieDemangle.cpp",
+      "line": 69
+    },
+    {
+      "name": "GetPkgName",
+      "file": "demangler/CangjieDemangle.h",
+      "line": 38
+    },
+    {
+      "name": "GetFullName",
+      "file": "demangler/CangjieDemangle.h",
+      "line": 45
+    },
+    {
+      "name": "IsFunctionLike",
+      "file": "demangler/CangjieDemangle.h",
+      "line": 52
+    },
+    {
+      "name": "IsValid",
+      "file": "demangler/CangjieDemangle.h",
+      "line": 59
+    },
+    {
+      "name": "SetPrivateDeclaration",
+      "file": "demangler/CangjieDemangle.h",
+      "line": 66
+    },
+    {
+      "name": "IsPrivateDeclaration",
+      "file": "demangler/CangjieDemangle.h",
+      "line": 73
+    },
+    {
+      "name": "Demangle",
+      "file": "demangler/CangjieDemangle.h",
+      "line": 90
+    },
+    {
+      "name": "Demangle",
+      "file": "demangler/CangjieDemangle.h",
+      "line": 109
+    },
+    {
+      "name": "Demangle",
+      "file": "demangler/CangjieDemangle.h",
+      "line": 118
+    },
+    {
+      "name": "DemangleType",
+      "file": "demangler/CangjieDemangle.h",
+      "line": 126
+    },
+    {
+      "name": "DemangleType",
+      "file": "demangler/CangjieDemangle.h",
+      "line": 135
+    },
+    {
+      "name": "TreeIdMapPop",
+      "file": "demangler/DeCompression.cpp",
+      "line": 352
+    },
+    {
+      "name": "UpdateCompressedName",
+      "file": "demangler/DeCompression.cpp",
+      "line": 373
+    },
+    {
+      "name": "UpdateCompressedName",
+      "file": "demangler/DeCompression.cpp",
+      "line": 376
+    },
+    {
+      "name": "TreeIdMapPop",
+      "file": "demangler/DeCompression.cpp",
+      "line": 392
+    },
+    {
+      "name": "TreeIdMapPop",
+      "file": "demangler/DeCompression.cpp",
+      "line": 412
+    },
+    {
+      "name": "TreeIdMapPop",
+      "file": "demangler/DeCompression.cpp",
+      "line": 440
+    },
+    {
+      "name": "TreeIdMapPop",
+      "file": "demangler/DeCompression.cpp",
+      "line": 473
+    },
+    {
+      "name": "TreeIdMapErase",
+      "file": "demangler/DeCompression.cpp",
+      "line": 587
+    },
+    {
+      "name": "TreeIdMapPop",
+      "file": "demangler/DeCompression.cpp",
+      "line": 638
+    },
+    {
+      "name": "TreeIdMapPop",
+      "file": "demangler/DeCompression.cpp",
+      "line": 652
+    },
+    {
+      "name": "TreeIdMapPop",
+      "file": "demangler/DeCompression.cpp",
+      "line": 660
+    },
+    {
+      "name": "TreeIdMapAssign",
+      "file": "demangler/DeCompression.cpp",
+      "line": 671
+    },
+    {
+      "name": "TreeIdMapPop",
+      "file": "demangler/DeCompression.cpp",
+      "line": 673
+    },
+    {
+      "name": "TreeIdMapPushBack",
+      "file": "demangler/DeCompression.cpp",
+      "line": 724
+    },
+    {
+      "name": "TreeIdMapPushBack",
+      "file": "demangler/DeCompression.cpp",
+      "line": 749
+    },
+    {
+      "name": "TreeIdMapPushBack",
+      "file": "demangler/DeCompression.cpp",
+      "line": 751
+    },
+    {
+      "name": "TreeIdMapPushBack",
+      "file": "demangler/DeCompression.cpp",
+      "line": 759
+    },
+    {
+      "name": "SpanningFuncDeclTree",
+      "file": "demangler/DeCompression.cpp",
+      "line": 803
+    },
+    {
+      "name": "SpanningVarDeclTree",
+      "file": "demangler/DeCompression.cpp",
+      "line": 816
+    },
+    {
+      "name": "SpanningFuncDeclTree",
+      "file": "demangler/DeCompression.cpp",
+      "line": 822
+    },
+    {
+      "name": "TreeIdMapAssign",
+      "file": "demangler/DeCompression.cpp",
+      "line": 915
+    },
+    {
+      "name": "TreeIdMapAssign",
+      "file": "demangler/DeCompression.cpp",
+      "line": 941
+    },
+    {
+      "name": "TreeIdMapAssign",
+      "file": "demangler/DeCompression.cpp",
+      "line": 959
+    },
+    {
+      "name": "TreeIdMapAssign",
+      "file": "demangler/DeCompression.cpp",
+      "line": 965
+    },
+    {
+      "name": "TreeIdMapAssign",
+      "file": "demangler/DeCompression.cpp",
+      "line": 968
+    },
+    {
+      "name": "TreeIdMapAssign",
+      "file": "demangler/DeCompression.cpp",
+      "line": 1005
+    },
+    {
+      "name": "TreeIdMapAssign",
+      "file": "demangler/DeCompression.cpp",
+      "line": 1020
+    },
+    {
+      "name": "TreeIdMapAssign",
+      "file": "demangler/DeCompression.cpp",
+      "line": 1023
+    },
+    {
+      "name": "TreeIdMapPop",
+      "file": "demangler/DeCompression.cpp",
+      "line": 1033
+    },
+    {
+      "name": "TreeIdMapAssign",
+      "file": "demangler/DeCompression.cpp",
+      "line": 1056
+    },
+    {
+      "name": "TreeIdMapAssign",
+      "file": "demangler/DeCompression.cpp",
+      "line": 1072
+    },
+    {
+      "name": "TreeIdMapPop",
+      "file": "demangler/DeCompression.cpp",
+      "line": 1079
+    },
+    {
+      "name": "PRINT_ERROR",
+      "file": "demangler/Demangler.cpp",
+      "line": 375
+    },
+    {
+      "name": "PRINT_ERROR",
+      "file": "demangler/Demangler.cpp",
+      "line": 377
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 444
+    },
+    {
+      "name": "GetFunctionName",
+      "file": "demangler/Demangler.cpp",
+      "line": 466
+    },
+    {
+      "name": "GetGenericConstraintsName",
+      "file": "demangler/Demangler.cpp",
+      "line": 468
+    },
+    {
+      "name": "SkipString",
+      "file": "demangler/Demangler.cpp",
+      "line": 598
+    },
+    {
+      "name": "SkipString",
+      "file": "demangler/Demangler.cpp",
+      "line": 602
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 606
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 619
+    },
+    {
+      "name": "SkipString",
+      "file": "demangler/Demangler.cpp",
+      "line": 627
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 639
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 671
+    },
+    {
+      "name": "DemangleNextUnit",
+      "file": "demangler/Demangler.cpp",
+      "line": 673
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 677
+    },
+    {
+      "name": "DemangleGlobalInit",
+      "file": "demangler/Demangler.cpp",
+      "line": 681
+    },
+    {
+      "name": "DemangleParamInit",
+      "file": "demangler/Demangler.cpp",
+      "line": 684
+    },
+    {
+      "name": "DemangleInnerFunction",
+      "file": "demangler/Demangler.cpp",
+      "line": 688
+    },
+    {
+      "name": "DemangleWrappedFunction",
+      "file": "demangler/Demangler.cpp",
+      "line": 697
+    },
+    {
+      "name": "DemangleDecl",
+      "file": "demangler/Demangler.cpp",
+      "line": 699
+    },
+    {
+      "name": "DemangleFileName",
+      "file": "demangler/Demangler.cpp",
+      "line": 736
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 907
+    },
+    {
+      "name": "DemangleFileNameNumber",
+      "file": "demangler/Demangler.cpp",
+      "line": 908
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 921
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 937
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 949
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 1006
+    },
+    {
+      "name": "SkipLocalCounter",
+      "file": "demangler/Demangler.cpp",
+      "line": 1015
+    },
+    {
+      "name": "SkipLocalCounter",
+      "file": "demangler/Demangler.cpp",
+      "line": 1035
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 1037
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 1042
+    },
+    {
+      "name": "SkipOptionalChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 1046
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 1051
+    },
+    {
+      "name": "SkipOptionalChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 1055
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 1088
+    },
+    {
+      "name": "SkipString",
+      "file": "demangler/Demangler.cpp",
+      "line": 1096
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 1099
+    },
+    {
+      "name": "SkipString",
+      "file": "demangler/Demangler.cpp",
+      "line": 1106
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 1109
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 1117
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 1123
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 1131
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 1144
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 1154
+    },
+    {
+      "name": "SkipString",
+      "file": "demangler/Demangler.cpp",
+      "line": 1165
+    },
+    {
+      "name": "SkipString",
+      "file": "demangler/Demangler.cpp",
+      "line": 1167
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 1171
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 1184
+    },
+    {
+      "name": "SkipString",
+      "file": "demangler/Demangler.cpp",
+      "line": 1200
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 1202
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 1221
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 1226
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 1238
+    },
+    {
+      "name": "SkipString",
+      "file": "demangler/Demangler.cpp",
+      "line": 1242
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 1244
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 1253
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 1260
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 1349
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 1352
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.cpp",
+      "line": 1356
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 1360
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 1376
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 1416
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 1425
+    },
+    {
+      "name": "DemangleClass",
+      "file": "demangler/Demangler.cpp",
+      "line": 1430
+    },
+    {
+      "name": "DemangleClass",
+      "file": "demangler/Demangler.cpp",
+      "line": 1432
+    },
+    {
+      "name": "DemangleFunction",
+      "file": "demangler/Demangler.cpp",
+      "line": 1437
+    },
+    {
+      "name": "DemangleCFuncType",
+      "file": "demangler/Demangler.cpp",
+      "line": 1439
+    },
+    {
+      "name": "DemangleClass",
+      "file": "demangler/Demangler.cpp",
+      "line": 1447
+    },
+    {
+      "name": "DemangleTuple",
+      "file": "demangler/Demangler.cpp",
+      "line": 1449
+    },
+    {
+      "name": "DemangleCPointer",
+      "file": "demangler/Demangler.cpp",
+      "line": 1451
+    },
+    {
+      "name": "DemangleRawArray",
+      "file": "demangler/Demangler.cpp",
+      "line": 1455
+    },
+    {
+      "name": "DemangleVArray",
+      "file": "demangler/Demangler.cpp",
+      "line": 1457
+    },
+    {
+      "name": "DemangleCStringType",
+      "file": "demangler/Demangler.cpp",
+      "line": 1459
+    },
+    {
+      "name": "DemangleGenericType",
+      "file": "demangler/Demangler.cpp",
+      "line": 1461
+    },
+    {
+      "name": "DemanglePrimitive",
+      "file": "demangler/Demangler.cpp",
+      "line": 1466
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.cpp",
+      "line": 1474
+    },
+    {
+      "name": "GetIdentifier",
+      "file": "demangler/Demangler.h",
+      "line": 127
+    },
+    {
+      "name": "GetReturnType",
+      "file": "demangler/Demangler.h",
+      "line": 134
+    },
+    {
+      "name": "IsFunctionLike",
+      "file": "demangler/Demangler.h",
+      "line": 141
+    },
+    {
+      "name": "IsValid",
+      "file": "demangler/Demangler.h",
+      "line": 148
+    },
+    {
+      "name": "MatchSuffix",
+      "file": "demangler/Demangler.h",
+      "line": 151
+    },
+    {
+      "name": "GetGenericConstraints",
+      "file": "demangler/Demangler.h",
+      "line": 152
+    },
+    {
+      "name": "GetGenericTypes",
+      "file": "demangler/Demangler.h",
+      "line": 153
+    },
+    {
+      "name": "GetFunctionName",
+      "file": "demangler/Demangler.h",
+      "line": 154
+    },
+    {
+      "name": "GetGenericConstraintsName",
+      "file": "demangler/Demangler.h",
+      "line": 155
+    },
+    {
+      "name": "Demangle",
+      "file": "demangler/Demangler.h",
+      "line": 206
+    },
+    {
+      "name": "DemangleClassType",
+      "file": "demangler/Demangler.h",
+      "line": 213
+    },
+    {
+      "name": "DemangleQualifiedName",
+      "file": "demangler/Demangler.h",
+      "line": 220
+    },
+    {
+      "name": "ScopeResolution",
+      "file": "demangler/Demangler.h",
+      "line": 227
+    },
+    {
+      "name": "setGenericVec",
+      "file": "demangler/Demangler.h",
+      "line": 234
+    },
+    {
+      "name": "DemanglePackageName",
+      "file": "demangler/Demangler.h",
+      "line": 238
+    },
+    {
+      "name": "DemangleStringName",
+      "file": "demangler/Demangler.h",
+      "line": 239
+    },
+    {
+      "name": "DemangleProp",
+      "file": "demangler/Demangler.h",
+      "line": 240
+    },
+    {
+      "name": "DemangleManglingNumber",
+      "file": "demangler/Demangler.h",
+      "line": 241
+    },
+    {
+      "name": "DemangleFileNameNumber",
+      "file": "demangler/Demangler.h",
+      "line": 242
+    },
+    {
+      "name": "UIntToString",
+      "file": "demangler/Demangler.h",
+      "line": 243
+    },
+    {
+      "name": "SkipPrivateTopLevelDeclHash",
+      "file": "demangler/Demangler.h",
+      "line": 244
+    },
+    {
+      "name": "DemangleFileName",
+      "file": "demangler/Demangler.h",
+      "line": 245
+    },
+    {
+      "name": "SkipLocalCounter",
+      "file": "demangler/Demangler.h",
+      "line": 246
+    },
+    {
+      "name": "DemangleArgTypes",
+      "file": "demangler/Demangler.h",
+      "line": 247
+    },
+    {
+      "name": "DemangleNestedDecls",
+      "file": "demangler/Demangler.h",
+      "line": 248
+    },
+    {
+      "name": "DemangleLength",
+      "file": "demangler/Demangler.h",
+      "line": 249
+    },
+    {
+      "name": "Reject",
+      "file": "demangler/Demangler.h",
+      "line": 250
+    },
+    {
+      "name": "DemangleNextUnit",
+      "file": "demangler/Demangler.h",
+      "line": 251
+    },
+    {
+      "name": "DemangleByPrefix",
+      "file": "demangler/Demangler.h",
+      "line": 252
+    },
+    {
+      "name": "DemangleClass",
+      "file": "demangler/Demangler.h",
+      "line": 253
+    },
+    {
+      "name": "DemangleCFuncType",
+      "file": "demangler/Demangler.h",
+      "line": 254
+    },
+    {
+      "name": "DemangleTuple",
+      "file": "demangler/Demangler.h",
+      "line": 255
+    },
+    {
+      "name": "DemangleCommonDecl",
+      "file": "demangler/Demangler.h",
+      "line": 256
+    },
+    {
+      "name": "DemangleDecl",
+      "file": "demangler/Demangler.h",
+      "line": 257
+    },
+    {
+      "name": "DemangleRawArray",
+      "file": "demangler/Demangler.h",
+      "line": 258
+    },
+    {
+      "name": "DemangleVArray",
+      "file": "demangler/Demangler.h",
+      "line": 259
+    },
+    {
+      "name": "DemangleCPointer",
+      "file": "demangler/Demangler.h",
+      "line": 260
+    },
+    {
+      "name": "DemangleFunction",
+      "file": "demangler/Demangler.h",
+      "line": 261
+    },
+    {
+      "name": "DemanglePrimitive",
+      "file": "demangler/Demangler.h",
+      "line": 262
+    },
+    {
+      "name": "DemangleCStringType",
+      "file": "demangler/Demangler.h",
+      "line": 263
+    },
+    {
+      "name": "DemangleGenericType",
+      "file": "demangler/Demangler.h",
+      "line": 264
+    },
+    {
+      "name": "DemangleDefaultParamFunction",
+      "file": "demangler/Demangler.h",
+      "line": 265
+    },
+    {
+      "name": "DemangleInnerFunction",
+      "file": "demangler/Demangler.h",
+      "line": 266
+    },
+    {
+      "name": "DemangleType",
+      "file": "demangler/Demangler.h",
+      "line": 267
+    },
+    {
+      "name": "DemangleGenericTypes",
+      "file": "demangler/Demangler.h",
+      "line": 268
+    },
+    {
+      "name": "DemangleFunctionParameterTypes",
+      "file": "demangler/Demangler.h",
+      "line": 269
+    },
+    {
+      "name": "DemangleGlobalInit",
+      "file": "demangler/Demangler.h",
+      "line": 270
+    },
+    {
+      "name": "DemangleParamInit",
+      "file": "demangler/Demangler.h",
+      "line": 271
+    },
+    {
+      "name": "DemangleWrappedFunction",
+      "file": "demangler/Demangler.h",
+      "line": 272
+    },
+    {
+      "name": "IsFileName",
+      "file": "demangler/Demangler.h",
+      "line": 274
+    },
+    {
+      "name": "IsProp",
+      "file": "demangler/Demangler.h",
+      "line": 275
+    },
+    {
+      "name": "IsInnerFunction",
+      "file": "demangler/Demangler.h",
+      "line": 276
+    },
+    {
+      "name": "IsMaybeDefaultFuncParamFunction",
+      "file": "demangler/Demangler.h",
+      "line": 277
+    },
+    {
+      "name": "IsOperatorName",
+      "file": "demangler/Demangler.h",
+      "line": 278
+    },
+    {
+      "name": "IsGlobalInit",
+      "file": "demangler/Demangler.h",
+      "line": 279
+    },
+    {
+      "name": "IsParamInit",
+      "file": "demangler/Demangler.h",
+      "line": 280
+    },
+    {
+      "name": "IsCFunctionWrapper",
+      "file": "demangler/Demangler.h",
+      "line": 281
+    },
+    {
+      "name": "IsWrappedFunction",
+      "file": "demangler/Demangler.h",
+      "line": 282
+    },
+    {
+      "name": "IsQualifiedType",
+      "file": "demangler/Demangler.h",
+      "line": 283
+    },
+    {
+      "name": "IsDecl",
+      "file": "demangler/Demangler.h",
+      "line": 284
+    },
+    {
+      "name": "IsNotEndOfMangledName",
+      "file": "demangler/Demangler.h",
+      "line": 285
+    },
+    {
+      "name": "MatchForward",
+      "file": "demangler/Demangler.h",
+      "line": 286
+    },
+    {
+      "name": "PeekChar",
+      "file": "demangler/Demangler.h",
+      "line": 294
+    },
+    {
+      "name": "GetChar",
+      "file": "demangler/Demangler.h",
+      "line": 302
+    },
+    {
+      "name": "SkipChar",
+      "file": "demangler/Demangler.h",
+      "line": 303
+    },
+    {
+      "name": "SkipOptionalChar",
+      "file": "demangler/Demangler.h",
+      "line": 305
+    },
+    {
+      "name": "SkipString",
+      "file": "demangler/Demangler.h",
+      "line": 307
+    },
+    {
+      "name": "ErrorLog",
+      "file": "demangler/Demangler.h",
+      "line": 308
+    },
+    {
+      "name": "Length",
+      "file": "demangler/StdString.h",
+      "line": 79
+    },
+    {
+      "name": "IsEmpty",
+      "file": "demangler/StdString.h",
+      "line": 93
+    },
+    {
+      "name": "Find",
+      "file": "demangler/StdString.h",
+      "line": 102
+    },
+    {
+      "name": "Find",
+      "file": "demangler/StdString.h",
+      "line": 112
+    },
+    {
+      "name": "SubStr",
+      "file": "demangler/StdString.h",
+      "line": 120
+    },
+    {
+      "name": "SubStr",
+      "file": "demangler/StdString.h",
+      "line": 129
+    },
+    {
+      "name": "CJMangledDeCompression",
+      "file": "demangler/DeCompression.h",
+      "line": 38
+    },
+    {
+      "name": "ForwardClassType",
+      "file": "demangler/DeCompression.h",
+      "line": 48
+    },
+    {
+      "name": "ForwardGenericTypes",
+      "file": "demangler/DeCompression.h",
+      "line": 58
+    },
+    {
+      "name": "ForwardFunctionType",
+      "file": "demangler/DeCompression.h",
+      "line": 68
+    },
+    {
+      "name": "ForwardTupleType",
+      "file": "demangler/DeCompression.h",
+      "line": 78
+    },
+    {
+      "name": "ForwardCPointer",
+      "file": "demangler/DeCompression.h",
+      "line": 88
+    },
+    {
+      "name": "ForwardArrayType",
+      "file": "demangler/DeCompression.h",
+      "line": 98
+    },
+    {
+      "name": "ForwardGenericType",
+      "file": "demangler/DeCompression.h",
+      "line": 108
+    },
+    {
+      "name": "ForwardPackageName",
+      "file": "demangler/DeCompression.h",
+      "line": 118
+    },
+    {
+      "name": "ForwardType",
+      "file": "demangler/DeCompression.h",
+      "line": 128
+    },
+    {
+      "name": "ForwardTypes",
+      "file": "demangler/DeCompression.h",
+      "line": 138
+    },
+    {
+      "name": "ForwardNumber",
+      "file": "demangler/DeCompression.h",
+      "line": 147
+    },
+    {
+      "name": "ForwardName",
+      "file": "demangler/DeCompression.h",
+      "line": 156
+    },
+    {
+      "name": "IsCompressed",
+      "file": "demangler/DeCompression.h",
+      "line": 164
+    },
+    {
+      "name": "IsVarDeclEncode",
+      "file": "demangler/DeCompression.h",
+      "line": 172
+    },
+    {
+      "name": "IsGlobalEncode",
+      "file": "demangler/DeCompression.h",
+      "line": 180
+    },
+    {
+      "name": "IsDefaultParamFuncEncode",
+      "file": "demangler/DeCompression.h",
+      "line": 188
+    },
+    {
+      "name": "IsSamePrefix",
+      "file": "demangler/DeCompression.h",
+      "line": 198
+    },
+    {
+      "name": "HasDuplicates",
+      "file": "demangler/DeCompression.h",
+      "line": 207
+    },
+    {
+      "name": "HasDuplicates",
+      "file": "demangler/DeCompression.h",
+      "line": 216
+    },
+    {
+      "name": "UpdateCompressedName",
+      "file": "demangler/DeCompression.h",
+      "line": 235
+    },
+    {
+      "name": "TryExtendPath",
+      "file": "demangler/DeCompression.h",
+      "line": 247
+    },
+    {
+      "name": "TryLambdaPath",
+      "file": "demangler/DeCompression.h",
+      "line": 259
+    },
+    {
+      "name": "TryGenericPrefixPath",
+      "file": "demangler/DeCompression.h",
+      "line": 270
+    },
+    {
+      "name": "TryNamePrefixPath",
+      "file": "demangler/DeCompression.h",
+      "line": 281
+    },
+    {
+      "name": "TryParsePath",
+      "file": "demangler/DeCompression.h",
+      "line": 289
+    },
+    {
+      "name": "SpanningVarDeclTree",
+      "file": "demangler/DeCompression.h",
+      "line": 294
+    },
+    {
+      "name": "SpanningFuncDeclTree",
+      "file": "demangler/DeCompression.h",
+      "line": 299
+    },
+    {
+      "name": "TreeIdMapPop",
+      "file": "demangler/DeCompression.h",
+      "line": 307
+    },
+    {
+      "name": "TreeIdMapPushBack",
+      "file": "demangler/DeCompression.h",
+      "line": 316
+    },
+    {
+      "name": "TreeIdMapErase",
+      "file": "demangler/DeCompression.h",
+      "line": 327
+    }
+  ],
+  "submodules": []
+}

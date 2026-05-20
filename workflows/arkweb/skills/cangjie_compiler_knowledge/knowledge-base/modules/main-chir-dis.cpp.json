@@ -1,0 +1,131 @@
+{
+  "name": "main-chir-dis.cpp",
+  "path": "src",
+  "files": [
+    "src/main-chir-dis.cpp"
+  ],
+  "classes": [
+    {
+      "name": "ActionInfo",
+      "file": "src/main-chir-dis.cpp",
+      "line": 43
+    }
+  ],
+  "functions": [
+    {
+      "name": "CreateAltSignalStack",
+      "file": "src/main-chir-dis.cpp",
+      "line": 53
+    },
+    {
+      "name": "RegisterCrashExceptionHandler",
+      "file": "src/main-chir-dis.cpp",
+      "line": 55
+    },
+    {
+      "name": "RegisterCrashSignalHandler",
+      "file": "src/main-chir-dis.cpp",
+      "line": 57
+    },
+    {
+      "name": "RegisterCrtlCSignalHandler",
+      "file": "src/main-chir-dis.cpp",
+      "line": 59
+    },
+    {
+      "name": "Errorln",
+      "file": "src/main-chir-dis.cpp",
+      "line": 78
+    },
+    {
+      "name": "Println",
+      "file": "src/main-chir-dis.cpp",
+      "line": 79
+    },
+    {
+      "name": "Println",
+      "file": "src/main-chir-dis.cpp",
+      "line": 93
+    },
+    {
+      "name": "Errorln",
+      "file": "src/main-chir-dis.cpp",
+      "line": 106
+    },
+    {
+      "name": "Println",
+      "file": "src/main-chir-dis.cpp",
+      "line": 107
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/main-chir-dis.cpp",
+      "line": 118
+    },
+    {
+      "name": "Errorln",
+      "file": "src/main-chir-dis.cpp",
+      "line": 121
+    },
+    {
+      "name": "Errorln",
+      "file": "src/main-chir-dis.cpp",
+      "line": 124
+    },
+    {
+      "name": "cctx",
+      "file": "src/main-chir-dis.cpp",
+      "line": 130
+    },
+    {
+      "name": "chirBuilder",
+      "file": "src/main-chir-dis.cpp",
+      "line": 131
+    },
+    {
+      "name": "CHIR::CHIRPrinter::PrintCHIRSerializeInfo",
+      "file": "src/main-chir-dis.cpp",
+      "line": 138
+    },
+    {
+      "name": "RegisterSignalHandler",
+      "file": "src/main-chir-dis.cpp",
+      "line": 150
+    },
+    {
+      "name": "Println",
+      "file": "src/main-chir-dis.cpp",
+      "line": 157
+    },
+    {
+      "name": "Cangjie::PrintVersion",
+      "file": "src/main-chir-dis.cpp",
+      "line": 161
+    },
+    {
+      "name": "InternalError",
+      "file": "src/main-chir-dis.cpp",
+      "line": 170
+    }
+  ],
+  "submodules": [
+    "ast",
+    "basic",
+    "chir",
+    "codegen",
+    "conditionalcompilation",
+    "driver",
+    "frontend",
+    "frontendtool",
+    "incrementalcompilation",
+    "lex",
+    "macro",
+    "mangle",
+    "metatransformation",
+    "modules",
+    "option",
+    "parse",
+    "sema",
+    "utils"
+  ]
+}

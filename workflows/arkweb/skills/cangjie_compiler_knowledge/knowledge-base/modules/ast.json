@@ -1,0 +1,3479 @@
+{
+  "name": "ast",
+  "path": "src/AST",
+  "files": [
+    "src/AST/ASTContext.cpp",
+    "src/AST/ASTTypeValidator.cpp",
+    "src/AST/Cache.cpp",
+    "src/AST/Comment.cpp",
+    "src/AST/Identifier.cpp",
+    "src/AST/IntLiteral.cpp",
+    "src/AST/Create.cpp",
+    "src/AST/PrintNode.cpp",
+    "src/AST/Clone.cpp",
+    "src/AST/Query.cpp",
+    "src/AST/QueryParser.h",
+    "src/AST/RecoverDesugar.cpp",
+    "src/AST/Node.cpp",
+    "src/AST/ScopeManagerApi.cpp",
+    "src/AST/Types.cpp",
+    "src/AST/Utils.cpp",
+    "src/AST/Searcher.cpp",
+    "src/AST/Walker.cpp"
+  ],
+  "classes": [
+    {
+      "name": "ASTTypeValidator",
+      "file": "src/AST/ASTTypeValidator.cpp",
+      "line": 17
+    },
+    {
+      "name": "QueryParser",
+      "file": "src/AST/QueryParser.h",
+      "line": 26
+    },
+    {
+      "name": "Span",
+      "file": "src/AST/Node.cpp",
+      "line": 40
+    }
+  ],
+  "functions": [
+    {
+      "name": "Reset",
+      "file": "src/AST/ASTContext.cpp",
+      "line": 26
+    },
+    {
+      "name": "SymbolApi::ResetID",
+      "file": "src/AST/ASTContext.cpp",
+      "line": 62
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/ASTContext.cpp",
+      "line": 113
+    },
+    {
+      "name": "Utils::InKeys",
+      "file": "src/AST/ASTContext.cpp",
+      "line": 159
+    },
+    {
+      "name": "cleaner",
+      "file": "src/AST/ASTContext.cpp",
+      "line": 178
+    },
+    {
+      "name": "enabler",
+      "file": "src/AST/ASTContext.cpp",
+      "line": 192
+    },
+    {
+      "name": "SkipSynForCorrectTy",
+      "file": "src/AST/ASTContext.cpp",
+      "line": 194
+    },
+    {
+      "name": "Utils::EraseIf",
+      "file": "src/AST/ASTContext.cpp",
+      "line": 214
+    },
+    {
+      "name": "Ty::IsTyCorrect",
+      "file": "src/AST/ASTTypeValidator.cpp",
+      "line": 63
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/AST/ASTTypeValidator.cpp",
+      "line": 64
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/AST/ASTTypeValidator.cpp",
+      "line": 68
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/AST/ASTTypeValidator.cpp",
+      "line": 82
+    },
+    {
+      "name": "validator",
+      "file": "src/AST/ASTTypeValidator.cpp",
+      "line": 155
+    },
+    {
+      "name": "CollectTargets",
+      "file": "src/AST/Cache.cpp",
+      "line": 23
+    },
+    {
+      "name": "std::make_pair",
+      "file": "src/AST/Cache.cpp",
+      "line": 29
+    },
+    {
+      "name": "std::make_pair",
+      "file": "src/AST/Cache.cpp",
+      "line": 31
+    },
+    {
+      "name": "std::make_pair",
+      "file": "src/AST/Cache.cpp",
+      "line": 34
+    },
+    {
+      "name": "RestoreTargets",
+      "file": "src/AST/Cache.cpp",
+      "line": 40
+    },
+    {
+      "name": "SetPos",
+      "file": "src/AST/Identifier.cpp",
+      "line": 17
+    },
+    {
+      "name": "std::swap",
+      "file": "src/AST/Identifier.cpp",
+      "line": 50
+    },
+    {
+      "name": "IntLiteral::EscapeCharacterToInt",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 119
+    },
+    {
+      "name": "std::make_pair",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 169
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 216
+    },
+    {
+      "name": "SetUint64",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 305
+    },
+    {
+      "name": "SetInt64",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 308
+    },
+    {
+      "name": "SetUint64",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 317
+    },
+    {
+      "name": "SetInt64",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 320
+    },
+    {
+      "name": "std::to_string",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 326
+    },
+    {
+      "name": "std::to_string",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 328
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 335
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 347
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 351
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 354
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 364
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 366
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 374
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 377
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 392
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 394
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 401
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 407
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 415
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 421
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 429
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 432
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 437
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 439
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 445
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 448
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 451
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 458
+    },
+    {
+      "name": "IntLiteral",
+      "file": "src/AST/IntLiteral.cpp",
+      "line": 528
+    },
+    {
+      "name": "CopyNodeScopeInfo",
+      "file": "src/AST/Create.cpp",
+      "line": 54
+    },
+    {
+      "name": "CopyFileID",
+      "file": "src/AST/Create.cpp",
+      "line": 55
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Create.cpp",
+      "line": 73
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/AST/Create.cpp",
+      "line": 74
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Create.cpp",
+      "line": 87
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Create.cpp",
+      "line": 88
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Create.cpp",
+      "line": 123
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Create.cpp",
+      "line": 141
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Create.cpp",
+      "line": 142
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Create.cpp",
+      "line": 143
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Create.cpp",
+      "line": 150
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Create.cpp",
+      "line": 151
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Create.cpp",
+      "line": 166
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Create.cpp",
+      "line": 354
+    },
+    {
+      "name": "CreateRefExpr",
+      "file": "src/AST/Create.cpp",
+      "line": 366
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/AST/Create.cpp",
+      "line": 429
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Create.cpp",
+      "line": 467
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Create.cpp",
+      "line": 476
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/AST/Create.cpp",
+      "line": 481
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/AST/Create.cpp",
+      "line": 577
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/AST/Create.cpp",
+      "line": 582
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/AST/Create.cpp",
+      "line": 596
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Create.cpp",
+      "line": 606
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/AST/Create.cpp",
+      "line": 684
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Create.cpp",
+      "line": 713
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Create.cpp",
+      "line": 714
+    },
+    {
+      "name": "PrintIndentOnly",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 62
+    },
+    {
+      "name": "Println",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 63
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 80
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 87
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 89
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 97
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 99
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 101
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 104
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 106
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 110
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 116
+    },
+    {
+      "name": "PrintTarget",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 122
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 151
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 153
+    },
+    {
+      "name": "PrintIndentTokens",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 154
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 155
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 158
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 160
+    },
+    {
+      "name": "PrintIndentTokens",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 161
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 162
+    },
+    {
+      "name": "PrintNode",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 165
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 171
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 173
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 179
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 183
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 185
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 189
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 191
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 195
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 197
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 202
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 203
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 218
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 222
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 223
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 228
+    },
+    {
+      "name": "PrintMacroInvocation",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 229
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 230
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 236
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 237
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 242
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 243
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 244
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 245
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 249
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 251
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 253
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 258
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 262
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 268
+    },
+    {
+      "name": "PrintAnnotations",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 269
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 272
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 276
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 281
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 283
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 289
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 295
+    },
+    {
+      "name": "PrintModifiers",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 296
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 298
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 301
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 304
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 311
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 315
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 317
+    },
+    {
+      "name": "PrintAnnotations",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 321
+    },
+    {
+      "name": "PrintModifiers",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 322
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 324
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 330
+    },
+    {
+      "name": "PrintAnnotations",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 331
+    },
+    {
+      "name": "PrintModifiers",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 332
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 334
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 340
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 346
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 351
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 355
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 356
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 360
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 365
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 366
+    },
+    {
+      "name": "PrintGeneric",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 368
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 374
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 376
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 380
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 386
+    },
+    {
+      "name": "PrintModifiers",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 387
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 395
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 400
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 401
+    },
+    {
+      "name": "PrintMacroInvocation",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 402
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 403
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 409
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 410
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 412
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 414
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 419
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 426
+    },
+    {
+      "name": "PrintAnnotations",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 427
+    },
+    {
+      "name": "PrintModifiers",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 428
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 432
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 438
+    },
+    {
+      "name": "PrintGeneric",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 440
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 443
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 450
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 453
+    },
+    {
+      "name": "PrintAnnotations",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 454
+    },
+    {
+      "name": "PrintModifiers",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 455
+    },
+    {
+      "name": "PrintGeneric",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 457
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 460
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 464
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 467
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 476
+    },
+    {
+      "name": "PrintModifiers",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 477
+    },
+    {
+      "name": "PrintGeneric",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 479
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 482
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 486
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 489
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 495
+    },
+    {
+      "name": "PrintModifiers",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 496
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 497
+    },
+    {
+      "name": "PrintGeneric",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 499
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 502
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 506
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 508
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 512
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 513
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 517
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 518
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 524
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 527
+    },
+    {
+      "name": "PrintAnnotations",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 528
+    },
+    {
+      "name": "PrintModifiers",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 529
+    },
+    {
+      "name": "PrintGeneric",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 531
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 534
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 538
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 540
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 542
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 543
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 548
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 549
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 551
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 555
+    },
+    {
+      "name": "PrintGeneric",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 557
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 559
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 563
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 564
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 569
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 570
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 576
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 581
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 582
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 583
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 587
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 589
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 593
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 595
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 600
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 601
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 603
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 605
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 607
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 611
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 614
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 616
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 618
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 622
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 625
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 630
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 631
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 633
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 637
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 639
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 641
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 643
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 644
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 646
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 647
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 649
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 650
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 653
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 654
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 655
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 657
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 658
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 660
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 661
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 663
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 664
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 666
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 668
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 670
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 672
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 673
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 675
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 677
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 682
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 683
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 685
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 690
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 691
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 693
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 698
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 699
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 702
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 707
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 708
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 710
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 716
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 717
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 722
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 723
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 724
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 726
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 728
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 731
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 736
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 737
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 738
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 740
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 742
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 747
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 748
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 750
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 752
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 753
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 774
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 775
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 781
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 787
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 792
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 793
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 795
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 800
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 806
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 811
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 817
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 824
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 829
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 830
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 831
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 833
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 835
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 837
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 842
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 843
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 845
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 849
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 850
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 855
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 856
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 860
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 862
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 866
+    },
+    {
+      "name": "PrintTarget",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 869
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 871
+    },
+    {
+      "name": "PrintTarget",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 873
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 875
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 876
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 881
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 882
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 883
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 885
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 891
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 892
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 893
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 895
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 900
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 901
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 902
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 904
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 906
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 908
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 909
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 911
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 912
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 917
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 918
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 923
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 926
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 931
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 932
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 933
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 935
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 937
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 939
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 943
+    },
+    {
+      "name": "PrintTarget",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 946
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 948
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 953
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 954
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 956
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 961
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 962
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 963
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 965
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 972
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 976
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 981
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 982
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 984
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 989
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 990
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 991
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 995
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 996
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1001
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1002
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1004
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1006
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1010
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1011
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1017
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1018
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1019
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1023
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1024
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1029
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1030
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1034
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1039
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1040
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1041
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1043
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1045
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1051
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1053
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1055
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1059
+    },
+    {
+      "name": "PrintTarget",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1062
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1064
+    },
+    {
+      "name": "PrintTarget",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1066
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1068
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1069
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1074
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1075
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1085
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1090
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1091
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1094
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1099
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1100
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1104
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1109
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1110
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1112
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1118
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1123
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1127
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1132
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1136
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1148
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1149
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1152
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1157
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1158
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1161
+    },
+    {
+      "name": "PrintIndentTokens",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1166
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1171
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1174
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1176
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1181
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1186
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1187
+    },
+    {
+      "name": "PrintMacroInvocation",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1188
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1189
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1195
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1197
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1199
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1203
+    },
+    {
+      "name": "PrintTarget",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1206
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1208
+    },
+    {
+      "name": "PrintTarget",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1210
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1212
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1213
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1218
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1219
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1221
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1226
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1227
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1228
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1232
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1234
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1235
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1240
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1241
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1242
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1246
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1247
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1252
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1253
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1254
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1259
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1260
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1261
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1266
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1267
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1268
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1270
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1271
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1276
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1277
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1278
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1280
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1285
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1286
+    },
+    {
+      "name": "PrintTarget",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1290
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1292
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1297
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1299
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1303
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1304
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1309
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1311
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1316
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1317
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1321
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1322
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1327
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1328
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1334
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1340
+    },
+    {
+      "name": "PrintNode",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1341
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1342
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1347
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1352
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1358
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1363
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1368
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1369
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1371
+    },
+    {
+      "name": "PrintNode",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1372
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1373
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1375
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1390
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1391
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1396
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1397
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1398
+    },
+    {
+      "name": "PrintNode",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1400
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1402
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1403
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1409
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1410
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1411
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1415
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1417
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1431
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1447
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1448
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1461
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1470
+    },
+    {
+      "name": "PrintImportSpec",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1589
+    },
+    {
+      "name": "PrintBasic",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1594
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1595
+    },
+    {
+      "name": "PrintNode",
+      "file": "src/AST/PrintNode.cpp",
+      "line": 1601
+    },
+    {
+      "name": "CopyNodeScopeInfo",
+      "file": "src/AST/Clone.cpp",
+      "line": 43
+    },
+    {
+      "name": "CopyNodeScopeInfo",
+      "file": "src/AST/Clone.cpp",
+      "line": 94
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Clone.cpp",
+      "line": 162
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Clone.cpp",
+      "line": 185
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/AST/Clone.cpp",
+      "line": 454
+    },
+    {
+      "name": "visitor",
+      "file": "src/AST/Clone.cpp",
+      "line": 464
+    },
+    {
+      "name": "CopyNodeField",
+      "file": "src/AST/Clone.cpp",
+      "line": 545
+    },
+    {
+      "name": "CopyNodeField",
+      "file": "src/AST/Clone.cpp",
+      "line": 557
+    },
+    {
+      "name": "CopyNodeField",
+      "file": "src/AST/Clone.cpp",
+      "line": 561
+    },
+    {
+      "name": "visitor",
+      "file": "src/AST/Clone.cpp",
+      "line": 771
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/AST/Clone.cpp",
+      "line": 1086
+    },
+    {
+      "name": "visitor",
+      "file": "src/AST/Clone.cpp",
+      "line": 1102
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Clone.cpp",
+      "line": 1105
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/AST/Clone.cpp",
+      "line": 1139
+    },
+    {
+      "name": "visitor",
+      "file": "src/AST/Clone.cpp",
+      "line": 1157
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/AST/Clone.cpp",
+      "line": 1285
+    },
+    {
+      "name": "visitor",
+      "file": "src/AST/Clone.cpp",
+      "line": 1290
+    },
+    {
+      "name": "CopyNodeField",
+      "file": "src/AST/Clone.cpp",
+      "line": 1460
+    },
+    {
+      "name": "cloneContent",
+      "file": "src/AST/Clone.cpp",
+      "line": 1472
+    },
+    {
+      "name": "cloneContent",
+      "file": "src/AST/Clone.cpp",
+      "line": 1478
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/AST/Clone.cpp",
+      "line": 1543
+    },
+    {
+      "name": "visitor",
+      "file": "src/AST/Clone.cpp",
+      "line": 1544
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1557
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1558
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1564
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1565
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1570
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1571
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1572
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1573
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1574
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1579
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1595
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1596
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1602
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1608
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1617
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1618
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1620
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1628
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1640
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1646
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1652
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1658
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1664
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1671
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1672
+    },
+    {
+      "name": "TargetAddrMapInsert",
+      "file": "src/AST/Clone.cpp",
+      "line": 1678
+    },
+    {
+      "name": "visitor",
+      "file": "src/AST/Clone.cpp",
+      "line": 1684
+    },
+    {
+      "name": "ParseBooleanClause",
+      "file": "src/AST/Query.cpp",
+      "line": 41
+    },
+    {
+      "name": "Next",
+      "file": "src/AST/Query.cpp",
+      "line": 62
+    },
+    {
+      "name": "SkipCombinator",
+      "file": "src/AST/Query.cpp",
+      "line": 123
+    },
+    {
+      "name": "Next",
+      "file": "src/AST/Query.cpp",
+      "line": 210
+    },
+    {
+      "name": "Next",
+      "file": "src/AST/Query.cpp",
+      "line": 219
+    },
+    {
+      "name": "ParseNormalTerm",
+      "file": "src/AST/Query.cpp",
+      "line": 237
+    },
+    {
+      "name": "ParsePositionTerm",
+      "file": "src/AST/Query.cpp",
+      "line": 240
+    },
+    {
+      "name": "Parse",
+      "file": "src/AST/QueryParser.h",
+      "line": 34
+    },
+    {
+      "name": "ParseParenClause",
+      "file": "src/AST/QueryParser.h",
+      "line": 40
+    },
+    {
+      "name": "ParseBooleanClause",
+      "file": "src/AST/QueryParser.h",
+      "line": 44
+    },
+    {
+      "name": "ParseNormalTerm",
+      "file": "src/AST/QueryParser.h",
+      "line": 48
+    },
+    {
+      "name": "ParsePositionTerm",
+      "file": "src/AST/QueryParser.h",
+      "line": 52
+    },
+    {
+      "name": "ParseComparator",
+      "file": "src/AST/QueryParser.h",
+      "line": 56
+    },
+    {
+      "name": "ParseTerm",
+      "file": "src/AST/QueryParser.h",
+      "line": 60
+    },
+    {
+      "name": "std::move",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 30
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 38
+    },
+    {
+      "name": "UnsetCallExprOfNode",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 43
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 52
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 56
+    },
+    {
+      "name": "UnsetCallExprOfNode",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 59
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 61
+    },
+    {
+      "name": "UnsetCallExprOfNode",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 64
+    },
+    {
+      "name": "RecoverToCallExpr",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 77
+    },
+    {
+      "name": "UnsetCallExprOfNode",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 86
+    },
+    {
+      "name": "RecoverToCallExpr",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 98
+    },
+    {
+      "name": "UnsetCallExprOfNode",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 102
+    },
+    {
+      "name": "RecoverToPipelineExpr",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 119
+    },
+    {
+      "name": "RecoverToCompositionExpr",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 122
+    },
+    {
+      "name": "UnsetCallExprOfNode",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 131
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 133
+    },
+    {
+      "name": "RecoverToCallExpr",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 146
+    },
+    {
+      "name": "UnsetCallExprOfNode",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 166
+    },
+    {
+      "name": "RecoverToCallExpr",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 174
+    },
+    {
+      "name": "RecoverToCallExpr",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 204
+    },
+    {
+      "name": "RecoverFromVariadicCallExpr",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 209
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 215
+    },
+    {
+      "name": "RecoverCallFromArrayExpr",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 220
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/AST/RecoverDesugar.cpp",
+      "line": 259
+    },
+    {
+      "name": "GetMacroCallEndPos",
+      "file": "src/AST/Node.cpp",
+      "line": 145
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/AST/Node.cpp",
+      "line": 221
+    },
+    {
+      "name": "RecoverToCallExpr",
+      "file": "src/AST/Node.cpp",
+      "line": 252
+    },
+    {
+      "name": "Expr::Clear",
+      "file": "src/AST/Node.cpp",
+      "line": 253
+    },
+    {
+      "name": "Node::Clear",
+      "file": "src/AST/Node.cpp",
+      "line": 469
+    },
+    {
+      "name": "RecoverToSubscriptExpr",
+      "file": "src/AST/Node.cpp",
+      "line": 513
+    },
+    {
+      "name": "Expr::Clear",
+      "file": "src/AST/Node.cpp",
+      "line": 521
+    },
+    {
+      "name": "RecoverToAssignExpr",
+      "file": "src/AST/Node.cpp",
+      "line": 526
+    },
+    {
+      "name": "Expr::Clear",
+      "file": "src/AST/Node.cpp",
+      "line": 527
+    },
+    {
+      "name": "RecoverToUnaryExpr",
+      "file": "src/AST/Node.cpp",
+      "line": 532
+    },
+    {
+      "name": "Expr::Clear",
+      "file": "src/AST/Node.cpp",
+      "line": 533
+    },
+    {
+      "name": "RecoverToBinaryExpr",
+      "file": "src/AST/Node.cpp",
+      "line": 541
+    },
+    {
+      "name": "Expr::Clear",
+      "file": "src/AST/Node.cpp",
+      "line": 542
+    },
+    {
+      "name": "Expr::Clear",
+      "file": "src/AST/Node.cpp",
+      "line": 553
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Node.cpp",
+      "line": 625
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Node.cpp",
+      "line": 630
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Node.cpp",
+      "line": 635
+    },
+    {
+      "name": "GetMacroSourcePos",
+      "file": "src/AST/Node.cpp",
+      "line": 856
+    },
+    {
+      "name": "GetMacroSourcePos",
+      "file": "src/AST/Node.cpp",
+      "line": 866
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/AST/Node.cpp",
+      "line": 1136
+    },
+    {
+      "name": "toString",
+      "file": "src/AST/Node.cpp",
+      "line": 1187
+    },
+    {
+      "name": "toString",
+      "file": "src/AST/Node.cpp",
+      "line": 1194
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Node.cpp",
+      "line": 1231
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/AST/Node.cpp",
+      "line": 1233
+    },
+    {
+      "name": "Decl::IsExportedDecl",
+      "file": "src/AST/Node.cpp",
+      "line": 1290
+    },
+    {
+      "name": "Decl::IsExportedDecl",
+      "file": "src/AST/Node.cpp",
+      "line": 1296
+    },
+    {
+      "name": "Decl::IsExportedDecl",
+      "file": "src/AST/Node.cpp",
+      "line": 1308
+    },
+    {
+      "name": "Decl::IsExportedDecl",
+      "file": "src/AST/Node.cpp",
+      "line": 1314
+    },
+    {
+      "name": "KindName",
+      "file": "src/AST/Types.cpp",
+      "line": 147
+    },
+    {
+      "name": "HashNominalTy",
+      "file": "src/AST/Types.cpp",
+      "line": 232
+    },
+    {
+      "name": "HashNominalTy",
+      "file": "src/AST/Types.cpp",
+      "line": 237
+    },
+    {
+      "name": "HashNominalTy",
+      "file": "src/AST/Types.cpp",
+      "line": 265
+    },
+    {
+      "name": "Utils::In",
+      "file": "src/AST/Types.cpp",
+      "line": 561
+    },
+    {
+      "name": "Utils::In",
+      "file": "src/AST/Types.cpp",
+      "line": 563
+    },
+    {
+      "name": "Utils::In",
+      "file": "src/AST/Types.cpp",
+      "line": 565
+    },
+    {
+      "name": "GetTypesToStr",
+      "file": "src/AST/Types.cpp",
+      "line": 765
+    },
+    {
+      "name": "GetTypesToStableStr",
+      "file": "src/AST/Types.cpp",
+      "line": 770
+    },
+    {
+      "name": "GetTypesToStableStr",
+      "file": "src/AST/Types.cpp",
+      "line": 775
+    },
+    {
+      "name": "IsMetCType",
+      "file": "src/AST/Types.cpp",
+      "line": 867
+    },
+    {
+      "name": "NominalTyEqualTo",
+      "file": "src/AST/Types.cpp",
+      "line": 1050
+    },
+    {
+      "name": "NominalTyEqualTo",
+      "file": "src/AST/Types.cpp",
+      "line": 1055
+    },
+    {
+      "name": "NominalTyEqualTo",
+      "file": "src/AST/Types.cpp",
+      "line": 1060
+    },
+    {
+      "name": "NominalTyEqualTo",
+      "file": "src/AST/Types.cpp",
+      "line": 1065
+    },
+    {
+      "name": "NominalTyEqualTo",
+      "file": "src/AST/Types.cpp",
+      "line": 1070
+    },
+    {
+      "name": "AddMacroAttr",
+      "file": "src/AST/Utils.cpp",
+      "line": 59
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/AST/Utils.cpp",
+      "line": 137
+    },
+    {
+      "name": "guard",
+      "file": "src/AST/Utils.cpp",
+      "line": 190
+    },
+    {
+      "name": "walker",
+      "file": "src/AST/Utils.cpp",
+      "line": 259
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/AST/Utils.cpp",
+      "line": 334
+    },
+    {
+      "name": "action",
+      "file": "src/AST/Utils.cpp",
+      "line": 346
+    },
+    {
+      "name": "action",
+      "file": "src/AST/Utils.cpp",
+      "line": 356
+    },
+    {
+      "name": "action",
+      "file": "src/AST/Utils.cpp",
+      "line": 365
+    },
+    {
+      "name": "IterateAllMembersInTypeDecl",
+      "file": "src/AST/Utils.cpp",
+      "line": 367
+    },
+    {
+      "name": "IsCondition",
+      "file": "src/AST/Utils.cpp",
+      "line": 414
+    },
+    {
+      "name": "InsertPropConvertedByField",
+      "file": "src/AST/Utils.cpp",
+      "line": 761
+    },
+    {
+      "name": "IsJObject",
+      "file": "src/AST/Utils.cpp",
+      "line": 790
+    },
+    {
+      "name": "SetPositionAndCurFileByProvidedNode",
+      "file": "src/AST/Utils.cpp",
+      "line": 884
+    },
+    {
+      "name": "SetPositionAndCurFileByProvidedNode",
+      "file": "src/AST/Utils.cpp",
+      "line": 890
+    },
+    {
+      "name": "SetPositionAndCurFileByProvidedNode",
+      "file": "src/AST/Utils.cpp",
+      "line": 893
+    },
+    {
+      "name": "SetPositionAndCurFileByProvidedNode",
+      "file": "src/AST/Utils.cpp",
+      "line": 926
+    },
+    {
+      "name": "SetPositionAndCurFileByProvidedNode",
+      "file": "src/AST/Utils.cpp",
+      "line": 929
+    },
+    {
+      "name": "walk",
+      "file": "src/AST/Searcher.cpp",
+      "line": 136
+    },
+    {
+      "name": "GetIDsLessThanPosOfDepth",
+      "file": "src/AST/Searcher.cpp",
+      "line": 266
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/AST/Searcher.cpp",
+      "line": 286
+    },
+    {
+      "name": "Sort::posAsc",
+      "file": "src/AST/Searcher.cpp",
+      "line": 304
+    },
+    {
+      "name": "Intersection",
+      "file": "src/AST/Searcher.cpp",
+      "line": 468
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/AST/Walker.cpp",
+      "line": 1214
+    }
+  ],
+  "submodules": []
+}

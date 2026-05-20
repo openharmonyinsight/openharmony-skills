@@ -1,0 +1,2 @@
+workflows/arkweb/skills/cangjie_compiler_knowledge/knowledge-base/search-index.json filter=lfs diff=lfs merge=lfs -text
+workflows/arkweb/skills/harmonyos-stdx-dependency/cangjie-stdx-ohos-x86_64-1.1.0-beta.10.1.zip filter=lfs diff=lfs merge=lfs -text

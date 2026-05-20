@@ -1,0 +1,2089 @@
+[
+  {
+    "category": "Toolchain",
+    "knowledge_point": "Cangjie Toolchain Installation",
+    "trigger_keywords": [
+      "安装",
+      "toolchain",
+      "安装指南"
+    ],
+    "rag_content": {
+      "concept": "Cangjie语言提供了一套完整的命令行工具和语言服务器工具，涵盖项目管理、命令行调试、代码格式化等功能。安装Cangjie工具链后，可根据手册使用这些工具。",
+      "code_example": "// 安装指南参考链接\n// 请参阅 [Installing the Cangjie Toolchain](../../dev-guide/source_en/first_understanding/install.md)"
+    },
+    "source_file": "docs\\tools\\source_en\\command_line_overview.md"
+  },
+  {
+    "category": "Toolchain",
+    "knowledge_point": "Command-line Tools Overview",
+    "trigger_keywords": [
+      "命令行工具",
+      "调试",
+      "格式化"
+    ],
+    "rag_content": {
+      "concept": "Cangjie工具链包括项目管理、命令行调试和代码格式化等命令行工具，用于辅助开发工作流。",
+      "code_example": "// 工具使用示例需参考具体工具手册\n// 例如：cangjie build, cangjie fmt, cangjie debug"
+    },
+    "source_file": "docs\\tools\\source_en\\command_line_overview.md"
+  },
+  {
+    "category": "Tool",
+    "knowledge_point": "cjpm - Project Management Tool",
+    "trigger_keywords": [
+      "cjpm",
+      "project",
+      "build",
+      "dependency"
+    ],
+    "rag_content": {
+      "concept": "仓颉项目构建与管理工具，支持项目初始化、编译、依赖管理等功能。",
+      "code_example": "// 初始化新项目\ncjpm init my_project\n\n// 编译项目\ncjpm build\n\n// 添加依赖\ncjpm add github.com/example/lib"
+    },
+    "source_file": "docs\\tools\\summary_cjnative_EN.md"
+  },
+  {
+    "category": "Tool",
+    "knowledge_point": "cjdb - Debugging Tool",
+    "trigger_keywords": [
+      "cjdb",
+      "debug",
+      "breakpoint",
+      "inspect"
+    ],
+    "rag_content": {
+      "concept": "仓颉代码调试器，支持设置断点、单步执行、变量查看等调试功能。",
+      "code_example": "// 启动调试会话\ncjdb run main.cj\n\n// 设置断点\nbreak main:15\n\n// 查看变量值\nprint variable_name"
+    },
+    "source_file": "docs\\tools\\summary_cjnative_EN.md"
+  },
+  {
+    "category": "Tool",
+    "knowledge_point": "cjfmt - Formatting Tool",
+    "trigger_keywords": [
+      "cjfmt",
+      "format",
+      "style",
+      "indent"
+    ],
+    "rag_content": {
+      "concept": "仓颉代码格式化工具，自动调整代码缩进、空格和换行以符合编码规范。",
+      "code_example": "// 格式化单个文件\ncjfmt src/main.cj\n\n// 格式化整个目录\ncjfmt src/"
+    },
+    "source_file": "docs\\tools\\summary_cjnative_EN.md"
+  },
+  {
+    "category": "Tool",
+    "knowledge_point": "LSPServer - Language Server Tool",
+    "trigger_keywords": [
+      "LSPServer",
+      "language server",
+      "IDE",
+      "autocomplete"
+    ],
+    "rag_content": {
+      "concept": "仓颉语言服务器，为IDE提供代码补全、语法高亮、错误检查等语言智能功能。",
+      "code_example": "// 启动语言服务器（通常由IDE集成）\nLSPServer --port 8080\n\n// 客户端连接示例（伪代码）\n// IDE通过LSP协议与服务器通信，发送textDocument/didOpen等通知"
+    },
+    "source_file": "docs\\tools\\summary_cjnative_EN.md"
+  },
+  {
+    "category": "Tool",
+    "knowledge_point": "chir_dis - CHIR Deserialization Tool",
+    "trigger_keywords": [
+      "chir_dis",
+      "deserialize",
+      "CHIR",
+      "intermediate representation"
+    ],
+    "rag_content": {
+      "concept": "CHIR中间表示反序列化工具，用于分析和查看仓颉编译器生成的中间代码。",
+      "code_example": "// 反序列化CHIR文件\nchir_dis output.chir\n\n// 输出反序列化结果到文本文件\nchir_dis output.chir -o output.txt"
+    },
+    "source_file": "docs\\tools\\summary_cjnative_EN.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "cjpm 项目管理工具",
+    "trigger_keywords": [
+      "项目管理",
+      "cjpm",
+      "构建"
+    ],
+    "rag_content": {
+      "concept": "仓颉项目管理工具，用于项目构建、依赖管理和包发布。",
+      "code_example": "// 初始化项目\ncjpm init\n\n// 安装依赖\ncjpm install\n\n// 构建项目\ncjpm build"
+    },
+    "source_file": "docs\\tools\\summary_cjnative.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "cjdb 调试工具",
+    "trigger_keywords": [
+      "调试",
+      "cjdb",
+      "断点"
+    ],
+    "rag_content": {
+      "concept": "仓颉调试器，支持设置断点、单步执行和变量检查。",
+      "code_example": "// 启动调试会话\ncjdb run main.cj\n\n// 设置断点\nbreak main:10\n\n// 继续执行\ncontinue"
+    },
+    "source_file": "docs\\tools\\summary_cjnative.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "cjfmt 格式化工具",
+    "trigger_keywords": [
+      "格式化",
+      "cjfmt",
+      "代码风格"
+    ],
+    "rag_content": {
+      "concept": "自动格式化仓颉源代码，确保代码风格一致。",
+      "code_example": "// 格式化单个文件\ncjfmt src/main.cj\n\n// 格式化整个目录\ncjfmt src/"
+    },
+    "source_file": "docs\\tools\\summary_cjnative.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "cjlint 静态检查工具",
+    "trigger_keywords": [
+      "静态检查",
+      "cjlint",
+      "代码质量"
+    ],
+    "rag_content": {
+      "concept": "静态分析工具，用于检测代码中的潜在错误和风格问题。",
+      "code_example": "// 检查单个文件\ncjlint src/main.cj\n\n// 检查整个项目\ncjlint ."
+    },
+    "source_file": "docs\\tools\\summary_cjnative.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "cjcov 覆盖率统计工具",
+    "trigger_keywords": [
+      "覆盖率",
+      "cjcov",
+      "测试"
+    ],
+    "rag_content": {
+      "concept": "统计代码测试覆盖率，生成覆盖率报告。",
+      "code_example": "// 运行测试并收集覆盖率\ncjcov run tests/\n\n// 生成 HTML 报告\ncjcov report --format html"
+    },
+    "source_file": "docs\\tools\\summary_cjnative.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "语言服务器工具",
+    "trigger_keywords": [
+      "LSP",
+      "语言服务器",
+      "代码补全"
+    ],
+    "rag_content": {
+      "concept": "提供语言服务器协议支持，实现代码补全、跳转和悬停提示等功能。",
+      "code_example": "// 启动语言服务器\ncangjie-lsp start\n\n// 配置编辑器以连接到服务器"
+    },
+    "source_file": "docs\\tools\\summary_cjnative.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "CHIR 反序列化工具",
+    "trigger_keywords": [
+      "CHIR",
+      "反序列化",
+      "中间表示"
+    ],
+    "rag_content": {
+      "concept": "将仓颉中间表示（CHIR）反序列化为可读格式，用于分析和调试。",
+      "code_example": "// 反序列化 CHIR 文件\nchir-dis input.chir -o output.txt"
+    },
+    "source_file": "docs\\tools\\summary_cjnative.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "cjtrace 异常堆栈信息还原工具",
+    "trigger_keywords": [
+      "异常堆栈",
+      "cjtrace",
+      "错误追踪"
+    ],
+    "rag_content": {
+      "concept": "还原异常堆栈信息，帮助定位运行时错误。",
+      "code_example": "// 还原堆栈跟踪\ncjtrace recover stacktrace.log"
+    },
+    "source_file": "docs\\tools\\summary_cjnative.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "cjprof 性能分析工具",
+    "trigger_keywords": [
+      "性能分析",
+      "cjprof",
+      "性能剖析"
+    ],
+    "rag_content": {
+      "concept": "性能剖析工具，用于分析程序性能瓶颈。",
+      "code_example": "// 启动性能分析\ncjprof record ./myapp\n\n// 生成分析报告\ncjprof report"
+    },
+    "source_file": "docs\\tools\\summary_cjnative.md"
+  },
+  {
+    "category": "Tool",
+    "knowledge_point": "cjdb 获取与启动",
+    "trigger_keywords": [
+      "cjdb",
+      "获取",
+      "启动",
+      "SDK"
+    ],
+    "rag_content": {
+      "concept": "cjdb 是基于 lldb 开发的仓颉程序命令行调试工具，通过 Cangjie SDK 获取，位于 cangjie/tools/bin 目录。启动方式包括直接启动并加载目标程序，或先启动 cjdb 再使用 file 命令加载。",
+      "code_example": "~/0901/cangjie_test$ cjdb test\n(cjdb) target create \"test\"\nCurrent executable set to '/0901/cangjie-linux-x86_64-release/bin/test' (x86_64).\n\n~/0901/cangjie_test$ cjdb\n(cjdb) file test\nCurrent executable set to '/0901/cangjie/test' (x86_64)."
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjdb_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "断点设置",
+    "trigger_keywords": [
+      "breakpoint",
+      "断点",
+      "b"
+    ],
+    "rag_content": {
+      "concept": "在 cjdb 中设置源代码断点、函数断点和条件断点。支持简写命令。",
+      "code_example": "// 源代码断点\nbreakpoint set --file test.cj --line 4\nb test.cj:4\n\n// 函数断点\nbreakpoint set --name test\nb test\n\n// 条件断点\nbreakpoint set --file test.cj --line 4 --condition a==12"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjdb_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "单步调试",
+    "trigger_keywords": [
+      "step",
+      "next",
+      "finish",
+      "单步",
+      "步入",
+      "步过",
+      "步出"
+    ],
+    "rag_content": {
+      "concept": "使用 step（或 s）步入函数，next（或 n）步过函数，finish 步出当前函数。",
+      "code_example": "(cjdb) n\nProcess 2884 stopped\n* thread #1, name = 'test', stop reason = step over\n    frame #0: 0x0000000000401498 test`default.main() at test.cj:5:7\n   2    main(): Int64 {\n   3\n   4       var a : Int32 = 12\n-> 5       a = a + 23\n   6       a = test(10, 34)\n   7       return 1\n   8    }\n\n(cjdb) s\nProcess 5240 stopped\n* thread #1, name = 'test', stop reason = step in\n    frame #0: 0x0000000000401547 test`default.test(a=10, b=34) at test.cj:12:10\n   9\n   10   func test(a : Int32, b : Int32) : Int32 {\n   11\n-> 12     return a + b\n   13   }\n\n(cjdb) finish\nProcess 5240 stopped\n* thread #1, name = 'test', stop reason = step out\n\nReturn value: (int) $0 = 44"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjdb_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "变量查看与修改",
+    "trigger_keywords": [
+      "locals",
+      "print",
+      "globals",
+      "set",
+      "变量",
+      "查看",
+      "修改"
+    ],
+    "rag_content": {
+      "concept": "使用 locals 查看局部变量，print（或 p）查看单个变量，globals 查看全局变量，set 修改变量值。支持基本类型、数组、结构体、类等。",
+      "code_example": "(cjdb) locals\n(Int32) a = 12\n(Int64) b = 68\n(Array<Int64>) array = {\n  [0] = 2\n  [1] = 4\n  [2] = 6\n}\n\n(cjdb) print array[1..3]\n(Array<Int64>) $1 = {\n  [1] = 4\n  [2] = 6\n}\n\n(cjdb) set a=30\n(Int32) $4 = 30"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjdb_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "表达式求值",
+    "trigger_keywords": [
+      "expression",
+      "expr",
+      "表达式",
+      "求值"
+    ],
+    "rag_content": {
+      "concept": "使用 expression（或 expr）进行表达式求值，支持字面量、变量、算术、关系、逻辑、成员访问、索引访问等表达式。",
+      "code_example": "(cjdb) expr 3\n(Int64) $0 = 3\n\n(cjdb) expr a + b\n(Int64) $0 = 3\n\n(cjdb) expr a > b\n(Bool) $0 = false\n\n(cjdb) expr array[2]\n(Int64) $0 = 3"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjdb_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "观察点设置",
+    "trigger_keywords": [
+      "watchpoint",
+      "wa",
+      "观察点",
+      "watch"
+    ],
+    "rag_content": {
+      "concept": "使用 watchpoint set variable 设置观察点，监控变量的读/写/读写操作。",
+      "code_example": "watchpoint set variable -w read a\nwa s v -w read a\n\n(cjdb) wa s v -w read a\nWatchpoint created: Watchpoint 1: addr = 0x7fffddffed70 size = 8 state = enabled type = r\n    declare @ 'test.cj:27'\n    watchpoint spec = 'a'\n    new value: 10"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjdb_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "仓颉线程查看",
+    "trigger_keywords": [
+      "cjthread",
+      "线程",
+      "backtrace"
+    ],
+    "rag_content": {
+      "concept": "使用 cjthread list 查看当前目标进程中的仓颉线程，使用 cjthread backtrace 查看指定线程的调用栈。",
+      "code_example": "(cjdb) cjthread list\ncjthread id: 1, state: running name: cjthread1\n    frame #0: 0x000055555557c140 main`ab::main() at varray.cj:16:1\ncjthread id: 2, state: pending name: cjthread2\n    frame #0: 0x00007ffff7d8b9d5 libcangjie-runtime.so`CJ_CJThreadPark + 117\n\n(cjdb) cjthread backtrace 1\ncjthread #1 state: pending name: cangjie\n  frame #0: 0x00007ffff7d8b9d5 libcangjie-runtime.so`CJ_CJThreadPark + 117\n  frame #1: 0x00007ffff7d97252 libcangjie-runtime.so`CJ_TimerSleep + 66"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjdb_manual.md"
+  },
+  {
+    "category": "FAQ",
+    "knowledge_point": "常见问题：信号处理与异常调试",
+    "trigger_keywords": [
+      "SIGSEGV",
+      "SIGABRT",
+      "catch",
+      "信号",
+      "异常"
+    ],
+    "rag_content": {
+      "concept": "cjdb 默认不捕获 SIGSEGV 信号，需手动配置；程序可能连续产生 SIGABRT 导致调试器暂停，可配置忽略；无法通过 next/s 步入 catch 块，需在 catch 块内设置断点。",
+      "code_example": "// 配置捕获 SIGSEGV\n(cjdb) process handle -p true -s true -n true SIGSEGV\nNAME         PASS   STOP   NOTIFY\n===========  =====  =====  ======\nSIGSEGV      true   true   true\n\n// 忽略 SIGABRT\n(cjdb) process handle --pass true --stop false --notify true SIGBUS\n\n// 在 catch 块设置断点\n(cjdb) b 31\nBreakpoint 2: where = main`default::test(Int64) + 299 at a.cj:31:18"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjdb_manual.md"
+  },
+  {
+    "category": "Configuration",
+    "knowledge_point": "Cangjie Language Server Startup Parameters",
+    "trigger_keywords": [
+      "启动参数",
+      "LSPServer",
+      "命令行"
+    ],
+    "rag_content": {
+      "concept": "控制语言服务器日志、崩溃报告和自动导入功能的命令行参数",
+      "code_example": "LSPServer.exe --enable-log=true --log-path=D:/CangjieLSPLog -V --disableAutoImport"
+    },
+    "source_file": "docs\\tools\\source_en\\cangjie-language-server\\LSPServer_manual.md"
+  },
+  {
+    "category": "Configuration",
+    "knowledge_point": "Enable Logging Parameter (--enable-log)",
+    "trigger_keywords": [
+      "日志打印",
+      "enable-log"
+    ],
+    "rag_content": {
+      "concept": "可选参数，控制是否启用日志打印。未设置时默认为 true（启用日志打印）",
+      "code_example": "--enable-log=<value>"
+    },
+    "source_file": "docs\\tools\\source_en\\cangjie-language-server\\LSPServer_manual.md"
+  },
+  {
+    "category": "Configuration",
+    "knowledge_point": "Log Path Parameter (--log-path)",
+    "trigger_keywords": [
+      "日志路径",
+      "log-path"
+    ],
+    "rag_content": {
+      "concept": "可选参数，指定生成日志文件和崩溃日志的目录。未设置时默认在 LSPServer 的工作目录生成日志",
+      "code_example": "--log-path=<value>"
+    },
+    "source_file": "docs\\tools\\source_en\\cangjie-language-server\\LSPServer_manual.md"
+  },
+  {
+    "category": "Configuration",
+    "knowledge_point": "Disable Auto-Import Parameter (--disableAutoImport)",
+    "trigger_keywords": [
+      "自动导入",
+      "disableAutoImport",
+      "代码补全"
+    ],
+    "rag_content": {
+      "concept": "可选参数，在代码补全期间禁用自动包导入",
+      "code_example": "--disableAutoImport"
+    },
+    "source_file": "docs\\tools\\source_en\\cangjie-language-server\\LSPServer_manual.md"
+  },
+  {
+    "category": "Configuration",
+    "knowledge_point": "Crash Log Parameter (-V)",
+    "trigger_keywords": [
+      "崩溃日志",
+      "-V"
+    ],
+    "rag_content": {
+      "concept": "可选参数，为 LSPServer 启用崩溃日志生成能力",
+      "code_example": "-V"
+    },
+    "source_file": "docs\\tools\\source_en\\cangjie-language-server\\LSPServer_manual.md"
+  },
+  {
+    "category": "Tool",
+    "knowledge_point": "chir-dis command line tool",
+    "trigger_keywords": [
+      "chir-dis",
+      "deserialize",
+      "CHIR"
+    ],
+    "rag_content": {
+      "concept": "A tool to deserialize compiler-output CHIR serialized files into human-readable text files.",
+      "code_example": "chir-dis package.chir"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\chir_dis_manual.md"
+  },
+  {
+    "category": "Tool",
+    "knowledge_point": "chir-dis help and version options",
+    "trigger_keywords": [
+      "-h",
+      "-v",
+      "help",
+      "version"
+    ],
+    "rag_content": {
+      "concept": "Command-line options to print help information or the compiler version.",
+      "code_example": "chir-dis -h\nchir-dis -v"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\chir_dis_manual.md"
+  },
+  {
+    "category": "Tool",
+    "knowledge_point": "chir-dis output file naming",
+    "trigger_keywords": [
+      ".chirtxt",
+      "output",
+      "file"
+    ],
+    "rag_content": {
+      "concept": "The tool generates an output text file with the same base name as the input but with a .chirtxt extension.",
+      "code_example": "Input: package.chir\nOutput: package.chirtxt"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\chir_dis_manual.md"
+  },
+  {
+    "category": "Tool",
+    "knowledge_point": "cjfmt command line usage",
+    "trigger_keywords": [
+      "cjfmt",
+      "command line",
+      "usage"
+    ],
+    "rag_content": {
+      "concept": "Cangjie automatic code formatting tool command line interface with options for file, directory, configuration, and partial formatting.",
+      "code_example": "cjfmt -f test.cj\ncjfmt -d test/ -o ./testout\ncjfmt -f a.cj -c ./cangjie-format.toml\ncjfmt -f a.cj -o b.cj -l 10:25"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjfmt_manual.md"
+  },
+  {
+    "category": "Configuration",
+    "knowledge_point": "Formatting configuration file (cangjie-format.toml)",
+    "trigger_keywords": [
+      "configuration",
+      "cangjie-format.toml",
+      "options"
+    ],
+    "rag_content": {
+      "concept": "Customizable formatting options via TOML configuration file, including indent width, line length limit, line break type, and multi-line method chain settings.",
+      "code_example": "indentWidth = 4\nlinelimitLength = 120\nlineBreakType = \"LF\"\nallowMultiLineMethodChain = false\nmultipleLineMethodChainLevel = 5\nmultipleLineMethodChainOverLineLength = true"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjfmt_manual.md"
+  },
+  {
+    "category": "Rule",
+    "knowledge_point": "File structure ordering",
+    "trigger_keywords": [
+      "copyright",
+      "package",
+      "import",
+      "top-level elements",
+      "blank lines"
+    ],
+    "rag_content": {
+      "concept": "Source files should sequentially contain copyright, package, import, and top-level elements, separated by blank lines.",
+      "code_example": "// Part 1: Copyright\n/*\n * Copyright (c) [Year of First Pubication]-[Year of Latest Update]. [Company Name]. All rights reserved.\n */\n\n// Part 2: Package declaration\npackage com.myproduct.mymodule\n\n// Part 3: Imports\nimport std.collection.HashMap   // Standard library\n\n// Part 4: Public elements\npublic class ListItem <: Component {\n    // CODE\n}\n\n// Part 5: Internal elements\nclass Helper {\n    // CODE\n}"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjfmt_manual.md"
+  },
+  {
+    "category": "Rule",
+    "knowledge_point": "Consistent 4-space indentation",
+    "trigger_keywords": [
+      "indentation",
+      "4-space",
+      "consistent"
+    ],
+    "rag_content": {
+      "concept": "Use consistent 4-space indentation for code blocks, parameters, and nested structures.",
+      "code_example": "class ListItem {\n    var content: Array<Int64> // Correct: 4-space indent relative to class\n    init(\n        content: Array<Int64>, // Correct: 4-space indent for parameters\n        isShow!: Bool = true,\n        id!: String = \"\"\n    ) {\n        this.content = content\n    }\n}"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjfmt_manual.md"
+  },
+  {
+    "category": "Rule",
+    "knowledge_point": "Uniform brace style (K&R for non-empty blocks)",
+    "trigger_keywords": [
+      "brace style",
+      "K&R",
+      "opening brace",
+      "closing brace"
+    ],
+    "rag_content": {
+      "concept": "Opening brace on same line with one preceding space for non-empty blocks; closing brace on own line; lambda functions follow K&R style.",
+      "code_example": "enum TimeUnit { // Correct: Opening brace on same line with 1 preceding space\n    Year | Month | Day | Hour\n} // Correct: Closing brace on own line\n\nclass A { // Correct: Opening brace on same line\n    var count = 1\n}\n\nfunc fn(a: Int64): Unit { // Correct: Opening brace on same line\n    if (a > 0) { // Correct: Opening brace on same line\n    // CODE\n    } else { // Correct: Closing brace and 'else' on same line\n        // CODE\n    } // Correct: Closing brace on own line\n}\n\n// Lambda functions\nlet add = {\n    base: Int64, bonus: Int64 => // Correct: Lambda follows K&R style\n    print(\"Correct news\")\n    base + bonus\n}"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjfmt_manual.md"
+  },
+  {
+    "category": "Rule",
+    "knowledge_point": "Spacing around keywords and operators",
+    "trigger_keywords": [
+      "spacing",
+      "keywords",
+      "operators",
+      "colon",
+      "range operator"
+    ],
+    "rag_content": {
+      "concept": "Use spaces after colons in type annotations and named arguments; no spaces around range operator; spaces around binary operators; no space for unary operators.",
+      "code_example": "var isPresent: Bool = false  // Correct: Space after colon\nfunc method(isEmpty!: Bool): RetType { ... } // Correct: Space after colon in params/return\n\nmethod(isEmpty: isPresent) // Correct: Space after colon in named args\n\n0..MAX_COUNT : -1 // Correct: No spaces around range operator, spaces around step colon\n\nvar hundred = 0\ndo { // Correct: Space between 'do' and brace\n    hundred++\n} while (hundred < 100) // Correct: Space between 'while' and paren\n\nfunc fn(paramName1: ArgType, paramName2: ArgType): ReturnType { // Correct: No inner paren spaces\n    ...\n    for (i in 1..4) { // Correct: No spaces around range operator\n        ...\n    }\n}\n\nlet listOne: Array<Int64> = [1, 2, 3, 4] // Correct: No inner bracket/paren spaces\n\nlet salary = base + bonus // Correct: Spaces around binary operators\n\nx++ // Correct: No space for unary operators"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjfmt_manual.md"
+  },
+  {
+    "category": "Rule",
+    "knowledge_point": "Modifier keyword ordering",
+    "trigger_keywords": [
+      "modifier",
+      "ordering",
+      "priority",
+      "public",
+      "override",
+      "static"
+    ],
+    "rag_content": {
+      "concept": "Recommended modifier priority for top-level elements, instance members, static members, and member variables per specification G.FMT.12.",
+      "code_example": "// Top-level element modifier priority:\npublic\nopen/abstract\n\n// Instance member function/property modifier priority:\npublic/protected/private\nopen\noverride\n\n// Static member function modifier priority:\npublic/protected/private\nstatic\nredef\n\n// Member variable modifier priority:\npublic/protected/private\nstatic"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjfmt_manual.md"
+  },
+  {
+    "category": "Limitation",
+    "knowledge_point": "Formatter limitations",
+    "trigger_keywords": [
+      "limitation",
+      "syntactically incorrect",
+      "metaprogramming",
+      "unsupported"
+    ],
+    "rag_content": {
+      "concept": "The Cangjie formatter currently does not support formatting syntactically incorrect code or metaprogramming constructs.",
+      "code_example": ""
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjfmt_manual.md"
+  },
+  {
+    "category": "工具链",
+    "knowledge_point": "仓颉工具链概述",
+    "trigger_keywords": [
+      "命令行工具",
+      "语言服务器",
+      "项目管理",
+      "代码格式化"
+    ],
+    "rag_content": {
+      "concept": "仓颉语言提供了一系列命令行工具和语言服务器工具，用于项目管理、命令行调试、代码格式化等功能。",
+      "code_example": ""
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\command_line_overview.md"
+  },
+  {
+    "category": "工具链",
+    "knowledge_point": "仓颉工具链安装",
+    "trigger_keywords": [
+      "安装",
+      "工具链"
+    ],
+    "rag_content": {
+      "concept": "使用仓颉工具前需要先安装仓颉工具链，具体安装说明请参考相关文档。",
+      "code_example": ""
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\command_line_overview.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "Cangjie Language Server 启动参数",
+    "trigger_keywords": [
+      "启动参数",
+      "LSPServer",
+      "命令行参数"
+    ],
+    "rag_content": {
+      "concept": "仓颉语言服务器的命令行启动参数，用于控制日志、崩溃报告和自动导入等功能。",
+      "code_example": "LSPServer.exe --enable-log=true --log-path=D:/CangjieLSPLog -V --disableAutoImport"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cangjie-language-server\\LSPServer_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "启用崩溃日志生成 (-V)",
+    "trigger_keywords": [
+      "崩溃日志",
+      "-V",
+      "日志生成"
+    ],
+    "rag_content": {
+      "concept": "可选参数，使能LSPServer崩溃日志生成能力。",
+      "code_example": "-V"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cangjie-language-server\\LSPServer_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "控制日志打印 (--enable-log)",
+    "trigger_keywords": [
+      "日志打印",
+      "--enable-log",
+      "日志控制"
+    ],
+    "rag_content": {
+      "concept": "可选参数，控制是否开启日志打印。若不设置，默认值为true，开启日志打印功能。",
+      "code_example": "--enable-log=<value>"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cangjie-language-server\\LSPServer_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "设置日志路径 (--log-path)",
+    "trigger_keywords": [
+      "日志路径",
+      "--log-path",
+      "日志文件位置"
+    ],
+    "rag_content": {
+      "concept": "可选参数，设置日志文件和崩溃日志文件生成位置。若不设置，默认在LSPServer所在目录生成日志文件。",
+      "code_example": "--log-path=<value>"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cangjie-language-server\\LSPServer_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "禁用自动包导入 (--disableAutoImport)",
+    "trigger_keywords": [
+      "自动包导入",
+      "--disableAutoImport",
+      "代码补全"
+    ],
+    "rag_content": {
+      "concept": "可选参数，禁用代码补全时的自动包导入功能。",
+      "code_example": "--disableAutoImport"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cangjie-language-server\\LSPServer_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "测试模式 (--test)",
+    "trigger_keywords": [
+      "测试模式",
+      "--test",
+      "测试用例"
+    ],
+    "rag_content": {
+      "concept": "可选参数，启动测试模式，配合运行LSPServer测试用例。",
+      "code_example": "--test"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cangjie-language-server\\LSPServer_manual.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "chir-dis 反序列化工具",
+    "trigger_keywords": [
+      "chir-dis",
+      "反序列化",
+      "CHIR"
+    ],
+    "rag_content": {
+      "concept": "用于将编译器输出的 CHIR 序列化信息反序列化为可读的文本文件并保存。",
+      "code_example": "chir-dis package.chir"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\chir_dis_manual.md"
+  },
+  {
+    "category": "命令行选项",
+    "knowledge_point": "chir-dis 帮助与版本选项",
+    "trigger_keywords": [
+      "-h",
+      "-v",
+      "帮助",
+      "版本"
+    ],
+    "rag_content": {
+      "concept": "-h 打印帮助信息，-v 打印编译器版本信息。",
+      "code_example": "chir-dis -h\nchir-dis -v"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\chir_dis_manual.md"
+  },
+  {
+    "category": "输出文件",
+    "knowledge_point": "反序列化输出文件格式",
+    "trigger_keywords": [
+      ".chirtxt",
+      "输出文件",
+      "保存"
+    ],
+    "rag_content": {
+      "concept": "反序列化后生成的文件后缀为 .chirtxt，保存在当前目录。",
+      "code_example": "chir-dis package.chir"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\chir_dis_manual.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "cjcov 基本命令",
+    "trigger_keywords": [
+      "cjcov",
+      "帮助",
+      "版本"
+    ],
+    "rag_content": {
+      "concept": "cjcov 是仓颉语言的覆盖率统计工具，用于生成覆盖率报告。支持显示帮助信息和版本号。",
+      "code_example": "cjcov -h\ncjcov -v"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjcov_manual.md"
+  },
+  {
+    "category": "配置项",
+    "knowledge_point": "cjcov --html-details",
+    "trigger_keywords": [
+      "html",
+      "详细报告",
+      "子html"
+    ],
+    "rag_content": {
+      "concept": "指定该参数会生成每个源文件对应的详细 HTML 覆盖率报告，否则只生成总的 index.html。",
+      "code_example": "cjcov --html-details"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjcov_manual.md"
+  },
+  {
+    "category": "配置项",
+    "knowledge_point": "cjcov -b | --branches",
+    "trigger_keywords": [
+      "分支覆盖率",
+      "试验功能"
+    ],
+    "rag_content": {
+      "concept": "生成分支覆盖率信息，但这是试验功能，可能不准确。默认不生成。",
+      "code_example": "cjcov -b"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjcov_manual.md"
+  },
+  {
+    "category": "配置项",
+    "knowledge_point": "cjcov -r ROOT | --root=ROOT",
+    "trigger_keywords": [
+      "根目录",
+      "gcda",
+      "gcno"
+    ],
+    "rag_content": {
+      "concept": "指定查找 gcda 和 gcno 文件的根目录，默认为当前目录。",
+      "code_example": "cjcov -r ./src"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjcov_manual.md"
+  },
+  {
+    "category": "配置项",
+    "knowledge_point": "cjcov -o OUTPUT | --output=OUTPUT",
+    "trigger_keywords": [
+      "输出目录",
+      "html报告"
+    ],
+    "rag_content": {
+      "concept": "指定覆盖率报告的输出目录，如果不存在且父目录存在则会自动创建。",
+      "code_example": "cjcov -o ./coverage_report"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjcov_manual.md"
+  },
+  {
+    "category": "配置项",
+    "knowledge_point": "cjcov -s SOURCE | --source=SOURCE",
+    "trigger_keywords": [
+      "源文件路径",
+      "相对路径"
+    ],
+    "rag_content": {
+      "concept": "指定仓颉源文件的代码路径，用于在报告中显示相对路径。",
+      "code_example": "cjcov -s \"/work/cangjie /work/cangjie-tools/tests\""
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjcov_manual.md"
+  },
+  {
+    "category": "配置项",
+    "knowledge_point": "cjcov -e EXCLUDE | --exclude=EXCLUDE",
+    "trigger_keywords": [
+      "排除文件",
+      "不生成覆盖率"
+    ],
+    "rag_content": {
+      "concept": "指定不需要生成覆盖率信息的源文件或目录列表。",
+      "code_example": "cjcov -e \"/usr1/cangjie-tools/tests/cjnative\""
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjcov_manual.md"
+  },
+  {
+    "category": "配置项",
+    "knowledge_point": "cjcov -i INCLUDE | --include=INCLUDE",
+    "trigger_keywords": [
+      "包含文件",
+      "显示在报告"
+    ],
+    "rag_content": {
+      "concept": "指定需要显示在覆盖率报告中的源文件或目录列表。",
+      "code_example": "cjcov -i \"/usr1/cangjie/tests/API/test01/src/1.cj\""
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjcov_manual.md"
+  },
+  {
+    "category": "特殊场景",
+    "knowledge_point": "常驻服务程序覆盖率收集",
+    "trigger_keywords": [
+      "常驻服务",
+      "gcda",
+      "手动退出"
+    ],
+    "rag_content": {
+      "concept": "对于无法正常结束的常驻服务程序，需要手动执行脚本来生成 gcda 覆盖率数据。",
+      "code_example": "#!/bin/sh\nSERVER_NAME=$1\npid=`ps -ef | grep $SERVER_NAME | grep -v \"grep\" | awk '{print $2}'`\necho $pid\ngdb -q attach $pid <<__EOF__\np exit(0)\n__EOF__"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjcov_manual.md"
+  },
+  {
+    "category": "FAQ",
+    "knowledge_point": "报错找不到 llvm-cov 命令",
+    "trigger_keywords": [
+      "llvm-cov",
+      "环境变量",
+      "CANGJIE_HOME"
+    ],
+    "rag_content": {
+      "concept": "通过设置 CANGJIE_HOME 环境变量或手动安装 llvm-cov 来解决找不到命令的问题。",
+      "code_example": "export CANGJIE_HOME=/work/cangjie"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjcov_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm init",
+    "trigger_keywords": [
+      "初始化模块",
+      "init"
+    ],
+    "rag_content": {
+      "concept": "初始化一个新的仓颉模块或工作区，创建 cjpm.toml 配置文件及 src 源码目录。",
+      "code_example": "cjpm init --name demo --type=static"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm check",
+    "trigger_keywords": [
+      "依赖检查",
+      "check"
+    ],
+    "rag_content": {
+      "concept": "检查项目所需的依赖关系，打印有效的包编译顺序或检测循环依赖。",
+      "code_example": "cjpm check --no-tests"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm tree",
+    "trigger_keywords": [
+      "依赖树",
+      "tree"
+    ],
+    "rag_content": {
+      "concept": "可视化显示仓颉源码中的包依赖关系，支持深度限制、包过滤和反转依赖。",
+      "code_example": "cjpm tree --depth 2 -p a --verbose"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm build",
+    "trigger_keywords": [
+      "编译",
+      "build"
+    ],
+    "rag_content": {
+      "concept": "构建当前仓颉项目，支持增量编译、并行编译、跨平台编译等选项。",
+      "code_example": "cjpm build -i -j 4 --target-dir \"target/custom\""
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm run",
+    "trigger_keywords": [
+      "运行",
+      "run"
+    ],
+    "rag_content": {
+      "concept": "执行当前项目的二进制输出，隐式调用 build 命令，支持传递运行参数。",
+      "code_example": "cjpm run --build-args=\"-s -j16\" --run-args=\"a b c\""
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm test",
+    "trigger_keywords": [
+      "单元测试",
+      "test"
+    ],
+    "rag_content": {
+      "concept": "编译并运行仓颉文件的单元测试用例，支持路径指定和测试结果输出。",
+      "code_example": "cjpm test src/koo src/zoo"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm bench",
+    "trigger_keywords": [
+      "性能测试",
+      "bench"
+    ],
+    "rag_content": {
+      "concept": "执行性能测试用例，支持过滤、标签包含/排除、报告生成等高级选项。",
+      "code_example": "cjpm bench --filter=\"*.*Test\" --include-tags=\"Unittest+Smoke\""
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm clean",
+    "trigger_keywords": [
+      "清理",
+      "clean"
+    ],
+    "rag_content": {
+      "concept": "移除临时构建产物（target 目录），支持指定目录和清理调试版本。",
+      "code_example": "cjpm clean --target-dir temp"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm install",
+    "trigger_keywords": [
+      "install",
+      "安装",
+      "安装命令"
+    ],
+    "rag_content": {
+      "concept": "安装仓颉项目，先编译后安装产物到指定路径，项目类型必须为 executable。支持本地路径和 Git 仓库两种安装方式。",
+      "code_example": "cjpm install --path path/to/project\ncjpm install --git url"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm uninstall",
+    "trigger_keywords": [
+      "uninstall",
+      "卸载",
+      "移除"
+    ],
+    "rag_content": {
+      "concept": "卸载仓颉项目，删除其可执行文件和依赖文件。需要指定要卸载的产物名称，支持多个名称。",
+      "code_example": "cjpm uninstall <name>"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Configuration",
+    "knowledge_point": "cjpm.toml package 配置",
+    "trigger_keywords": [
+      "package",
+      "模块配置",
+      "cjpm.toml"
+    ],
+    "rag_content": {
+      "concept": "单模块配置文件，包含模块基本信息、依赖、编译选项等。必须字段包括 cjc-version、name、version、output-type。",
+      "code_example": "[package]\n  cjc-version = \"1.0.0\"\n  name = \"demo\"\n  version = \"1.0.0\"\n  output-type = \"executable\""
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Configuration",
+    "knowledge_point": "cjpm.toml dependencies",
+    "trigger_keywords": [
+      "dependencies",
+      "依赖",
+      "source dependencies"
+    ],
+    "rag_content": {
+      "concept": "源依赖配置，支持本地路径和 Git 远程依赖。可指定 output-type 覆盖依赖模块的编译输出类型。",
+      "code_example": "[dependencies]\n  pro0 = { path = \"./pro0\" }\n  pro1 = { git = \"https://github.com/example\", tag = \"v1.0.0\"}"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Configuration",
+    "knowledge_point": "cjpm.toml test-dependencies",
+    "trigger_keywords": [
+      "test-dependencies",
+      "测试依赖"
+    ],
+    "rag_content": {
+      "concept": "测试阶段依赖，格式与 dependencies 相同。仅用于测试文件（xxx_test.cj），主项目构建时不需这些依赖。",
+      "code_example": "[test-dependencies]\n  test_lib = { git = \"https://github.com/example/test\" }"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Configuration",
+    "knowledge_point": "compile-option 与 override-compile-option",
+    "trigger_keywords": [
+      "compile-option",
+      "override-compile-option",
+      "编译选项"
+    ],
+    "rag_content": {
+      "concept": "compile-option 为模块级编译选项，override-compile-option 为全局编译选项，优先级更高，会影响所有依赖模块。",
+      "code_example": "compile-option = \"-O1 -V\"\noverride-compile-option = \"-O2\""
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Configuration",
+    "knowledge_point": "output-type",
+    "trigger_keywords": [
+      "output-type",
+      "输出类型",
+      "executable",
+      "static",
+      "dynamic"
+    ],
+    "rag_content": {
+      "concept": "指定输出产物类型：executable（可执行文件）、static（静态库）或 dynamic（动态库）。默认为 executable。",
+      "code_example": "output-type = \"dynamic\""
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Configuration",
+    "knowledge_point": "replace field",
+    "trigger_keywords": [
+      "replace",
+      "间接依赖",
+      "替换"
+    ],
+    "rag_content": {
+      "concept": "用于指定同名间接依赖的替换项，配置的依赖项将成为编译模块时最终使用的版本。只有入口模块的replace字段在编译时生效。",
+      "code_example": "[package]\n  name = \"demo\"\n\n[dependencies]\n  aaa = { path = \"path/to/aaa\" }\n\n[replace]\n  bbb = { path = \"new/path/to/bbb\" }"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Configuration",
+    "knowledge_point": "ffi.c field",
+    "trigger_keywords": [
+      "ffi.c",
+      "外部C库",
+      "动态库"
+    ],
+    "rag_content": {
+      "concept": "配置当前仓颉模块的外部C库依赖，包含依赖库所需的信息，如库名和路径。开发者需自行编译动态或静态库并放置在指定path下。",
+      "code_example": "[ffi.c]\nhello = { path = \"./src/\" }"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Configuration",
+    "knowledge_point": "profile.build.combined",
+    "trigger_keywords": [
+      "combined",
+      "动态库",
+      "子包"
+    ],
+    "rag_content": {
+      "concept": "将模块编译为单个动态库文件。配置后，子包编译为静态库，根包编译为动态库并链接所有子包静态库。其他模块依赖此动态库时可以使用所有子包的符号。",
+      "code_example": "[profile.build.combined]\ndemo = \"dynamic\""
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Configuration",
+    "knowledge_point": "profile.test.env",
+    "trigger_keywords": [
+      "环境变量",
+      "test.env",
+      "splice-type"
+    ],
+    "rag_content": {
+      "concept": "配置test命令运行可执行文件时的临时环境变量。key为要配置的环境变量名，支持value和splice-type选项，splice-type指定环境变量的拼接方式。",
+      "code_example": "[profile.test.env]\nMY_ENV = { value = \"abc\" }\ncjHeapSize = { value = \"32GB\", splice-type = \"replace\" }\nPATH = { value = \"/usr/bin\", splice-type = \"prepend\" }"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Package Management",
+    "knowledge_point": "有效源包要求",
+    "trigger_keywords": [
+      "源包",
+      "Cangjie代码文件",
+      "父包"
+    ],
+    "rag_content": {
+      "concept": "一个文件目录要被识别为有效的源包，必须直接包含至少一个仓颉代码文件，且其父包（包括父包的父包，直到根包）也必须是有效的源包。",
+      "code_example": "package demo.pkg0"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Build Script",
+    "knowledge_point": "build.cj 模板",
+    "trigger_keywords": [
+      "build.cj",
+      "构建脚本",
+      "pre-build",
+      "post-build"
+    ],
+    "rag_content": {
+      "concept": "build.cj是构建脚本源文件，位于仓颉项目根目录，与cjpm.toml同级。它允许开发者为cjpm命令定义执行前或执行后的行为。",
+      "code_example": "import std.process.*\n\nfunc stagePreBuild(): Int64 {\n    println(\"PRE-BUILD\")\n    0\n}\n\nfunc stagePostBuild(): Int64 {\n    println(\"POST-BUILD\")\n    0\n}\n\nmain(): Int64 {\n    match (Process.current.arguments[0]) {\n        case \"pre-build\" => stagePreBuild()\n        case \"post-build\" => stagePostBuild()\n        case _ => 0\n    }\n}"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Build Script",
+    "knowledge_point": "script-dependencies",
+    "trigger_keywords": [
+      "script-dependencies",
+      "构建脚本依赖",
+      "独立依赖"
+    ],
+    "rag_content": {
+      "concept": "构建脚本可以通过cjpm.toml中的script-dependencies字段导入依赖模块，格式与dependencies相同。构建脚本依赖与源代码相关的依赖（dependencies和test-dependencies）相互独立。",
+      "code_example": "[script-dependencies]\naoo = { path = \"./aoo\" }"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "命令行工具",
+    "knowledge_point": "cjfmt 基本用法",
+    "trigger_keywords": [
+      "cjfmt",
+      "命令行",
+      "格式化"
+    ],
+    "rag_content": {
+      "concept": "仓颉代码格式化工具的基本命令行调用方式，支持文件、目录、配置文件和指定行范围格式化。",
+      "code_example": "cjfmt -f test.cj\ncjfmt -d test/ -o ./testout\ncjfmt -f a.cj -c ./cangjie-format.toml\ncjfmt -f a.cj -o b.cj -l 10:25"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjfmt_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "格式化配置文件 (cangjie-format.toml)",
+    "trigger_keywords": [
+      "配置文件",
+      "cangjie-format.toml",
+      "配置选项"
+    ],
+    "rag_content": {
+      "concept": "客制化格式化行为的配置文件，包含缩进宽度、行长度限制、换行符类型、多行方法链等配置项。若自定义配置读取失败，会依次回退到环境变量默认配置和工具内置配置。",
+      "code_example": "indentWidth = 4\nlinelimitLength = 120\nlineBreakType = \"LF\"\nallowMultiLineMethodChain = false\nmultipleLineMethodChainLevel = 5\nmultipleLineMethodChainOverLineLength = true"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjfmt_manual.md"
+  },
+  {
+    "category": "格式化规则",
+    "knowledge_point": "源文件结构顺序",
+    "trigger_keywords": [
+      "源文件结构",
+      "版权",
+      "package",
+      "import",
+      "顶层元素"
+    ],
+    "rag_content": {
+      "concept": "一个源文件应按照版权信息、package声明、import声明、public顶层元素定义、internal顶层元素定义的顺序排列，各部分之间用空行分隔。",
+      "code_example": "// 第一部分，版权信息\n/*\n * Copyright (c) [Year of First Pubication]-[Year of Latest Update]. [Company Name]. All rights reserved.\n */\n\n// 第二部分，package 声明\npackage com.myproduct.mymodule\n\n// 第三部分，import 声明\nimport std.collection.HashMap   // 标准库\n\n// 第四部分，public 元素定义\npublic class ListItem <: Component {\n    // CODE\n}\n\n// 第五部分，internal 元素定义\nclass Helper {\n    // CODE\n}"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjfmt_manual.md"
+  },
+  {
+    "category": "格式化规则",
+    "knowledge_point": "缩进与空格风格",
+    "trigger_keywords": [
+      "缩进",
+      "空格",
+      "大括号",
+      "K&R风格"
+    ],
+    "rag_content": {
+      "concept": "采用4空格缩进。非空块状结构的大括号使用K&R风格（左大括号放在行末，前置一个空格；右大括号独占一行）。关键字、操作符等周围使用空格来突出重要信息。",
+      "code_example": "class A {\n    var count = 1\n}\n\nfunc fn(a: Int64): Unit {\n    if (a > 0) {\n        // CODE\n    } else {\n        // CODE\n    }\n}\n\nlet salary = base + bonus // 符合：二元操作符左右两侧留空格\nx++ // 符合：一元操作符和操作数之间不留空格"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjfmt_manual.md"
+  },
+  {
+    "category": "格式化规则",
+    "knowledge_point": "修饰符关键字优先级",
+    "trigger_keywords": [
+      "修饰符",
+      "优先级",
+      "public",
+      "override",
+      "static"
+    ],
+    "rag_content": {
+      "concept": "修饰符关键字需按照规定的优先级顺序排列，例如顶层元素优先 public，然后是 open/abstract；实例成员优先可见性修饰符，然后是 open，最后是 override。",
+      "code_example": "// 顶层元素\npublic\nopen/abstract\n\n// 实例成员函数或属性\npublic/protected/private\nopen\noverride\n\n// 静态成员函数\npublic/protected/private\nstatic\nredef\n\n// 成员变量\npublic/protected/private\nstatic"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjfmt_manual.md"
+  },
+  {
+    "category": "注意事项",
+    "knowledge_point": "不支持格式化语法错误代码和元编程",
+    "trigger_keywords": [
+      "语法错误",
+      "元编程",
+      "不支持"
+    ],
+    "rag_content": {
+      "concept": "仓颉格式化工具目前无法对包含语法错误的代码进行格式化，也不支持对元编程代码进行格式化。",
+      "code_example": ""
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjfmt_manual.md"
+  },
+  {
+    "category": "调试命令",
+    "knowledge_point": "单步调试命令",
+    "trigger_keywords": [
+      "step",
+      "next",
+      "s",
+      "n",
+      "finish"
+    ],
+    "rag_content": {
+      "concept": "用于控制程序执行流程，包括进入函数（step）、跳过函数（next）和退出当前函数（finish）。",
+      "code_example": "(cjdb) n\nProcess 2884 stopped\n* thread #1, name = 'test', stop reason = step over\n    frame #0: 0x0000000000401498 test`default.main() at test.cj:5:7\n   2    main(): Int64 {\n   3\n   4       var a : Int32 = 12\n-> 5       a = a + 23\n   6       a = test(10, 34)\n   7       return 1\n   8    }\n(cjdb)"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjdb_manual.md"
+  },
+  {
+    "category": "调试命令",
+    "knowledge_point": "断点设置",
+    "trigger_keywords": [
+      "breakpoint",
+      "b",
+      "断点"
+    ],
+    "rag_content": {
+      "concept": "支持设置源码断点、函数断点和条件断点，用于在特定位置暂停程序执行。",
+      "code_example": "设置源码断点：\n(cjdb) b test.cj:4\nBreakpoint 2: where = test`default.main() + 13 at test.cj:4:3, address = 0x0000000000401491\n\n设置函数断点：\n(cjdb) b test\nBreakpoint 3: where = test`default.test(int, int) + 19 at test.cj:12:10, address = 0x0000000000401547\n\n设置条件断点：\n(cjdb) breakpoint set --file test.cj --line 4 --condition a==12\nBreakpoint 2: where = main`default::main() + 60 at test.cj:4:9, address = 0x00005555555b62d0"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjdb_manual.md"
+  },
+  {
+    "category": "调试命令",
+    "knowledge_point": "观察点设置",
+    "trigger_keywords": [
+      "watchpoint",
+      "wa",
+      "观察点"
+    ],
+    "rag_content": {
+      "concept": "用于监控变量的读写操作，支持 read、write、read_write 三种类型，仅适用于基础类型。",
+      "code_example": "(cjdb) wa s v -w read a\nWatchpoint created: Watchpoint 1: addr = 0x7fffddffed70 size = 8 state = enabled type = r\n    declare @ 'test.cj:27'\n    watchpoint spec = 'a'\n    new value: 10\n(cjdb)"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjdb_manual.md"
+  },
+  {
+    "category": "调试命令",
+    "knowledge_point": "表达式计算",
+    "trigger_keywords": [
+      "expression",
+      "expr",
+      "表达式"
+    ],
+    "rag_content": {
+      "concept": "支持在调试时计算各种表达式，包括字面量、变量、算术、关系、逻辑、成员访问、索引访问等，但某些高级特性不支持。",
+      "code_example": "查看变量：\n(cjdb) expr a\n(Int64) $0 = 3\n\n查看算术表达式：\n(cjdb) expr a + b\n(Int64) $0 = 3\n\n查看关系表达式：\n(cjdb) expr a > b\n(Bool) $0 = false\n\n查看后缀表达式：\n(cjdb) expr value.member\n(Int64) $0 = 1"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjdb_manual.md"
+  },
+  {
+    "category": "调试命令",
+    "knowledge_point": "变量查看与修改",
+    "trigger_keywords": [
+      "locals",
+      "print",
+      "p",
+      "globals",
+      "set",
+      "变量"
+    ],
+    "rag_content": {
+      "concept": "支持查看局部变量、全局变量、结构体、类、数组等，并可修改基础数值类型变量的值。",
+      "code_example": "查看局部变量：\n(cjdb) locals\n(Int32) a = 12\n(Int64) b = 68\n(Int32) c = 13\n\n查看单个变量：\n(cjdb) print b\n(Int64) $0 = 110\n\n查看数组：\n(cjdb) print array\n(Array<Int64>) $0 = {\n  [0] = 2\n  [1] = 4\n  [2] = 6\n}\n\n修改变量：\n(cjdb) set a=30\n(Int32) $4 = 30"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjdb_manual.md"
+  },
+  {
+    "category": "调试命令",
+    "knowledge_point": "仓颉线程操作",
+    "trigger_keywords": [
+      "cjthread",
+      "仓颉线程"
+    ],
+    "rag_content": {
+      "concept": "支持查看仓颉线程的ID、状态和堆栈信息，但不支持线程切换。",
+      "code_example": "显示线程列表：\n(cjdb) cjthread list\ncjthread id: 1, state: running name: cjthread1\n    frame #0: 0x000055555557c140 main`ab::main() at varray.cj:16:1\n\n堆栈回溯：\n(cjdb) cjthread backtrace 1\ncjthread #1 state: pending name: cangjie\n  frame #0: 0x00007ffff7d8b9d5 libcangjie-runtime.so`CJ_CJThreadPark + 117"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjdb_manual.md"
+  },
+  {
+    "category": "调试方式",
+    "knowledge_point": "可执行文件调试",
+    "trigger_keywords": [
+      "launch",
+      "attach",
+      "调试方式"
+    ],
+    "rag_content": {
+      "concept": "支持通过launch方式启动调试（直接加载或通过file命令）和attach方式附加到正在运行的程序。",
+      "code_example": "launch方式1：\n~/0901/cangjie_test$ cjdb test\n(cjdb) target create \"test\"\n\nlaunch方式2：\n(cjdb) file test\nCurrent executable set to '/0901/cangjie/test' (x86_64).\n\nattach方式：\n(cjdb) attach 15325\nProcess 15325 stopped\n* thread #1, name = 'test', stop reason = signal SIGSTOP\n    frame #0: 0x00000000004014cd test`default.main() at test.cj:7:9"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjdb_manual.md"
+  },
+  {
+    "category": "注意事项",
+    "knowledge_point": "调试版本要求",
+    "trigger_keywords": [
+      "debug",
+      "编译",
+      "注意事项"
+    ],
+    "rag_content": {
+      "concept": "被调试的程序必须是debug版本，使用cjc -g命令编译生成。",
+      "code_example": "cjc -g test.cj -o test"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjdb_manual.md"
+  },
+  {
+    "category": "FAQ",
+    "knowledge_point": "常见问题处理",
+    "trigger_keywords": [
+      "FAQ",
+      "常见问题",
+      "信号处理"
+    ],
+    "rag_content": {
+      "concept": "包括Docker环境权限问题、信号处理（如SIGABRT、SIGSEGV）、catch块调试等常见问题的解决方案。",
+      "code_example": "屏蔽SIGABRT信号：\n(cjdb) process handle --pass true --stop false --notify true SIGBUS\n\n捕获SIGSEGV信号：\n(cjdb)process handle -p true -s true -n true SIGSEGV\n\nDocker权限问题解决：\ndocker run --cap-add=SYS_PTRACE --security-opt seccomp=unconfined --security-opt apparmor=unconfined"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjdb_manual.md"
+  },
+  {
+    "category": "Tool",
+    "knowledge_point": "HLE Tool Overview",
+    "trigger_keywords": [
+      "HLE",
+      "Hyper-Lang extension",
+      "代码模板生成"
+    ],
+    "rag_content": {
+      "concept": "HLE (Hyper-Lang extension) 是一个用于仓颉(Cangjie)-ARKTS 互操作的自动代码模板生成工具。它以 ARKTS 接口声明文件（如 .d.ts 或 .d.ets 文件）作为输入，输出包含 BUILD.gn 文件和 src 文件夹的目录，src 文件夹中存放生成的互操作代码 .cj 文件，并输出一个包含 ARKTS 文件所有信息的 JSON 文件。"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\HLE_manual.md"
+  },
+  {
+    "category": "Parameter",
+    "knowledge_point": "Input Parameter (-i)",
+    "trigger_keywords": [
+      "-i",
+      "输入文件路径"
+    ],
+    "rag_content": {
+      "concept": "指定输入 .d.ts 或 .d.ets 文件的绝对路径。与 -d 参数互斥或可组合使用。",
+      "code_example": "main -i /path/to/test.d.ts -o out -j /path/to/analysis.js --module-name=ohos.hilog"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\HLE_manual.md"
+  },
+  {
+    "category": "Parameter",
+    "knowledge_point": "Directory Input Parameter (-d)",
+    "trigger_keywords": [
+      "-d",
+      "输入目录路径"
+    ],
+    "rag_content": {
+      "concept": "指定包含输入 .d.ts 或 .d.ets 文件的目录的绝对路径。与 -i 参数互斥或可组合使用。"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\HLE_manual.md"
+  },
+  {
+    "category": "Parameter",
+    "knowledge_point": "Output Parameter (-o)",
+    "trigger_keywords": [
+      "-o",
+      "输出目录"
+    ],
+    "rag_content": {
+      "concept": "指定互操作代码的输出目录。默认为当前目录。",
+      "code_example": "main -i /path/to/test.d.ts -o out -j /path/to/analysis.js --module-name=ohos.hilog"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\HLE_manual.md"
+  },
+  {
+    "category": "Parameter",
+    "knowledge_point": "Module Name Parameter (--module-name)",
+    "trigger_keywords": [
+      "--module-name",
+      "自定义包名"
+    ],
+    "rag_content": {
+      "concept": "自定义生成的仓颉(Cangjie)包名。",
+      "code_example": "main -i /path/to/test.d.ts -o out -j /path/to/analysis.js --module-name=ohos.hilog"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\HLE_manual.md"
+  },
+  {
+    "category": "Environment",
+    "knowledge_point": "Windows Path Limitation",
+    "trigger_keywords": [
+      "Windows",
+      "路径",
+      "不支持反斜杠"
+    ],
+    "rag_content": {
+      "concept": "在 Windows 环境中，文件目录目前不支持 \"\\\\\" 符号，只能使用 \"/\"。",
+      "code_example": "main -i /path/to/test.d.ts -o out -j /path/to/analysis.js --module-name=ohos.hilog"
+    },
+    "source_file": "docs\\tools\\source_en\\cmd-tools\\HLE_manual.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "CJLint 基本使用命令",
+    "trigger_keywords": [
+      "cjlint",
+      "命令行选项",
+      "帮助信息"
+    ],
+    "rag_content": {
+      "concept": "CJLint 是仓颉语言的静态检查工具，用于识别代码中不符合编程规范的问题。",
+      "code_example": "cjlint -h\ncjlint -f fileDir\ncjlint -f \"fileDir1 fileDir2\""
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjlint_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "规则级告警屏蔽配置文件",
+    "trigger_keywords": [
+      "cjlint_rule_list.json",
+      "exclude_lists.json",
+      "规则屏蔽"
+    ],
+    "rag_content": {
+      "concept": "通过配置文件 cjlint_rule_list.json 选择要检查的规则，通过 exclude_lists.json 屏蔽特定规则的告警。",
+      "code_example": "{\n    \"RuleList\": [\n        \"G.FMT.01\",\n        \"G.ENU.01\",\n        \"G.EXP.03\",\n        \"G.OTH.01\",\n        \"G.OTH.02\"\n    ]\n}"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjlint_manual.md"
+  },
+  {
+    "category": "代码注释",
+    "knowledge_point": "源代码注释告警屏蔽",
+    "trigger_keywords": [
+      "cjlint-ignore",
+      "单行屏蔽",
+      "多行屏蔽"
+    ],
+    "rag_content": {
+      "concept": "通过在代码中添加特殊注释来屏蔽特定规则的告警，支持单行和多行屏蔽。",
+      "code_example": "func foo(a: Int64, b: Int64, c: Int64, d: Int64) { /* cjlint-ignore !G.FUN.02 */\n    return a + b + c\n}"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjlint_manual.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "文件级告警屏蔽",
+    "trigger_keywords": [
+      "-e 选项",
+      "文件屏蔽",
+      "正则表达式"
+    ],
+    "rag_content": {
+      "concept": "通过 -e 选项或配置文件批量屏蔽特定文件或目录的告警检查。",
+      "code_example": "cjlint -f src/ -e \"dir1/ dir2/a.cj test*.cj\""
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjlint_manual.md"
+  },
+  {
+    "category": "规范",
+    "knowledge_point": "默认启用的规范列表",
+    "trigger_keywords": [
+      "G.NAM.01",
+      "G.FMT.01",
+      "G.FUN.01",
+      "G.OTH.01"
+    ],
+    "rag_content": {
+      "concept": "CJLint 默认启用一系列编程规范检查，涵盖命名、格式、函数、错误处理、安全等方面。",
+      "code_example": "G.NAM.01 包名采用全小写单词，允许包含数字和下划线。\nG.FMT.01 源文件编码格式（包括注释）必须是 UTF-8。\nG.FUN.01 函数功能要单一。\nG.OTH.01 禁止在日志中保存口令、密钥和其他敏感数据。"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjlint_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "支持语法禁用检查",
+    "trigger_keywords": [
+      "G.SYN.01",
+      "禁用语法",
+      "structural_rule_G_SYN_01.json"
+    ],
+    "rag_content": {
+      "concept": "通过启用 G.SYN.01 规则并配置 structural_rule_G_SYN_01.json 文件，可以检查并禁止使用特定的语法元素。",
+      "code_example": "{\n  \"SyntaxKeyword\": [\n    \"Import\"\n  ]\n}"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjlint_manual.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "cjtrace-recover 功能简介",
+    "trigger_keywords": [
+      "异常堆栈信息还原",
+      "外形混淆",
+      "cjtrace-recover"
+    ],
+    "rag_content": {
+      "concept": "cjtrace-recover 是仓颉语言的异常堆栈信息还原工具，用于还原因开启外形混淆而导致的混淆堆栈信息，帮助定位问题。",
+      "code_example": ""
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjtrace_recover_manual.md"
+  },
+  {
+    "category": "命令行",
+    "knowledge_point": "cjtrace-recover 命令选项",
+    "trigger_keywords": [
+      "-f",
+      "-m",
+      "-h",
+      "-v",
+      "使用说明"
+    ],
+    "rag_content": {
+      "concept": "cjtrace-recover 支持以下选项：-f 指定混淆异常堆栈文件，-m 指定符号映射文件，-h 显示帮助，-v 打印版本。",
+      "code_example": "cjtrace-recover -h\nUsage: cjtrace-recover OPTION\n\nUse symbol mapping files to recover obfuscated exception stacktrace. The supported options are:\n    -f <file>       path to the obfuscated exception stacktrace file\n    -m <file,...>   path to the symbol mapping files\n    -h              display this help and exit\n    -v              print version of cjtrace-recover"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjtrace_recover_manual.md"
+  },
+  {
+    "category": "示例",
+    "knowledge_point": "cjtrace-recover 使用样例",
+    "trigger_keywords": [
+      "使用样例",
+      "还原堆栈",
+      "符号映射"
+    ],
+    "rag_content": {
+      "concept": "通过 -f 指定异常堆栈文件，-m 指定符号映射文件，运行命令还原混淆的堆栈信息，输出到标准输出。",
+      "code_example": "cjtrace-recover -f test_stacktrace -m test.obf.map"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjtrace_recover_manual.md"
+  },
+  {
+    "category": "概念",
+    "knowledge_point": "符号映射文件格式",
+    "trigger_keywords": [
+      "符号映射文件",
+      "test.obf.map",
+      "映射关系"
+    ],
+    "rag_content": {
+      "concept": "符号映射文件包含混淆前后的符号名和路径名映射，用于还原堆栈信息中的函数名和路径名。",
+      "code_example": "_ZN10mymod.mod111MyException6<init>ER_ZN8std.core6StringE a0 mymod/mod1/mod1.cj\n_ZN10mymod.mod115my_common_func1Ev ah mymod/mod1/mod1.cj\n_ZN10mymod.mod18MyClassA7myfunc1Eld c3 mymod/mod1/mod1.cj\n_ZN7default6<main>Ev cm0 test1/test.cj\nuser.main cm1\ncj_entry$ ci0"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjtrace_recover_manual.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "cjprof record",
+    "trigger_keywords": [
+      "采集CPU热点函数",
+      "record",
+      "采样"
+    ],
+    "rag_content": {
+      "concept": "采集仓颉语言程序的CPU热点函数信息，支持指定采样频率、输出文件和目标进程。",
+      "code_example": "cjprof record -f 10000 -p 12345 -o sample.data\ncjprof record -f max -- ./test arg1 arg2"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjprof_manual.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "cjprof report",
+    "trigger_keywords": [
+      "生成CPU热点函数报告",
+      "report",
+      "火焰图"
+    ],
+    "rag_content": {
+      "concept": "分析采样数据，生成CPU热点函数的文本报告或火焰图。",
+      "code_example": "cjprof report -i sample.data\ncjprof report -F -o test.svg"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjprof_manual.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "cjprof heap -d",
+    "trigger_keywords": [
+      "导出堆内存",
+      "heap dump",
+      "导出"
+    ],
+    "rag_content": {
+      "concept": "导出仓颉应用程序当前时刻的堆内存到文件。",
+      "code_example": "cjprof heap -d 12345 -o heap.data"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjprof_manual.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "cjprof heap 分析",
+    "trigger_keywords": [
+      "分析堆内存",
+      "heap分析",
+      "对象信息"
+    ],
+    "rag_content": {
+      "concept": "解析堆内存数据文件，展示对象类型、实例数、浅堆和深堆大小。",
+      "code_example": "cjprof heap -i ~/heap.data\n\nObject Type           Objects        Shallow Heap   Retained Heap\n====================  =============  =============  =============\nAAA                               1            80             400\nBBB                               4            32             196\nCCC                               2            16              32"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjprof_manual.md"
+  },
+  {
+    "category": "工具",
+    "knowledge_point": "cjprof heap --show-reference",
+    "trigger_keywords": [
+      "对象引用关系",
+      "show-reference",
+      "引用分析"
+    ],
+    "rag_content": {
+      "concept": "展示指定对象的引用关系（出引用）或被引用关系（入引用）。",
+      "code_example": "cjprof heap --show-reference=\"AAA;BBB\"\ncjprof heap --show-reference=\"CCC\" --incoming-reference"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjprof_manual.md"
+  },
+  {
+    "category": "概念",
+    "knowledge_point": "浅堆与深堆",
+    "trigger_keywords": [
+      "Shallow Heap",
+      "Retained Heap",
+      "堆内存大小"
+    ],
+    "rag_content": {
+      "concept": "浅堆是对象自身占用的堆内存大小；深堆是对象被垃圾回收后可释放的所有对象（直接或间接引用）的浅堆之和。",
+      "code_example": ""
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjprof_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "perf权限要求",
+    "trigger_keywords": [
+      "权限不足",
+      "perf_event_paranoid",
+      "root权限"
+    ],
+    "rag_content": {
+      "concept": "使用cjprof record需要root权限或系统perf_event_paranoid参数设置为-1，否则可能权限不足。",
+      "code_example": ""
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjprof_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm init",
+    "trigger_keywords": [
+      "初始化",
+      "init",
+      "模块",
+      "工作空间"
+    ],
+    "rag_content": {
+      "concept": "初始化一个新的仓颉模块或者工作空间。初始化模块时，默认在当前文件夹创建配置文件 cjpm.toml，并新建 src 源码文件夹。如果该模块的产物为可执行类型，则会在 src 下生成默认的 main.cj 文件。初始化工作空间时仅会创建 cjpm.toml 文件。",
+      "code_example": "cjpm init\ncjpm init --name demo --path project\ncjpm init --type=static"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm check",
+    "trigger_keywords": [
+      "依赖检查",
+      "check",
+      "循环依赖"
+    ],
+    "rag_content": {
+      "concept": "检查项目中所需的依赖项，执行成功将会打印有效的包编译顺序。如果存在循环依赖或缺失依赖，会输出错误信息。",
+      "code_example": "cjpm check\ncjpm check --no-tests\ncjpm check --skip-script"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm tree",
+    "trigger_keywords": [
+      "依赖树",
+      "tree",
+      "可视化依赖"
+    ],
+    "rag_content": {
+      "concept": "可视化地展示仓颉源码中的包依赖关系。支持指定根节点、反转依赖树、限制深度等选项。",
+      "code_example": "cjpm tree\ncjpm tree --depth 2 -p a\ncjpm tree --invert a.coo --verbose"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm build",
+    "trigger_keywords": [
+      "构建",
+      "build",
+      "编译",
+      "增量编译"
+    ],
+    "rag_content": {
+      "concept": "构建当前仓颉项目，执行该命令前会先检查依赖项，检查通过后调用 cjc 进行构建。支持增量编译、并行编译、指定目标平台等选项。",
+      "code_example": "cjpm build -V\ncjpm build -i -j 4\ncjpm build --target x86_64-linux-gnu"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm test",
+    "trigger_keywords": [
+      "单元测试",
+      "test",
+      "测试",
+      "覆盖率"
+    ],
+    "rag_content": {
+      "concept": "编译并运行仓颉文件的单元测试用例，运行后打印测试结果。支持过滤测试用例、指定标签、生成覆盖率报告等高级选项。",
+      "code_example": "cjpm test\ncjpm test src/koo\ncjpm test --coverage\ncjpm test --filter=*.*Test --include-tags=Smoke"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm bench",
+    "trigger_keywords": [
+      "性能测试",
+      "bench",
+      "基准测试"
+    ],
+    "rag_content": {
+      "concept": "执行测试文件的性能用例并直接打印测试结果。性能用例由 @Bench 宏标注。支持过滤、标签、报告生成等选项。",
+      "code_example": "cjpm bench\ncjpm bench src --filter=*\ncjpm bench --report-format=csv"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm install",
+    "trigger_keywords": [
+      "安装",
+      "install",
+      "可执行文件"
+    ],
+    "rag_content": {
+      "concept": "安装仓颉项目，执行该命令前会先进行编译，然后将编译产物安装到指定路径。支持安装本地项目或 git 项目。",
+      "code_example": "cjpm install --path path/to/project\ncjpm install --git url --branch main\ncjpm install --list"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "Command",
+    "knowledge_point": "cjpm uninstall",
+    "trigger_keywords": [
+      "卸载",
+      "uninstall",
+      "删除"
+    ],
+    "rag_content": {
+      "concept": "卸载仓颉项目，清除对应的可执行文件和依赖文件。需要指定产物名称。",
+      "code_example": "cjpm uninstall myapp\ncjpm uninstall app1 app2 --root /custom/path"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "cjpm.toml 配置文件结构",
+    "trigger_keywords": [
+      "cjpm.toml",
+      "配置文件",
+      "package",
+      "workspace"
+    ],
+    "rag_content": {
+      "concept": "仓颉模块的配置文件，用于定义模块元数据、依赖、编译选项等。package 和 workspace 字段不能同时存在。",
+      "code_example": "[package]\n  cjc-version = \"1.0.0\"\n  name = \"demo\"\n  version = \"1.0.0\"\n  output-type = \"executable\"\n\n[workspace]\n  members = []\n  build-members = []\n  test-members = []"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "output-type 编译输出类型",
+    "trigger_keywords": [
+      "output-type",
+      "编译产物",
+      "executable",
+      "static",
+      "dynamic"
+    ],
+    "rag_content": {
+      "concept": "指定模块编译产物的类型，包括可执行程序、静态库和动态库。只有主模块可以为 executable。",
+      "code_example": "output-type = \"executable\"  # 可执行程序\noutput-type = \"static\"      # 静态库\noutput-type = \"dynamic\"     # 动态库"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "dependencies 源码依赖配置",
+    "trigger_keywords": [
+      "dependencies",
+      "依赖",
+      "path",
+      "git"
+    ],
+    "rag_content": {
+      "concept": "配置当前模块所依赖的其他仓颉模块，支持本地路径依赖和远程 git 依赖。",
+      "code_example": "[dependencies]\n  pro0 = { path = \"./pro0\" }\n  pro1 = { git = \"https://github.com/example\", branch = \"dev\"}"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "compile-option 与 override-compile-option",
+    "trigger_keywords": [
+      "compile-option",
+      "override-compile-option",
+      "编译选项"
+    ],
+    "rag_content": {
+      "concept": "额外编译选项。compile-option 对当前模块所有包生效；override-compile-option 优先级更高，且在工作空间中会应用于所有成员模块。",
+      "code_example": "compile-option = \"-O1 -V\"\noverride-compile-option = \"-O2\""
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "package-configuration 单包配置",
+    "trigger_keywords": [
+      "package-configuration",
+      "单包配置",
+      "combine-all-deps"
+    ],
+    "rag_content": {
+      "concept": "用于对模块内特定包进行精细配置，如指定输出类型、编译选项，或开启工程级编译产物合并（combine-all-deps）。",
+      "code_example": "[package.package-configuration.\"demo.aoo\"]\n  output-type = \"dynamic\"\n  compile-option = \"-g\"\n\n[package.package-configuration.\"demo\"]\n  combine-all-deps = true"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "workspace 工作空间管理",
+    "trigger_keywords": [
+      "workspace",
+      "工作空间",
+      "members",
+      "build-members"
+    ],
+    "rag_content": {
+      "concept": "将多个模块组织为一个工作空间，统一管理公共配置、编译和测试成员。",
+      "code_example": "[workspace]\nmembers = [\"aoo\", \"boo\", \"coo\"]\nbuild-members = [\"aoo\", \"boo\"]\ntest-members = [\"aoo\"]\ncompile-option = \"-Woff all\""
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "target 后端和平台隔离配置",
+    "trigger_keywords": [
+      "target",
+      "平台隔离",
+      "交叉编译"
+    ],
+    "rag_content": {
+      "concept": "针对特定目标平台（如 x86_64-unknown-linux-gnu）配置编译选项、依赖等，用于交叉编译或平台特定优化。",
+      "code_example": "[target.x86_64-unknown-linux-gnu]\n  compile-option = \"value1\"\n  override-compile-option = \"value2\"\n  link-option = \"value3\""
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "配置字段",
+    "knowledge_point": "test-dependencies",
+    "trigger_keywords": [
+      "测试依赖",
+      "test-dependencies"
+    ],
+    "rag_content": {
+      "concept": "用于指定仅在测试过程中使用的依赖项，仅可用于文件名形如 xxx_test.cj 的测试文件，编译时这些依赖不会被编译。",
+      "code_example": "[test-dependencies]\nmy_test_lib = { path = \"./test_lib\" }"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "配置字段",
+    "knowledge_point": "replace",
+    "trigger_keywords": [
+      "依赖替换",
+      "replace"
+    ],
+    "rag_content": {
+      "concept": "用于指定间接依赖的同名替换项，配置的依赖项会作为编译该模块时最终使用的依赖版本。仅入口模块的 replace 字段会在编译时生效。",
+      "code_example": "[replace]\nbbb = { path = \"new/path/to/bbb\" }"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "配置字段",
+    "knowledge_point": "ffi.c",
+    "trigger_keywords": [
+      "外部C库",
+      "ffi.c"
+    ],
+    "rag_content": {
+      "concept": "配置当前仓颉模块外部依赖 C 库的信息，包含库名和路径。开发者需要自行编出动态库或静态库放到设置的 path 下。",
+      "code_example": "[ffi.c]\nhello = { path = \"./src/\" }"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "配置字段",
+    "knowledge_point": "profile.build",
+    "trigger_keywords": [
+      "编译剖面",
+      "profile.build",
+      "LTO",
+      "combined"
+    ],
+    "rag_content": {
+      "concept": "编译流程的控制项，用于控制 build 命令执行时的默认配置项，如 LTO 优化、性能分析、增量编译和 combined 模块编译。",
+      "code_example": "[profile.build]\nlto = \"full\"\nperformance_analysis = true\nincremental = true\n[profile.build.combined]\ndemo = \"dynamic\""
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "配置字段",
+    "knowledge_point": "profile.test",
+    "trigger_keywords": [
+      "测试剖面",
+      "profile.test",
+      "并行测试",
+      "环境变量"
+    ],
+    "rag_content": {
+      "concept": "测试配置支持指定编译和运行测试用例时的选项，如并行执行、过滤器、超时时间、环境变量等。",
+      "code_example": "[profile.test]\nparallel=true\nfilter=*.*\ntimeout-each = \"4m\"\n[profile.test.env]\nMY_ENV = { value = \"abc\" }\ncjHeapSize = { value = \"32GB\", splice-type = \"replace\" }"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "配置字段",
+    "knowledge_point": "target",
+    "trigger_keywords": [
+      "多平台配置",
+      "target",
+      "交叉编译",
+      "bin-dependencies"
+    ],
+    "rag_content": {
+      "concept": "多后端、多平台隔离选项，用于配置不同后端、不同平台情况下的一系列不同配置项，如编译选项、依赖项和二进制依赖。",
+      "code_example": "[target.x86_64-unknown-linux-gnu]\ncompile-option = \"value1\"\n[target.x86_64-unknown-linux-gnu.bin-dependencies]\npath-option = [\"./test/pro0\", \"./test/pro1\"]"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "机制",
+    "knowledge_point": "构建脚本 (build.cj)",
+    "trigger_keywords": [
+      "构建脚本",
+      "build.cj",
+      "pre-build",
+      "post-build"
+    ],
+    "rag_content": {
+      "concept": "提供构建脚本机制，开发者可以在构建脚本中定义需要 cjpm 在某个命令前后的行为。构建脚本源文件固定命名为 build.cj，位于仓颉项目主目录下。",
+      "code_example": "func stagePreBuild(): Int64 {\n    println(\"PRE-BUILD\")\n    0\n}\n\nmain(): Int64 {\n    match (Process.current.arguments[0]) {\n        case \"pre-build\" => stagePreBuild()\n        case _ => 0\n    }\n}"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "机制",
+    "knowledge_point": "命令扩展",
+    "trigger_keywords": [
+      "命令扩展",
+      "cjpm-xxx"
+    ],
+    "rag_content": {
+      "concept": "cjpm 提供命令扩展机制，开发者可以通过文件名形如 cjpm-xxx(.exe) 的可执行文件扩展 cjpm 的命令。",
+      "code_example": "// 编译 cjpm-demo 可执行文件后，运行命令：\n// cjpm demo hello,world\n// 输出：Output: hello,world"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "cjpm.toml 包配置文件",
+    "trigger_keywords": [
+      "cjpm.toml",
+      "package",
+      "dependencies"
+    ],
+    "rag_content": {
+      "concept": "仓颉项目的包配置文件，用于定义项目元数据、依赖和输出类型。",
+      "code_example": "[package]\ncjc-version = \"1.0.0\"\ndescription = \"nothing here\"\nversion = \"1.0.0\"\nname = \"test\"\noutput-type = \"executable\"\n\n[dependencies]\npro0 = { path = \"pro0\" }"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "output-type 输出类型配置",
+    "trigger_keywords": [
+      "output-type",
+      "executable",
+      "static"
+    ],
+    "rag_content": {
+      "concept": "定义项目的构建输出类型，如可执行文件（executable）或静态库（static）。",
+      "code_example": "output-type = \"executable\"\noutput-type = \"static\""
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  },
+  {
+    "category": "配置",
+    "knowledge_point": "dependencies 依赖声明",
+    "trigger_keywords": [
+      "dependencies",
+      "path",
+      "依赖"
+    ],
+    "rag_content": {
+      "concept": "声明项目依赖，支持通过路径（path）引用本地依赖。",
+      "code_example": "[dependencies]\npro0 = { path = \"pro0\" }"
+    },
+    "source_file": "docs\\tools\\source_zh_cn\\cmd-tools\\cjpm_manual.md"
+  }
+]

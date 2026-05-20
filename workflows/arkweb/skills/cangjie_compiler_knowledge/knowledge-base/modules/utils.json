@@ -1,0 +1,774 @@
+{
+  "name": "utils",
+  "path": "src/Utils",
+  "files": [
+    "src/Utils/FloatFormat.cpp",
+    "src/Utils/SafePointer.cpp",
+    "src/Utils/FileUtil.cpp",
+    "src/Utils/ProfileRecorder.cpp",
+    "src/Utils/ICEUtil.cpp",
+    "src/Utils/SignalUnix.cpp",
+    "src/Utils/SignalUtil.cpp",
+    "src/Utils/SignalUtil.h",
+    "src/Utils/Semaphore.cpp",
+    "src/Utils/StdUtils/StdUtils.cpp",
+    "src/Utils/Unicode.cpp",
+    "src/Utils/UnicodeNFC.cpp",
+    "src/Utils/SignalWin.cpp",
+    "src/Utils/UserBase.cpp",
+    "src/Utils/UserBase.h",
+    "src/Utils/UnicodeWidth.cpp",
+    "src/Utils/UserCodeInfo.cpp",
+    "src/Utils/UserMemoryUsage.cpp",
+    "src/Utils/UserMemoryUsage.h",
+    "src/Utils/UserTimer.h",
+    "src/Utils/UserTimer.cpp",
+    "src/Utils/UserCodeInfo.h",
+    "src/Utils/Utils.cpp"
+  ],
+  "classes": [
+    {
+      "name": "dirent",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 205
+    },
+    {
+      "name": "stat",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 213
+    },
+    {
+      "name": "stat",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 446
+    },
+    {
+      "name": "stat",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 494
+    },
+    {
+      "name": "stat",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 534
+    },
+    {
+      "name": "__stat64",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 819
+    },
+    {
+      "name": "stat",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 823
+    },
+    {
+      "name": "dirent",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 933
+    },
+    {
+      "name": "dirent",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 1202
+    },
+    {
+      "name": "sigaction",
+      "file": "src/Utils/SignalUnix.cpp",
+      "line": 58
+    },
+    {
+      "name": "sigaction",
+      "file": "src/Utils/SignalUnix.cpp",
+      "line": 86
+    },
+    {
+      "name": "Range",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 180
+    },
+    {
+      "name": "Decompositions",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 207
+    },
+    {
+      "name": "RecompositionState",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 305
+    },
+    {
+      "name": "Recompositions",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 314
+    },
+    {
+      "name": "UserBase",
+      "file": "src/Utils/UserBase.h",
+      "line": 13
+    },
+    {
+      "name": "UserMemoryUsage",
+      "file": "src/Utils/UserMemoryUsage.h",
+      "line": 17
+    },
+    {
+      "name": "Info",
+      "file": "src/Utils/UserMemoryUsage.h",
+      "line": 46
+    },
+    {
+      "name": "UserTimer",
+      "file": "src/Utils/UserTimer.h",
+      "line": 19
+    },
+    {
+      "name": "Info",
+      "file": "src/Utils/UserTimer.h",
+      "line": 37
+    },
+    {
+      "name": "UserCodeInfo",
+      "file": "src/Utils/UserCodeInfo.h",
+      "line": 16
+    }
+  ],
+  "functions": [
+    {
+      "name": "ss",
+      "file": "src/Utils/FloatFormat.cpp",
+      "line": 57
+    },
+    {
+      "name": "Access",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 120
+    },
+    {
+      "name": "FindClose",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 140
+    },
+    {
+      "name": "name",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 145
+    },
+    {
+      "name": "closeHandle",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 161
+    },
+    {
+      "name": "closeHandle",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 169
+    },
+    {
+      "name": "closeHandle",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 177
+    },
+    {
+      "name": "closeHandle",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 182
+    },
+    {
+      "name": "name",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 208
+    },
+    {
+      "name": "closedir",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 230
+    },
+    {
+      "name": "GetFileName",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 317
+    },
+    {
+      "name": "S_ISDIR",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 450
+    },
+    {
+      "name": "closedir",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 454
+    },
+    {
+      "name": "RemoveDirRecursively",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 532
+    },
+    {
+      "name": "RemoveDirRecursively",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 544
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 588
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 594
+    },
+    {
+      "name": "file",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 598
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 600
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 608
+    },
+    {
+      "name": "Normalize",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 778
+    },
+    {
+      "name": "GetAllDirsUnderCurrentPath",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 786
+    },
+    {
+      "name": "closedir",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 808
+    },
+    {
+      "name": "GetAllDirsUnderCurrentPath",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 856
+    },
+    {
+      "name": "FindClose",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 859
+    },
+    {
+      "name": "FindClose",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 881
+    },
+    {
+      "name": "FindClose",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 901
+    },
+    {
+      "name": "fileName",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 918
+    },
+    {
+      "name": "closedir",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 926
+    },
+    {
+      "name": "closedir",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 951
+    },
+    {
+      "name": "Normalize",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 964
+    },
+    {
+      "name": "Normalize",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 1091
+    },
+    {
+      "name": "ConvertPackageNameToLibCangjieBaseFormat",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 1111
+    },
+    {
+      "name": "FindClose",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 1182
+    },
+    {
+      "name": "FindClose",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 1186
+    },
+    {
+      "name": "closedir",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 1205
+    },
+    {
+      "name": "closedir",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 1209
+    },
+    {
+      "name": "Access",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 1212
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 1265
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Utils/FileUtil.cpp",
+      "line": 1282
+    },
+    {
+      "name": "Start",
+      "file": "src/Utils/ProfileRecorder.cpp",
+      "line": 28
+    },
+    {
+      "name": "Stop",
+      "file": "src/Utils/ProfileRecorder.cpp",
+      "line": 36
+    },
+    {
+      "name": "g_writeOnceICEMessag",
+      "file": "src/Utils/ICEUtil.cpp",
+      "line": 22
+    },
+    {
+      "name": "Cangjie::Signal::ConcurrentSynchronousSignalHandler",
+      "file": "src/Utils/SignalUnix.cpp",
+      "line": 29
+    },
+    {
+      "name": "InternalError",
+      "file": "src/Utils/SignalUnix.cpp",
+      "line": 52
+    },
+    {
+      "name": "sigemptyset",
+      "file": "src/Utils/SignalUnix.cpp",
+      "line": 60
+    },
+    {
+      "name": "_exit",
+      "file": "src/Utils/SignalUnix.cpp",
+      "line": 79
+    },
+    {
+      "name": "sigemptyset",
+      "file": "src/Utils/SignalUnix.cpp",
+      "line": 88
+    },
+    {
+      "name": "g_processingSignalOrException",
+      "file": "src/Utils/SignalUtil.cpp",
+      "line": 35
+    },
+    {
+      "name": "AsyncSigSafeReverse",
+      "file": "src/Utils/SignalUtil.cpp",
+      "line": 66
+    },
+    {
+      "name": "AsyncSigSafeItoa",
+      "file": "src/Utils/SignalUtil.cpp",
+      "line": 77
+    },
+    {
+      "name": "AsyncSigSafeWriteToError",
+      "file": "src/Utils/SignalUtil.cpp",
+      "line": 78
+    },
+    {
+      "name": "close",
+      "file": "src/Utils/SignalUtil.cpp",
+      "line": 85
+    },
+    {
+      "name": "CloseTempFileHandle",
+      "file": "src/Utils/SignalUtil.cpp",
+      "line": 106
+    },
+    {
+      "name": "volatile",
+      "file": "src/Utils/SignalUtil.cpp",
+      "line": 116
+    },
+    {
+      "name": "ThreadDelaySynchronizer",
+      "file": "src/Utils/SignalUtil.cpp",
+      "line": 123
+    },
+    {
+      "name": "WriteICEMessage",
+      "file": "src/Utils/SignalUtil.cpp",
+      "line": 124
+    },
+    {
+      "name": "_exit",
+      "file": "src/Utils/SignalUtil.cpp",
+      "line": 127
+    },
+    {
+      "name": "g_signalTestCallbackFunction",
+      "file": "src/Utils/SignalUtil.cpp",
+      "line": 151
+    },
+    {
+      "name": "WriteICEMessage",
+      "file": "src/Utils/SignalUtil.h",
+      "line": 25
+    },
+    {
+      "name": "ThreadDelaySynchronizer",
+      "file": "src/Utils/SignalUtil.h",
+      "line": 26
+    },
+    {
+      "name": "ConcurrentSynchronousSignalHandler",
+      "file": "src/Utils/SignalUtil.h",
+      "line": 27
+    },
+    {
+      "name": "lock",
+      "file": "src/Utils/Semaphore.cpp",
+      "line": 31
+    },
+    {
+      "name": "lock",
+      "file": "src/Utils/Semaphore.cpp",
+      "line": 38
+    },
+    {
+      "name": "lock",
+      "file": "src/Utils/Semaphore.cpp",
+      "line": 45
+    },
+    {
+      "name": "lock",
+      "file": "src/Utils/Semaphore.cpp",
+      "line": 51
+    },
+    {
+      "name": "std::stoi",
+      "file": "src/Utils/StdUtils/StdUtils.cpp",
+      "line": 13
+    },
+    {
+      "name": "std::stol",
+      "file": "src/Utils/StdUtils/StdUtils.cpp",
+      "line": 21
+    },
+    {
+      "name": "std::stoul",
+      "file": "src/Utils/StdUtils/StdUtils.cpp",
+      "line": 29
+    },
+    {
+      "name": "std::stoll",
+      "file": "src/Utils/StdUtils/StdUtils.cpp",
+      "line": 37
+    },
+    {
+      "name": "std::stoull",
+      "file": "src/Utils/StdUtils/StdUtils.cpp",
+      "line": 45
+    },
+    {
+      "name": "std::stod",
+      "file": "src/Utils/StdUtils/StdUtils.cpp",
+      "line": 54
+    },
+    {
+      "name": "std::stold",
+      "file": "src/Utils/StdUtils/StdUtils.cpp",
+      "line": 62
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Utils/Unicode.cpp",
+      "line": 87
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Utils/Unicode.cpp",
+      "line": 91
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Utils/Unicode.cpp",
+      "line": 146
+    },
+    {
+      "name": "std::binary_search",
+      "file": "src/Utils/Unicode.cpp",
+      "line": 179
+    },
+    {
+      "name": "CompositionTableAstral",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 70
+    },
+    {
+      "name": "emitChar",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 107
+    },
+    {
+      "name": "emitChar",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 111
+    },
+    {
+      "name": "emitChar",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 115
+    },
+    {
+      "name": "emitChar",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 141
+    },
+    {
+      "name": "emitChar",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 152
+    },
+    {
+      "name": "emitChar",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 157
+    },
+    {
+      "name": "Decompose",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 173
+    },
+    {
+      "name": "static_assert",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 181
+    },
+    {
+      "name": "DecomposeCanonical",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 233
+    },
+    {
+      "name": "SortPending",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 238
+    },
+    {
+      "name": "IncrementNextReady",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 245
+    },
+    {
+      "name": "SortPending",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 256
+    },
+    {
+      "name": "ResetBuffer",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 290
+    },
+    {
+      "name": "CompositionTable",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 302
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 332
+    },
+    {
+      "name": "ConvertUTF32ToUTF8String",
+      "file": "src/Utils/UnicodeNFC.cpp",
+      "line": 443
+    },
+    {
+      "name": "Cangjie::Signal::ThreadDelaySynchronizer",
+      "file": "src/Utils/SignalWin.cpp",
+      "line": 21
+    },
+    {
+      "name": "Cangjie::Signal::WriteICEMessage",
+      "file": "src/Utils/SignalWin.cpp",
+      "line": 27
+    },
+    {
+      "name": "Cangjie::Signal::ConcurrentSynchronousSignalHandler",
+      "file": "src/Utils/SignalWin.cpp",
+      "line": 34
+    },
+    {
+      "name": "SetUnhandledExceptionFilter",
+      "file": "src/Utils/SignalWin.cpp",
+      "line": 42
+    },
+    {
+      "name": "GetJson",
+      "file": "src/Utils/UserBase.cpp",
+      "line": 22
+    },
+    {
+      "name": "WriteJson",
+      "file": "src/Utils/UserBase.h",
+      "line": 18
+    },
+    {
+      "name": "Enable",
+      "file": "src/Utils/UserBase.h",
+      "line": 22
+    },
+    {
+      "name": "IsEnable",
+      "file": "src/Utils/UserBase.h",
+      "line": 23
+    },
+    {
+      "name": "SetPackageName",
+      "file": "src/Utils/UserBase.h",
+      "line": 24
+    },
+    {
+      "name": "SetOutputDir",
+      "file": "src/Utils/UserBase.h",
+      "line": 25
+    },
+    {
+      "name": "LookupWidth",
+      "file": "src/Utils/UnicodeWidth.cpp",
+      "line": 105
+    },
+    {
+      "name": "SingleCharWidth",
+      "file": "src/Utils/UnicodeWidth.cpp",
+      "line": 149
+    },
+    {
+      "name": "mem",
+      "file": "src/Utils/UserMemoryUsage.cpp",
+      "line": 97
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Utils/UserMemoryUsage.cpp",
+      "line": 109
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Utils/UserMemoryUsage.cpp",
+      "line": 113
+    },
+    {
+      "name": "CloseHandle",
+      "file": "src/Utils/UserMemoryUsage.cpp",
+      "line": 115
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Utils/UserMemoryUsage.cpp",
+      "line": 123
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Utils/UserMemoryUsage.cpp",
+      "line": 128
+    },
+    {
+      "name": "OutputResult",
+      "file": "src/Utils/UserMemoryUsage.h",
+      "line": 22
+    },
+    {
+      "name": "Start",
+      "file": "src/Utils/UserMemoryUsage.h",
+      "line": 30
+    },
+    {
+      "name": "Stop",
+      "file": "src/Utils/UserMemoryUsage.h",
+      "line": 31
+    },
+    {
+      "name": "GetJson",
+      "file": "src/Utils/UserMemoryUsage.h",
+      "line": 34
+    },
+    {
+      "name": "OutputResult",
+      "file": "src/Utils/UserTimer.h",
+      "line": 24
+    },
+    {
+      "name": "Start",
+      "file": "src/Utils/UserTimer.h",
+      "line": 32
+    },
+    {
+      "name": "Stop",
+      "file": "src/Utils/UserTimer.h",
+      "line": 33
+    },
+    {
+      "name": "GetJson",
+      "file": "src/Utils/UserTimer.h",
+      "line": 57
+    },
+    {
+      "name": "std::make_pair",
+      "file": "src/Utils/UserTimer.cpp",
+      "line": 97
+    },
+    {
+      "name": "OutputResult",
+      "file": "src/Utils/UserCodeInfo.h",
+      "line": 21
+    },
+    {
+      "name": "RecordInfo",
+      "file": "src/Utils/UserCodeInfo.h",
+      "line": 29
+    },
+    {
+      "name": "GetJson",
+      "file": "src/Utils/UserCodeInfo.h",
+      "line": 32
+    },
+    {
+      "name": "rand_s",
+      "file": "src/Utils/Utils.cpp",
+      "line": 77
+    },
+    {
+      "name": "item",
+      "file": "src/Utils/Utils.cpp",
+      "line": 152
+    },
+    {
+      "name": "Cangjie::Errorf",
+      "file": "src/Utils/Utils.cpp",
+      "line": 200
+    }
+  ],
+  "submodules": []
+}

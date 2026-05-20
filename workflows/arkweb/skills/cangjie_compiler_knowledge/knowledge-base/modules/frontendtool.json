@@ -1,0 +1,514 @@
+{
+  "name": "frontendtool",
+  "path": "src/FrontendTool",
+  "files": [
+    "src/FrontendTool/DefaultCompilerInstance.cpp",
+    "src/FrontendTool/IncrementalCompilerInstance.cpp",
+    "src/FrontendTool/FrontendTool.cpp"
+  ],
+  "classes": [
+    {
+      "name": "DefaultCIImpl",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 35
+    }
+  ],
+  "functions": [
+    {
+      "name": "PerformCodeGen",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 42
+    },
+    {
+      "name": "PerformCjoSaving",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 43
+    },
+    {
+      "name": "PerformResultsSaving",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 44
+    },
+    {
+      "name": "DumpDepPackage",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 45
+    },
+    {
+      "name": "SaveCjo",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 46
+    },
+    {
+      "name": "SaveCjo",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 47
+    },
+    {
+      "name": "RearrangeImportedPackageDependence",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 48
+    },
+    {
+      "name": "CodegenOnePackage",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 49
+    },
+    {
+      "name": "EmitLLVMSimilarBytecode",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 54
+    },
+    {
+      "name": "GenerateFileName",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 55
+    },
+    {
+      "name": "CodeGen::ClearPackageModules",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 70
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 79
+    },
+    {
+      "name": "CompilerInstance::PerformParse",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 80
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 85
+    },
+    {
+      "name": "CompilerInstance::PerformConditionCompile",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 86
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 91
+    },
+    {
+      "name": "CompilerInstance::PerformImportPackage",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 92
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 97
+    },
+    {
+      "name": "CompilerInstance::PerformMacroExpand",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 98
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 103
+    },
+    {
+      "name": "CompilerInstance::PerformSema",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 104
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 109
+    },
+    {
+      "name": "CompilerInstance::PerformOverflowStrategy",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 110
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 115
+    },
+    {
+      "name": "CompilerInstance::PerformDesugarAfterSema",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 116
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 121
+    },
+    {
+      "name": "CompilerInstance::PerformGenericInstantiation",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 122
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 127
+    },
+    {
+      "name": "CompilerInstance::PerformCHIRCompilation",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 128
+    },
+    {
+      "name": "FileUtil::GetFileNameWithoutExtension",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 142
+    },
+    {
+      "name": "Errorln",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 156
+    },
+    {
+      "name": "Errorln",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 160
+    },
+    {
+      "name": "Utils::ProfileRecorder::Start",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 194
+    },
+    {
+      "name": "Utils::ProfileRecorder::Stop",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 196
+    },
+    {
+      "name": "Utils::ProfileRecorder::Start",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 201
+    },
+    {
+      "name": "Utils::ProfileRecorder::Stop",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 203
+    },
+    {
+      "name": "Errorln",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 205
+    },
+    {
+      "name": "FileUtil::Remove",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 212
+    },
+    {
+      "name": "file",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 214
+    },
+    {
+      "name": "Errorln",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 242
+    },
+    {
+      "name": "Cangjie::SignalTest::ExecuteSignalTestCallbackFunc",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 251
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 263
+    },
+    {
+      "name": "CodeGen::SavePackageModule",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 270
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 301
+    },
+    {
+      "name": "CompilerInstance::PerformMangling",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 302
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 307
+    },
+    {
+      "name": "RearrangeImportedPackageDependence",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 310
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 320
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 334
+    },
+    {
+      "name": "Println",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 341
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 347
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/FrontendTool/DefaultCompilerInstance.cpp",
+      "line": 350
+    },
+    {
+      "name": "CompilerInstance::InitCompilerInstance",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 48
+    },
+    {
+      "name": "CacheCompileArgs",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 61
+    },
+    {
+      "name": "Sema::CollectRemovedMangles",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 79
+    },
+    {
+      "name": "Sema::CollectRemovedMangles",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 84
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 93
+    },
+    {
+      "name": "Errorln",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 113
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 195
+    },
+    {
+      "name": "Warningf",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 209
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 269
+    },
+    {
+      "name": ":",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 273
+    },
+    {
+      "name": "CompilerInstance::PerformSema",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 279
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 281
+    },
+    {
+      "name": "Sema::HandleCtorForIncr",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 285
+    },
+    {
+      "name": "Sema::MarkIncrementalCheckForCtor",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 288
+    },
+    {
+      "name": "visit",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 317
+    },
+    {
+      "name": "CompilerInstance::PerformSema",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 320
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 325
+    },
+    {
+      "name": "CompilerInstance::PerformOverflowStrategy",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 329
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 334
+    },
+    {
+      "name": "CompilerInstance::PerformDesugarAfterSema",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 338
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 343
+    },
+    {
+      "name": "IterateAllExportableDecls",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 351
+    },
+    {
+      "name": "UpdateMangleNameForCachedInfo",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 377
+    },
+    {
+      "name": "UpdateCHIROptEffectMap",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 378
+    },
+    {
+      "name": "Sema::CollectCompilerAddedDeclUsage",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 400
+    },
+    {
+      "name": "DeleteRemovedNodesInCHIROptEffectMap",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 408
+    },
+    {
+      "name": "DeleteRemovedNodesInCHIROptEffectMap",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 415
+    },
+    {
+      "name": "DeleteRecompiledNodesInCHIROptEffectMap",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 416
+    },
+    {
+      "name": "MergeCHIROptEffectMap",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 418
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 452
+    },
+    {
+      "name": "UpdateIncrRemovedDeclsForVarInitDep",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 463
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 479
+    },
+    {
+      "name": "LoadCachedCodegenResult",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 482
+    },
+    {
+      "name": "RearrangeImportedPackageDependence",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 489
+    },
+    {
+      "name": "DefaultCompilerInstance::PerformCjoSaving",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 516
+    },
+    {
+      "name": "recorder",
+      "file": "src/FrontendTool/IncrementalCompilerInstance.cpp",
+      "line": 521
+    },
+    {
+      "name": "WriteError",
+      "file": "src/FrontendTool/FrontendTool.cpp",
+      "line": 46
+    },
+    {
+      "name": "HandleEmptyInputFileSituation",
+      "file": "src/FrontendTool/FrontendTool.cpp",
+      "line": 113
+    },
+    {
+      "name": "nameView",
+      "file": "src/FrontendTool/FrontendTool.cpp",
+      "line": 123
+    },
+    {
+      "name": "PerformDumpAction",
+      "file": "src/FrontendTool/FrontendTool.cpp",
+      "line": 143
+    },
+    {
+      "name": "iceSetter",
+      "file": "src/FrontendTool/FrontendTool.cpp",
+      "line": 152
+    },
+    {
+      "name": "iceSetter",
+      "file": "src/FrontendTool/FrontendTool.cpp",
+      "line": 156
+    },
+    {
+      "name": "Cangjie::PrintVersion",
+      "file": "src/FrontendTool/FrontendTool.cpp",
+      "line": 189
+    },
+    {
+      "name": "Utils::ProfileRecorder::Enable",
+      "file": "src/FrontendTool/FrontendTool.cpp",
+      "line": 195
+    },
+    {
+      "name": "Utils::ProfileRecorder::Enable",
+      "file": "src/FrontendTool/FrontendTool.cpp",
+      "line": 198
+    },
+    {
+      "name": "iceSetter",
+      "file": "src/FrontendTool/FrontendTool.cpp",
+      "line": 216
+    },
+    {
+      "name": "iceSetter",
+      "file": "src/FrontendTool/FrontendTool.cpp",
+      "line": 240
+    }
+  ],
+  "submodules": []
+}

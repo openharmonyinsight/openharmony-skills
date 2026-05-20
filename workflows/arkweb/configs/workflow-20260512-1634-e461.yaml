@@ -1,0 +1,230 @@
+workflow:
+  name: web测试设计
+  description: SR测试设计
+  mode: state-machine
+  states:
+    - name: 设计
+      description: 执行设计任务，红队实施、蓝队挑战、裁判评审
+      type: normal
+      requireHumanApproval: false
+      steps:
+        - name: 方案设计
+          agent: architect
+          task: 根据需求设计技术方案，输出设计文档
+          role: defender
+          specTaskBinding:
+            taskId: "1.1"
+            taskIds:
+              - "1.1"
+            requirementIds: []
+            artifactKeys: []
+        - name: 方案挑战
+          agent: design-breaker
+          task: 审查设计方案，寻找潜在缺陷和风险点
+          role: attacker
+          specTaskBinding:
+            taskId: "1.2"
+            taskIds:
+              - "1.2"
+            requirementIds: []
+            artifactKeys: []
+        - name: 设计评审
+          agent: design-judge
+          task: 综合红队方案和蓝队意见，给出评审结论和 verdict
+          role: judge
+          specTaskBinding:
+            taskId: "1.2"
+            taskIds:
+              - "1.2"
+            requirementIds: []
+            artifactKeys: []
+      transitions:
+        - to: 实施
+          condition:
+            verdict: pass
+          priority: 10
+          label: 设计通过
+        - to: 设计
+          condition:
+            verdict: conditional_pass
+          priority: 20
+          label: 需要修改
+        - to: 设计
+          condition:
+            verdict: fail
+          priority: 30
+          label: 重新设计
+      position:
+        x: 100
+        y: 200
+      isInitial: true
+      isFinal: false
+      maxSelfTransitions: 3
+    - name: 实施
+      description: 执行实施任务，红队编码、蓝队审查、裁判验收
+      type: normal
+      requireHumanApproval: false
+      steps:
+        - name: 编码实施
+          agent: developer
+          task: 根据设计方案进行编码实施
+          role: defender
+          specTaskBinding:
+            taskId: "1.1"
+            taskIds:
+              - "1.1"
+            requirementIds: []
+            artifactKeys: []
+        - name: 代码审查
+          agent: code-hunter
+          task: 审查代码实现，检查安全性、性能和代码质量
+          role: attacker
+          specTaskBinding:
+            taskId: "1.2"
+            taskIds:
+              - "1.2"
+            requirementIds: []
+            artifactKeys: []
+        - name: 实施评审
+          agent: code-judge
+          task: 综合实施结果和审查意见，给出评审结论和 verdict
+          role: judge
+          specTaskBinding:
+            taskId: "1.2"
+            taskIds:
+              - "1.2"
+            requirementIds: []
+            artifactKeys: []
+      transitions:
+        - to: 测试
+          condition:
+            verdict: pass
+          priority: 10
+          label: 实施完成
+        - to: 实施
+          condition:
+            verdict: conditional_pass
+          priority: 20
+          label: 需要修改
+        - to: 设计
+          condition:
+            verdict: fail
+          priority: 30
+          label: 设计有问题
+      position:
+        x: 400
+        y: 200
+      isInitial: false
+      isFinal: false
+      maxSelfTransitions: 3
+    - name: 测试
+      description: 执行测试验证，红队测试、蓝队攻击、裁判判定
+      type: normal
+      requireHumanApproval: false
+      steps:
+        - name: 功能测试
+          agent: tester
+          task: 编写并执行测试用例，验证功能正确性
+          role: defender
+          specTaskBinding:
+            taskId: "1.1"
+            taskIds:
+              - "1.1"
+            requirementIds: []
+            artifactKeys: []
+        - name: 压力测试
+          agent: stress-tester
+          task: 进行边界测试和压力测试，寻找潜在问题
+          role: attacker
+          specTaskBinding:
+            taskId: "1.2"
+            taskIds:
+              - "1.2"
+            requirementIds: []
+            artifactKeys: []
+        - name: 测试评审
+          agent: code-judge
+          task: 综合测试结果，给出最终评审结论和 verdict
+          role: judge
+          specTaskBinding:
+            taskId: "1.2"
+            taskIds:
+              - "1.2"
+            requirementIds: []
+            artifactKeys: []
+      transitions:
+        - to: 完成
+          condition:
+            verdict: pass
+          priority: 10
+          label: 测试通过
+        - to: 实施
+          condition:
+            verdict: conditional_pass
+          priority: 20
+          label: 需要修复
+        - to: 设计
+          condition:
+            verdict: fail
+          priority: 30
+          label: 严重问题
+      position:
+        x: 700
+        y: 200
+      isInitial: false
+      isFinal: false
+      maxSelfTransitions: 3
+    - name: 完成
+      description: 工作流结束，生成总结报告
+      type: normal
+      requireHumanApproval: false
+      steps:
+        - name: 生成报告
+          agent: developer
+          task: 汇总各阶段成果，生成最终报告
+          role: defender
+          specTaskBinding:
+            taskId: "1.1"
+            taskIds:
+              - "1.1"
+            requirementIds: []
+            artifactKeys: []
+        - name: 报告审查
+          agent: code-auditor
+          task: 审查最终报告的完整性和准确性
+          role: attacker
+          specTaskBinding:
+            taskId: "1.2"
+            taskIds:
+              - "1.2"
+            requirementIds: []
+            artifactKeys: []
+        - name: 最终确认
+          agent: code-judge
+          task: 确认报告质量，给出最终结论
+          role: judge
+          specTaskBinding:
+            taskId: "1.2"
+            taskIds:
+              - "1.2"
+            requirementIds: []
+            artifactKeys: []
+      transitions: []
+      position:
+        x: 1000
+        y: 200
+      isInitial: false
+      isFinal: true
+      maxSelfTransitions: 3
+  maxTransitions: 30
+  supervisor:
+    enabled: true
+    agent: default-supervisor
+    stageReviewEnabled: true
+    checkpointAdviceEnabled: true
+    scoringEnabled: true
+    experienceEnabled: true
+context:
+  projectRoot: /mnt/vdb_new/user_home/gzwoh/glz
+  workspaceMode: in-place
+  requirements: ""

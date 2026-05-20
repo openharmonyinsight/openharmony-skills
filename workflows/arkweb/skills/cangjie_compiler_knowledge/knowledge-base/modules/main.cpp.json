@@ -1,0 +1,70 @@
+{
+  "name": "main.cpp",
+  "path": "src",
+  "files": [
+    "src/main.cpp"
+  ],
+  "classes": [],
+  "functions": [
+    {
+      "name": "Cangjie::CreateAltSignalStack",
+      "file": "src/main.cpp",
+      "line": 36
+    },
+    {
+      "name": "Cangjie::RegisterCrashExceptionHandler",
+      "file": "src/main.cpp",
+      "line": 38
+    },
+    {
+      "name": "Cangjie::RegisterCrashSignalHandler",
+      "file": "src/main.cpp",
+      "line": 40
+    },
+    {
+      "name": "RegisterSignalHandler",
+      "file": "src/main.cpp",
+      "line": 57
+    },
+    {
+      "name": "RegisterCrtlCSignalHandler",
+      "file": "src/main.cpp",
+      "line": 59
+    },
+    {
+      "name": "Cangjie::SignalTest::ExecuteSignalTestCallbackFunc",
+      "file": "src/main.cpp",
+      "line": 85
+    },
+    {
+      "name": "WriteError",
+      "file": "src/main.cpp",
+      "line": 93
+    },
+    {
+      "name": "InternalError",
+      "file": "src/main.cpp",
+      "line": 106
+    }
+  ],
+  "submodules": [
+    "ast",
+    "basic",
+    "chir",
+    "codegen",
+    "conditionalcompilation",
+    "driver",
+    "frontend",
+    "frontendtool",
+    "incrementalcompilation",
+    "lex",
+    "macro",
+    "mangle",
+    "metatransformation",
+    "modules",
+    "option",
+    "parse",
+    "sema",
+    "utils"
+  ]
+}

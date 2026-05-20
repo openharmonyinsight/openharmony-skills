@@ -1,0 +1,131 @@
+{
+  "name": "main-macrosrv.cpp",
+  "path": "src",
+  "files": [
+    "src/main-macrosrv.cpp"
+  ],
+  "classes": [
+    {
+      "name": "stat",
+      "file": "src/main-macrosrv.cpp",
+      "line": 109
+    }
+  ],
+  "functions": [
+    {
+      "name": "sleep",
+      "file": "src/main-macrosrv.cpp",
+      "line": 49
+    },
+    {
+      "name": "perror",
+      "file": "src/main-macrosrv.cpp",
+      "line": 51
+    },
+    {
+      "name": "exit",
+      "file": "src/main-macrosrv.cpp",
+      "line": 55
+    },
+    {
+      "name": "Errorln",
+      "file": "src/main-macrosrv.cpp",
+      "line": 79
+    },
+    {
+      "name": "Errorln",
+      "file": "src/main-macrosrv.cpp",
+      "line": 83
+    },
+    {
+      "name": "Errorln",
+      "file": "src/main-macrosrv.cpp",
+      "line": 87
+    },
+    {
+      "name": "Errorln",
+      "file": "src/main-macrosrv.cpp",
+      "line": 96
+    },
+    {
+      "name": "CloseHandle",
+      "file": "src/main-macrosrv.cpp",
+      "line": 100
+    },
+    {
+      "name": "Errorln",
+      "file": "src/main-macrosrv.cpp",
+      "line": 101
+    },
+    {
+      "name": "fstat",
+      "file": "src/main-macrosrv.cpp",
+      "line": 110
+    },
+    {
+      "name": "S_ISFIFO",
+      "file": "src/main-macrosrv.cpp",
+      "line": 111
+    },
+    {
+      "name": "Errorln",
+      "file": "src/main-macrosrv.cpp",
+      "line": 116
+    },
+    {
+      "name": "close",
+      "file": "src/main-macrosrv.cpp",
+      "line": 120
+    },
+    {
+      "name": "Errorln",
+      "file": "src/main-macrosrv.cpp",
+      "line": 121
+    },
+    {
+      "name": "w",
+      "file": "src/main-macrosrv.cpp",
+      "line": 143
+    },
+    {
+      "name": "ci",
+      "file": "src/main-macrosrv.cpp",
+      "line": 160
+    },
+    {
+      "name": "evaluator",
+      "file": "src/main-macrosrv.cpp",
+      "line": 162
+    },
+    {
+      "name": "CloseHandle",
+      "file": "src/main-macrosrv.cpp",
+      "line": 174
+    },
+    {
+      "name": "CloseHandle",
+      "file": "src/main-macrosrv.cpp",
+      "line": 175
+    }
+  ],
+  "submodules": [
+    "ast",
+    "basic",
+    "chir",
+    "codegen",
+    "conditionalcompilation",
+    "driver",
+    "frontend",
+    "frontendtool",
+    "incrementalcompilation",
+    "lex",
+    "macro",
+    "mangle",
+    "metatransformation",
+    "modules",
+    "option",
+    "parse",
+    "sema",
+    "utils"
+  ]
+}

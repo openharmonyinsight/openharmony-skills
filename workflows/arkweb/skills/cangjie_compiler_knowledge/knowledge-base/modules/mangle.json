@@ -1,0 +1,748 @@
+{
+  "name": "mangle",
+  "path": "src/Mangle",
+  "files": [
+    "src/Mangle/ASTMangler.cpp",
+    "src/Mangle/CHIRMangler.cpp",
+    "src/Mangle/CHIRManglingUtils.cpp",
+    "src/Mangle/CHIRTypeManglingUtils.cpp",
+    "src/Mangle/Compression.cpp",
+    "src/Mangle/BaseMangler.cpp",
+    "src/Mangle/Compression.h"
+  ],
+  "classes": [
+    {
+      "name": "Cangjie",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 246
+    },
+    {
+      "name": "Entity",
+      "file": "src/Mangle/Compression.h",
+      "line": 52
+    },
+    {
+      "name": "CJType",
+      "file": "src/Mangle/Compression.h",
+      "line": 60
+    },
+    {
+      "name": "FunctionEntity",
+      "file": "src/Mangle/Compression.h",
+      "line": 71
+    },
+    {
+      "name": "DataEntity",
+      "file": "src/Mangle/Compression.h",
+      "line": 83
+    },
+    {
+      "name": "ExtendEntity",
+      "file": "src/Mangle/Compression.h",
+      "line": 93
+    },
+    {
+      "name": "CompositeType",
+      "file": "src/Mangle/Compression.h",
+      "line": 105
+    },
+    {
+      "name": "FunctionType",
+      "file": "src/Mangle/Compression.h",
+      "line": 117
+    },
+    {
+      "name": "TupleType",
+      "file": "src/Mangle/Compression.h",
+      "line": 128
+    }
+  ],
+  "functions": [
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 27
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 42
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 51
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 60
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 72
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 76
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 83
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 93
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 105
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 153
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 159
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 207
+    },
+    {
+      "name": "MangleVarWithPatternDecl",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 255
+    },
+    {
+      "name": "std::move",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 256
+    },
+    {
+      "name": "MangleExtendDecl",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 260
+    },
+    {
+      "name": "std::move",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 261
+    },
+    {
+      "name": "MangleDeclCommon",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 263
+    },
+    {
+      "name": "std::move",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 264
+    },
+    {
+      "name": "MangleExtendLiteralIfInExtend",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 305
+    },
+    {
+      "name": "MangleNestedDecl",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 306
+    },
+    {
+      "name": "MangleGenericArguments",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 315
+    },
+    {
+      "name": "MangleOthers",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 317
+    },
+    {
+      "name": "MangleFuncParameters",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 330
+    },
+    {
+      "name": "MangleFuncParameters",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 338
+    },
+    {
+      "name": "MangleFuncParameters",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 355
+    },
+    {
+      "name": "MangleFuncParameters",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 359
+    },
+    {
+      "name": "MangleExtendDecl",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 421
+    },
+    {
+      "name": "MangleGenericArguments",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 424
+    },
+    {
+      "name": "MangleGenericConstraints",
+      "file": "src/Mangle/ASTMangler.cpp",
+      "line": 448
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/CHIRManglingUtils.cpp",
+      "line": 35
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/CHIRManglingUtils.cpp",
+      "line": 115
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Mangle/CHIRTypeManglingUtils.cpp",
+      "line": 77
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Mangle/CHIRTypeManglingUtils.cpp",
+      "line": 92
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Mangle/CHIRTypeManglingUtils.cpp",
+      "line": 134
+    },
+    {
+      "name": "MangleType",
+      "file": "src/Mangle/CHIRTypeManglingUtils.cpp",
+      "line": 219
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/CHIRTypeManglingUtils.cpp",
+      "line": 229
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/CHIRTypeManglingUtils.cpp",
+      "line": 253
+    },
+    {
+      "name": "MangleType",
+      "file": "src/Mangle/CHIRTypeManglingUtils.cpp",
+      "line": 260
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/CHIRTypeManglingUtils.cpp",
+      "line": 309
+    },
+    {
+      "name": "GetTypeQualifiedNameOfCustomType",
+      "file": "src/Mangle/CHIRTypeManglingUtils.cpp",
+      "line": 336
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/CHIRTypeManglingUtils.cpp",
+      "line": 355
+    },
+    {
+      "name": "ForwardNumber",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 214
+    },
+    {
+      "name": "ForwardFileNameNumber",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 312
+    },
+    {
+      "name": "ForwardNumber",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 346
+    },
+    {
+      "name": "ForwardCompressed",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 356
+    },
+    {
+      "name": "ForwardCompressed",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 419
+    },
+    {
+      "name": "ForwardCompressed",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 449
+    },
+    {
+      "name": "ForwardCompressed",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 477
+    },
+    {
+      "name": "ForwardCompressed",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 496
+    },
+    {
+      "name": "TryGenericPrefixPath",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 734
+    },
+    {
+      "name": "RecursionEntity",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 885
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 893
+    },
+    {
+      "name": "RecursionType",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 919
+    },
+    {
+      "name": "RecursionTypes",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 929
+    },
+    {
+      "name": "RecursionEntity",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 946
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 961
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 962
+    },
+    {
+      "name": "RecursionEntity",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 985
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 999
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1000
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1055
+    },
+    {
+      "name": "RecursionType",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1062
+    },
+    {
+      "name": "RecursionType",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1069
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1098
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1103
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1105
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1121
+    },
+    {
+      "name": "RecursionType",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1127
+    },
+    {
+      "name": "RecursionType",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1137
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1138
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1139
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1143
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1172
+    },
+    {
+      "name": "ForwardType",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1179
+    },
+    {
+      "name": "RecursionType",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1180
+    },
+    {
+      "name": "RecursionType",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1188
+    },
+    {
+      "name": "ForwardType",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1196
+    },
+    {
+      "name": "RecursionType",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1197
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1207
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1210
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1212
+    },
+    {
+      "name": "RecursionType",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1217
+    },
+    {
+      "name": "RecursionType",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1227
+    },
+    {
+      "name": "RecursionType",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1229
+    },
+    {
+      "name": "RecursionHelper",
+      "file": "src/Mangle/Compression.cpp",
+      "line": 1235
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 140
+    },
+    {
+      "name": "MangleUtils::MangleName",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 188
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 210
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 222
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 226
+    },
+    {
+      "name": "MangleType",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 256
+    },
+    {
+      "name": "MangleGenericType",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 268
+    },
+    {
+      "name": "MangleGenericType",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 270
+    },
+    {
+      "name": "MangleCPointerType",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 273
+    },
+    {
+      "name": "MangleEnumType",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 275
+    },
+    {
+      "name": "MangleRawArrayType",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 277
+    },
+    {
+      "name": "MangleVArrayType",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 279
+    },
+    {
+      "name": "MangleTupleType",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 281
+    },
+    {
+      "name": "MangleFuncType",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 283
+    },
+    {
+      "name": "MangleUserDefinedType",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 286
+    },
+    {
+      "name": "MangleCStringType",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 288
+    },
+    {
+      "name": "MangleGenericArgumentsHelper",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 322
+    },
+    {
+      "name": "Mangle",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 483
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 540
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 642
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 643
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 884
+    },
+    {
+      "name": "Compression::CJMangledCompression",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 931
+    },
+    {
+      "name": "Walker",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 936
+    },
+    {
+      "name": "Walker",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 969
+    },
+    {
+      "name": "MangleExportIdForGenericParamDecl",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 991
+    },
+    {
+      "name": "Mangle",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1000
+    },
+    {
+      "name": "MangleExportIdForGenericParamDecl",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1011
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1021
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1041
+    },
+    {
+      "name": "MangleUserDefinedType",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1043
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1049
+    },
+    {
+      "name": "MangleType",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1052
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1058
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1071
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1085
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1102
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1111
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1136
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1148
+    },
+    {
+      "name": "MangleFullPackageName",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1175
+    },
+    {
+      "name": "ToBase62",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1208
+    },
+    {
+      "name": "Walker",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1315
+    },
+    {
+      "name": "Walker",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1342
+    },
+    {
+      "name": "Walker",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1367
+    },
+    {
+      "name": "Walker",
+      "file": "src/Mangle/BaseMangler.cpp",
+      "line": 1403
+    },
+    {
+      "name": "IsVarDeclEncode",
+      "file": "src/Mangle/Compression.h",
+      "line": 143
+    },
+    {
+      "name": "IsDefaultParamFuncEncode",
+      "file": "src/Mangle/Compression.h",
+      "line": 151
+    },
+    {
+      "name": "ForwardName",
+      "file": "src/Mangle/Compression.h",
+      "line": 185
+    },
+    {
+      "name": "ForwardNumber",
+      "file": "src/Mangle/Compression.h",
+      "line": 194
+    },
+    {
+      "name": "CJMangledCompression",
+      "file": "src/Mangle/Compression.h",
+      "line": 203
+    },
+    {
+      "name": "TryParsePath",
+      "file": "src/Mangle/Compression.h",
+      "line": 213
+    }
+  ],
+  "submodules": []
+}

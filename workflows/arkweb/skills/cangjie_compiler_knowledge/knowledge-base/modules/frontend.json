@@ -1,0 +1,889 @@
+{
+  "name": "frontend",
+  "path": "src/Frontend",
+  "files": [
+    "src/Frontend/CompileStrategy.cpp",
+    "src/Frontend/FrontendOptions.cpp",
+    "src/Frontend/CompilerInstance.cpp",
+    "src/Frontend/CompilerInvocation.cpp",
+    "src/Frontend/MergeAnnoFromCjd.h",
+    "src/Frontend/PrintSymbolTable.h",
+    "src/Frontend/MergeAnnoFromCjd.cpp",
+    "src/Frontend/PrintSymbolTable.cpp"
+  ],
+  "classes": [
+    {
+      "name": "FullCompileStrategyImpl",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 91
+    },
+    {
+      "name": "MetaTransformPlugin",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 226
+    },
+    {
+      "name": "DeclAndPackageNameHasher",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 630
+    }
+  ],
+  "functions": [
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 41
+    },
+    {
+      "name": "CompileStrategy::InteropConfigTomlCheck",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 46
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 75
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 78
+    },
+    {
+      "name": "Cangjie::PerformDesugarBeforeTypeCheck",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 86
+    },
+    {
+      "name": "InitializePackageInfoFromFirstFile",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 182
+    },
+    {
+      "name": "CheckPackageConsistency",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 194
+    },
+    {
+      "name": "taskQueue",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 221
+    },
+    {
+      "name": "Cangjie::CreateAltSignalStack",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 233
+    },
+    {
+      "name": "Cangjie::RegisterCrashSignalHandler",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 238
+    },
+    {
+      "name": "CJC_ASSERT_WITH_MSG",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 278
+    },
+    {
+      "name": "CheckPackageConsistency",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 283
+    },
+    {
+      "name": "DeleteFileInPackage",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 317
+    },
+    {
+      "name": "DeleteFileInPackage",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 323
+    },
+    {
+      "name": "CJC_ASSERT_WITH_MSG",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 346
+    },
+    {
+      "name": "BuildFileInfoQueueFromCache",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 347
+    },
+    {
+      "name": "MultiThreadParseOnePackage",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 350
+    },
+    {
+      "name": "ParseAndMergeCjds",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 450
+    },
+    {
+      "name": "guardOfSm",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 483
+    },
+    {
+      "name": "InternalError",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 495
+    },
+    {
+      "name": "guard",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 499
+    },
+    {
+      "name": "Utils::ProfileRecorder::Start",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 513
+    },
+    {
+      "name": "ParseAndMergeCjd",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 522
+    },
+    {
+      "name": "guard",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 525
+    },
+    {
+      "name": "InternalError",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 530
+    },
+    {
+      "name": "Utils::ProfileRecorder::Stop",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 543
+    },
+    {
+      "name": "me",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 549
+    },
+    {
+      "name": "recorder",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 567
+    },
+    {
+      "name": "PerformDesugar",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 568
+    },
+    {
+      "name": "InteropConfigTomlCheck",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 571
+    },
+    {
+      "name": "TypeCheck",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 572
+    },
+    {
+      "name": "Cangjie::SignalTest::ExecuteSignalTestCallbackFunc",
+      "file": "src/Frontend/CompileStrategy.cpp",
+      "line": 575
+    },
+    {
+      "name": "GlobalOptions::ParseOption",
+      "file": "src/Frontend/FrontendOptions.cpp",
+      "line": 48
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 65
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 66
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 80
+    },
+    {
+      "name": "AST::ASTHasher::Init",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 82
+    },
+    {
+      "name": "DumpASTToScreen",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 145
+    },
+    {
+      "name": "FileUtil::RemoveDirectoryRecursively",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 158
+    },
+    {
+      "name": "FileUtil::CreateDirs",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 160
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 165
+    },
+    {
+      "name": "ofs",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 170
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 172
+    },
+    {
+      "name": "RegisterCallbackTo",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 229
+    },
+    {
+      "name": "MetaTransformPlugin",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 244
+    },
+    {
+      "name": "NullPointerException",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 268
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 270
+    },
+    {
+      "name": "NullPointerException",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 276
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 278
+    },
+    {
+      "name": "MetaTransformPlugin",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 282
+    },
+    {
+      "name": "Utils::ProfileRecorder::SetPackageName",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 320
+    },
+    {
+      "name": "Utils::ProfileRecorder::SetOutputDir",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 321
+    },
+    {
+      "name": "Print",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 355
+    },
+    {
+      "name": "Print",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 358
+    },
+    {
+      "name": "Println",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 361
+    },
+    {
+      "name": "InternalError",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 403
+    },
+    {
+      "name": "InternalError",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 417
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 436
+    },
+    {
+      "name": "UpdateMemberDeclMangleNameForCachedInfo",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 439
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 449
+    },
+    {
+      "name": "UpdateMemberDeclMangleNameForCachedInfo",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 452
+    },
+    {
+      "name": "UpdateTopLevelDeclMangleNameForCachedInfo",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 461
+    },
+    {
+      "name": "UpdateTopLevelDeclMangleNameForCachedInfo",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 465
+    },
+    {
+      "name": "UpdateMangleNameForCachedInfo",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 472
+    },
+    {
+      "name": "UpdateCachedInfo",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 491
+    },
+    {
+      "name": "WriteCachedInfo",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 492
+    },
+    {
+      "name": "std::make_pair",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 521
+    },
+    {
+      "name": "recorder",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 539
+    },
+    {
+      "name": "CalculateASTCache",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 540
+    },
+    {
+      "name": "InternalError",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 589
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 594
+    },
+    {
+      "name": "Utils::ProfileRecorder::Start",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 598
+    },
+    {
+      "name": "Utils::ProfileRecorder::Stop",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 601
+    },
+    {
+      "name": "Utils::ProfileRecorder::Start",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 602
+    },
+    {
+      "name": "Utils::ProfileRecorder::Stop",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 610
+    },
+    {
+      "name": "recorder",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 612
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 617
+    },
+    {
+      "name": "taskQueue",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 719
+    },
+    {
+      "name": "Walker",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 748
+    },
+    {
+      "name": "ManglingHelpFunction",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 810
+    },
+    {
+      "name": "convertor",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 831
+    },
+    {
+      "name": "CHIR::CHIRPrinter::PrintPackage",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 835
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 840
+    },
+    {
+      "name": "Cangjie::SignalTest::ExecuteSignalTestCallbackFunc",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 854
+    },
+    {
+      "name": "PrintSymbolTable",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 917
+    },
+    {
+      "name": "Println",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 922
+    },
+    {
+      "name": "Println",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 923
+    },
+    {
+      "name": "Println",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 925
+    },
+    {
+      "name": "AddSourceToMember",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 973
+    },
+    {
+      "name": "MergePackages",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 989
+    },
+    {
+      "name": "ModularizeCompilation",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 990
+    },
+    {
+      "name": "collectInheritMember",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 1055
+    },
+    {
+      "name": "collectInheritMember",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 1067
+    },
+    {
+      "name": "CHIR::CHIRDeserializer::Deserialize",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 1145
+    },
+    {
+      "name": "CHIR::CHIRPrinter::PrintCHIRSerializeInfo",
+      "file": "src/Frontend/CompilerInstance.cpp",
+      "line": 1147
+    },
+    {
+      "name": "MergeCusAnno",
+      "file": "src/Frontend/MergeAnnoFromCjd.h",
+      "line": 20
+    },
+    {
+      "name": "PrintSymbolTable",
+      "file": "src/Frontend/PrintSymbolTable.h",
+      "line": 110
+    },
+    {
+      "name": "IsSameType",
+      "file": "src/Frontend/MergeAnnoFromCjd.cpp",
+      "line": 63
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Frontend/MergeAnnoFromCjd.cpp",
+      "line": 211
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Frontend/MergeAnnoFromCjd.cpp",
+      "line": 213
+    },
+    {
+      "name": "ExpandToAPILevel",
+      "file": "src/Frontend/MergeAnnoFromCjd.cpp",
+      "line": 286
+    },
+    {
+      "name": "IsSameDeclByIdentifier",
+      "file": "src/Frontend/MergeAnnoFromCjd.cpp",
+      "line": 305
+    },
+    {
+      "name": "ExpandToAPILevel",
+      "file": "src/Frontend/MergeAnnoFromCjd.cpp",
+      "line": 428
+    },
+    {
+      "name": "IterateToplevelDecls",
+      "file": "src/Frontend/MergeAnnoFromCjd.cpp",
+      "line": 441
+    },
+    {
+      "name": "IsSameDeclByIdentifier",
+      "file": "src/Frontend/MergeAnnoFromCjd.cpp",
+      "line": 451
+    },
+    {
+      "name": "IterateToplevelDecls",
+      "file": "src/Frontend/MergeAnnoFromCjd.cpp",
+      "line": 465
+    },
+    {
+      "name": "ExpandToAPILevel",
+      "file": "src/Frontend/MergeAnnoFromCjd.cpp",
+      "line": 481
+    },
+    {
+      "name": "ExpandToAPILevel",
+      "file": "src/Frontend/MergeAnnoFromCjd.cpp",
+      "line": 516
+    },
+    {
+      "name": "MergeTopLevelDecl",
+      "file": "src/Frontend/MergeAnnoFromCjd.cpp",
+      "line": 536
+    },
+    {
+      "name": "MergeMemberDecl",
+      "file": "src/Frontend/MergeAnnoFromCjd.cpp",
+      "line": 541
+    },
+    {
+      "name": "PrintIndentOnly",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 31
+    },
+    {
+      "name": "PrintNoSplit",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 32
+    },
+    {
+      "name": "PrintIndentNoSplitNoEndl",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 37
+    },
+    {
+      "name": "Println",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 38
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 43
+    },
+    {
+      "name": "PrintIndentNoSplit",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 44
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 45
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 47
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 48
+    },
+    {
+      "name": "Println",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 54
+    },
+    {
+      "name": "PrintIndentNoSplitNoEndl",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 55
+    },
+    {
+      "name": "Println",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 57
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 58
+    },
+    {
+      "name": "PrintIndentNoSplitNoEndl",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 59
+    },
+    {
+      "name": "PrintPackage",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 70
+    },
+    {
+      "name": "Println",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 74
+    },
+    {
+      "name": "PrintPackage",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 75
+    },
+    {
+      "name": "Println",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 78
+    },
+    {
+      "name": "PrintIndentNoSplit",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 83
+    },
+    {
+      "name": "PrintIndentNoSplit",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 84
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 85
+    },
+    {
+      "name": "PrintIndentNoSplit",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 86
+    },
+    {
+      "name": "PrintPosition",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 92
+    },
+    {
+      "name": "PrintPosition",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 93
+    },
+    {
+      "name": "PrintPosition",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 99
+    },
+    {
+      "name": "PrintPosition",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 101
+    },
+    {
+      "name": "PrintPosition",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 103
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 120
+    },
+    {
+      "name": "PrintIndentNoSplit",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 121
+    },
+    {
+      "name": "PrintIndentNoSplit",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 122
+    },
+    {
+      "name": "PrintPackageSpecPart",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 124
+    },
+    {
+      "name": "PrintImportSpecPart",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 126
+    },
+    {
+      "name": "PrintDeclPart",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 128
+    },
+    {
+      "name": "PrintPosition",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 130
+    },
+    {
+      "name": "PrintPosition",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 131
+    },
+    {
+      "name": "PrintIndentNoSplitNoEndl",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 132
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 137
+    },
+    {
+      "name": "PrintIndentNoSplit",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 138
+    },
+    {
+      "name": "PrintIndentNoSplit",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 139
+    },
+    {
+      "name": "PrintNode",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 142
+    },
+    {
+      "name": "Println",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 145
+    },
+    {
+      "name": "PrintNode",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 146
+    },
+    {
+      "name": "Println",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 148
+    },
+    {
+      "name": "PrintIndentNoSplit",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 150
+    },
+    {
+      "name": "PrintIndentNoSplitNoEndl",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 151
+    },
+    {
+      "name": "Println",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 165
+    },
+    {
+      "name": "PrintFile",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 166
+    },
+    {
+      "name": "Println",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 168
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 197
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 208
+    },
+    {
+      "name": "HandleFileNode",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 211
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 222
+    },
+    {
+      "name": "AddSymbolToInfo",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 225
+    },
+    {
+      "name": "Println",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 228
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 229
+    },
+    {
+      "name": "PrintPackages",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 230
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 231
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 232
+    },
+    {
+      "name": "PrintFiles",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 233
+    },
+    {
+      "name": "PrintIndent",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 234
+    },
+    {
+      "name": "Println",
+      "file": "src/Frontend/PrintSymbolTable.cpp",
+      "line": 235
+    }
+  ],
+  "submodules": []
+}

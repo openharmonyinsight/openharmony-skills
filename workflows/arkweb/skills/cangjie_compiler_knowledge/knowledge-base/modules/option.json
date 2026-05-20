@@ -1,0 +1,413 @@
+{
+  "name": "option",
+  "path": "src/Option",
+  "files": [
+    "src/Option/OptionAction.cpp",
+    "src/Option/OptionTable.cpp",
+    "src/Option/Option.cpp"
+  ],
+  "classes": [],
+  "functions": [
+    {
+      "name": "Errorln",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 210
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 222
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 232
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 265
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 270
+    },
+    {
+      "name": "Unicode::NFC",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 354
+    },
+    {
+      "name": "RemoveEscapedSymbol",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 373
+    },
+    {
+      "name": "Utils::TrimStringVector",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 388
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 411
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 426
+    },
+    {
+      "name": "Utils::TrimStringVector",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 540
+    },
+    {
+      "name": "RemoveEscapedSymbol",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 554
+    },
+    {
+      "name": "ParseTargetTriple",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 639
+    },
+    {
+      "name": "WarningOptionMgr::UpdateFlag",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 713
+    },
+    {
+      "name": "WarningOptionMgr::UpdateFlag",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 724
+    },
+    {
+      "name": "ParsePassedWhen",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 919
+    },
+    {
+      "name": "OccurrenceCheck",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 1125
+    },
+    {
+      "name": "DeprecatedOptionCheck",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 1126
+    },
+    {
+      "name": "SetupConditionalCompilationCfgFromFile",
+      "file": "src/Option/OptionAction.cpp",
+      "line": 1154
+    },
+    {
+      "name": "std::make_pair",
+      "file": "src/Option/OptionTable.cpp",
+      "line": 68
+    },
+    {
+      "name": "BelongsTo",
+      "file": "src/Option/OptionTable.cpp",
+      "line": 122
+    },
+    {
+      "name": "SetArgValue",
+      "file": "src/Option/OptionTable.cpp",
+      "line": 150
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Option/OptionTable.cpp",
+      "line": 199
+    },
+    {
+      "name": "name",
+      "file": "src/Option/OptionTable.cpp",
+      "line": 253
+    },
+    {
+      "name": "desc",
+      "file": "src/Option/OptionTable.cpp",
+      "line": 262
+    },
+    {
+      "name": "PrintCommandDesc",
+      "file": "src/Option/OptionTable.cpp",
+      "line": 269
+    },
+    {
+      "name": "PrintCommandDesc",
+      "file": "src/Option/OptionTable.cpp",
+      "line": 271
+    },
+    {
+      "name": "PrintCommandDesc",
+      "file": "src/Option/OptionTable.cpp",
+      "line": 272
+    },
+    {
+      "name": "PrintCommandDesc",
+      "file": "src/Option/OptionTable.cpp",
+      "line": 295
+    },
+    {
+      "name": "Println",
+      "file": "src/Option/OptionTable.cpp",
+      "line": 306
+    },
+    {
+      "name": "Println",
+      "file": "src/Option/OptionTable.cpp",
+      "line": 309
+    },
+    {
+      "name": "Println",
+      "file": "src/Option/OptionTable.cpp",
+      "line": 311
+    },
+    {
+      "name": "Println",
+      "file": "src/Option/OptionTable.cpp",
+      "line": 313
+    },
+    {
+      "name": "Println",
+      "file": "src/Option/OptionTable.cpp",
+      "line": 314
+    },
+    {
+      "name": "PrintInfo",
+      "file": "src/Option/OptionTable.cpp",
+      "line": 322
+    },
+    {
+      "name": "SetupChirOptions",
+      "file": "src/Option/Option.cpp",
+      "line": 247
+    },
+    {
+      "name": "SetupCompileTargetOptions",
+      "file": "src/Option/Option.cpp",
+      "line": 248
+    },
+    {
+      "name": "RefactJobs",
+      "file": "src/Option/Option.cpp",
+      "line": 264
+    },
+    {
+      "name": "RefactAggressiveParallelCompileOption",
+      "file": "src/Option/Option.cpp",
+      "line": 265
+    },
+    {
+      "name": "DisableStaticStdForOhos",
+      "file": "src/Option/Option.cpp",
+      "line": 266
+    },
+    {
+      "name": "Errorf",
+      "file": "src/Option/Option.cpp",
+      "line": 308
+    },
+    {
+      "name": "Errorf",
+      "file": "src/Option/Option.cpp",
+      "line": 343
+    },
+    {
+      "name": "Errorf",
+      "file": "src/Option/Option.cpp",
+      "line": 415
+    },
+    {
+      "name": "Errorf",
+      "file": "src/Option/Option.cpp",
+      "line": 420
+    },
+    {
+      "name": "Warningf",
+      "file": "src/Option/Option.cpp",
+      "line": 431
+    },
+    {
+      "name": "Warningf",
+      "file": "src/Option/Option.cpp",
+      "line": 435
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Option/Option.cpp",
+      "line": 490
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Option/Option.cpp",
+      "line": 495
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Option/Option.cpp",
+      "line": 500
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Option/Option.cpp",
+      "line": 506
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Option/Option.cpp",
+      "line": 511
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Option/Option.cpp",
+      "line": 517
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Option/Option.cpp",
+      "line": 522
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Option/Option.cpp",
+      "line": 536
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Option/Option.cpp",
+      "line": 540
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Option/Option.cpp",
+      "line": 544
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Option/Option.cpp",
+      "line": 548
+    },
+    {
+      "name": "ErrorExperimentalOption",
+      "file": "src/Option/Option.cpp",
+      "line": 987
+    },
+    {
+      "name": "ErrorExperimentalOption",
+      "file": "src/Option/Option.cpp",
+      "line": 1006
+    },
+    {
+      "name": "DeprecatedOptionCheck",
+      "file": "src/Option/Option.cpp",
+      "line": 1011
+    },
+    {
+      "name": "OccurrenceCheck",
+      "file": "src/Option/Option.cpp",
+      "line": 1018
+    },
+    {
+      "name": "RaiseArgumentUnusedMessage",
+      "file": "src/Option/Option.cpp",
+      "line": 1038
+    },
+    {
+      "name": "RaiseArgumentUnusedMessage",
+      "file": "src/Option/Option.cpp",
+      "line": 1042
+    },
+    {
+      "name": "RaiseArgumentUnusedMessage",
+      "file": "src/Option/Option.cpp",
+      "line": 1047
+    },
+    {
+      "name": "printErrorMessage",
+      "file": "src/Option/Option.cpp",
+      "line": 1064
+    },
+    {
+      "name": "printErrorMessage",
+      "file": "src/Option/Option.cpp",
+      "line": 1075
+    },
+    {
+      "name": "RaiseArgumentUnusedMessage",
+      "file": "src/Option/Option.cpp",
+      "line": 1091
+    },
+    {
+      "name": "RaiseArgumentUnusedMessage",
+      "file": "src/Option/Option.cpp",
+      "line": 1095
+    },
+    {
+      "name": "RaiseArgumentUnusedMessage",
+      "file": "src/Option/Option.cpp",
+      "line": 1099
+    },
+    {
+      "name": "RaiseArgumentUnusedMessage",
+      "file": "src/Option/Option.cpp",
+      "line": 1104
+    },
+    {
+      "name": "ValidateInputFilePath",
+      "file": "src/Option/Option.cpp",
+      "line": 1114
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Option/Option.cpp",
+      "line": 1231
+    },
+    {
+      "name": "FileUtil::GetFileName",
+      "file": "src/Option/Option.cpp",
+      "line": 1300
+    },
+    {
+      "name": "FileUtil::GetFileName",
+      "file": "src/Option/Option.cpp",
+      "line": 1304
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/Option/Option.cpp",
+      "line": 1380
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/Option/Option.cpp",
+      "line": 1401
+    },
+    {
+      "name": "CompileTargetToSerializedString",
+      "file": "src/Option/Option.cpp",
+      "line": 1418
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/Option/Option.cpp",
+      "line": 1420
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/Option/Option.cpp",
+      "line": 1435
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/Option/Option.cpp",
+      "line": 1512
+    }
+  ],
+  "submodules": []
+}

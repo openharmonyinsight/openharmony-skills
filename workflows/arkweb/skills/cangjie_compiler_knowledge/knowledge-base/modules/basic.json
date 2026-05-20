@@ -1,0 +1,930 @@
+{
+  "name": "basic",
+  "path": "src/Basic",
+  "files": [
+    "src/Basic/DiagnosticEmitterImpl.h",
+    "src/Basic/DiagnosticEngineImpl.h",
+    "src/Basic/DiagnosticEngineImpl.cpp",
+    "src/Basic/DiagnosticEngine.cpp",
+    "src/Basic/DiagnosticJsonFormatter.cpp",
+    "src/Basic/Display.cpp",
+    "src/Basic/DiagnosticEmitter.cpp",
+    "src/Basic/InteropCJPackageConfigReader.cpp",
+    "src/Basic/Print.cpp",
+    "src/Basic/SourceManager.cpp",
+    "src/Basic/Version.cpp",
+    "src/Basic/StringConvertor.cpp",
+    "src/Basic/Position.cpp",
+    "src/Basic/Utils.cpp"
+  ],
+  "classes": [
+    {
+      "name": "CombinedLine",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 24
+    },
+    {
+      "name": "CollectedInfo",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 35
+    },
+    {
+      "name": "MultiLineHashFunc",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 53
+    },
+    {
+      "name": "MultiLineEqualFunc",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 61
+    },
+    {
+      "name": "DiagnosticEmitterImpl",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 68
+    },
+    {
+      "name": "DiagnosticEngineImpl",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 19
+    },
+    {
+      "name": "DiagRange",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 70
+    }
+  ],
+  "functions": [
+    {
+      "name": "HandleSpecialCharacters",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 21
+    },
+    {
+      "name": "Emit",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 75
+    },
+    {
+      "name": "CollectInformation",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 88
+    },
+    {
+      "name": "SortAndCheck",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 89
+    },
+    {
+      "name": "GetDisplayedWidthFromSource",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 90
+    },
+    {
+      "name": "InsertSymbolNotFirstLine",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 93
+    },
+    {
+      "name": "ConvertHangingContents",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 100
+    },
+    {
+      "name": "AnalyseMultiLineHanging",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 103
+    },
+    {
+      "name": "ColorizeCombinedVec",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 108
+    },
+    {
+      "name": "GetSourceCode",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 109
+    },
+    {
+      "name": "CombineErrorPrint",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 110
+    },
+    {
+      "name": "HandleUnprintableChar",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 111
+    },
+    {
+      "name": "CompressLineCode",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 112
+    },
+    {
+      "name": "EmitErrorMessage",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 113
+    },
+    {
+      "name": "EmitErrorLocation",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 114
+    },
+    {
+      "name": "ConstructAndEmitSourceCode",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 115
+    },
+    {
+      "name": "EmitSourceCode",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 116
+    },
+    {
+      "name": "EmitNote",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 117
+    },
+    {
+      "name": "EmitSingleNoteWithSource",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 118
+    },
+    {
+      "name": "EmitSingleMessageWithoutSource",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 119
+    },
+    {
+      "name": "GetHelpSubstituteSource",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 120
+    },
+    {
+      "name": "HelpSubstitutionToMap",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 121
+    },
+    {
+      "name": "HelpSubstituteConvert",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 124
+    },
+    {
+      "name": "EmitSingleHelpWithSource",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 125
+    },
+    {
+      "name": "EmitHelp",
+      "file": "src/Basic/DiagnosticEmitterImpl.h",
+      "line": 126
+    },
+    {
+      "name": "SetSourceManager",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 55
+    },
+    {
+      "name": "std::move",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 75
+    },
+    {
+      "name": "AddMacroCallNote",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 86
+    },
+    {
+      "name": "Prepare",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 89
+    },
+    {
+      "name": "Commit",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 90
+    },
+    {
+      "name": "ClearTransaction",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 91
+    },
+    {
+      "name": "RegisterHandler",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 117
+    },
+    {
+      "name": "IncreaseErrorCount",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 119
+    },
+    {
+      "name": "IncreaseWarningCount",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 121
+    },
+    {
+      "name": "IncreaseErrorCount",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 123
+    },
+    {
+      "name": "GetWarningCount",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 125
+    },
+    {
+      "name": "GetErrorCount",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 127
+    },
+    {
+      "name": "Reset",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 216
+    },
+    {
+      "name": "ReportErrorAndWarningCount",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 239
+    },
+    {
+      "name": "DisableDiagnose",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 249
+    },
+    {
+      "name": "EnableDiagnose",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 251
+    },
+    {
+      "name": "EnableDiagnose",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 257
+    },
+    {
+      "name": "ConsumeStoredDiags",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 259
+    },
+    {
+      "name": "HardDisable",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 261
+    },
+    {
+      "name": "CheckRange",
+      "file": "src/Basic/DiagnosticEngineImpl.h",
+      "line": 267
+    },
+    {
+      "name": "std::swap",
+      "file": "src/Basic/DiagnosticEngineImpl.cpp",
+      "line": 43
+    },
+    {
+      "name": "std::swap",
+      "file": "src/Basic/DiagnosticEngineImpl.cpp",
+      "line": 44
+    },
+    {
+      "name": "std::swap",
+      "file": "src/Basic/DiagnosticEngineImpl.cpp",
+      "line": 45
+    },
+    {
+      "name": "Range",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 39
+    },
+    {
+      "name": "GET_CATE",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 64
+    },
+    {
+      "name": "GET_CATE",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 65
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 101
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 216
+    },
+    {
+      "name": "subDiag",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 256
+    },
+    {
+      "name": "AddNote",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 257
+    },
+    {
+      "name": "subDiag",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 270
+    },
+    {
+      "name": "AddNote",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 271
+    },
+    {
+      "name": "subDiag",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 279
+    },
+    {
+      "name": "AddNote",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 280
+    },
+    {
+      "name": "subDiag",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 285
+    },
+    {
+      "name": "AddNote",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 286
+    },
+    {
+      "name": "IncreaseErrorCount",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 311
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 395
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 406
+    },
+    {
+      "name": "std::to_string",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 458
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 460
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 470
+    },
+    {
+      "name": "std::string",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 475
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 477
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 485
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 489
+    },
+    {
+      "name": "ConvertArgsToDiagMessage",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 520
+    },
+    {
+      "name": "InternalError",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 537
+    },
+    {
+      "name": "InternalError",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 540
+    },
+    {
+      "name": "checkZero",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 545
+    },
+    {
+      "name": "guard",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 549
+    },
+    {
+      "name": "checkZero",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 553
+    },
+    {
+      "name": "ConsumeStoredDiags",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 600
+    },
+    {
+      "name": "EnableDiagnose",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 618
+    },
+    {
+      "name": "MakeRange",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 634
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 639
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 645
+    },
+    {
+      "name": "ConvertArgsToDiagMessage",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 702
+    },
+    {
+      "name": "ConvertOldDiagToNew",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 793
+    },
+    {
+      "name": "SetPrevDiag",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 798
+    },
+    {
+      "name": "EmitDiagnose",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 826
+    },
+    {
+      "name": "formatter",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 841
+    },
+    {
+      "name": "formatter",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 887
+    },
+    {
+      "name": "EmitCategoryDiagnostics",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 893
+    },
+    {
+      "name": "EmitCategoryDiagnostics",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 896
+    },
+    {
+      "name": "EmitDiagnose",
+      "file": "src/Basic/DiagnosticEngine.cpp",
+      "line": 935
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/DiagnosticJsonFormatter.cpp",
+      "line": 239
+    },
+    {
+      "name": "Char32ToUTF8",
+      "file": "src/Basic/Display.cpp",
+      "line": 69
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/Display.cpp",
+      "line": 147
+    },
+    {
+      "name": "std::string",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 46
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 71
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 80
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 98
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 145
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 146
+    },
+    {
+      "name": "InsertSymbolInFirstLine",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 179
+    },
+    {
+      "name": "InsertSymbolNotFirstLine",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 181
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 199
+    },
+    {
+      "name": "InsertSymbolInFirstLine",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 276
+    },
+    {
+      "name": "InsertSymbolToUpperLine",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 283
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 290
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 314
+    },
+    {
+      "name": "InternalError",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 343
+    },
+    {
+      "name": "AnalyseMultiLineHanging",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 347
+    },
+    {
+      "name": "InsertSymbolToUpperLine",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 376
+    },
+    {
+      "name": "CompressLineCode",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 387
+    },
+    {
+      "name": "CombineErrorPrintMultiLine",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 406
+    },
+    {
+      "name": "CombineErrorPrintSingleLine",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 408
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 581
+    },
+    {
+      "name": "ConvertHangingContentsHelper",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 582
+    },
+    {
+      "name": "HandleSpecialCharacters",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 603
+    },
+    {
+      "name": "EmitErrorMessage",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 628
+    },
+    {
+      "name": "CollectInformation",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 631
+    },
+    {
+      "name": "CollectInformation",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 633
+    },
+    {
+      "name": "SortAndCheck",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 636
+    },
+    {
+      "name": "EmitErrorLocation",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 641
+    },
+    {
+      "name": "ConstructAndEmitSourceCode",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 644
+    },
+    {
+      "name": "EmitHelp",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 648
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 673
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 675
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 676
+    },
+    {
+      "name": "HelpSubstituteConvertHelper",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 694
+    },
+    {
+      "name": "HandleUnprintableChar",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 746
+    },
+    {
+      "name": "ColorizeCombinedVec",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 749
+    },
+    {
+      "name": "EmitSourceCode",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 752
+    },
+    {
+      "name": "EmitSingleMessageWithoutSource",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 788
+    },
+    {
+      "name": "EmitSingleMessageWithoutSource",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 804
+    },
+    {
+      "name": "HandleUnprintableChar",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 875
+    },
+    {
+      "name": "ColorizeCombinedVec",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 878
+    },
+    {
+      "name": "EmitSourceCode",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 881
+    },
+    {
+      "name": "return",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 887
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 902
+    },
+    {
+      "name": "EmitNote",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 906
+    },
+    {
+      "name": "CollectInformation",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 913
+    },
+    {
+      "name": "CollectInformation",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 915
+    },
+    {
+      "name": "SortAndCheck",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 920
+    },
+    {
+      "name": "EmitErrorLocation",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 924
+    },
+    {
+      "name": "ConstructAndEmitSourceCode",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 926
+    },
+    {
+      "name": "EmitNote",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 928
+    },
+    {
+      "name": "EmitHelp",
+      "file": "src/Basic/DiagnosticEmitter.cpp",
+      "line": 930
+    },
+    {
+      "name": "StringToStrategy",
+      "file": "src/Basic/InteropCJPackageConfigReader.cpp",
+      "line": 83
+    },
+    {
+      "name": "StringToGenericStrategy",
+      "file": "src/Basic/InteropCJPackageConfigReader.cpp",
+      "line": 94
+    },
+    {
+      "name": "LambdaPattern",
+      "file": "src/Basic/InteropCJPackageConfigReader.cpp",
+      "line": 294
+    },
+    {
+      "name": "typeStream",
+      "file": "src/Basic/InteropCJPackageConfigReader.cpp",
+      "line": 335
+    },
+    {
+      "name": "CombineTypesToString",
+      "file": "src/Basic/InteropCJPackageConfigReader.cpp",
+      "line": 375
+    },
+    {
+      "name": "ProcessGenericTypeWithSymbols",
+      "file": "src/Basic/InteropCJPackageConfigReader.cpp",
+      "line": 503
+    },
+    {
+      "name": "ProcessNonGenericTypeWithSymbols",
+      "file": "src/Basic/InteropCJPackageConfigReader.cpp",
+      "line": 507
+    },
+    {
+      "name": "ProcessSymbolConfigurations",
+      "file": "src/Basic/InteropCJPackageConfigReader.cpp",
+      "line": 526
+    },
+    {
+      "name": "ParseIncludedAPIs",
+      "file": "src/Basic/InteropCJPackageConfigReader.cpp",
+      "line": 572
+    },
+    {
+      "name": "ParseExcludedAPIs",
+      "file": "src/Basic/InteropCJPackageConfigReader.cpp",
+      "line": 575
+    },
+    {
+      "name": "ParseTupleConfiguration",
+      "file": "src/Basic/InteropCJPackageConfigReader.cpp",
+      "line": 581
+    },
+    {
+      "name": "ParseLmabdaPatternsConfiguration",
+      "file": "src/Basic/InteropCJPackageConfigReader.cpp",
+      "line": 584
+    },
+    {
+      "name": "file",
+      "file": "src/Basic/InteropCJPackageConfigReader.cpp",
+      "line": 624
+    },
+    {
+      "name": "ParseDefaultConfig",
+      "file": "src/Basic/InteropCJPackageConfigReader.cpp",
+      "line": 643
+    },
+    {
+      "name": "GetFileId",
+      "file": "src/Basic/SourceManager.cpp",
+      "line": 113
+    },
+    {
+      "name": "GetFileId",
+      "file": "src/Basic/SourceManager.cpp",
+      "line": 121
+    },
+    {
+      "name": "FileUtil::FileExist",
+      "file": "src/Basic/SourceManager.cpp",
+      "line": 130
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/SourceManager.cpp",
+      "line": 138
+    },
+    {
+      "name": "GetContentBetween",
+      "file": "src/Basic/SourceManager.cpp",
+      "line": 160
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Basic/SourceManager.cpp",
+      "line": 170
+    },
+    {
+      "name": "Cangjie::Println",
+      "file": "src/Basic/Version.cpp",
+      "line": 28
+    },
+    {
+      "name": "CodepointToUTF8",
+      "file": "src/Basic/StringConvertor.cpp",
+      "line": 167
+    },
+    {
+      "name": "EscapeString",
+      "file": "src/Basic/StringConvertor.cpp",
+      "line": 283
+    },
+    {
+      "name": "EscapeString",
+      "file": "src/Basic/StringConvertor.cpp",
+      "line": 290
+    },
+    {
+      "name": "GBKToUTF8",
+      "file": "src/Basic/StringConvertor.cpp",
+      "line": 389
+    },
+    {
+      "name": "UTF8ToGBK",
+      "file": "src/Basic/StringConvertor.cpp",
+      "line": 399
+    },
+    {
+      "name": "CodePageToUTF16",
+      "file": "src/Basic/StringConvertor.cpp",
+      "line": 411
+    },
+    {
+      "name": "CodePageToUTF16",
+      "file": "src/Basic/StringConvertor.cpp",
+      "line": 413
+    },
+    {
+      "name": "RtlGetVersion",
+      "file": "src/Basic/Utils.cpp",
+      "line": 145
+    }
+  ],
+  "submodules": []
+}

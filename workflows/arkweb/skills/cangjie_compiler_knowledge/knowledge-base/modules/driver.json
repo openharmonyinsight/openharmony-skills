@@ -1,0 +1,1465 @@
+{
+  "name": "driver",
+  "path": "src/Driver/Backend",
+  "files": [
+    "src/Driver/Backend/CJNATIVEBackend.cpp",
+    "src/Driver/Driver.cpp",
+    "src/Driver/Backend/Backend.cpp",
+    "src/Driver/TempFileManager.cpp",
+    "src/Driver/Job.h",
+    "src/Driver/Job.cpp",
+    "src/Driver/ToolOptions.cpp",
+    "src/Driver/DriverOptions.cpp",
+    "src/Driver/Tool.cpp",
+    "src/Driver/ToolFuture.cpp",
+    "src/Driver/Toolchains/CJNATIVE/Android_CJNATIVE.h",
+    "src/Driver/Toolchains/CJNATIVE/Android_CJNATIVE.cpp",
+    "src/Driver/Toolchains/CJNATIVE/Darwin_CJNATIVE.h",
+    "src/Driver/Toolchains/CJNATIVE/IOS_CJNATIVE.cpp",
+    "src/Driver/Toolchains/CJNATIVE/Darwin_CJNATIVE.cpp",
+    "src/Driver/Toolchains/CJNATIVE/Linux_CJNATIVE.cpp",
+    "src/Driver/Toolchains/CJNATIVE/Linux_CJNATIVE.h",
+    "src/Driver/Toolchains/CJNATIVE/IOS_CJNATIVE.h",
+    "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.h",
+    "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.cpp",
+    "src/Driver/Toolchains/CJNATIVE/Ohos_CJNATIVE.h",
+    "src/Driver/Toolchains/Gnu.h",
+    "src/Driver/Toolchains/CJNATIVE/Ohos_CJNATIVE.cpp",
+    "src/Driver/Toolchains/GCCPathScanner.cpp",
+    "src/Driver/Toolchains/MachO.cpp",
+    "src/Driver/Toolchains/ToolChain.cpp",
+    "src/Driver/Toolchains/Gnu.cpp",
+    "src/Driver/Toolchains/MachO.h",
+    "src/Driver/Utils.cpp"
+  ],
+  "classes": [
+    {
+      "name": "timespec",
+      "file": "src/Driver/TempFileManager.cpp",
+      "line": 103
+    },
+    {
+      "name": "stat",
+      "file": "src/Driver/TempFileManager.cpp",
+      "line": 458
+    },
+    {
+      "name": "Job",
+      "file": "src/Driver/Job.h",
+      "line": 25
+    },
+    {
+      "name": "Android_CJNATIVE",
+      "file": "src/Driver/Toolchains/CJNATIVE/Android_CJNATIVE.h",
+      "line": 24
+    },
+    {
+      "name": "Darwin_CJNATIVE",
+      "file": "src/Driver/Toolchains/CJNATIVE/Darwin_CJNATIVE.h",
+      "line": 22
+    },
+    {
+      "name": "Linux_CJNATIVE",
+      "file": "src/Driver/Toolchains/CJNATIVE/Linux_CJNATIVE.h",
+      "line": 22
+    },
+    {
+      "name": "IOS_CJNATIVE",
+      "file": "src/Driver/Toolchains/CJNATIVE/IOS_CJNATIVE.h",
+      "line": 23
+    },
+    {
+      "name": "MinGW_CJNATIVE",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.h",
+      "line": 22
+    },
+    {
+      "name": "Ohos_CJNATIVE",
+      "file": "src/Driver/Toolchains/CJNATIVE/Ohos_CJNATIVE.h",
+      "line": 22
+    },
+    {
+      "name": "Gnu",
+      "file": "src/Driver/Toolchains/Gnu.h",
+      "line": 22
+    },
+    {
+      "name": "MachO",
+      "file": "src/Driver/Toolchains/MachO.h",
+      "line": 20
+    }
+  ],
+  "functions": [
+    {
+      "name": "Errorln",
+      "file": "src/Driver/Backend/CJNATIVEBackend.cpp",
+      "line": 85
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Driver/Backend/CJNATIVEBackend.cpp",
+      "line": 90
+    },
+    {
+      "name": "ProcessGenerationOfNormalCompile",
+      "file": "src/Driver/Backend/CJNATIVEBackend.cpp",
+      "line": 140
+    },
+    {
+      "name": "GenerateCacheCopyTool",
+      "file": "src/Driver/Backend/CJNATIVEBackend.cpp",
+      "line": 146
+    },
+    {
+      "name": "Errorf",
+      "file": "src/Driver/Backend/CJNATIVEBackend.cpp",
+      "line": 237
+    },
+    {
+      "name": "SetOptions",
+      "file": "src/Driver/Backend/CJNATIVEBackend.cpp",
+      "line": 253
+    },
+    {
+      "name": "SetOptions",
+      "file": "src/Driver/Backend/CJNATIVEBackend.cpp",
+      "line": 257
+    },
+    {
+      "name": "PreprocessOfNewPassManager",
+      "file": "src/Driver/Backend/CJNATIVEBackend.cpp",
+      "line": 281
+    },
+    {
+      "name": "SetOptions",
+      "file": "src/Driver/Backend/CJNATIVEBackend.cpp",
+      "line": 294
+    },
+    {
+      "name": "SetOptions",
+      "file": "src/Driver/Backend/CJNATIVEBackend.cpp",
+      "line": 336
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Driver/Driver.cpp",
+      "line": 43
+    },
+    {
+      "name": "StartsWith",
+      "file": "src/Driver/Driver.cpp",
+      "line": 61
+    },
+    {
+      "name": "recorder",
+      "file": "src/Driver/Driver.cpp",
+      "line": 86
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Driver/Driver.cpp",
+      "line": 98
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Driver/Driver.cpp",
+      "line": 107
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Driver/Driver.cpp",
+      "line": 122
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Driver/Driver.cpp",
+      "line": 133
+    },
+    {
+      "name": "Warningln",
+      "file": "src/Driver/Driver.cpp",
+      "line": 149
+    },
+    {
+      "name": "Cangjie::PrintVersion",
+      "file": "src/Driver/Driver.cpp",
+      "line": 155
+    },
+    {
+      "name": "Warningln",
+      "file": "src/Driver/Driver.cpp",
+      "line": 160
+    },
+    {
+      "name": "Utils::ProfileRecorder::Enable",
+      "file": "src/Driver/Driver.cpp",
+      "line": 165
+    },
+    {
+      "name": "Utils::ProfileRecorder::Enable",
+      "file": "src/Driver/Driver.cpp",
+      "line": 168
+    },
+    {
+      "name": "DeleteInstance",
+      "file": "src/Driver/Driver.cpp",
+      "line": 193
+    },
+    {
+      "name": "DeleteInstance",
+      "file": "src/Driver/Driver.cpp",
+      "line": 203
+    },
+    {
+      "name": "Utils::ProfileRecorder::Start",
+      "file": "src/Driver/Driver.cpp",
+      "line": 209
+    },
+    {
+      "name": "Utils::ProfileRecorder::Stop",
+      "file": "src/Driver/Driver.cpp",
+      "line": 211
+    },
+    {
+      "name": "Cangjie::SignalTest::ExecuteSignalTestCallbackFunc",
+      "file": "src/Driver/Driver.cpp",
+      "line": 219
+    },
+    {
+      "name": "ProcessGeneration",
+      "file": "src/Driver/Backend/Backend.cpp",
+      "line": 52
+    },
+    {
+      "name": "std::string",
+      "file": "src/Driver/TempFileManager.cpp",
+      "line": 83
+    },
+    {
+      "name": "constexpr",
+      "file": "src/Driver/TempFileManager.cpp",
+      "line": 88
+    },
+    {
+      "name": "std::string",
+      "file": "src/Driver/TempFileManager.cpp",
+      "line": 93
+    },
+    {
+      "name": "FindClose",
+      "file": "src/Driver/TempFileManager.cpp",
+      "line": 167
+    },
+    {
+      "name": "FindNextFileW",
+      "file": "src/Driver/TempFileManager.cpp",
+      "line": 173
+    },
+    {
+      "name": "RemoveDirRecursively",
+      "file": "src/Driver/TempFileManager.cpp",
+      "line": 178
+    },
+    {
+      "name": "FindClose",
+      "file": "src/Driver/TempFileManager.cpp",
+      "line": 183
+    },
+    {
+      "name": "RemoveDirRecursively",
+      "file": "src/Driver/TempFileManager.cpp",
+      "line": 202
+    },
+    {
+      "name": "InitTempDir",
+      "file": "src/Driver/TempFileManager.cpp",
+      "line": 244
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Driver/TempFileManager.cpp",
+      "line": 260
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Driver/TempFileManager.cpp",
+      "line": 345
+    },
+    {
+      "name": "CreateOutputFileInfo",
+      "file": "src/Driver/TempFileManager.cpp",
+      "line": 365
+    },
+    {
+      "name": "RemoveDirRecursively",
+      "file": "src/Driver/TempFileManager.cpp",
+      "line": 449
+    },
+    {
+      "name": "RemoveDirRecursively",
+      "file": "src/Driver/TempFileManager.cpp",
+      "line": 467
+    },
+    {
+      "name": "Assemble",
+      "file": "src/Driver/Job.h",
+      "line": 35
+    },
+    {
+      "name": "Execute",
+      "file": "src/Driver/Job.h",
+      "line": 40
+    },
+    {
+      "name": "printError",
+      "file": "src/Driver/Job.cpp",
+      "line": 52
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Driver/Job.cpp",
+      "line": 84
+    },
+    {
+      "name": "Cangjie::StringConvertor::StringToWString",
+      "file": "src/Driver/Job.cpp",
+      "line": 121
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 32
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 40
+    },
+    {
+      "name": "SetOptionIf",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 65
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 74
+    },
+    {
+      "name": "SetCodeLayoutObfuscationOptions",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 112
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 136
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 137
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 138
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 144
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 149
+    },
+    {
+      "name": "SetOptionIf",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 155
+    },
+    {
+      "name": "SetOptionIf",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 156
+    },
+    {
+      "name": "SetMtripleOption",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 164
+    },
+    {
+      "name": "SetOptionStringArgs",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 170
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 176
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 178
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 180
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 184
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 185
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 205
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 209
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 212
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 214
+    },
+    {
+      "name": "SetOptionIf",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 217
+    },
+    {
+      "name": "SetOptionIf",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 218
+    },
+    {
+      "name": "SetOptionIf",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 219
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 224
+    },
+    {
+      "name": "SetOptionIf",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 234
+    },
+    {
+      "name": "SetMtripleOption",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 243
+    },
+    {
+      "name": "SetOptionStringArgs",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 249
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 260
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 266
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 269
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 272
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 275
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 283
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 284
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 287
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 291
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 292
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 295
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 296
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 297
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 298
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 300
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 307
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 309
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 314
+    },
+    {
+      "name": "setOptionHandler",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 315
+    },
+    {
+      "name": "typeFunc",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 322
+    },
+    {
+      "name": "typefunc",
+      "file": "src/Driver/ToolOptions.cpp",
+      "line": 329
+    },
+    {
+      "name": "GlobalOptions::ParseOption",
+      "file": "src/Driver/DriverOptions.cpp",
+      "line": 157
+    },
+    {
+      "name": "Warningf",
+      "file": "src/Driver/DriverOptions.cpp",
+      "line": 208
+    },
+    {
+      "name": "Errorf",
+      "file": "src/Driver/DriverOptions.cpp",
+      "line": 212
+    },
+    {
+      "name": "Errorf",
+      "file": "src/Driver/DriverOptions.cpp",
+      "line": 216
+    },
+    {
+      "name": "Errorf",
+      "file": "src/Driver/DriverOptions.cpp",
+      "line": 220
+    },
+    {
+      "name": "Errorf",
+      "file": "src/Driver/DriverOptions.cpp",
+      "line": 224
+    },
+    {
+      "name": "Errorf",
+      "file": "src/Driver/DriverOptions.cpp",
+      "line": 228
+    },
+    {
+      "name": "Errorf",
+      "file": "src/Driver/DriverOptions.cpp",
+      "line": 232
+    },
+    {
+      "name": "Errorf",
+      "file": "src/Driver/DriverOptions.cpp",
+      "line": 236
+    },
+    {
+      "name": "Warningln",
+      "file": "src/Driver/DriverOptions.cpp",
+      "line": 283
+    },
+    {
+      "name": "Warningln",
+      "file": "src/Driver/DriverOptions.cpp",
+      "line": 285
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Driver/DriverOptions.cpp",
+      "line": 297
+    },
+    {
+      "name": "Errorln",
+      "file": "src/Driver/DriverOptions.cpp",
+      "line": 302
+    },
+    {
+      "name": "Warningln",
+      "file": "src/Driver/DriverOptions.cpp",
+      "line": 307
+    },
+    {
+      "name": "Warningln",
+      "file": "src/Driver/DriverOptions.cpp",
+      "line": 320
+    },
+    {
+      "name": "constexpr",
+      "file": "src/Driver/Tool.cpp",
+      "line": 55
+    },
+    {
+      "name": "std::string",
+      "file": "src/Driver/Tool.cpp",
+      "line": 59
+    },
+    {
+      "name": "srcStream",
+      "file": "src/Driver/Tool.cpp",
+      "line": 123
+    },
+    {
+      "name": "destStream",
+      "file": "src/Driver/Tool.cpp",
+      "line": 125
+    },
+    {
+      "name": "Run",
+      "file": "src/Driver/Tool.cpp",
+      "line": 145
+    },
+    {
+      "name": "CloseHandle",
+      "file": "src/Driver/ToolFuture.cpp",
+      "line": 42
+    },
+    {
+      "name": "CloseHandle",
+      "file": "src/Driver/ToolFuture.cpp",
+      "line": 43
+    },
+    {
+      "name": "Linux_CJNATIVE",
+      "file": "src/Driver/Toolchains/CJNATIVE/Android_CJNATIVE.h",
+      "line": 28
+    },
+    {
+      "name": "InitializeLibraryPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/Android_CJNATIVE.h",
+      "line": 32
+    },
+    {
+      "name": "AddCRuntimeLibraryPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/Android_CJNATIVE.h",
+      "line": 33
+    },
+    {
+      "name": "PrepareDependencyPath",
+      "file": "src/Driver/Toolchains/CJNATIVE/Android_CJNATIVE.h",
+      "line": 34
+    },
+    {
+      "name": "GenerateLinking",
+      "file": "src/Driver/Toolchains/CJNATIVE/Android_CJNATIVE.h",
+      "line": 36
+    },
+    {
+      "name": "GenerateLinkOptions",
+      "file": "src/Driver/Toolchains/CJNATIVE/Android_CJNATIVE.h",
+      "line": 40
+    },
+    {
+      "name": "HandleSanitizerDependencies",
+      "file": "src/Driver/Toolchains/CJNATIVE/Android_CJNATIVE.h",
+      "line": 42
+    },
+    {
+      "name": "deduceToolchainLibPath",
+      "file": "src/Driver/Toolchains/CJNATIVE/Android_CJNATIVE.cpp",
+      "line": 53
+    },
+    {
+      "name": "AddLibraryPath",
+      "file": "src/Driver/Toolchains/CJNATIVE/Android_CJNATIVE.cpp",
+      "line": 64
+    },
+    {
+      "name": "AddCRuntimeLibraryPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/Android_CJNATIVE.cpp",
+      "line": 66
+    },
+    {
+      "name": "GenerateLinkingTool",
+      "file": "src/Driver/Toolchains/CJNATIVE/Android_CJNATIVE.cpp",
+      "line": 92
+    },
+    {
+      "name": "HandleLLVMLinkOptions",
+      "file": "src/Driver/Toolchains/CJNATIVE/Android_CJNATIVE.cpp",
+      "line": 124
+    },
+    {
+      "name": "MachO",
+      "file": "src/Driver/Toolchains/CJNATIVE/Darwin_CJNATIVE.h",
+      "line": 26
+    },
+    {
+      "name": "AddSystemLibraryPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/Darwin_CJNATIVE.h",
+      "line": 39
+    },
+    {
+      "name": "GenerateLinkOptions",
+      "file": "src/Driver/Toolchains/CJNATIVE/Darwin_CJNATIVE.h",
+      "line": 42
+    },
+    {
+      "name": "MachO::AddSystemLibraryPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/IOS_CJNATIVE.cpp",
+      "line": 29
+    },
+    {
+      "name": "HandleLLVMLinkOptions",
+      "file": "src/Driver/Toolchains/CJNATIVE/IOS_CJNATIVE.cpp",
+      "line": 66
+    },
+    {
+      "name": "GenerateRuntimePath",
+      "file": "src/Driver/Toolchains/CJNATIVE/IOS_CJNATIVE.cpp",
+      "line": 67
+    },
+    {
+      "name": "MachO::AddSystemLibraryPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/Darwin_CJNATIVE.cpp",
+      "line": 29
+    },
+    {
+      "name": "HandleLLVMLinkOptions",
+      "file": "src/Driver/Toolchains/CJNATIVE/Darwin_CJNATIVE.cpp",
+      "line": 65
+    },
+    {
+      "name": "GenerateRuntimePath",
+      "file": "src/Driver/Toolchains/CJNATIVE/Darwin_CJNATIVE.cpp",
+      "line": 66
+    },
+    {
+      "name": "Gnu::AddSystemLibraryPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/Linux_CJNATIVE.cpp",
+      "line": 28
+    },
+    {
+      "name": "HandleLLVMLinkOptions",
+      "file": "src/Driver/Toolchains/CJNATIVE/Linux_CJNATIVE.cpp",
+      "line": 107
+    },
+    {
+      "name": "GenerateRuntimePath",
+      "file": "src/Driver/Toolchains/CJNATIVE/Linux_CJNATIVE.cpp",
+      "line": 108
+    },
+    {
+      "name": "SetOptions",
+      "file": "src/Driver/Toolchains/CJNATIVE/Linux_CJNATIVE.cpp",
+      "line": 157
+    },
+    {
+      "name": "SetOptions",
+      "file": "src/Driver/Toolchains/CJNATIVE/Linux_CJNATIVE.cpp",
+      "line": 166
+    },
+    {
+      "name": "SetOptions",
+      "file": "src/Driver/Toolchains/CJNATIVE/Linux_CJNATIVE.cpp",
+      "line": 194
+    },
+    {
+      "name": "Gnu",
+      "file": "src/Driver/Toolchains/CJNATIVE/Linux_CJNATIVE.h",
+      "line": 26
+    },
+    {
+      "name": "AddSystemLibraryPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/Linux_CJNATIVE.h",
+      "line": 41
+    },
+    {
+      "name": "GetCjldScript",
+      "file": "src/Driver/Toolchains/CJNATIVE/Linux_CJNATIVE.h",
+      "line": 44
+    },
+    {
+      "name": "GenerateLinkOptions",
+      "file": "src/Driver/Toolchains/CJNATIVE/Linux_CJNATIVE.h",
+      "line": 47
+    },
+    {
+      "name": "GenerateLinkOptionsForLTO",
+      "file": "src/Driver/Toolchains/CJNATIVE/Linux_CJNATIVE.h",
+      "line": 48
+    },
+    {
+      "name": "Darwin_CJNATIVE",
+      "file": "src/Driver/Toolchains/CJNATIVE/IOS_CJNATIVE.h",
+      "line": 27
+    },
+    {
+      "name": "AddSystemLibraryPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/IOS_CJNATIVE.h",
+      "line": 40
+    },
+    {
+      "name": "GenerateLinkOptions",
+      "file": "src/Driver/Toolchains/CJNATIVE/IOS_CJNATIVE.h",
+      "line": 43
+    },
+    {
+      "name": "GetClangRTProfileLibraryName",
+      "file": "src/Driver/Toolchains/CJNATIVE/IOS_CJNATIVE.h",
+      "line": 44
+    },
+    {
+      "name": "InitializeLibraryPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.h",
+      "line": 38
+    },
+    {
+      "name": "InitializeMinGWSysroot",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.h",
+      "line": 40
+    },
+    {
+      "name": "AddCRuntimeLibraryPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.h",
+      "line": 42
+    },
+    {
+      "name": "PrepareDependencyPath",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.h",
+      "line": 43
+    },
+    {
+      "name": "AddSystemLibraryPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.h",
+      "line": 46
+    },
+    {
+      "name": "ComputeLibPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.h",
+      "line": 48
+    },
+    {
+      "name": "GenerateGCCLibPath",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.h",
+      "line": 50
+    },
+    {
+      "name": "GenerateArchiveTool",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.h",
+      "line": 52
+    },
+    {
+      "name": "HandleLibrarySearchPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.h",
+      "line": 54
+    },
+    {
+      "name": "GetCjldScript",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.h",
+      "line": 61
+    },
+    {
+      "name": "GenerateLinkOptions",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.h",
+      "line": 65
+    },
+    {
+      "name": "FindCangjieMinGWToolPath",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.h",
+      "line": 67
+    },
+    {
+      "name": "AddCRuntimeLibraryPath",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.cpp",
+      "line": 26
+    },
+    {
+      "name": "InitializeMinGWSysroot",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.cpp",
+      "line": 28
+    },
+    {
+      "name": "AddCRuntimeLibraryPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.cpp",
+      "line": 29
+    },
+    {
+      "name": "AddSystemLibraryPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.cpp",
+      "line": 30
+    },
+    {
+      "name": "AddCRuntimeLibraryPath",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.cpp",
+      "line": 50
+    },
+    {
+      "name": "AddCRuntimeLibraryPath",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.cpp",
+      "line": 55
+    },
+    {
+      "name": "Gnu::AddSystemLibraryPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.cpp",
+      "line": 63
+    },
+    {
+      "name": "HandleLLVMLinkOptions",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.cpp",
+      "line": 165
+    },
+    {
+      "name": "Gnu::HandleLibrarySearchPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/MinGW_CJNATIVE.cpp",
+      "line": 175
+    },
+    {
+      "name": "Linux_CJNATIVE",
+      "file": "src/Driver/Toolchains/CJNATIVE/Ohos_CJNATIVE.h",
+      "line": 26
+    },
+    {
+      "name": "AddCRuntimeLibraryPaths",
+      "file": "src/Driver/Toolchains/CJNATIVE/Ohos_CJNATIVE.h",
+      "line": 30
+    },
+    {
+      "name": "PrepareDependencyPath",
+      "file": "src/Driver/Toolchains/CJNATIVE/Ohos_CJNATIVE.h",
+      "line": 31
+    },
+    {
+      "name": "GenerateLinking",
+      "file": "src/Driver/Toolchains/CJNATIVE/Ohos_CJNATIVE.h",
+      "line": 33
+    },
+    {
+      "name": "GenerateLinkOptions",
+      "file": "src/Driver/Toolchains/CJNATIVE/Ohos_CJNATIVE.h",
+      "line": 37
+    },
+    {
+      "name": "HandleSanitizerDependencies",
+      "file": "src/Driver/Toolchains/CJNATIVE/Ohos_CJNATIVE.h",
+      "line": 39
+    },
+    {
+      "name": "ToolChain",
+      "file": "src/Driver/Toolchains/Gnu.h",
+      "line": 25
+    },
+    {
+      "name": "GetGccLibFile",
+      "file": "src/Driver/Toolchains/Gnu.h",
+      "line": 35
+    },
+    {
+      "name": "PrepareDependencyPath",
+      "file": "src/Driver/Toolchains/Gnu.h",
+      "line": 42
+    },
+    {
+      "name": "ProcessGeneration",
+      "file": "src/Driver/Toolchains/Gnu.h",
+      "line": 43
+    },
+    {
+      "name": "PerformPartialLinkAndContinue",
+      "file": "src/Driver/Toolchains/Gnu.h",
+      "line": 44
+    },
+    {
+      "name": "SearchClangLibrary",
+      "file": "src/Driver/Toolchains/Gnu.h",
+      "line": 50
+    },
+    {
+      "name": "HandleSanitizer",
+      "file": "src/Driver/Toolchains/Gnu.h",
+      "line": 51
+    },
+    {
+      "name": "InitializeLibraryPaths",
+      "file": "src/Driver/Toolchains/Gnu.h",
+      "line": 57
+    },
+    {
+      "name": "HandleAsanDependencies",
+      "file": "src/Driver/Toolchains/Gnu.h",
+      "line": 75
+    },
+    {
+      "name": "HandleHwasanDependencies",
+      "file": "src/Driver/Toolchains/Gnu.h",
+      "line": 76
+    },
+    {
+      "name": "AddCRuntimeLibraryPath",
+      "file": "src/Driver/Toolchains/CJNATIVE/Ohos_CJNATIVE.cpp",
+      "line": 21
+    },
+    {
+      "name": "GenerateLinkingTool",
+      "file": "src/Driver/Toolchains/CJNATIVE/Ohos_CJNATIVE.cpp",
+      "line": 43
+    },
+    {
+      "name": "HandleLLVMLinkOptions",
+      "file": "src/Driver/Toolchains/CJNATIVE/Ohos_CJNATIVE.cpp",
+      "line": 81
+    },
+    {
+      "name": "GenerateRuntimePath",
+      "file": "src/Driver/Toolchains/CJNATIVE/Ohos_CJNATIVE.cpp",
+      "line": 82
+    },
+    {
+      "name": "HandleLibrarySearchPaths",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 111
+    },
+    {
+      "name": "SortInputlibraryFileAndAppend",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 120
+    },
+    {
+      "name": "GenerateLinkOptionsOfBuiltinLibs",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 126
+    },
+    {
+      "name": "GenerateLinkOptions",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 128
+    },
+    {
+      "name": "AddCRuntimeLibraryPath",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 172
+    },
+    {
+      "name": "AddCRuntimeLibraryPaths",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 174
+    },
+    {
+      "name": "AddSystemLibraryPaths",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 175
+    },
+    {
+      "name": "AddCRuntimeLibraryPath",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 185
+    },
+    {
+      "name": "AddCRuntimeLibraryPath",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 189
+    },
+    {
+      "name": "AddLibraryPaths",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 196
+    },
+    {
+      "name": "GenerateArchiveTool",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 203
+    },
+    {
+      "name": "GenerateObjTool",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 208
+    },
+    {
+      "name": "GenerateDebugSymbolFile",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 214
+    },
+    {
+      "name": "GenerateStripSymbolFile",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 217
+    },
+    {
+      "name": "CheckOtherDependeniesOfStaticLib",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 308
+    },
+    {
+      "name": "ForEachBuiltinDependencies",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 311
+    },
+    {
+      "name": "ForEachBuiltinDependencies",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 312
+    },
+    {
+      "name": "ForEachBuiltinDependencies",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 333
+    },
+    {
+      "name": "ForEachBuiltinDependencies",
+      "file": "src/Driver/Toolchains/MachO.cpp",
+      "line": 339
+    },
+    {
+      "name": "GenerateLinkOptionsOfBuiltinLibsForStaticLink",
+      "file": "src/Driver/Toolchains/ToolChain.cpp",
+      "line": 53
+    },
+    {
+      "name": "GenerateLinkOptionsOfBuiltinLibsForDyLink",
+      "file": "src/Driver/Toolchains/ToolChain.cpp",
+      "line": 55
+    },
+    {
+      "name": "getDyDependencies",
+      "file": "src/Driver/Toolchains/ToolChain.cpp",
+      "line": 79
+    },
+    {
+      "name": "getDyDependencies",
+      "file": "src/Driver/Toolchains/ToolChain.cpp",
+      "line": 80
+    },
+    {
+      "name": "CheckOtherDependeniesOfStaticLib",
+      "file": "src/Driver/Toolchains/ToolChain.cpp",
+      "line": 107
+    },
+    {
+      "name": "ForEachBuiltinDependencies",
+      "file": "src/Driver/Toolchains/ToolChain.cpp",
+      "line": 110
+    },
+    {
+      "name": "ForEachBuiltinDependencies",
+      "file": "src/Driver/Toolchains/ToolChain.cpp",
+      "line": 111
+    },
+    {
+      "name": "ForEachBuiltinDependencies",
+      "file": "src/Driver/Toolchains/ToolChain.cpp",
+      "line": 135
+    },
+    {
+      "name": "ForEachBuiltinDependencies",
+      "file": "src/Driver/Toolchains/ToolChain.cpp",
+      "line": 142
+    },
+    {
+      "name": "InternalError",
+      "file": "src/Driver/Toolchains/ToolChain.cpp",
+      "line": 195
+    },
+    {
+      "name": "InternalError",
+      "file": "src/Driver/Toolchains/ToolChain.cpp",
+      "line": 210
+    },
+    {
+      "name": "AppendObjectsFromCompiled",
+      "file": "src/Driver/Toolchains/ToolChain.cpp",
+      "line": 250
+    },
+    {
+      "name": "AppendObjectsFromInput",
+      "file": "src/Driver/Toolchains/ToolChain.cpp",
+      "line": 252
+    },
+    {
+      "name": "AppendLibrariesFromInput",
+      "file": "src/Driver/Toolchains/ToolChain.cpp",
+      "line": 253
+    },
+    {
+      "name": "AppendLinkOptionFromInput",
+      "file": "src/Driver/Toolchains/ToolChain.cpp",
+      "line": 254
+    },
+    {
+      "name": "AppendLinkOptionsFromInput",
+      "file": "src/Driver/Toolchains/ToolChain.cpp",
+      "line": 255
+    },
+    {
+      "name": "CreateNewFileInfoWrapper",
+      "file": "src/Driver/Toolchains/ToolChain.cpp",
+      "line": 274
+    },
+    {
+      "name": "FileUtil::JoinPath",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 58
+    },
+    {
+      "name": "HandleSanitizerDependencies",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 99
+    },
+    {
+      "name": "finalFallback",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 123
+    },
+    {
+      "name": "GenericHandleSanitizerRuntime",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 209
+    },
+    {
+      "name": "GenericHandleSanitizerRuntime",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 217
+    },
+    {
+      "name": "LinkStaticLibrary",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 218
+    },
+    {
+      "name": "HandleAsanDependencies",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 231
+    },
+    {
+      "name": "HandleSanitizerDependencies",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 236
+    },
+    {
+      "name": "HandleHwasanDependencies",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 239
+    },
+    {
+      "name": "HandleLibrarySearchPaths",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 279
+    },
+    {
+      "name": "SortInputlibraryFileAndAppend",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 304
+    },
+    {
+      "name": "HandleSanitizer",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 309
+    },
+    {
+      "name": "GenerateLinkOptionsOfBuiltinLibs",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 311
+    },
+    {
+      "name": "GenerateLinkOptions",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 313
+    },
+    {
+      "name": "AddCRuntimeLibraryPath",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 369
+    },
+    {
+      "name": "AddCRuntimeLibraryPaths",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 371
+    },
+    {
+      "name": "AddSystemLibraryPaths",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 372
+    },
+    {
+      "name": "AddCRuntimeLibraryPath",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 389
+    },
+    {
+      "name": "AddCRuntimeLibraryPath",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 391
+    },
+    {
+      "name": "AddCRuntimeLibraryPath",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 396
+    },
+    {
+      "name": "AddCRuntimeLibraryPath",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 402
+    },
+    {
+      "name": "AddLibraryPaths",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 409
+    },
+    {
+      "name": "GenerateArchiveTool",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 422
+    },
+    {
+      "name": "GenerateObjTool",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 425
+    },
+    {
+      "name": "GenerateLinking",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 428
+    },
+    {
+      "name": "PerformPartialLinkAndContinue",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 431
+    },
+    {
+      "name": "GenerateArchiveTool",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 492
+    },
+    {
+      "name": "GenerateObjTool",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 495
+    },
+    {
+      "name": "GenerateLinking",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 498
+    },
+    {
+      "name": "Infoln",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 508
+    },
+    {
+      "name": "GenerateLinkingTool",
+      "file": "src/Driver/Toolchains/Gnu.cpp",
+      "line": 510
+    },
+    {
+      "name": "ToolChain",
+      "file": "src/Driver/Toolchains/MachO.h",
+      "line": 23
+    },
+    {
+      "name": "ProcessGeneration",
+      "file": "src/Driver/Toolchains/MachO.h",
+      "line": 27
+    },
+    {
+      "name": "PrepareDependencyPath",
+      "file": "src/Driver/Toolchains/MachO.h",
+      "line": 29
+    },
+    {
+      "name": "InitializeLibraryPaths",
+      "file": "src/Driver/Toolchains/MachO.h",
+      "line": 31
+    },
+    {
+      "name": "HandleLLVMLinkOptions",
+      "file": "src/Driver/Toolchains/MachO.h",
+      "line": 47
+    },
+    {
+      "name": "GenerateStripSymbolFile",
+      "file": "src/Driver/Toolchains/MachO.h",
+      "line": 61
+    },
+    {
+      "name": "GenerateLinkOptionsOfBuiltinLibsForStaticLink",
+      "file": "src/Driver/Toolchains/MachO.h",
+      "line": 64
+    },
+    {
+      "name": "GenerateLinkOptionsOfBuiltinLibsForDyLink",
+      "file": "src/Driver/Toolchains/MachO.h",
+      "line": 66
+    },
+    {
+      "name": "FileUtil::GetQuoted",
+      "file": "src/Driver/Utils.cpp",
+      "line": 43
+    },
+    {
+      "name": "GetSingleQuoted",
+      "file": "src/Driver/Utils.cpp",
+      "line": 45
+    }
+  ],
+  "submodules": []
+}

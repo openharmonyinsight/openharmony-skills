@@ -1,0 +1,148 @@
+{
+  "name": "conditionalcompilation",
+  "path": "src/ConditionalCompilation",
+  "files": [
+    "src/ConditionalCompilation/ConditionalCompilation.cpp",
+    "src/ConditionalCompilation/ConditionalCompilationImpl.h"
+  ],
+  "classes": [
+    {
+      "name": "ConditionalCompilationImpl",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 33
+    }
+  ],
+  "functions": [
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/ConditionalCompilation/ConditionalCompilation.cpp",
+      "line": 151
+    },
+    {
+      "name": "JoinPath",
+      "file": "src/ConditionalCompilation/ConditionalCompilation.cpp",
+      "line": 190
+    },
+    {
+      "name": "cjcVersionRegex",
+      "file": "src/ConditionalCompilation/ConditionalCompilation.cpp",
+      "line": 274
+    },
+    {
+      "name": "Eval",
+      "file": "src/ConditionalCompilation/ConditionalCompilation.cpp",
+      "line": 348
+    },
+    {
+      "name": "EvalLogicBinaryExpr",
+      "file": "src/ConditionalCompilation/ConditionalCompilation.cpp",
+      "line": 354
+    },
+    {
+      "name": "EvalJudgeBinaryExpr",
+      "file": "src/ConditionalCompilation/ConditionalCompilation.cpp",
+      "line": 357
+    },
+    {
+      "name": "astWalker",
+      "file": "src/ConditionalCompilation/ConditionalCompilation.cpp",
+      "line": 442
+    },
+    {
+      "name": "Utils::EraseIf",
+      "file": "src/ConditionalCompilation/ConditionalCompilation.cpp",
+      "line": 464
+    },
+    {
+      "name": "astWalker",
+      "file": "src/ConditionalCompilation/ConditionalCompilation.cpp",
+      "line": 541
+    },
+    {
+      "name": "ConditionalCompilationImpl",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 35
+    },
+    {
+      "name": "HandleConditionalCompilation",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 36
+    },
+    {
+      "name": "HandleFileConditionalCompilation",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 37
+    },
+    {
+      "name": "Triple::BackendToString",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 45
+    },
+    {
+      "name": "GetOSType",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 56
+    },
+    {
+      "name": "RefreshVersionStr",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 60
+    },
+    {
+      "name": "GetUserDefinedInfoByName",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 70
+    },
+    {
+      "name": "GetRelatedInfo",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 75
+    },
+    {
+      "name": "EvalConditionExpr",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 85
+    },
+    {
+      "name": "ConditionCheck",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 87
+    },
+    {
+      "name": "Eval",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 89
+    },
+    {
+      "name": "EvalBinaryExpr",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 91
+    },
+    {
+      "name": "EvalParenExpr",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 92
+    },
+    {
+      "name": "EvalUnaryExpr",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 93
+    },
+    {
+      "name": "EvalRefExpr",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 94
+    },
+    {
+      "name": "EvalLogicBinaryExpr",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 96
+    },
+    {
+      "name": "EvalJudgeBinaryExpr",
+      "file": "src/ConditionalCompilation/ConditionalCompilationImpl.h",
+      "line": 97
+    }
+  ],
+  "submodules": []
+}

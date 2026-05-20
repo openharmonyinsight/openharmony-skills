@@ -1,0 +1,312 @@
+models:
+  - value: claude-haiku-4-5
+    label: Claude Haiku 4.5
+    costMultiplier: 0.06
+    endpoints:
+      - anthropic
+    engines:
+      - claude-code
+      - kiro-cli
+  - value: claude-opus-4-6
+    label: Claude Opus 4.6
+    costMultiplier: 0.3
+    endpoints:
+      - anthropic
+    engines:
+      - claude-code
+      - kiro-cli
+  - value: claude-sonnet-4-6
+    label: Claude Sonnet 4.6
+    costMultiplier: 0.18
+    endpoints:
+      - anthropic
+    engines:
+      - claude-code
+      - kiro-cli
+  - value: claude-sonnet-4-5-20250929
+    label: Claude Sonnet 4.5
+    costMultiplier: 0.18
+    endpoints:
+      - anthropic
+    engines:
+      - claude-code
+      - kiro-cli
+  - value: claude-sonnet-4.5
+    label: Claude Sonnet 4.5 Kiro
+    costMultiplier: 0.1
+    endpoints:
+      - anthropic
+    engines:
+      - kiro-cli
+  - value: glm-5
+    label: GLM-5
+    costMultiplier: 0.02
+    endpoints:
+      - anthropic
+      - openai
+    engines:
+      - claude-code
+      - opencode
+      - nga
+      - codegenie
+      - kiro-cli
+  - value: qwen3.5-plus
+    label: Qwen 3.5 Plus
+    costMultiplier: 0.02
+    endpoints:
+      - openai
+    engines:
+      - opencode
+      - nga
+      - codegenie
+  - value: kimi-k2.5
+    label: Kimi K2.5
+    costMultiplier: 0.02
+    endpoints:
+      - anthropic
+      - openai
+    engines:
+      - claude-code
+      - opencode
+      - nga
+      - codegenie
+      - cursor
+  - value: MiniMax-M2.7
+    label: Minimax M2.7
+    costMultiplier: 0.02
+    endpoints:
+      - anthropic
+      - openai
+    engines:
+      - claude-code
+      - opencode
+      - nga
+      - codegenie
+  - value: gpt-5.3-codex
+    label: GPT-5.3 Codex
+    costMultiplier: 0.05
+    endpoints:
+      - openai
+    engines:
+      - codex
+      - opencode
+      - nga
+      - codegenie
+  - value: grok-4-20[thinking=true]
+    label: Grok 4.20
+    costMultiplier: 0.1
+    endpoints:
+      - openai
+    engines:
+      - cursor
+  - value: glm-4.7
+    label: GLM-4.7
+    costMultiplier: 0.1
+    endpoints:
+      - openai
+    engines:
+      - opencode
+      - nga
+      - codegenie
+  - value: deepseek-3.2
+    label: deepseek-3.2
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - kiro-cli
+  - value: default[]
+    label: Auto
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: composer-2[fast=true]
+    label: composer-2
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: composer-1.5[]
+    label: composer-1.5
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: gpt-5.3-codex[reasoning=medium,fast=false]
+    label: gpt-5.3-codex
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: gpt-5.4[reasoning=medium,context=272k,fast=false]
+    label: gpt-5.4 (MAX mode)
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: claude-sonnet-4-6[thinking=true,context=200k,effort=medium]
+    label: claude-sonnet-4-6
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: claude-opus-4-6[thinking=true,context=200k,effort=high,fast=false]
+    label: claude-opus-4-6
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: claude-opus-4-5[thinking=true]
+    label: claude-opus-4-5
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: gpt-5.2[reasoning=medium,fast=false]
+    label: gpt-5.2
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: gemini-3.1-pro[]
+    label: gemini-3.1-pro
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: gpt-5.4-mini[reasoning=medium]
+    label: gpt-5.4-mini
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: gpt-5.4-nano[reasoning=medium]
+    label: gpt-5.4-nano
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: claude-haiku-4-5[thinking=true]
+    label: claude-haiku-4-5
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: gpt-5.3-codex-spark[reasoning=medium]
+    label: gpt-5.3-codex-spark
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: claude-sonnet-4-5[thinking=true,context=200k]
+    label: claude-sonnet-4-5
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: gpt-5.2-codex[reasoning=medium,fast=false]
+    label: gpt-5.2-codex
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: gpt-5.1-codex-max[reasoning=medium,fast=false]
+    label: gpt-5.1-codex-max
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: gpt-5.1[reasoning=medium]
+    label: gpt-5.1
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: gemini-3-flash[]
+    label: gemini-3-flash
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: gpt-5.1-codex-mini[reasoning=medium]
+    label: gpt-5.1-codex-mini
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: claude-sonnet-4[thinking=false,context=200k]
+    label: claude-sonnet-4
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: gpt-5-mini[]
+    label: gpt-5-mini
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: gemini-2.5-flash[]
+    label: gemini-2.5-flash
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: kimi-k2.5[]
+    label: kimi-k2.5
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - cursor
+  - value: gpt-5.4
+    label: GPT 5.4
+    costMultiplier: 0.1
+    endpoints:
+      - openai
+    engines:
+      - claude-code
+      - codex
+      - opencode
+      - nga
+      - codegenie
+  - value: csi-provider/GLM-4.7
+    label: csi.ai/GLM-4.7
+    costMultiplier: 0.1
+    endpoints: []
+    engines:
+      - opencode
+      - nga
+      - codegenie
+  - value: glm-5.1
+    label: GLM-5.1
+    costMultiplier: 0.02
+    endpoints:
+      - openai
+    engines:
+      - opencode
+      - nga
+      - codegenie
+  - value: big-pickle
+    label: Big Pickle
+    costMultiplier: 0.02
+    endpoints: []
+    engines:
+      - opencode
+      - nga
+      - codegenie
+  - value: MiniMax-M2.5-Free
+    label: MiniMax M2.5 Free
+    costMultiplier: 0.02
+    endpoints: []
+    engines:
+      - opencode
+      - nga
+      - codegenie
+  - value: Nemotron-3-Super-Free
+    label: Nemotron 3 Super Free
+    costMultiplier: 0.02
+    endpoints: []
+    engines:
+      - opencode
+      - nga
+      - codegenie

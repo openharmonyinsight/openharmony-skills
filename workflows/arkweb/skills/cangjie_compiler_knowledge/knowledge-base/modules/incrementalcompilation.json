@@ -1,0 +1,1757 @@
+{
+  "name": "incrementalcompilation",
+  "path": "src/IncrementalCompilation",
+  "files": [
+    "src/IncrementalCompilation/ASTDiff.cpp",
+    "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+    "src/IncrementalCompilation/CompilationCacheSerialization.h",
+    "src/IncrementalCompilation/CachedDataSerialization.cpp",
+    "src/IncrementalCompilation/ASTDiff.h",
+    "src/IncrementalCompilation/DependencySerialization.cpp",
+    "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+    "src/IncrementalCompilation/PollutionMapGen.h",
+    "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+    "src/IncrementalCompilation/Utils.cpp",
+    "src/IncrementalCompilation/PollutionAnalyzer.h"
+  ],
+  "classes": [
+    {
+      "name": "OrderDiffCompare",
+      "file": "src/IncrementalCompilation/ASTDiff.cpp",
+      "line": 17
+    },
+    {
+      "name": "ASTDiffImpl",
+      "file": "src/IncrementalCompilation/ASTDiff.cpp",
+      "line": 212
+    },
+    {
+      "name": "ASTCacheCalculatorImpl",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 18
+    },
+    {
+      "name": "HashedASTWriter",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 27
+    },
+    {
+      "name": "HashedASTLoader",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 69
+    },
+    {
+      "name": "CommonChange",
+      "file": "src/IncrementalCompilation/ASTDiff.h",
+      "line": 22
+    },
+    {
+      "name": "TypeChange",
+      "file": "src/IncrementalCompilation/ASTDiff.h",
+      "line": 53
+    },
+    {
+      "name": "ModifiedDecls",
+      "file": "src/IncrementalCompilation/ASTDiff.h",
+      "line": 115
+    },
+    {
+      "name": "ASTDiffArgs",
+      "file": "src/IncrementalCompilation/ASTDiff.h",
+      "line": 192
+    },
+    {
+      "name": "ASTDiffResult",
+      "file": "src/IncrementalCompilation/ASTDiff.h",
+      "line": 201
+    },
+    {
+      "name": "DumpInfo",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 26
+    },
+    {
+      "name": "ImportPackageWalker",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 275
+    },
+    {
+      "name": "PollutionMapGen",
+      "file": "src/IncrementalCompilation/PollutionMapGen.h",
+      "line": 15
+    },
+    {
+      "name": "TypeMap",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 24
+    },
+    {
+      "name": "QualifiedUsage",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 107
+    },
+    {
+      "name": "Hasher",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 116
+    },
+    {
+      "name": "ChangePollutedMap",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 135
+    },
+    {
+      "name": "PollutionResult",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 228
+    },
+    {
+      "name": "PollutionAnalyseArgs",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 235
+    },
+    {
+      "name": "PollutionAnalyzer",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 248
+    },
+    {
+      "name": "PollutedCommonChangeRecord",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 402
+    },
+    {
+      "name": "PollutedTypeChangeRecord",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 413
+    },
+    {
+      "name": "PollutedOtherUseRecord",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 424
+    }
+  ],
+  "functions": [
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/ASTDiff.cpp",
+      "line": 52
+    },
+    {
+      "name": "FindRecompileDeclsFromOrder",
+      "file": "src/IncrementalCompilation/ASTDiff.cpp",
+      "line": 199
+    },
+    {
+      "name": "FindRecompileDeclsFromFileMove",
+      "file": "src/IncrementalCompilation/ASTDiff.cpp",
+      "line": 204
+    },
+    {
+      "name": "CompareCommonDecls",
+      "file": "src/IncrementalCompilation/ASTDiff.cpp",
+      "line": 225
+    },
+    {
+      "name": "CompareCommonDecls",
+      "file": "src/IncrementalCompilation/ASTDiff.cpp",
+      "line": 233
+    },
+    {
+      "name": "CollectDeletedTopLevelDecl",
+      "file": "src/IncrementalCompilation/ASTDiff.cpp",
+      "line": 242
+    },
+    {
+      "name": "CompareTopLevelDecl",
+      "file": "src/IncrementalCompilation/ASTDiff.cpp",
+      "line": 246
+    },
+    {
+      "name": "CompareMembers",
+      "file": "src/IncrementalCompilation/ASTDiff.cpp",
+      "line": 292
+    },
+    {
+      "name": "CompareMemberDecl",
+      "file": "src/IncrementalCompilation/ASTDiff.cpp",
+      "line": 316
+    },
+    {
+      "name": "CompareMembers",
+      "file": "src/IncrementalCompilation/ASTDiff.cpp",
+      "line": 339
+    },
+    {
+      "name": "WalkDecl",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 46
+    },
+    {
+      "name": "PrevisitDirectExtendMember",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 115
+    },
+    {
+      "name": "CollectDecl",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 123
+    },
+    {
+      "name": "CombineDeclHash",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 141
+    },
+    {
+      "name": "CombineDeclHash",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 162
+    },
+    {
+      "name": "CombineDeclHash",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 174
+    },
+    {
+      "name": "CombineDeclHash",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 207
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 217
+    },
+    {
+      "name": "WalkDecl",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 220
+    },
+    {
+      "name": "PrevisitDirectExtendMember",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 265
+    },
+    {
+      "name": "CollectDecl",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 268
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 274
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 305
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 313
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 320
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 326
+    },
+    {
+      "name": "VisitTopLevelDeclMembers",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 337
+    },
+    {
+      "name": "VisitTopLevelImpl1",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 343
+    },
+    {
+      "name": "CollectDecl",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 358
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 367
+    },
+    {
+      "name": "ASTCacheCalculator::Walk",
+      "file": "src/IncrementalCompilation/ASTCacheCalculator.cpp",
+      "line": 423
+    },
+    {
+      "name": "SetImportSpecs",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 34
+    },
+    {
+      "name": "SetLambdaCounter",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 35
+    },
+    {
+      "name": "SetEnvClassCounter",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 36
+    },
+    {
+      "name": "SetStringLiteralCounter",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 37
+    },
+    {
+      "name": "SetCompileArgs",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 38
+    },
+    {
+      "name": "SetCHIROptInfo",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 41
+    },
+    {
+      "name": "SetVirtualFuncDep",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 42
+    },
+    {
+      "name": "SetVarInitDep",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 43
+    },
+    {
+      "name": "SetCCOutFuncs",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 44
+    },
+    {
+      "name": "SetBitcodeFilesName",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 45
+    },
+    {
+      "name": "SetSemanticInfo",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 46
+    },
+    {
+      "name": "WriteAllDecls",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 47
+    },
+    {
+      "name": "AST2FB",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 48
+    },
+    {
+      "name": "VerifyData",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 78
+    },
+    {
+      "name": "LoadCachedAST",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 79
+    },
+    {
+      "name": "Load",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 83
+    },
+    {
+      "name": "Load",
+      "file": "src/IncrementalCompilation/CompilationCacheSerialization.h",
+      "line": 84
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/IncrementalCompilation/CachedDataSerialization.cpp",
+      "line": 92
+    },
+    {
+      "name": "std::make_pair",
+      "file": "src/IncrementalCompilation/CachedDataSerialization.cpp",
+      "line": 130
+    },
+    {
+      "name": "FinishHashedPackageBuffer",
+      "file": "src/IncrementalCompilation/CachedDataSerialization.cpp",
+      "line": 330
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/CachedDataSerialization.cpp",
+      "line": 335
+    },
+    {
+      "name": "CachedASTFormat::VerifyHashedPackageBuffer",
+      "file": "src/IncrementalCompilation/CachedDataSerialization.cpp",
+      "line": 344
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/CachedDataSerialization.cpp",
+      "line": 353
+    },
+    {
+      "name": "LoadCHIROptInfo",
+      "file": "src/IncrementalCompilation/CachedDataSerialization.cpp",
+      "line": 389
+    },
+    {
+      "name": "LoadVirtualFuncDep",
+      "file": "src/IncrementalCompilation/CachedDataSerialization.cpp",
+      "line": 390
+    },
+    {
+      "name": "LoadVarInitDep",
+      "file": "src/IncrementalCompilation/CachedDataSerialization.cpp",
+      "line": 391
+    },
+    {
+      "name": "LoadCCOutFunc",
+      "file": "src/IncrementalCompilation/CachedDataSerialization.cpp",
+      "line": 392
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/ASTDiff.h",
+      "line": 152
+    },
+    {
+      "name": "PrintDecl",
+      "file": "src/IncrementalCompilation/ASTDiff.h",
+      "line": 168
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/ASTDiff.h",
+      "line": 181
+    },
+    {
+      "name": "ASTDiff",
+      "file": "src/IncrementalCompilation/ASTDiff.h",
+      "line": 206
+    },
+    {
+      "name": "CachedASTFormat::CreateUseInfo",
+      "file": "src/IncrementalCompilation/DependencySerialization.cpp",
+      "line": 51
+    },
+    {
+      "name": "CachedASTFormat::CreateRelation",
+      "file": "src/IncrementalCompilation/DependencySerialization.cpp",
+      "line": 105
+    },
+    {
+      "name": "std::tie",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 43
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 65
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 114
+    },
+    {
+      "name": "DumpDeclsToRecompile",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 123
+    },
+    {
+      "name": "DumpDeleted",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 125
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 144
+    },
+    {
+      "name": "PrintCHIROptEffectMap",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 196
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 347
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 352
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 377
+    },
+    {
+      "name": "ReplaceTypeWithTyInMangleName",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 434
+    },
+    {
+      "name": "CollectSrcImportedDep",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 443
+    },
+    {
+      "name": "CollectSrcImportedDep",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 450
+    },
+    {
+      "name": "UpdateMangleNameAndCollectDep",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 462
+    },
+    {
+      "name": "AST::Walker",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 468
+    },
+    {
+      "name": "ImportPackageWalker::Get",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 482
+    },
+    {
+      "name": "BuildMangleMapForCachedInfo",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 518
+    },
+    {
+      "name": "BuildMangleMapForCachedInfo",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 527
+    },
+    {
+      "name": "BuildMangleMapForCachedInfo",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 540
+    },
+    {
+      "name": "BuildMangleMapForCachedInfo",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 544
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 551
+    },
+    {
+      "name": "ImportPackageWalker::Get",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 584
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 598
+    },
+    {
+      "name": "DumpDeclsToRecompile",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 604
+    },
+    {
+      "name": "DumpDeleted",
+      "file": "src/IncrementalCompilation/IncrementalScopeAnalysis.cpp",
+      "line": 605
+    },
+    {
+      "name": "CollectPopulation",
+      "file": "src/IncrementalCompilation/PollutionMapGen.h",
+      "line": 46
+    },
+    {
+      "name": "CollectSourceImportedPopulation",
+      "file": "src/IncrementalCompilation/PollutionMapGen.h",
+      "line": 49
+    },
+    {
+      "name": "CollectRelation",
+      "file": "src/IncrementalCompilation/PollutionMapGen.h",
+      "line": 52
+    },
+    {
+      "name": "CollectBuiltinRelation",
+      "file": "src/IncrementalCompilation/PollutionMapGen.h",
+      "line": 55
+    },
+    {
+      "name": "CollectUsedNameInfo",
+      "file": "src/IncrementalCompilation/PollutionMapGen.h",
+      "line": 137
+    },
+    {
+      "name": "CollectUseInfo",
+      "file": "src/IncrementalCompilation/PollutionMapGen.h",
+      "line": 143
+    },
+    {
+      "name": "CollectUseInfo",
+      "file": "src/IncrementalCompilation/PollutionMapGen.h",
+      "line": 144
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 29
+    },
+    {
+      "name": "AddParent",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 30
+    },
+    {
+      "name": "PrintDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 62
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 78
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 121
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 147
+    },
+    {
+      "name": "PollutionForAddedTypeDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 174
+    },
+    {
+      "name": "PollutionForAddedNonTypeDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 176
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 188
+    },
+    {
+      "name": "PollutionForAddedNonTypeDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 190
+    },
+    {
+      "name": "PollutionForAddedNonTypeDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 194
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 198
+    },
+    {
+      "name": "PollutionForAddedNonTypeDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 201
+    },
+    {
+      "name": "PollutedUnqualifiedUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 205
+    },
+    {
+      "name": "PollutedGlobalChangeToPackageQualifiedUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 206
+    },
+    {
+      "name": "PolluteGlobalChangeToQualifiedUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 207
+    },
+    {
+      "name": "AdditionPollutionForAddedExtendDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 210
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 232
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 235
+    },
+    {
+      "name": "PollutionForAddedNonTypeDeclImpl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 238
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 245
+    },
+    {
+      "name": "PollutionForAddedNonTypeDeclImpl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 246
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 249
+    },
+    {
+      "name": "PollutionForAddedNonTypeDeclImpl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 250
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 261
+    },
+    {
+      "name": "PollutionForAddedNonTypeDeclImpl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 262
+    },
+    {
+      "name": "PollutedUnqualifiedUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 270
+    },
+    {
+      "name": "PollutedGlobalChangeToPackageQualifiedUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 271
+    },
+    {
+      "name": "PolluteGlobalChangeToQualifiedUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 272
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 281
+    },
+    {
+      "name": "PollutionForAddedTypeDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 282
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 299
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 304
+    },
+    {
+      "name": "PollutedInstantiationChangeFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 305
+    },
+    {
+      "name": "AdditionPollutionAPIOfExtendedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 315
+    },
+    {
+      "name": "AdditionPollutionAPIOfDirectExtendDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 318
+    },
+    {
+      "name": "AdditionPollutionAPIOfExtendedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 326
+    },
+    {
+      "name": "AdditionPollutionForBodyChangedExtendDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 329
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 341
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 376
+    },
+    {
+      "name": "PollutePreciseUsages",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 387
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 392
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 397
+    },
+    {
+      "name": "PollutedInstantiationChangeFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 398
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 415
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 416
+    },
+    {
+      "name": "PolluteBoxUsesFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 417
+    },
+    {
+      "name": "PollutedInstantiationChangeFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 418
+    },
+    {
+      "name": "PollutedToBoxUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 424
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 431
+    },
+    {
+      "name": "PollutedInstantiationChangeFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 432
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 438
+    },
+    {
+      "name": "PollutedInstantiationChangeFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 440
+    },
+    {
+      "name": "PollutionForConstDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 448
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 453
+    },
+    {
+      "name": "PollutionForSigChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 455
+    },
+    {
+      "name": "PollutionForSrcUseChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 457
+    },
+    {
+      "name": "PollutionForBodyChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 459
+    },
+    {
+      "name": "PollutedInstantiationChangeFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 465
+    },
+    {
+      "name": "PollutionForBodyChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 488
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 494
+    },
+    {
+      "name": "AdditionPollutionForBodyChangedExtendDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 502
+    },
+    {
+      "name": "PolluteDownStreamTypes",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 511
+    },
+    {
+      "name": "PolluteBoxUsesFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 515
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 516
+    },
+    {
+      "name": "PollutedInstantiationChangeFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 517
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 523
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 530
+    },
+    {
+      "name": "PollutionForSigChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 537
+    },
+    {
+      "name": "PollutedInstantiationChangeFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 540
+    },
+    {
+      "name": "PollutionForSrcUseChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 542
+    },
+    {
+      "name": "PolluteCHIROptAffectDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 544
+    },
+    {
+      "name": "PolluteToConstructors",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 549
+    },
+    {
+      "name": "PollutionForSigChangedFuncDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 560
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 564
+    },
+    {
+      "name": "PollutedUnqualifiedUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 591
+    },
+    {
+      "name": "PollutedGlobalChangeToPackageQualifiedUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 592
+    },
+    {
+      "name": "PolluteGlobalChangeToQualifiedUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 593
+    },
+    {
+      "name": "PollutedInstantiationChangeFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 594
+    },
+    {
+      "name": "PollutedUnqualifiedUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 608
+    },
+    {
+      "name": "PollutePreciseUsages",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 614
+    },
+    {
+      "name": "PollutionForSigChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 631
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 643
+    },
+    {
+      "name": "PollutionForSigChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 644
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 647
+    },
+    {
+      "name": "PollutionForSigChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 648
+    },
+    {
+      "name": "PollutePreciseUsages",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 659
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 682
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 686
+    },
+    {
+      "name": "PolluteBoxUsesFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 688
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 712
+    },
+    {
+      "name": "PollutionForSrcUseChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 713
+    },
+    {
+      "name": "PollutePreciseUsages",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 716
+    },
+    {
+      "name": "PolluteBoxUsesFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 717
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 729
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 734
+    },
+    {
+      "name": "PollutionForLayoutChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 735
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 738
+    },
+    {
+      "name": "PollutionForVTableChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 739
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 742
+    },
+    {
+      "name": "PollutionForSigChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 743
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 746
+    },
+    {
+      "name": "PollutionForSrcUseChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 747
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 750
+    },
+    {
+      "name": "PollutionForBodyChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 751
+    },
+    {
+      "name": "PollutedInstantiationChangeFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 757
+    },
+    {
+      "name": "PollutionForAddedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 761
+    },
+    {
+      "name": "PollutionForDeletedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 765
+    },
+    {
+      "name": "PollutionForChangedNonTypeDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 769
+    },
+    {
+      "name": "PollutedToBoxUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 777
+    },
+    {
+      "name": "PollutedToBoxUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 780
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 794
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 799
+    },
+    {
+      "name": "PollutePreciseUsages",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 806
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 814
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 832
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 836
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 840
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 850
+    },
+    {
+      "name": "PolluteToConstructors",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 853
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 858
+    },
+    {
+      "name": "PolluteDownStreamTypes",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 873
+    },
+    {
+      "name": "PolluteBoxUsesFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 874
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 879
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 891
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 893
+    },
+    {
+      "name": "PollutedInstantiationChangeFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 895
+    },
+    {
+      "name": "PolluteCHIROptAffectDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 896
+    },
+    {
+      "name": "Sema::GetTypeRawMangleName",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 932
+    },
+    {
+      "name": "ASTMangler::ManglePrimitiveType",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 939
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 968
+    },
+    {
+      "name": "GetExtendedTypeRawMangleNameImpl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 979
+    },
+    {
+      "name": "GetExtendedTypeRawMangleNameImpl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 989
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 999
+    },
+    {
+      "name": "PolluteBoxUsesFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1000
+    },
+    {
+      "name": "PollutedInstantiationChangeFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1001
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1011
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1014
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1027
+    },
+    {
+      "name": "PollutionForLayoutChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1028
+    },
+    {
+      "name": "PollutePreciseUsages",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1041
+    },
+    {
+      "name": "PollutedUnqualifiedUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1042
+    },
+    {
+      "name": "PollutedGlobalChangeToPackageQualifiedUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1043
+    },
+    {
+      "name": "PolluteGlobalChangeToQualifiedUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1044
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1046
+    },
+    {
+      "name": "PollutedInstantiationChangeFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1047
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1058
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1066
+    },
+    {
+      "name": "IsInDeclWithAttribute",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1088
+    },
+    {
+      "name": "PollutedInstantiationChangeFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1099
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1102
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1105
+    },
+    {
+      "name": "PollutePreciseUsages",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1107
+    },
+    {
+      "name": "PolluteCHIROptAffectDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1122
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1138
+    },
+    {
+      "name": "PolluteCHIROptAffectDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1139
+    },
+    {
+      "name": "PolluteBodyOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1141
+    },
+    {
+      "name": "PollutionForBodyChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1158
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1166
+    },
+    {
+      "name": "PollutedToBoxUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1167
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1178
+    },
+    {
+      "name": "PolluteCHIROptAffectDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1179
+    },
+    {
+      "name": "PolluteBodyOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1187
+    },
+    {
+      "name": "PollutePreciseUsages",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1196
+    },
+    {
+      "name": "PolluteBodyOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1201
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1204
+    },
+    {
+      "name": "PolluteDownStreamTypes",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1231
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1239
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1245
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1251
+    },
+    {
+      "name": "PollutedInstantiationChangeFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1252
+    },
+    {
+      "name": "PolluteBodyOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1274
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1291
+    },
+    {
+      "name": "PolluteBodyOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1303
+    },
+    {
+      "name": "PolluteBodyOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1314
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1322
+    },
+    {
+      "name": "PrintDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1346
+    },
+    {
+      "name": "PrintDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.cpp",
+      "line": 1354
+    },
+    {
+      "name": "IsTyped",
+      "file": "src/IncrementalCompilation/Utils.cpp",
+      "line": 65
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 42
+    },
+    {
+      "name": "CollectImportedDeclExtraRelation",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 69
+    },
+    {
+      "name": "AddToPollutedDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 253
+    },
+    {
+      "name": "PollutionForAddedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 258
+    },
+    {
+      "name": "PollutionForAddedTypeDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 260
+    },
+    {
+      "name": "PollutionForAddedNonTypeDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 261
+    },
+    {
+      "name": "PollutionForAddedNonTypeDeclImpl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 262
+    },
+    {
+      "name": "AdditionPollutionForAddedExtendDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 264
+    },
+    {
+      "name": "AdditionPollutionAPIOfExtendDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 265
+    },
+    {
+      "name": "AdditionPollutionAPIOfExtendedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 266
+    },
+    {
+      "name": "AdditionPollutionForBodyChangedExtendDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 269
+    },
+    {
+      "name": "AdditionPollutionAPIOfDirectExtendDecls",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 270
+    },
+    {
+      "name": "PollutionForConstDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 271
+    },
+    {
+      "name": "PollutionForOrderChangeDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 272
+    },
+    {
+      "name": "PollutionForDeletedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 277
+    },
+    {
+      "name": "PollutionForChangedNonTypeDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 282
+    },
+    {
+      "name": "PollutionForBodyChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 284
+    },
+    {
+      "name": "PollutionForSigChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 286
+    },
+    {
+      "name": "PollutionForSigChangedFuncDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 288
+    },
+    {
+      "name": "PollutionForSigChangedVarDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 292
+    },
+    {
+      "name": "PollutionForSigChangedVarWithPatternDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 296
+    },
+    {
+      "name": "PollutionForSigChangedPropDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 298
+    },
+    {
+      "name": "PollutionForSigChangedInheritableDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 300
+    },
+    {
+      "name": "PollutionForSrcUseChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 302
+    },
+    {
+      "name": "PollutionForChangedTypeDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 305
+    },
+    {
+      "name": "PolluteBoxUsesFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 307
+    },
+    {
+      "name": "PollutionForLayoutChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 309
+    },
+    {
+      "name": "PollutionForVTableChangedDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 311
+    },
+    {
+      "name": "PolluteBodyOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 313
+    },
+    {
+      "name": "GetExtendedTypeRawMangleNameImpl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 317
+    },
+    {
+      "name": "GetExtendedTypeRawMangleName",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 318
+    },
+    {
+      "name": "PolluteAPIOfDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 320
+    },
+    {
+      "name": "GetPollutionResult",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 322
+    },
+    {
+      "name": "GetDeletedResult",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 324
+    },
+    {
+      "name": "NeedPollutedInstantiationChange",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 334
+    },
+    {
+      "name": "PollutedInstantiationChangeFromDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 336
+    },
+    {
+      "name": "PolluteCHIROptAffectDecl",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 338
+    },
+    {
+      "name": "PollutedToBoxUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 340
+    },
+    {
+      "name": "PolluteToConstructors",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 343
+    },
+    {
+      "name": "PollutedToExprUsages",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 345
+    },
+    {
+      "name": "PollutePreciseUsages",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 346
+    },
+    {
+      "name": "PollutePreciseUsages",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 347
+    },
+    {
+      "name": "PolluteDownStreamTypes",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 348
+    },
+    {
+      "name": "PolluteDownStreamTypes",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 349
+    },
+    {
+      "name": "PollutedUnqualifiedUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 352
+    },
+    {
+      "name": "PolluteGlobalChangeToQualifiedUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 354
+    },
+    {
+      "name": "PollutedGlobalChangeToPackageQualifiedUses",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 357
+    },
+    {
+      "name": "FallBack",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 360
+    },
+    {
+      "name": "PrintFallbackInfo",
+      "file": "src/IncrementalCompilation/PollutionAnalyzer.h",
+      "line": 362
+    }
+  ],
+  "submodules": []
+}

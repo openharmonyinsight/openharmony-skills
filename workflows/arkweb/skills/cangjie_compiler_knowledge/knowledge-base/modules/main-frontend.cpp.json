@@ -1,0 +1,50 @@
+{
+  "name": "main-frontend.cpp",
+  "path": "src",
+  "files": [
+    "src/main-frontend.cpp"
+  ],
+  "classes": [],
+  "functions": [
+    {
+      "name": "GetModuleFileName",
+      "file": "src/main-frontend.cpp",
+      "line": 63
+    },
+    {
+      "name": "WaitForSingleObject",
+      "file": "src/main-frontend.cpp",
+      "line": 82
+    },
+    {
+      "name": "CloseHandle",
+      "file": "src/main-frontend.cpp",
+      "line": 88
+    },
+    {
+      "name": "CloseHandle",
+      "file": "src/main-frontend.cpp",
+      "line": 89
+    }
+  ],
+  "submodules": [
+    "ast",
+    "basic",
+    "chir",
+    "codegen",
+    "conditionalcompilation",
+    "driver",
+    "frontend",
+    "frontendtool",
+    "incrementalcompilation",
+    "lex",
+    "macro",
+    "mangle",
+    "metatransformation",
+    "modules",
+    "option",
+    "parse",
+    "sema",
+    "utils"
+  ]
+}

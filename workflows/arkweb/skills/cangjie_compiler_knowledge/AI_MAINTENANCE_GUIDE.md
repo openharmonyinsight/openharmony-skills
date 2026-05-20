@@ -1,0 +1,379 @@
+# AI Maintenance Guide for Cangjie Compiler Knowledge Base
+
+This guide explains how AI assistants should maintain and enhance the Cangjie compiler knowledge base by adding and updating descriptive content.
+
+## Overview
+
+The knowledge base has two types of content:
+
+1. **Structural Data** (automatic): Classes, functions, modules, dependencies - extracted automatically from source code
+2. **Descriptive Content** (AI-maintained): Concept explanations, synonyms, usage scenarios - maintained through Markdown files
+
+As an AI assistant, you should ONLY edit the descriptive content in Markdown files. Never manually edit the JSON files - they are regenerated automatically.
+
+## When to Maintain the Knowledge Base
+
+Add or update descriptions when:
+
+1. **Missing Descriptions**: User asks about a concept but search results lack explanations
+2. **Inaccurate Descriptions**: Existing descriptions are outdated or incorrect
+3. **Missing Synonyms**: Users search with terms that should match but don't
+4. **Unclear Usage**: The purpose or usage scenario of a feature needs clarification
+5. **New Features**: Compiler source code has been updated with new features
+
+## How to Write High-Quality Descriptions
+
+### Quality Standards
+
+Good descriptions should be:
+
+- **Concise**: Get to the point quickly, avoid unnecessary details
+- **Clear**: Use simple language, explain technical terms when needed
+- **Accurate**: Based on actual code analysis, not assumptions
+- **Bilingual**: Provide both Chinese and English descriptions when possible
+- **Practical**: Include real usage scenarios and examples
+- **Consistent**: Use terminology consistent with official documentation
+
+### Writing Process
+
+1. **Analyze the Code**: Read the relevant source files to understand the implementation
+2. **Identify Key Concepts**: What is the core purpose? What problems does it solve?
+3. **Find Related Components**: What other modules, classes, or functions are involved?
+4. **Document Usage Scenarios**: When and how would developers use this feature?
+5. **Add Synonyms**: What other terms might users search for?
+
+## Markdown File Format
+
+### Standard Template
+
+Create files in `knowledge-base/descriptions/` with this structure:
+
+```markdown
+---
+keyword: <primary-keyword>
+synonyms: [synonym1, synonym2, ...]
+related: [related-concept1, related-concept2, ...]
+category: <category>
+---
+
+# <Concept Name>
+
+## 中文描述
+<Detailed Chinese description>
+
+## English Description
+<Detailed English description>
+
+## 使用场景
+- Scenario 1
+- Scenario 2
+- ...
+
+## 相关实现
+- Module/class/function details
+```
+
+### Required Fields
+
+- `keyword`: The primary search keyword (lowercase, use underscores for multi-word)
+- `# <Concept Name>`: The display name of the concept
+- At least one of: `## 中文描述` or `## English Description`
+
+### Optional Fields
+
+- `synonyms`: Alternative terms users might search for
+- `related`: Links to related concepts
+- `category`: Classification (e.g., `language-feature`, `module`, `algorithm`)
+- `## 使用场景`: Usage scenarios and examples
+- `## 相关实现`: Implementation details and notes
+
+### Categories
+
+Use these standard categories:
+
+- `language-feature`: Language syntax and features (lambda, generic, class, etc.)
+- `module`: Compiler modules (parse, sema, codegen, etc.)
+- `algorithm`: Algorithms and techniques (type-inference, flow-analysis, etc.)
+- `data-structure`: Data structures (AST nodes, type representations, etc.)
+- `tool`: Development tools and utilities
+
+## Example Descriptions
+
+### Example 1: Language Feature (Lambda)
+
+```markdown
+---
+keyword: lambda
+synonyms: [匿名函数, anonymous function, closure, 闭包]
+related: [function, closure, capture]
+category: language-feature
+---
+
+# Lambda 表达式
+
+## 中文描述
+Lambda 表达式是仓颉语言中的匿名函数特性，允许在表达式中定义函数而无需显式命名。Lambda 支持捕获外部作用域的变量，形成闭包。编译器在解析阶段识别 lambda 语法，在语义分析阶段处理变量捕获和类型推断。
+
+## English Description
+Lambda expressions are anonymous function features in Cangjie language, allowing functions to be defined within expressions without explicit naming. Lambdas support capturing variables from outer scopes, forming closures. The compiler recognizes lambda syntax during parsing and handles variable capture and type inference during semantic analysis.
+
+## 使用场景
+- 函数式编程：作为高阶函数的参数
+- 回调函数：事件处理和异步操作
+- 集合操作：map、filter、reduce 等操作
+- 延迟计算：创建惰性求值的表达式
+
+## 相关实现
+- 解析：`src/Parse/ParseExpr.cpp` 中的 lambda 表达式解析
+- 语义分析：`src/Sema/` 中的闭包分析和类型检查
+- 代码生成：`src/CodeGen/` 中的闭包对象生成
+```
+
+### Example 2: Compiler Module (Sema)
+
+```markdown
+---
+keyword: sema
+synonyms: [semantic analysis, 语义分析, type checker, 类型检查]
+related: [parse, ast, type_system, chir]
+category: module
+---
+
+# 语义分析模块 (Sema)
+
+## 中文描述
+Sema（Semantic Analysis）模块负责编译器的语义分析阶段，包括类型检查、符号解析、作用域管理和语义约束验证。该模块接收 Parse 模块生成的 AST，进行深度语义分析，确保程序符合语言规范，并为后续的中间代码生成做准备。
+
+## English Description
+The Sema (Semantic Analysis) module handles the semantic analysis phase of the compiler, including type checking, symbol resolution, scope management, and semantic constraint validation. It receives the AST generated by the Parse module, performs deep semantic analysis to ensure the program conforms to language specifications, and prepares for subsequent intermediate code generation.
+
+## 使用场景
+- 类型检查：验证表达式和语句的类型正确性
+- 符号解析：将标识符绑定到声明
+- 泛型实例化：处理泛型类型和函数的实例化
+- 继承检查：验证类继承关系的合法性
+- 模式匹配：检查模式的穷尽性和类型兼容性
+
+## 相关实现
+- 核心类型检查器：`src/Sema/TypeChecker.cpp`
+- 泛型处理：`src/Sema/TypeCheckGeneric.cpp`
+- 类和接口：`src/Sema/TypeCheckClassLike.cpp`
+- 模式匹配：`src/Sema/TypeCheckPattern.cpp`
+```
+
+### Example 3: Algorithm (Type Inference)
+
+```markdown
+---
+keyword: type_inference
+synonyms: [类型推断, type deduction, 类型推导]
+related: [type_system, generic, sema]
+category: algorithm
+---
+
+# 类型推断
+
+## 中文描述
+类型推断是编译器自动推导表达式类型的能力，使开发者无需显式标注所有类型。仓颉编译器使用基于约束的类型推断算法，结合局部类型推断和全局类型推断，在保证类型安全的同时提供良好的开发体验。
+
+## English Description
+Type inference is the compiler's ability to automatically deduce expression types, allowing developers to omit explicit type annotations. The Cangjie compiler uses a constraint-based type inference algorithm, combining local and global type inference to ensure type safety while providing a good development experience.
+
+## 使用场景
+- 变量声明：`let x = 42` 自动推断为 Int64
+- Lambda 参数：根据上下文推断参数类型
+- 泛型实例化：根据参数推断类型参数
+- 返回类型：从函数体推断返回类型
+
+## 相关实现
+- 类型推断引擎：`src/Sema/TypeInference.cpp`
+- 约束求解：`src/Sema/ConstraintSolver.cpp`
+- 泛型类型参数推断：`src/Sema/GenericInstantiation/`
+```
+
+## Synonym Management
+
+### Identifying Synonyms
+
+Good synonyms include:
+
+- **Translations**: Chinese ↔ English terms
+- **Abbreviations**: "AST" for "Abstract Syntax Tree"
+- **Alternative Names**: "anonymous function" for "lambda"
+- **Common Misspellings**: Handle common typos
+- **Domain Variations**: Different terms used in different contexts
+
+### Adding Synonyms
+
+Add synonyms to the `synonyms` array in the YAML frontmatter:
+
+```yaml
+synonyms: [匿名函数, anonymous function, closure, 闭包, lambda expression]
+```
+
+## Related Concepts
+
+Link related concepts to help users discover connected information:
+
+```yaml
+related: [function, closure, capture, higher_order_function]
+```
+
+Guidelines:
+- Link to concepts that are frequently used together
+- Link to parent/child concepts in hierarchies
+- Link to alternative approaches or competing features
+- Keep the list focused (3-7 items is ideal)
+
+## Triggering Knowledge Base Updates
+
+After creating or editing Markdown files, the knowledge base must be regenerated:
+
+```bash
+python3 scripts/generate_knowledge.py
+```
+
+For incremental updates (faster, only processes changed files):
+
+```bash
+python3 scripts/generate_knowledge.py --incremental
+```
+
+## Common Compiler Concept Templates
+
+### Template: Language Feature
+
+```markdown
+---
+keyword: <feature_name>
+synonyms: [<chinese_term>, <alternative_english_terms>]
+related: [<related_features>]
+category: language-feature
+---
+
+# <Feature Display Name>
+
+## 中文描述
+<What it is, how it works, key characteristics>
+
+## English Description
+<What it is, how it works, key characteristics>
+
+## 使用场景
+- <Use case 1>
+- <Use case 2>
+- <Use case 3>
+
+## 相关实现
+- <Parsing location>
+- <Semantic analysis location>
+- <Code generation location>
+```
+
+### Template: Compiler Module
+
+```markdown
+---
+keyword: <module_name>
+synonyms: [<alternative_names>]
+related: [<related_modules>]
+category: module
+---
+
+# <Module Display Name>
+
+## 中文描述
+<Module purpose, responsibilities, position in compilation pipeline>
+
+## English Description
+<Module purpose, responsibilities, position in compilation pipeline>
+
+## 使用场景
+- <Primary responsibility 1>
+- <Primary responsibility 2>
+- <Primary responsibility 3>
+
+## 相关实现
+- <Key files and directories>
+- <Important classes>
+- <Main entry points>
+```
+
+### Template: Algorithm/Technique
+
+```markdown
+---
+keyword: <algorithm_name>
+synonyms: [<alternative_names>]
+related: [<related_algorithms>]
+category: algorithm
+---
+
+# <Algorithm Display Name>
+
+## 中文描述
+<What problem it solves, how it works, key properties>
+
+## English Description
+<What problem it solves, how it works, key properties>
+
+## 使用场景
+- <Application 1>
+- <Application 2>
+- <Application 3>
+
+## 相关实现
+- <Implementation files>
+- <Key functions/classes>
+- <Algorithm variants>
+```
+
+## Best Practices
+
+1. **Start with Code Analysis**: Always read the actual source code before writing descriptions
+2. **Be Specific**: Reference actual file paths, class names, and function names
+3. **Keep It Current**: Update descriptions when compiler code changes
+4. **Test Your Descriptions**: After adding descriptions, test searches to ensure they work
+5. **Use Consistent Terminology**: Match terms used in official documentation
+6. **Provide Context**: Explain not just what, but why and when
+7. **Link Generously**: Use the `related` field to connect concepts
+8. **Think Like a User**: What would someone actually search for?
+
+## Troubleshooting
+
+### Description Not Appearing in Search Results
+
+1. Check that the Markdown file is in `knowledge-base/descriptions/`
+2. Verify the YAML frontmatter is valid
+3. Ensure `keyword` field matches what users would search
+4. Run `generate_knowledge.py` to regenerate the index
+5. Test the search again
+
+### Search Returns Wrong Results
+
+1. Review the `synonyms` field - might be too broad
+2. Check if `keyword` conflicts with other concepts
+3. Make the description more specific
+4. Add distinguishing terms to help ranking
+
+### Descriptions Are Outdated
+
+1. Review recent compiler source code changes
+2. Update affected Markdown files
+3. Run `generate_knowledge.py --incremental`
+4. Verify updated descriptions appear in search
+
+## Summary
+
+As an AI assistant maintaining this knowledge base:
+
+- **DO**: Edit Markdown files in `knowledge-base/descriptions/`
+- **DO**: Add synonyms, related concepts, and clear descriptions
+- **DO**: Base descriptions on actual code analysis
+- **DO**: Run `generate_knowledge.py` after making changes
+- **DON'T**: Manually edit JSON files
+- **DON'T**: Make assumptions without checking source code
+- **DON'T**: Write overly technical descriptions without context
+- **DON'T**: Forget to test your changes with actual searches
+
+The goal is to make the compiler source code easily discoverable and understandable for developers working with Cangjie.

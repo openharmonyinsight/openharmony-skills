@@ -1,0 +1,3534 @@
+{
+  "name": "modules",
+  "path": "src/Modules/ASTSerialization",
+  "files": [
+    "src/Modules/ASTSerialization/ASTLoader.cpp",
+    "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+    "src/Modules/ASTSerialization/ASTWriter.cpp",
+    "src/Modules/ASTSerialization/ASTSerializeUtils.h",
+    "src/Modules/ASTSerialization/ASTWriterImpl.h",
+    "src/Modules/ASTSerialization/ExprWriter.cpp",
+    "src/Modules/ASTSerialization/ExprLoader.cpp",
+    "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+    "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+    "src/Modules/ASTSerialization/Mapping.h",
+    "src/Modules/CjoManager.cpp",
+    "src/Modules/DependencyGraph.cpp",
+    "src/Modules/ModulesDiag.h",
+    "src/Modules/ModulesUtils.cpp",
+    "src/Modules/ModulesDiag.cpp",
+    "src/Modules/ImportManager.cpp",
+    "src/Modules/CjoManagerImpl.h",
+    "src/Modules/PackageManager.cpp"
+  ],
+  "classes": [
+    {
+      "name": "ASTLoader",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 25
+    },
+    {
+      "name": "CacheLoadingStatus",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 91
+    },
+    {
+      "name": "DeclInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 24
+    },
+    {
+      "name": "NodeInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 42
+    },
+    {
+      "name": "ASTWriter",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 50
+    },
+    {
+      "name": "DependencyInfoItem",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 103
+    },
+    {
+      "name": "CjoManagerImpl",
+      "file": "src/Modules/CjoManagerImpl.h",
+      "line": 19
+    },
+    {
+      "name": "PackageInfo",
+      "file": "src/Modules/CjoManagerImpl.h",
+      "line": 22
+    },
+    {
+      "name": "CjoCacheInfo",
+      "file": "src/Modules/CjoManagerImpl.h",
+      "line": 108
+    }
+  ],
+  "functions": [
+    {
+      "name": "constexpr",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 95
+    },
+    {
+      "name": "static_assert",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 107
+    },
+    {
+      "name": "SetOuterDeclForSetterAndGetter",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 147
+    },
+    {
+      "name": "SetOuterDeclForParamDecl",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 149
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 176
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 189
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 219
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 234
+    },
+    {
+      "name": "PreLoadImportedPackageNode",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 243
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 249
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 258
+    },
+    {
+      "name": "LoadImportContent",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 280
+    },
+    {
+      "name": "LoadNodePos",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 281
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 327
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 331
+    },
+    {
+      "name": "ReportPackageMismatch",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 338
+    },
+    {
+      "name": "AddCurFile",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 367
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 369
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 387
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 406
+    },
+    {
+      "name": "AddCurFile",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 407
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 413
+    },
+    {
+      "name": "AddCurFile",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 429
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 452
+    },
+    {
+      "name": "AddCurFile",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 477
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 521
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 556
+    },
+    {
+      "name": "InternalError",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 590
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 651
+    },
+    {
+      "name": "InternalError",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 742
+    },
+    {
+      "name": "InternalError",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 763
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 774
+    },
+    {
+      "name": "LoadDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 778
+    },
+    {
+      "name": "AddDeclToImportedPackage",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 789
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 798
+    },
+    {
+      "name": "LoadDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 801
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 811
+    },
+    {
+      "name": "LoadDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 813
+    },
+    {
+      "name": "LoadDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 852
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 854
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 864
+    },
+    {
+      "name": "SetOuterFunctionDecl",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 884
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 907
+    },
+    {
+      "name": "SetOuterDeclForMemberDecl",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 918
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 946
+    },
+    {
+      "name": "LoadAnnoTargets",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 950
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 961
+    },
+    {
+      "name": "SetOuterDeclForMemberDecl",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 965
+    },
+    {
+      "name": "SetDeclBody",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 973
+    },
+    {
+      "name": "LoadDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 974
+    },
+    {
+      "name": "AddDeclToImportedPackage",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 975
+    },
+    {
+      "name": "constexpr",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 978
+    },
+    {
+      "name": "LoadEnumDeclAdvancedInfo",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 979
+    },
+    {
+      "name": "LoadFuncDeclAdvancedInfo",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 981
+    },
+    {
+      "name": "LoadInheritableDeclAdvancedInfo",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 983
+    },
+    {
+      "name": "constexpr",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 985
+    },
+    {
+      "name": "LoadDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 994
+    },
+    {
+      "name": "AddDeclToImportedPackage",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 995
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 1003
+    },
+    {
+      "name": "LoadDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 1005
+    },
+    {
+      "name": "AddDeclToImportedPackage",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 1006
+    },
+    {
+      "name": "LoadDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 1014
+    },
+    {
+      "name": "AddDeclToImportedPackage",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 1017
+    },
+    {
+      "name": "LoadDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 1026
+    },
+    {
+      "name": "LoadNodePos",
+      "file": "src/Modules/ASTSerialization/ASTLoader.cpp",
+      "line": 1027
+    },
+    {
+      "name": "InitializeTypeLoader",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 37
+    },
+    {
+      "name": "LoadPackageDependencies",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 44
+    },
+    {
+      "name": "LoadPackageDecls",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 45
+    },
+    {
+      "name": "PreloadCommonPartOfPackage",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 47
+    },
+    {
+      "name": "LoadImportSpecs",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 48
+    },
+    {
+      "name": "ReadFileNames",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 49
+    },
+    {
+      "name": "LoadPackageDepInfo",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 52
+    },
+    {
+      "name": "LoadRefs",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 53
+    },
+    {
+      "name": "LoadType",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 60
+    },
+    {
+      "name": "HasInlineDefaultParamFunc",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 82
+    },
+    {
+      "name": "VerifyForData",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 106
+    },
+    {
+      "name": "PrepareForLoadTypeCache",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 108
+    },
+    {
+      "name": "CollectRemovedDecls",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 111
+    },
+    {
+      "name": "LoadInheritedTypes",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 116
+    },
+    {
+      "name": "LoadGenericConstraintsRef",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 117
+    },
+    {
+      "name": "LoadAnnotationBaseExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 118
+    },
+    {
+      "name": "LoadTypeAliasDeclRef",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 120
+    },
+    {
+      "name": "LoadDeclDependencies",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 121
+    },
+    {
+      "name": "LoadDeclRefs",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 122
+    },
+    {
+      "name": "LoadFuncParam",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 123
+    },
+    {
+      "name": "LoadPropDecl",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 124
+    },
+    {
+      "name": "LoadVarDecl",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 125
+    },
+    {
+      "name": "LoadVarWithPatternDecl",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 126
+    },
+    {
+      "name": "LoadNominalDecl",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 128
+    },
+    {
+      "name": "LoadTypeAliasDecl",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 129
+    },
+    {
+      "name": "LoadBuiltInDecl",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 130
+    },
+    {
+      "name": "LoadGenericParamDecl",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 131
+    },
+    {
+      "name": "LoadInvalidDecl",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 132
+    },
+    {
+      "name": "LoadGeneric",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 133
+    },
+    {
+      "name": "LoadDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 136
+    },
+    {
+      "name": "LoadFuncDeclAdvancedInfo",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 137
+    },
+    {
+      "name": "LoadEnumDeclAdvancedInfo",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 138
+    },
+    {
+      "name": "LoadInheritableDeclAdvancedInfo",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 139
+    },
+    {
+      "name": "AddDeclToImportedPackage",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 140
+    },
+    {
+      "name": "GetDeclFromIndex",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 143
+    },
+    {
+      "name": "constexpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 150
+    },
+    {
+      "name": "LoadNodePos",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 157
+    },
+    {
+      "name": "AST::AttributePack",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 173
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 184
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 191
+    },
+    {
+      "name": "LoadFuncParamList",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 222
+    },
+    {
+      "name": "LoadPos",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 224
+    },
+    {
+      "name": "LoadImportContent",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 225
+    },
+    {
+      "name": "LoadTypeArgs",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 226
+    },
+    {
+      "name": "SetGenericTy",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 227
+    },
+    {
+      "name": "GetPrimitiveTy",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 228
+    },
+    {
+      "name": "SetTypeTy",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 230
+    },
+    {
+      "name": "PreLoadImportedPackageNode",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 231
+    },
+    {
+      "name": "LoadCachedTypeForDecl",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 234
+    },
+    {
+      "name": "InitializeTypeLoader",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 256
+    },
+    {
+      "name": "LoadInvalidExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 269
+    },
+    {
+      "name": "LoadWildcardExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 270
+    },
+    {
+      "name": "LoadPrimitiveTypeExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 271
+    },
+    {
+      "name": "LoadReturnExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 272
+    },
+    {
+      "name": "LoadJumpExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 273
+    },
+    {
+      "name": "LoadMemberAccess",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 274
+    },
+    {
+      "name": "LoadRefExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 275
+    },
+    {
+      "name": "LoadCallExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 276
+    },
+    {
+      "name": "LoadUnaryExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 277
+    },
+    {
+      "name": "LoadIncOrDecExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 278
+    },
+    {
+      "name": "LoadLitConstExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 279
+    },
+    {
+      "name": "LoadBinaryExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 280
+    },
+    {
+      "name": "LoadSubscriptExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 281
+    },
+    {
+      "name": "LoadAssignExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 282
+    },
+    {
+      "name": "LoadArrayExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 283
+    },
+    {
+      "name": "LoadPointerExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 284
+    },
+    {
+      "name": "LoadTypeConvExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 285
+    },
+    {
+      "name": "LoadThrowExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 286
+    },
+    {
+      "name": "LoadPerformExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 287
+    },
+    {
+      "name": "LoadResumeExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 288
+    },
+    {
+      "name": "LoadSpawnExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 289
+    },
+    {
+      "name": "LoadArrayLit",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 290
+    },
+    {
+      "name": "LoadTupleLit",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 291
+    },
+    {
+      "name": "LoadIfExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 292
+    },
+    {
+      "name": "LoadTryExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 293
+    },
+    {
+      "name": "LoadWhileExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 294
+    },
+    {
+      "name": "LoadDoWhileExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 295
+    },
+    {
+      "name": "LoadLambdaExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 296
+    },
+    {
+      "name": "LoadBlock",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 297
+    },
+    {
+      "name": "LoadMatchExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 298
+    },
+    {
+      "name": "LoadLetPatternDestructor",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 299
+    },
+    {
+      "name": "LoadForInExpr",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 300
+    },
+    {
+      "name": "LoadFuncArg",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 301
+    },
+    {
+      "name": "LoadMatchCase",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 302
+    },
+    {
+      "name": "LoadMatchCaseOther",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 303
+    },
+    {
+      "name": "LoadPattern",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 349
+    },
+    {
+      "name": "LoadConstPattern",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 350
+    },
+    {
+      "name": "LoadWildcardPattern",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 351
+    },
+    {
+      "name": "LoadVarPattern",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 352
+    },
+    {
+      "name": "LoadTuplePattern",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 353
+    },
+    {
+      "name": "LoadTypePattern",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 354
+    },
+    {
+      "name": "LoadEnumPattern",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 355
+    },
+    {
+      "name": "LoadExceptTypePattern",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 356
+    },
+    {
+      "name": "LoadCommandTypePattern",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 357
+    },
+    {
+      "name": "LoadExprRefs",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 359
+    },
+    {
+      "name": "LoadSubNodeRefs",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 360
+    },
+    {
+      "name": "LoadSubNodeRefs2",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 361
+    },
+    {
+      "name": "LoadPatternRefs",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 362
+    },
+    {
+      "name": "LoadMatchCaseRef",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 363
+    },
+    {
+      "name": "LoadAnnotation",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 365
+    },
+    {
+      "name": "LoadAnnotationArgs",
+      "file": "src/Modules/ASTSerialization/ASTLoaderImpl.h",
+      "line": 366
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 98
+    },
+    {
+      "name": "InternalError",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 132
+    },
+    {
+      "name": "InternalError",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 142
+    },
+    {
+      "name": "Walker",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 190
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 219
+    },
+    {
+      "name": "IsGenericInCommonSerialization",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 222
+    },
+    {
+      "name": "CollectBodyToQueue",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 226
+    },
+    {
+      "name": "CollectBodyToQueue",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 232
+    },
+    {
+      "name": "CollectInstantiatedTys",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 246
+    },
+    {
+      "name": "CollectInstantiatedTys",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 259
+    },
+    {
+      "name": "CollectInstantiatedTys",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 263
+    },
+    {
+      "name": "CollectInstantiatedTys",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 267
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 286
+    },
+    {
+      "name": "CollectInstantiatedTys",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 289
+    },
+    {
+      "name": "CollectInstantiatedTys",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 293
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 419
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 439
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 445
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 488
+    },
+    {
+      "name": "SaveFileInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 521
+    },
+    {
+      "name": "IterateToplevelDecls",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 534
+    },
+    {
+      "name": "CollectFullExportParamDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 549
+    },
+    {
+      "name": "CollectBodyToQueue",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 555
+    },
+    {
+      "name": "CollectAnnotations",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 564
+    },
+    {
+      "name": "CollectMembers",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 565
+    },
+    {
+      "name": "MangleExportId",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 571
+    },
+    {
+      "name": "SaveExpr",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 577
+    },
+    {
+      "name": "CanSkip4CJMP",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 590
+    },
+    {
+      "name": "AppendDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 617
+    },
+    {
+      "name": "DFSCollectFilesDeclarations",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 631
+    },
+    {
+      "name": "AddCurFile",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 637
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 675
+    },
+    {
+      "name": "MangleExportId",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 678
+    },
+    {
+      "name": "CollectInstantiationRecursively",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 689
+    },
+    {
+      "name": "CheckForConflictExportId",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 694
+    },
+    {
+      "name": "MarkImplicitExportOfImportSpec",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 703
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 718
+    },
+    {
+      "name": "cjoVersion",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 756
+    },
+    {
+      "name": "FinishPackageBuffer",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 760
+    },
+    {
+      "name": "SaveDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 781
+    },
+    {
+      "name": "PackageFormat::CreateFullId",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 805
+    },
+    {
+      "name": "importsBuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 832
+    },
+    {
+      "name": "PackageFormat::CreateFeaturesDirective",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 855
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 910
+    },
+    {
+      "name": "tbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1009
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1022
+    },
+    {
+      "name": "tbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1031
+    },
+    {
+      "name": "tbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1050
+    },
+    {
+      "name": "tbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1068
+    },
+    {
+      "name": "tbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1084
+    },
+    {
+      "name": "tbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1097
+    },
+    {
+      "name": "tbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1111
+    },
+    {
+      "name": "tbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1124
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1142
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1166
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1170
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1173
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1183
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1191
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1204
+    },
+    {
+      "name": "SaveDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1205
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1234
+    },
+    {
+      "name": "SaveDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1235
+    },
+    {
+      "name": "PackageFormat::CreateVarInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1247
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1248
+    },
+    {
+      "name": "SaveDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1249
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1259
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1263
+    },
+    {
+      "name": "SaveDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1264
+    },
+    {
+      "name": "PackageFormat::CreateFuncBody",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1288
+    },
+    {
+      "name": "PackageFormat::CreateFuncBody",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1316
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1322
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1329
+    },
+    {
+      "name": "SaveDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1330
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1349
+    },
+    {
+      "name": "SaveDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1350
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1372
+    },
+    {
+      "name": "SaveDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1373
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1391
+    },
+    {
+      "name": "SaveDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1392
+    },
+    {
+      "name": "ibuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1428
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1434
+    },
+    {
+      "name": "WriteAnnoTargets",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1436
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1442
+    },
+    {
+      "name": "SaveDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1444
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1461
+    },
+    {
+      "name": "SaveDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1462
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1478
+    },
+    {
+      "name": "SaveDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1479
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1493
+    },
+    {
+      "name": "SaveDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1494
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1509
+    },
+    {
+      "name": "SaveDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1511
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1519
+    },
+    {
+      "name": "SaveDeclBasicInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1520
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1640
+    },
+    {
+      "name": "declHash",
+      "file": "src/Modules/ASTSerialization/ASTWriter.cpp",
+      "line": 1651
+    },
+    {
+      "name": "SetSerializingCommon",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 65
+    },
+    {
+      "name": "PreSaveFullExportDecls",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 66
+    },
+    {
+      "name": "ExportAST",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 73
+    },
+    {
+      "name": "AST2FB",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 74
+    },
+    {
+      "name": "SaveType",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 77
+    },
+    {
+      "name": "SavePackageName",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 131
+    },
+    {
+      "name": "SaveFileInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 133
+    },
+    {
+      "name": "SaveFileImports",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 134
+    },
+    {
+      "name": "CreateFeatureId",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 136
+    },
+    {
+      "name": "SaveFeaturesDirective",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 137
+    },
+    {
+      "name": "SaveDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 143
+    },
+    {
+      "name": "SaveVarDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 144
+    },
+    {
+      "name": "SaveVarWithPatternDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 146
+    },
+    {
+      "name": "SavePropDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 147
+    },
+    {
+      "name": "SaveFuncDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 148
+    },
+    {
+      "name": "SaveParamDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 149
+    },
+    {
+      "name": "SaveStructDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 150
+    },
+    {
+      "name": "SaveEnumDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 151
+    },
+    {
+      "name": "SaveInterfaceDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 152
+    },
+    {
+      "name": "SaveClassDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 153
+    },
+    {
+      "name": "SaveExtendDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 154
+    },
+    {
+      "name": "SaveTypeAliasDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 155
+    },
+    {
+      "name": "SaveBuiltInDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 156
+    },
+    {
+      "name": "SaveGenericParamDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 157
+    },
+    {
+      "name": "SaveUnsupportDecl",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 158
+    },
+    {
+      "name": "PlannedToBeSerialized",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 183
+    },
+    {
+      "name": "SaveFuncBody",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 186
+    },
+    {
+      "name": "SaveGeneric",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 188
+    },
+    {
+      "name": "SaveFuncParamList",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 189
+    },
+    {
+      "name": "GetDeclIndex",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 195
+    },
+    {
+      "name": "GetFullDeclIndex",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 197
+    },
+    {
+      "name": "SaveAnnotations",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 198
+    },
+    {
+      "name": "SaveAnnotationArgs",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 199
+    },
+    {
+      "name": "SaveAttributes",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 200
+    },
+    {
+      "name": "GetFullDeclIndex",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 205
+    },
+    {
+      "name": "GetVirtualParamLists",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 209
+    },
+    {
+      "name": "MarkImplicitExportOfImportSpec",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 221
+    },
+    {
+      "name": "PackNodeInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 223
+    },
+    {
+      "name": "SaveExpr",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 225
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 226
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 227
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 228
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 229
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 230
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 231
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 232
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 233
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 234
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 235
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 236
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 237
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 238
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 239
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 240
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 241
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 242
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 243
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 244
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 245
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 246
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 247
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 248
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 249
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 250
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 251
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 252
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 253
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 254
+    },
+    {
+      "name": "SaveUnsupportExpr",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 255
+    },
+    {
+      "name": "SaveExpression",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 256
+    },
+    {
+      "name": "SaveFuncArg",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 300
+    },
+    {
+      "name": "SaveMatchCase",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 301
+    },
+    {
+      "name": "SaveMatchCaseOther",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 302
+    },
+    {
+      "name": "SavePattern",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 305
+    },
+    {
+      "name": "SaveConstPattern",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 306
+    },
+    {
+      "name": "SaveWildcardPattern",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 307
+    },
+    {
+      "name": "SaveVarPattern",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 308
+    },
+    {
+      "name": "SaveTuplePattern",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 309
+    },
+    {
+      "name": "SaveTypePattern",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 310
+    },
+    {
+      "name": "SaveEnumPattern",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 311
+    },
+    {
+      "name": "SaveExceptTypePattern",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 312
+    },
+    {
+      "name": "SaveCommandTypePattern",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 313
+    },
+    {
+      "name": "SavePointerTy",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 316
+    },
+    {
+      "name": "SaveArrayTy",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 317
+    },
+    {
+      "name": "SaveVArrayTy",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 318
+    },
+    {
+      "name": "SaveTupleTy",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 319
+    },
+    {
+      "name": "SaveFuncTy",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 320
+    },
+    {
+      "name": "SaveGenericsTy",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 321
+    },
+    {
+      "name": "SaveNominalTy",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 322
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ASTWriterImpl.h",
+      "line": 324
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 53
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 92
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 93
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 99
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 101
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 107
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 109
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 115
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 118
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 120
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 128
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 130
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 138
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 150
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 152
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 171
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 173
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 181
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 194
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 196
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 205
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 209
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 211
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 220
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 224
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 226
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 238
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 240
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 248
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 249
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 255
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 257
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 266
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 270
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 275
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 277
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 286
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 287
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 293
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 295
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 311
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 313
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 327
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 329
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 336
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 340
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 342
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 349
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 353
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 355
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 362
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 366
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 368
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 376
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 386
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 388
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 404
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 406
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 420
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 422
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 429
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 430
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 437
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 439
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 468
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 470
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 479
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 480
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 485
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 487
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 494
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 495
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 500
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 502
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 509
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 512
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 514
+    },
+    {
+      "name": "operands",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 523
+    },
+    {
+      "name": "childrenCond",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 524
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 534
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 542
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 544
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 555
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 558
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 563
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 570
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 572
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 591
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 601
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 603
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 604
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 611
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 613
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 632
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 637
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 639
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 652
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 653
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 658
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 660
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 680
+    },
+    {
+      "name": "SaveBasicNodeInfo",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 681
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 710
+    },
+    {
+      "name": "SavePattern",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 711
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 715
+    },
+    {
+      "name": "TPatternOffset",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 716
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 722
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 731
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 744
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 754
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 759
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 777
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 788
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 793
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 806
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 816
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 832
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 837
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 852
+    },
+    {
+      "name": "dbuilder",
+      "file": "src/Modules/ASTSerialization/ExprWriter.cpp",
+      "line": 857
+    },
+    {
+      "name": "LoadNodePos",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 29
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 42
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 45
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 62
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 73
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 85
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 105
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 125
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 136
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 144
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 161
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 176
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 192
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 206
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 259
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 316
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 352
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 366
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 387
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 410
+    },
+    {
+      "name": "constexpr",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 431
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 453
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 465
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 522
+    },
+    {
+      "name": "LoadConstPattern",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 538
+    },
+    {
+      "name": "LoadWildcardPattern",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 540
+    },
+    {
+      "name": "LoadVarPattern",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 542
+    },
+    {
+      "name": "LoadTuplePattern",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 544
+    },
+    {
+      "name": "LoadTypePattern",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 546
+    },
+    {
+      "name": "LoadEnumPattern",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 548
+    },
+    {
+      "name": "LoadExceptTypePattern",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 550
+    },
+    {
+      "name": "LoadCommandTypePattern",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 552
+    },
+    {
+      "name": "CJC_ABORT",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 554
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ExprLoader.cpp",
+      "line": 582
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 27
+    },
+    {
+      "name": "SetFuncParentReference",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 47
+    },
+    {
+      "name": "SetFuncParentReference",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 50
+    },
+    {
+      "name": "SetFuncParentReference",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 53
+    },
+    {
+      "name": "SetFuncParentReference",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 59
+    },
+    {
+      "name": "WrapType",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 65
+    },
+    {
+      "name": "Wrap2RefType",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 152
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 157
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 180
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 186
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 193
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 206
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 212
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 236
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 244
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 245
+    },
+    {
+      "name": "LoadDeclRefs",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 246
+    },
+    {
+      "name": "LoadDeclDependencies",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 247
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 251
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 252
+    },
+    {
+      "name": "LoadExprRefs",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 253
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 257
+    },
+    {
+      "name": "PostLoadReference",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 264
+    },
+    {
+      "name": "TypeManager::GetInvalidTy",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 272
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 298
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 309
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 327
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 329
+    },
+    {
+      "name": "constexpr",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 349
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 356
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 362
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 369
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 374
+    },
+    {
+      "name": "constexpr",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 381
+    },
+    {
+      "name": "static_assert",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 394
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 409
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 416
+    },
+    {
+      "name": "constexpr",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 470
+    },
+    {
+      "name": "SetMemberDeclReference",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 472
+    },
+    {
+      "name": "LoadInheritedTypes",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 477
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 486
+    },
+    {
+      "name": "constexpr",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 492
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 503
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 530
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 564
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 611
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 621
+    },
+    {
+      "name": "LoadSubNodeRefs",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 644
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 659
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 698
+    },
+    {
+      "name": "LoadSubNodeRefs2",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 705
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 714
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/ReferenceLoader.cpp",
+      "line": 731
+    },
+    {
+      "name": "Utils::In",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 38
+    },
+    {
+      "name": "AddDeclToImportedPackage",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 54
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 57
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 62
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 76
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 87
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 90
+    },
+    {
+      "name": "AddDeclToImportedPackage",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 94
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 130
+    },
+    {
+      "name": "CollectRemovedDecls",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 133
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 154
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 157
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 160
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 166
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 172
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 201
+    },
+    {
+      "name": "CollectRemovedDecls",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 202
+    },
+    {
+      "name": "CollectRemovedDecls",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 218
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 230
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 241
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 244
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 247
+    },
+    {
+      "name": "ctx",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 273
+    },
+    {
+      "name": "PrepareForLoadTypeCache",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 278
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 290
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 296
+    },
+    {
+      "name": "CollectRemovedDecls",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 301
+    },
+    {
+      "name": "LoadDesugarDecl",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 314
+    },
+    {
+      "name": "LoadDesugarDecl",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 316
+    },
+    {
+      "name": "LoadCachedTypeForDecl",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 318
+    },
+    {
+      "name": "CollectRemovedDefaultImpl",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 319
+    },
+    {
+      "name": "ClearInstantiatedCache",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 335
+    },
+    {
+      "name": "LoadRefs",
+      "file": "src/Modules/ASTSerialization/IncrementalLoader.cpp",
+      "line": 342
+    },
+    {
+      "name": "DeleteASTLoaders",
+      "file": "src/Modules/CjoManager.cpp",
+      "line": 63
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/CjoManager.cpp",
+      "line": 88
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/CjoManager.cpp",
+      "line": 208
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/CjoManager.cpp",
+      "line": 219
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/CjoManager.cpp",
+      "line": 271
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/CjoManager.cpp",
+      "line": 310
+    },
+    {
+      "name": "Utils::EraseIf",
+      "file": "src/Modules/CjoManager.cpp",
+      "line": 312
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/CjoManager.cpp",
+      "line": 387
+    },
+    {
+      "name": "FileUtil::ReadBinaryFileToBuffer",
+      "file": "src/Modules/CjoManager.cpp",
+      "line": 452
+    },
+    {
+      "name": "Modules::AddImportedDeclToMap",
+      "file": "src/Modules/CjoManager.cpp",
+      "line": 501
+    },
+    {
+      "name": "Modules::AddImportedDeclToMap",
+      "file": "src/Modules/CjoManager.cpp",
+      "line": 508
+    },
+    {
+      "name": "Modules::AddImportedDeclToMap",
+      "file": "src/Modules/CjoManager.cpp",
+      "line": 511
+    },
+    {
+      "name": "Modules::GetPackageRelation",
+      "file": "src/Modules/CjoManager.cpp",
+      "line": 524
+    },
+    {
+      "name": "AddDeclToMap",
+      "file": "src/Modules/CjoManager.cpp",
+      "line": 531
+    },
+    {
+      "name": "AddPackageDeclMap",
+      "file": "src/Modules/CjoManager.cpp",
+      "line": 548
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/CjoManager.cpp",
+      "line": 600
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/CjoManager.cpp",
+      "line": 626
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/DependencyGraph.cpp",
+      "line": 55
+    },
+    {
+      "name": "Utils::EraseIf",
+      "file": "src/Modules/DependencyGraph.cpp",
+      "line": 113
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/DependencyGraph.cpp",
+      "line": 138
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/DependencyGraph.cpp",
+      "line": 140
+    },
+    {
+      "name": "AddDependenciesForImport",
+      "file": "src/Modules/DependencyGraph.cpp",
+      "line": 141
+    },
+    {
+      "name": "AddDependency",
+      "file": "src/Modules/DependencyGraph.cpp",
+      "line": 153
+    },
+    {
+      "name": "AddDependenciesForPackage",
+      "file": "src/Modules/DependencyGraph.cpp",
+      "line": 154
+    },
+    {
+      "name": "WarnUselessImport",
+      "file": "src/Modules/ModulesDiag.h",
+      "line": 23
+    },
+    {
+      "name": "WarnConflictImport",
+      "file": "src/Modules/ModulesDiag.h",
+      "line": 24
+    },
+    {
+      "name": "WarnRepeatedFeatureName",
+      "file": "src/Modules/ModulesDiag.h",
+      "line": 25
+    },
+    {
+      "name": "DiagForNullPackageFeature",
+      "file": "src/Modules/ModulesDiag.h",
+      "line": 26
+    },
+    {
+      "name": "DiagRootPackageModifier",
+      "file": "src/Modules/ModulesDiag.h",
+      "line": 31
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 84
+    },
+    {
+      "name": "AddImplicitImportAll",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 86
+    },
+    {
+      "name": "AddImplicitImportAll",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 89
+    },
+    {
+      "name": "AddImplicitImportAll",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 90
+    },
+    {
+      "name": "AddImplicitImportAll",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 97
+    },
+    {
+      "name": "AddImplicitImportAll",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 98
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 117
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 151
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 258
+    },
+    {
+      "name": "CollectStdDependency",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 265
+    },
+    {
+      "name": "CollectStdDependency",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 278
+    },
+    {
+      "name": "CollectStdDependency",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 283
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 320
+    },
+    {
+      "name": "additionalSerializations",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 329
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 344
+    },
+    {
+      "name": "HandleStdPackage",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 392
+    },
+    {
+      "name": "HandleStdPackage",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 398
+    },
+    {
+      "name": "ResolveImportedPackageHeaders",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 400
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 432
+    },
+    {
+      "name": "SaveDepPkgCjoPath",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 441
+    },
+    {
+      "name": "HandleAlreadyParsedPackage",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 447
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 459
+    },
+    {
+      "name": "HandleStdPackage",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 479
+    },
+    {
+      "name": "HandleStdPackage",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 485
+    },
+    {
+      "name": "UpdateMacroPackageUsage",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 602
+    },
+    {
+      "name": "CheckImports",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 604
+    },
+    {
+      "name": "CheckRedefinition",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 606
+    },
+    {
+      "name": "Utils::EraseIf",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 654
+    },
+    {
+      "name": "WarnConflictImport",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 693
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 768
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 800
+    },
+    {
+      "name": "WarnRepeatedFeatureName",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 808
+    },
+    {
+      "name": "ValidateFileFeatureSpec",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 867
+    },
+    {
+      "name": "CollectInvalidFeatureFiles",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 868
+    },
+    {
+      "name": "DiagForDifferentPackageFeatureConsistency",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 880
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 902
+    },
+    {
+      "name": "DiagRootPackageModifier",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 908
+    },
+    {
+      "name": "DiagForDifferentPackageNames",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 921
+    },
+    {
+      "name": "ClearCachesForRebuild",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 935
+    },
+    {
+      "name": "CheckPackageFeatureSpec",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 939
+    },
+    {
+      "name": "CheckPackageSpecsIdentical",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 941
+    },
+    {
+      "name": "AddImplicitImports",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 945
+    },
+    {
+      "name": "ResolveImportedPackages",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 948
+    },
+    {
+      "name": "ClearPackageCjoCache",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 949
+    },
+    {
+      "name": "AddImportedDeclsForSourcePackage",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 956
+    },
+    {
+      "name": "ResolveImports",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 960
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 993
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 1003
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 1019
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 1022
+    },
+    {
+      "name": "InternalError",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 1035
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 1098
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 1245
+    },
+    {
+      "name": "IsDeclAccessible",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 1328
+    },
+    {
+      "name": "IsDeclAccessible",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 1344
+    },
+    {
+      "name": "CJC_NULLPTR_CHECK",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 1397
+    },
+    {
+      "name": "IsExtendMemberImported",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 1539
+    },
+    {
+      "name": "DeleteASTWriters",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 1544
+    },
+    {
+      "name": "DeleteASTLoaders",
+      "file": "src/Modules/ImportManager.cpp",
+      "line": 1545
+    },
+    {
+      "name": "CjoManagerImpl",
+      "file": "src/Modules/CjoManagerImpl.h",
+      "line": 21
+    },
+    {
+      "name": "GetPackageInfo",
+      "file": "src/Modules/CjoManagerImpl.h",
+      "line": 36
+    },
+    {
+      "name": "IsReExportBy",
+      "file": "src/Modules/CjoManagerImpl.h",
+      "line": 69
+    },
+    {
+      "name": "ClearForReBuildIndex",
+      "file": "src/Modules/CjoManagerImpl.h",
+      "line": 135
+    },
+    {
+      "name": "GetCommonPartCjos",
+      "file": "src/Modules/CjoManagerImpl.h",
+      "line": 144
+    },
+    {
+      "name": "SubstituteImportedTypeAliasTy",
+      "file": "src/Modules/CjoManagerImpl.h",
+      "line": 175
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/PackageManager.cpp",
+      "line": 26
+    },
+    {
+      "name": "CJC_ASSERT",
+      "file": "src/Modules/PackageManager.cpp",
+      "line": 47
+    },
+    {
+      "name": "CollectDepsInFile",
+      "file": "src/Modules/PackageManager.cpp",
+      "line": 52
+    },
+    {
+      "name": "CollectDeps",
+      "file": "src/Modules/PackageManager.cpp",
+      "line": 65
+    },
+    {
+      "name": "TarjanForSCC",
+      "file": "src/Modules/PackageManager.cpp",
+      "line": 110
+    }
+  ],
+  "submodules": []
+}

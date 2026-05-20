@@ -1,0 +1,59 @@
+---
+keyword: type parameter
+synonyms: [generic]
+related: [type, class, interface, function, instantiation, 实例化]
+category: compiler-feature
+---
+
+# Type Parameter
+
+## 中文描述
+泛型是一种参数化类型的机制,允许在定义类、接口或函数时使用类型参数,在使用时再指定具体类型。泛型提供了类型安全的代码复用,避免了类型转换和运行时错误。
+
+## English Description
+Generics are a mechanism for parameterized types, allowing type parameters to be used when defining classes, interfaces, or functions, with concrete types specified at usage time. Generics provide type-safe code reuse while avoiding type casts and runtime errors.
+
+## 使用场景
+- 待补充
+
+## 相关实现
+- 相关模块: ast, basic, chir, codegen, demangler
+- 主要类: GenericConstraint, Generic, GenericParamDecl, GenericParamDecl, GenericTypeArguments
+- 主要函数: GetGenericConstraints, GetGenericTypes, GetGenericConstraintsName, setGenericVec, DemangleGenericType
+
+## 代码示例
+
+### 示例 1: GetGenericConstraints
+文件: `demangler/Demangler.h:152`
+
+```cpp
+// 代码示例待提取
+```
+
+### 示例 2: GetGenericTypes
+文件: `demangler/Demangler.h:153`
+
+```cpp
+// 代码示例待提取
+```
+
+
+## 概念关系图谱
+
+- **同义词**: generic
+- **相关概念**: type, class, interface, function, instantiation, 实例化
+- **相关模块**: ast, basic, chir, codegen, demangler, driver, frontendtool, include, macro, mangle
+
+## 常见问题
+
+### type parameter 是什么？
+
+请参考上面的概念描述部分。
+
+### 如何在代码中使用 type parameter？
+
+请参考上面的代码示例部分。
+
+### type parameter 在编译器的哪个阶段处理？
+
+请查看相关模块部分了解处理流程。
