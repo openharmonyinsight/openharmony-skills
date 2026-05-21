@@ -1,0 +1,574 @@
+workflow:
+  name: ArkWeb Video全屏Title控制
+  description: ArkWeb项目中网页视频全屏时，支持开发者通过HTML扩展属性控制全屏标题显示。覆盖需求澄清到代码生成全流程，包含专家团讨论、方案设计、设计文档生成、文档评审、Spec 生成和代码生成。
+  mode: state-machine
+  maxTransitions: 60
+
+  states:
+    # ============================================================
+    # Phase 1: 需求澄清 + proposal.md 生成
+    # ============================================================
+    - name: 需求澄清
+      description: Phase 1 — 接收用户需求，通过交互澄清提取关键信息，生成 proposal.md
+      requireHumanApproval: true
+      isInitial: true
+      isFinal: false
+      steps:
+        - name: 生成 proposal
+          agent: arkweb-architect
+          role: defender
+          task: |
+            接收用户需求并执行以下操作：
+            1. 提取关键信息：需求描述、目标设备（默认全覆盖）、OHOS 版本（默认全部）
+            2. 确定工作目录：docs_dir、analysis_dir、references_dir
+            3. 创建需求目录：mkdir -p {docs_dir}
+            4. 按 proposal.md 模板格式生成需求澄清文档，保存为 {docs_dir}/proposal.md
+            5. 包含：来源、提出人、原始问题描述、用户痛点、初始范围、初始假设、流程级别（L0-L3）
+        - name: 需求澄清检查
+          agent: arkweb-spec-review
+          role: judge
+          task: |
+            检查 proposal.md 的完整性和合理性：
+            1. 需求描述是否清晰、具体
+            2. 目标设备和版本是否明确
+            3. 初始范围和假设是否合理
+            4. 流程级别（L0-L3）判断是否准确
+            输出裁决 JSON：{"verdict":"pass|conditional_pass|fail","summary":"..."}
+      transitions:
+        - to: 需求分析
+          condition: { verdict: pass }
+          priority: 1
+          label: 需求澄清通过
+        - to: 需求澄清
+          condition: { verdict: conditional_pass }
+          priority: 2
+          label: 需求需补充
+        - to: 终止
+          condition: { verdict: fail }
+          priority: 3
+          label: 需求不明确
+
+    # ============================================================
+    # Phase 2: 需求分析 — 专家团 + brainstorm + code-analysis
+    # ============================================================
+    - name: 需求分析
+      description: Phase 2 — 专家团讨论 + brainstorm + code-analysis 并行执行，输出方案和代码分析
+      isInitial: false
+      isFinal: false
+      steps:
+        - name: 专家团 + 代码分析 + brainstorm
+          agent: arkweb-brainstorm
+          role: defender
+          task: |
+            执行完整的需求分析流程：
+            1. 专家团相关度权重判定（🟢核心/🟡关联/⚪旁听）
+            2. 并行 spawn 专家团 subagent（按相关度筛选）
+            3. 并行 spawn code-analysis subagent（使用 oh-chromium-knowledge + DeepWiki + 本地文档）
+            4. 收集专家意见，汇总为「专家团讨论纪要」
+            5. 执行 brainstorm：需求拆解 → 知识库候选集收敛 → 提出方案（2-3 个）→ 交互场景分析
+            6. 输出 brainstorm.md 到 {docs_dir}/{date}-{feature}-brainstorm.md
+            brainstorm 必须标注采纳了哪些专家建议，并包含知识库证据清单。
+        - name: 分析质量评审
+          agent: arkweb-spec-review
+          role: judge
+          task: |
+            评审 brainstorm.md 和 analysis.md 的质量：
+            1. 方案是否覆盖了所有需求点
+            2. 专家建议是否被合理采纳
+            3. 代码分析是否充分
+            4. 技术可行性评估是否可信
+            输出裁决 JSON：{"verdict":"pass|conditional_pass|fail","summary":"..."}
+      transitions:
+        - to: 需求基线
+          condition: { verdict: pass }
+          priority: 1
+          label: 分析通过
+        - to: 需求分析
+          condition: { verdict: conditional_pass }
+          priority: 2
+          label: 分析不充分，补充后重做
+        - to: 需求澄清
+          condition: { verdict: fail }
+          priority: 3
+          label: 需求理解偏差，回到需求澄清
+
+    # ============================================================
+    # Phase 3: 需求基线（追加到 proposal.md）
+    # ============================================================
+    - name: 需求基线
+      description: Phase 3 — 追加 proposal.md 第二章和第三章，生成稳定版需求基线
+      isInitial: false
+      isFinal: false
+      steps:
+        - name: 生成需求基线
+          agent: arkweb-architect
+          role: defender
+          task: |
+            从以下输入提取需求基线，追加 proposal.md 第二章和第三章：
+            - proposal.md 第一章（原始痛点 + 背景）
+            - brainstorm.md（确认方案 + 专家意见）
+            - analysis.md（技术可行性）
+            追加内容：问题陈述、目标和成功指标、用户故事表、验收标准表、不做范围清单、关键假设与验证结果
+            保存为 {docs_dir}/proposal.md（覆盖）
+        - name: 基线质量检查
+          agent: arkweb-spec-review
+          role: judge
+          task: |
+            检查 proposal.md 需求基线的完整性：
+            1. 验收标准是否具体可测
+            2. 用户故事是否覆盖主要场景
+            3. 不做范围是否明确
+            输出裁决 JSON：{"verdict":"pass|conditional_pass","summary":"..."}
+      transitions:
+        - to: 设计文档
+          condition: { verdict: pass }
+          priority: 1
+          label: 基线通过
+        - to: 需求基线
+          condition: { verdict: conditional_pass }
+          priority: 2
+          label: 基线需补充
+        - to: 终止
+          condition: { verdict: fail }
+          priority: 3
+          label: 基线生成失败
+
+    # ============================================================
+    # Phase 4: 设计文档
+    # ============================================================
+    - name: 设计文档
+      description: Phase 4 — 生成 requirement.md + design.md 两个设计文档
+      isInitial: false
+      isFinal: false
+      steps:
+        - name: 生成设计文档
+          agent: arkweb-design-doc
+          role: defender
+          task: |
+            基于确认方案生成两个设计文档：
+            1. 读取参考资料：proposal.md、brainstorm.md、analysis.md、架构参考、竞品分析
+            2. 执行知识库检索，输出候选子系统/部件/API
+            3. 按 requirement.md 模板生成需求基线评审文档
+            4. 按 design.md 模板生成架构设计文档
+            requirement.md 包含：需求描述、功能设计（架构图/类图/时序图）、接口设计、设备矩阵、DFX 八维度分析
+            design.md 包含：设计元数据、涉及仓和模块、ADR、设计骨架、风险和开放问题
+            保存到 {docs_dir}/
+        - name: 文档质量评审
+          agent: arkweb-spec-review
+          role: judge
+          task: |
+            检查设计文档的基本质量：
+            1. 章节是否完整无空章节
+            2. 架构图/类图/时序图是否存在
+            3. 接口设计是否有参数表和示例代码
+            4. DFX 八维度是否覆盖
+            输出裁决 JSON：{"verdict":"pass|conditional_pass","summary":"..."}
+      transitions:
+        - to: 文档评审
+          condition: { verdict: pass }
+          priority: 1
+          label: 文档生成通过
+        - to: 设计文档
+          condition: { verdict: conditional_pass }
+          priority: 2
+          label: 文档需补充完善
+        - to: 终止
+          condition: { verdict: fail }
+          priority: 3
+          label: 文档生成失败
+
+    # ============================================================
+    # Phase 5: 文档评审（含 Checklist 检视）
+    # ============================================================
+    - name: 文档评审
+      description: Phase 5 — 技术评审 + Checklist 33 项检视，输出 review.md
+      isInitial: false
+      isFinal: false
+      steps:
+        - name: 技术评审 + Checklist
+          agent: arkweb-spec-review
+          role: attacker
+          task: |
+            对 requirement.md 和 design.md 执行全面评审：
+            Part A 技术评审（5 维度 31 项）：
+            1. 完整性检查（10 项）
+            2. 一致性检查（6 项）
+            3. 技术可行性检查（5 项）
+            4. DFX 完整性（6 项）
+            5. 文档规范（4 项）
+            Plus 接口设计规范（7 项）
+            Part B Checklist 检视（8 大类 33 项）：
+            按 assets/templates/requirement-design-review-checklist.md 逐项检查
+            输出 review.md 到 {docs_dir}/{date}-{feature}-review.md
+            包含：评审结果、问题清单（🔴/🟡/🟢）、Checklist 检视结果、统计数据
+        - name: 评审质量确认
+          agent: arkweb-spec-review
+          role: judge
+          task: |
+            确认评审报告的完整性和判定合理性：
+            1. 评审维度是否全覆盖
+            2. Checklist 是否逐项检查
+            3. 问题等级判定是否合理
+            输出裁决 JSON：{"verdict":"pass|conditional_pass","summary":"评审报告完整，发现 N 个问题"}
+      transitions:
+        - to: 规格生成
+          condition: { verdict: pass }
+          priority: 1
+          label: 评审通过
+        - to: 文档评审
+          condition: { verdict: conditional_pass }
+          priority: 2
+          label: 评审不充分，补充评审
+        - to: 终止
+          condition: { verdict: fail }
+          priority: 3
+          label: 评审失败
+
+    # ============================================================
+    # Phase 5: 规格生成
+    # ============================================================
+    - name: 规格生成
+      description: Phase 6 — 从 proposal/requirement/design/review/analysis 聚合生成 spec.md + task.md
+      isInitial: false
+      isFinal: false
+      steps:
+        - name: 生成 Spec 和执行计划
+          agent: arkweb-spec-gen
+          role: defender
+          task: |
+            基于 5 个输入文档生成统一 Spec 和执行计划：
+            输入：proposal.md + requirement.md + design.md + review.md + analysis.md
+            输出 1：spec.md（4 合 1）
+              - 第 1 章：架构设计（设计元数据、涉及仓、ADR、骨架）
+              - 第 2 章：接口规格（定义、行为场景、约束条件）
+              - 第 3 章：特性规格（用户故事、AC、规则表、验证映射）
+              - 第 4 章：任务规格（受影响文件、依赖、代码变更规格）
+            输出 2：task.md（AC→Task 追溯 + Task 详情 + 停止条件）
+            如果 review.md 有🟡未处理项，记录到 spec.md 已知限制章节。
+            保存到 {docs_dir}/
+        - name: Spec 质量检查
+          agent: arkweb-spec-review
+          role: judge
+          task: |
+            检查 spec.md 和 task.md 的质量：
+            1. 无 TBD/TODO/占位符
+            2. 所有 AC 使用 WHEN/THEN 格式
+            3. 每个 P0/P1 AC 至少映射到一个 Task
+            4. 每个 Task 有完成判据和停止条件
+            5. 接口参数表四段式完整
+            输出裁决 JSON：{"verdict":"pass|conditional_pass","summary":"..."}
+      transitions:
+        - to: 代码实现
+          condition: { verdict: pass }
+          priority: 1
+          label: 规格生成通过
+        - to: 规格生成
+          condition: { verdict: conditional_pass }
+          priority: 2
+          label: 规格需补充完善
+        - to: 终止
+          condition: { verdict: fail }
+          priority: 3
+          label: 规格生成失败
+
+    # ============================================================
+    # Phase 7a: 代码实现（Spec 驱动）
+    # ============================================================
+    - name: 代码实现
+      description: Phase 7a — 基于 SDD 产出的 spec.md 和 task.md 执行代码实现
+      isInitial: false
+      isFinal: false
+      steps:
+        - name: Spec 驱动代码实现
+          agent: arkweb-code-gen
+          role: defender
+          task: |
+            基于 SDD 产出的设计文档执行代码实现。
+
+            【文件读取约束 — 严格遵守，避免上下文膨胀】：
+            - 必读：{docs_dir}/spec.md 第 4 章（任务规格）、{docs_dir}/task.md（仅当前 Task 相关部分）
+            - 按需读：{docs_dir}/spec.md 第 2 章（接口规格，仅当前 Task 涉及的接口）
+            - 按需读：{docs_dir}/design.md（仅与当前 Task 相关的章节，使用 Grep 定位而非全文 Read）
+            - 禁读：proposal.md、brainstorm.md、analysis.md、review.md、requirement.md 等早期文档
+
+            实现步骤：
+            1. 读取 {docs_dir}/spec.md 第 4 章和 {docs_dir}/execution-plan.md，确认当前 Task 范围
+            2. 如需接口细节，仅读取 spec.md 第 2 章中与当前 Task 相关的接口
+            3. 遵循 ArkWeb 解耦机制（_for_include），编码前先 Read 编码规范参考文档
+            4. 按 execution-plan.md 中的 Task 逐 Step 实现代码
+            5. 生成核心代码 + 单元测试 + BUILD.gn 修改
+            6. 输出变更文件清单和 <step-conclusion>（含实现摘要、变更文件列表、关键决策）
+      transitions:
+        - to: 代码检视
+          condition: { verdict: pass }
+          priority: 1
+          label: 代码实现完成，进入检视
+        - to: 代码实现
+          condition: { verdict: conditional_pass }
+          priority: 2
+          label: 部分实现失败，重做
+        - to: 规格生成
+          condition: { verdict: fail }
+          priority: 3
+          label: 规格不可行，回退调整
+
+    # ============================================================
+    # Phase 7b: 代码检视（含修复循环）
+    # ============================================================
+    - name: 代码检视
+      description: Phase 7b — 8 维度代码检视 + 修复循环（max 5 轮）
+      isInitial: false
+      isFinal: false
+      steps:
+        - name: 代码检视
+          agent: arkweb-spec-review
+          role: attacker
+          task: |
+            执行 8 维度代码检视。
+
+            【文件读取约束 — 严格遵守，避免上下文膨胀】：
+            - 必读：上一步 <step-conclusion> 中的变更文件清单，确定要检视的文件
+            - 按需读：{docs_dir}/spec.md（仅第 2 章接口规格和第 3 章特性规格，用于比对实现是否符合 spec）
+            - 禁读：proposal.md、brainstorm.md、analysis.md、review.md、requirement.md 等早期文档
+            - 禁读：{docs_dir}/design.md 全文（仅用 Grep 搜索关键接口名进行局部比对）
+
+            8 维度检视：
+              A. 代码规范 — 命名、格式、注释
+              B. 逻辑正确性 — 边界条件、异常处理、返回值
+              C. 内存安全 — 泄漏、越界、悬空指针
+              D. 线程安全 — 数据竞争、死锁、序列访问
+              E. 稳定性 — 容错、降级、恢复
+              F. 性能 — 算法复杂度、资源占用
+              G. 项目规范 — BUILD.gn、目录结构、依赖
+              H. 设计遵从性 — 参照 reference/design-conformance-check.md，比对实现与设计一致性
+            生成检视报告到 /tmp/arkweb_review_report.md
+        - name: 修复循环
+          agent: arkweb-code-gen
+          role: defender
+          task: |
+            修复循环（max 5 轮）。
+
+            【文件读取约束 — 严格遵守】：
+            - 必读：/tmp/arkweb_review_report.md 中的 BLOCKER 和 CRITICAL 问题
+            - 按需读：报错涉及的源代码文件（仅检视报告中提及的文件）
+            - 禁读：所有设计文档（spec.md、design.md、proposal.md 等）
+
+            修复步骤：
+            1. 读取 /tmp/arkweb_review_report.md 中的 BLOCKER 和 CRITICAL 问题
+            2. 仅修复检视问题，不做额外改动
+            3. 重新检查修复后的代码是否解决了问题
+            4. 如果仍有 BLOCKER/CRITICAL 且未达到 5 轮上限，继续循环
+            5. 更新检视报告 /tmp/arkweb_review_report.md
+        - name: 检视裁决
+          agent: arkweb-spec-review
+          role: judge
+          task: |
+            最终检视裁决。
+
+            【文件读取约束】：
+            - 必读：最终版 /tmp/arkweb_review_report.md
+            - 禁读：所有设计文档和历史文档
+
+            裁决步骤：
+            1. 检查 BLOCKER/CRITICAL 是否已清零
+            2. 检查修复循环是否达到上限
+            3. 综合评估代码质量
+            输出裁决 JSON：{"verdict":"pass|conditional_pass|fail","summary":"检视完成，剩余 BLOCKER: N, CRITICAL: N"}
+      transitions:
+        - to: 设计差异对齐
+          condition: { verdict: pass }
+          priority: 1
+          label: 检视通过，进入设计差异对齐
+        - to: 代码检视
+          condition: { verdict: conditional_pass }
+          priority: 2
+          label: 继续修复
+        - to: 代码实现
+          condition: { verdict: fail }
+          priority: 3
+          label: 严重问题，回退重做实现
+
+    # ============================================================
+    # Phase 7c: 设计差异对齐
+    # ============================================================
+    - name: 设计差异对齐
+      description: Phase 7c — 10 维度比对 design.md 与实际实现，交互式差异对齐
+      isInitial: false
+      isFinal: false
+      steps:
+        - name: 设计差异对齐
+          agent: arkweb-architect
+          role: judge
+          task: |
+            设计差异对齐流程。
+
+            【文件读取约束 — 严格遵守，避免上下文膨胀】：
+            - 必读：上一步 <step-conclusion> 中的实现摘要和变更文件清单
+            - 必读：{docs_dir}/design.md（仅与变更文件相关的章节，用 Grep 定位后局部 Read）
+            - 按需读：上一步检视报告 /tmp/arkweb_review_report.md（仅摘要部分）
+            - 禁读：proposal.md、brainstorm.md、analysis.md、review.md、requirement.md 等早期文档
+            - 禁读：spec.md 全文（仅用 Grep 搜索关键接口名）
+
+            对齐步骤：
+            1. Read reference/design-diff-alignment.md 获取对齐方法论
+            2. 从上一步 <step-conclusion> 获取变更文件清单，确定比对范围
+            3. 10 维度比对 design.md 与实际实现（仅比对变更涉及的维度）：
+               - 接口签名、数据结构、类关系、方法列表
+               - 参数返回值、流程状态机、错误码
+               - Feature Flag、多语言绑定、模块划分
+            4. 差异对齐循环（max 5 轮）：
+               对每个差异点，交互式向用户展示并请求决策：
+               A) 接受实现 — 回写 design.md
+               B) 要求重做 — 标记需重做的部分
+               C) 暂时搁置 — 记录为遗留项到 {docs_dir}/design-waivers.md
+            5. 所有差异处理完毕或达到循环上限后，输出对齐结论
+            输出裁决 JSON：{"verdict":"pass|conditional_pass|fail","summary":"差异对齐完成，接受 N 项，重做 N 项，搁置 N 项"}
+      transitions:
+        - to: 编译验证
+          condition: { verdict: pass }
+          priority: 1
+          label: 差异对齐通过，进入编译验证
+        - to: 代码实现
+          condition: { verdict: conditional_pass }
+          priority: 2
+          label: 需重做部分代码
+        - to: 规格生成
+          condition: { verdict: fail }
+          priority: 3
+          label: 差异过大，需调整规格
+
+    # ============================================================
+    # Phase 7d: 编译验证（含编译修复循环）
+    # ============================================================
+    - name: 编译验证
+      description: Phase 7d — 编译验证 + 编译-修复循环（max 10 轮）
+      isInitial: false
+      isFinal: false
+      steps:
+        - name: 编译验证
+          agent: arkweb-builder
+          role: judge
+          task: |
+            编译验证流程。
+
+            【编译命令（固定，不要使用其他命令）】：
+            cd /mnt/vdb_new/user_home/gzwoh/code/arkweb_144 && ./build_arkweb.sh rk3568_64 -t n -A
+
+            【文件读取约束 — 严格遵守，避免上下文膨胀】：
+            - 必读：上一步 <step-conclusion> 中的变更文件清单（确定编译目标）
+            - 必读：编译报错信息和相关源代码文件（仅报错涉及的）
+            - 按需读：BUILD.gn、头文件（仅报错涉及的）
+            - 禁读：所有设计文档（spec.md、design.md、proposal.md、brainstorm.md、analysis.md、review.md、requirement.md）
+            - 禁读：检视报告 /tmp/arkweb_review_report.md
+
+            编译验证步骤：
+            1. 从上一步 <step-conclusion> 获取变更文件清单，确认编译范围
+            2. 执行编译命令：cd /mnt/vdb_new/user_home/gzwoh/code/arkweb_144 && ./build_arkweb.sh rk3568_64 -t n -A
+            3. 编译-修复循环（max 10 轮）：
+               a. 如果编译成功（exit code 0，输出 "Build completed"）：跳出循环
+               b. 如果编译失败：
+                  - 仅读取报错信息，定位到具体源文件
+                  - 修复编译错误（仅修复编译问题，不做额外改动）
+                  - 重新执行编译命令
+               c. 达到 10 轮上限仍失败则终止
+            4. 输出编译验证结果
+            输出裁决 JSON：{"verdict":"pass|conditional_pass|fail","summary":"编译验证结果：..., 修复轮次：N"}
+      transitions:
+        - to: 完成
+          condition: { verdict: pass }
+          priority: 1
+          label: 编译通过，代码生成完成
+        - to: 编译验证
+          condition: { verdict: conditional_pass }
+          priority: 2
+          label: 编译需继续修复
+        - to: 代码实现
+          condition: { verdict: fail }
+          priority: 3
+          label: 编译失败，需回退重做实现
+
+    # ============================================================
+    # 完成状态
+    # ============================================================
+    - name: 完成
+      description: 代码生成完成 — 所有文档和代码已生成
+      isInitial: false
+      isFinal: true
+      steps:
+        - name: 生成交付报告
+          agent: arkweb-architect
+          role: defender
+          task: |
+            生成最终交付报告，包含：
+            1. 需求概述
+            2. 文档产出物清单：
+               - proposal.md（需求澄清+基线）
+               - brainstorm.md（方案设计）
+               - analysis.md（代码分析）
+               - requirement.md + design.md（设计文档）
+               - review.md（评审报告）
+               - spec.md + task.md（Spec + 执行计划）
+            3. 代码变更清单
+            4. 编译验证结果
+            5. 后续建议（Committer 检视、PR 提交）
+      transitions: []
+
+    # ============================================================
+    # 终止状态
+    # ============================================================
+    - name: 终止
+      description: 异常终止
+      isInitial: false
+      isFinal: true
+      steps:
+        - name: 终止记录
+          agent: arkweb-architect
+          role: defender
+          task: 记录终止原因和已完成的工作阶段
+      transitions: []
+
+context:
+  projectRoot: {project_root}
+  docsDir: {ACE_HOME}/workspaces/arkweb-video-fullscreen-title-0514
+  analysisDir: {ACE_HOME}/workspaces/arkweb-video-fullscreen-title-0514/analysis
+  referencesDir: {ACE_HOME}/references
+  templatesDir: {ACE_HOME}/assets/templates
+  docs_dir: {ACE_HOME}/workspaces/arkweb-video-fullscreen-title-0514
+  analysis_dir: {ACE_HOME}/workspaces/arkweb-video-fullscreen-title-0514/analysis
+  references_dir: {ACE_HOME}/references
+  requirements: |
+    ArkWeb项目中网页视频全屏时，支持开发者通过设置HTML扩展属性，在网页video元素播放点击全屏时不显示HTML标题。
+    当开发者不设置新增的HTML扩展属性时，默认保持当前规格不变，在网页video元素播放点击全屏时显示标题。
+
+    ArkWeb SDD 全流程工作流。从需求澄清开始，经过专家团讨论、方案设计、设计文档生成、
+    文档评审、Spec 生成，最终完成 Spec 驱动的代码生成（含需求分析、设计遵从性门禁、
+    业务对齐、代码实现、代码检视、修复循环、设计差异对齐、编译-修复循环）。
+
+    工作流在代码生成完成（Phase 7）后终止。Phase 8（Committer 检视）和 Phase 9（PR 提交）
+    不包含在本工作流中。
+  timeoutMinutes: 480
+  workspaceMode: in-place
+  skills:
+    - arkweb-architect
+    - arkweb-brainstorm
+    - arkweb-code-analysis
+    - arkweb-design-doc
+    - arkweb-spec-review
+    - arkweb-spec-gen
+    - arkweb-code-gen
+    - arkweb-committer-review
+    - arkweb-design-alignment
+    - arkweb-preflight
+    - arkweb-experts/arkweb-expert-performance
+    - arkweb-experts/arkweb-expert-multimedia
+    - arkweb-experts/arkweb-expert-peripheral
+    - arkweb-experts/arkweb-expert-interaction-security
+    - arkweb-experts/arkweb-expert-rendering
+    - arkweb-experts/arkweb-expert-compositing
+    - arkweb-experts/arkweb-expert-interaction-motion
+    - arkweb-experts/arkweb-expert-network
+    - arkweb-experts/arkweb-expert-js-engine
+    - arkweb-experts/arkweb-expert-stability
+    - oh-chromium-knowledge
+    - chromium-docs
+    - gitcode-pr
