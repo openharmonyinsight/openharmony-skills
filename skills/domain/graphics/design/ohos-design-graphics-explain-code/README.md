@@ -21,6 +21,13 @@ ohos-design-graphics-explain-code/
   README.md               # This file, intended for maintainers
   references/
     mermaid-guide.md      # Mermaid diagram syntax reference
+  evals/
+    evals.json            # Test case definitions and assertions
+    README.md             # Eval documentation
+    files/                # Test input code files
+      render_pipeline/    # Multi-threaded rendering code (eval 1)
+      fence_cache/        # SyncFence caching system code (eval 2)
+      simple_config/      # Simple display config code (eval 3)
 ```
 
 ## Metadata
@@ -40,3 +47,4 @@ ohos-design-graphics-explain-code/
 
 - The YAML Front Matter in `SKILL.md` must be consistent with the directory name and the metadata in this README.
 - When updating `references/mermaid-guide.md`, ensure that the syntax examples remain valid.
+- When updating `evals/evals.json`, ensure that the assertions still accurately test the skill's differentiating behaviors.

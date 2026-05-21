@@ -1,0 +1,144 @@
+{
+  "skill_name": "ohos-design-graphics-explain-code",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "render-pipeline-architecture",
+      "prompt": "I'm working on the OpenHarmony rendering subsystem and I need to understand the two-thread rendering pipeline. Can you explain how RSMainThread and RSUniRenderThread interact, and draw a diagram of the architecture? The code is in the render_pipeline directory.",
+      "expected_output": "An interactive analysis that (1) asks clarifying questions about scope before diving in, (2) presents the call flow between RSMainThread and RSUniRenderThread for confirmation, (3) generates a markdown documentation file with a mermaid class diagram showing RSRenderNode/RSBaseRenderNode/RSRenderNodeDrawable hierarchy and a sequence diagram showing the Vsync → Prepare → Sync → Render flow with code provenance (file paths and line numbers).",
+      "files": [
+        "files/render_pipeline/render_node.h",
+        "files/render_pipeline/render_thread.h",
+        "files/render_pipeline/render_thread.cpp"
+      ],
+      "assertions": [
+        {
+          "name": "asks-clarifying-questions",
+          "type": "contains",
+          "expected": "The response should include clarifying questions about scope, depth, or specific aspects the user wants to understand before proceeding to analysis"
+        },
+        {
+          "name": "presents-call-flow-for-confirmation",
+          "type": "contains",
+          "expected": "The response should present a call flow or architecture overview and ask for confirmation before generating full documentation"
+        },
+        {
+          "name": "includes-mermaid-class-diagram",
+          "type": "regex",
+          "pattern": "classDiagram"
+        },
+        {
+          "name": "includes-mermaid-sequence-diagram",
+          "type": "regex",
+          "pattern": "sequenceDiagram"
+        },
+        {
+          "name": "diagrams-have-code-provenance",
+          "type": "contains",
+          "expected": "Documentation should reference specific file paths and line numbers (e.g., render_thread.cpp:32 or render_node.h:15) to anchor diagram elements to actual code"
+        },
+        {
+          "name": "captures-async-error-paths",
+          "type": "contains",
+          "expected": "The analysis should mention or trace the error/async paths: the condition_variable wait pattern, invalid fence handling, or the null drawable check in OnDraw"
+        },
+        {
+          "name": "produces-markdown-doc-file",
+          "type": "contains",
+          "expected": "Should create a markdown documentation file with sections like Overview, Architecture, Flow Description, Key Components"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "fence-cache-class-hierarchy",
+      "prompt": "Help me understand the SyncFence caching system in the graphics module. I need documentation with class diagrams showing how SyncFence, FenceCache, SyncFenceManager, and RenderFencePool relate to each other. The source files are in the fence_cache directory.",
+      "expected_output": "An interactive analysis that (1) asks about depth and focus areas, (2) presents the fence lifecycle flow for confirmation, (3) generates documentation with a mermaid class diagram showing the ownership/dependency relationships between the four classes, and a sequence diagram showing the GetOrCreateFence → CreateFenceFromSemaphore → FenceCache Insert flow.",
+      "files": [
+        "files/fence_cache/sync_fence_manager.h",
+        "files/fence_cache/sync_fence_manager.cpp"
+      ],
+      "assertions": [
+        {
+          "name": "asks-clarifying-questions",
+          "type": "contains",
+          "expected": "The response should ask clarifying questions about scope or depth before proceeding"
+        },
+        {
+          "name": "presents-call-flow-for-confirmation",
+          "type": "contains",
+          "expected": "The response should present a call flow and ask for confirmation"
+        },
+        {
+          "name": "includes-mermaid-class-diagram",
+          "type": "regex",
+          "pattern": "classDiagram"
+        },
+        {
+          "name": "class-diagram-shows-relationships",
+          "type": "regex",
+          "pattern": "(SyncFenceManager|FenceCache|RenderFencePool|SyncFence).*-->.*(SyncFenceManager|FenceCache|RenderFencePool|SyncFence)"
+        },
+        {
+          "name": "includes-mermaid-sequence-diagram",
+          "type": "regex",
+          "pattern": "sequenceDiagram"
+        },
+        {
+          "name": "diagrams-have-code-provenance",
+          "type": "contains",
+          "expected": "Documentation should reference specific file paths and line numbers to anchor diagram elements"
+        },
+        {
+          "name": "captures-second-pass-error-paths",
+          "type": "contains",
+          "expected": "Should mention error paths: null semaphore callback, invalid fd (< 0), or expired cache entry cleanup logic"
+        },
+        {
+          "name": "produces-markdown-doc-file",
+          "type": "contains",
+          "expected": "Should create a markdown documentation file with structured sections"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "simple-config-no-diagram",
+      "prompt": "Explain the DisplayConfig and display mode calculation functions in the display_config directory. I just need to understand what these functions do.",
+      "expected_output": "An interactive analysis that correctly identifies this as a simple data-structure + linear-function module and either (1) skips diagrams entirely, or (2) uses a table/text format instead. Should NOT force a class diagram (fewer than 3 meaningful types) or sequence diagram (purely linear flow).",
+      "files": [
+        "files/simple_config/display_config.h",
+        "files/simple_config/display_config.cpp"
+      ],
+      "assertions": [
+        {
+          "name": "asks-clarifying-questions",
+          "type": "contains",
+          "expected": "The response should ask clarifying questions about scope or what the user needs"
+        },
+        {
+          "name": "does-not-force-class-diagram",
+          "type": "not_regex",
+          "pattern": "classDiagram",
+          "note": "The module has fewer than 3 meaningful classes — just 2 structs and 3 standalone functions. A class diagram should be skipped per the skill's guidance"
+        },
+        {
+          "name": "does-not-force-sequence-diagram",
+          "type": "not_regex",
+          "pattern": "sequenceDiagram",
+          "note": "The flow is purely linear with no branching or multi-component interaction — a sequence diagram should be skipped per the skill's guidance"
+        },
+        {
+          "name": "uses-table-or-text-for-config",
+          "type": "contains",
+          "expected": "Should use a table or text description to document the data structures and functions, since this is a config/schema module"
+        },
+        {
+          "name": "explains-functions-clearly",
+          "type": "contains",
+          "expected": "Should explain what GetDefaultDisplayMode, CalculateDensityDpi, and GetScaleFactorForDpi do"
+        }
+      ]
+    }
+  ]
+}
