@@ -528,14 +528,14 @@ workflow:
       transitions: []
 
 context:
-  projectRoot: /mnt/disk/workspace/personal_build/arkweb_144
-  docsDir: /root/.aceharness/workspaces/arkweb-video-fullscreen-title-0514
-  analysisDir: /root/.aceharness/workspaces/arkweb-video-fullscreen-title-0514/analysis
-  referencesDir: /root/.aceharness/references
-  templatesDir: /root/.aceharness/assets/templates
-  docs_dir: /root/.aceharness/workspaces/arkweb-video-fullscreen-title-0514
-  analysis_dir: /root/.aceharness/workspaces/arkweb-video-fullscreen-title-0514/analysis
-  references_dir: /root/.aceharness/references
+  projectRoot: {project_root}
+  docsDir: {ACE_HOME}/workspaces/arkweb-video-fullscreen-title-0514
+  analysisDir: {ACE_HOME}/workspaces/arkweb-video-fullscreen-title-0514/analysis
+  referencesDir: {ACE_HOME}/references
+  templatesDir: {ACE_HOME}/assets/templates
+  docs_dir: {ACE_HOME}/workspaces/arkweb-video-fullscreen-title-0514
+  analysis_dir: {ACE_HOME}/workspaces/arkweb-video-fullscreen-title-0514/analysis
+  references_dir: {ACE_HOME}/references
   requirements: |
     ArkWeb项目中网页视频全屏时，支持开发者通过设置HTML扩展属性，在网页video元素播放点击全屏时不显示HTML标题。
     当开发者不设置新增的HTML扩展属性时，默认保持当前规格不变，在网页video元素播放点击全屏时显示标题。

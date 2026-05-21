@@ -5,7 +5,7 @@
 
 ## 元信息
 
-- **知识库仓库**: `zhufenghao/oh-chromium-knowledge` (GitCode 公开)
+- **知识库仓库**: `{owner}/{knowledge_repo}` (GitCode 公开)
 - **数据来源组织**: `openharmony-tpc` (14 个 Chromium 相关仓库)
 - **Chromium 版本**: M144 (144.0.7559.59)
 - **适用场景**: ArkWeb 代码分析、方案设计、代码审查、版本升级评估
@@ -17,7 +17,7 @@
 ### 1.1 GitCode API 访问
 
 ```
-BASE_URL = "https://gitcode.com/api/v5/repos/zhufenghao/oh-chromium-knowledge/contents"
+BASE_URL = "https://gitcode.com/api/v5/repos/{owner}/{knowledge_repo}/contents"
 AUTH = "PRIVATE-TOKEN: <TOKEN>"（优先 GITCODE_TOKEN，回退 GITLAB_TOKEN）
 ```
 
@@ -175,7 +175,7 @@ architect skill:
 import base64, json, urllib.request
 
 TOKEN = "your_gitlab_token"
-BASE = "https://gitcode.com/api/v5/repos/zhufenghao/oh-chromium-knowledge/contents"
+BASE = "https://gitcode.com/api/v5/repos/{owner}/{knowledge_repo}/contents"
 
 def read_kb_file(path: str, ref: str = "master") -> dict:
     """读取知识库文件"""
@@ -205,7 +205,7 @@ scroll_paths = routing["routing"]["滚动"]["chromium_paths"]
 ### 4.1 更新索引
 
 **手动更新**:
-1. 修改本地 `/root/oh-chromium-knowledge/` 中的文件
+1. 修改本地 `{project_root}/` 中的文件
 2. 通过 Git push 或 API 推送到 GitCode
 
 **API 更新（单文件）**:

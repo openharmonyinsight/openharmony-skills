@@ -31,8 +31,8 @@
 
 ## 2. 🥇 oh-chromium-knowledge 检索顺序（强制）
 
-**仓库**: `zhufenghao/oh-chromium-knowledge`（GitCode 公开）
-**API**: `GET /api/v5/repos/zhufenghao/oh-chromium-knowledge/contents/{path}`
+**仓库**: `{owner}/{knowledge_repo}`（GitCode 公开）
+**API**: `GET /api/v5/repos/{owner}/{knowledge_repo}/contents/{path}`
 **认证**: `PRIVATE-TOKEN` header（Token 从环境变量读取（优先 `GITCODE_TOKEN`，回退 `GITLAB_TOKEN`，或从 `.env` 文件加载））
 
 检索步骤（严格按顺序）：

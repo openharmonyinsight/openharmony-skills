@@ -23,7 +23,7 @@ description: GitCode 仓库 PR 提交流程。可作为独立 subagent 运行。
 - 分支名：docs/{feature-name}
 
 ## 仓库配置
-- 仓库：zhufenghao/AI-assisted-design
+- 仓库：{owner}/{docs_repo}
 - 本地路径：{project_root}
 - Token：从环境变量读取（优先 `GITCODE_TOKEN`，回退 `GITLAB_TOKEN`）
 ```
@@ -44,8 +44,8 @@ description: GitCode 仓库 PR 提交流程。可作为独立 subagent 运行。
 
 | 仓库 | GitCode 路径 | 本地路径 |
 |------|-------------|---------|
-| AI 辅助设计 | `zhufenghao/AI-assisted-design` | `{project_root}` |
-| AI Dashboard | `zhufenghao/ai-dashboard` | `{project_root}` |
+| AI 辅助设计 | `{owner}/{docs_repo}` | `{project_root}` |
+| AI Dashboard | `{owner}/{dashboard_repo}` | `{project_root}` |
 | 鸿蒙知识库 | `openharmony-ai-design/oh-ai-full-design` | 见 memory |
 
 ### API 配置
@@ -264,7 +264,7 @@ Signed-off-by: {user.name} <{user.email}>
 - Committer 检视：[{date}-{feature}-committer-review.md]({DOCS_REPO_URL}/blob/master/docs/features/{feature-name}/{date}-{feature}-committer-review.md)
 ```
 
-> `{DOCS_REPO_URL}` 为 `AI-assisted-design` 仓库的 GitCode Web URL（如 `https://gitcode.com/zhufenghao/AI-assisted-design`）。如果设计文档不在 GitCode 仓库中，使用本地绝对路径。
+> `{DOCS_REPO_URL}` 为 `{docs_repo}` 仓库的 GitCode Web URL。如果设计文档不在 GitCode 仓库中，使用本地绝对路径。
 
 **默认模板（无仓库模板时使用）：**
 
@@ -376,7 +376,7 @@ print(f'PR merged: {result.get(\"state\", \"merged\")}')
 - [ ] Issue 已创建且内容完整（按分层规则，同层共用 Issue）
 - [ ] PR 描述中包含 Issue 链接或 `Closes #N`
 - [ ] PR body 使用了仓库的 PR 模板（已读取模板文件，非自定义格式）
-- [ ] PR body 包含设计文档索引（链接到 AI-assisted-design 仓库）
+- [ ] PR body 包含设计文档索引（链接到 设计文档仓库）
 - [ ] PR 方向正确：fork → 上游原仓（非 fork 内部自合并）
 - [ ] `head` 参数使用 `{fork_owner}:{branch}` 格式（跨仓库 PR）
 - [ ] 多仓库 PR 之间互相引用了关联 PR 链接
