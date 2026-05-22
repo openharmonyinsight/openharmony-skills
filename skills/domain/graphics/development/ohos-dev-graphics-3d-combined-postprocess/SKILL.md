@@ -1,12 +1,19 @@
 ---
 name: ohos-dev-graphics-3d-combined-postprocess
-display_name: OpenHarmony Graphics3D Combined Post-Process Implementation
-scope: domain
-stage: development
-domain: graphics-3d
-capability: combined-postprocess
-version: 0.1.0
-status: stable
+description: >
+  Implement OpenHarmony Graphics3D Combined post-processing effects across
+  LumeRender, Lume3D, and LumeScene. Use when adding or modifying single-pass
+  fullscreen effects such as tone mapping, color grading, vignette, white
+  balance, color adjustments, shader factors, ECS components, or scene-facing
+  post-process APIs in the Combined post-process pipeline.
+metadata:
+  display_name: OpenHarmony Graphics3D Combined Post-Process Implementation
+  scope: domain
+  stage: development
+  domain: graphics-3d
+  capability: combined-postprocess
+  version: 0.1.0
+  status: stable
 ---
 
 # Combined Post-Process Implementation Guide
