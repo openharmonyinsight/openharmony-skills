@@ -41,7 +41,7 @@ if [ -z "$BUILD_LOG" ] && [ -f "build.log" ]; then
     BUILD_LOG="build.log"
 fi
 
-# Check if build log exists
+# Check if build log exists and is readable
 if [ -z "$BUILD_LOG" ]; then
     echo "Error: Build log not found!" >&2
     echo "Searched locations:" >&2
@@ -49,6 +49,11 @@ if [ -z "$BUILD_LOG" ]; then
         echo "  - ${log}" >&2
     done
     echo "You can specify the log path as: $0 /path/to/build.log" >&2
+    exit 1
+fi
+
+if [[ ! -f "$BUILD_LOG" || ! -r "$BUILD_LOG" ]]; then
+    echo "Error: Build log not found or not readable: $BUILD_LOG" >&2
     exit 1
 fi
 
@@ -78,7 +83,7 @@ def extract_last_error(log_file, output_file):
             lines = f.readlines()
     except Exception as e:
         with open(output_file, 'w') as f:
-            f.write("build success, no error\n")
+            f.write(f"log read failed: {e}\n")
         return
 
     # First, scan the entire log to detect if there are any real errors

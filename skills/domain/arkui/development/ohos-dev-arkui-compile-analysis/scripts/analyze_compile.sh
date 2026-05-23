@@ -93,7 +93,7 @@ echo "步骤 1: 生成增强编译脚本"
 echo "========================================"
 echo ""
 
-SOURCE_BASENAME=$(basename "$SOURCE_FILE" .cpp)
+SOURCE_BASENAME=$(basename "$SOURCE_FILE" | sed 's/\.cpp$//;s/\.cc$//;s/\.cxx$//;s/\.c$//')
 ENHANCED_SCRIPT="$OH_ROOT/out/$PRODUCT_NAME/compile_single_file_${SOURCE_BASENAME}.sh"
 
 python3 "$SCRIPT_DIR/get_compile_command.py" "$SOURCE_FILE" "$OH_ROOT/out/$PRODUCT_NAME" --save-enhanced 2>&1

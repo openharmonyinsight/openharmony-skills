@@ -229,7 +229,7 @@ Is there a value type member from heavy include?
 ### Related Patterns
 
 - **Include Replacement** (case-drag-event-include-reduction.md): Replace heavy include with light include
-- **PIMPL Pattern** (pimp-guide.md): Hide all implementation details
+- **PIMPL Pattern**: See Strategy 5 (PIMPL) in `<skill_dir>/SKILL.md`
 - **RefPtr Forward Declaration** (case-click_event-forward-declaration.md): Using RefPtr<T> instead of std::unique_ptr
 
 ## Files Modified
@@ -248,5 +248,5 @@ Is there a value type member from heavy include?
 ## References
 
 - **SKILL.md**: Step 4.1 - Smart Pointer Template Parameters (RefPtr/WeakPtr)
-- **forward-declaration.md**: Forward declaration best practices
-- **pimp-guide.md**: When forward declaration is not enough
+- **Strategy 2 (Forward Declarations)** in `<skill_dir>/SKILL.md`: Forward declaration rules and ACE Engine cheat sheet
+- **Strategy 5 (PIMPL)** in `<skill_dir>/SKILL.md`: When forward declaration is not enough

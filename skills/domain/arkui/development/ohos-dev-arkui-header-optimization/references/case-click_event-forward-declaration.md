@@ -600,6 +600,6 @@ The `click_event.h` optimization demonstrates that:
 ## Related Documentation
 
 - **Header Optimization Skill**: `<skill_dir>/SKILL.md`
-- **Forward Declaration Guide**: `<skill_dir>/references/forward-declaration.md`
+- **Strategy 2 (Forward Declarations)** in `<skill_dir>/SKILL.md`: Forward declaration rules and ACE Engine cheat sheet
 - **Case Study: drag_event.h Split**: `<skill_dir>/references/case-split-enums.md`
 - **test_header.cpp Analysis**: `out/rk3568/test_header_dependency_tree.txt`

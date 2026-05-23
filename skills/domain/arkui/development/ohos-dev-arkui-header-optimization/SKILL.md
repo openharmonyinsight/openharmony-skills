@@ -35,12 +35,15 @@ Reduce C++ header compilation overhead in ace_engine through dependency analysis
 
 Determine the header file to optimize. If user provides a file, start there. Otherwise identify the target from context.
 
-Run analysis:
-```bash
-bash <skill_dir>/scripts/analyze-includes.sh <header_file>
-```
-
 For compilation metrics, use `arkui-compile-analysis` skill to measure before/after.
+
+**Quick screening** — when the header has 5+ includes and you need a first-pass triage:
+```bash
+python3 <skill_dir>/scripts/extract-includes.py <header_file>
+```
+This script scans every `#include`, resolves the exported type names (from a known list or by parsing the included header), and classifies each as `[unused]` / `[candidate]` / `[? review]` / `[unsafe]`. It is a screening tool — results must be verified before acting.
+
+**When to skip the script** — if the header has ≤3 includes or you already know which types are pointer/ref vs value, go directly to Step 2 and classify manually by reading the code.
 
 ### Step 2: Analyze Dependencies
 
@@ -212,8 +215,7 @@ For real-world optimization examples with metrics and step-by-step instructions:
 
 ## Scripts
 
-- `scripts/analyze-includes.sh <header_file>` — Quick analysis of includes, forward declaration candidates, unused includes, impact estimate
-- `scripts/extract-includes.py <header_file> [--format json|text]` — Detailed include analysis with categorization and recommendations
+- `scripts/extract-includes.py <header_file> [--format json|text]` — Quick screening tool: resolves type names from each include, classifies as unused/candidate/needs_check/unsafe. Use for first-pass triage on headers with 5+ includes. Results are heuristic — verify before acting.
 
 ## NEVER Rules
 

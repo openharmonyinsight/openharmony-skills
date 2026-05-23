@@ -111,4 +111,9 @@ out/
 
 ## Scripts
 
-- **`scripts/check_fast_rebuild.sh`** `[minutes]` - Check if GN files modified recently; recommend standard or fast rebuild
+- **`scripts/check_fast_rebuild.sh`** `[--root <path>] [--product <name>] [minutes]` — Three-stage safety check before using `--fast-rebuild`:
+  1. `git status` for uncommitted BUILD.gn/*.gni changes
+  2. GN vs `build.ninja` timestamp comparison (catches changes outside the time window)
+  3. Recent modification time check (last N minutes, default 30)
+
+  If any check fails, recommends standard build. Defaults to full build when uncertain.

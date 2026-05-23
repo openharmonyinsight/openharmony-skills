@@ -17,6 +17,7 @@ Features:
 import sys
 import re
 import json
+import argparse
 from pathlib import Path
 from collections import defaultdict
 from typing import List, Dict, Set, Tuple
@@ -25,24 +26,29 @@ from typing import List, Dict, Set, Tuple
 class IncludeAnalyzer:
     """Analyze C++ header file includes and dependencies."""
 
-    # Common ace_engine patterns that are good forward declaration candidates
-    FORWARD_DECL_PATTERNS = {
-        "frame_node.h": "FrameNode",
-        "ui_node.h": "UINode",
-        "element.h": "Element",
-        "render_node.h": "RenderNode",
-        "pattern.h": "Pattern",
-        "layout_property.h": "LayoutProperty",
-        "paint_property.h": "PaintProperty",
-        "event_hub.h": "EventHub",
-        "gesture_event_hub.h": "GestureEventHub",
+    # Known header→type mappings for quick lookup.
+    # For headers NOT in this list, the scanner extracts class/struct/enum names
+    # directly from the included header file.
+    KNOWN_TYPES = {
+        "frame_node.h": ["FrameNode"],
+        "ui_node.h": ["UINode"],
+        "element.h": ["Element"],
+        "render_node.h": ["RenderNode"],
+        "pattern.h": ["Pattern"],
+        "layout_property.h": ["LayoutProperty"],
+        "paint_property.h": ["PaintProperty"],
+        "event_hub.h": ["EventHub"],
+        "gesture_event_hub.h": ["GestureEventHub"],
+        "render_context.h": ["RenderContext"],
+        "touch_event.h": ["TouchEvent", "TouchEventTarget"],
+        "drag_event.h": ["DragEvent"],
+        "gesture_info.h": ["GestureInfo", "GestureType"],
+        "pipeline_base.h": ["PipelineBase"],
+        "pipeline_context.h": ["PipelineContext"],
+        "gesture_recognizer.h": ["GestureRecognizer"],
+        "input_event.h": ["InputEvent"],
+        "drag_drop_proxy.h": ["DragDropProxy"],
     }
-
-    # Base namespace patterns for ace_engine
-    NAMESPACES = [
-        "OHOS::Ace",
-        "OHOS::Ace::NG",
-    ]
 
     def __init__(self, header_path: str):
         self.header_path = Path(header_path)
@@ -91,48 +97,166 @@ class IncludeAnalyzer:
         matches = re.findall(pattern, content_excludes)
         return len(matches)
 
+    def _resolve_type_names(self, include_path: str) -> List[str]:
+        """Get type names exported by an include.
+
+        Priority:
+        1. KNOWN_TYPES dict (reliable, curated)
+        2. Scan the actual header file for class/struct/enum class declarations
+        3. Fall back to PascalCase of filename
+        """
+        basename = Path(include_path).name
+
+        # 1. Known mapping
+        for header, types in self.KNOWN_TYPES.items():
+            if header == basename:
+                return types
+
+        # 2. Scan the actual header file
+        # Try to resolve relative to the analyzed header's directory tree
+        search_roots = [self.header_path.parent]
+        for _ in range(8):
+            search_roots.append(search_roots[-1].parent)
+
+        for root in search_roots:
+            candidate = root / include_path
+            if candidate.exists():
+                try:
+                    content = candidate.read_text()
+                    types = re.findall(
+                        r'(?:class|struct|enum\s+class)\s+(\w+)', content
+                    )
+                    # Filter obvious internal names (Impl_, Test, etc.)
+                    types = [t for t in types if not t.endswith('_') and not t.startswith('_')]
+                    if types:
+                        return types[:5]  # cap at 5 to avoid noise
+                except Exception:
+                    pass
+                break
+
+        # 3. Fallback: PascalCase from filename
+        name = Path(include_path).stem
+        # Remove common suffixes
+        for suffix in ('_ng', '_ohos', '_builder', '_manager', '_helper'):
+            name = name.removesuffix(suffix)
+        pascal = re.sub(r'(^|_)([a-z])', lambda m: m.group(2).upper(), name)
+        return [pascal]
+
     def identify_forward_decl_candidates(self) -> List[Dict]:
-        """Identify includes that could be replaced with forward declarations."""
+        """Identify includes that could be replaced with forward declarations.
+
+        Returns a three-state safety classification per candidate:
+          - 'candidate': likely safe (type used only as pointer/ref/RefPtr/unique_ptr)
+          - 'needs_check': heuristic is inconclusive — manual review required
+          - 'unsafe': definitely cannot forward declare (base class, value member, etc.)
+        """
         candidates = []
+        body = re.sub(r'^\s*#include.*$', '', self.content, flags=re.MULTILINE)
 
         for include in self.includes:
             include_path = include['path']
+            type_names = self._resolve_type_names(include_path)
 
-            # Check against known patterns
-            for header, type_name in self.FORWARD_DECL_PATTERNS.items():
-                if header in include_path:
-                    usage_count = self.find_type_usage(type_name)
+            # Check if any type from this include is used
+            any_used = False
+            for type_name in type_names:
+                if self.find_type_usage(type_name) > 0:
+                    any_used = True
+                    break
 
-                    if usage_count > 0:
-                        # Check if it's used as base class (can't forward declare)
-                        content_excludes = re.sub(r'^\s*#include.*$', '', self.content, flags=re.MULTILINE)
-                        is_base_class = bool(re.search(
-                            rf':\s*public\s+(?:{re.escape(type_name)}|::\w*\*?\s*{re.escape(type_name)})',
-                            content_excludes
-                        ))
+            if not any_used:
+                # Include not used at all — flag for potential removal
+                candidates.append({
+                    'include_path': include_path,
+                    'type_name': ', '.join(type_names[:3]),
+                    'usage_count': 0,
+                    'safety': 'unused',
+                    'flags': {},
+                    'recommendation': "Possibly unused — no exported types found in file",
+                })
+                continue
 
-                        # Check if used as member instance (not pointer/ref)
-                        # This is heuristic - actual check requires more parsing
-                        has_member_instance = False
+            # Analyze each used type for forward-declaration safety
+            for type_name in type_names:
+                usage_count = self.find_type_usage(type_name)
+                if usage_count == 0:
+                    continue
 
-                        candidates.append({
-                            'include_path': include_path,
-                            'type_name': type_name,
-                            'usage_count': usage_count,
-                            'is_base_class': is_base_class,
-                            'can_forward_declare': not is_base_class and not has_member_instance,
-                            'recommendation': self._get_recommendation(not is_base_class and not has_member_instance),
-                        })
+                esc = re.escape(type_name)
+
+                # --- checks that make it UNSAFE ---
+                is_base_class = bool(re.search(
+                    rf':\s*public\s+(?:{esc}|::\w*\*?\s*{esc})', body
+                ))
+
+                # Value member: Type used as a non-pointer, non-reference member
+                value_member_re = (
+                    r'\b' + esc + r'\b(?!\s*\*)'
+                    r'(?!\s*&)'
+                    r'(?!\s*>)'
+                    r'\s+\w+\s*(?:[{;=])'
+                )
+                has_value_member = bool(re.search(value_member_re, body))
+
+                # sizeof / decltype / type_traits require complete type
+                has_sizeof_decltype = bool(re.search(
+                    rf'(?:sizeof|decltype|static_assert|is_base_of|is_convertible|is_constructible)\s*[(<].*{esc}',
+                    body
+                ))
+
+                # Inline method body accessing members of the type (-> or . on type)
+                has_inline_member_access = bool(re.search(
+                    rf'\b{esc}\s*\w+\s*\([^)]*\)\s*(?:const\s*)?\{{[^}}]*->',
+                    body, re.DOTALL
+                ))
+
+                # --- checks that make it a CANDIDATE ---
+                ptr_ref_only = True
+                remaining = body
+                remaining = re.sub(rf'(?:RefPtr|unique_ptr|shared_ptr)\s*<\s*{esc}\s*>', '', remaining)
+                remaining = re.sub(rf'\b{esc}\s*[*&]', '', remaining)
+                remaining = re.sub(rf'class\s+{esc}\s*;', '', remaining)
+                remaining = re.sub(r'//.*$', '', remaining, flags=re.MULTILINE)
+                remaining = re.sub(r'/\*.*?\*/', '', remaining, flags=re.DOTALL)
+                if re.search(rf'\b{esc}\b', remaining):
+                    ptr_ref_only = False
+
+                # --- classify ---
+                if is_base_class or has_value_member or has_sizeof_decltype:
+                    safety = 'unsafe'
+                elif ptr_ref_only and not has_inline_member_access:
+                    safety = 'candidate'
+                else:
+                    safety = 'needs_check'
+
+                candidates.append({
+                    'include_path': include_path,
+                    'type_name': type_name,
+                    'usage_count': usage_count,
+                    'safety': safety,
+                    'flags': {
+                        'is_base_class': is_base_class,
+                        'has_value_member': has_value_member,
+                        'has_sizeof_decltype': has_sizeof_decltype,
+                        'has_inline_member_access': has_inline_member_access,
+                        'ptr_ref_only': ptr_ref_only,
+                    },
+                    'recommendation': self._get_recommendation(safety),
+                })
 
         self.forward_decl_candidates = candidates
         return candidates
 
-    def _get_recommendation(self, can_forward_declare: bool) -> str:
-        """Generate recommendation for forward declaration."""
-        if can_forward_declare:
-            return "Replace with forward declaration"
+    def _get_recommendation(self, safety: str) -> str:
+        """Generate recommendation based on safety classification."""
+        if safety == 'unused':
+            return "Possibly unused — verify and remove"
+        elif safety == 'candidate':
+            return "Can likely replace with forward declaration"
+        elif safety == 'needs_check':
+            return "Needs manual review — heuristic inconclusive"
         else:
-            return "Keep full include (base class or member instance)"
+            return "Keep full include (unsafe to forward declare)"
 
     def calculate_statistics(self) -> Dict:
         """Calculate overall statistics about the header file."""
@@ -178,10 +302,15 @@ class IncludeAnalyzer:
             )
 
         # Forward declaration candidates
-        fwd_count = sum(1 for c in self.forward_decl_candidates if c['can_forward_declare'])
+        fwd_count = sum(1 for c in self.forward_decl_candidates if c['safety'] == 'candidate')
+        unused_count = sum(1 for c in self.forward_decl_candidates if c['safety'] == 'unused')
         if fwd_count > 0:
             recommendations.append(
                 f"Found {fwd_count} potential forward declaration candidates"
+            )
+        if unused_count > 0:
+            recommendations.append(
+                f"Found {unused_count} possibly unused includes"
             )
 
         # Inline methods
@@ -246,11 +375,34 @@ class IncludeAnalyzer:
             lines.append("Forward Declaration Candidates")
             lines.append("-" * 40)
             for candidate in analysis['forward_decl_candidates']:
-                status = "✓" if candidate['can_forward_declare'] else "✗"
+                safety = candidate['safety']
+                if safety == 'unused':
+                    status = "[unused]"
+                elif safety == 'candidate':
+                    status = "[candidate]"
+                elif safety == 'needs_check':
+                    status = "[? review]"
+                else:
+                    status = "[unsafe]"
                 lines.append(f"  {status} {candidate['include_path']}")
                 lines.append(f"      Type: {candidate['type_name']}")
                 lines.append(f"      Used {candidate['usage_count']} time(s)")
-                lines.append(f"      → {candidate['recommendation']}")
+                lines.append(f"      -> {candidate['recommendation']}")
+                if safety != 'candidate':
+                    flags = candidate.get('flags', {})
+                    reasons = []
+                    if flags.get('is_base_class'):
+                        reasons.append('base class')
+                    if flags.get('has_value_member'):
+                        reasons.append('value member')
+                    if flags.get('has_sizeof_decltype'):
+                        reasons.append('sizeof/decltype')
+                    if flags.get('has_inline_member_access'):
+                        reasons.append('inline member access')
+                    if not flags.get('ptr_ref_only') and not reasons:
+                        reasons.append('used beyond ptr/ref context')
+                    if reasons:
+                        lines.append(f"      Flags: {', '.join(reasons)}")
                 lines.append("")
 
         # Recommendations
@@ -273,18 +425,19 @@ class IncludeAnalyzer:
 
 def main():
     """Main entry point."""
-    if len(sys.argv) < 2:
-        print("Usage: python3 extract-includes.py <header_file> [--format json|text]", file=sys.stderr)
-        sys.exit(1)
-
-    header_file = sys.argv[1]
-    output_format = sys.argv[2] if len(sys.argv) > 2 else "text"
+    parser = argparse.ArgumentParser(
+        description='Extract and analyze include statistics from C++ header files.'
+    )
+    parser.add_argument('header_file', type=str, help='Path to header file')
+    parser.add_argument('--format', choices=['json', 'text'], default='text',
+                        help='Output format (default: text)')
+    args = parser.parse_args()
 
     try:
-        analyzer = IncludeAnalyzer(header_file)
+        analyzer = IncludeAnalyzer(args.header_file)
         analysis = analyzer.analyze()
 
-        if output_format == "json":
+        if args.format == "json":
             print(analyzer.format_json(analysis))
         else:
             print(analyzer.format_text(analysis))

@@ -360,4 +360,4 @@ constexpr int MAX_VALUE = 100;
 
 - **SKILL.md**: Step 5 - Split Headers for Constants and Enums
 - **case-split-enums.md**: Extracting enums from drag_event.h (original split case)
-- **forward-declaration.md**: Forward declaration best practices
+- **Strategy 2 (Forward Declarations)** in `<skill_dir>/SKILL.md`: Forward declaration rules and ACE Engine cheat sheet

@@ -49,13 +49,21 @@ The script generates `last_error.log` in the same directory as build.log.
 
 ### Success Check
 
-If `last_error.log` contains "build success" or "no error", **stop immediately** and report:
+If `last_error.log` contains "build success, no error", **stop immediately** and report:
 
 ```
 Build succeeded. No errors found in the latest build.
 ```
 
-Do NOT continue searching in other log files (error.log, build_output*.log, etc.).
+If `last_error.log` contains "log read failed" or the extraction script exited non-zero, **do NOT report success** — the log was not read. Fall back to `grep -i "error:" out/<product>/build.log | tail -50` and diagnose manually.
+
+If no `[N/M]` task markers are found in the error block (GN/Ninja configuration errors lack these markers), the extraction script may miss them. Check for GN error patterns directly:
+
+```bash
+grep -E "(ERROR at |AssertionError|gn gen failed|ninja: build stopped)" out/<product>/build.log | tail -20
+```
+
+Do NOT continue searching in other log files (error.log, build_output*.log, etc.) unless the extraction script failed.
 
 ## Behavior Rules
 
@@ -120,7 +128,7 @@ Distinguish non-template vs template FIRST:
 **Scenario 4: LTO Virtual Thunk** (see `references/lto-virtual-thunk-libace-map-export.md`)
 - Error: "undefined symbol: virtual thunk to ClassName::~ClassName()"
 - Keep forward declaration optimization, do NOT revert to inline
-- Add BOTH patterns to libace.map: `ClassName::*;` AND `virtual?thunk?to::ClassName::*;`
+- Add BOTH patterns to libace.map: `OHOS::Ace::ClassName::*;` AND `virtual?thunk?to?OHOS::Ace::ClassName::*;`
 
 ### Pattern 2: Incomplete Type (`member access into incomplete type`)
 

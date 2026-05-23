@@ -2,63 +2,86 @@
 
 import re
 import argparse
-from collections import defaultdict
 
-def parse_ii_file(file_path):
-    file_include_pattern = re.compile(r'#\s*\d+\s+"([^"]+)"')
-    target_prefix = "foundation/arkui/"
+# .ii line marker format: # linenum "filename" [flags]
+# Flags (from GCC/Clang preprocessor output):
+#   1 = entering a new file (#include)
+#   2 = returning to this file (after an include)
+#   3 = following text comes from a system header (externally generated)
+#   4 = returning to a file that should not be re-exported
+# A line may have multiple flags (e.g., "3 4" or no flags at all).
+LINE_MARKER_RE = re.compile(r'^#\s*(\d+)\s+"([^"]+)"(?:\s+(\d+(?:\s+\d+)*))?$')
+
+
+def parse_ii_file(file_path, target_prefix="foundation/arkui/"):
     dependencies = []
     stack = []
+    guard_depth = 0  # tracks include-guard re-entries we skipped
 
-    with open(file_path, 'r', encoding='utf-8') as file:
-        for line in file:
-            match = file_include_pattern.match(line)
-            if match:
-                new_file = match.group(1)
-                if target_prefix in new_file:
-                    if new_file in stack:
-                        # Returning to a parent file — pop back to it
-                        index = stack.index(new_file)
-                        stack = stack[:index + 1]
-                    else:
-                        # Entering a new file — push and record the path
-                        stack.append(new_file)
-                        dependencies.append(list(stack))
+    with open(file_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            match = LINE_MARKER_RE.match(line)
+            if not match:
+                continue
+
+            filename = match.group(2)
+            flags_str = match.group(3) or ""
+            flags = set(int(x) for x in flags_str.split()) if flags_str.strip() else set()
+
+            if 1 in flags:
+                if filename in stack:
+                    # Re-entering a file already in stack (include guard)
+                    guard_depth += 1
+                else:
+                    # Entering a new file (push)
+                    stack.append(filename)
+                    if target_prefix in filename:
+                        filtered = [p for p in stack if target_prefix in p]
+                        if filtered:
+                            dependencies.append(list(filtered))
+            elif 2 in flags or (3 in flags and 4 in flags):
+                if guard_depth > 0 and filename in stack:
+                    # Return matching a guard re-entry we skipped — no-op
+                    guard_depth -= 1
+                elif stack and stack[-1] == filename:
+                    stack.pop()
+                elif filename in stack:
+                    # Pop back to this file (handles skipped intermediaries)
+                    idx = stack.index(filename)
+                    stack = stack[:idx + 1]
 
     return dependencies
+
 
 def build_tree_structure(dependencies):
     tree = {}
     for path in dependencies:
-        current_level = tree
-        for file in path:
-            if file not in current_level:
-                current_level[file] = {}
-            current_level = current_level[file]
+        current = tree
+        for f in path:
+            if f not in current:
+                current[f] = {}
+            current = current[f]
     return tree
 
-def print_tree(tree, prefix='', is_last=True, output_file=None):
+
+def print_tree(tree, prefix='', output_file=None):
     items = list(tree.items())
-    count = len(items)
-    for i, (file, subtree) in enumerate(items):
-        connector = '└──' if i == count - 1 else '├──'
-        new_prefix = prefix + ('    ' if i == count - 1 else '│   ')
-
-        line = prefix + connector + ' ' + file
+    for i, (name, subtree) in enumerate(items):
+        is_last = (i == len(items) - 1)
+        connector = '└── ' if is_last else '├── '
+        new_prefix = prefix + ('    ' if is_last else '│   ')
+        line = prefix + connector + name
         print(line)
-
-        # 如果指定了输出文件，写入文件
         if output_file:
             output_file.write(line + '\n')
+        print_tree(subtree, new_prefix, output_file)
 
-        # 递归处理子节点
-        print_tree(subtree, new_prefix, is_last=i == count - 1, output_file=output_file)
 
 def main(file_path, output_path=None):
     dependencies = parse_ii_file(file_path)
     tree = build_tree_structure(dependencies)
 
-    header = "头文件的依赖关系树："
+    header = "Header dependency tree:"
     print(header)
 
     output_file = None
@@ -71,14 +94,12 @@ def main(file_path, output_path=None):
     finally:
         if output_file:
             output_file.close()
-            print(f"\n✓ 依赖树已保存到: {output_path}")
+            print(f"\nDependency tree saved to: {output_path}")
+
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='解析 .ii 文件并显示头文件依赖关系树。')
-    parser.add_argument('file', type=str, help='要解析的 .ii 文件路径')
-    parser.add_argument('--output', '-o', type=str, help='保存依赖树到指定文件（可选）')
+    parser = argparse.ArgumentParser(description='Parse .ii file and display header dependency tree.')
+    parser.add_argument('file', type=str, help='Path to .ii file')
+    parser.add_argument('--output', '-o', type=str, help='Save dependency tree to file')
     args = parser.parse_args()
-
-    # 如果指定了输出文件路径，使用该路径；否则输出到控制台
-    output_path = args.output if args.output else None
-    main(args.file, output_path)
+    main(args.file, args.output)
