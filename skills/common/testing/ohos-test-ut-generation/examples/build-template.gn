@@ -1,0 +1,46 @@
+import("//build/test.gni")  # MUST在第一行
+
+module_output_path = "hiviewdfx/hiview_test"  # 格式：子系统名/模块名
+
+config("module_private_config") {
+    visibility = [ ":*" ]  # 仅本BUILD.gn可见
+    include_dirs = [
+        "//base/hiviewdfx/hiview/include",
+        "//base/hiviewdfx/hiview/core",
+    ]
+}
+
+ohos_unittest("BBoxDetectorUnitTest") {
+    module_out_path = module_output_path
+    
+    sources = [
+        "unittest/bbox_detector/bbox_detector_test.cpp",
+        "mock/mock_service.cpp",  # Mock文件（如需要）
+    ]
+    
+    configs = [ ":module_private_config" ]
+    
+    deps = [
+        "//third_party/googletest:gtest_main",  # MUST包含
+        "//base/hiviewdfx/hiview:hiview_core",  # 被测模块（同子系统）
+    ]
+    
+    external_deps = [
+        "googletest:gmock",  # 使用Mock时MUST填
+        "hiviewdfx_hilog_native:libhilog",  # 跨子系统依赖
+    ]
+    
+    cflags_cc = [
+        "-Dprivate=public",  # 测试private成员时MUST填
+        "-Dprotected=public",
+    ]
+    
+    defines = [
+        "UNIT_TEST",  # 条件编译宏
+    ]
+}
+
+group("unittest") {
+    testonly = true
+    deps = [":BBoxDetectorUnitTest"]
+}
