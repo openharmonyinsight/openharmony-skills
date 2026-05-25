@@ -1,15 +1,10 @@
 ---
 name: ohos-dev-arkui-compile-analysis
 description: >
-  Analyze compilation efficiency for individual source files in the ArkUI ACE Engine project.
-  Measures compilation time, peak memory usage, and generates header file dependency trees.
-  Use when user says: 分析编译效率, 分析编译时间, 查看头文件依赖, 保存编译命令, 提取编译命令,
-  生成编译脚本, 单独编译, 编译单个文件, 单编文件, 独立编译, 头文件依赖关系, analyze compilation,
-  check compile time, header dependencies, save compile command, extract compile command,
-  generate compile script, standalone compile, compile single file, or mentions .ii files,
-  dependency tree, compilation performance, build time optimization, parse_ii, analyze_compile,
-  ace_engine. Supports saving reusable compilation scripts with --save-script for benchmarking
-  and before/after comparisons.
+  Measure compilation time, peak memory, and header dependency trees for individual ACE Engine
+  source files. Generates reusable compilation scripts for before/after benchmarking.
+  Use when user says 分析编译效率/analyze compilation, 头文件依赖/header dependencies,
+  单独编译/compile single file, or mentions .ii files, dependency tree.
 metadata:
   author: openharmony
   scope: domain

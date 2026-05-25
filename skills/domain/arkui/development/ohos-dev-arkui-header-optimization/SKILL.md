@@ -1,13 +1,9 @@
 ---
 name: ohos-dev-arkui-header-optimization
 description: >
-  Optimize C++ header files in the ArkUI ACE Engine (ace_engine) codebase to reduce compilation
-  time and memory. Apply forward declarations, inline extraction, enum splitting, include
-  reduction, and PIMPL pattern refactoring. Use when user says: optimize header, reduce
-  dependencies, forward declaration, extract inline, split header, PIMPL, reduce includes,
-  optimize compilation, analyze header dependencies, optimize ace_engine header. Handles
-  RefPtr, unique_ptr, ACE_FORCE_EXPORT, ace_core_ng_source_set, BUILD.gn integration,
-  cross-namespace (OHOS::Ace vs OHOS::Ace::NG) dependency reduction.
+  Optimize C++ header files in ace_engine to reduce compilation time and memory.
+  Use when user says 优化头文件/optimize header, 减少依赖/reduce dependencies, forward declaration,
+  or mentions header compilation overhead.
 metadata:
   author: openharmony
   scope: domain

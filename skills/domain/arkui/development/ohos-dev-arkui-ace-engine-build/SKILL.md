@@ -1,6 +1,10 @@
 ---
 name: ohos-dev-arkui-ace-engine-build
-description: Build the OpenHarmony ACE Engine and related components. Use when the user asks to build or compile OpenHarmony, ace_engine, ace_engine_test, or any component/target. Handles full system builds, component builds, test builds with coverage, fast rebuild (skip GN), SDK builds, and test list builds from unittest_targets.txt. Trigger keywords include "编译", "build", "compile", "快速编译", "fast-build", "编译测试", "编译测试用例", "编译覆盖率", "build coverage", "编译 sdk", "build sdk", "编译测试列表", "build test list", "按列表编译测试", "编译指定测试", and any mention of building the OpenHarmony codebase.
+description: >
+  Build ACE Engine with arkui-specific knowledge: when --fast-rebuild is safe (GN change detection),
+  zero-cost coverage for ace_engine_test, SDK build constraints, and test list builds from
+  unittest_targets.txt. Use when user says 编译/build ace_engine, 编译测试, 编译SDK, 快速编译,
+  or mentions ace_engine_test, rk3568.
 metadata:
   author: openharmony
   scope: domain

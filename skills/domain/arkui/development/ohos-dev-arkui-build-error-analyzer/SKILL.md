@@ -1,13 +1,10 @@
 ---
 name: ohos-dev-arkui-build-error-analyzer
 description: >
-  Analyze OpenHarmony ArkUI (ACE Engine) build errors from last_error.log and provide fix
-  recommendations for undefined symbol (ld.lld), ACE_FORCE_EXPORT, libace.map, ace_core_ng_source_set,
-  RefPtr forward declaration, template instantiation, LTO virtual thunk, MinGW dllexport, and BUILD.gn
-  configuration issues in the arkui/ace_engine codebase. Use when user says: analyze build errors,
-  check compilation errors, diagnose linker errors, fix build issues, build failures, undefined symbols,
-  SDK compilation errors, or mentions last_error.log, build.log, ld.lld error, ACE_FORCE_EXPORT,
-  libace.map, ace_engine. Supports regular builds and SDK builds. Analysis-only.
+  Analyze ACE Engine build errors from last_error.log and provide fix recommendations.
+  Covers compilation errors, linker errors (undefined symbol), and build system (GN/Ninja) issues.
+  Use when user says 分析编译错误/analyze build errors, fix linker errors, fix build, or mentions
+  last_error.log, build.log. Analysis-only, no auto-modifications.
 metadata:
   author: openharmony
   scope: domain
