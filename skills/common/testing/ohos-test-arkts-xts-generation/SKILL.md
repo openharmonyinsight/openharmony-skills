@@ -1,8 +1,12 @@
 ---
 name: ohos-test-arkts-xts-generation
-description: Use this skill when: (1) Generating XTS test cases for OpenHarmony ArkTS APIs, including .d.ts parsing, test generation, and build verification. (2) Analyzing API coverage with APICoverageDetector. (3) Performing batch test generation for large API sets. (4) Validating existing test code for quality issues. (5) Building and verifying test suites.
-
-Trigger keywords: XTS, ArkTS-Dyn, ArkTS-Sta, test generation, API coverage, APICoverageDetector, Hypium, batch generation, .ets files, @tc annotation, test design documents, .d.ts files, coverage analysis
+description: >
+  Generate and validate OpenHarmony ArkTS XTS tests, including .d.ts parsing,
+  Hypium test design, .ets generation, API coverage analysis with
+  APICoverageDetector, batch generation, registration, build verification, and
+  existing test quality checks. Use when the task mentions XTS, ArkTS-Dyn,
+  ArkTS-Sta, APICoverageDetector, API coverage, Hypium, @tc annotations, test
+  design documents, .d.ts files, .ets test files, or batch test generation.
 metadata:
   author: openharmony
   scope: common

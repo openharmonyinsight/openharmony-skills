@@ -1,21 +1,17 @@
 ---
 name: ohos-dev-arkui-code-review
 description: >
-  Use this skill when the user explicitly requests a code review, quality audit, or
-  safety/correctness analysis of ACE Engine (OpenHarmony ArkUI) code.
-  Triggers: reviewing PRs or code changes, checking memory management
-  (RefPtr/WeakPtr/MakeRefPtr), verifying architecture compliance (four-layer, Pattern/Model/
-  Property separation), auditing security vulnerabilities, detecting threading issues (data
-  races, unsafe callback captures), analyzing code quality (code smells, SOLID violations),
-  or generating review reports with severity levels.
-  Activates on explicit task verbs: "check code", "review PR", "audit security",
-  "find memory leaks", "analyze code quality", "is this code safe/correct", or when asked to
-  inspect crash-prone patterns, unsafe pointer usage, or layer boundary violations.
-  Does NOT activate for general development, debugging, build-fix, or pure architectural
-  Q&A tasks unless the user explicitly asks for review.
-  The following directory contexts and symbols reinforce relevance but do not trigger
-  this skill on their own: `components_ng/`, `frameworks/core/`, `bridge/`, `adapter/`,
-  `AceType::`, `MakeRefPtr`, `DynamicCast`, `WeakClaim`, `FrameNode`, or `RefPtr`.
+  Review OpenHarmony ArkUI / ACE Engine code for correctness, safety, memory
+  ownership, threading, security, architecture compliance, and maintainability.
+  Use when the user explicitly asks to review PRs or code changes, audit
+  security, find memory leaks, analyze code quality, check RefPtr/WeakPtr/
+  MakeRefPtr usage, inspect unsafe callback captures, detect data races, verify
+  four-layer architecture or Pattern/Model/Property separation, or produce
+  severity-ranked review findings. Relevant contexts include components_ng/,
+  frameworks/core/, bridge/, adapter/, AceType, MakeRefPtr, DynamicCast,
+  WeakClaim, FrameNode, Pattern, LayoutProperty, and RefPtr. Do not use for
+  general development, debugging, build fixes, or architecture Q&A unless review
+  or audit is explicitly requested.
 metadata:
   author: openharmony
   scope: domain
