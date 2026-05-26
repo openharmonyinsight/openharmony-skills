@@ -1,6 +1,6 @@
 ---
 name: oh-xts-generator-template
-description: OpenHarmony XTS 测试用例通用生成模板。支持各子系统测试用例生成，API 定义解析，测试覆盖率分析，代码规范检查。触发关键词：XTS、测试生成、用例生成、测试用例。
+description: "OpenHarmony XTS 测试用例通用生成模板。支持各子系统测试用例生成，API 定义解析，测试覆盖率分析，代码规范检查。触发关键词：XTS、测试生成、用例生成、测试用例。"
 allowed-tools:
   - Read
   - Write
