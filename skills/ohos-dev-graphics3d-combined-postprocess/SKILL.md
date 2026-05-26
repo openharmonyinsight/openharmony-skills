@@ -1,13 +1,14 @@
 ---
 name: ohos-dev-graphics3d-combined-postprocess
-display_name: OpenHarmony Graphics3D Combined Post-Process Implementation
-scope: domain
-stage: development
-domain: graphics3d
-capability: combined-postprocess
-version: 0.1.0
-status: stable
 description: "Implement Combined post-processing effects (tone mapping, color grading, vignette) in Graphics3D. MUST use when: (1) Adding effect to Combined post-process, (2) User mentions 'Combined post-process' or 'post-processing'. DOES NOT apply to multi-pass effects (bloom, depth-of-field)."
+metadata:
+  display_name: OpenHarmony Graphics3D Combined Post-Process Implementation
+  scope: domain
+  stage: development
+  domain: graphics3d
+  capability: combined-postprocess
+  version: 0.1.0
+  status: stable
 ---
 
 # Combined Post-Process Implementation Guide
