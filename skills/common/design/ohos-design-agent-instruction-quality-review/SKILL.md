@@ -7,8 +7,8 @@ metadata:
   stage: design
   domain: agent
   capability: instruction-quality-review
-  version: 0.1.0
-  status: draft
+  version: 1.0.0
+  status: stable
   tags:
     - agent
     - instructions
