@@ -89,7 +89,7 @@ echo -e "${YELLOW}[1/3] Checking git working tree for GN changes...${NC}"
 
 GIT_GN_CHANGES=""
 if git -C "$OH_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    GIT_GN_CHANGES=$(git -C "$OH_ROOT" status --porcelain -- 'BUILD.gn' '*.gni' 2>/dev/null || true)
+    GIT_GN_CHANGES=$(git -C "$OH_ROOT" status --porcelain -- '**/BUILD.gn' '*.gni' 2>/dev/null || true)
 fi
 
 if [ -n "$GIT_GN_CHANGES" ]; then

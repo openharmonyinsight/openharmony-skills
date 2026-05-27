@@ -86,16 +86,34 @@ def extract_last_error(log_file, output_file):
             f.write(f"log read failed: {e}\n")
         return
 
-    # First, scan the entire log to detect if there are any real errors
-    # Real errors: FAILED, fatal error, undefined reference, errors generated
-    has_real_error = False
-    for line in lines:
-        # Check for real error indicators (excluding target names like "form_error")
-        if re.search(r'(FAILED\s*:|fatal error:|undefined reference|errors generated\.|ld\.lld: error:)', line):
-            has_real_error = True
-            break
+    error_re = re.compile(r'(FAILED\s*:|fatal error:|undefined reference|errors generated\.|ld\.lld: error:)')
+    success_pat = re.compile(r'={5,}\s*build\s+successful\s*={5,}', re.IGNORECASE)
+    failed_pat = re.compile(r'={5,}\s*build\s+failed\s*={5,}', re.IGNORECASE)
 
-    # If no real errors found, write success message and return
+    # Locate all build end markers to isolate the latest build segment
+    # This avoids reporting errors from historical builds that were followed by a successful rebuild
+    end_markers = []
+    for i, line in enumerate(lines):
+        if success_pat.search(line):
+            end_markers.append((i, 'success'))
+        elif failed_pat.search(line):
+            end_markers.append((i, 'failed'))
+
+    if end_markers:
+        last_idx, last_status = end_markers[-1]
+        if last_status == 'success':
+            with open(output_file, 'w') as f:
+                f.write("build success, no error\n")
+            return
+        # Last build failed — restrict analysis to that build segment
+        seg_start = 0
+        if len(end_markers) > 1:
+            seg_start = end_markers[-2][0] + 1
+        lines = lines[seg_start:last_idx + 1]
+
+    # Scan the (possibly restricted) lines for real errors
+    has_real_error = any(error_re.search(line) for line in lines)
+
     if not has_real_error:
         with open(output_file, 'w') as f:
             f.write("build success, no error\n")
@@ -106,27 +124,20 @@ def extract_last_error(log_file, output_file):
     current_block = []
 
     for line in lines:
-        # Check if this is a start of a new build task
-        # Match: [N/M] followed by task type
         if re.match(r'^\[\d+/\d+\]', line):
-            # Save previous block if it exists
             if current_block:
                 blocks.append(current_block)
-            # Start new block
             current_block = [line]
         elif current_block:
             current_block.append(line)
 
-    # Don't forget the last block
     if current_block:
         blocks.append(current_block)
 
     # Find the last block that contains real errors
     for block in reversed(blocks):
         block_text = ''.join(block)
-        if re.search(r'(FAILED\s*:|fatal error:|undefined reference|errors generated\.|ld\.lld: error:)', block_text):
-            # Expand the block to include more context (include previous blocks if needed)
-            # Write to output file
+        if error_re.search(block_text):
             with open(output_file, 'w') as f:
                 f.writelines(block)
             return

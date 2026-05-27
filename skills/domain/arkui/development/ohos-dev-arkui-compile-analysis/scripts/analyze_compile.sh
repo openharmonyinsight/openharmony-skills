@@ -64,11 +64,32 @@ if [[ $# -lt 1 ]]; then
 fi
 
 SOURCE_FILE="$1"
-PRODUCT_NAME="${2:-rk3568}"
+PRODUCT_NAME=""
 SAVE_SCRIPT=""
-if [[ "$3" == "--save-script" ]] || [[ "$2" == "--save-script" ]]; then
-    SAVE_SCRIPT="--save-enhanced"
-fi
+
+# Parse remaining arguments, handling product name and flags in any order
+shift
+for arg in "$@"; do
+    case "$arg" in
+        --save-script)
+            SAVE_SCRIPT="--save-enhanced"
+            ;;
+        -*)
+            echo "未知选项: $arg" >&2
+            exit 1
+            ;;
+        *)
+            if [[ -z "$PRODUCT_NAME" ]]; then
+                PRODUCT_NAME="$arg"
+            else
+                echo "错误: 多余的参数: $arg" >&2
+                exit 1
+            fi
+            ;;
+    esac
+done
+
+PRODUCT_NAME="${PRODUCT_NAME:-rk3568}"
 
 # 查找目录
 OH_ROOT=$(find_oh_root)
