@@ -4,7 +4,7 @@ description: Use when analyzing OpenHarmony cppcrash faultlogs to locate root ca
 metadata:
   author: openharmony
   scope: domain
-  stage: issue
+  stage: troubleshooting
   domain: graphics
   capability: cppcrash-analysis
   version: 0.1.0

@@ -4,7 +4,7 @@ description: Use when analyzing OpenHarmony sysfreeze/appfreeze logs to diagnose
 metadata:
   author: openharmony
   scope: domain
-  stage: issue
+  stage: troubleshooting
   domain: graphics
   capability: sysfreeze-analysis
   version: 0.1.0
