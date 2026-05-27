@@ -27,12 +27,17 @@ skills/
 
 [openharmony-skills-namespace-and-placement-spec.md](openharmony-skills-namespace-and-placement-spec.md)
 
+网站展示、搜索和详情页生成遵守网站展示元数据规范：
+
+[openharmony-skills-website-metadata-spec.md](openharmony-skills-website-metadata-spec.md)
+
 核心约定：
 
 ```text
 公共能力：skills/common/<stage>/<skill-name>/
 领域能力：skills/domain/<namespace-domain>/<stage>/<skill-name>/
 Skill name：ohos-<stage>-<domain>-<capability>
+网站展示源数据：<skill-name>/skill.info.yaml
 ```
 
 示例：
@@ -57,13 +62,14 @@ skills/domain/arkui/development/ohos-dev-arkui-component-development/
 ```text
 <skill-name>/
   SKILL.md
+  skill.info.yaml
   README.md
   references/
   examples/
   evals/
 ```
 
-`SKILL.md` 是必需文件，供 Agent 加载。`README.md`、`references/`、`examples/` 和 `evals/` 根据 Skill 复杂度补充。
+`SKILL.md` 是必需文件，供 Agent 加载。`skill.info.yaml` 是网站展示源数据。`README.md`、`references/`、`examples/` 和 `evals/` 根据 Skill 复杂度补充。
 
 ## 入库检查
 

@@ -1,0 +1,90 @@
+schemaVersion: 1
+
+id: ohos-dev-security-code-review
+title: OpenHarmony 安全代码审查
+summary: 审查 OpenHarmony C++ 系统服务中的 IPC 输入、权限校验、并发共享状态和隐私日志等安全风险。
+
+category:
+  scope: common
+  namespace: development
+  stage: development
+  domain: security
+  capability: code-review
+
+status:
+  maturity: draft
+  version: 0.2.0
+  owner: openharmony
+
+tags:
+  - security
+  - code-review
+  - cpp
+  - ipc
+  - concurrency
+  - privacy
+
+audience:
+  - OpenHarmony C++ 系统服务开发者
+  - 安全代码审查人员
+  - System Ability 维护者
+  - IPC 接口和权限模型维护者
+
+useCases:
+  - title: 审查 IPC 入口和反序列化路径
+    description: 从 Stub、OnRemoteRequest、MessageParcel、fd 和 remote object 追踪不可信输入到敏感操作。
+  - title: 校验权限和跨边界访问
+    description: 检查 AccessToken、caller 身份、跨用户/账号/设备访问和 System Ability confused-deputy 风险。
+  - title: 识别并发与隐私日志问题
+    description: 分析共享状态竞态、生命周期风险，以及 HILOG 中的敏感数据或地址泄露。
+
+whenToUse:
+  - 需要审查 OpenHarmony native/C++ 系统服务的安全风险。
+  - 代码包含 Stub、Service、Ability、OnRemoteRequest 或 IPC transaction handler。
+  - 涉及 MessageParcel、IRemoteObject、文件描述符、回调对象或外部输入解析。
+  - 需要确认权限校验、跨用户访问、System Ability 信任边界、并发共享状态或隐私日志。
+
+whenNotToUse:
+  - 只做应用层功能评审或普通代码风格评审。
+  - 代码不是 OpenHarmony 系统服务或没有安全边界问题。
+  - 只需要性能优化、编译修复或单元测试生成。
+
+inputs:
+  required:
+    - 待审查的 C++ 系统服务代码或补丁
+    - 入口函数、transaction code 或相关调用路径说明
+  optional:
+    - 权限模型、调用方身份和 System Ability 关系说明
+    - 相关日志、崩溃信息或漏洞怀疑点
+    - 业务对象的用户、账号、设备或数据敏感性说明
+
+outputs:
+  - 可利用安全风险清单
+  - 攻击者可控字段到敏感 sink 的证据链
+  - 权限、输入校验、并发或隐私日志修复建议
+  - 需要继续确认的缺失证据
+
+quickStart:
+  steps:
+    - 提供待审查补丁或源码路径，并标出外部可达入口。
+    - 说明调用方、权限要求和敏感操作背景。
+    - 请求 Agent 使用该 Skill 输出安全风险和修复建议。
+  examplePrompt: |
+    请使用 ohos-dev-security-code-review 审查这个 System Ability 的 OnRemoteRequest 实现。
+    重点看 MessageParcel 参数、AccessToken 校验、跨用户访问和 HILOG 是否有敏感信息泄露。
+
+related:
+  skills: []
+  docs:
+    - title: IPC 输入校验
+      path: references/ipc-input-validation.md
+    - title: 权限与授权审查
+      path: references/permission-authorization.md
+    - title: System Ability 信任边界
+      path: references/system-ability-trust-boundary.md
+
+extractionNotes:
+  confidence: high
+  missing: []
+  comments:
+    - README.md 和 SKILL.md 元数据完整，网站文案去除了内部报告格式和执行性禁令，只保留能力边界。

@@ -1,0 +1,87 @@
+schemaVersion: 1
+
+id: ohos-test-capi-xts-generation
+title: CAPI XTS 测试生成
+summary: 为 OpenHarmony C/C++ CAPI 生成基于 N-API 封装的 XTS 测试，支持头文件解析、覆盖率补测、校验和编译指导。
+
+category:
+  scope: common
+  namespace: testing
+  stage: testing
+  domain: capi
+  capability: xts-generation
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - xts
+  - capi
+  - napi
+  - test-generation
+
+audience:
+  - OpenHarmony CAPI 测试开发者
+  - Native API XTS 用例维护者
+  - 覆盖率补测人员
+  - N-API 封装测试工程维护者
+
+useCases:
+  - title: 根据 C 头文件生成 XTS 用例
+    description: 解析 .h 文件中的函数、参数、返回值和宏定义，生成 N-API 封装与 ETS/ArkTS 测试。
+  - title: 基于覆盖率报告补测
+    description: 根据覆盖率报告中的未覆盖 API、缺失参数组合和测试场景补充既有工程。
+  - title: 校验 N-API 封装测试工程
+    description: 执行 N-API 三重校验、测试套结构检查和构建验证，降低运行时和编译错误。
+
+whenToUse:
+  - 需要为 OpenHarmony C/C++ CAPI 生成 XTS 测试用例。
+  - 任务涉及 .h 文件解析、CAPI、Native testing、N-API wrapper 或 ETS 测试代码生成。
+  - 需要按覆盖率报告补充缺失测试，或扫描现有测试识别覆盖缺口。
+  - 需要生成或检查 N-API 封装、index.d.ts、.test.ets 和测试工程配置。
+
+whenNotToUse:
+  - 目标是 ArkTS API 的 XTS 测试，应使用 ArkTS XTS 生成 Skill。
+  - 目标是 C/C++ 单元测试或 FUZZ 测试，不是 CAPI XTS。
+  - 只需要修改业务代码，不涉及测试生成或测试工程校验。
+
+inputs:
+  required:
+    - OH_ROOT 或 OpenHarmony 工程根目录
+    - 目标子系统、模块和 CAPI API 列表
+    - 对应 .h 头文件或接口路径
+  optional:
+    - 覆盖率报告和缺失测试项
+    - 既有测试工程路径和代码风格
+    - 自定义测试路径、Kit 包或特殊测试规则
+    - 编译日志或验证失败输出
+
+outputs:
+  - C++ N-API 封装代码
+  - TypeScript 声明和 ETS/ArkTS XTS 测试用例
+  - 测试设计文档和覆盖率补测说明
+  - N-API 三重校验、测试套结构检查和编译指导
+
+quickStart:
+  steps:
+    - 配置 OH_ROOT，并准备目标头文件、子系统和 API 列表。
+    - 说明是标准生成还是基于覆盖率报告补测。
+    - 请求 Agent 使用该 Skill 生成 N-API 封装测试并完成验证。
+  examplePrompt: |
+    请使用 ohos-test-capi-xts-generation 为 HiLog 模块的 HiLogPrint 和 HiLogIsLoggable 生成 CAPI XTS 测试。
+    头文件在 interface/sdk_c/，需要生成 N-API 封装、.test.ets 用例并给出验证结果。
+
+related:
+  skills:
+    - ohos-test-arkts-xts-generation
+    - ohos-dev-napi-module
+  docs: []
+
+extractionNotes:
+  confidence: high
+  missing:
+    - related.docs
+  comments:
+    - README.md 内容较长，展示信息按 SKILL.md 和 README.md 中一致的 N-API 封装 XTS 流程提取。

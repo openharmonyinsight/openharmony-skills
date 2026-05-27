@@ -1,0 +1,84 @@
+schemaVersion: 1
+
+id: ohos-dev-graphics-stability-code-review
+title: 图形 C/C++ 稳定性代码检视
+summary: 基于 34 条稳定性规则检视 OpenHarmony C/C++ 代码，识别异常处理、并发、资源、边界和图形稳定性风险。
+
+category:
+  scope: domain
+  namespace: graphics
+  stage: development
+  domain: graphics
+  capability: stability-code-review
+
+status:
+  maturity: trial
+  version: 0.1.1
+  owner: openharmony
+
+tags:
+  - graphics
+  - cpp
+  - stability
+  - code-review
+  - static-analysis
+
+audience:
+  - OpenHarmony 图形子系统开发者
+  - C/C++ 稳定性专项检视人员
+  - 代码上库前自检和审计人员
+  - 稳定性规则维护者
+
+useCases:
+  - title: 稳定性全量扫描
+    description: 对 C/C++ 代码库遍历启用规则，发现异常处理、并发、资源管理、边界条件和图形稳定性问题。
+  - title: 指定规则或分类检视
+    description: 按规则 ID、严重级别或稳定性分类对目标代码进行定向审查。
+  - title: 生成结构化检视报告
+    description: 输出包含问题描述、风险流分析、影响分析和修复建议的 Markdown 与 CSV 报告。
+
+whenToUse:
+  - 需要对 OpenHarmony C/C++ 代码执行稳定性专项检视或全仓扫描。
+  - 需要在代码上库前检查异常处理、并发死锁、资源泄漏、边界条件或图形稳定性风险。
+  - 需要按规则 ID、严重级别或分类筛选稳定性规则进行审计。
+  - 用户明确要求检查 C/C++ 代码稳定性风险。
+
+whenNotToUse:
+  - 需求是直接修复源码而不是检视和报告风险。
+  - 目标代码不是 C/C++，或问题不属于稳定性风险分析。
+  - 只需要普通代码风格审查、功能评审或非稳定性专项检查。
+
+inputs:
+  required:
+    - 需要检视的 C/C++ 代码目录或文件范围。
+  optional:
+    - 指定的规则 ID、稳定性分类或严重级别过滤条件。
+    - 白名单路径、误报排除条件或需要重点关注的模块。
+    - 期望的报告输出格式或报告目录。
+
+outputs:
+  - 中文稳定性代码检视报告。
+  - CSV 格式检出问题列表。
+  - 每个问题的规则 ID、严重程度、代码位置、风险流分析、影响分析和修复建议。
+  - 可扩展稳定性规则使用或维护建议。
+
+quickStart:
+  steps:
+    - 准备要检视的 C/C++ 代码目录。
+    - 根据需要指定全量扫描、规则 ID、严重级别或稳定性分类。
+    - 请求 Agent 使用该 Skill 执行稳定性检视并生成报告。
+  examplePrompt: |
+    请使用 ohos-dev-graphics-stability-code-review 对 ./rosen/ 做稳定性扫描，
+    只检视 CRITICAL 和 HIGH 级别规则，并生成 Markdown 和 CSV 报告。
+
+related:
+  skills: []
+  docs:
+    - title: 稳定性规则总索引
+      path: references/RULE_INDEX.md
+    - title: 规则配置文件
+      path: config/rules.yaml
+    - title: 白名单配置
+      path: config/whitelist.yaml
+    - title: 报告输出模板
+      path: references/REPORT_TEMPLATE.md

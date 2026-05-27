@@ -1,0 +1,79 @@
+schemaVersion: 1
+
+id: ohos-design-graphics-explain-code
+title: 图形代码解释与文档生成
+summary: 通过交互确认、调用流梳理和 Mermaid 图表，为 OpenHarmony 图形相关代码生成准确的技术说明文档。
+
+category:
+  scope: domain
+  namespace: graphics
+  stage: design
+  domain: graphics
+  capability: explain-code
+
+status:
+  maturity: stable
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - graphics
+  - explain-code
+  - documentation
+  - mermaid
+  - architecture
+
+audience:
+  - OpenHarmony 图形子系统开发者
+  - 需要理解现有代码的设计和维护人员
+  - 需要生成模块技术文档的工程师
+
+useCases:
+  - title: 解释代码调用流程
+    description: 从入口函数、关键组件、数据流和返回路径梳理代码如何工作。
+  - title: 生成模块技术文档
+    description: 为模块、功能或 API 生成 Markdown 文档，包含概览、架构、流程、关键组件和注意事项。
+  - title: 绘制架构和时序图
+    description: 在代码证据充分时生成 Mermaid 类图和时序图，帮助理解组件关系和运行时交互。
+
+whenToUse:
+  - 需要解释一段 OpenHarmony 图形相关代码、模块或功能是如何工作的。
+  - 需要分析调用链、业务逻辑、架构关系或数据流。
+  - 需要生成带 Mermaid 图表的技术文档。
+  - 用户希望先确认理解和调用流，再产出正式文档。
+
+whenNotToUse:
+  - 需求是修复缺陷、审查代码质量或定位崩溃，而不是解释和文档生成。
+  - 目标是配置文件或简单数据结构，使用表格说明比图表更合适。
+  - 用户明确不需要交互确认、调用流确认或文档产出。
+
+inputs:
+  required:
+    - 需要解释或文档化的代码路径、模块、功能或文件范围。
+    - 用户希望解决的问题或文档使用目标。
+  optional:
+    - 期望文档深度，如概览、详细调用流或面向维护者的完整文档。
+    - 需要包含或排除的类、函数、文件和图表类型。
+    - 已知架构背景、设计说明或现有文档。
+
+outputs:
+  - 经过确认的调用流或架构理解。
+  - Markdown 技术文档。
+  - Mermaid 类图、时序图或适合的文本流程说明。
+  - 带源码路径和行号依据的关键组件说明。
+
+quickStart:
+  steps:
+    - 准备要解释的代码目录、文件或功能名称。
+    - 说明文档目标和希望覆盖的深度。
+    - 请求 Agent 使用该 Skill 先梳理调用流，确认后生成 Markdown 文档。
+  examplePrompt: |
+    请使用 ohos-design-graphics-explain-code 解释 graphics/render_service 中这个渲染流程，
+    先梳理入口、关键类和调用链，确认后生成带 Mermaid 图的技术文档。
+
+related:
+  skills: []
+  docs:
+    - title: Mermaid 图表指南
+      path: references/mermaid-guide.md
+

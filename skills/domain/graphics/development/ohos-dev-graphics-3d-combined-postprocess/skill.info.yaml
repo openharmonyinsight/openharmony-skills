@@ -1,0 +1,81 @@
+schemaVersion: 1
+
+id: ohos-dev-graphics-3d-combined-postprocess
+title: Graphics3D Combined 后处理实现
+summary: 指导在 OpenHarmony Graphics3D 的 LumeRender、Lume3D 和 LumeScene 中实现单通道 Combined 后处理效果。
+
+category:
+  scope: domain
+  namespace: graphics
+  stage: development
+  domain: graphics-3d
+  capability: combined-postprocess
+
+status:
+  maturity: stable
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - graphics-3d
+  - postprocess
+  - LumeRender
+  - Lume3D
+  - LumeScene
+  - shader
+
+audience:
+  - OpenHarmony Graphics3D 渲染引擎开发者
+  - 需要扩展后处理效果的图形开发者
+  - 维护 LumeRender、Lume3D 或 LumeScene 的工程师
+
+useCases:
+  - title: 添加单通道全屏后处理效果
+    description: 为 tone mapping、color grading、vignette 等单个 fullscreen shader pass 效果补齐渲染、ECS 和场景接口实现。
+  - title: 扩展 Combined 后处理管线
+    description: 在 LumeRender、Lume3D 和 LumeScene 的依赖链中注册参数、元数据、shader 常量和 API 包装。
+  - title: 判断效果是否适合 Combined 系统
+    description: 根据参数数量、是否需要中间 framebuffer 和现有索引使用情况，决定是否进入 Combined 后处理实现流程。
+
+whenToUse:
+  - 需要在 OpenHarmony Graphics3D 中新增或修改 Combined post-process 效果。
+  - 效果运行在单个全屏 shader pass 中，例如 tone mapping、color grading、vignette、white balance 或 color adjustments。
+  - 需要同步修改 LumeRender、Lume3D 和 LumeScene 的后处理配置、组件、shader 与对外 API。
+
+whenNotToUse:
+  - 效果需要多个 render pass、blur pass、downscale/upscale、temporal 处理或中间 framebuffer。
+  - 目标是 bloom、depth-of-field、motion blur 等多通道后处理效果。
+  - 需求不涉及 Graphics3D Combined 后处理管线。
+
+inputs:
+  required:
+    - 待实现后处理效果的视觉目标和参数设计。
+    - OpenHarmony Graphics3D 源码目录。
+    - 需要修改的 LumeRender、Lume3D 和 LumeScene 相关文件范围。
+  optional:
+    - 现有效果实现作为参考，例如 tone、vignette、white balance 或 color adjustments。
+    - 参数数量、默认值、启用标志和 shader 索引规划。
+    - 构建或渲染验证要求。
+
+outputs:
+  - LumeRender 中的配置结构、元数据、shader 常量和渲染管线集成。
+  - Lume3D 中的 ECS flag、组件属性、元数据和 shader 集成。
+  - LumeScene 中的接口、API wrapper、effect class、类型注册和构建文件更新。
+  - 面向 Combined 后处理效果的实现检查结果。
+
+quickStart:
+  steps:
+    - 准备后处理效果目标、参数列表和 OpenHarmony Graphics3D 源码路径。
+    - 确认效果是否只需要单个 fullscreen shader pass，以及 Combined 系统中可用的索引和参数承载方式。
+    - 请求 Agent 使用该 Skill 按 LumeRender 到 Lume3D 再到 LumeScene 的顺序完成实现。
+  examplePrompt: |
+    请使用 ohos-dev-graphics-3d-combined-postprocess 为 Graphics3D Combined 后处理新增一个单通道色彩调整效果，
+    源码在 graphic_3d/，参数包括强度、对比度和饱和度，并同步更新 LumeRender、Lume3D 和 LumeScene。
+
+related:
+  skills: []
+  docs:
+    - title: Combined 后处理实现模板
+      path: references/code_templates.md
+    - title: Combined 后处理进阶参考
+      path: references/advanced_reference.md

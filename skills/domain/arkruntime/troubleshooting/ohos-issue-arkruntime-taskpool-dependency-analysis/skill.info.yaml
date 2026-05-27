@@ -1,0 +1,79 @@
+schemaVersion: 1
+
+id: ohos-issue-arkruntime-taskpool-dependency-analysis
+title: ArkRuntime taskpool 依赖问题分析
+summary: 分析静态 ArkTS taskpool 的依赖图、循环依赖、非法依赖边和依赖任务不唤醒等问题，并给出应用代码修复建议。
+
+category:
+  scope: domain
+  namespace: arkruntime
+  stage: troubleshooting
+  domain: arkruntime
+  capability: taskpool-dependency-analysis
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - arkruntime
+  - taskpool
+  - dependency
+  - arkts
+  - troubleshooting
+
+audience:
+  - 使用 ArkTS taskpool 的应用开发者
+  - ArkRuntime 问题定位人员
+  - 并发任务依赖问题排查人员
+
+useCases:
+  - title: 定位循环依赖和缺失依赖
+    description: 根据 addDependency、removeDependency 和 execute 调用顺序构建依赖图，识别循环边、缺失边和对应错误码。
+  - title: 分析依赖任务不执行
+    description: 追踪依赖完成后的通知、计数递减、pending 队列和重新入队路径，判断是用法问题还是需要上游跟进。
+  - title: 检查取消传播
+    description: 分析 cancel 调用在依赖链中的传播关系，定位依赖任务卡住或被取消的原因。
+
+whenToUse:
+  - taskpool 代码涉及 addDependency、removeDependency、依赖图或依赖链取消。
+  - 出现 10200026、10200027、10200070、10200071、10200073、10200074、10200079、10200097、10200101 或 10200113 等 taskpool 依赖相关错误码。
+  - 任务提交后因为依赖关系迟迟不执行、不会唤醒或取消传播结果不符合预期。
+  - 需要从应用 ArkTS 代码中找出依赖声明顺序、任务类型或执行顺序问题。
+
+whenNotToUse:
+  - 问题与 taskpool 依赖 API 无关，只是普通异步任务失败或业务逻辑错误。
+  - 需要通用线程安全审计、Promise 互操作分析或 native 崩溃分析。
+  - 没有可分析的 taskpool 代码、调用顺序、错误码或复现现象。
+
+inputs:
+  required:
+    - 涉及 taskpool Task 创建、addDependency、removeDependency、execute 和 cancel 的 ArkTS 代码或最小复现。
+    - 实际现象、错误码或期望行为说明。
+  optional:
+    - SDK、系统版本和运行环境信息。
+    - 相关测试用例、日志或 issue 背景。
+    - 可读的 arkcompiler_runtime_core 源码路径用于行为佐证。
+
+outputs:
+  - 文本化任务依赖图和关键状态变化。
+  - 循环依赖、非法边、缺失依赖或通知路径问题列表。
+  - 对应错误码和根因说明。
+  - 面向应用代码的修复建议或最小复现上游跟进建议。
+
+quickStart:
+  steps:
+    - 准备最小的 taskpool 依赖复现代码和完整调用顺序。
+    - 标出实际报错、卡住位置或取消传播异常。
+    - 请求 Agent 使用该 Skill 构建依赖图并定位根因。
+  examplePrompt: |
+    请使用 ohos-issue-arkruntime-taskpool-dependency-analysis 分析这个 taskpool 依赖卡住问题，
+    代码里 taskA.addDependency(taskB) 后执行 taskA 没有被唤醒，错误现象和复现代码如下。
+
+related:
+  skills: []
+  docs:
+    - title: Taskpool 依赖参考
+      path: references/dependency_reference.md
+

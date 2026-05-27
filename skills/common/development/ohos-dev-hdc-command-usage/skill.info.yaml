@@ -1,0 +1,85 @@
+schemaVersion: 1
+
+id: ohos-dev-hdc-command-usage
+title: hdc 命令使用与连接排障
+summary: 指导 OpenHarmony/HarmonyOS 开发中安全选择 hdc 命令，处理设备连接、文件传输、安装、日志和常见通信故障。
+
+category:
+  scope: common
+  namespace: development
+  stage: development
+  domain: hdc
+  capability: command-usage
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - hdc
+  - harmonyos
+  - device-debugging
+  - command-line
+
+audience:
+  - OpenHarmony 系统开发者
+  - HarmonyOS 设备调试人员
+  - 自动化和 CI 脚本维护者
+  - 应用安装与日志采集排障人员
+
+useCases:
+  - title: 选择安全的 hdc 目标和命令
+    description: 在多设备、USB、TCP 或远程 hdc server 场景下确认目标设备，避免误操作。
+  - title: 处理设备连接异常
+    description: 根据 Empty、Unauthorized、Offline、Connect failed 等状态定位主机、传输链路或 daemon 问题。
+  - title: 完成开发常用设备操作
+    description: 执行文件收发、应用安装卸载、hilog/bugreport 采集、端口转发和系统组件推送前后的检查。
+
+whenToUse:
+  - 需要通过 hdc 连接、选择或诊断 OpenHarmony/HarmonyOS 设备。
+  - 需要执行 remount、系统分区写入、文件 send/recv、shell、安装卸载或端口转发等命令。
+  - hdc 报 Empty、Unauthorized、Offline、Connect failed 或 Failed to communicate with daemon。
+  - 编写 CI 或自动化脚本时需要保证目标设备明确且命令行为可控。
+
+whenNotToUse:
+  - 问题与 hdc、设备调试桥或设备侧命令无关。
+  - 只需要分析应用业务逻辑、ArkTS 代码或非设备连接问题。
+  - 已经进入具体崩溃根因分析，需要使用对应崩溃或日志分析 Skill。
+
+inputs:
+  required:
+    - 目标操作或故障现象说明
+    - hdc list targets -v 输出或当前设备连接方式
+  optional:
+    - hdc 版本和 SDK/toolchain 信息
+    - 操作系统平台和 USB/TCP/远程 server 环境
+    - 失败命令、错误输出、hilog 或 hdc service 日志
+    - 待安装包、待传输文件或目标设备路径
+
+outputs:
+  - 推荐的 hdc 命令序列
+  - 目标设备选择和安全检查建议
+  - 连接故障分层排查结论
+  - 日志、文件传输、安装卸载或端口转发处理方案
+
+quickStart:
+  steps:
+    - 准备设备连接状态、失败命令和期望操作。
+    - 提供 hdc list targets -v 输出，说明是 USB、TCP 还是远程 server 场景。
+    - 请求 Agent 使用该 Skill 给出安全命令和排障步骤。
+  examplePrompt: |
+    请使用 ohos-dev-hdc-command-usage 帮我排查 hdc 连接问题。
+    当前 hdc list targets -v 显示 Offline，我需要通过 USB 向设备推送系统组件并采集 hilog。
+
+related:
+  skills: []
+  docs:
+    - title: hdc 命令速查
+      path: references/hdc-command-reference.md
+
+extractionNotes:
+  confidence: high
+  missing: []
+  comments:
+    - README.md 和 SKILL.md 元数据完整，展示文案基于命令使用、连接诊断、文件传输、安装卸载和日志场景提取。

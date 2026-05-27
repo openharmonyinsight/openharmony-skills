@@ -1,0 +1,72 @@
+schemaVersion: 1
+
+id: ohos-design-agent-instruction-quality-review
+title: Agent 指令质量评审
+summary: 评审 OpenHarmony 仓库中的 AGENTS.md、CLAUDE.md、GEMINI.md、Codex、Copilot 或 Cursor 指令是否能可靠指导 coding agent。
+
+category:
+  scope: common
+  namespace: design
+  stage: design
+  domain: agent
+  capability: instruction-quality-review
+
+status:
+  maturity: stable
+  version: 1.0.0
+  owner: openharmony
+
+tags:
+  - agent
+  - instructions
+  - quality-review
+
+audience:
+  - OpenHarmony 仓库维护者
+  - Agent 指令编写者
+  - 代码协作流程设计人员
+
+useCases:
+  - title: 评审仓库级 Agent 指令
+    description: 检查 AGENTS.md、CLAUDE.md、GEMINI.md 或同类文件是否具备有效的代码地图、知识路由、约束边界和验证闭环。
+  - title: 建立指令质量基线
+    description: 对团队或仓库的 agent 指令进行评分，判断是否可作为基线使用。
+  - title: 制定修复计划
+    description: 针对薄弱指令输出具体缺口和最小修复建议。
+
+whenToUse:
+  - 新增或修改 OpenHarmony 仓库 coding-agent 指令后需要质量评审
+  - 需要比较不同仓库或团队的 agent 指令质量
+  - 需要判断指令是否足以约束高风险代码修改和验证流程
+
+whenNotToUse:
+  - 只评审普通 README、架构文档或编码风格文档
+  - 需要评审业务代码实现质量
+  - 用户没有要求从 agent 指令有效性角度进行审查
+
+inputs:
+  required:
+    - 待评审的 AGENTS.md、CLAUDE.md、GEMINI.md、Codex 指令、Copilot 指令、Cursor 规则或等价文件内容
+  optional:
+    - 仓库目录结构或关键路径图
+    - 指令中引用的补充文档
+    - 仓库类型或子系统背景
+
+outputs:
+  - 指令质量评分和等级
+  - 代码地图、知识路由、约束边界、验证闭环四项评审结果
+  - 关键缺口和风险说明
+  - 面向修复的最小改进建议
+
+quickStart:
+  steps:
+    - 提供待评审的 agent 指令文件路径或内容。
+    - 说明该指令适用的仓库、目录或目标 agent。
+    - 请求按质量维度输出评分、缺口和修复建议。
+  examplePrompt: |
+    请使用 ohos-design-agent-instruction-quality-review 评审这个仓库的 AGENTS.md，
+    判断它是否足以指导 coding agent 安全修改代码，并给出修复建议。
+
+related:
+  skills: []
+  docs: []

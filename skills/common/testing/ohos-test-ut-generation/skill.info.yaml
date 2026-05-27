@@ -1,0 +1,95 @@
+schemaVersion: 1
+
+id: ohos-test-ut-generation
+title: C/C++ 单元测试生成
+summary: 为 OpenHarmony C/C++ 代码生成符合 testfwk_developer_test 规范的 HWTEST/HWTEST_F 单元测试和 BUILD.gn 配置。
+
+category:
+  scope: common
+  namespace: testing
+  stage: testing
+  domain: ut
+  capability: generation
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - unit-test
+  - c++
+  - hwtest
+  - ohos_unittest
+  - test-generation
+
+audience:
+  - OpenHarmony C/C++ 模块开发者
+  - 单元测试用例编写人员
+  - testfwk_developer_test 测试维护者
+  - 需要补充 HWTEST 用例的代码审查人员
+
+useCases:
+  - title: 生成 HWTEST/HWTEST_F 单元测试
+    description: 分析 C/C++ 源码、公开方法、分支和边界条件，生成符合 OpenHarmony 测试框架的用例。
+  - title: 规划测试策略和测试设计
+    description: 输出源码分析、测试策略、场景设计和用例规划，覆盖功能、可靠性、安全或性能测试类型。
+  - title: 创建或修正测试 BUILD.gn
+    description: 生成 ohos_unittest 相关 BUILD.gn 配置，补齐测试依赖、输出路径和 gtest_main 等必要项。
+
+whenToUse:
+  - 需要为 OpenHarmony C/C++ 子系统、模块、文件、类或函数生成单元测试。
+  - 任务提到 HWTEST、HWTEST_F、ohos_unittest、unit test 或写单元测试。
+  - 需要分析存量 test/unittest 目录风格，并生成一致的新测试。
+  - 需要检查测试文件位置、BUILD.gn 入口、测试等级和 @tc 注释规范。
+
+whenNotToUse:
+  - 目标是 XTS 测试、CAPI N-API 封装测试或 FUZZ 测试。
+  - 目标不是 OpenHarmony C/C++ 代码。
+  - 只需要安全漏洞审查、性能调优或业务功能实现。
+
+inputs:
+  required:
+    - 待测源码文件或目标函数/类列表
+    - 模块根目录、测试目录和源码 GN 路径
+    - 期望测试范围或覆盖目标
+  optional:
+    - 既有 test/unittest 目录
+    - Mock 需求和依赖模块信息
+    - 编译错误、链接错误或门禁失败日志
+    - 需要兼容的历史命名或注释风格
+
+outputs:
+  - 源码分析报告
+  - 测试策略、测试场景和用例规划
+  - C++ 单元测试文件
+  - test/BUILD.gn 或 ohos_unittest 配置建议
+  - 编译和常见错误修复建议
+
+quickStart:
+  steps:
+    - 提供待测源码、模块根目录、测试目录和源码 GN 路径。
+    - 说明需要新增用例、补覆盖率、修复测试编译问题还是对齐存量风格。
+    - 请求 Agent 使用该 Skill 生成 OpenHarmony C/C++ 单元测试。
+  examplePrompt: |
+    请使用 ohos-test-ut-generation 为 base/demo/src/config_manager.cpp 生成单元测试。
+    模块根目录是 base/demo，测试目录是 base/demo/test/unittest，源码 GN 路径是 //base/demo。
+
+related:
+  skills:
+    - ohos-test-fuzz-generation
+    - ohos-test-capi-xts-generation
+  docs:
+    - title: 测试框架说明
+      path: references/test-framework.md
+    - title: 命名规范
+      path: references/naming-convention.md
+    - title: 构建规则
+      path: references/build-rules.md
+
+extractionNotes:
+  confidence: medium
+  missing:
+    - SKILL.md metadata
+  comments:
+    - SKILL.md front matter 只有 name 和 description，缺少 metadata；scope、stage 从路径推断，domain 从目录名中的 ut 推断，capability 从 generation 推断，version 和 maturity 按首版 draft/0.1.0 处理，需维护者确认。

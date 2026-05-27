@@ -1,0 +1,89 @@
+schemaVersion: 1
+
+id: ohos-dev-arkui-code-review
+title: ArkUI ACE Engine 代码审查
+summary: 对 OpenHarmony ArkUI/ACE Engine 代码进行结构化审查，覆盖正确性、安全性、内存所有权、线程、架构和可维护性。
+
+category:
+  scope: domain
+  namespace: arkui
+  stage: development
+  domain: arkui
+  capability: code-review
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - arkui
+  - code-review
+  - ace-engine
+  - cpp
+  - arkts
+
+audience:
+  - ArkUI ACE Engine 开发者
+  - OpenHarmony PR 审查人员
+  - 组件、桥接层和框架维护者
+
+useCases:
+  - title: 审查 ACE Engine C++ 代码
+    description: 检查 RefPtr、WeakPtr、MakeRefPtr、DynamicCast、生命周期回调、异步捕获和线程安全问题。
+  - title: 校验 ArkUI 架构边界
+    description: 审查 components_ng、frameworks/core、bridge 和 adapter 代码是否符合四层架构和 Pattern/Model/Property 分离要求。
+  - title: 输出严重级别排序的审查发现
+    description: 对 PR、diff 或源码目录生成 CRITICAL、HIGH、MEDIUM、LOW 分级的代码审查报告。
+
+whenToUse:
+  - 用户明确要求 review、audit、inspect 或评估 ArkUI/ACE Engine 代码质量。
+  - 代码涉及 RefPtr、WeakPtr、DynamicCast、FrameNode、Pattern、LayoutProperty、OnModifyDone 或异步回调。
+  - 需要检查内存泄漏、悬空回调、数据竞争、安全风险、架构合规或可维护性。
+  - 需要对 ArkUI PR 或代码变更给出带行号的审查意见和修复示例。
+
+whenNotToUse:
+  - 用户只是要求实现功能、修复构建或解释架构，没有要求代码审查或审计。
+  - 目标不是 ACE Engine、OpenHarmony ArkUI 或相关框架代码。
+  - 需求是 UI/UX 设计评审、通用 C++ 编码规范或构建系统问题。
+
+inputs:
+  required:
+    - 待审查的源码文件、diff、PR 描述或目录路径。
+  optional:
+    - 指定审查维度，如内存、安全、线程、架构、性能或代码质量。
+    - 相关上下文、变更意图、测试结果或已知风险点。
+    - 需要套用的正式报告格式要求。
+
+outputs:
+  - 按严重级别排序的代码审查发现。
+  - 文件、行号、问题原因、影响和建议修复方式。
+  - 必要时提供 before/after 修复示例。
+  - 架构、生命周期、内存和安全维度的补充说明。
+
+quickStart:
+  steps:
+    - 准备 ArkUI/ACE Engine 的 PR diff、文件路径或目录。
+    - 说明是否需要全量审查，或只关注内存、线程、安全、架构等维度。
+    - 请求 Agent 使用该 Skill 输出严重级别排序的审查结果。
+  examplePrompt: |
+    请使用 ohos-dev-arkui-code-review 审查这个 ArkUI PR diff，
+    重点关注 RefPtr/WeakPtr 生命周期、异步 this 捕获和 components_ng 架构边界。
+
+related:
+  skills:
+    - ohos-dev-cpp-coding-style
+  docs:
+    - title: ACE 架构参考
+      path: references/ACE_ARCHITECTURE.md
+    - title: ACE 生命周期参考
+      path: references/ACE_LIFECYCLE.md
+    - title: ACE 测试参考
+      path: references/ACE_TESTING.md
+    - title: 内存审查参考
+      path: references/MEMORY.md
+    - title: 安全审查参考
+      path: references/SECURITY.md
+    - title: 稳定性审查参考
+      path: references/STABILITY.md
+
