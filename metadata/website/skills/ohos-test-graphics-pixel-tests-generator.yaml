@@ -1,0 +1,85 @@
+schemaVersion: 1
+
+id: ohos-test-graphics-pixel-tests-generator
+title: 图形像素比对测试生成
+summary: 为 OpenHarmony Rosen graphic_test 框架生成符合仓库风格的 C++ 像素比对测试，并维护测试分类、节点生命周期和构建入口。
+
+category:
+  scope: domain
+  namespace: graphics
+  stage: testing
+  domain: graphics
+  capability: pixel-tests-generator
+
+status:
+  maturity: trial
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - graphics
+  - cpp
+  - pixel-test
+  - RSGraphicTest
+  - Rosen
+  - graphic_test
+
+audience:
+  - OpenHarmony Rosen 图形测试开发者
+  - RenderService 图形能力验证人员
+  - 需要编写或维护像素比对测试的工程师
+
+useCases:
+  - title: 生成 graphic_test 像素比对用例
+    description: 根据被测渲染行为选择目录、RSGraphicTestType 和测试宏，生成稳定可见的 C++ 测试场景。
+  - title: 扩展已有 Rosen 渲染测试
+    description: 沿用相邻文件风格，添加节点、Canvas、PixelMap、动画或 surface 相关测试。
+  - title: 维护测试构建入口
+    description: 新增 .cpp 文件时更新 graphic_test/test/BUILD.gn 中匹配的 sources 数组。
+
+whenToUse:
+  - 需要创建、修改、评审或调试 OpenHarmony graphic_2d graphic_test 像素比对测试。
+  - 需求涉及 RSGraphicTest、GRAPHIC_TEST、GRAPHIC_TESTS、GRAPHIC_N_TEST 或 Rosen 渲染测试。
+  - 需要测试 RSCanvasNode、RSSurfaceNode、Drawing::Canvas、PixelMap 或截图输出。
+  - 需要处理 /data/local/graphic_test 图片或 graphic_test/test 目录下的测试。
+
+whenNotToUse:
+  - 需求是普通 GTest 单元测试、接口逻辑测试或性能测试，不依赖截图像素比对。
+  - 目标不属于 OpenHarmony Rosen graphic_test 框架。
+  - 缺少可验证的渲染行为或无法构造稳定、可见的像素输出。
+
+inputs:
+  required:
+    - 待验证的具体渲染行为或截图差异目标。
+    - 本地 graphic_test 根目录和相关相邻测试文件。
+  optional:
+    - 期望放置的测试分类、RSGraphicTestType 或测试宏。
+    - 可复用的图片资源路径、PixelMap 生成方式或测试 helper。
+    - 是否需要手动截图、子窗口、动画、surface 或特殊 flush 流程。
+
+outputs:
+  - 符合 OpenHarmony Rosen graphic_test 风格的 C++ 像素比对测试。
+  - 正确的测试目录、测试宏、fixture、屏幕尺寸和可见渲染场景。
+  - 必要的 RegisterNode、截图、flush 和 BUILD.gn sources 更新。
+  - 完成前的文本级检查结果。
+
+quickStart:
+  steps:
+    - 定位真实的 graphic_test 根目录，并准备最接近需求的现有测试文件。
+    - 说明要验证的渲染行为、期望截图差异和是否新增 .cpp 文件。
+    - 请求 Agent 使用该 Skill 生成或修改像素比对测试，并更新 BUILD.gn。
+  examplePrompt: |
+    请使用 ohos-test-graphics-pixel-tests-generator 在 graphic_test/test 中新增一个 RSCanvasNode 背景色像素比对测试，
+    画面需要稳定可见，如果新建 .cpp 请同步更新 BUILD.gn。
+
+related:
+  skills: []
+  docs:
+    - title: graphic_test 框架生命周期
+      path: references/framework-lifecycle.md
+    - title: 测试分类与 BUILD.gn 规则
+      path: references/test-taxonomy-build.md
+    - title: 常用代码模式
+      path: references/code-patterns.md
+    - title: 测试模板
+      path: references/templates.md

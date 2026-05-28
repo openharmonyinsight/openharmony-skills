@@ -1,0 +1,75 @@
+schemaVersion: 1
+
+id: ohos-ci-openharmony-ci-analysis
+title: OpenHarmony CI 门禁分析
+summary: 根据 GitCode PR、openharmony_ci 评论、DCP event、产物链接或日志 URL 分析 OpenHarmony CI 状态和失败原因。
+
+category:
+  scope: common
+  namespace: cicd
+  stage: cicd
+  domain: openharmony
+  capability: ci-analysis
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - openharmony
+  - ci
+  - dcp
+  - gitcode
+  - logs
+
+audience:
+  - OpenHarmony PR 提交者
+  - CI 门禁问题定位人员
+  - 仓库维护者和值班开发者
+
+useCases:
+  - title: 分析 PR 门禁状态
+    description: 从 GitCode PR 或 openharmony_ci 评论中提取最新 DCP event，并汇总各 job 的执行结果。
+  - title: 定位失败日志
+    description: 对失败 job 自动跟随产物链接，下载或读取相关日志，输出失败摘要。
+  - title: 展开静态检查缺陷
+    description: 在静态检查失败时查询 DCP 详情接口，列出具体缺陷、文件位置和规则信息。
+
+whenToUse:
+  - OpenHarmony PR 的 CI 状态不清楚或门禁失败
+  - 已知 GitCode PR 编号、PR URL、DCP event id、产物链接或 CI 日志 URL
+  - 需要区分整体 CI 结果、单个 job 状态和静态检查缺陷
+
+whenNotToUse:
+  - 问题与 OpenHarmony CI 或 DCP 门禁无关
+  - 只需要本地编译或单元测试诊断
+  - 无法访问 GitCode、DCP 或 CI 产物服务，且没有离线日志
+
+inputs:
+  required:
+    - GitCode PR 编号、PR URL、DCP event id、产物路径或 CI 日志 URL
+  optional:
+    - GitCode 仓库 owner/repo
+    - 是否抓取日志的策略
+    - 日志下载目录或 JSON 输出需求
+
+outputs:
+  - DCP overall 结果和各 job 状态摘要
+  - 失败 job 的日志摘要和关键错误
+  - 静态检查缺陷列表
+  - 后续排查方向或需要补充的访问条件
+
+quickStart:
+  steps:
+    - 准备 GitCode PR 编号、PR URL 或 DCP event id。
+    - 确认当前环境可以访问 GitCode、DCP 和 CI 产物服务。
+    - 请求分析 CI 结果，并说明是否需要下载失败日志或输出 JSON。
+  examplePrompt: |
+    请使用 ohos-ci-openharmony-ci-analysis 分析这个 PR 的 CI 失败原因：
+    https://gitcode.com/openharmony/arkui_ace_engine/pull/82764
+
+related:
+  skills:
+    - ohos-ci-gitcode-cli-usage
+  docs: []

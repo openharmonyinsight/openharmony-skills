@@ -1,0 +1,91 @@
+schemaVersion: 1
+
+id: ohos-issue-graphics-cppcrash-analysis
+title: 图形 cppcrash 崩溃分析
+summary: 分析 OpenHarmony 图形模块 cppcrash 日志，结合符号表和源码定位 native 崩溃根因并给出修复建议。
+
+category:
+  scope: domain
+  namespace: graphics
+  stage: troubleshooting
+  domain: graphics
+  capability: cppcrash-analysis
+
+status:
+  maturity: trial
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - graphics
+  - cppcrash
+  - native-crash
+  - SIGSEGV
+  - SIGABRT
+  - troubleshooting
+
+audience:
+  - OpenHarmony 图形子系统开发者
+  - native 崩溃问题定位人员
+  - render_service 故障分析人员
+
+useCases:
+  - title: 分析 SIGSEGV 或 SIGABRT 崩溃
+    description: 读取 cppcrash 元数据、调用栈、符号表和源码，定位崩溃代码行和业务上下文。
+  - title: 识别内存破坏模式
+    description: 根据 0x6b6b 地址、异常高位字节、cfi_slowpath_comm 等特征分析 Use-After-Free、野指针或内存踩踏。
+  - title: 追踪多线程竞态
+    description: 结合 Other thread info、锁竞争和对象生命周期分析图形模块多线程崩溃根因。
+
+whenToUse:
+  - OpenHarmony 图形模块发生 native cppcrash。
+  - 日志包含 SIGSEGV、SIGABRT、Use-After-Free、野指针、内存踩踏或 0x6b6b 地址特征。
+  - 需要结合 cppcrash 日志、lib.unstripped 符号表和源码定位崩溃根因。
+  - render_service 或图形相关进程崩溃需要分析调用栈和修复方向。
+
+whenNotToUse:
+  - 纯 ArkTS 或 JS 层崩溃，没有 native 调用栈。
+  - 没有 cppcrash 日志文件。
+  - 没有对应版本的带符号表 so 文件，无法解栈。
+  - 问题不是图形模块相关崩溃。
+
+inputs:
+  required:
+    - cppcrash 日志文件。
+    - code/ 目录下的相关源码。
+    - lib.unstripped/ 目录下的带符号表 so 文件。
+  optional:
+    - 复现步骤、问题背景或关联 issue。
+    - Other thread info、内存 dump 或相关日志。
+    - 可能相关的提交记录或版本信息。
+
+outputs:
+  - 崩溃根因分析报告。
+  - 精确的代码行号定位。
+  - 地址模式、调用链、数据流或多线程竞争分析结论。
+  - 修复建议和进一步排查方向。
+
+quickStart:
+  steps:
+    - 准备 cppcrash 日志、code/ 源码目录和 lib.unstripped/ 符号表目录。
+    - 说明崩溃进程、信号类型、复现背景和相关图形模块。
+    - 请求 Agent 使用该 Skill 验证 buildId、解栈并分析崩溃根因。
+  examplePrompt: |
+    请使用 ohos-issue-graphics-cppcrash-analysis 分析这个 render_service cppcrash，
+    日志在 crash.log，源码在 code/，符号表在 lib.unstripped/，请定位根因和修复建议。
+
+related:
+  skills: []
+  docs:
+    - title: 解栈分析
+      path: references/stack-unwinding.md
+    - title: 反汇编分析
+      path: references/disassembly-analysis.md
+    - title: 内存模式分析
+      path: references/memory-pattern-analysis.md
+    - title: 调用链回溯
+      path: references/call-chain-backtrace.md
+    - title: 多线程竞争分析
+      path: references/thread-competition-analysis.md
+    - title: 分析报告模板
+      path: references/report-template.md

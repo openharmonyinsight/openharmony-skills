@@ -1,0 +1,77 @@
+schemaVersion: 1
+
+id: ohos-issue-arkruntime-thread-safety-audit
+title: ArkRuntime 线程安全审计
+summary: 审计 ArkCompiler Runtime Core 中 ETS stdlib 和插件代码的共享可变状态、并发入口和同步缺陷。
+
+category:
+  scope: domain
+  namespace: arkruntime
+  stage: troubleshooting
+  domain: arkruntime
+  capability: thread-safety-audit
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - arkruntime
+  - thread-safety
+  - concurrency
+  - troubleshooting
+  - arkts
+
+audience:
+  - ArkCompiler Runtime Core 开发者
+  - ETS stdlib 维护者
+  - TSAN 问题跟进和并发测试设计人员
+
+useCases:
+  - title: 扫描 ETS 静态可变状态
+    description: 识别 static 字段、单例、Map、Array、StringBuilder、缓存、锁和原子变量等共享状态。
+  - title: 判断并发可达性和风险等级
+    description: 结合 taskpool、EAWorker、回调和公共 API 入口，评估数据竞争、生命周期或状态不一致风险。
+  - title: 设计最小同步修复
+    description: 针对计数器、布尔标志、共享 Map、单例初始化和复合状态选择合适的 Atomic、Mutex、QueueSpinlock 或 ConcurrentHashMap 方案。
+
+whenToUse:
+  - 需要审计 ArkRuntime ETS stdlib 或 static_core/plugins/ets 相关代码的线程安全性。
+  - 代码变更涉及 taskpool、EAWorker、公共 API、native 边界或多协程访问。
+  - 需要跟进 TSAN 报告、静态可变状态、全局缓存、单例或共享计数器问题。
+  - 需要为并发访问设计针对性测试或验证修复思路。
+
+whenNotToUse:
+  - 只需要解释普通业务代码或生成模块文档。
+  - 问题是 taskpool 依赖图用法错误，而非共享状态或同步风险。
+  - 目标代码不在 ArkCompiler Runtime Core 或相关 ETS stdlib/plugin 范围内。
+
+inputs:
+  required:
+    - 需要审计的文件、目录、diff 或 TSAN 报告。
+    - 目标代码所在的 ArkRuntime 源码 checkout。
+  optional:
+    - 已知并发入口、复现步骤或相关测试。
+    - 涉及的 taskpool、EAWorker、native 回调或公共 API 背景。
+    - 期望重点关注的风险维度或修复范围。
+
+outputs:
+  - 按 High、Medium、Low、Candidate 或 No risk 分类的审计结果。
+  - 共享状态、并发入口、缺失同步和具体影响说明。
+  - 最小修复建议和需要验证的并发测试方向。
+  - 可用于复查的源码证据和相关 API 引用。
+
+quickStart:
+  steps:
+    - 准备待审计的 ArkRuntime 文件、diff 或 TSAN 报告。
+    - 说明是否已有复现、并发入口或重点怀疑的共享状态。
+    - 请求 Agent 使用该 Skill 扫描候选状态、分析风险并给出修复建议。
+  examplePrompt: |
+    请使用 ohos-issue-arkruntime-thread-safety-audit 审计 static_core/plugins/ets/stdlib/std/core 下这次改动，
+    重点看静态缓存和 EAWorker/taskpool 并发访问是否存在数据竞争。
+
+related:
+  skills: []
+  docs: []
+

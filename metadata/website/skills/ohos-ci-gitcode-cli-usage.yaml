@@ -1,0 +1,81 @@
+schemaVersion: 1
+
+id: ohos-ci-gitcode-cli-usage
+title: GitCode 命令行操作
+summary: 使用 oh-gc CLI 在终端中管理 GitCode 仓库、Issue、PR、评审人、测试人、标签和发布流程。
+
+category:
+  scope: common
+  namespace: cicd
+  stage: cicd
+  domain: gitcode
+  capability: cli-usage
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - gitcode
+  - oh-gc
+  - cli
+  - pr
+  - issue
+
+audience:
+  - OpenHarmony 仓库维护者
+  - GitCode Issue 和 PR 协作者
+  - 需要在终端处理 GitCode 流程的开发者
+
+useCases:
+  - title: 管理 Issue 和 PR
+    description: 通过 oh-gc 查看、创建、评论、打标、分配评审人或测试人，并处理 PR 合并相关操作。
+  - title: 操作 GitCode 仓库对象
+    description: 在需要时处理 Release、仓库配置、分支、提交、文件、里程碑和 Webhook 等低频操作。
+  - title: 执行 fork 到上游的 PR 流程
+    description: 结合本地分支、上游仓库和 GitCode PR 创建规则完成提交和建 PR 的自动化流程。
+
+whenToUse:
+  - 需要通过终端管理 GitCode 仓库、Issue 或 PR
+  - 需要使用 oh-gc 查询或更新评审人、测试人、标签、评论或合并状态
+  - 需要在没有浏览器操作的情况下完成 GitCode 协作流程
+
+whenNotToUse:
+  - 目标平台不是 GitCode
+  - 只需要本地 git 操作，不涉及 GitCode API
+  - 无法安装或使用 oh-gc CLI
+
+inputs:
+  required:
+    - GitCode 仓库标识或当前 GitCode 仓库工作区
+    - oh-gc CLI 0.7.5
+    - 已登录的 GitCode 账号或可用认证信息
+  optional:
+    - Issue 或 PR 编号
+    - 目标分支、fork 分支或上游仓库信息
+    - 需要设置的评审人、测试人、标签或评论内容
+
+outputs:
+  - GitCode Issue 或 PR 操作结果
+  - 仓库、Release、分支或文件查询结果
+  - 可用于继续协作的 GitCode 链接和状态摘要
+
+quickStart:
+  steps:
+    - 确认本地已安装 oh-gc CLI 0.7.5 并完成 GitCode 登录。
+    - 在目标仓库目录中运行，或提供明确的 owner/repo 仓库标识。
+    - 说明要处理的 Issue、PR、标签、评审人、测试人或仓库操作。
+  examplePrompt: |
+    请使用 ohos-ci-gitcode-cli-usage 帮我查看 openharmony/arkui_ace_engine
+    仓库中 PR 12345 的状态、评论和评审人信息。
+
+related:
+  skills: []
+  docs:
+    - title: 常用 Issue 和 PR 命令
+      path: references/common-issue-pr-commands.md
+    - title: 扩展 GitCode 命令
+      path: references/extended-commands.md
+    - title: GitCode PR 工作流
+      path: references/gitcode-pr-workflow.md

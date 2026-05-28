@@ -1,0 +1,80 @@
+schemaVersion: 1
+
+id: ohos-dev-arkweb-thread-safety-review
+title: ArkWeb 线程安全代码审查
+summary: 审查 ArkWeb/Chromium C++ 单文件中的跨线程访问、异步回调生命周期、mojo、GPU/Audio 和 UI 线程约束问题。
+
+category:
+  scope: domain
+  namespace: arkweb
+  stage: development
+  domain: arkweb
+  capability: thread-safety-review
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - arkweb
+  - chromium
+  - cpp
+  - thread-safety
+  - memory-safety
+
+audience:
+  - ArkWeb C++ 开发者
+  - Chromium 适配代码审查人员
+  - Web 线程安全和生命周期问题定位人员
+
+useCases:
+  - title: 审查异步回调生命周期
+    description: 检查 PostTask、BindOnce、base::Unretained(this)、WeakPtr 和取消机制是否存在可证明的生命周期风险。
+  - title: 检查跨线程对象访问
+    description: 分析 WebContents、Profile、BrowserContext、NavigationController、NWeb、mojo::Connector、GPU 和 Audio 资源的线程归属。
+  - title: 输出标准规则违规 JSON
+    description: 对明确满足 standard_rule1 到 standard_rule10 的问题输出可被工具链解析的审查结果。
+
+whenToUse:
+  - 需要扫描或审查 ArkWeb/Chromium C++ 单文件的线程安全和生命周期问题。
+  - 代码涉及 PostTask、BindOnce、base::Unretained(this)、WeakPtr、scoped_refptr、mojo::Connector、GPU/Audio/DrDC 线程或 NDK/UI 回调。
+  - 需要基于当前文件证据判断是否违反 standard_rule1 到 standard_rule10。
+  - 需要严格控制误报，只报告线程、对象归属、异步边界和生命周期证据充分的问题。
+
+whenNotToUse:
+  - 目标不是 ArkWeb/Chromium C++ 单文件审查。
+  - 需要的是通用代码风格、功能实现、构建修复或非线程安全审查。
+  - 当前文件没有足够证据确认线程路径、对象归属或生命周期风险。
+
+inputs:
+  required:
+    - 待扫描的 ArkWeb/Chromium C++ 单个文件路径或文件内容。
+  optional:
+    - 相关调用背景、线程模型说明或 PR diff。
+    - 需要关注的规则编号、对象类型或回调路径。
+    - 团队归属信息或可用于判断团队的路径上下文。
+
+outputs:
+  - 标准 JSON 审查结果。
+  - standard_rule1 到 standard_rule10 范围内的明确违规列表。
+  - 每条违规的规则等级、位置、问题描述、违规代码、最小修复方向、影响和责任团队。
+  - 无明确违规时的空 violations 结果。
+
+quickStart:
+  steps:
+    - 准备一个 ArkWeb/Chromium C++ 文件或需要审查的单文件 diff。
+    - 指明是否重点关注异步回调、UI/GPU/Audio 线程、mojo 或 scoped_refptr。
+    - 请求 Agent 使用该 Skill 按标准规则输出 JSON 审查结果。
+  examplePrompt: |
+    请使用 ohos-dev-arkweb-thread-safety-review 扫描这个 ArkWeb C++ 文件，
+    重点看 PostTask 中 base::Unretained(this)、mojo::Connector 和 WebContents 跨线程访问风险。
+
+related:
+  skills: []
+  docs:
+    - title: 团队归属映射
+      path: references/team_mapping.md
+    - title: 输出示例
+      path: references/output_examples.md
+

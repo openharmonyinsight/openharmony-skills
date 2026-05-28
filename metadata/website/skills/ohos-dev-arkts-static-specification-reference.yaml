@@ -1,0 +1,85 @@
+schemaVersion: 1
+
+id: ohos-dev-arkts-static-specification-reference
+title: ArkTS 静态语言规范参考
+summary: 查询 ArkTS 静态语言规范和 TypeScript 迁移指南，用于解释类型系统、静态语义、编译期行为和迁移差异。
+
+category:
+  scope: common
+  namespace: development
+  stage: development
+  domain: arkts
+  capability: static-specification-reference
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - arkts
+  - static-spec
+  - specification-reference
+  - type-system
+  - typescript-migration
+
+audience:
+  - ArkTS 开发者
+  - TypeScript 到 ArkTS 迁移人员
+  - ArkTS 编译诊断和语言规则分析人员
+
+useCases:
+  - title: 查询 ArkTS 语言规则
+    description: 根据规范文件回答类型系统、表达式、类、接口、泛型、模块、并发和编译期错误等问题。
+  - title: 诊断 ArkTS 代码问题
+    description: 对照静态规范解释代码为何报错，并给出更符合 ArkTS 规则的最小修改方向。
+  - title: 分析 TypeScript 迁移差异
+    description: 查阅迁移指南和兼容性说明，识别 TypeScript 写法在 ArkTS 中的限制和替代写法。
+
+whenToUse:
+  - 需要解释 ArkTS 类型系统、静态语义、语法、约束或编译期行为
+  - 需要判断 ArkTS 是否支持某个 TypeScript 写法或迁移方式
+  - 需要依据本地规范资料定位 ArkTS 编译错误的语言规则原因
+
+whenNotToUse:
+  - 需要验证完整 OpenHarmony 工程构建、运行时行为或设备行为
+  - 问题需要官方规范之外的实现细节，且本 skill 文档没有覆盖
+  - 只需要通用 TypeScript 或 JavaScript 语言解释
+
+inputs:
+  required:
+    - ArkTS 语言规则问题、代码片段、编译错误或 TypeScript 迁移问题
+  optional:
+    - 相关 .ets 代码上下文
+    - 编译器诊断文本
+    - 迁移前的 TypeScript 写法
+
+outputs:
+  - ArkTS 规范依据和结论
+  - 编译错误或规则冲突的解释
+  - 最小修正方案或迁移建议
+  - 文档未明确覆盖时的不确定性说明
+
+quickStart:
+  steps:
+    - 提供 ArkTS 问题、代码片段或迁移前 TypeScript 写法。
+    - 说明关注的是类型、表达式、类、泛型、模块、并发还是迁移差异。
+    - 请求依据 ArkTS 静态规范给出结论、来源和限制。
+  examplePrompt: |
+    请使用 ohos-dev-arkts-static-specification-reference 解释这段 ArkTS 代码为什么编译失败，
+    并给出符合规范的最小修改方案。
+
+related:
+  skills:
+    - ohos-dev-arkts-sta-playground
+  docs:
+    - title: ArkTS 规范目录
+      path: spec/intro.md
+    - title: 类型系统
+      path: spec/types.md
+    - title: 静态语义
+      path: spec/semantics.md
+    - title: 表达式
+      path: spec/expressions.md
+    - title: TypeScript 迁移指南
+      path: cookbook/index.md

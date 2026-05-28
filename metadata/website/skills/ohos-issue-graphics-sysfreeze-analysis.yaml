@@ -1,0 +1,83 @@
+schemaVersion: 1
+
+id: ohos-issue-graphics-sysfreeze-analysis
+title: 图形 sysfreeze 卡死分析
+summary: 分析 OpenHarmony 图形相关 sysfreeze 或 appfreeze 日志，追踪线程阻塞链、任务队列和系统资源状态以定位卡死根因。
+
+category:
+  scope: domain
+  namespace: graphics
+  stage: troubleshooting
+  domain: graphics
+  capability: sysfreeze-analysis
+
+status:
+  maturity: trial
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - graphics
+  - sysfreeze
+  - appfreeze
+  - SERVICE_BLOCK
+  - THREAD_BLOCK
+  - troubleshooting
+
+audience:
+  - OpenHarmony 图形子系统开发者
+  - 进程卡死和线程阻塞问题定位人员
+  - RenderService 故障分析和值班人员
+
+useCases:
+  - title: 分析 SERVICE_BLOCK 或 THREAD_BLOCK
+    description: 读取 sysfreeze/appfreeze 日志，确认故障类型、关键 TID、时间戳和两次抓栈信息。
+  - title: 追踪阻塞链和死锁
+    description: 根据解栈结果、锁等待、信号量、条件变量和 IPC 对端信息递归定位最终问题线程。
+  - title: 综合任务队列和整机资源
+    description: 结合任务队列、内存、温度、hilog 和 hilog_kmsg 判断业务阻塞或整机资源异常。
+
+whenToUse:
+  - 需要分析 OpenHarmony 图形相关模块的 sysfreeze 或 appfreeze 日志。
+  - 日志出现 SERVICE_BLOCK、THREAD_BLOCK_6S、SERVICE_WARNING 或 THREAD_BLOCK_3S。
+  - 需要诊断进程卡住、线程阻塞、死锁、IPC 阻塞或任务队列阻塞。
+  - 需要结合符号表、源码和日志生成卡死根因分析报告。
+
+whenNotToUse:
+  - 纯性能优化问题，没有阻塞或 freeze 证据。
+  - 应用层逻辑错误，没有系统级阻塞。
+  - freeze 调用栈与图形模块无关。
+  - 日志严重缺失，无法进行抓栈对比或阻塞链分析。
+
+inputs:
+  required:
+    - Sysfreeze 或 Appfreeze 日志文件。
+    - code/ 目录下的相关源码。
+    - lib.unstripped/ 目录下的带符号表 so 文件。
+  optional:
+    - hilog 和 hilog_kmsg 日志。
+    - BinderCatcher、PeerBinder Stacktrace 或 IPC 对端信息。
+    - 复现步骤、问题时间点和业务操作背景。
+
+outputs:
+  - 故障类型确认。
+  - 线程阻塞链路径和关键阻塞点。
+  - 根本原因分析或下一步排查方向。
+  - 业务或系统资源层面的优化建议。
+
+quickStart:
+  steps:
+    - 准备 sysfreeze/appfreeze 日志、code/ 源码目录和 lib.unstripped/ 符号表目录。
+    - 说明问题进程、发生时间、是否有 hilog、hilog_kmsg 或 BinderCatcher 信息。
+    - 请求 Agent 使用该 Skill 解栈、对比两次抓栈并追踪阻塞链。
+  examplePrompt: |
+    请使用 ohos-issue-graphics-sysfreeze-analysis 分析这个 render_service sysfreeze，
+    日志在 freeze.log，源码在 code/，符号表在 lib.unstripped/，同时有 hilog 和 BinderCatcher 信息。
+
+related:
+  skills: []
+  docs:
+    - title: 常见阻塞模式
+      path: references/blocking-patterns.md
+    - title: 常见流水日志
+      path: references/hilog-refernce.md

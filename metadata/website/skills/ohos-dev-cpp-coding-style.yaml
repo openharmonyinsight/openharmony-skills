@@ -1,0 +1,79 @@
+schemaVersion: 1
+
+id: ohos-dev-cpp-coding-style
+title: OpenHarmony C++ 编码风格
+summary: 为 OpenHarmony C++ 代码编写、脚手架、接口注释和评审提供项目特定的命名、文件组织、继承、所有权和验证规则。
+
+category:
+  scope: common
+  namespace: development
+  stage: development
+  domain: cpp
+  capability: coding-style
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - cpp
+  - coding-style
+  - openharmony
+  - review
+  - validation
+
+audience:
+  - OpenHarmony C++ 开发者
+  - C++ 代码评审人员
+  - 需要生成或整理 OpenHarmony C++ 文件的维护者
+
+useCases:
+  - title: 编写或修改 C++ 代码
+    description: 按 OpenHarmony 约定处理文件布局、命名、接口边界、所有权、继承语义和注释。
+  - title: 生成 C++ 文件脚手架
+    description: 创建符合本地规则的 .h/.cpp 骨架、命名空间、头文件保护和必要的公开 API 注释。
+  - title: 执行编码风格评审
+    description: 对代码进行 OpenHarmony 特定约定检查，指出问题、依据和修复建议。
+
+whenToUse:
+  - 任务涉及 OpenHarmony C++ 代码编写、修改、脚手架、注释或评审
+  - 需要判断文件命名、include guard、继承语义、lambda 捕获、所有权风格或 API 注释是否符合约定
+  - 需要使用随附工具进行格式、静态检查或 CI 就绪性验证
+
+whenNotToUse:
+  - 代码属于第三方或导入源码，且应保持上游风格
+  - 任务只需要通用 C++ 语言解释，与 OpenHarmony 约定无关
+  - 目标语言不是 C++
+
+inputs:
+  required:
+    - 待编写、修改、脚手架、注释或评审的 C++ 代码需求或代码片段
+  optional:
+    - 目标仓库或子系统上下文
+    - 需要检查的文件列表
+    - 是否需要格式化、clang-tidy 或完整验证
+
+outputs:
+  - 符合 OpenHarmony 约定的 C++ 代码或文件结构
+  - 编码风格评审发现和修复建议
+  - 可选的格式化、静态检查或验证结果
+
+quickStart:
+  steps:
+    - 提供要处理的 C++ 文件、代码片段或生成需求。
+    - 说明是实现、脚手架、注释修复、评审还是验证。
+    - 请求按 OpenHarmony C++ 约定给出修改或评审结论。
+  examplePrompt: |
+    请使用 ohos-dev-cpp-coding-style 评审这些 OpenHarmony C++ 改动，
+    重点检查命名、头文件保护、所有权、继承语义和 API 注释。
+
+related:
+  skills: []
+  docs:
+    - title: OpenHarmony C++ 规则
+      path: references/rules.md
+    - title: 评审清单
+      path: references/review-checklist.md
+    - title: 工具验证说明
+      path: references/tooling.md

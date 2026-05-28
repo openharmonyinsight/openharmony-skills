@@ -1,0 +1,73 @@
+schemaVersion: 1
+
+id: ohos-dev-arkts-sta-playground
+title: ArkTS-Sta Playground 编译探针
+summary: 通过远端 ArkTS-Sta Playground 编译 API 快速验证自包含 .ets 片段的静态语法、诊断信息和最小复现。
+
+category:
+  scope: common
+  namespace: development
+  stage: development
+  domain: arkts
+  capability: sta-playground
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - arkts
+  - arkts-sta
+  - playground
+  - testing
+
+audience:
+  - ArkTS 语言特性验证人员
+  - OpenHarmony ArkTS 开发者
+  - 需要最小化编译诊断的测试和迁移人员
+
+useCases:
+  - title: 验证 ArkTS-Sta 语法片段
+    description: 将自包含代码片段发送到 Playground，确认是否能通过静态编译。
+  - title: 构造预期失败用例
+    description: 用最小 .ets 片段复现编译错误，并检查诊断是否命中预期语言规则。
+  - title: 批量检查独立示例
+    description: 对多个独立 .ets 文件输出 JSON 结果，便于记录成功、失败和诊断内容。
+
+whenToUse:
+  - 需要快速确认一个自包含 ArkTS-Sta 片段是否编译通过
+  - 需要复现或比较 ArkTS 静态语法和语言规则诊断
+  - 需要在真实 OpenHarmony 工程构建前验证小型语言特性示例
+
+whenNotToUse:
+  - 需要证明 HAP、XTS、模块配置、SysCap、权限、资源或设备运行时场景可用
+  - 代码依赖完整工程声明、构建参数、框架运行时或生成文件
+  - 代码包含敏感、未公开、客户所有或安全相关内容
+
+inputs:
+  required:
+    - 自包含 ArkTS-Sta 代码片段或 .ets 文件
+  optional:
+    - 是否需要 JSON 输出
+    - 批量检查的文件列表
+    - 预期失败诊断或语言规则说明
+
+outputs:
+  - 编译是否成功的结果
+  - Playground 返回的输出或编译诊断
+  - 请求失败、超时或响应异常等工具错误说明
+
+quickStart:
+  steps:
+    - 准备一个不依赖完整工程的 .ets 文件或代码片段。
+    - 确认该代码可以发送到远端编译接口。
+    - 请求使用 Playground 检查编译结果或预期诊断。
+  examplePrompt: |
+    请使用 ohos-dev-arkts-sta-playground 检查这个 .ets 片段是否符合 ArkTS-Sta，
+    并说明编译诊断是否匹配预期规则。
+
+related:
+  skills:
+    - ohos-dev-arkts-static-specification-reference
+  docs: []

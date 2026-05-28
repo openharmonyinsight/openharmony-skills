@@ -1,0 +1,89 @@
+schemaVersion: 1
+
+id: ohos-dev-napi-module
+title: NAPI 原生模块开发
+summary: 指导 OpenHarmony NAPI 原生模块开发、注册、GN 构建、异步工作和 Node.js N-API 迁移差异处理。
+
+category:
+  scope: common
+  namespace: development
+  stage: development
+  domain: napi
+  capability: module
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - napi
+  - native-module
+  - arkts-binding
+
+audience:
+  - OpenHarmony NAPI 模块开发者
+  - ArkTS 原生绑定开发者
+  - 负责 Node.js N-API 代码迁移的开发者
+  - NAPI 模块代码审查人员
+
+useCases:
+  - title: 创建或修复 NAPI 模块注册
+    description: 检查 napi_module_register、napi_module_with_js_register、nm_modname 和 ArkTS/JS import 身份是否匹配。
+  - title: 配置 OpenHarmony NAPI 构建
+    description: 处理 BUILD.gn、ace_napi 依赖、安装目录、subsystem/part 元数据和系统 native 安全编译选项。
+  - title: 处理异步和运行时边界
+    description: 设计 async work、threadsafe function、Sendable、序列化和跨线程资源释放方案。
+
+whenToUse:
+  - 需要开发、调试、移植或审查 OpenHarmony/HarmonyOS NAPI 原生模块。
+  - 遇到模块找不到、构造注册未执行、BUILD.gn 缺依赖或导入名不匹配。
+  - 需要从 Node.js N-API 代码迁移到 OpenHarmony，并确认行为差异。
+  - 代码涉及 DECLARE_NAPI 宏、async work、Sendable、QoS 或序列化扩展 API。
+
+whenNotToUse:
+  - 只涉及普通 C++ 业务逻辑，不涉及 ArkTS/JS 原生绑定。
+  - 只需要 OpenHarmony 通用构建系统帮助，未涉及 NAPI 模块。
+  - 需要生成 CAPI XTS 测试，应使用 CAPI XTS 生成 Skill。
+
+inputs:
+  required:
+    - NAPI 模块源码或目标 API 说明
+    - 期望的 ArkTS/JS import 名称
+    - BUILD.gn 或目标构建信息
+  optional:
+    - 运行时报错、构建报错或模块加载日志
+    - Node.js N-API 原始代码或迁移背景
+    - 涉及的异步、线程或 Sendable 使用场景
+
+outputs:
+  - NAPI 模块注册和导出设计建议
+  - BUILD.gn 配置检查结果
+  - 异步工作和资源生命周期修复建议
+  - OpenHarmony 与 Node.js N-API 行为差异提示
+
+quickStart:
+  steps:
+    - 准备 NAPI 源码、BUILD.gn 和目标 import 名称。
+    - 说明是新建模块、加载失败、构建失败、异步问题还是 Node.js 迁移。
+    - 请求 Agent 使用该 Skill 检查注册、构建和运行时边界。
+  examplePrompt: |
+    请使用 ohos-dev-napi-module 审查这个 OpenHarmony NAPI 模块。
+    ArkTS 侧 import 名称是 myModule，模块加载时报 module not found，请检查注册代码和 BUILD.gn。
+
+related:
+  skills:
+    - ohos-test-capi-xts-generation
+  docs:
+    - title: 构建配置
+      path: references/build-configuration.md
+    - title: API 行为差异
+      path: references/api-behavior-differences.md
+    - title: 异步工作模式
+      path: references/async-work-pattern.md
+
+extractionNotes:
+  confidence: high
+  missing: []
+  comments:
+    - README.md 和 SKILL.md 元数据完整，相关 Skill 中仅保留本仓库批次内可确认的 CAPI XTS 生成 Skill。

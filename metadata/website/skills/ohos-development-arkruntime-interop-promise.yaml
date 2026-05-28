@@ -1,0 +1,79 @@
+schemaVersion: 1
+
+id: ohos-development-arkruntime-interop-promise
+title: ArkRuntime Promise 跨语言互操作开发
+summary: 理解、开发和调试 ETS 与 JavaScript 之间的 Promise 双向转换、状态同步和 await 桥接机制。
+
+category:
+  scope: domain
+  namespace: arkruntime
+  stage: development
+  domain: arkruntime
+  capability: interop-promise
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - arkruntime
+  - interop
+  - promise
+  - arkts
+  - javascript
+
+audience:
+  - ArkCompiler Runtime 开发者
+  - ETS 与 JavaScript 互操作开发者
+  - Promise 桥接和异步运行时问题排查人员
+
+useCases:
+  - title: 分析 ETS 与 JavaScript Promise 转换路径
+    description: 梳理 JSConvertPromise 的 Wrap 和 Unwrap 流程，以及 EtsPromise、EtsPromiseRef 与 SharedReferenceStorage 的配合关系。
+  - title: 调试跨 VM Promise 状态同步
+    description: 追踪 CreatePromiseLink、OnJsPromiseCompleted、SettleJsPromise 等路径，定位 resolve、reject 或 await 不返回的问题。
+  - title: 审查 Promise 互操作相关代码
+    description: 检查回调队列、napi_deferred 生命周期、协程挂起恢复和代理 Promise 状态转换是否符合运行时设计。
+
+whenToUse:
+  - 需要开发或审查 ETS 与 JavaScript 之间的 Promise 互操作代码。
+  - 需要分析 JS Promise 转 ETS Promise 代理，或 ETS Promise 转 JS Promise 的路径。
+  - await、resolve、reject、回调队列或 napi_deferred 生命周期在跨语言场景中表现异常。
+  - 问题涉及 js_convert.h、js_job_queue、ets_promise、ets_promise_ref、std_core_Promise.cpp 或 PromiseInterop.ets。
+
+whenNotToUse:
+  - 问题只涉及普通 ArkTS Promise 用法，不涉及 ETS 与 JavaScript 互操作。
+  - 问题是通用 JavaScript 业务异步逻辑错误，未触及 ArkRuntime 互操作层。
+  - 需要的是 taskpool 依赖、线程安全或崩溃日志分析等其他领域能力。
+
+inputs:
+  required:
+    - 相关源码路径或变更 diff。
+    - 需要分析的 Promise 转换方向或异常现象。
+  optional:
+    - await 卡住、resolve/reject 未传播或 napi_deferred 异常的日志。
+    - 关联测试用例或最小复现代码。
+    - 目标 OpenHarmony 或 ArkCompiler 版本信息。
+
+outputs:
+  - Promise 互操作调用链和状态流分析。
+  - 关键类、函数和源码位置说明。
+  - 跨语言状态同步或生命周期问题定位结果。
+  - 面向运行时代码的修复或审查建议。
+
+quickStart:
+  steps:
+    - 准备相关 ArkRuntime 源码、问题现象和涉及的 Promise 转换方向。
+    - 指明问题发生在 JS 到 ETS、ETS 到 JS，还是 await/回调传播阶段。
+    - 请求 Agent 使用该 Skill 分析调用链、状态变化和可能的修复点。
+  examplePrompt: |
+    请使用 ohos-development-arkruntime-interop-promise 分析 ETS 调用 JS async 函数后 await 卡住的问题，
+    相关代码在 plugins/ets/runtime/interop_js/ 和 plugins/ets/runtime/types/ets_promise.cpp。
+
+related:
+  skills: []
+  docs:
+    - title: Promise 互操作 API 参考
+      path: references/api-reference.md
+

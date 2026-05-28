@@ -1,0 +1,85 @@
+schemaVersion: 1
+
+id: ohos-dev-gitcode-pr-review
+title: GitCode PR 深度评审
+summary: 从 GitCode PR 编号或 URL 出发，结合 oh-gc 拉取的元数据、diff、评论和本地代码上下文产出具体评审发现或提交草稿。
+
+category:
+  scope: common
+  namespace: development
+  stage: development
+  domain: gitcode
+  capability: pr-review
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - gitcode
+  - pr-review
+  - code-review
+
+audience:
+  - OpenHarmony PR 评审人员
+  - GitCode 仓库维护者
+  - 需要准备 GitCode 评论草稿的开发者
+
+useCases:
+  - title: 拉取并评审 GitCode PR
+    description: 从 PR 编号或 URL 规范化目标，采集 PR 元数据、diff、评论和变更文件列表。
+  - title: 结合本地代码上下文发现问题
+    description: 阅读变更、周边代码、调用关系、测试和风险清单，输出高信号评审发现。
+  - title: 准备 GitCode 评论提交草稿
+    description: 将确认的问题整理为结构化 findings，并生成可预览、可校验的 GitCode 评论草稿。
+
+whenToUse:
+  - 需要评审 GitCode PR，且必须通过 oh-gc 获取 PR 元数据、diff 或评论
+  - 需要结合本地仓库代码上下文判断 PR 是否存在正确性、回归、测试或安全问题
+  - 需要为 GitCode PR 生成可提交的评审评论草稿
+
+whenNotToUse:
+  - 只评审本地未关联 GitCode PR 的改动
+  - 目标平台是 GitHub、GitLab 或其他非 GitCode 平台
+  - 用户要求在未确认的情况下自动提交评论或审批
+
+inputs:
+  required:
+    - GitCode PR 编号或 PR URL
+    - 对应的本地仓库代码上下文
+    - 可用的 oh-gc CLI 和访问权限
+  optional:
+    - 明确的 owner/repo 仓库标识
+    - 已采集的 PR artifact 目录
+    - 是否需要生成评论提交草稿或执行提交
+
+outputs:
+  - 具体评审发现，包含严重性、位置、问题、证据和修复建议
+  - 每个变更文件的评审状态或未评审原因
+  - 可选的 findings.json 或 review-draft.json
+  - 可选的 GitCode 评论预览和提交结果
+
+quickStart:
+  steps:
+    - 提供 GitCode PR 编号或 PR URL，并确保本地仓库与 PR 对应。
+    - 确认 oh-gc 可用且具备读取该 PR 的权限。
+    - 请求执行 PR 深度评审，必要时再生成评论提交草稿。
+  examplePrompt: |
+    请使用 ohos-dev-gitcode-pr-review 评审这个 GitCode PR：
+    https://gitcode.com/openharmony/arkui_ace_engine/pull/12345
+    先输出发现，不要直接提交评论。
+
+related:
+  skills:
+    - ohos-ci-gitcode-cli-usage
+    - ohos-dev-security-code-review
+  docs:
+    - title: 深度评审清单
+      path: references/deep-review-checklist.md
+    - title: 评审分级标准
+      path: references/review-rubric.md
+    - title: 评审发现 schema
+      path: references/findings-schema.md
+    - title: 提交草稿 schema
+      path: references/review-draft-schema.md

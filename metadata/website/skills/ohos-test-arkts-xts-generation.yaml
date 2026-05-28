@@ -1,0 +1,91 @@
+schemaVersion: 1
+
+id: ohos-test-arkts-xts-generation
+title: ArkTS XTS 测试生成
+summary: 生成和验证 OpenHarmony ArkTS XTS 测试，覆盖 .d.ts 解析、Hypium 用例、覆盖率分析、注册、编译和质量检查。
+
+category:
+  scope: common
+  namespace: testing
+  stage: testing
+  domain: arkts
+  capability: xts-generation
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - xts
+  - arkts
+  - test-generation
+  - coverage-analysis
+
+audience:
+  - OpenHarmony ArkTS API 测试开发者
+  - XTS 用例生成和维护人员
+  - API 覆盖率补测人员
+  - Hypium 测试套维护者
+
+useCases:
+  - title: 根据 .d.ts 生成 ArkTS XTS 用例
+    description: 解析 API 定义，生成测试设计文档、Hypium .ets 测试文件和标准 @tc 注释。
+  - title: 基于覆盖率补充测试
+    description: 使用 APICoverageDetector 或已有覆盖率报告识别未覆盖 API，并生成补测用例。
+  - title: 验证和注册测试套
+    description: 完成 List.test.ets 注册、格式校验、测试上下文检查、编译验证和覆盖率前后对比。
+
+whenToUse:
+  - 需要为 OpenHarmony ArkTS-Dyn 或 ArkTS-Sta API 生成 XTS 测试。
+  - 任务提到 XTS、Hypium、@tc 注释、.d.ts、.ets、APICoverageDetector 或 API 覆盖率。
+  - 需要批量生成、注册、验证或补充 ArkTS XTS 用例。
+  - 需要检查既有 ArkTS XTS 测试质量和覆盖情况。
+
+whenNotToUse:
+  - 目标是 C/C++ CAPI 的 N-API 封装 XTS 测试。
+  - 目标是 C/C++ 单元测试、FUZZ 测试或非 XTS 测试。
+  - 没有可用 API 定义、覆盖率报告或明确的目标 API 范围。
+
+inputs:
+  required:
+    - OpenHarmony 工程根目录或目标测试工程路径
+    - 目标子系统、模块或 API 列表
+    - 对应 .d.ts API 定义或可解析的 API 来源
+  optional:
+    - 覆盖率报告或 APICoverageDetector 扫描结果
+    - 既有测试文件和代码风格要求
+    - ArkTS-Dyn 或 ArkTS-Sta 项目信息
+    - 构建环境和失败日志
+
+outputs:
+  - ArkTS XTS 测试设计文档
+  - Hypium .ets 测试用例
+  - 测试注册和覆盖率对比结果
+  - 格式、质量和编译验证报告
+
+quickStart:
+  steps:
+    - 配置 skill_root、OpenHarmony 工程路径和覆盖率工具路径。
+    - 提供目标子系统、模块、API 范围和 .d.ts 来源。
+    - 请求 Agent 使用该 Skill 生成、注册并验证 ArkTS XTS 测试。
+  examplePrompt: |
+    请使用 ohos-test-arkts-xts-generation 为 ArkUI 模块的这些 .d.ts API 生成 XTS 测试。
+    需要输出测试设计、.ets 用例、List.test.ets 注册修改和覆盖率验证建议。
+
+related:
+  skills:
+    - ohos-test-capi-xts-generation
+  docs:
+    - title: 使用指南
+      path: docs/USAGE.md
+    - title: 配置说明
+      path: docs/CONFIG.md
+    - title: 异步覆盖率扫描
+      path: docs/ASYNC_COVERAGE_SCAN.md
+
+extractionNotes:
+  confidence: high
+  missing: []
+  comments:
+    - SKILL.md 元数据完整；README.md 不存在，展示信息来自 SKILL.md 的流程、输入输出和文档索引。

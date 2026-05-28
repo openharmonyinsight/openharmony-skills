@@ -1,0 +1,83 @@
+schemaVersion: 1
+
+id: ohos-test-graphics-3d-static-api-unit-test
+title: Graphics3D 静态 API 单元测试生成
+summary: 为 OpenHarmony graphic_3d 模块的 ETS/ArkTS 静态 API 包装类生成符合 GTest 框架和仓库规范的单元测试。
+
+category:
+  scope: domain
+  namespace: graphics
+  stage: testing
+  domain: graphics-3d
+  capability: static-api-unit-test
+
+status:
+  maturity: trial
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - graphics-3d
+  - unit-test
+  - ETS
+  - ArkTS
+  - GTest
+  - BUILD.gn
+
+audience:
+  - OpenHarmony graphic_3d 模块测试开发者
+  - ETS/ArkTS API 包装层维护者
+  - 需要补充 Graphics3D API 单元测试的工程师
+
+useCases:
+  - title: 为 ETS 包装类新增单元测试
+    description: 为 CameraETS、MaterialETS、SceneETS 等静态 API 类生成命名规范、注解完整的 GTest 用例。
+  - title: 扩展已有测试场景
+    description: 按现有 fixture 和 AAA 模式补充 API 方法、错误处理或边界场景测试。
+  - title: 配置新测试模块
+    description: 创建测试文件并更新 BUILD.gn，接入 EtsTest fixture 和 OpenHarmony 测试宏。
+
+whenToUse:
+  - 需要为 OpenHarmony graphic_3d 模块的 ETS/ArkTS 静态 API 类生成单元测试。
+  - 需要为 MaterialETS、CameraETS、SceneETS 或类似 wrapper class 增加测试用例。
+  - 需要设置基于 GTest 的 ETS 单元测试文件、fixture 或 BUILD.gn 配置。
+
+whenNotToUse:
+  - 需要测试 Lume 引擎核心层，而不是 ETS/ArkTS API 包装层。
+  - 需求是集成测试、性能测试或像素比对测试。
+  - 目标模块不属于 OpenHarmony graphic_3d 静态 API 单元测试范围。
+
+inputs:
+  required:
+    - 待测试的 ETS/ArkTS 静态 API 类或方法。
+    - OpenHarmony graphic_3d 源码和测试目录。
+  optional:
+    - 现有相邻测试文件或期望复用的 fixture。
+    - 需要覆盖的正常、异常或边界测试场景。
+    - BUILD.gn 位置和测试运行环境信息。
+
+outputs:
+  - 符合 OpenHarmony 命名和注解规范的 GTest 单元测试用例。
+  - 使用 HWTEST_F 和 EtsTest fixture 的测试代码。
+  - 必要的 BUILD.gn sources 更新建议或修改。
+  - 常见编译、依赖和测试隔离问题的处理建议。
+
+quickStart:
+  steps:
+    - 准备待测 ETS/ArkTS API 类名、方法名和源码路径。
+    - 说明是扩展现有测试还是创建新的测试文件。
+    - 请求 Agent 使用该 Skill 生成 HWTEST_F 单元测试并更新 BUILD.gn。
+  examplePrompt: |
+    请使用 ohos-test-graphics-3d-static-api-unit-test 为 MaterialETS 新增 Create 和 SetBaseColor 的单元测试，
+    源码在 graphic_3d/，优先沿用已有 api_unit_test 风格。
+
+related:
+  skills: []
+  docs:
+    - title: Graphics3D ETS 单元测试指南
+      path: references/UNITTEST_GUIDE.md
+
+extractionNotes:
+  confidence: medium
+  missing: []
+  comments: README 中存在旧的 skill 名称和 domain 写法；本文件按目录名和 SKILL.md front matter 使用 graphics-3d。

@@ -1,0 +1,87 @@
+schemaVersion: 1
+
+id: ohos-test-fuzz-generation
+title: FUZZ 测试生成与规范审查
+summary: 为 OpenHarmony C/C++ 项目生成 LLVM libFuzzer 用例、语义化种子和合规审查报告，并支持自动修复部分问题。
+
+category:
+  scope: common
+  namespace: testing
+  stage: testing
+  domain: fuzz
+  capability: test-generation
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - fuzz
+  - testing
+  - security
+  - c++
+
+audience:
+  - OpenHarmony C/C++ 测试开发者
+  - FUZZ 用例维护者
+  - 安全测试和合规审查人员
+  - 需要构造 libFuzzer 种子的开发者
+
+useCases:
+  - title: 生成标准 FUZZ 测试工程
+    description: 根据目标类、API、命名空间和头文件生成 fuzzer 源码、BUILD.gn、project.xml 和 corpus 目录。
+  - title: 生成语义化种子数据
+    description: 根据参数类型、名称特征和 API 语义构造高价值初始 corpus。
+  - title: 执行 FUZZ 规范审查
+    description: 按规则检查变异数据使用、复杂参数构造、IPC 测试、文件格式和可自动修复问题。
+
+whenToUse:
+  - 需要为 C/C++ 类或 API 生成 FUZZ 测试用例。
+  - 任务提到 fuzz 测试、生成 fuzzer、fuzz_test、LLVMFuzzerTestOneInput 或 FUZZ 规范检查。
+  - 需要生成或验证 corpus 种子数据。
+  - 需要检查已有 FUZZ 用例是否符合安全编码和 OpenHarmony 文件规范。
+
+whenNotToUse:
+  - 目标 API 没有可变输入参数，且更适合单元测试。
+  - 目标是 XTS 用例、普通单元测试或应用层功能测试。
+  - 仅需要业务安全代码审查，不涉及 FUZZ 用例生成或 FUZZ 规范。
+
+inputs:
+  required:
+    - 目标类名或 API 名称
+    - 命名空间、头文件路径和输出目录
+    - 目标源码或接口定义
+  optional:
+    - 现有 fuzzer 目录
+    - 需要重点覆盖的参数、状态或调用序列
+    - 期望生成的 fuzzer 名称
+    - 规范审查或自动修复需求
+
+outputs:
+  - FUZZ 测试源码和工程文件
+  - 语义化 corpus 种子数据
+  - FUZZ 规范审查报告
+  - 可自动修复项的修复结果和人工确认清单
+
+quickStart:
+  steps:
+    - 准备目标 API、类名、命名空间、头文件和输出路径。
+    - 说明是新生成 fuzzer、检查现有 fuzzer、生成种子还是生成报告。
+    - 请求 Agent 使用该 Skill 生成用例并执行规范审查。
+  examplePrompt: |
+    请使用 ohos-test-fuzz-generation 为 MyClass::ParseConfig 生成 FUZZ 测试。
+    命名空间是 OHOS::Demo，头文件是 include/my_class.h，输出到 test/fuzztest/myclassparse_fuzzer。
+
+related:
+  skills:
+    - ohos-test-ut-generation
+    - ohos-dev-security-code-review
+  docs: []
+
+extractionNotes:
+  confidence: high
+  missing:
+    - related.docs
+  comments:
+    - SKILL.md 元数据完整；README.md 不存在，展示信息来自主流程、工具入口和规则速查。
