@@ -1,0 +1,85 @@
+schemaVersion: 1
+
+id: ohos-dev-arkweb-build-execution-diagnosis
+title: ArkWeb 构建执行与诊断
+summary: 执行 ArkWeb 增量或指定目标构建，基于 build_arkweb.sh、src/out 日志和当前改动定位构建失败原因。
+
+category:
+  scope: domain
+  namespace: arkweb
+  stage: development
+  domain: arkweb
+  capability: build-execution-diagnosis
+
+status:
+  maturity: trial
+  version: 0.1.3
+  owner: openharmony
+
+tags:
+  - arkweb
+  - build
+  - build-log
+  - build_arkweb.sh
+
+audience:
+  - ArkWeb 开发者
+  - ArkWeb 构建问题定位人员
+  - 需要验证 ArkWeb native 或 browser 目标的维护者
+
+useCases:
+  - title: 执行 ArkWeb 构建
+    description: 在 ArkWeb wrapper root 下选择 build_arkweb.sh 命令，区分首次构建、增量构建和目标构建。
+  - title: 诊断构建失败
+    description: 从 src/out/<product>/build.log 提取首个关键错误，结合当前 git 改动定位缺失依赖、符号、target 或源码问题。
+  - title: 制定恢复和重跑策略
+    description: 根据失败阶段、资源状态、LFS 资产和并行度判断是否调整构建参数并重新验证。
+
+whenToUse:
+  - 需要编译 ArkWeb 或运行 build_arkweb.sh
+  - ArkWeb 构建失败，需要分析 src/out/<product>/build.log
+  - 需要判断 rk3568_64、rk3568 或其他 ArkWeb 构建目标的命令和输出
+  - 需要在不清理工作区的前提下继续增量构建或验证修复
+
+whenNotToUse:
+  - 目标不是 ArkWeb 项目或没有 build_arkweb.sh
+  - 需要诊断的是通用 OpenHarmony build.sh 构建，而非 ArkWeb wrapper 构建
+  - 用户要求修改全局工具链、SDK 预编译包或其他项目外部环境
+
+inputs:
+  required:
+    - ArkWeb wrapper root 或其中任意子目录
+    - 构建目标、用户指定命令或已有 build.log 路径
+  optional:
+    - 失败时的终端输出
+    - 当前 git 改动背景
+    - 是否允许执行构建或只做日志分析
+    - 期望的产品名、构建目标和超时时间
+
+outputs:
+  - ArkWeb 构建命令或验证命令建议
+  - 构建成功与否的证据和输出位置
+  - build.log 关键错误摘要和失败阶段分类
+  - 最小修复方向、允许范围内的代码或配置修复建议
+  - 重跑策略和后续验证结果
+
+quickStart:
+  steps:
+    - 准备 ArkWeb 工程路径、目标产品或已有 build.log。
+    - 说明是要执行构建、分析失败日志，还是验证当前修复。
+    - 请求按 ArkWeb 构建规则选择命令、定位失败并给出可验证修复。
+  examplePrompt: |
+    请使用 ohos-dev-arkweb-build-execution-diagnosis 分析 ArkWeb 构建失败，
+    工程在 arkweb_xxx/，日志在 src/out/rk3568_64/build.log，先定位首个关键错误。
+
+related:
+  skills:
+    - ohos-dev-build-execution-diagnosis
+  docs:
+    - title: ArkWeb 构建命令
+      path: references/build-commands.md
+    - title: ArkWeb 构建日志位置
+      path: references/log-locations.md
+    - title: 常见构建错误
+      path: references/common-errors.md
+
