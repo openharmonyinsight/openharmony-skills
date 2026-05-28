@@ -1,0 +1,92 @@
+schemaVersion: 1
+
+id: ohos-dev-build-execution-diagnosis
+title: OpenHarmony 构建执行与诊断
+summary: 执行 OpenHarmony 全量、定向、测试、SDK、host 和部件独立编译，并从 build.log 定位构建失败原因。
+
+category:
+  scope: common
+  namespace: development
+  stage: development
+  domain: build
+  capability: execution-diagnosis
+
+status:
+  maturity: trial
+  version: 0.9.0
+  owner: openharmony
+
+tags:
+  - build
+  - build-log
+  - hb
+  - openharmony
+
+audience:
+  - OpenHarmony 开发者
+  - 构建失败问题定位人员
+  - 需要执行定向构建或部件独立编译的维护者
+
+useCases:
+  - title: 选择并执行构建命令
+    description: 根据全量构建、定向 target、SDK、host、模拟器、单元测试或测试列表场景选择 build.sh 或 hb build 命令。
+  - title: 分析 build.log 失败原因
+    description: 从 out/<product>/build.log 或 out/standard/build.log 提取首个关键错误，判断依赖、符号、GN、编译或链接失败。
+  - title: 验证修复和快速重构建
+    description: 在配置未变化时判断是否可用 fast rebuild，并按最小范围重跑构建验证修复。
+
+whenToUse:
+  - 需要编译 OpenHarmony 完整代码、SDK、host、最小模拟器或全量模拟器
+  - 需要执行指定 build target、单元测试 target 或测试列表构建
+  - 需要进行 hb 部件独立编译或诊断 out/standard 构建失败
+  - 需要分析 build.log 中的失败原因并给出可验证修复路径
+
+whenNotToUse:
+  - 目标是 ArkWeb wrapper 的 build_arkweb.sh 构建
+  - 用户只需要 GitCode PR CI 门禁结果分析，而不涉及本地构建日志
+  - 需要执行 repo sync、下载源码、预编译包或环境初始化，但用户没有明确授权
+
+inputs:
+  required:
+    - OpenHarmony 源码根目录或其中任意子目录
+    - 构建目标、用户指定命令或已有 build.log 路径
+  optional:
+    - 产品名、build target、hb 部件名或测试列表文件
+    - 失败时的终端输出
+    - 当前代码改动背景
+    - 是否允许执行构建或只分析日志
+
+outputs:
+  - 适合当前场景的 OpenHarmony 构建命令
+  - 构建成功判断依据和产物或日志位置
+  - build.log 首个关键错误、错误类型和影响范围
+  - 最小修复建议与重跑验证策略
+  - 可选的 fast rebuild、定向构建或 hb 独立构建建议
+
+quickStart:
+  steps:
+    - 准备 OpenHarmony 源码路径、产品名、目标 target 或已有 build.log。
+    - 说明是要执行构建、分析失败、独立编译部件还是验证修复。
+    - 请求按 OpenHarmony 构建规则选择命令并从主日志定位失败原因。
+  examplePrompt: |
+    请使用 ohos-dev-build-execution-diagnosis 分析这个 OpenHarmony 构建失败，
+    产品是 rk3568，日志在 out/rk3568/build.log，先找首个关键错误并给出修复方向。
+
+related:
+  skills:
+    - ohos-dev-arkweb-build-execution-diagnosis
+    - ohos-ci-openharmony-ci-analysis
+  docs:
+    - title: 构建命令矩阵
+      path: references/build-commands.md
+    - title: 构建日志位置
+      path: references/log-locations.md
+    - title: 失败分析流程
+      path: references/failure-analysis.md
+    - title: 部件独立编译
+      path: references/independent-build.md
+    - title: 测试列表构建
+      path: references/test-list-builds.md
+    - title: 常见构建错误
+      path: references/common-errors.md
+
