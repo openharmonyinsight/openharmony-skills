@@ -17,7 +17,7 @@ The script is a symlink to: `build/build_scripts/build.sh`
 **Default recommended options**:
 - `--export-para PYCACHE_ENABLE:true` - Enable Python bytecode caching
 - `--ccache` - Enable compiler cache for faster rebuilds
-- `--fast-rebuild` - Skip GN generation (use when no GN files modified)
+- `--fast-rebuild` - Skip GN generation; use only after confirming build configuration did not change
 
 ## Product Names
 
@@ -233,7 +233,8 @@ The helper searches `foundation/arkui/ace_engine/unittest_targets.txt` first, th
 ./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target ace_engine --ccache --fast-rebuild
 ```
 
-**When to use**: Only source files changed, no BUILD.gn modifications
+**When to use**: Only source files changed and no build configuration, product
+configuration, dependency metadata, `BUILD.gn`, or `*.gni` files changed.
 
 ### Clean Build
 
@@ -266,7 +267,7 @@ cd "$OH_ROOT"
 ### Fast Rebuild Options
 
 ```bash
-# Fast rebuild - skip GN generation (when no BUILD.gn files changed)
+# Fast rebuild - skip GN generation only when build configuration did not change
 ./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --ccache --fast-rebuild
 
 # Fast rebuild with specific component
@@ -275,14 +276,15 @@ cd "$OH_ROOT"
 
 **When to use `--fast-rebuild`**:
 - ✅ Only source code changed (.cpp, .h, .ts, .ets files)
-- ✅ No BUILD.gn or *.gni files modified
+- ✅ No build configuration, product configuration, dependency metadata, `BUILD.gn`, or `*.gni` files modified
 - ✅ Incremental development iterations
 - ✅ Quick compilation during active development
 
 **When NOT to use `--fast-rebuild`**:
-- ❌ BUILD.gn files modified
+- ❌ `BUILD.gn` or `*.gni` files modified
 - ❌ New dependencies added
 - ❌ Build configuration changed
+- ❌ Product configuration or dependency metadata changed
 - ❌ First build or after `rm -rf out/`
 
 **Performance impact**:

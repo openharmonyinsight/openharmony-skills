@@ -14,9 +14,15 @@ Reference for common build errors and their solutions.
 **Cause**: Python prebuilts not available or incompatible version.
 
 **Solution**:
+Do not run prebuilt downloads automatically. This mutates the workspace and can
+take a long time. First confirm that the current task is environment setup and
+ask the user before running any download command.
+
+If the user explicitly approves setup, run the prebuilt download from the
+OpenHarmony root:
+
 ```bash
-# Download prebuilts
-cd /path/to/openharmony
+cd <openharmony-root>
 ./build/prebuilts_download.sh
 ```
 
