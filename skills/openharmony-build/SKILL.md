@@ -1,591 +1,188 @@
 ---
 name: openharmony-build
-description: This skill should be used when the user asks to "编译 OpenHarmony", "build OpenHarmony", "编译完整代码", "执行编译", "编译 OpenHarmony 代码", "快速编译", "跳过gn编译", "fast-build", "编译测试", "编译测试用例", "build ace_engine_test", "编译 sdk", "编译 SDK", "build sdk", "build SDK", "编译 ohos-sdk", "编译测试列表", "build test list", "按列表编译测试", "编译指定测试", or mentions building the full OpenHarmony system, fast rebuild, test compilation, SDK compilation, or building tests from a target list. Handles complete build process including build execution, success verification, and failure log analysis with primary focus on out/{product}/build.log.
-version: 0.5.0
+description: Use for OpenHarmony build execution and diagnosis, including 编译OpenHarmony/完整代码/测试/SDK/host/最小模拟器/全量模拟器/部件独立编译/测试列表, plus full product builds, targeted component/test builds, fast rebuilds, hb independent builds, and build.log failure analysis.
+version: 0.9.0
 ---
 
 # OpenHarmony Build Skill
 
-This skill provides comprehensive support for building the complete OpenHarmony codebase, including build execution, result verification, and error log analysis.
+Use this skill for OpenHarmony build execution, targeted build verification, and build-log diagnosis. Keep context small: start here, then load only the reference that matches the task.
 
-## Build Environment
+`<skill-dir>` means the directory containing this `SKILL.md`.
 
-OpenHarmony uses the `build.sh` script located in the root directory for building. The build process requires:
+## Core Rules
 
-- **Build script**: `./build.sh` in OpenHarmony root directory
-- **Build tool**: hb (Harmony Build) system
-- **Python environment**: Python 3 from prebuilts
-- **Node.js**: Version 14.21.1
-- **Output directory**: `out/` in OpenHarmony root
+- Run builds from the OpenHarmony root containing both `.gn` and `build.sh`.
+- If the user gives an exact command, run that command.
+- For failures, inspect the primary build log before guessing at source fixes.
+- Do not revert unrelated dirty-worktree changes.
+- Prefer narrow rebuilds after fixes, then rerun the user-requested command when practical.
 
-## Build Execution
+## Never / Ask Before
 
-### Navigate to Root Directory
+- Never run `repo sync`, source download, prebuilt download, or environment bootstrap unless the user explicitly asks for setup; these are slow and can mutate the workspace.
+- Never delete source logic just to make a build pass; preserve behavior and fix the real dependency, symbol, or configuration issue.
+- Never diagnose a failed build from terminal tail alone when `build.log` exists; the primary log is the source of truth.
+- Never treat a repository name as the `hb build` component name without checking; independent builds require OpenHarmony component names.
+- Never broadly delete `out/`, generated artifacts, or test binaries. Ask first unless the user requested cleanup; for test-list disk pressure, only use the path in `references/test-list-builds.md`.
+- Ask before changing product, target, branch, or user-provided command arguments.
 
-Always execute builds from the OpenHarmony root directory. To find the root directory from any location in the tree:
+## Find Root
+
+Use this root test:
 
 ```bash
-# Method 1: Find directory containing .gn file
-find_root() {
-    local current_dir="$(pwd)"
-    while [[ ! -f "$current_dir/.gn" ]]; do
-        current_dir="$(dirname "$current_dir")"
-        if [[ "$current_dir" == "/" ]]; then
-            echo "Error: OpenHarmony root not found (no .gn file)"
-            return 1
+find_oh_root() {
+    local dir="${1:-$PWD}"
+    while [[ "$dir" != "/" ]]; do
+        if [[ -f "$dir/.gn" && -f "$dir/build.sh" ]]; then
+            echo "$dir"
+            return 0
         fi
+        dir="$(dirname "$dir")"
     done
-    echo "$current_dir"
+    return 1
 }
-
-# Navigate to root
-cd "$(find_root)"
 ```
 
-### Standard Build Commands
+## Command Selection
 
-**Full build for product** (recommended command with cache enabled):
+Default full build:
+
 ```bash
 ./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --ccache
 ```
 
-**Build specific component**:
-```bash
-./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target ace_engine --ccache
-```
+Targeted build:
 
-**Build with specific target**:
 ```bash
 ./build.sh --export-para PYCACHE_ENABLE:true --product-name <product> --build-target <target> --ccache
 ```
 
-Common product names: `rk3568`, `ohos-sdk`, `rk3588`
+Special products:
 
-Common build targets: `ohos` (default if omitted), `ace_engine`, `ace_engine_test`, `unittest`
+- SDK: `./build.sh --export-para PYCACHE_ENABLE:true --product-name ohos-sdk --ccache`
+- Host: `./build.sh --product-name host_product --ccache --no-prebuilt-sdk`
+- Minimal emulator: `./build.sh --product-name qemu-arm-linux-min --ccache --no-prebuilt-sdk --deps-guard=false --load-test-config false --gn-args linux_kernel_version=\"linux-5.10\"`
+- Full emulator: `./build.sh --product-name arm64_virt --ccache --deps-guard=false`
 
-### SDK Build (Special Case)
+Read `references/build-commands.md` for the full command matrix, products, targets, SDK/host/emulator notes, and fast-rebuild examples.
 
-**IMPORTANT**: SDK build has a special output directory structure.
+Reference routing:
 
-Build OpenHarmony SDK:
+- Read `references/build-commands.md` when choosing command syntax, products, targets, SDK/host/emulator commands, or fast-rebuild examples.
+- Read `references/log-locations.md` only when locating or explaining build outputs and logs.
+- Read `references/common-errors.md` only after a concrete error class is known.
+
+## Fast Rebuild
+
+Use `--fast-rebuild` only when build configuration did not change. Do not use it after edits to `BUILD.gn`, `*.gni`, product config, dependency metadata, or first-time output generation.
+
+Helper:
+
 ```bash
-./build.sh --export-para PYCACHE_ENABLE:true --product-name ohos-sdk --ccache
+bash <skill-dir>/scripts/check_fast_rebuild.sh 30 "$OH_ROOT"
 ```
 
-**SDK build characteristics**:
-- **No `--build-target` option**: Do NOT specify a build target for SDK compilation
-- **Output directory**: `out/sdk/` (NOT `out/ohos-sdk/`)
-- **Special case**: Unlike other products where output is `out/<product>/`, SDK output is always in `out/sdk/`
-- **Use case**: Building the OpenHarmony SDK for application development
+## Independent Component Build
 
-**Trigger keywords for SDK build**:
-- "编译 sdk" / "编译 SDK"
-- "build sdk" / "build SDK"
-- "编译 ohos-sdk"
-- "make sdk"
+Use for "部件独立编译", "独立编译部件", or explicit `hb build` requests.
 
-**Example SDK build workflow**:
 ```bash
-# Navigate to OpenHarmony root
-cd "$(find_root)"
-
-# Build SDK (no target specified)
-./build.sh --export-para PYCACHE_ENABLE:true --product-name ohos-sdk --ccache
-
-# Check SDK build log
-cat "$OH_ROOT/out/sdk/build.log"
+command -v hb
+hb build <component-name> -i
+hb build <component-name> -t
 ```
 
-**Build command options**:
-- `--export-para PYCACHE_ENABLE:true` - Enable Python cache for faster builds
-- `--ccache` - Enable compiler cache for faster rebuilds
-- `--product-name` - Target product to build
-- `--build-target` - Specific component or target (optional, defaults to full system)
-- `--fast-rebuild` - Skip GN generation if no GN files modified (significantly faster)
+Rules:
 
-### Test Build Commands
+- Use the OpenHarmony component name, not necessarily the repository name.
+- Put `-i` or `-t` after the component name.
+- Run `-i` before `-t` when both are requested.
+- Diagnose independent builds from `out/standard/`.
 
-**Build ACE Engine tests** (recommended for ACE Engine development):
+Reference routing: for `hb` independent builds, always read `references/independent-build.md`; do not load `references/test-list-builds.md` unless the task is specifically about target-list builds.
+
+## Test Builds
+
+For ACE Engine development, prefer:
+
 ```bash
 ./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target ace_engine_test --ccache
 ```
 
-**Build all unit tests** (full test suite):
+Build all unit tests only when requested or required:
+
 ```bash
 ./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target unittest --ccache
 ```
 
-**Test target priorities** (recommended usage):
-1. **`ace_engine_test`** - Build ACE Engine specific tests only (faster, recommended for ACE Engine development)
-2. **`unittest`** - Build all unit tests across entire system (slower, comprehensive testing)
-
-**When to use `ace_engine_test`**:
-- Developing or testing ACE Engine components
-- Quick validation of ACE Engine changes
-- Focused testing on ACE Engine functionality
-- Faster iteration during development
-
-**When to use `unittest`**:
-- Running complete test suite
-- Validating cross-module interactions
-- Pre-release comprehensive testing
-- When specifically required to build all tests
-
-### Fast Rebuild (Skip GN Generation)
-
-When no GN files (BUILD.gn, *.gni) have been modified, use `--fast-rebuild` to skip GN generation:
+For target-list builds:
 
 ```bash
-./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --ccache --fast-rebuild
+bash <skill-dir>/scripts/build_test_list.sh rk3568 "$OH_ROOT"
 ```
 
-**When to use fast rebuild**:
-- Only source code (.cpp, .h, .ts, .ets) has changed
-- No build configuration files (BUILD.gn, *.gni) modified
-- Incremental development iteration
+Reference routing: for target-list builds, read `references/test-list-builds.md`; do not load `references/independent-build.md` unless the target-list run uses `hb build`.
 
-**Fast rebuild benefits**:
-- Skips GN parse and generation phase
-- Directly uses existing ninja build files
-- Significantly faster for code-only changes
-- Typical speedup: 30-50% faster
+## Success Check
 
-**When NOT to use fast rebuild**:
-- BUILD.gn files modified
-- New dependencies added
-- Build configuration changed
-- First time building or after cleaning output
+A successful build usually has:
 
-### Fast Build for Component
+- command exit code `0`
+- `=====build successful=====` or equivalent success output
+- expected output under `out/`
+- no final fatal/error section in the primary build log
 
-Combine fast rebuild with component build for maximum speed:
-
-```bash
-./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target ace_engine --ccache --fast-rebuild
-```
-
-### Fast Build for Tests
-
-Combine fast rebuild with test builds for rapid iteration:
-
-**Build ACE Engine tests (fast)**:
-```bash
-./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target ace_engine_test --ccache --fast-rebuild
-```
-
-**Build all unit tests**:
-```bash
-./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target unittest --ccache --fast-rebuild
-```
-
-**Recommendation**: For ACE Engine development, prefer `ace_engine_test` with `--fast-rebuild` for fastest iteration when only test code has changed.
-
-### Build Test Target List
-
-**Build specified test targets from a list file**:
-
-This feature allows you to build a custom list of test targets sequentially. If any test target fails to build, the process stops and does not continue with remaining targets.
-
-**Trigger keywords**:
-- "编译测试列表" / "build test list"
-- "按列表编译测试" / "compile tests from list"
-- "编译指定测试" / "build specified tests"
-
-**unittest_targets.txt file location**:
-- Searched in current ace_engine directory first
-- Fallback to OpenHarmony root if not found in ace_engine
-- File name must be exactly: `unittest_targets.txt`
-
-**File format** (one target per line):
-```txt
-# Comments start with #
-ace_engine_test
-# Build specific test module
-adapter/ohos/osal/system_properties_unittest
-```
-
-**Workflow**:
-```bash
-# 1. Create unittest_targets.txt in ace_engine directory
-cd foundation/arkui/ace_engine
-cat > unittest_targets.txt << EOF
-# ACE Engine tests
-ace_engine_test
-
-# Specific test module
-adapter/ohos/osal/system_properties_unittest
-EOF
-
-# 2. Navigate to OpenHarmony root
-cd /home/sunfei/workspace/openHarmony
-
-# 3. Build tests from the list
-# For each target in file, runs: --build-target=<target>
-./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target=ace_engine_test --ccache
-./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target=adapter/ohos/osal/system_properties_unittest --ccache
-```
-
-**Key features**:
-- ✅ Sequential compilation: Tests are built in the order listed in file
-- ✅ Stop on error: Compilation stops immediately if a test target fails
-- ✅ Uses `--build-target=`: Each target compiled with explicit `--build-target=<name>` parameter
-- ✅ Comment support: Lines starting with # are ignored
-- ✅ Empty lines: Blank lines are ignored
-- ✅ Auto file discovery: Searches ace_engine directory first, then root
-
-**Example: Creating target list**:
-```bash
-# Create file in ace_engine directory
-cd foundation/arkui/ace_engine
-cat > unittest_targets.txt << EOF
-# Priority 1: Core ACE Engine tests
-ace_engine_test
-
-# Priority 2: Adapter tests
-adapter/ohos/osal/system_properties_unittest
-adapter/ohos/capability/feature_config_unittest
-EOF
-```
-
-**Example: Building from list**:
-```bash
-# From OpenHarmony root
-cd /home/sunfei/workspace/openHarmony
-
-# Execute build (skill will read unittest_targets.txt and build each target sequentially)
-# Equivalent to manually running:
-./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target=ace_engine_test --ccache
-# Then if successful:
-./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target=adapter/ohos/osal/system_properties_unittest --ccache
-# Then if successful:
-./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target=adapter/ohos/capability/feature_config_unittest --ccache
-```
-
-**Supported target types**:
-- Full test targets: `--build-target=ace_engine_test`, `--build-target=unittest`
-- Component/group targets: `--build-target=adapter/ohos/osal/*_unittest`
-- Specific test modules: Any valid build-target path
-
-**File discovery priority**:
-1. `foundation/arkui/ace_engine/unittest_targets.txt` (ace_engine directory)
-2. `unittest_targets.txt` (OpenHarmony root - fallback)
-
-**Error handling**:
-- **File not found**: Warning message displayed, normal build proceeds without list
-- **Build failure**: Stops immediately, error extracted from failed target's build log
-- **Recovery**: Fix error and re-run same command to continue from next target
-
-**Disk space management**:
-- **Problem**: Test artifacts can be very large, causing disk space issues during compilation
-- **Solution**: Delete previously compiled test binaries to free up space
-- **Safe deletion location**: `out/<product>/exe.unstripped/tests/unittest/ace_engine/`
-- **⚠️ WARNING**: ONLY delete files in this specific directory, DO NOT delete files elsewhere
-- **Resume strategy**: Continue compilation from the failed target, skip already verified targets
-- **Goal**: Ensure all test targets in the list are successfully compiled
-
-**Workflow for disk space recovery**:
-```bash
-# When disk space error occurs during test list compilation:
-
-# 1. Navigate to test artifacts directory
-cd "$OH_ROOT/out/<product>/exe.unstripped/tests/unittest/ace_engine/"
-
-# 2. List current test binaries
-ls -lh
-
-# 3. Remove successfully compiled test binaries to free space
-# Example: remove adapter_unittest, base_unittest (already verified)
-rm -f adapter_unittest base_unittest bridge_unittest
-
-# 4. Verify deletion (ensure only test binaries are removed)
-ls -lh
-
-# 5. Return to OpenHarmony root
-cd "$OH_ROOT"
-
-# 6. Resume compilation from the failed target
-# Skip targets that were already successfully compiled
-./build.sh --export-para PYCACHE_ENABLE:true --product-name <product> --build-target=<failed_target> --ccache
-```
-
-**Best practices for disk space management**:
-- ✅ Keep track of which targets have been successfully compiled
-- ✅ Only delete test binaries from `exe.unstripped/tests/unittest/ace_engine/` directory
-- ✅ Verify file paths before deletion to avoid removing critical build artifacts
-- ✅ Resume compilation from the first failed target after cleanup
-- ✅ Document compilation progress to track remaining targets
-- ❌ NEVER delete files from `out/<product>/libs/`, `out/<product>/packages/`, or other directories
-- ❌ NEVER delete intermediate build files or object files
-- ❌ NEVER delete build configuration files
-
-**Progress tracking example**:
-```bash
-# Track compilation progress
-# ✅ adapter_unittest - COMPLETED
-# ✅ base_unittest - COMPLETED
-# ✅ bridge_unittest - COMPLETED
-# ❌ frameworks_unittest - FAILED (disk space error)
-# ⏸️ interfaces_unittest - SKIPPED (waiting for frameworks_unittest)
-
-# After cleanup, resume from frameworks_unittest
-./build.sh --export-para PYCACHE_ENABLE:true --product-name <product> --build-target=frameworks_unittest --ccache
-
-# Then continue with remaining targets
-./build.sh --export-para PYCACHE_ENABLE:true --product-name <product> --build-target=interfaces_unittest --ccache
-```
-
-**Use cases**:
-- Incremental test validation after focused code changes
-- Building specific test modules for isolated testing
-- Verifying fixes for specific test failures
-- Splitting large test builds into sequential steps
-- **Recovering from disk space errors during test list compilation**
-
-### Build Process
-
-Execute the build command and monitor the output. The build process:
-1. Checks environment (Python, Node.js versions)
-2. Initializes ohpm and dependencies
-3. Runs the hb build system
-4. Generates output in `out/` directory
-
-## Success Verification
-
-### Check Build Exit Code
-
-A successful build exits with code 0 and displays:
-```
-=====build successful=====
-```
-
-### Verify Output
-
-Check that the expected build artifacts exist in `out/`:
-
-```bash
-# Get OpenHarmony root dynamically
-OH_ROOT=$(find_root)
-
-# Check for product-specific output
-ls -la "$OH_ROOT/out/<product-name>/"
-
-# Example for rk3568:
-ls -la "$OH_ROOT/out/rk3568/"
-```
-
-Look for key directories:
-- `packages/` - Built packages
-- `libs/` - Compiled libraries
-- `bin/` - Executables
-
-### Build Success Indicators
-
-- Exit code is 0
-- Success message displayed
-- Expected artifacts in output directory
-- No error messages in final output
+Use exit code as the first signal. Check artifacts only when the user needs artifact confirmation.
 
 ## Failure Analysis
 
-When build fails (exit code non-zero), analyze the error systematically.
+Always start from the primary log:
 
-### Locate Build Logs
+- regular product: `out/<product>/build.log`
+- SDK: `out/sdk/build.log`
+- host product: `out/host/host_product/build.log`
+- independent build: `out/standard/build.log` or the relevant `out/standard/` sublog
 
-**IMPORTANT: Always check the primary build log first**
-
-Build logs are located in the `out/` directory structure. The primary build log contains all build information and should be the first place to check for errors.
-
-```bash
-# Get OpenHarmony root dynamically
-OH_ROOT=$(find_root)
-```
-
-**Primary build log (FIRST PRIORITY)**:
-```bash
-# Main build log - contains all errors and warnings
-$OH_ROOT/out/<product-name>/build.log
-
-# Example for rk3568:
-$OH_ROOT/out/rk3568/build.log
-```
-
-**Component-specific logs (for detailed investigation)**:
-```bash
-# Check for component build failures
-$OH_ROOT/out/<product-name>/logs/<component>/
-
-# Example for ace_engine:
-find "$OH_ROOT/out/rk3568/logs" -name "*ace_engine*" -type f
-```
-
-**Common log locations** (in order of priority):
-1. **`$OH_ROOT/out/<product>/build.log`** - Main build log ⭐ **ALWAYS CHECK THIS FIRST**
-2. `$OH_ROOT/out/<product>/logs/` - Detailed component logs
-3. **`$OH_ROOT/out/sdk/build.log`** - SDK build log ⚠️ **SPECIAL CASE**: SDK output is in `out/sdk/`, NOT `out/ohos-sdk/`
-
-**Output directory mapping**:
-- Regular products: `out/<product>/build.log` (e.g., `out/rk3568/build.log`)
-- SDK product: `out/sdk/build.log` ⚠️ Special case, different directory structure
-
-### Analyze Build Errors
-
-Use the error analysis script to extract and summarize errors:
+Use scripts before broad manual searching:
 
 ```bash
-# Get OpenHarmony root dynamically
-OH_ROOT=$(find_root)
-
-# Use the provided analysis script
-"$OH_ROOT/foundation/arkui/ace_engine/.claude/skills/openharmony-build/scripts/analyze_build_error.sh" <product-name>
+bash <skill-dir>/scripts/resolve_build_log.sh <product> "$OH_ROOT"
+bash <skill-dir>/scripts/find_recent_errors.sh <product> "$OH_ROOT"
+bash <skill-dir>/scripts/analyze_build_error.sh <product> "$OH_ROOT"
 ```
 
-**Manual error search**:
-```bash
-# Get OpenHarmony root dynamically
-OH_ROOT=$(find_root)
-
-# Search for error patterns in build log
-grep -i "error" "$OH_ROOT/out/<product>/build.log" | tail -50
-
-# Find fatal errors
-grep -i "fatal" "$OH_ROOT/out/<product>/build.log"
-
-# Search for specific failure patterns
-grep -A 10 "FAILED" "$OH_ROOT/out/<product>/build.log"
-```
-
-### Common Build Failure Patterns
-
-**Compilation errors**:
-```
-error: undefined reference to 'symbol'
-error: 'header_file' not found
-```
-
-**Link errors**:
-```
-ld: error: undefined symbol
-ld: cannot find -l<library>
-```
-
-**Dependency errors**:
-```
-error: package 'package-name' not found
-error: dependency 'dependency-name' not satisfied
-```
-
-**Configuration errors**:
-```
-error: invalid product name
-error: build target not found
-```
-
-## Error Resolution Workflow
-
-1. **Check primary build log**: Always start with `$OH_ROOT/out/<product>/build.log`
-2. **Identify the error**: Use `analyze_build_error.sh` to extract errors from build.log
-3. **Locate the source**: Find the file and line number causing the error
-4. **Understand the cause**: Read surrounding context in the build.log
-5. **Propose solution**: Based on error type and context
-6. **Verify fix**: Rebuild to confirm resolution
-
-**Key Principle**: The primary build log (`out/<product>/build.log`) contains all build information including GN generation, ninja compilation, linking, and packaging errors. Always check this file first before looking at component-specific logs.
-
-## Additional Resources
-
-### Scripts
-
-- **`scripts/analyze_build_error.sh`** - Extract and summarize build errors
-- **`scripts/find_recent_errors.sh`** - Find recent build failures
-
-### Reference Files
-
-- **`references/build-commands.md`** - Complete build command reference
-- **`references/common-errors.md`** - Common build errors and solutions
-- **`references/log-locations.md`** - Detailed log file locations
-
-## Best Practices
-
-- Always find OpenHarmony root dynamically using `.gn` file as marker
-- Use cache options (`--export-para PYCACHE_ENABLE:true --ccache`) for faster builds
-- Use `--fast-rebuild` when only code changed (no GN modifications)
-- Search for errors from the end of log files (most recent first)
-- Preserve full error context including line numbers
-- Check both main build log and component-specific logs
-- Verify environment setup (Python, Node.js versions) before building
-
-### Build Strategy Guide
-
-**First time build or major changes**:
-```bash
-./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --ccache
-```
-
-**Code-only changes (fastest)**:
-```bash
-./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --ccache --fast-rebuild
-```
-
-**Component development**:
-```bash
-./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target ace_engine --ccache --fast-rebuild
-```
-
-### Dynamic Path Finding Helper
-
-Use this helper function in all scripts and commands:
+For `hb build` failures, pass `standard` as the product:
 
 ```bash
-# Define function to find OpenHarmony root
-find_oh_root() {
-    local dir="$(pwd)"
-    while [[ ! -f "$dir/.gn" ]]; do
-        dir="$(dirname "$dir")"
-        if [[ "$dir" == "/" ]]; then
-            echo "Error: OpenHarmony root not found" >&2
-            return 1
-        fi
-    done
-    echo "$dir"
-}
-
-# Usage in commands
-OH_ROOT=$(find_oh_root)
-cd "$OH_ROOT" || exit 1
+bash <skill-dir>/scripts/find_recent_errors.sh standard "$OH_ROOT"
+bash <skill-dir>/scripts/analyze_build_error.sh standard "$OH_ROOT"
 ```
 
-## Version History
+Reference routing:
 
-- **0.5.0** (2026-02-02): 新增测试列表编译磁盘空间管理策略
-  - 💾 添加磁盘空间不足时的处理方案
-  - 🗑️ 指定安全删除测试产物的目录：`out/<product>/exe.unstripped/tests/unittest/ace_engine/`
-  - ⚠️ 强调仅删除指定目录的文件，避免误删其他构建产物
-  - 🔄 支持从失败的测试目标恢复编译，跳过已验证通过的目标
-  - 📝 提供完整的磁盘空间恢复工作流和最佳实践
-  - 📋 添加编译进度跟踪示例
-  - 🔧 使用通用 `<product>` 占位符以支持不同产品
+- Read `references/failure-analysis.md` for non-zero build exits, first-failure extraction, and fix/rebuild workflow.
+- Read `references/log-locations.md` when the log path is unclear.
+- Read `references/common-errors.md` only after identifying the error class.
 
-- **0.4.0** (2026-02-02): 新增测试目标列表编译功能
-  - ✨ 添加测试目标列表编译功能
-  - 📝 支持从 `unittest_targets.txt` 文件读取目标列表
-  - 🎯 依次编译列表中的每个目标，使用 `--build-target=<target>` 参数
-  - ⚠️ 遇到错误立即停止，不再编译后续目标
-  - 🔄 优先在 ace_engine 目录搜索文件，回退到 OpenHarmony 根目录
-  - 📋 新增触发关键词："编译测试列表"、"build test list"、"按列表编译测试"、"编译指定测试"
+## Bundled Resources
 
-- **0.3.0** (2025-02-02): 新增 SDK 编译支持（ohos-sdk 产品）
-  - ✨ 添加 SDK 编译专门命令和触发关键词
-  - ⚠️ 特别说明：SDK 输出目录为 `out/sdk/` 而非 `out/ohos-sdk/`
-  - 📝 添加 SDK 编译专门命令和触发关键词
-  - 📚 更新产品列表，标注 SDK 的特殊输出目录
-  - 🎯 新增触发关键词："编译 sdk"、"编译 SDK"、"build sdk"、"build SDK"、"编译 ohos-sdk"
-  - 🔧 优化日志位置说明，明确 SDK 特殊目录结构
+Scripts:
 
-- **0.2.0** (2025-01-23): 新增 `ace_engine_test` 编译目标支持
-  - ✨ 新增 `ace_engine_test` 编译目标支持
-  - 📝 明确测试编译优先级：`ace_engine_test` > `unittest`
-  - ⭐ 推荐使用 `ace_engine_test` 进行 ACE Engine 测试编译（更快）
-  - 📚 更新所有文档和示例，添加测试编译说明
-  - 🔧 优化测试编译工作流，支持快速编译测试用例
-  - 🎯 新增触发关键词："编译测试"、"编译测试用例"、"build ace_engine_test"
+- `scripts/resolve_build_log.sh`: print the primary build log for a product/root.
+- `scripts/analyze_build_error.sh`: summarize failures from the primary log.
+- `scripts/find_recent_errors.sh`: quick recent error scan.
+- `scripts/check_fast_rebuild.sh`: decide whether `--fast-rebuild` is appropriate.
+- `scripts/build_test_list.sh`: build targets listed in `unittest_targets.txt`.
 
+References:
+
+- `references/build-commands.md`: complete command reference.
+- `references/log-locations.md`: output and log path mapping.
+- `references/common-errors.md`: common failure classes and fixes.
+- `references/failure-analysis.md`: structured diagnosis workflow.
+- `references/independent-build.md`: `hb build` rules and diagnosis patterns.
+- `references/test-list-builds.md`: target-list builds and disk-space recovery.
+
+Do not load `README.md` or `examples/example-workflow.md` during normal skill execution; they are repository-facing summaries, not runtime instructions.

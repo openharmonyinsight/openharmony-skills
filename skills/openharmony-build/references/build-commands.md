@@ -26,7 +26,10 @@ Commonly used product names:
 | Product | Description | Use Case |
 |---------|-------------|----------|
 | `rk3568` | RK3568 development board | Standard development |
-| `ohos-sdk` | OpenHarmony SDK | SDK building |
+| `ohos-sdk` | OpenHarmony SDK | SDK building; output root is `out/sdk/` |
+| `host_product` | Host-form Linux x86_64 product | Build artifacts that run directly on the host |
+| `qemu-arm-linux-min` | Minimal QEMU ARM Linux emulator product | Minimal emulator build |
+| `arm64_virt` | Full ARM64 virtual emulator product | Full emulator build |
 | `rk3588` | RK3588 development board | High-performance board |
 
 Check available products:
@@ -67,6 +70,53 @@ ls -1 out/
 ./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --ccache
 ```
 
+### Host Build
+
+```bash
+# Build host-form OpenHarmony artifacts for Linux x86_64
+./build.sh --product-name host_product --ccache --no-prebuilt-sdk
+```
+
+```bash
+# Build a specific host target
+./build.sh --product-name host_product --build-target <target> --ccache --no-prebuilt-sdk
+```
+
+**Host build notes**:
+- produces artifacts intended to run directly on the host machine
+- uses `host_product` rather than a device product like `rk3568`
+- enables `--ccache` for faster rebuilds
+- should keep `--no-prebuilt-sdk` on this path
+- expected primary log: `out/host/host_product/build.log`
+
+### Minimal Emulator Build
+
+```bash
+# Build the minimal QEMU ARM Linux emulator product
+./build.sh --product-name qemu-arm-linux-min --ccache --no-prebuilt-sdk --deps-guard=false --load-test-config false --gn-args linux_kernel_version=\"linux-5.10\"
+```
+
+**Minimal emulator build notes**:
+- uses `qemu-arm-linux-min` as the product name
+- keep `--deps-guard=false` on this path
+- keep `--load-test-config false` on this path
+- pass `--gn-args linux_kernel_version=\"linux-5.10\"` exactly as shown
+- keep both `--ccache` and `--no-prebuilt-sdk`
+- expected primary log: `out/qemu-arm-linux-min/build.log`
+
+### Full Emulator Build
+
+```bash
+# Build the full ARM64 virtual emulator product
+./build.sh --product-name arm64_virt --ccache --deps-guard=false
+```
+
+**Full emulator build notes**:
+- uses `arm64_virt` as the product name
+- keep `--ccache` on this path
+- keep `--deps-guard=false` on this path
+- expected primary log: `out/arm64_virt/build.log`
+
 ### Component-specific Build
 
 ```bash
@@ -76,6 +126,65 @@ ls -1 out/
 # Build specific library
 ./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target libace --ccache
 ```
+
+### Independent Component Build
+
+Use this when validating a component with `hb build` instead of building a full product. These commands assume the workspace is already prepared; do not add source download or prebuilt-tool download steps unless the user asks for environment setup.
+
+Before running an independent build, check that the real `hb` command is available:
+
+```bash
+command -v hb
+```
+
+If it is missing and the workspace contains `build/hb`, install it from the local build repository:
+
+```bash
+python3 -m pip install --user build/hb
+export PATH="$HOME/.local/bin:$PATH"
+command -v hb
+```
+
+Use `hb build ...` after installation; do not substitute `python3 build/hb/main.py` when the requested operation is an `hb` independent build.
+
+```bash
+# Build component source. The -i option must be placed after the component name.
+hb build <component-name> -i
+
+# Build component tests. The -t option must be placed after the component name.
+hb build <component-name> -t
+```
+
+Example:
+
+```bash
+hb build syscap_codec -i
+hb build syscap_codec -t
+```
+
+Multi-component combined build:
+
+```bash
+hb build <component-a> <component-b> <component-c> -i
+hb build <component-a> <component-b> <component-c> -t
+```
+
+Useful independent-build options:
+
+```bash
+hb build <component-name> -i --keep-ninja-going
+hb build <component-name> -i --build-target <target>
+hb build <component-name> -i --gn-args key=value
+hb build <component-name> -i --skip-download
+```
+
+Notes:
+
+- Use the OpenHarmony component name, not necessarily the repository name.
+- Use `-i` for source builds and `-t` for test builds.
+- Run `-i` before `-t` when both are requested.
+- Independent-build output is usually under `out/standard/src/` and `out/standard/test/`.
+- `--skip-download` is for local debugging or explicit no-download requests, not the default.
 
 ### Test Build
 
@@ -101,6 +210,13 @@ ls -1 out/
 ```bash
 ./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target benchmark_linux --ccache
 ```
+
+**Build test targets from `unittest_targets.txt`**:
+```bash
+bash <skill-dir>/scripts/build_test_list.sh rk3568 "$OH_ROOT"
+```
+
+The helper searches `foundation/arkui/ace_engine/unittest_targets.txt` first, then `$OH_ROOT/unittest_targets.txt`. It builds targets sequentially and stops on the first failure.
 
 **Test Target Selection Guide**:
 - **ACE Engine development**: Use `ace_engine_test` (faster iteration)
@@ -235,7 +351,9 @@ export PATH=/path/to/node-v14.21.1-linux-x64/bin:$PATH
    - Generate packages
 
 6. **Output Generation**
-   - Create output in `out/<product>/`
+   - Create output in `out/<product>/` for regular products
+   - Create SDK output in `out/sdk/` for `ohos-sdk`
+   - Create host output in `out/host/host_product/` for `host_product`
    - Generate build.log
    - Package artifacts
 

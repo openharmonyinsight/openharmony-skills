@@ -10,35 +10,60 @@ YELLOW='\033[1;33m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
-# OpenHarmony root directory
-# Script is at: .../ace_engine/.claude/skills/openharmony-build/scripts/
-# Need to go up 7 levels to reach OpenHarmony root
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OH_ROOT="$(cd "$SCRIPT_DIR/../../../../../../.." && pwd)"
+find_root() {
+    local dir="${1:-$PWD}"
+    while [[ "$dir" != "/" ]]; do
+        if [[ -f "$dir/.gn" && -f "$dir/build.sh" ]]; then
+            echo "$dir"
+            return 0
+        fi
+        dir="$(dirname "$dir")"
+    done
+    return 1
+}
+
+build_log_path() {
+    local product="$1"
+    local root="$2"
+    if [[ "$product" == "host_product" ]]; then
+        echo "$root/out/host/host_product/build.log"
+    elif [[ "$product" == "ohos-sdk" || "$product" == "sdk" ]]; then
+        echo "$root/out/sdk/build.log"
+    elif [[ "$product" == "standard" || "$product" == "independent" || "$product" == "component" || "$product" == "component-independent" ]]; then
+        echo "$root/out/standard/build.log"
+    else
+        echo "$root/out/$product/build.log"
+    fi
+}
+
+# Check if product name is provided
+if [ -z "$1" ]; then
+    echo -e "${YELLOW}Usage: $0 <product-name> [openharmony-root]${NC}"
+    echo "Example: $0 rk3568 /path/to/OpenHarmony"
+    echo ""
+    exit 1
+fi
+
+PRODUCT_NAME="$1"
+ROOT_HINT="${2:-$PWD}"
+if ! OH_ROOT="$(find_root "$ROOT_HINT")"; then
+    echo -e "${RED}Error: OpenHarmony root not found from: $ROOT_HINT${NC}"
+    exit 1
+fi
 
 echo -e "${GREEN}OpenHarmony Build Error Analyzer${NC}"
 echo "OpenHarmony Root: $OH_ROOT"
 echo ""
 
-# Check if product name is provided
-if [ -z "$1" ]; then
-    echo -e "${YELLOW}Usage: $0 <product-name>${NC}"
-    echo "Example: $0 rk3568"
-    echo ""
-    echo "Available products in out/:"
-    ls -1 "$OH_ROOT/out/" 2>/dev/null | grep -v "sdk\|gen\|kernel" || echo "  No products found"
-    exit 1
-fi
-
-PRODUCT_NAME="$1"
-BUILD_LOG="$OH_ROOT/out/$PRODUCT_NAME/build.log"
+BUILD_LOG="$(build_log_path "$PRODUCT_NAME" "$OH_ROOT")"
 
 # Check if build log exists
 if [ ! -f "$BUILD_LOG" ]; then
     echo -e "${RED}Error: Build log not found: $BUILD_LOG${NC}"
     echo ""
+    echo "For independent component builds, use product name: standard"
     echo "Searching for alternative log files..."
-    find "$OH_ROOT/out/$PRODUCT_NAME" -name "*.log" -type f 2>/dev/null | head -5
+    find "$OH_ROOT/out/$PRODUCT_NAME" "$OH_ROOT/out/host/$PRODUCT_NAME" "$OH_ROOT/out/sdk" "$OH_ROOT/out/standard" -name "*.log" -type f 2>/dev/null | head -5
     exit 1
 fi
 
@@ -62,9 +87,17 @@ echo ""
 
 # Extract error statistics
 echo -e "${YELLOW}=== Error Statistics ===${NC}"
-ERROR_COUNT=$(grep -ci "error:" "$BUILD_LOG" 2>/dev/null || echo "0")
-WARNING_COUNT=$(grep -ci "warning:" "$BUILD_LOG" 2>/dev/null || echo "0")
-FATAL_COUNT=$(grep -ci "fatal" "$BUILD_LOG" 2>/dev/null || echo "0")
+count_matches() {
+    local pattern="$1"
+    local file="$2"
+    local count
+    count=$(grep -ci "$pattern" "$file" 2>/dev/null || true)
+    echo "${count:-0}"
+}
+
+ERROR_COUNT=$(count_matches "error:" "$BUILD_LOG")
+WARNING_COUNT=$(count_matches "warning:" "$BUILD_LOG")
+FATAL_COUNT=$(count_matches "fatal" "$BUILD_LOG")
 
 echo "Total errors: $ERROR_COUNT"
 echo "Total warnings: $WARNING_COUNT"

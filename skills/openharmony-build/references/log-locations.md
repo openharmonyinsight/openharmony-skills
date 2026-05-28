@@ -12,9 +12,15 @@ Complete guide to finding and understanding build logs.
 out/<product-name>/build.log
 ```
 
+SDK and host builds are exceptions:
+- SDK product `ohos-sdk`: `out/sdk/build.log`
+- Host product `host_product`: `out/host/host_product/build.log`
+
 **Examples**:
 - `out/rk3568/build.log` - RK3568 product build log
-- `out/ohos-sdk/build.log` - SDK build log
+- `out/arm64_virt/build.log` - full ARM64 virtual emulator product build log
+- `out/sdk/build.log` - SDK build log
+- `out/host/host_product/build.log` - host-form Linux x86_64 build log
 
 ### Why This File is Critical
 
@@ -25,7 +31,7 @@ The primary build log (`out/<product>/build.log`) is the **single most important
 - **Complete build context**: Environment setup, configuration, and final status
 - **Chronological order**: Build progress from start to finish
 
-**Before checking any other log files, always examine `out/<product>/build.log` first.**
+**Before checking any other log files, always examine the primary build log first: `out/<product>/build.log` for regular products, `out/sdk/build.log` for SDK, and `out/host/host_product/build.log` for host builds.**
 
 ### Contents
 
@@ -148,6 +154,16 @@ out/sdk/build.log
 ```
 
 Contains SDK-specific build output when building `ohos-sdk` target.
+
+## Host Build Logs
+
+### Location
+
+```
+out/host/host_product/build.log
+```
+
+Contains host-form build output when building `host_product`.
 
 ## Error-Specific Logs
 
@@ -350,8 +366,8 @@ Use the provided scripts for automated analysis:
 
 ```bash
 # Comprehensive error analysis
-.claude/skills/openharmony-build/scripts/analyze_build_error.sh <product>
+bash <skill-dir>/scripts/analyze_build_error.sh <product> <openharmony-root>
 
 # Quick recent error check
-.claude/skills/openharmony-build/scripts/find_recent_errors.sh <product>
+bash <skill-dir>/scripts/find_recent_errors.sh <product> <openharmony-root>
 ```
