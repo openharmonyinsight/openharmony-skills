@@ -8,7 +8,7 @@
 
 ```text
 SKILL.md 继续服务 Agent 触发和执行
-skill.info.yaml 服务网站展示、搜索、筛选和人类阅读
+metadata/website/skills/<skill-id>.yaml 服务网站展示、搜索、筛选和人类阅读
 dist/skills.catalog.json 服务网站列表页、搜索页和筛选页
 dist/skills/<skill-id>.json 服务网站详情页
 ```
@@ -22,34 +22,33 @@ dist/skills/<skill-id>.json 服务网站详情页
 | 层级 | 文件 | 使用方 | 定位 |
 | --- | --- | --- | --- |
 | Agent 执行层 | `SKILL.md` | Agent / Skill 运行时 | 触发和执行指令 |
-| 网站展示源数据层 | `skill.info.yaml` | 网站生成脚本 / 人类维护者 | 结构化能力介绍和使用说明 |
+| 网站展示源数据层 | `metadata/website/skills/<skill-id>.yaml` | 网站生成脚本 / 人类维护者 | 结构化能力介绍和使用说明 |
 | 网站生成产物层 | `dist/skills.catalog.json`、`dist/skills/<skill-id>.json` | 网站前端 | 列表、搜索、筛选和详情展示 |
 
-`SKILL.md` 与 `skill.info.yaml` 都位于单个 Skill 目录下。`dist/` 是生成产物目录，不作为人工维护入口。
+`SKILL.md` 位于单个 Skill 目录下。网站展示源数据集中位于 `metadata/website/skills/`，避免网站展示信息与 Agent 能力包结构耦合。`dist/` 是生成产物目录，不作为人工维护入口。
 
-## 3. 单个 Skill 目录要求
+## 3. 网站元数据目录要求
 
-在现有标准目录结构基础上，推荐新增 `skill.info.yaml`：
+网站展示源数据使用集中目录：
 
 ```text
-<skill-name>/
-  SKILL.md
-  skill.info.yaml
-  README.md
-  references/
-  examples/
-  evals/
+metadata/
+  website/
+    skills/
+      <skill-id>.yaml
 ```
 
 其中：
 
 | 文件 | 是否必需 | 说明 |
 | --- | --- | --- |
-| `SKILL.md` | 必需 | Agent 加载的 Skill 主文件 |
-| `skill.info.yaml` | 推荐，网站展示时必需 | 网站展示、搜索、筛选和详情页的源数据 |
-| `README.md` | 推荐 | 面向维护者的补充说明 |
+| `metadata/website/skills/<skill-id>.yaml` | 网站展示时必需 | 网站展示、搜索、筛选和详情页的源数据 |
+| `skills/**/<skill-id>/SKILL.md` | 必需 | Agent 加载的 Skill 主文件，也是元数据一致性校验的事实源 |
+| `skills/**/<skill-id>/README.md` | 推荐 | 面向维护者的补充说明，可作为首版提取的信息来源 |
 
-## 4. `skill.info.yaml` 字段模型
+元数据文件名必须使用 Skill id，且文件内容中的 `id` 必须与文件名、Skill 目录名和 `SKILL.md` 的 `name` 一致。
+
+## 4. 网站元数据 YAML 字段模型
 
 ### 4.1 基础示例
 
@@ -264,7 +263,7 @@ source path
 
 ### 6.2 `dist/skills/<skill-id>.json`
 
-详情页 JSON 由 `skill.info.yaml` 生成，保留完整字段，并补充源文件路径。
+详情页 JSON 由 `metadata/website/skills/<skill-id>.yaml` 生成，保留完整字段，并补充源文件路径。
 
 示例：
 
@@ -289,14 +288,14 @@ source path
   "source": {
     "skillDir": "skills/domain/graphics/troubleshooting/ohos-issue-graphics-cppcrash-analysis",
     "skillFile": "skills/domain/graphics/troubleshooting/ohos-issue-graphics-cppcrash-analysis/SKILL.md",
-    "infoFile": "skills/domain/graphics/troubleshooting/ohos-issue-graphics-cppcrash-analysis/skill.info.yaml"
+    "infoFile": "metadata/website/skills/ohos-issue-graphics-cppcrash-analysis.yaml"
   }
 }
 ```
 
 ## 7. 首版信息提取流程
 
-后续需要先用 Agent 从现有 `SKILL.md` 和 `README.md` 中提取一版 `skill.info.yaml`。建议流程如下：
+后续需要先用 Agent 从现有 `SKILL.md` 和 `README.md` 中提取一版网站元数据 YAML。建议流程如下：
 
 1. 扫描所有包含 `SKILL.md` 的 Skill 目录。
 2. 读取 `SKILL.md` YAML Front Matter，提取 `name`、`description` 和 `metadata`。
@@ -309,7 +308,7 @@ source path
    - 典型流程
    - 参考资料
 4. 若存在 `README.md`，优先补充面向人类用户的说明。
-5. 生成首版 `skill.info.yaml`。
+5. 生成首版 `metadata/website/skills/<skill-id>.yaml`。
 6. 标记提取不确定项，避免 Agent 伪造信息。
 7. 由维护者人工 review 和修订。
 
@@ -346,7 +345,8 @@ extractionNotes:
 生成前校验：
 
 ```text
-skill.info.yaml 是否存在且 YAML 可解析
+metadata/website/skills/<skill-id>.yaml 是否存在且 YAML 可解析
+文件名是否与 id 一致
 id 是否与目录名一致
 id 是否与 SKILL.md front matter 的 name 一致
 category.scope 是否与目录一级命名空间一致
@@ -361,7 +361,7 @@ related.docs 中的相对路径是否存在
 
 ### 8.2 构建阶段
 
-构建脚本读取所有 `skill.info.yaml`，生成：
+构建脚本读取所有 `metadata/website/skills/*.yaml`，生成：
 
 ```text
 dist/skills.catalog.json
@@ -385,14 +385,14 @@ dist/skills/<skill-id>.json 渲染详情页
 
 ### 9.1 第一阶段：补充展示元数据
 
-目标：为现有 Skill 生成首版 `skill.info.yaml`。
+目标：为现有 Skill 生成首版网站展示元数据 YAML。
 
 建议任务：
 
 ```text
 编写提取 Prompt 或 Agent 工作流
 批量扫描现有 Skill 目录
-为每个 Skill 生成 skill.info.yaml
+为每个 Skill 生成 metadata/website/skills/<skill-id>.yaml
 保留 extractionNotes
 人工 review 重点 Skill
 ```
@@ -400,14 +400,14 @@ dist/skills/<skill-id>.json 渲染详情页
 完成标准：
 
 ```text
-每个需要上站展示的 Skill 都有 skill.info.yaml
+每个需要上站展示的 Skill 都有 metadata/website/skills/<skill-id>.yaml
 核心字段 id、title、summary、category、status、whenToUse 可用
 不确定项已在 extractionNotes 中标记
 ```
 
 ### 9.2 第二阶段：实现校验和生成脚本
 
-目标：把 `skill.info.yaml` 转换成网站可消费的 JSON。
+目标：把 `metadata/website/skills/*.yaml` 转换成网站可消费的 JSON。
 
 建议任务：
 
@@ -460,4 +460,4 @@ dist/skills.catalog.json 可直接被网站列表页消费
 网站展示元数据规范：约束 Skill 如何被网站结构化展示、如何生成网站数据
 ```
 
-当两者涉及同一字段时，以 `SKILL.md` 的开放标准字段和 OpenHarmony 扩展元数据作为治理事实源，`skill.info.yaml` 必须与其保持一致。
+当两者涉及同一字段时，以 `SKILL.md` 的开放标准字段和 OpenHarmony 扩展元数据作为治理事实源，`metadata/website/skills/<skill-id>.yaml` 必须与其保持一致。

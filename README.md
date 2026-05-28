@@ -37,7 +37,7 @@ skills/
 公共能力：skills/common/<stage>/<skill-name>/
 领域能力：skills/domain/<namespace-domain>/<stage>/<skill-name>/
 Skill name：ohos-<stage>-<domain>-<capability>
-网站展示源数据：<skill-name>/skill.info.yaml
+网站展示源数据：metadata/website/skills/<skill-name>.yaml
 ```
 
 示例：
@@ -62,14 +62,15 @@ skills/domain/arkui/development/ohos-dev-arkui-component-development/
 ```text
 <skill-name>/
   SKILL.md
-  skill.info.yaml
   README.md
   references/
   examples/
   evals/
 ```
 
-`SKILL.md` 是必需文件，供 Agent 加载。`skill.info.yaml` 是网站展示源数据。`README.md`、`references/`、`examples/` 和 `evals/` 根据 Skill 复杂度补充。
+`SKILL.md` 是必需文件，供 Agent 加载。`README.md`、`references/`、`examples/` 和 `evals/` 根据 Skill 复杂度补充。
+
+网站展示源数据不放入单个 Skill 目录，统一维护在 `metadata/website/skills/<skill-name>.yaml`，避免网站展示信息与 Agent 能力包结构耦合。
 
 ## 入库检查
 
