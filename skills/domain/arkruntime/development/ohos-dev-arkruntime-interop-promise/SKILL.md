@@ -1,5 +1,5 @@
 ---
-name: ohos-development-arkruntime-interop-promise
+name: ohos-dev-arkruntime-interop-promise
 description: ETS-JavaScript interop Promise bridging system in ArkCompiler. Use this skill when working on cross-language Promise conversion between ETS (ArkTS) and JavaScript, including JSConvertPromise Wrap/Unwrap, EtsPromise proxy creation, EtsPromiseRef bridging, CreatePromiseLink, OnJsPromiseCompleted callbacks, connectPromise, SettleJsPromise, PromiseInteropResolve/Reject, EtsAwaitPromise/AwaitProxyPromise, callback queue management, or any code under js_convert.h (Promise section), js_job_queue, ets_promise, ets_promise_ref, std_core_Promise.cpp, or PromiseInterop.ets. Also use when debugging cross-VM Promise state synchronization, coroutine suspension/resumption during await, or napi_deferred lifecycle issues.
 metadata:
   author: openharmony
