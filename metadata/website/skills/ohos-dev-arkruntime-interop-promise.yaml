@@ -1,6 +1,6 @@
 schemaVersion: 1
 
-id: ohos-development-arkruntime-interop-promise
+id: ohos-dev-arkruntime-interop-promise
 title: ArkRuntime Promise 跨语言互操作开发
 summary: 理解、开发和调试 ETS 与 JavaScript 之间的 Promise 双向转换、状态同步和 await 桥接机制。
 
@@ -68,7 +68,7 @@ quickStart:
     - 指明问题发生在 JS 到 ETS、ETS 到 JS，还是 await/回调传播阶段。
     - 请求 Agent 使用该 Skill 分析调用链、状态变化和可能的修复点。
   examplePrompt: |
-    请使用 ohos-development-arkruntime-interop-promise 分析 ETS 调用 JS async 函数后 await 卡住的问题，
+    请使用 ohos-dev-arkruntime-interop-promise 分析 ETS 调用 JS async 函数后 await 卡住的问题，
     相关代码在 plugins/ets/runtime/interop_js/ 和 plugins/ets/runtime/types/ets_promise.cpp。
 
 related:
@@ -76,4 +76,3 @@ related:
   docs:
     - title: Promise 互操作 API 参考
       path: references/api-reference.md
-
