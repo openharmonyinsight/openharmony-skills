@@ -1,0 +1,89 @@
+schemaVersion: 1
+
+id: ohos-dev-sa-codegen
+title: SystemAbility (SA) IDL 化代码生成
+summary: 引导用户交互式提供 SA 参数，生成完整的 IDL 化 SA 框架代码，支持非 IDL 改 IDL 迁移和已有 SA 代码修改。
+
+category:
+  scope: common
+  namespace: development
+  stage: development
+  domain: sa
+  capability: sa-codegen
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - sa
+  - idl
+  - cpp
+  - code-generation
+  - openharmony
+
+audience:
+  - OpenHarmony SA 框架开发者
+  - 系统服务开发者
+  - 需要新增或迁移 SystemAbility 的工程师
+
+useCases:
+  - title: 从零生成 IDL 化 SA 框架代码
+    description: 交互式收集 SA 类名、ID、进程名等 10 项必填参数，生成 IDL 接口、Proxy/Stub、SA 注册、Profile、CFG 等完整代码。
+  - title: 迁移非 IDL SA 到 IDL 模式
+    description: 将手写 Proxy/Stub 的 SA 迁移到 IDL 自动生成模式，减少手动 IPC 维护成本。
+  - title: 修改已有 SA 代码
+    description: 为已有 SA 添加接口方法、更新配置、增加依赖监听等。
+
+whenToUse:
+  - 用户请求新建、创建、生成 SystemAbility (SA) 代码
+  - 需要将非 IDL 的 SA 迁移到 IDL 模式
+  - 需要修改已有 SA 的接口、配置或依赖
+
+whenNotToUse:
+  - 通用的 C++ 编码规范检查（使用 ohos-dev-cpp-coding-style）
+  - SA 运行时崩溃或异常问题排查
+  - 非系统服务的普通应用开发
+
+inputs:
+  required:
+    - SA 类名（PascalCase）
+    - SA ID（纯数字，需申请分配）
+    - 进程名（小写下划线）
+    - 子系统名、部件名
+    - 启动方式、分布式支持
+    - HiLog domain
+    - 接口方法（C++ 方法签名）
+    - 代码生成路径
+  optional:
+    - 已有的 SA 代码文件（用于迁移或修改）
+    - 特定子系统约束说明
+
+outputs:
+  - 完整的 IDL 化 SA 项目目录（BUILD.gn、IDL、Proxy/Stub、SA 注册、Profile、CFG）
+  - 编译验证通过确认
+  - 代码检查清单验证结果
+
+quickStart:
+  steps:
+    - 描述需要创建的 SA 功能和接口。
+    - 提供 SA ID、进程名、子系统等必要参数。
+    - 请求 Agent 生成完整的 SA 框架代码。
+  examplePrompt: |
+    请使用 ohos-dev-sa-codegen 帮我创建一个新的 SystemAbility，
+    SA 名为 DemoService，SA ID 为 1499，进程名为 demo_service，
+    子系统为 systemabilitymgr，部件名为 demo_sa。
+
+related:
+  skills:
+    - ohos-dev-cpp-coding-style
+  docs:
+    - title: SA 代码模板
+      path: references/idl-sa-templates.md
+    - title: IDL SA 生成流程
+      path: references/generate-idl-sa.md
+    - title: 变量替换表
+      path: references/variable-reference.md
+    - title: 反模式与常见错误
+      path: references/anti-patterns.md

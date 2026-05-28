@@ -1,0 +1,189 @@
+{
+  "skill_name": "ohos-dev-sa-codegen",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "generate-idl-sa-from-scratch",
+      "prompt": "帮我创建一个新的 OpenHarmony SystemAbility，类名 TestAbility，SA ID 3901，进程名 test_ability，子系统名 test_subsystem，部件名 test_part，按需启动，不支持分布式，HiLog domain 0xD003A01，接口方法：int32_t GetMessage(int32_t id, std::string& msg); void SetMessage(int32_t id, const std::string& msg); 生成到 ./test-ability 目录。",
+      "expected_output": "生成完整的 IDL 化 SA 框架代码，包含 9 个文件（根 BUILD.gn、I{SaName}.idl、{sa_name}.h、{sa_name}.cpp、services/BUILD.gn、sa_profile/{sa_id}.json、sa_profile/BUILD.gn、etc/{process_name}.cfg、etc/BUILD.gn），所有变量正确替换，CFG 使用 sa_main，SA Profile 的 name 为 3901，services/BUILD.gn 包含 idl_gen_interface 和 shlib_type。",
+      "files": [],
+      "assertions": [
+        {
+          "name": "generates-all-9-files",
+          "type": "contains",
+          "expected": "应生成 9 个文件：根 BUILD.gn、ITestAbility.idl、test_ability.h、test_ability.cpp、services/BUILD.gn、3901.json、sa_profile/BUILD.gn、test_ability.cfg、etc/BUILD.gn"
+        },
+        {
+          "name": "idl-file-correct",
+          "type": "regex",
+          "pattern": "interface OHOS.ITestAbility"
+        },
+        {
+          "name": "idl-methods-correct",
+          "type": "regex",
+          "pattern": "GetMessage.*\\[in\\].*\\[out\\]"
+        },
+        {
+          "name": "sa-id-3901-in-profile",
+          "type": "regex",
+          "pattern": "\"name\"\\s*:\\s*3901"
+        },
+        {
+          "name": "cfg-uses-sa-main",
+          "type": "regex",
+          "pattern": "/system/bin/sa_main"
+        },
+        {
+          "name": "cfg-ondemand-true",
+          "type": "regex",
+          "pattern": "\"ondemand\"\\s*:\\s*true"
+        },
+        {
+          "name": "services-build-has-idl-gen",
+          "type": "regex",
+          "pattern": "idl_gen_interface"
+        },
+        {
+          "name": "services-build-has-shlib-type",
+          "type": "regex",
+          "pattern": "shlib_type\\s*=\\s*\"sa\""
+        },
+        {
+          "name": "register-macro-correct",
+          "type": "regex",
+          "pattern": "REGISTER_SYSTEM_ABILITY_BY_ID\\(TestAbility,\\s*3901,\\s*false\\)"
+        },
+        {
+          "name": "log-domain-correct",
+          "type": "regex",
+          "pattern": "0xD003A01"
+        },
+        {
+          "name": "no-placeholder-values",
+          "type": "not_regex",
+          "pattern": "(1499|0xD003F00|placeholder|demo_service|safwk|systemabilitymgr)",
+          "note": "不应出现模板示例值（1499、0xD003F00、demo_service、safwk、systemabilitymgr），应全部替换为用户提供的值"
+        },
+        {
+          "name": "includes-todo-for-method-impl",
+          "type": "contains",
+          "expected": "应提示用户需要手动实现接口方法逻辑（TODO 项）"
+        },
+        {
+          "name": "reminds-selinux-and-sa-id",
+          "type": "contains",
+          "expected": "应提醒 SA ID 上库（system_ability_definition.h）和 Selinux 规则配置"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "generate-idl-sa-incomplete-info",
+      "prompt": "帮我创建一个 SA，类名 ListenService，SA ID 5002。",
+      "expected_output": "不应直接生成代码。应识别出缺失字段（进程名、子系统名、部件名、启动方式、分布式支持、HiLog domain、接口方法、生成路径）并逐项追问，不使用任何默认值或占位值填充。",
+      "files": [],
+      "assertions": [
+        {
+          "name": "does-not-generate-code",
+          "type": "not_regex",
+          "pattern": "REGISTER_SYSTEM_ABILITY_BY_ID",
+          "note": "信息不完整时不应生成任何代码"
+        },
+        {
+          "name": "asks-for-process-name",
+          "type": "contains",
+          "expected": "应追问进程名"
+        },
+        {
+          "name": "asks-for-subsystem",
+          "type": "contains",
+          "expected": "应追问子系统名和部件名"
+        },
+        {
+          "name": "asks-for-log-domain",
+          "type": "contains",
+          "expected": "应追问 HiLog domain"
+        },
+        {
+          "name": "asks-for-interface-methods",
+          "type": "contains",
+          "expected": "应追问接口方法签名"
+        },
+        {
+          "name": "asks-for-startup-mode",
+          "type": "contains",
+          "expected": "应追问启动方式（常驻/按需）"
+        },
+        {
+          "name": "no-default-values",
+          "type": "not_regex",
+          "pattern": "(saId.*=.*0|进程名.*=.*\".*\"|子系統.*systemabilitymgr)",
+          "note": "不应为缺失字段填充任何默认值"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "modify-existing-sa-add-interface",
+      "prompt": "我有一个 IDL 化的 SA，需要在 .idl 文件中添加一个新接口方法：int32_t QueryStatus(int32_t moduleId, bool& isActive); SA 代码在 ./my_sa 目录下。",
+      "expected_output": "给出正确的修改步骤：1) 在 .idl 文件添加方法声明 2) 在 SA 类中添加 override 实现 3) 说明 Proxy/Stub 由 IDL 工具自动重新生成 4) 提醒重新编译。",
+      "files": [],
+      "assertions": [
+        {
+          "name": "idl-method-signature-correct",
+          "type": "regex",
+          "pattern": "QueryStatus.*\\[in\\].*moduleId.*\\[out\\].*isActive"
+        },
+        {
+          "name": "mentions-override-impl",
+          "type": "contains",
+          "expected": "应说明需要在 SA 服务端类中添加新方法的 override 实现"
+        },
+        {
+          "name": "auto-regen-proxy-stub",
+          "type": "contains",
+          "expected": "应说明 Proxy/Stub 由 IDL 工具自动重新生成，无需手动修改"
+        },
+        {
+          "name": "reminds-recompile",
+          "type": "contains",
+          "expected": "应提醒用户重新编译"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "migrate-nonidl-to-idl",
+      "prompt": "我有一个手写 Proxy/Stub 的 SA 需要迁移到 IDL 模式，代码在 ./legacy_sa 目录。请帮我迁移。",
+      "expected_output": "按步骤执行：1) 读取并分析现有代码 2) 生成 .idl 文件 3) 修改 BUILD.gn（添加 idl_gen_interface，移除手写 proxy/stub）4) 修改 SA 类继承 5) 列出需要删除的手写文件 6) 提醒可能存在的差异。",
+      "files": [],
+      "assertions": [
+        {
+          "name": "reads-existing-code-first",
+          "type": "contains",
+          "expected": "应首先读取现有代码（接口头文件、Proxy、Stub、SA 类、BUILD.gn）进行分析"
+        },
+        {
+          "name": "generates-idl-file",
+          "type": "regex",
+          "pattern": "interface OHOS.I"
+        },
+        {
+          "name": "modifies-build-gn",
+          "type": "contains",
+          "expected": "应说明 BUILD.gn 的变更：添加 idl_gen_interface、ohos_source_set，移除手写 proxy/stub 源文件"
+        },
+        {
+          "name": "lists-files-to-delete",
+          "type": "contains",
+          "expected": "应列出需要删除的手写文件（proxy.h/.cpp、stub.h/.cpp、I{sa_name}.h）"
+        },
+        {
+          "name": "type-mapping-table",
+          "type": "contains",
+          "expected": "应展示 C++ 到 IDL 的类型映射（int32_t→int, bool→boolean, std::string→String, T&→[out] T）"
+        }
+      ]
+    }
+  ]
+}
