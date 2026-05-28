@@ -215,6 +215,97 @@ ERROR at //BUILD.gn:123:25: Unable to find target
 - Check for typos in target name
 - Ensure dependent component is built
 
+## Independent Component Build Errors
+
+### hb Command Does Not Build Anything
+
+**Common causes**:
+- The command is not run from the prepared workspace root.
+- The command uses a repository name instead of the OpenHarmony component name.
+- `-i` or `-t` is missing or placed before the component name.
+- Stale files under `out/standard/` come from another independent-build attempt.
+
+**Correct command shape**:
+```bash
+hb build <component-name> -i
+hb build <component-name> -t
+```
+
+### hb Command Not Found
+
+**Error**:
+```
+hb: command not found
+```
+
+**Cause**: The OpenHarmony hb command-line package is not installed in the current user environment or `$HOME/.local/bin` is not in `PATH`.
+
+**Solution**:
+```bash
+python3 -m pip install --user build/hb
+export PATH="$HOME/.local/bin:$PATH"
+command -v hb
+```
+
+Then rerun the independent build with the real hb command:
+```bash
+hb build <component-name> -i
+```
+
+### OHOS Component Not Found
+
+**Error**:
+```
+OHOS component:(xxx) not found
+```
+
+**Cause**: Component metadata or dependency names do not match what hb/HPM expects.
+
+**Solution**:
+- Check the component name used in the command.
+- Check whether the dependency appears in component metadata.
+- Check the HPM dependency cache only as evidence; fix metadata in source rather than editing downloaded package content.
+
+### Missing Independent-Build Binary Package
+
+**Error**:
+```
+unable to find linux-x64 based @ohos/xxx
+unable to find linux-x64 based @openharmony/xxx
+```
+
+**Cause**: A dependent component has no usable Linux x64 snapshot package, or `bundle.json` refers to the wrong package organization.
+
+**Solution**:
+- For `@ohos/xxx`, confirm the dependent component has an available Linux x64 snapshot package.
+- For `@openharmony/xxx`, check whether `bundle.json` should reference `@ohos/<component>` instead.
+
+### Header or Symbol Missing Only in Independent Build
+
+**Errors**:
+```
+fatal error: 'header_file.h' file not found
+ld.lld: error: undefined symbol
+```
+
+**Cause**: Independent build consumes dependent components through binary packages, so private include paths, private targets, absolute source paths, missing `public_deps`, or missing `public_configs` can be exposed.
+
+**Investigation**:
+```bash
+# Inspect dependency and config exposure
+prebuilts/build-tools/linux-x86/bin/gn desc out/standard <target> deps
+prebuilts/build-tools/linux-x86/bin/gn desc out/standard <target> public_deps
+prebuilts/build-tools/linux-x86/bin/gn desc out/standard <target> public_configs
+prebuilts/build-tools/linux-x86/bin/gn desc out/standard <target> defines
+prebuilts/build-tools/linux-x86/bin/gn desc out/standard <target> cflags
+```
+
+**Solution**:
+- Expose required headers through the provider component's inner API.
+- Move required dependencies to `public_deps` when downstream consumers need them.
+- Expose required include directories, defines, and compile options through public config where appropriate.
+- Remove absolute references to another source repository from `BUILD.gn`; use declared component dependencies instead.
+
 ## Memory/Resource Errors
 
 ### Out of Memory

@@ -10,12 +10,25 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# Find OpenHarmony root
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OH_ROOT="$(cd "$SCRIPT_DIR/../../../../../../.." && pwd)"
+find_root() {
+    local dir="${1:-$PWD}"
+    while [[ "$dir" != "/" ]]; do
+        if [[ -f "$dir/.gn" && -f "$dir/build.sh" ]]; then
+            echo "$dir"
+            return 0
+        fi
+        dir="$(dirname "$dir")"
+    done
+    return 1
+}
 
 # Default time window in minutes (check for changes in last N minutes)
 TIME_WINDOW=${1:-30}
+ROOT_HINT="${2:-$PWD}"
+if ! OH_ROOT="$(find_root "$ROOT_HINT")"; then
+    echo -e "${RED}Error: OpenHarmony root not found from: $ROOT_HINT${NC}"
+    exit 1
+fi
 
 echo -e "${GREEN}OpenHarmony Fast Rebuild Checker${NC}"
 echo "OpenHarmony Root: $OH_ROOT"
@@ -63,7 +76,7 @@ fi
 
 echo ""
 echo "To check a different time window:"
-echo "  $0 <minutes>"
+echo "  $0 <minutes> [openharmony-root]"
 echo ""
 echo "Example: Check last 60 minutes"
-echo "  $0 60"
+echo "  $0 60 /path/to/OpenHarmony"

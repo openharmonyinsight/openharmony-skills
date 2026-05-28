@@ -4,21 +4,47 @@
 
 set -e
 
-# OpenHarmony root directory
-# Script is at: .../ace_engine/.claude/skills/openharmony-build/scripts/
-# Need to go up 7 levels to reach OpenHarmony root
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OH_ROOT="$(cd "$SCRIPT_DIR/../../../../../../.." && pwd)"
+find_root() {
+    local dir="${1:-$PWD}"
+    while [[ "$dir" != "/" ]]; do
+        if [[ -f "$dir/.gn" && -f "$dir/build.sh" ]]; then
+            echo "$dir"
+            return 0
+        fi
+        dir="$(dirname "$dir")"
+    done
+    return 1
+}
+
+build_log_path() {
+    local product="$1"
+    local root="$2"
+    if [[ "$product" == "host_product" ]]; then
+        echo "$root/out/host/host_product/build.log"
+    elif [[ "$product" == "ohos-sdk" || "$product" == "sdk" ]]; then
+        echo "$root/out/sdk/build.log"
+    elif [[ "$product" == "standard" || "$product" == "independent" || "$product" == "component" || "$product" == "component-independent" ]]; then
+        echo "$root/out/standard/build.log"
+    else
+        echo "$root/out/$product/build.log"
+    fi
+}
 
 # Default product if none specified
 PRODUCT="${1:-rk3568}"
-BUILD_LOG="$OH_ROOT/out/$PRODUCT/build.log"
+ROOT_HINT="${2:-$PWD}"
+if ! OH_ROOT="$(find_root "$ROOT_HINT")"; then
+    echo "OpenHarmony root not found from: $ROOT_HINT"
+    exit 1
+fi
+BUILD_LOG="$(build_log_path "$PRODUCT" "$OH_ROOT")"
 
 if [ ! -f "$BUILD_LOG" ]; then
     echo "Build log not found: $BUILD_LOG"
     echo ""
-    echo "Usage: $0 [product-name]"
-    echo "Example: $0 rk3568"
+    echo "Usage: $0 [product-name] [openharmony-root]"
+    echo "Example: $0 rk3568 /path/to/OpenHarmony"
+    echo "Example: $0 standard /path/to/OpenHarmony    # independent component build"
     exit 1
 fi
 
