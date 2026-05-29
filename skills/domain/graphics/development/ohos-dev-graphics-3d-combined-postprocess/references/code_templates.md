@@ -225,7 +225,7 @@ output.factors[PostProcessConfiguration::INDEX_TONEMAP] =
 
 **File**: `api/render/shaders/common/render_post_process_blocks.h`
 
-**Generic Template:**
+**Generic Template (basic, factors only):**
 ```glsl
 void PostProcessYourEffectBlock(
     in uint postProcessFlags,
@@ -239,6 +239,26 @@ void PostProcessYourEffectBlock(
         const float param1 = factor.x;
         const float param2 = factor.y;
         outCol = YourEffectLogic(outCol, param1, param2);
+    }
+}
+```
+
+**Generic Template (with userFactors, for effects needing >4 parameters):**
+```glsl
+void PostProcessYourEffectBlock(
+    in uint postProcessFlags,
+    in vec4 factor,
+    in vec4 userFactor,
+    in vec3 inCol,
+    out vec3 outCol)
+{
+    outCol = inCol;
+    if ((postProcessFlags & POST_PROCESS_SPECIALIZATION_YOUR_EFFECT_BIT) ==
+        POST_PROCESS_SPECIALIZATION_YOUR_EFFECT_BIT) {
+        const float param1 = factor.x;
+        const float param2 = factor.y;
+        const float param3 = userFactor.x;
+        outCol = YourEffectLogic(outCol, param1, param2, param3);
     }
 }
 ```
@@ -293,6 +313,16 @@ PostProcessYourEffectBlock(
     outColor.rgb);
 ```
 
+**Generic Template (with userFactors, for effects needing >4 parameters):**
+```glsl
+PostProcessYourEffectBlock(
+    uGlobalData.flags.x,
+    uGlobalData.factors[POST_PROCESS_INDEX_YOUR_EFFECT],
+    uGlobalData.userFactors[USER_INDEX_YOUR_EFFECT],
+    outColor.rgb,
+    outColor.rgb);
+```
+
 **Tone Mapping Example:**
 ```glsl
 #version 460 core
@@ -330,6 +360,16 @@ void main(void)
 PostProcessYourEffectBlock(
     uGlobalData.flags.x,
     uGlobalData.factors[POST_PROCESS_INDEX_YOUR_EFFECT],
+    outColor.rgb,
+    outColor.rgb);
+```
+
+**Generic Template (with userFactors, for effects needing >4 parameters):**
+```glsl
+PostProcessYourEffectBlock(
+    uGlobalData.flags.x,
+    uGlobalData.factors[POST_PROCESS_INDEX_YOUR_EFFECT],
+    uGlobalData.userFactors[USER_INDEX_YOUR_EFFECT],
     outColor.rgb,
     outColor.rgb);
 ```
@@ -438,7 +478,7 @@ ppConfig.tonemapConfiguration = pp.tonemapConfiguration;
 
 **File**: `api/3d/shaders/common/3d_dm_inplace_post_process.h`
 
-**Generic Template:**
+**Generic Template (with userFactors, for effects needing >4 parameters):**
 ```glsl
 PostProcessYourEffectBlock(
     uPostProcessData.flags.x,
@@ -448,7 +488,9 @@ PostProcessYourEffectBlock(
     color.rgb);
 ```
 
-**Tone Mapping Example:**
+<!-- If the effect does not require userFactors (≤4 parameters), use the 4-parameter signature without userFactors. See Tone Mapping Example below. -->
+
+**Tone Mapping Example (basic, factors only):**
 ```glsl
 #include "render/shaders/common/render_post_process_blocks.h"
 
@@ -603,7 +645,7 @@ public:
     META_BEGIN_STATIC_DATA()
     SCENE_STATIC_DYNINIT_PROPERTY_DATA(IPostProcessEffect, bool, Enabled, "")
     SCENE_STATIC_DYNINIT_PROPERTY_DATA(ITonemap, TonemapType, TonemapType, "tonemapType")
-    SCENE_STATIC_DYNINITINIT_PROPERTY_DATA(ITonemap, float, Exposure, "exposure")
+    SCENE_STATIC_DYNINIT_PROPERTY_DATA(ITonemap, float, Exposure, "exposure")
     META_END_STATIC_DATA()
 
     META_IMPLEMENT_PROPERTY(bool, Enabled)
