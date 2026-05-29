@@ -1,0 +1,80 @@
+{
+  "skill_name": "ohos-dev-arkui-build-error-analyzer",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "编译 ace_engine 报错了，帮我分析一下。build log 在 out/rk3568/build.log。",
+      "expected_output": "Uses extract_last_error.sh to extract the last error from build.log, reads last_error.log (NOT build.log directly), then categorizes and recommends fixes.",
+      "files": [],
+      "expectations": [
+        "The response mentions running extract_last_error.sh or the bundled extraction script as the first step.",
+        "The response reads last_error.log for analysis, NOT build.log directly.",
+        "The response checks for 'build success, no error' before proceeding with analysis.",
+        "The response categorizes the error type (compilation, linker, or build system).",
+        "The response provides recommendations with file paths, line numbers, and before/after code examples."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "链接报错了：ld.lld: error: undefined symbol: OHOS::Ace::NG::MyPattern::OnModifyDone()。这个符号在 libace.z.so 里找不到，.cpp 文件已经在 BUILD.gn 里了。",
+      "expected_output": "Recognizes the symbol is not exported. Checks ACE_FORCE_EXPORT on the method and libace.map whitelist entry.",
+      "files": [],
+      "expectations": [
+        "The response identifies this as a symbol export issue (symbol exists in code but not exported from libace).",
+        "The response checks whether the method has ACE_FORCE_EXPORT attribute in the header declaration.",
+        "The response recommends adding the method to libace.map with a fine-grained pattern like 'OHOS::Ace::NG::MyPattern::OnModifyDone*;'.",
+        "The response distinguishes between non-template and template export requirements (this is a non-template case).",
+        "The response provides verification commands such as nm or grep on libace.map."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "编译报错：member access into incomplete type 'FrameNode'。报错在 click_event.h 里，这个文件正在做头文件优化，之前把 frame_node.h 的 include 替换成了前向声明。",
+      "expected_output": "Recognizes the header optimization context. Adds the missing include to the .cpp file, NOT back to the optimized header.",
+      "files": [],
+      "expectations": [
+        "The response recognizes that click_event.h is being optimized (checks git status context).",
+        "The response adds the missing #include to the .cpp file that has the error, NOT to the optimized header.",
+        "The response does NOT suggest reverting the forward declaration optimization.",
+        "The response explains why: adding includes back to an optimized header defeats the optimization purpose.",
+        "The response verifies the fix by suggesting standalone compilation of the affected file."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "头文件里用了 RefPtr<FrameNode> 作为成员变量，编译报错说 FrameNode 是 incomplete type，报在析构函数的地方。我用了前向声明替换了 #include。怎么办？",
+      "expected_output": "Recognizes RefPtr<T> with forward-declared T requires special member functions declared in header, implemented in .cpp.",
+      "files": [],
+      "expectations": [
+        "The response identifies that RefPtr<T> destructor needs complete type definition.",
+        "The response recommends declaring destructor (and possibly other special member functions) in the header and implementing with '= default' in the .cpp file.",
+        "The response does NOT recommend adding the full #include back to the header.",
+        "The response references the forward-declaration-refptr-member reference case."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Analyze this linker error: ld.lld: error: undefined symbol: virtual thunk to OHOS::Ace::NG::MyClass::~MyClass(). I already have ACE_FORCE_EXPORT on the class. Build is using LTO.",
+      "expected_output": "Recognizes LTO virtual thunk pattern. Adds both the class pattern and virtual thunk pattern to libace.map.",
+      "files": [],
+      "expectations": [
+        "The response identifies this as an LTO virtual thunk issue.",
+        "The response recommends adding BOTH patterns to libace.map: 'OHOS::Ace::NG::MyClass::*;' AND 'virtual?thunk?to?OHOS::Ace::NG::MyClass::*;'.",
+        "The response does NOT recommend reverting the forward declaration or removing LTO.",
+        "The response references the lto-virtual-thunk-libace-map-export reference case."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "编译一直报这个错，我怀疑是 thinlto-cache 有问题，帮我清理一下缓存然后重新编译。",
+      "expected_output": "Refuses to clear LTO cache. 99.9% of errors are code issues, not cache problems.",
+      "files": [],
+      "expectations": [
+        "The response refuses to clear thinlto-cache, llvmcache, or perform clean builds.",
+        "The response states the NEVER rule about clearing LTO cache.",
+        "The response redirects to analyze the actual error in the code instead.",
+        "The response does NOT suggest rm -rf out/obj or similar destructive commands."
+      ]
+    }
+  ]
+}
