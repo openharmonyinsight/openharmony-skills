@@ -1,0 +1,246 @@
+{
+  "skill_version": "1.0.0",
+  "name": "platform-adapter",
+  "description": "ArkUI-X Platform API Adapter Automation Skill",
+
+  "repo_config": {
+    "manifest_path": ".repo/manifests/openharmony-master.xml",
+    "remote_base": "https://gitcode.com/openharmony/",
+    "default_revision": "master"
+  },
+
+  "architecture_analysis": {
+    "platform_independent_threshold": 0.9,
+    "platform_heavy_threshold": 0.4,
+    "hybrid_threshold": 0.7,
+
+    "indicators": {
+      "platform_independent": [
+        "C/C++ business logic > 90%",
+        "Pure data processing",
+        "No system service calls",
+        "Cross-platform algorithms",
+        "JSON/XML parsing",
+        "Database operations",
+        "Network protocols"
+      ],
+      "platform_heavy": [
+        "Native framework integration",
+        "System service dependencies",
+        "Hardware access",
+        "Platform-specific APIs",
+        "JNI/ObjC++ required",
+        "System permissions",
+        "OS-level features"
+      ],
+      "hybrid": [
+        "Mixed logic types",
+        "Common data structures",
+        "Extractable platform layer",
+        "Service abstraction possible",
+        "Partial platform independence"
+      ]
+    },
+
+    "module_categories": {
+      "platform_independent": {
+        "examples": ["http", "socket", "preferences", "relational_store", "data"],
+        "recommended_mode": "ohos_reuse",
+        "code_reuse": 0.95,
+        "estimated_lines": 150
+      },
+      "platform_heavy": {
+        "examples": ["bluetooth", "pasteboard", "input_method", "clipboard", "location", "sensor"],
+        "recommended_mode": "independent",
+        "code_reuse": 0.2,
+        "estimated_lines": 3000
+      },
+      "hybrid": {
+        "examples": ["camera", "image", "audio", "player", "notification"],
+        "recommended_mode": "ohos_reuse_abstraction",
+        "code_reuse": 0.7,
+        "estimated_lines": 1000
+      }
+    }
+  },
+
+  "architecture_modes": {
+    "ohos_reuse": {
+      "name": "OHOS Code Reuse Mode",
+      "description": "Maximize OHOS code reuse, minimal platform adapter",
+      "layers": [
+        "ArkTS API (OHOS shared)",
+        "NAPI Binding (OHOS shared)",
+        "Data Structures (OHOS shared)",
+        "Platform Interface (custom)",
+        "Platform Adapter (custom)"
+      ],
+      "pros": [
+        "~95% code reuse",
+        "API compatibility guaranteed",
+        "Automatic OHOS updates",
+        "Low maintenance cost"
+      ],
+      "cons": [
+        "Requires OHOS foundation code",
+        "Complex build configuration",
+        "Dependent on OHOS structure"
+      ],
+      "steps": [
+        "Analyze OHOS NAPI structure",
+        "Define pure virtual interface",
+        "Implement OHOS thin wrapper (100% forwarding)",
+        "Implement Android adapter (JNI)",
+        "Implement iOS adapter (ObjC++)",
+        "Update NAPI with helper macros",
+        "Configure conditional compilation"
+      ],
+      "file_structure": {
+        "ohos_repo": [
+          "interfaces/kits/napi/include/{module}_adapter.h",
+          "services/adapter/{module}_adapter_ohos.cpp"
+        ],
+        "plugin_repo": [
+          "adapter/android/{module}_adapter_android.cpp",
+          "adapter/ios/{module}_adapter_ios.mm"
+        ]
+      }
+    },
+
+    "independent": {
+      "name": "Independent Implementation Mode",
+      "description": "Complete independent implementation, zero OHOS dependency",
+      "layers": [
+        "ArkTS API (custom)",
+        "NAPI Binding (custom)",
+        "Business Logic (custom)",
+        "Platform Interface (custom)",
+        "Platform Adapter (custom)"
+      ],
+      "pros": [
+        "Zero OHOS dependency",
+        "Platform optimization",
+        "Independent versioning",
+        "Simpler build config"
+      ],
+      "cons": [
+        "100% new code (~3000 lines)",
+        "API compatibility risk",
+        "Manual OHOS sync",
+        "Higher maintenance"
+      ],
+      "steps": [
+        "Create plugin directory structure",
+        "Define platform interface",
+        "Implement business logic",
+        "Implement Android adapter (JNI + Java)",
+        "Implement iOS adapter (ObjC++ + ObjC/Swift)",
+        "Add NAPI bindings",
+        "Configure build system"
+      ],
+      "file_structure": {
+        "plugin_repo": [
+          "interface/{module}_interface.h",
+          "napi/{module}_module.cpp",
+          "common/{module}_core.cpp",
+          "android/{module}_android.cpp",
+          "android/java/",
+          "ios/{module}_ios.mm"
+        ]
+      }
+    },
+
+    "ohos_reuse_abstraction": {
+      "name": "OHOS Reuse with Service Abstraction",
+      "description": "Reuse OHOS code with abstracted platform services",
+      "layers": [
+        "ArkTS API (OHOS shared)",
+        "NAPI Binding (OHOS shared)",
+        "Data Structures (OHOS shared)",
+        "Business Logic (OHOS shared)",
+        "Service Interface (custom)",
+        "Service Adapter (custom)"
+      ],
+      "pros": [
+        "~70% code reuse",
+        "Service abstraction flexibility",
+        "Partial independence",
+        "Balanced approach"
+      ],
+      "cons": [
+        "More complex architecture",
+        "Abstraction overhead",
+        "Requires careful design"
+      ],
+      "steps": [
+        "Analyze OHOS service dependencies",
+        "Define service abstraction layer",
+        "Extract platform-independent logic",
+        "Implement service adapters",
+        "Configure service injection",
+        "Update build with service layer"
+      ],
+      "file_structure": {
+        "ohos_repo": [
+          "interfaces/kits/napi/ (shared)",
+          "frameworks/innerkits/ (shared)",
+          "services/abstraction/ (custom)"
+        ],
+        "plugin_repo": [
+          "services/android/",
+          "services/ios/"
+        ]
+      }
+    }
+  },
+
+  "build_config": {
+    "mandatory_files": [
+      "plugins/plugin_lib.gni",
+      "interface/sdk/plugins/api/apiConfig.json",
+      "build_plugins/sdk/arkui_cross_sdk_description_std.json",
+      "plugins/{module}/BUILD.gn"
+    ],
+    "templates": {
+      "gni": "templates/build/{mode}.gni",
+      "build": "templates/build/BUILD.gn"
+    }
+  },
+
+  "reference_implementations": {
+    "http": {
+      "mode": "independent",
+      "path": "plugins/net/http/",
+      "description": "HTTP client - independent implementation"
+    },
+    "pasteboard": {
+      "mode": "ohos_reuse",
+      "path": "plugins/pasteboard/",
+      "description": "Pasteboard - OHOS reuse mode"
+    },
+    "preferences": {
+      "mode": "ohos_reuse",
+      "path": "plugins/data/preferences/",
+      "description": "Preferences - OHOS reuse mode"
+    }
+  },
+
+  "analysis_rules": {
+    "scan_patterns": {
+      "napi_bindings": "interfaces/kits/napi/**/*.cpp",
+      "innerkits": "frameworks/innerkits/**/*.cpp",
+      "platform_code": "services/platform/**/*.cpp",
+      "test_code": "test/**/*.cpp"
+    },
+    "metrics": {
+      "platform_ratio": "platform_code / total_code",
+      "napi_complexity": "napi_bindings_count / total_functions",
+      "dependency_count": "external_dependencies.length"
+    },
+    "classification": {
+      "if platform_ratio < 0.4": "platform_independent",
+      "elif platform_ratio > 0.7": "platform_heavy",
+      "else": "hybrid"
+    }
+  }
+}

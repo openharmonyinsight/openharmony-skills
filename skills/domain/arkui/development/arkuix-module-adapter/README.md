@@ -1,0 +1,3 @@
+# arkuix-module-adapter
+
+Guide OHOS modules cross-platform adaptation with automated architecture analysis, code sync, and configuration generation. Use for adapting OHOS subsystem modules (@ohos.data.preferences, @ohos.intl, @ohos.multimedia.image, etc.) to Android/iOS. Provides 6-phase workflow: info collection → code sync → API analysis → architecture analysis → recommendation → implementation. Includes automated scripts for DTS analysis, architecture analysis, and configuration generation.
