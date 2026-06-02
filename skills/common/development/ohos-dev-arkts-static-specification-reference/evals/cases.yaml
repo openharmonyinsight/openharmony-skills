@@ -43,3 +43,81 @@ cases:
     prompt_file: prompts/eval-007.md
     expected_file: expected/eval-007.md
     description: "FixedArray 与 ResizableArray 的区别"
+
+  - id: eval-008
+    category: overload
+    prompt_file: prompts/eval-008.md
+    expected_file: expected/eval-008.md
+    description: "函数重载按声明顺序匹配及后续窄类型被遮蔽"
+
+  - id: eval-009
+    category: overload
+    prompt_file: prompts/eval-009.md
+    expected_file: expected/eval-009.md
+    description: "只返回类型不同不能构成重载"
+
+  - id: eval-010
+    category: interfaces
+    prompt_file: prompts/eval-010.md
+    expected_file: expected/eval-010.md
+    description: "接口继承中当前接口方法优先，父接口按 extends 顺序参与"
+
+  - id: eval-011
+    category: classes
+    prompt_file: prompts/eval-011.md
+    expected_file: expected/eval-011.md
+    description: "实例方法继承查找优先级：当前类、父类、接口"
+
+  - id: eval-012
+    category: classes
+    prompt_file: prompts/eval-012.md
+    expected_file: expected/eval-012.md
+    description: "static 方法不继承，只看当前类静态成员"
+
+  - id: eval-013
+    category: constructors
+    prompt_file: prompts/eval-013.md
+    expected_file: expected/eval-013.md
+    description: "构造函数重载与 unnamed constructor 限制"
+
+  - id: eval-014
+    category: modules
+    prompt_file: prompts/eval-014.md
+    expected_file: expected/eval-014.md
+    description: "模块级 main 函数限制"
+
+  - id: eval-015
+    category: migration
+    prompt_file: prompts/eval-015.md
+    expected_file: expected/eval-015.md
+    description: "TypeScript require 迁移到 ArkTS ES module import"
+
+  - id: eval-016
+    category: annotations
+    prompt_file: prompts/eval-016.md
+    expected_file: expected/eval-016.md
+    description: "ArkTS annotations 不能按 TypeScript decorators 语义解释"
+
+  - id: eval-017
+    category: concurrency
+    prompt_file: prompts/eval-017.md
+    expected_file: expected/eval-017.md
+    description: "async/await 与 Promise 返回类型"
+
+  - id: eval-018
+    category: type-system
+    prompt_file: prompts/eval-018.md
+    expected_file: expected/eval-018.md
+    description: "访问 nullish 联合类型成员前必须收窄"
+
+  - id: eval-019
+    category: expressions
+    prompt_file: prompts/eval-019.md
+    expected_file: expected/eval-019.md
+    description: "字面量 cast 与非字面量 cast 的差异"
+
+  - id: eval-020
+    category: boundary
+    prompt_file: prompts/eval-020.md
+    expected_file: expected/eval-020.md
+    description: "规范未明确说明时必须输出固定边界提示"
