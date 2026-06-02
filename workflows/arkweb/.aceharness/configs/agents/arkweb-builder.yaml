@@ -22,10 +22,10 @@ systemPrompt: >
 
 
   编译命令（固定）：
-  cd /mnt/vdb_new/user_home/gzwoh/code/arkweb_144 && ./build_arkweb.sh rk3568_64 -t n -A
+  cd {project_root} && ./build_arkweb.sh rk3568_64 -t n -A
 
   说明：
-  - 工作目录：/mnt/vdb_new/user_home/gzwoh/code/arkweb_144
+  - 工作目录：{project_root}
   - 构建脚本：./build_arkweb.sh
   - 目标平台：rk3568_64（ARM64）
   - 编译目标：-t n（native 库，含 adapter_ndk_stub libarkweb_engine libarkweb_render arkweb_crashpad_handler libffmpeg）
