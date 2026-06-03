@@ -45,6 +45,7 @@ OpenHarmony CAPI XTS 测试用例生成器 — 方式2（N-API 封装测试）
 | 读取文档 | `modules/L1_Analysis/parser/doc_reader.md` |
 | 解析工程配置 | `modules/L1_Analysis/parser/project_parser.md` |
 | 分析覆盖率 | `modules/L1_Analysis/analyzer/coverage_analyzer.md` |
+| **生成测试设计文档** | `modules/L2_Generation/generator/design_doc_generator_c.md` |
 | 生成 C++ N-API 封装 | `modules/L2_Generation/generator/test_generation_c.md` |
 | N-API 基础模式 | `modules/L2_Generation/generator/test_patterns_napi_ets.md` |
 | N-API 高级模式 | `modules/L2_Generation/generator/test_patterns_napi_ets_advance.md` |
@@ -72,6 +73,7 @@ CAPI 头文件路径：`{OH_ROOT}/interface/sdk_c/`
 4. 测试用例命名使用小驼峰 camelCase
 5. 禁止修改工程目录中的非测试文件
 6. N-API 三重校验步骤不可跳过
+7. 测试设计文档不可跳过 — Phase 4 必须在 Phase 5 代码生成前完成
 
 ## Test Case Naming Format
 
@@ -101,7 +103,7 @@ C API (.h) → N-API 封装 (C++) → JS 接口 (index.d.ts) → ETS/ArkTS 测�
 ### Flow A: Coverage-Report-Driven
 
 ```
-Phase 1 (Config) → Phase 2 (Header Parse) → Phase 3 (Style Scan Only) → Phase 4 (Generate) → Phase 5 (Verify) → Phase 6 (Build) → Phase 7 (Output)
+Phase 1 (Config) → Phase 2 (Header Parse) → Phase 3 (Style Scan Only) → Phase 4 (Design Doc) → Phase 5 (Generate) → Phase 6 (Verify) → Phase 7 (Build) → Phase 8 (Output)
 ```
 
 1. Parse coverage report to extract missing test items
@@ -112,7 +114,7 @@ Phase 1 (Config) → Phase 2 (Header Parse) → Phase 3 (Style Scan Only) → Ph
 ### Flow B: Standard Process (Default)
 
 ```
-Phase 1 (Config) → Phase 2 (Header Parse) → Phase 3 (Full Coverage) → Phase 4 (Generate) → Phase 5 (Verify) → Phase 6 (Build) → Phase 7 (Output)
+Phase 1 (Config) → Phase 2 (Header Parse) → Phase 3 (Full Coverage) → Phase 4 (Design Doc) → Phase 5 (Generate) → Phase 6 (Verify) → Phase 7 (Build) → Phase 8 (Output)
 ```
 
 Flow B performs full coverage analysis in Phase 3 (scans all existing test files, generates gap report). Flow A only performs style scan when coverage report already exists.
@@ -124,10 +126,11 @@ Flow B performs full coverage analysis in Phase 3 (scans all existing test files
 | 1 | Determine Subsystem Config | `references/subsystems/_common.md` + subsystem config | Yes |
 | 2 | Header File Parsing | `modules/L1_Analysis/parser/unified_api_parser_c.md` | Yes |
 | 3 | Coverage Analysis / Style Scan | `modules/L1_Analysis/analyzer/coverage_analyzer.md` | Yes |
-| 4 | Generate Test Cases | `modules/L2_Generation/generator/test_generation_c.md` + `test_patterns_napi_ets.md` | Yes |
-| 5 | N-API Triple Verification | `modules/L2_Generation/generator/verification_common.md` | **MANDATORY — NEVER SKIP** |
-| 6 | Build Verification | `modules/L3_Validation/builder/build_workflow_c.md` | Recommended |
-| 7 | Output Results | — | Yes |
+| **4** | **Generate Test Design Doc** | **`modules/L2_Generation/generator/design_doc_generator_c.md`** | **MANDATORY — NEVER SKIP** |
+| 5 | Generate Test Cases | `modules/L2_Generation/generator/test_generation_c.md` + `test_patterns_napi_ets.md` | Yes |
+| 6 | N-API Triple Verification | `modules/L2_Generation/generator/verification_common.md` | **MANDATORY — NEVER SKIP** |
+| 7 | Build Verification | `modules/L3_Validation/builder/build_workflow_c.md` | Recommended |
+| 8 | Output Results | — | Yes |
 
 ---
 
@@ -176,7 +179,30 @@ User Custom > Module Config > Subsystem Config > Core Config
 
 ---
 
-#### Phase 4: Generate Test Cases
+#### Phase 4: Generate Test Design Document
+
+**MANDATORY - READ ENTIRE FILE**: Read [`modules/L2_Generation/generator/design_doc_generator_c.md`](modules/L2_Generation/generator/design_doc_generator_c.md) completely.
+
+**MANDATORY - NEVER SKIP**: This phase must complete before Phase 5 code generation. Design doc serves as the blueprint for test code — without it, test coverage will be incomplete and test IDs will conflict.
+
+**Output**: A `{TestFileName}.design.md` file containing:
+- All target API test case designs with unique SUB_ IDs
+- Detailed test steps and expected results (no vague descriptions)
+- N-API function name mapping for each test case
+- Coverage statistics table
+
+**Design Scope**:
+
+| Condition | Design Scope |
+|-----------|-------------|
+| Flow A (coverage report) | Only uncovered items from report |
+| Flow B (no coverage report) | All target APIs from Phase 2 |
+
+**File Location**: Same directory as test files, named `{TestFileName}.design.md`
+
+---
+
+#### Phase 5: Generate Test Cases
 
 **MANDATORY - READ ENTIRE FILE**: Read both:
 1. [`modules/L2_Generation/generator/test_generation_c.md`](modules/L2_Generation/generator/test_generation_c.md) (~800 lines)
@@ -200,7 +226,7 @@ User Custom > Module Config > Subsystem Config > Core Config
 
 ---
 
-#### Phase 5: N-API Triple Verification
+#### Phase 6: N-API Triple Verification
 
 **MANDATORY - READ ENTIRE FILE**: Read [`modules/L2_Generation/generator/verification_common.md`](modules/L2_Generation/generator/verification_common.md) (~600 lines) completely.
 
@@ -225,7 +251,7 @@ bash scripts/auto_fix_napi_triple.sh ${TARGET_PATH}
 
 ---
 
-#### Phase 6: Build Verification
+#### Phase 7: Build Verification
 
 **MANDATORY - READ ENTIRE FILE**: Read [`modules/L3_Validation/builder/build_workflow_c.md`](modules/L3_Validation/builder/build_workflow_c.md) (~500 lines).
 
@@ -238,7 +264,7 @@ bash scripts/auto_fix_napi_triple.sh ${TARGET_PATH}
 
 ---
 
-#### Phase 7: Output Results
+#### Phase 8: Output Results
 
 No module loading required in this phase.
 
@@ -254,7 +280,8 @@ Module:    references/subsystems/{Subsystem}/{Module}.md  (module-specific rules
 
 ## Key Constraints
 
-1. **Verification is mandatory** — Phase 5 (N-API 三重校验) can never be skipped
+1. **Verification is mandatory** — Phase 6 (N-API 三重校验) can never be skipped
+2. **Design doc is mandatory** — Phase 4 (测试设计文档) must complete before code generation
 2. **Strict API adherence** — Only use interfaces declared in `.h` header files
 3. **Module name must be `entry`** — `nm_modname = "entry"`, ETS imports from `libentry.so`
 4. **No project config modification** — Only create test files in designated directories
@@ -262,7 +289,7 @@ Module:    references/subsystems/{Subsystem}/{Module}.md  (module-specific rules
 6. **@tc annotation required** — Every test case must have standard `@tc` block
 7. **Error handling uses `napi_throw_error`** — Do not return error objects from N-API functions
 
-## Mandatory Phase 5: N-API Triple Verification
+## Mandatory Phase 6: N-API Triple Verification
 
 This phase is the **core quality gate**. Skipping it will cause runtime crashes, missing function registrations, and type mismatches between C++, TypeScript, and ETS.
 
@@ -323,4 +350,4 @@ bash scripts/check_test_suite_structure.sh ${TARGET_PATH}
 
 ---
 
-**版本**: 2.2.0 | **更新日期**: 2026-04-08 | **兼容性**: OpenHarmony API 10+
+**版本**: 2.3.0 | **更新日期**: 2026-06-03 | **兼容性**: OpenHarmony API 10+

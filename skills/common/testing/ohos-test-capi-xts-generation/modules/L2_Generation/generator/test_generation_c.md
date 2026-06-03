@@ -450,7 +450,10 @@ static napi_value [API名称]_BoundaryTest(napi_env env, napi_callback_info info
 
 ## 四、测试设计文档生成
 
-生成每个测试用例时同步生成测试设计文档，包含用例列表（编号、名称、描述、类型、状态）、用例详情和覆盖率统计（API/参数/错误码覆盖率）。
+> **⚠️ 本节已迁移至独立模块**: [`design_doc_generator_c.md`](./design_doc_generator_c.md)
+>
+> 测试设计文档在 Phase 4 独立完成，本文件（Phase 5）基于设计文档生成代码。
+> 禁止跳过设计文档直接生成代码。
 
 ## 五、代码风格应用
 
