@@ -1,0 +1,1101 @@
+workflow:
+  name: ArkWeb 本地 Issue 分析归档与上游安全补丁自动合入
+  description: 面向本地 issue HTML/MHTML 归档，串联漏洞解析、Patch抓取、影响判定、分析归档、自动合入、编译验证、提交上库与最终归档的单一工作流
+  mode: state-machine
+  states:
+    - name: 漏洞解析
+      description: 从本地 issue HTML/MHTML 归档中提取 issue、漏洞和上游修复线索
+      type: normal
+      requireHumanApproval: false
+      steps:
+        - name: 解析本地 issue 归档
+          agent: arkweb-security-patch-issue-analyzer
+          task: >
+            基于 context.requirements 中规定的本地 issue 归档目录解析 issue 信息，目录示例使用
+            <issue_archive_dir>。
+
+            需要支持 .html、.htm、.mhtml、.mht 文件；如果目录里有
+            issue.zip，可在只读分析需要时查看压缩包目录或解压到临时目录。
+
+
+            解析要求：
+
+            1. 扫描归档目录，列出候选 issue 文件，优先处理文件名或正文中包含 Chromium issue
+            id、Merge、M144、CVE、安全修复、CL、commit、patch 等线索的文件；
+
+            2. 从文件名和 HTML/MHTML 正文中提取 issue 标题、issue
+            id、产品/里程碑、状态、标签、owner、reporter、时间、相关链接；
+
+            3. 识别正文中的修复线索，包括 Chromium bug、Gerrit CL、commit hash、Gitiles
+            链接、review 链接、PR 链接、Change-Id、Fixed/merged/reland/revert 关系；
+
+            4. 按 arkweb-security-patch-intake skill
+            的修复链接抽取规则，逐条审查评论中的代码链接，区分真正的上游修复 PR/CL 与 bisect/culprit/noise 链接；
+
+            5. 漏洞解析阶段必须获取或定位上游修复 PR/CL，并同时填充到 Markdown 和 JSON；
+
+            6. 输出每个候选 issue 的可信度、信息缺口、是否可继续自动抓取 patch；
+
+            7. 每个 issue 从本阶段开始就写入独立归档目录：
+               .ace-outputs/{runId}/{issue_id}/01_issue_analysis.md
+               .ace-outputs/{runId}/{issue_id}/01_issue_analysis.json
+            8. 不得在 .ace-outputs/{runId}/ 根目录写任何文件；不得生成根级索引或根级
+            01_issue_analysis.md/json。
+               后续阶段必须通过扫描 .ace-outputs/{runId}/{issue_id}/01_issue_analysis.json 发现待处理 issue。
+
+            所有阶段产物的唯一输出根目录是：
+              <context.projectRoot>/.ace-outputs/{runId}
+              真实 ArkWeb 源码根目录来自 <context.codebase>，context.projectRoot 只作为工作流轻量输出根，避免 ACEHarness 启动时对 ArkWeb 大仓建立 Git 基线。
+            不得写入 ~/.aceharness/runs/{runId}/outputs/.ace-outputs，也不得写入任意临时
+            .ace-outputs。
+
+
+            处理本地 HTML/MHTML 时，优先使用结构化文本抽取；可用 `python3`
+            标准库、`grep`、`sed`、`strings` 等只读命令提取可读正文和链接，
+
+            不要修改归档目录中的原始文件。
+
+            优先直接执行 skill 内置脚本，不要实时生成临时解析脚本：
+              python3 skills/arkweb-security-patch-intake/scripts/parse_local_issue_archive.py --archive-dir <本地issue归档目录> --project-root <context.codebase> --output-root <context.projectRoot>/.ace-outputs/{runId}
+            脚本产物必须再按 arkweb-security-patch-intake skill 的修复链接规则做语义复核；脚本无法确认的
+            review/blocked 项可人工补充，但不得臆造修复链接。
+
+
+            阶段边界：
+
+            - 本阶段负责 Issue 基础字段、原始描述、修复事件审计、upstream_fix_prs[] 和初步问题/修复摘要；
+
+            - 不负责修改文件列表、patch 本地归档、ArkWeb 影响结论、责任田、特性树、是否建议保留。
+          role: defender
+          skills:
+            - arkweb-security-patch-intake
+        - name: 漏洞解析裁决
+          agent: arkweb-security-patch-judge
+          task: >
+            审核各 issue 目录中的《01_issue_analysis.md》是否足以支撑本地 issue 到上游 patch
+            的自动获取；不得依赖根目录索引。
+
+
+            裁决要求：
+
+            1. 至少有一个 issue 具备明确修复线索或可追踪的上游链接时，进入「Patch抓取」；
+
+            2. issue 文件可读但线索不足时，给 conditional_pass 并回到「漏洞解析」继续补充；
+
+            3. 本地归档不可读、没有有效 issue，或所有线索都无法追踪时，给 fail 并进入「分析归档」。
+
+
+            在回复末尾输出 JSON：
+
+            ```json
+
+            {
+              "verdict": "pass|conditional_pass|fail",
+              "next_state": "Patch抓取|漏洞解析|分析归档",
+              "issues": [
+                {
+                  "type": "security|implementation|design",
+                  "severity": "critical|major|minor",
+                  "description": "..."
+                }
+              ],
+              "summary": "一句话总结"
+            }
+
+            ```
+          role: judge
+          skills:
+            - arkweb-security-patch-judge
+      transitions:
+        - to: Patch抓取
+          condition:
+            verdict: pass
+          priority: 1
+          label: 本地 issue 线索可追踪
+        - to: 漏洞解析
+          condition:
+            verdict: conditional_pass
+          priority: 2
+          label: 继续补充本地 issue 信息
+        - to: 分析归档
+          condition:
+            verdict: fail
+          priority: 3
+          label: 无法解析有效 issue
+      position:
+        x: 80
+        y: 160
+      isInitial: true
+      isFinal: false
+      maxSelfTransitions: 3
+    - name: Patch抓取
+      description: 根据本地 issue 解析结果自动获取上游主修复 patch
+      type: normal
+      requireHumanApproval: false
+      steps:
+        - name: 自动获取修复 patch
+          agent: arkweb-security-patch-fetcher
+          task: |
+            基于 {issue_id}/01_issue_analysis.md/json 和本地 issue HTML/MHTML 中提取到的链接，自动获取明确的上游主修复 patch，
+            并写入对应 issue 目录下的 02_patch_fetch.md 和 02_patch_fetch.json。
+
+            抓取规则：
+            1. 只使用 {issue_id}/01_issue_analysis.json 中的 upstream_fix_prs[] 作为抓取入口；
+            2. 若 issue 指向多个 CL，必须区分主修复、依赖、revert、reland、测试-only 改动，只把当前 issue 的主修复作为结果；
+            3. 对每个确认 patch 输出来源 URL、commit hash/Change-Id、subject、author、reviewer、bug id、受影响文件、patch 文件路径或可复现获取命令；
+            4. 根据 PR/CL 获取修改文件列表，写入 modified_files[]；
+            5. patch 文件只归档到 .ace-outputs/{runId}/{issue_id}/patches/，不得在 .ace-outputs/{runId}/patches/ 下另建一份；
+            6. 如果允许网络访问，可按链接获取 patch；如果网络不可用，必须输出可复现的获取命令和阻塞原因；
+            7. 不得把“标题相似、同目录、同作者”的其他 patch 当作主修复。
+            8. 优先直接执行 skill 内置脚本，不要实时生成临时抓取脚本：
+               python3 skills/arkweb-security-patch-fetch/scripts/fetch_chromium_patch.py --project-root <context.codebase> --output-root <context.projectRoot>/.ace-outputs/{runId}
+               如网络不可用，使用 --offline 生成可复现抓取命令和阻塞说明；不得改用相似候选 patch 顶替。
+
+            阶段边界：
+            - 本阶段负责 selected_fix、modified_files[]、patch_files[]、fetch_commands[]、excluded_candidates[]；
+            - 不负责重写 Issue 基础字段、ArkWeb 影响结论、责任田、特性树、是否建议保留。
+          role: defender
+          skills:
+            - arkweb-security-patch-fetch
+        - name: Patch抓取裁决
+          agent: arkweb-security-patch-judge
+          task: >
+            审核各 issue 目录中的《02_patch_fetch.md》和《02_patch_fetch.json》是否已经拿到或明确定位本地
+            issue 对应的主修复 patch。
+
+            必须实际检查 patch_files[] 指向的本地文件内容，不能只看路径是否存在或文件大小是否非零。
+
+
+            裁决规则：
+
+            1. patch 来源明确，且至少一个本地 patch/diff 文件通过内容校验时，进入「影响判定」；
+
+            2. 仍有可补充的链接、CL 或 commit 线索时，给 conditional_pass 并回到「Patch抓取」；
+
+            3. 无公开 patch、patch 无法确认、只有不可信候选，或 patch_files[] 中的本地 patch 实际是
+            HTML/JSON/错误页/空文件而不是标准 diff 时，给 fail 并进入「分析归档」。
+
+
+            本地 patch 内容校验要求：
+
+            - 对每个 patch_files[] 中后缀为 .patch/.diff 的文件执行只读检查，确认文件存在、非空，且内容包含标准
+            diff 信号之一：`diff --git`、`Index:`、`--- a/` + `+++ b/`、或 mbox patch 的
+            `From <hash>` + `Subject:` + diff hunks；
+
+            - 如果文件开头是 `<!DOCTYPE html>`、`<html`、`)]}'` JSON 响应、HTTP
+            错误、Gerrit/Gitiles 错误页、纯 metadata JSON，不能算作有效 patch；
+
+            - metadata JSON 只能作为 commit/文件列表辅助证据，不能替代标准 patch/diff 文件；
+
+            - 裁决报告必须列出实际检查过的 patch 文件、判定为 valid/invalid 的原因，以及无效文件的前几行特征。
+
+            可优先执行 skill 内置校验脚本复查 patch 内容：
+              python3 skills/arkweb-security-patch-fetch/scripts/validate_patch_files.py --project-root <context.codebase> --output-root <context.projectRoot>/.ace-outputs/{runId}
+
+            在回复末尾输出 JSON：
+
+            ```json
+
+            {
+              "verdict": "pass|conditional_pass|fail",
+              "next_state": "影响判定|Patch抓取|分析归档",
+              "issues": [
+                {
+                  "type": "implementation|security|design",
+                  "severity": "critical|major|minor",
+                  "description": "..."
+                }
+              ],
+              "summary": "一句话总结"
+            }
+
+            ```
+          role: judge
+          skills:
+            - arkweb-security-patch-judge
+      transitions:
+        - to: 影响判定
+          condition:
+            verdict: pass
+          priority: 1
+          label: patch 已定位
+        - to: Patch抓取
+          condition:
+            verdict: conditional_pass
+          priority: 2
+          label: 继续补抓 patch
+        - to: 分析归档
+          condition:
+            verdict: fail
+          priority: 3
+          label: patch 不可用
+      position:
+        x: 500
+        y: 160
+      isInitial: false
+      isFinal: false
+      maxSelfTransitions: 3
+    - name: 影响判定
+      description: 判断已抓取 patch 对 ArkWeb / Chromium 基线的影响，不执行合入
+      type: normal
+      requireHumanApproval: false
+      steps:
+        - name: 分析 patch 影响
+          agent: arkweb-security-patch-impact-decider
+          task: |
+            基于 {issue_id}/01_issue_analysis.md/json 和 02_patch_fetch.md/json，判断本地 issue 对应修复 patch 对当前 ArkWeb / Chromium 基线是否有影响，
+            并写入对应 issue 目录下的 03_impact_decision.md 和 03_impact_decision.json。
+
+            本工作流的本地 ArkWeb 仓库路径由 context.codebase 提供；context.projectRoot 只作为轻量输出根。
+            影响判定阶段必须优先使用当前 workflow context 中的 context.codebase 作为源码核验路径；
+            context.automation.repoPath 和 context.codebase 仅作为旧配置兼容字段，不要求用户填写，也不得因为它们为空而判定“未配置本地仓库路径”。
+
+            必须包含：
+            1. patch 涉及的上游目录、文件、组件和行为；
+            2. Chromium 上游影响版本结论：明确列出该漏洞/修复影响哪些 Chromium milestone、分支或版本范围，无法精确到版本时必须说明 unknown；
+            3. Chromium 版本结论依据：引用 issue 元数据、merge/milestone 标签、修复 CL/commit、branch-head、release note、提交时间或 patch 所在分支等证据，区分事实、推断和缺口；
+            4. 再结合当前 workflow context 中的 context.codebase，对当前 ArkWeb 工程代码做本地核验：检查对应文件/符号/调用链/编译开关/平台裁剪是否存在，判断当前工程是否受影响；
+            5. 明确 ArkWeb 当前工程真实影响结论：affected、unaffected、unknown 三选一，并说明它与 Chromium 版本影响范围之间的关系；同时必须读取 Web 页面需求描述 context.requirements 中的“是否强制合入：是/否”标志，写入 merge_policy.force_merge、merge_policy.impact_mode、merge_policy.source 和 merge_policy.reason。强制合入只改变后续合入策略，不得篡改真实 arkweb_impact 结论。
+            6. 基于 arkweb-security-patch-impact skill 的责任田规则判定责任田，团队名必须来自配置中的合法团队名；
+            7. 基于 arkweb-security-patch-impact skill 的特性树规则输出影响特性，必须复制配置中的完整特性路径；
+            8. 输出稳定性、安全性、性能、兼容性、业务逻辑正确性、RAM、ROM、风险等级、是否建议保留、是否需要测试与测试建议；
+            9. 如果 issue 属于安全相关（例如含 CVE、安全标签、漏洞类型、可利用性、权限绕过、内存破坏、沙箱逃逸、XSS、URL/证书/隐私/权限等线索），必须单独重点分析安全影响：
+               - 漏洞类别、攻击面、触发条件、可利用性、影响资产或权限边界；
+               - ArkWeb 是否暴露对应入口、是否被平台裁剪、沙箱/站点隔离/权限/证书/隐私能力是否相关；
+               - 不修复时的安全后果、受影响场景、风险等级依据、是否需要安全专项测试；
+               - 如判定 unaffected，也必须给出安全链路不可达或代码不存在的证据。
+            10. affected 时列出后续人工合入建议和风险点；若 forceMerge=true，即使真实结论为 unaffected 或 unknown，也必须说明“按用户强制合入策略继续合入”，并把真实影响证据和强制策略分开记录；
+            11. unaffected 或 unknown 时列出证据、缺口和后续核查建议。
+
+            本状态只做影响判定并产出 03 阶段结论；自动合入、编译验证和提交上库由后续状态继续执行。
+            可优先执行 skill 内置脚本生成 03 阶段初稿，不要实时生成临时影响判定脚本：
+              python3 skills/arkweb-security-patch-impact/scripts/generate_impact_decision.py --project-root <context.codebase> --output-root <context.projectRoot>/.ace-outputs/{runId} --feature-tree skills/arkweb-security-patch-impact/references/feature_tree_list.txt --impact-mode <根据需求描述“是否强制合入”解析为 normal|force_affected>
+            脚本输出后仍必须人工复核版本分支、源码语义、安全专项影响和 merge_policy；如果页面需求描述写“是否强制合入：是/否”，必须以需求描述为准修正 03_impact_decision.json。
+
+            阶段边界：
+            - 本阶段先给出 Chromium 上游影响版本范围和依据，再结合 context.codebase 的当前工程源码给出 ArkWeb 影响结论；
+            - 本阶段负责 ArkWeb 影响结论、五性/RAM/ROM、责任田、特性树、风险级别、保留建议和测试建议；
+            - 不负责重新抓取 patch 或重写修改文件列表。
+          role: defender
+          skills:
+            - arkweb-security-patch-impact
+        - name: 影响判定裁决
+          agent: arkweb-security-patch-judge
+          task: |
+            审核各 issue 目录中的《03_impact_decision.md》是否足以归档。
+
+            裁决规则：
+            1. 影响结论为 affected、unaffected 或 unknown 且证据链清楚时，进入「分析归档」；
+            2. 影响分析还可继续补充时，给 conditional_pass 并回到「影响判定」；
+            3. 分析过程不可用或证据严重矛盾时，给 fail 并仍进入「分析归档」记录失败原因。
+
+            在回复末尾输出 JSON：
+            ```json
+            {
+              "verdict": "pass|conditional_pass|fail",
+              "next_state": "分析归档|影响判定",
+              "issues": [
+                {
+                  "type": "security|implementation|design",
+                  "severity": "critical|major|minor",
+                  "description": "..."
+                }
+              ],
+              "summary": "一句话总结"
+            }
+            ```
+          role: judge
+          skills:
+            - arkweb-security-patch-judge
+      transitions:
+        - to: 分析归档
+          condition:
+            verdict: pass
+          priority: 1
+          label: 影响结论可分析归档
+        - to: 影响判定
+          condition:
+            verdict: conditional_pass
+          priority: 2
+          label: 继续补充影响判断
+        - to: 分析归档
+          condition:
+            verdict: fail
+          priority: 3
+          label: 影响判断失败，分析归档原因
+      position:
+        x: 920
+        y: 160
+      isInitial: false
+      isFinal: false
+      maxSelfTransitions: 3
+    - name: 分析归档
+      description: 归档本地 issue 解析、patch 获取和影响判定结果，并把当前 run 归档交给后续自动合入
+      type: normal
+      requireHumanApproval: false
+      steps:
+        - name: 生成归档报告
+          agent: arkweb-security-patch-report-writer
+          task: |
+            汇总本次运行的本地 issue 解析、patch 获取和影响判定阶段，为每个 issue 输出《ArkWeb本地Issue补丁分析归档报告》，并写入对应 issue 目录：
+            .ace-outputs/{runId}/{issue_id}/04_final_archive.md 和 .ace-outputs/{runId}/{issue_id}/04_final_archive.json。
+
+            报告至少包含：
+            1. 本地 issue 归档目录、实际处理的 HTML/MHTML 文件清单、issue id 与标题；
+            2. 解析出的漏洞/缺陷摘要、里程碑、标签、状态和可信度；
+            3. 自动获取或定位到的 patch 列表，包括 URL、commit、Change-Id、patch 路径或获取命令；
+            4. 影响判定结论 affected/unaffected/unknown、证据链和风险；安全相关 issue 必须包含安全专项影响摘要；必须保留 merge_policy.force_merge/impact_mode/reason，区分真实影响结论和用户强制合入策略；
+            5. 责任田、影响特性、五性/RAM/ROM、是否建议保留、是否需要测试；
+            6. 未解决问题、人工核查建议、后续工作建议；本阶段只记录分析归档结果；自动合入、编译验证、提交上库由后续状态继续执行，不得在本阶段写成最终失败结论；
+            7. 确保按每个 issue 一个文件夹归档，{issue_id} 是阶段产物和 patch 的唯一主目录：
+               .ace-outputs/{runId}/{issue_id}/01_issue_analysis.md
+               .ace-outputs/{runId}/{issue_id}/01_issue_analysis.json
+               .ace-outputs/{runId}/{issue_id}/02_patch_fetch.md
+               .ace-outputs/{runId}/{issue_id}/02_patch_fetch.json
+               .ace-outputs/{runId}/{issue_id}/03_impact_decision.md
+               .ace-outputs/{runId}/{issue_id}/03_impact_decision.json
+               .ace-outputs/{runId}/{issue_id}/patches/
+               .ace-outputs/{runId}/{issue_id}/04_final_archive.md
+               .ace-outputs/{runId}/{issue_id}/04_final_archive.json
+               .ace-outputs/{runId}/{issue_id}/summary.md
+               .ace-outputs/{runId}/{issue_id}/summary.json
+            8. .ace-outputs/{runId}/ 根目录不得写任何文件；只能包含以 issue id 命名的目录。
+               不得生成根级 04_final_archive.md/json、*.index.md/json、patches/ 或 01/02/03 主产物。
+            9. 附一个 JSON 摘要块，字段至少包含：
+            {
+              "archive_result": "success|partial|failed",
+              "issue_archive_dir": "<issue_archive_dir>",
+              "processed_issue_files": [],
+              "patches_found": [],
+              "impact": "affected|unaffected|unknown",
+              "merge_policy": {
+                "force_merge": false,
+                "impact_mode": "normal|force_affected",
+                "reason": ""
+              },
+              "archive_dirs": [],
+              "missing_artifacts": [],
+              "report_path": ".ace-outputs/{runId}/{issue_id}/04_final_archive.md"
+            }
+
+            阶段边界：
+            - 本阶段只汇总和复制归档，不重新生成漏洞事实、patch 文件列表或影响结论；
+            - 缺失产物必须如实写入 missing_artifacts[]。
+            可先执行 skill 内置汇总脚本收集现有 01/02/03 JSON：
+              python3 skills/arkweb-security-patch-report/scripts/collect_archive_summary.py --project-root <context.codebase> --output-root <context.projectRoot>/.ace-outputs/{runId}
+            该脚本只向 stdout 输出汇总，不写根目录文件，不替代每个 issue 的最终归档报告。
+            可执行 skill 内置归档脚本生成各 issue 的最终归档文件：
+              python3 skills/arkweb-security-patch-report/scripts/generate_final_archive.py --project-root <context.codebase> --output-root <context.projectRoot>/.ace-outputs/{runId} --issue-archive-root <本地issue归档目录>
+          role: defender
+          skills:
+            - arkweb-security-patch-report
+      transitions:
+        - to: 自动合入
+          condition:
+            verdict: pass
+          priority: 1
+          label: 分析分析归档完成，继续自动合入
+        - to: 自动合入
+          condition:
+            verdict: conditional_pass
+          priority: 2
+          label: 兼容条件放行，继续自动合入
+        - to: 结果归档
+          condition:
+            verdict: fail
+          priority: 3
+          label: 分析归档失败，进入结果归档
+      position:
+        x: 1340
+        y: 160
+      isInitial: false
+      isFinal: false
+      maxSelfTransitions: 3
+    - name: 自动合入
+      description: 读取本地 issue 归档工作流产物，执行 git apply 或最小手工改写
+      type: normal
+      requireHumanApproval: false
+      steps:
+        - name: 自动合入补丁
+          agent: arkweb-security-patch-merge-engineer
+          task: |
+            基于本工作流前序「分析归档」状态产物执行自动合入；默认输入归档目录就是当前 run 的 <context.projectRoot>/.ace-outputs/{runId}，该目录下应包含一个或多个 issue 子目录。真实 ArkWeb 源码根目录来自 <context.codebase>。若 context.requirements 明确提供已有单 issue 归档目录或批量 run 归档目录，也可改用该外部归档输入；外部目录是 issue 目录或批量 run 目录，不是 ArkWeb 项目根目录。
+            输入判定规则： 1. 若输入目录本身包含 01_issue_analysis.md/json、02_patch_fetch.md/json、
+               03_impact_decision.md/json 和 patches/，按单 issue 模式处理；
+            2. 若输入目录下存在多个一级数字 issue 子目录，且这些子目录包含上述归档文件，按批量模式处理； 3. 批量模式必须先枚举 issue 子目录，读取 summary.json / 03_impact_decision.json；必须读取 Web 页面需求描述 context.requirements 中的“是否强制合入：是/否”标志，并把解析结果写入 00_batch_plan.json、batch_status.json 和每个 issue 的 06_merge_result.json。forceMerge=true 时，批量输入目录下的有效 issue 全部进入合入队列，不能因为 impact=unknown 或 impact=unaffected 跳过；impact 结论只作为风险说明和后续审查输入。forceMerge=false 时，也只有 requirements 明确要求按影响过滤时才允许因 unaffected 跳过，并必须写明 skipped_by_impact_policy；默认不得输出 skipped 作为不合入理由。只有 patch 缺失、patch 无效、工件不完整、目标子仓无法确定或必须越权修改范围外文件时，才能写入 blocked。
+            4. 当前工作流输出目录固定为 context.projectRoot/.ace-outputs/{runId}；context.projectRoot 是轻量输出根，不是 ArkWeb 源码根；真实源码根使用 context.codebase。集成模式下输入归档目录也来自当前 run 前序分析产物，但自动合入及后续产物必须写入 .ace-outputs/{runId}/issues/{issue_id}/ 和根级批量报告，不能改写 01/02/03/04 分析归档事实。若 requirements 显式指定外部归档目录，则外部输入与当前输出必须分开，禁止从 ~/.aceharness/runs/{runId}/outputs/.ace-outputs 读取归档输入。
+            5. 批量模式必须先执行或等价遵循：
+               node skills/arkweb-security-patch-merge/scripts/plan_batch.mjs --archive-dir <输入归档run目录> --project-root <context.codebase> --output-dir <context.projectRoot>/.ace-outputs/{runId}
+               该脚本必须从归档目录读取 issue 子目录和 patch_files[]，并把当前工作流计划写入 context.projectRoot/.ace-outputs/{runId}/00_batch_plan.md/json。
+            6. 批量模式必须输出 .ace-outputs/{runId}/00_batch_plan.md 和 .ace-outputs/{runId}/00_batch_plan.json，
+               记录 issue 列表、处理顺序、阻塞原因、目标子仓、manifest project、上游仓、patch 文件和允许修改文件。
+
+            从归档目录读取 02_patch_fetch.json 的 issues[0].patch_files[]、issues[0].modified_files[] 和 issues[0].selected_fix；若 JSON 是旧的扁平结构，则读取顶层 patch_files[]、modified_files[] 和 selected_fix。读取 03_impact_decision.json 的 issues[0].arkweb_impact、责任田、影响特性和测试建议。 单 issue 模式只允许处理输入归档目录中当前 issue 的 patch_files[] 和 modified_files[]。 在使用任何 patch 文件前必须先做 patch 格式识别和规范化： 1. 读取原始 patch 的前几行/前 4KB，判断是否已经是标准 diff/mbox patch。标准信号包括 `diff --git`、
+               `Index:`、`--- a/` + `+++ b/`，或 mbox patch 的 `From <hash>` + `Subject:` + diff hunks；
+            2. 如果原始文件不含标准 diff 信号，但内容符合 base64 文本特征，必须先 base64 解码； 3. 解码后的内容必须再次校验包含标准 diff/mbox patch 信号，否则该 patch 标记 invalid_patch_format，不能执行 git apply； 4. 不得覆盖输入归档目录里的原始 patch 文件；规范化后的 patch 写入当前工作流输出目录，例如
+               .ace-outputs/{runId}/issues/{issue_id}/normalized_patches/<patch-name>.patch，单 issue 模式可写入
+               .ace-outputs/{runId}/normalized_patches/<patch-name>.patch；
+            5. 后续目标子仓判定、diff 路径扫描、strip 参数判断和 git apply 都必须使用规范化后的 patch 文件； 6. 06_merge_result.md/json 和 batch_status.md/json 必须记录原始 patch 路径、检测到的编码/格式、规范化 patch 路径、
+               解码/校验结果和 sha256。
+            批量模式必须在当前工程的目标 git 子仓中直接合入，禁止创建或依赖 git worktree。ArkWeb 是多仓结构，自动合入前必须先确定目标 git 子仓，不能直接在 ArkWeb wrapper 根目录执行。 目标子仓由 selected_fix.project、modified_files[]、patch diff 路径和本地 .git 边界共同确定： chromium/src 或 chrome/content/components 等主树路径默认落到 context.codebase/src； v8 项目或 v8/ 路径落到 context.codebase/src/v8； arkweb 项目或 src/arkweb 内路径落到 context.codebase/src/arkweb。 目标子仓确定后，必须从 context.codebase/.repo/manifests 解析该 path 对应的 manifest project， 例如 src -> chromium_src、src/v8 -> chromium_v8、src/arkweb -> chromium_arkweb； GitCode 上库目标由 manifest remote fetch 和 project name 推导，不能要求用户手工改 upstreamRepo。 若无法唯一确定目标子仓，必须停止并写入阻塞项。
+            批量合入规则： 1. 批量开始前必须基于 normalized patch 的 diff 路径和 02_patch_fetch.json.modified_files[] 统计全部 issue 的目标文件集合； 2. 若任意两个 issue 修改同一目标文件，必须在 00_batch_plan.md/json 标记 duplicate_files/overlap，并按 issue_id 数值升序为每个重复文件选择最小 issue_id 作为 winner；不同重复文件组必须分别选择 winner，例如 a/b/c 因文件1重复则选 a，d/e/f 因文件2重复则选 d，a 和 d 都进入 active batch；其它涉及该重复文件的 issue 标记为 deferred_for_archive/terminal_failed，退出 active batch，本轮不自动合入，最终在结果归档中说明遗留原因；active_batch 计算方式为“无重复文件 issue ∪ 所有重复文件组 winner - 所有重复文件组 loser”，如果某 issue 在任一重复文件组里是 loser，该 issue 整体不进入 active batch，不能半合入； 3. 只有确认 active batch 中不存在重复修改文件时，才允许把这些 issue 的 patch 全部合入当前工程目标子仓； 4. 合入按 issue 串行执行，但同一轮不创建 issue 独立工作树、不创建预提交、不切换到临时 worktree； 5. 每个 issue 必须记录自己的 patch_normalization、modified_files、final_changed_files、manual_attempted、manual_applied、semantic_landed、local_adaptations[] 和 apply/manual 结果，batch_status 记录 duplicate_files、overlap_winners、active_batch、deferred_for_archive、ready_for_next、pending_current_stage、terminal_failed。final_changed_files 必须按 issue 允许文件过滤，不能使用全局 git diff 污染每个 issue。
+
+            长耗时等待规则：ArkWeb 是大仓，首次 git status/git diff、patch apply、冲突扫描和后续提交拆分都可能长时间运行。批量合入时只在当前工程目标子仓刷新一次工作树状态，并在全部非重叠 issue 合入后统一编译验证；自动合入补丁阶段不能因为几分钟没有输出就判定进程阻塞、死锁或失败。只有命令退出码非 0、出现明确错误文本、超过工作流显式超时，或通过 ps/文件时间/CPU-IO 状态确认长期无进展时，才允许判定异常。需要定位时只能先做只读检查并记录命令、PID、运行时长、issue id 和目标子仓路径，不得因为“看起来卡住”就 kill 进程、中断、重跑或跳过该 issue。
+
+            在确定的 ArkWeb git 子仓中执行自动合入，优先使用规范化后的 patch 执行 git apply；发生冲突、上下文漂移或 patch does not apply 时，进入冲突解决阶段。此工作流里的“冲突解决”就是在 modified_files[] 允许范围内执行最小等价手工写入。输出合入过程、冲突点和结果到 .ace-outputs/{runId}/06_merge_result.md；批量模式还必须为每个 issue 输出 .ace-outputs/{runId}/issues/{issue_id}/06_merge_result.md，并维护 .ace-outputs/{runId}/batch_status.md/json。
+            要求： 1. 记录输入归档目录、archiveRunId、issue_id、目标 git 子仓、manifest project、manifest remote、推导出的上游仓、git apply 工作目录、strip 参数、patch_files[]、modified_files[]、selected_fix； 2. 记录每个 patch 的格式识别、base64 解码、规范化路径、内容校验、执行命令和结果； 3. 保持最小侵入，避免顺手重构； 4. 若合入失败，准确标记冲突文件和根因； 5. 如果已成功合入，列出最终变更文件。 6. 如果 git apply 失败但属于可解冲突，必须进入冲突解决阶段执行最小手工写入，不要直接判停；手工补丁只能落在归档的 modified_files[] 范围内。对 patch does not apply、repository lacks the necessary blob to perform 3-way merge、上下文漂移等 apply 失败，必须先读取规范化 patch hunks 和当前目标文件，在 modified_files[] 范围内执行最小等价手工写入；手工修复成功即合入成功，必须写 manual_applied=true、semantic_landed=true 并清除当前合入 blocker；但 manual_attempted=true 只代表尝试过，不能作为成功条件。除非写明 manual_attempted=false 和不可手工处理的具体原因，否则不得最终判 fail。
+               若必须修改范围外文件，必须停止并在《06_merge_result.md》中列为阻塞项，不能自行扩大变更范围。
+            7. 如果某个 issue 执行后没有真实文件变更，或者按该 issue 允许文件过滤后的 `git diff --name-status -- <allowed files...>` / `git diff --cached --name-status -- <allowed files...>` 为空，只能判定该 issue 未合入成功并进入 pending_current_stage 或 terminal_failed，不能让其它已合入 issue 失败。 8. 批量模式中，每个 issue 必须记录独立的最终变更文件列表；若多个 issue 修改同一文件，必须在
+               00_batch_plan.md/json 中标记 duplicate_files/overlap，并按 issue_id 数值升序选择最小 issue_id 作为该重复文件 winner 进入 active batch；其它涉及重复文件的 issue 标记为 deferred_for_archive/terminal_failed 并移出 active batch，本轮不自动合入、不进入冲突解决、不编译、不提交，最终在结果归档说明遗留原因。
+            9. batch_status 和 issue 级 06_merge_result 只能保留最新一轮 blocker。某 patch 后续已手工落地后必须清除旧 patch_apply_failed:* 和 no_real_file_change；旧 worktree_add_failed 只作为历史失败记录，不得参与当前 in-place 合入裁决；不能把历史失败与最新状态混写。只有 `apply_ok=true`、`manual_applied=true` 或 `semantic_landed=true` 且 blockers 为空时，才允许 ready_for_next。
+            10. 批量模式必须按阶段统一处理、阶段结束后按 issue 分流：本阶段内不能让已成功 issue 提前越过仍在本阶段处理的 issue；阶段内，ready_for_next issue 只表示本阶段已完成并等待统一出口，不能单独进入下一阶段；pending_current_stage issue 留在当前阶段继续处理；重复文件/overlap 的 winner issue 可进入 active batch，非 winner issue 标记 deferred_for_archive/terminal_failed 并从 active batch 剔除，只在结果归档说明遗留原因；terminal_failed issue 从 active batch 剔除并归档失败原因。只有当本阶段没有 pending_current_stage 后，状态机才把全部 ready_for_next issue 作为新的 active batch 一次性推进下一阶段。顶层 pass 表示本阶段无 pending_current_stage 且至少一个 ready_for_next issue 可随批次统一进入下一阶段；conditional_pass 只表示仍有 issue 需要留在当前阶段继续冲突解决或编译修复，此时 ready_for_next 必须等待；fail 仅表示没有任何 ready_for_next issue 可继续或存在整批不可恢复基础设施错误。个别 issue 因重复文件遗留、确实无法合入、无法手工解决、无法编译修复，不得阻塞 pending 清零后的统一推进。
+            11. 统一使用 patch_normalization[] 字段记录规范化结果，重试写回时不得混用 normalized_patches；06_merge_result.md/json 与 batch_status.md/json 必须一致，不能 JSON 已 pass 但 Markdown 仍残留旧 blocker。
+
+            在回复末尾输出 JSON： ```json {
+              "verdict": "pass|conditional_pass|fail",
+              "issues": [
+                {
+                  "type": "implementation|security|design",
+                  "severity": "critical|major|minor",
+                  "description": "..."
+                }
+              ],
+              "summary": "一句话总结"
+            } ```
+          role: defender
+          skills:
+            - arkweb-security-patch-merge
+      transitions:
+        - to: 代码审查
+          condition:
+            verdict: pass
+          priority: 1
+          label: 自动合入成功
+        - to: 冲突解决
+          condition:
+            verdict: conditional_pass
+          priority: 2
+          label: 需最小手工写入
+        - to: 结果归档
+          condition:
+            verdict: fail
+          priority: 3
+          label: 自动合入不可继续，归档失败证据
+      position:
+        x: 1760
+        y: 160
+      isInitial: false
+      isFinal: false
+      maxSelfTransitions: 3
+    - name: 冲突解决
+      description: 解决合入冲突并保持与上游修复意图一致
+      type: normal
+      requireHumanApproval: false
+      steps:
+        - name: 解决合入冲突
+          agent: arkweb-security-patch-conflict-resolver
+          task: |
+            基于《06_merge_result.md》执行冲突解决；本工作流里的“冲突解决”就是 git apply 失败或上下文漂移后，在允许文件范围内做最小等价手工写入。批量模式下必须逐个 issue 读取 .ace-outputs/{runId}/issues/{issue_id}/06_merge_result.md，只处理该 issue 的冲突和允许文件范围，并在当前工程目标子仓中解决冲突，不得创建或切换到 git worktree。结果写入 .ace-outputs/{runId}/issues/{issue_id}/07_conflict_resolution.md， 同时更新 batch_status.md/json。 冲突解决/最小手工写入范围硬性限制：只允许修改上游 patch 明确涉及的冲突文件，以及《06_merge_result.md》中明确列出的本次 patch 必需文件。工程中其它未提交代码、未跟踪文件、历史脏改、构建产物和无关删除一律视为外部状态，必须忽略， 不能清理、暂存、格式化或顺手修复。 批量模式必须优先读取 issue 级 06_merge_result.json 的 patch_normalization[]、modified_files[]、target_subrepo 和 blockers；如旧产物只有 normalized_patches，必须按 patch_normalization[] 兼容处理。对 patch does not apply、三方合并缺 blob、上下文漂移和空 diff，必须读取规范化 patch hunks 与当前目标文件，在 modified_files[] 范围内执行最小等价手工写入。若未执行手工写入，必须写明 manual_attempted=false 和 manual_skip_reason，不能只把 git apply 失败原样带到下一轮。手工写入成功就是成功，必须写回 manual_attempted=true、manual_applied=true、manual_rewrite=true、semantic_landed=true、最终变更文件、关键语义对应关系，并清除旧的 patch_apply_failed:*、no_real_file_change；旧 worktree_add_failed 不得作为当前轮阻塞。manual_attempted=true 但 manual_applied=false 时不得 ready_for_next。默认执行最小手工补丁；如果最小手工写入需要改动范围外文件才能继续，必须停止并输出阻塞项，不能自动扩大处理范围。 写入完成后必须检查按该 issue 允许文件过滤后的 `git diff --name-status -- <allowed files...>` 是否非空，确保真的产生了合入变更；如果没有变化，不能把结果写成 pass。 冲突解决后按 issue 分流：已真实合入的 issue 标记 ready_for_next 并等待本阶段统一出口，确认无法手工合入的 issue 标记 terminal_failed 并归档原因，其它仍可处理的 issue 标记 pending_current_stage；只要仍存在 pending_current_stage，ready_for_next issue 不能提前进入代码审查/编译验证。不得因为发生过冲突或手工改写降级裁决。 无进展保护：批量模式每轮必须记录本轮前后的 stage_status、blocker 和 final_diff 变化；如果某些 issue 没有 blocker 减少、manual_applied 状态变化或 issue 过滤 diff 变化，只能将这些 issue 标记为 no_progress/terminal_failed 或继续 pending_current_stage；若仍有 pending_current_stage，顶层 verdict 必须保持 conditional_pass 并继续本阶段；只有 pending 清零且仍有 ready_for_next issue 时，顶层 verdict 才能 pass 并统一进入下一阶段。
+            需要输出： 1. apply 失败/冲突根因； 2. 最小手工写入方案； 3. 与上游 patch 的偏差说明； 4. 仍未解决的阻塞项； 5. 每个处理 issue 的 issue_id、target_subrepo、manual_attempted、manual_applied、semantic_landed、manual_skip_reason、final_diff_name_status 和最新 blockers。
+            单 issue 模式将结果写入 .ace-outputs/{runId}/07_conflict_resolution.md；批量模式除总览外，还必须写入每个 issue 的 issues/{issue_id}/07_conflict_resolution.md。
+          role: defender
+          skills:
+            - arkweb-security-patch-conflict
+        - name: 冲突解决裁决
+          agent: arkweb-security-patch-judge
+          task: >
+            审核《07_conflict_resolution.md》是否已经把 patch 稳定落地。
+
+            裁决只看给定 patch 是否已经落地：冲突已解决且最终 diff 非空、关键
+            hunk/语义存在、未越过允许范围时必须进入「代码审查」。
+
+            受控手工改写是正常合入方式，不得作为 conditional_pass/fail 原因。
+
+            只有仍有未解冲突、关键 hunk/语义缺失、空 diff、合错仓/合错文件或必须越过允许范围才能完成给定 patch
+            时，才可回到「冲突解决」或进入「结果归档」。
+
+            如果连续一轮冲突解决没有任何 issue 的 blocker 减少、manual_attempted 状态变化或 diff
+            变化，则只把仍无法推进的 issue 标记为 terminal_failed 或 no_progress；若仍有
+            pending_current_stage，整体必须继续「冲突解决」；只有 pending 清零且仍有 ready_for_next
+            issue 时，整体才进入「代码审查」。
+
+
+            在回复末尾输出 JSON：
+
+            ```json
+
+            {
+              "verdict": "pass|conditional_pass|fail",
+              "next_state": "代码审查|冲突解决|结果归档",
+              "issues": [
+                {
+                  "type": "implementation|security|design",
+                  "severity": "critical|major|minor",
+                  "description": "..."
+                }
+              ],
+              "summary": "一句话总结"
+            }
+
+            ```
+          role: judge
+          skills:
+            - arkweb-security-patch-judge
+      transitions:
+        - to: 代码审查
+          condition:
+            verdict: pass
+          priority: 1
+          label: 冲突已解决
+        - to: 冲突解决
+          condition:
+            verdict: conditional_pass
+          priority: 2
+          label: 继续最小手工写入
+        - to: 结果归档
+          condition:
+            verdict: fail
+          priority: 3
+          label: 无法解决冲突
+      position:
+        x: 940
+        y: 160
+      isInitial: false
+      isFinal: false
+      maxSelfTransitions: 3
+    - name: 代码审查
+      description: 审查给定 patch 是否已真实合入
+      type: normal
+      requireHumanApproval: false
+      steps:
+        - name: 安全与代码审查
+          agent: arkweb-security-patch-reviewer
+          task: |
+            针对本次 patch 实际修改的文件执行代码审查。批量模式下必须逐个 issue 审查当前工程目标子仓中属于该 issue 的 diff， 不得把多个 issue 的风险混成一个结论；每个 issue 写入 .ace-outputs/{runId}/issues/{issue_id}/08_code_review.md， 总览写入 .ace-outputs/{runId}/08_code_review.md。重点检查： 1. active batch 中的给定 patch 是否已经真实合入到当前工程目标子仓； 2. 最终变更是否覆盖给定 patch 的目标修改文件和关键 diff 语义； 3. 是否存在未解冲突、空 diff、范围外改动或明显把 patch 合错文件/合错仓的问题。
+            审查范围硬性限制：只审查《06_merge_result.md》《07_conflict_resolution.md》《10_build_fix.md》或 git diff 中明确属于本次 patch 的文件。工作区里其它历史脏改、SDK、toolchain、构建产物、未跟踪文件和无关删除都必须忽略，不能作为本次审查问题， 也不能要求清理或修复。 阻塞边界： - 代码审查阶段只有“给定 patch 未真实合入”才能阻塞，包括 patch 未应用、关键 hunk/语义缺失、空 diff、未解冲突、合错仓/合错文件、
+              或必须修改范围外文件才能完成给定 patch。
+            - 批量模式中，terminal_failed 和 deferred_for_archive issue 已经退出 active batch；代码审查只能把它们列入归档/遗留清单，不能计入 blocked_issues，不能因为这些 issue 让整批 fail 回到冲突解决。
+            - 当 pending_current_stage 为空且仍有 ready_for_next issue 时，审查总览必须输出 pass 并推进 ready_for_next active batch 到编译验证；terminal_failed/deferred_for_archive 不参与本阶段 verdict 聚合。
+            - git apply 失败后在 modified_files[] 范围内做最小手工改写是本工作流的正常合入方式；只要语义等价、无未解冲突、无范围外改动，
+              不能因为“手工冲突改写”本身判阻塞。
+            - 本阶段尚未执行编译；不要评价非当前步骤事项，只判断 patch 是否合入。
+            将审查结果写入 .ace-outputs/{runId}/08_code_review.md。
+
+            回复末尾必须输出最后一个完整 JSON 代码块，不能只输出 remaining_issues 或省略 next_state/issues：
+            ```json
+            {
+              "verdict": "pass|fail",
+              "next_state": "编译验证|冲突解决",
+              "issues": [
+                {
+                  "type": "security|implementation|performance|design",
+                  "severity": "critical|major|minor",
+                  "description": "..."
+                }
+              ],
+              "summary": "一句话总结"
+            }
+            ```
+            若 active batch 无阻塞、pending_current_stage 为空且存在 ready_for_next issue，必须输出
+            verdict=pass、next_state=编译验证、issues=[]。terminal_failed/deferred_for_archive issue
+            只允许写入审查报告的归档清单，不得写入 JSON issues，也不得导致 fail。
+          role: attacker
+          skills:
+            - arkweb-security-patch-review
+        - name: 审查裁决
+          agent: arkweb-security-patch-judge
+          task: >
+            根据《08_code_review.md》判断是否可以进入编译验证。
+
+
+            裁决规则：
+
+            1. 批量模式中 pending_current_stage 为空且存在 ready_for_next issue
+            时，进入「编译验证」；terminal_failed/deferred_for_archive issue 只归档，不阻塞
+            ready_for_next 批次；
+
+            2. 只有 active batch 中仍存在给定 patch 未真实合入且可继续处理的 pending_current_stage
+            issue 时，才进入「冲突解决」执行最小手工写入；不得回到「自动合入」只重复 git apply/回写报告；
+
+            3. issues 只能列出 active batch 中 patch 未合入且需要回到冲突解决的证据，例如关键 hunk/语义缺失、空
+            diff、未解冲突、合错仓/合错文件、越过允许范围仍无法完成；terminal_failed/deferred_for_archive
+            不得写入本阶段 issues，只能写入归档清单；
+
+            4. 手工冲突改写本身不得写入 issues 或作为 fail 原因。
+
+
+            在回复末尾输出 JSON：
+
+            ```json
+
+            {
+              "verdict": "pass|fail",
+              "next_state": "编译验证|冲突解决",
+              "issues": [
+                {
+                  "type": "security|implementation|performance|design",
+                  "severity": "critical|major|minor",
+                  "description": "..."
+                }
+              ],
+              "summary": "一句话总结"
+            }
+
+            ```
+          role: judge
+          skills:
+            - arkweb-security-patch-judge
+      transitions:
+        - to: 编译验证
+          condition:
+            verdict: pass
+          priority: 1
+          label: 审查通过
+        - to: 冲突解决
+          condition:
+            verdict: conditional_pass
+          priority: 2
+          label: 审查仍需补充合入证据，继续最小手工写入
+        - to: 冲突解决
+          condition:
+            verdict: fail
+          priority: 3
+          label: 审查未通过，进入最小手工写入
+      position:
+        x: 1160
+        y: 160
+      isInitial: false
+      isFinal: false
+      maxSelfTransitions: 3
+    - name: 编译验证
+      description: 以编译通过作为自动化门禁
+      type: normal
+      requireHumanApproval: false
+      steps:
+        - name: 执行编译验证
+          agent: arkweb-security-patch-build
+          task: >
+            严格依据 context.codebase 指向的真实 ArkWeb 工程执行编译验证。默认构建命令为 `cd
+            <context.codebase> && ./build_arkweb.sh rk3568_64 -t w -A`，默认构建输出目录为
+            `<context.codebase>/src/out/rk3568_64`，最长等待时间使用
+            context.timeoutMinutes。不得要求用户额外配置 任何 context.automation 构建字段。 在当前
+            ArkWeb 工程里执行编译验证，并将过程和结果写入
+            .ace-outputs/{runId}/09_build_verification.md。批量模式在自动合入阶段已经把无重复文件
+            issue 以及重复文件组 winner issue 组成 active batch
+            全部合入当前工程，因此默认只执行一次统一增量编译验证；不得为每个 issue 创建 worktree 或重复编译。 若构建命令只能在
+            ArkWeb wrapper 根目录执行，必须在 context.codebase 下执行。统一编译失败时，
+            需要根据失败文件、目标、符号和前序 issue 的 modified_files[]/final_changed_files
+            判断最可能归属的 issue；只要编译命令完整退出但返回非零，不论初步看起来是否与本次 patch 无关，编译验证阶段都必须进入「编译修复」
+            做二次诊断和必要修复，不能直接进入「风险评估」。如果构建进程中断、超时、无真实退出码、后台进程失联、资源快照/前置脚本卡住、build.log
+            未更新或无法证明构建命令已完整退出，必须判定为 build_interrupted/build_incomplete，先在同一编译验证步骤内重新执行一次
+            配置的编译命令；重跑仍未拿到可信完整结果时，不能视为非阻塞编译风险，必须进入「编译修复」做中断诊断和可控重试。
+            批量模式仍需为每个 active issue 写入
+            issues/{issue_id}/09_build_verification.md 的摘要，总览写入根目录
+            09_build_verification.md。
+
+            门禁规则： 1. 本地实际编译执行并返回成功时，verdict 必须是 pass；不能因为还会触发 GitCode 门禁而降级为
+            conditional_pass； 2. 编译失败时必须保留关键日志、首个根因、失败目标，并判断是否与本次 patch
+            修改文件或语义相关； 3. 编译验证阶段只允许本地编译成功时输出 pass；完整非零退出也必须输出
+            fail、next_state=编译修复，由「编译修复」阶段做修复或无关归因后再决定是否放行；不得在编译验证阶段直接把编译失败输出为 conditional_pass 进入风险评估； 4. 构建进程中断、超时、无真实退出码、后台构建未完成、日志没有可信更新、只剩孤儿辅助进程或无法确认编译主进程完整退出时，必须记录
+            build_completed=false、build_status=interrupted|incomplete、retry_attempted=true|false，并在本步骤内重跑一次真实编译；重跑仍未完成时 verdict=fail、next_state=编译修复，不能 conditional_pass，也不能进入提交上库； 5. 如果某个
+            issue 的编译失败与本次 patch 的文件、BUILD 依赖、符号、接口或语义直接相关，编译验证阶段必须输出
+            verdict=fail，并将该 issue 标记 pending_current_stage，按 transition
+            进入「编译修复」让修复阶段执行最小修复；这不是归档失败，issues 中必须写“需编译修复”，不得输出
+            conditional_pass；其它已 ready_for_next 的 issue 在本阶段等待，直到所有
+            pending_current_stage 处理完后统一推进； 6. 禁止用“环境不足”替代真实执行，除非 requirements
+            中就明确未提供构建环境； 7. 必须等待构建命令退出并取得真实退出码，最多等待 120
+            分钟，不能因为几分钟无输出或后台构建未完成就进入下一步。
+
+            在回复末尾输出 JSON： ```json {
+              "verdict": "pass|conditional_pass|fail",
+              "next_state": "风险评估|编译修复",
+              "issues": [
+                {
+                  "type": "implementation|test|performance",
+                  "severity": "critical|major|minor",
+                  "description": "..."
+                }
+              ],
+              "summary": "一句话总结"
+            } ```
+          role: judge
+          skills:
+            - arkweb-security-patch-build
+      transitions:
+        - to: 风险评估
+          condition:
+            verdict: pass
+          priority: 1
+          label: 编译通过
+        - to: 风险评估
+          condition:
+            verdict: conditional_pass
+          priority: 2
+          label: 保留兼容路径；编译失败不得在本阶段使用该路径
+        - to: 编译修复
+          condition:
+            verdict: fail
+          priority: 3
+          label: 编译失败与本次 patch 相关，进入编译修复
+      position:
+        x: 1380
+        y: 160
+      isInitial: false
+      isFinal: false
+      maxSelfTransitions: 3
+    - name: 编译修复
+      description: 针对编译失败做最小修复并回到编译验证
+      type: normal
+      requireHumanApproval: false
+      steps:
+        - name: 修复编译失败
+          agent: arkweb-security-patch-build
+          task: >
+            基于《09_build_verification.md》修复编译失败，仅允许做与 patch 落地直接相关的最小修改。
+            批量模式下必须先定位失败最可能归属的 issue 和文件，并在当前工程目标子仓中修复； 只能修改对应 issue 的
+            modified_files[] 范围， 并写入 issues/{issue_id}/10_build_fix.md。无法唯一归属到本次
+            patch 时，不得扩大修改范围；如果 09_build_verification.md 显示构建进程中断、超时、无真实退出码、后台进程失联、资源快照/前置脚本卡住、build.log
+            未更新或无法证明编译主命令完整退出，编译修复阶段必须先做中断诊断并重新执行一次配置的编译命令；如果重跑后拿到完整非零退出码，再按是否与本次 patch
+            相关分流。如果重跑仍未拿到可信完整结果，必须记录 build_completed=false、build_status=interrupted|incomplete、
+            submit_eligible=false，并输出 verdict=fail、next_state=结果归档，不能把中断当作无关失败放行。 如果失败已证明来自历史脏改、环境/资源、LFS/SDK/工具链、主树既有错误、其它 issue 其它
+            issue、或不在本次 patch modified_files[]/最终 diff 范围内的文件，必须输出
+            conditional_pass，记录为非阻塞编译风险并进入「风险评估」，不能阻塞上库，也不能回到编译验证空转。 需要写出： 1.
+            失败根因； 2. 是否与本次 patch 相关； 3. 修复点或不修复理由； 4. 影响文件； 5. 是否偏离上游补丁语义； 6.
+            本轮剩余风险。 只有完成与本次 patch 直接相关的最小修复后，才回到「编译验证」重新执行真实编译；与本次 patch
+            相关的编译错误必须先尝试最小修复，不能未尝试修复就直接 fail；如果根因与本次 patch 无关，不做修复并
+            conditional_pass 放行。 无进展保护：编译修复必须有可验证进展，包括修复文件
+            diff、失败根因变化、下一次编译错误位置变化，或明确证明失败与本次 patch 无关并转为 conditional_pass。若某个
+            issue 连续一轮没有 diff 变化、失败根因变化、可重试依据或无关归因证据，必须只将该 issue 标记
+            terminal_failed 并说明 no_progress；如果仍有 pending_current_stage，整体必须输出
+            conditional_pass 且 next_state=编译修复，继续留在本阶段；只有 pending 清零且仍有
+            ready_for_next issue 时，整体必须输出 conditional_pass 且
+            next_state=风险评估。不得因为部分 issue terminal_failed 而让仍可推进的 ready_for_next
+            批次进入「结果归档」。
+
+            将结果写入 .ace-outputs/{runId}/10_build_fix.md。
+          role: defender
+          skills:
+            - arkweb-security-patch-build
+        - name: 编译修复裁决
+          agent: arkweb-security-patch-judge
+          task: >
+            审核《10_build_fix.md》是否适合重新进入编译验证。
+
+            裁决只判断编译失败是否与本次 patch 相关、是否已经做了与当前 patch 相关的最小修复、是否可以重新编译。
+
+            不得因为发生过编译报错或做过编译修复而阻塞；如果已完成与本次 patch
+            相关的最小修复，应回到「编译验证」。如果《10_build_fix.md》证明编译验证只是中断/超时/无真实退出码且重跑仍未完成，必须
+            verdict=fail 并进入「结果归档」，不得进入「风险评估」或「提交上库」。如果《10_build_fix.md》证明构建命令已经完整退出且编译失败与本次 patch 无关，必须
+            verdict=conditional_pass 并进入「风险评估」，不得阻塞上库，也不得回到「编译验证」或「编译修复」空转。
+
+            只有在某个 issue 已经尝试最小修复后仍无法继续、修复需要越过本次 patch
+            允许范围、或《10_build_fix.md》显示没有修复 diff、失败根因没有变化、没有无关归因证据、明确 no_progress
+            时，才允许将该 issue 标记 terminal_failed；如果仍有 pending_current_stage，整体必须
+            verdict=conditional_pass 且 next_state=编译修复，继续留在本阶段；只有 pending 清零且仍有
+            ready_for_next issue 时，整体必须 verdict=conditional_pass 且
+            next_state=风险评估。只有没有任何 ready_for_next issue
+            可继续，或存在影响整批的不可恢复基础设施错误时，才允许 verdict=fail 进入「结果归档」。不得对与本次 patch
+            相关但尚未尝试修复的编译错误直接 terminal_failed/fail。
+
+
+            在回复末尾输出 JSON：
+
+            ```json
+
+            {
+              "verdict": "pass|conditional_pass|fail",
+              "next_state": "编译验证|编译修复|风险评估|结果归档",
+              "issues": [
+                {
+                  "type": "implementation|test|design",
+                  "severity": "critical|major|minor",
+                  "description": "..."
+                }
+              ],
+              "summary": "一句话总结"
+            }
+
+            ```
+          role: judge
+          skills:
+            - arkweb-security-patch-judge
+      transitions:
+        - to: 编译验证
+          condition:
+            verdict: pass
+          priority: 1
+          label: 修复后重编译
+        - to: 风险评估
+          condition:
+            verdict: conditional_pass
+          priority: 2
+          label: 编译修复阶段已清空 pending，进入风险评估
+        - to: 结果归档
+          condition:
+            verdict: fail
+          priority: 3
+          label: 无法修复编译
+      position:
+        x: 1380
+        y: 360
+      isInitial: false
+      isFinal: false
+      maxSelfTransitions: 3
+    - name: 风险评估
+      description: 在编译通过或完整无关编译失败放行后记录非阻塞风险并给出提交前摘要
+      type: normal
+      requireHumanApproval: false
+      steps:
+        - name: 生成风险评估
+          agent: arkweb-security-patch-risk-assessor
+          task: >
+            基于本流程前序产物以及输入归档目录中的 03_impact_decision.md/json
+            生成风险评估。必须读取并记录页面需求描述中的“是否强制合入：是/否”和
+            merge_policy.force_merge；forceMerge=true 时，unaffected/unknown
+            影响结论只作为非阻塞风险和提交背景，不得作为阻塞或回退理由。批量模式下必须逐个 issue 输出风险结论，写入
+            issues/{issue_id}/11_risk_assessment.md， 总览写入
+            .ace-outputs/{runId}/11_risk_assessment.md。
+            覆盖安全、兼容性、性能、ROM、稳定性、责任田、影响特性、上游偏差和回滚建议， 并写入
+            .ace-outputs/{runId}/11_risk_assessment.md。
+
+            说明： 1. 风险评估只记录风险摘要，不作为提交上库阻塞门槛； 2. 不得因为未知风险、人工跟踪项或非当前步骤事项阻塞提交； 3.
+            只要给定 patch 已真实合入，且本地编译通过，或编译命令完整退出后失败已证明与本次 patch
+            无关并记录为非阻塞编译风险，就必须允许进入「提交上库」； 4. 编译进程中断、超时、无真实退出码、重跑仍未完成、build_completed=false
+            或 submit_eligible=false 不属于非阻塞编译风险，必须输出 fail、next_state=结果归档，不得进入提交上库； 5. 只有某个 issue 的前序产物证明给定 patch
+            未真实合入，或与本次 patch 相关的编译失败却被误报通过/无关，才允许将该 issue 标记
+            terminal_failed；此类失败表示该 issue
+            前序产物不可信，应归档证据，不得回到「自动合入」形成循环，ready_for_next issue 必须等到本阶段 pending
+            清零后统一推进。
+          role: defender
+          skills:
+            - arkweb-security-patch-risk
+        - name: 风险评估裁决
+          agent: arkweb-security-patch-judge
+          task: >
+            审核《11_risk_assessment.md》。
+
+
+            裁决规则：
+
+            1. 给定 patch 已真实合入，且本地编译通过，或编译命令完整退出后失败已证明与本次 patch
+            无关并记录为非阻塞编译风险时，必须进入「提交上库」；
+
+            2. 风险、未知项、人工跟踪项或非当前步骤事项不得作为 fail 原因；
+
+            3. 编译进程中断、超时、无真实退出码、重跑仍未完成、build_completed=false 或 submit_eligible=false 时，必须进入「结果归档」，不得把它作为非阻塞风险提交上库；
+
+            4. 只有某个 issue 的前序产物证明给定 patch 未真实合入，或与本次 patch
+            相关的编译失败却被误报通过/无关，才允许将该 issue 标记 terminal_failed 并归档前序不可信证据；只有当前阶段
+            pending 清零且仍有 ready_for_next issue
+            时，整体才进入「提交上库」，不得回到「自动合入」或「编译验证」形成循环。
+
+
+            在回复末尾输出 JSON：
+
+            ```json
+
+            {
+              "verdict": "pass|conditional_pass|fail",
+              "next_state": "提交上库|结果归档",
+              "issues": [
+                {
+                  "type": "security|performance|implementation|design",
+                  "severity": "critical|major|minor",
+                  "description": "..."
+                }
+              ],
+              "summary": "一句话总结"
+            }
+
+            ```
+          role: judge
+          skills:
+            - arkweb-security-patch-judge
+      transitions:
+        - to: 提交上库
+          condition:
+            verdict: pass
+          priority: 1
+          label: 风险记录完成
+        - to: 提交上库
+          condition:
+            verdict: conditional_pass
+          priority: 2
+          label: 风险记录完成，条件放行提交
+        - to: 结果归档
+          condition:
+            verdict: fail
+          priority: 3
+          label: 前序产物不可信，归档失败证据
+      position:
+        x: 1600
+        y: 160
+      isInitial: false
+      isFinal: false
+      maxSelfTransitions: 3
+    - name: 提交上库
+      description: 生成提交、推送远端并记录上库结果
+      type: normal
+      requireHumanApproval: false
+      steps:
+        - name: 提交并上库
+          agent: arkweb-security-patch-submitter
+          task: |
+            严格使用 arkweb-security-patch-gitcode-pr skill 完成 ArkWeb Chromium 补丁上库。必须读取 03_impact_decision.json / 04_final_archive.json / 06_merge_result.json 中的 merge_policy.force_merge；forceMerge=true 时，提交说明必须如实写明“真实影响结论为 affected/unaffected/unknown，按用户强制合入策略继续提交”，但不得把 unaffected/unknown 当作阻塞门槛。 基于当前工作树状态和前序报告识别本次 patch 实际涉及的文件，只暂存这些文件。 单 issue 模式创建一个规范提交，推送到个人 fork 分支，然后按《06_merge_result.md》记录的 manifest project / remote 推导上游仓，并按 context.automation.gitcode.targetBranch 创建 GitCode PR。 批量模式必须读取 .ace-outputs/{runId}/00_batch_plan.json、batch_status.json 和 issues/{issue_id}/06_merge_result.md，按 issue 串行提交；每一个 Chromium issue 必须对应一个 GitCode Issue、 一个 git commit、一个独立 fork 分支和一个 GitCode PR，禁止把多个 issue 合成一个 commit 或一个 PR。提交队列只能来自 batch_status.json 中当前阶段可提交的 ready_for_next active issue；terminal_failed、deferred_for_archive、pending_current_stage、未通过风险评估或未满足编译门槛的 issue 不得创建 GitCode Issue、commit、分支或 PR。 批量模式提交使用当前工程目标子仓中已经合入的总 diff， 提交阶段再按 issue 的 modified_files[]/final_changed_files 拆分暂存和提交；不得创建或依赖 git worktree， 不得把前一个 issue 的提交内容带入后一个 issue。 GitCode Issue、commit message、PR title/body 必须只总结当前 issue 的漏洞、影响判定、合入、编译和风险信息； 不得把 00_batch_plan、batch_status 或其它 issue 的批量汇总、批量统计、其它 PR/commit 状态带入当前 issue 的 GitCode Issue、commit message 或 PR body。批量信息只能写入本地根目录 12_submit_result.md 和最终批量报告。 将结果写入 .ace-outputs/{runId}/12_submit_result.md。 批量模式还必须为每个 issue 写入 .ace-outputs/{runId}/issues/{issue_id}/12_submit_result.md， 并在根目录 12_submit_result.md 中输出汇总表。根目录 12_submit_result.md 必须区分 submitted、submit_failed、not_submitted_deferred、not_submitted_terminal 和 not_submitted_pending，不能把未进入提交队列的 issue 当作提交失败。 commit message 必须读取输入 issue 归档目录中的 04_final_archive.md，并把其中的 issue、patch、影响判定事实 作为漏洞背景；自动合入、编译验证、风险评估和提交状态必须来自当前工作流的 06_merge_result.md、 09_build_verification.md、11_risk_assessment.md 和 12_submit_result.md，不能把归档阶段未执行的占位结论当成本流程事实。 不能只写摘要。如果 04_final_archive.md 不存在，必须停止提交并写入阻塞项。 提交正文必须过滤归档阶段的“未解决问题与人工建议/人工核查建议/后续合入建议”章节，尤其不能带入 “自动合入、编译验证、提交上库（均未执行）”这类前置归档阶段的占位或过期判断；提交结果以本工作流实际执行的 自动合入、编译验证和上库步骤为准。 提交仓库路径必须从顶层 workflow context 传递：优先使用 context.automation.gitcode.repoPath， 其次使用 context.automation.repoPath 或 context.codebase；如果传入的是 ArkWeb wrapper 根目录， 只能自动推导到其 src 子仓，不能写死个人路径。
+            提交范围硬性限制：只允许提交本次 patch 实际修改文件。其它无关脏改、未跟踪文件、SDK、toolchain、构建产物、src/out、 .ace-outputs、临时 patch 文件和历史遗留删除必须全部忽略，不得暂存、不得提交、不得清理。 批量模式中，每个 issue 提交前必须根据该 issue 的 modified_files[]、06_merge_result.md 最终变更文件列表、以及编译修复登记的 local_adaptations[]/compile_fix_files[] 计算 本 issue 允许暂存文件；每个 issue 提交前必须先确保暂存区为空，只允许 `git add -- <当前issue文件...>`， 禁止暂存其它 issue 文件。若多个 issue 修改同一文件，自动合入阶段应已按 issue_id 数值升序只保留最小 issue_id 作为 winner 进入 active batch，其它 issue 标记为 duplicate_files/overlap 并排除出无重复 active batch；提交阶段再次发现重叠文件时，必须停止对应 issue，不得把重叠文件合并提交到错误 issue。 推送前必须执行提交体积预检：确认 `git diff --cached --name-status`、`git diff --cached --stat`、暂存文件大小、 新增/修改文件列表和待推送 commit 范围只包含本次 patch 文件。待推送 commit 范围必须以 manifest/upstream remote 的目标分支为基线，例如 `tpc/master..HEAD`；个人 fork remote 只作为 push 目的地，不得用 `personal/master..HEAD` 作为整批最小提交范围判定。如果 `personal/master..HEAD` 很大但 manifest/upstream range 很小且暂存区只包含当前 issue 白名单文件，不得把 ready issue 标记为 submit_failed。如果个人 fork 默认分支与 manifest/upstream baseline 无 merge-base，或 fork range 显示会推送大量历史，必须先用 GitCode API/`oh-gc branch create` 在个人 fork 创建一个指向 manifest/upstream baseline SHA 的临时基线分支，再 push issue 分支；不得直接尝试推送包含上游历史的大 pack。批量工作树已包含多个 issue 的未提交总 diff，或当前 HEAD 已有其它 issue 提交时，必须使用 arkweb-security-patch-gitcode-pr skill 内的 `create_isolated_issue_commit.mjs` 从 manifest/upstream baseline 和当前 issue 白名单文件构造独立 commit；不得在污染分支上直接 `git commit`，不得切换/清理当前工作树，不得使用 git worktree。若发现大文件、构建产物、SDK/toolchain、压缩包、 src/out 或范围外文件，必须取消暂存/停止提交，并写入阻塞项，不能继续 push。 如果 `git push` 返回 HTTP 413 或远端拒绝过大 pack，必须判定为提交范围或对象体积问题：禁止重复盲推， 必须输出 pack 过大的可能文件、已暂存文件、待推送 commit 列表，以及下一步最小修复建议（拆分提交、去除范围外文件、 重新基于干净分支只应用或移植本次 patch 文件）。如果 `git push` 被 Git LFS pre-push hook 报 `Unable to find source for object ...`，必须先判断当前 issue submit scope 是否包含 LFS 跟踪文件；若本 issue 不修改 LFS 跟踪文件，必须立即对同一 fork 分支使用 `GIT_LFS_SKIP_PUSH=1 git push ...` 重试一次，并记录首次失败和重试结果，不得直接把整批标记为 submit_failed；若本 issue 修改了 LFS 跟踪文件，才允许要求补齐 LFS 对象后再推送。不得通过清理其它脏改或强推来规避。 批量模式必须逐 issue 推进；单个 issue push、GitCode Issue 或 PR 失败时，只能标记该 issue `submit_failed` 并继续后续 ready issue，不得把剩余 ready issue 直接改成 pending 或整批停止；只有认证失效、网络不可达、配置缺失等共享基础设施问题才允许停止整批。如果 fork 分支已经存在且指向本 issue isolated commit，必须跳过重复 push，继续创建或复用 GitCode Issue，再创建 PR 与 `start build` 评论。 批量恢复提交前必须先做远端幂等扫描：按 issue id 查询已有 fork 分支和已有 open PR；如果该 issue 已存在 open PR，必须复用该 PR 并标记 submitted，不得再创建新 commit、新分支、新 GitCode Issue 或新 PR。如果已有 fork 分支但 PR 缺失，只允许复用该分支继续创建 PR；不得为同一 issue 再创建第二个分支，除非原分支 commit 与当前 issue scope 明确不一致并在结果文件中记录废弃原因。 使用 `create_isolated_issue_commit.mjs` 时，当前工作树范围外脏改、未跟踪文件、SDK/toolchain 删除或构建产物只作为 ignored_worktree_state 记录，不得阻塞当前 issue 提交；真正的提交对象只能由 submit scope 白名单文件和 manifest/upstream baseline 构造，只有 submit scope 本身包含禁用路径时才阻塞。
+            必须记录： 1. commit id、subject、关联 issue / CVE / bug / Change-Id，以及 commit message 已按规则引用 04_final_archive.md
+               并过滤人工建议/未执行占位章节的确认；
+            2. 实际 git add 的文件列表，禁止全量提交无关脏改； 3. fork remote、fork 分支、manifest project、manifest remote、实际目标仓库、实际目标分支； 4. 推送前的暂存区 diff、文件体积预检和待推送 commit 范围； 5. GitCode PR 链接或创建失败原因； 6. 若上库失败，给出明确失败原因和后续操作建议；HTTP 413 必须按过大 pack 问题记录。 7. 批量模式必须记录每个 issue 的 GitCode Issue 编号、commit、fork 分支、PR 链接、start build 评论结果和最终状态。 批量提交阶段不得临时生成大段 shell/Python/Node 上库脚本；必须调用 arkweb-security-patch-gitcode-pr skill 的 scripts。 push 前必须先调用 `scan_existing_submit_targets.mjs` 对整个 ready 队列做远端幂等扫描，并把扫描结果作为 `12_submit_result.md` 的证据。若同一 Chromium issue 已有 open PR，必须复用该 PR 并标记 submitted，不得重新生成 commit、分支、GitCode Issue 或 PR。若同名 fork 分支已存在但 commit 与本次 isolated commit 不一致，且没有可复用 open PR，必须标记 `submit_failed(branch_exists_commit_mismatch)`，记录远端 SHA 与本地 commit，禁止自动创建 `-r2/-r3` 分支、禁止强推、禁止重复盲推。
+            在回复末尾输出 JSON： ```json {
+              "verdict": "pass|conditional_pass|fail",
+              "issues": [
+                {
+                  "type": "implementation|security|design",
+                  "severity": "critical|major|minor",
+                  "description": "..."
+                }
+              ],
+              "summary": "一句话总结"
+            } ```
+          role: defender
+          skills:
+            - arkweb-security-patch-gitcode-pr
+      transitions:
+        - to: 结果归档
+          condition:
+            verdict: pass
+          priority: 1
+          label: 上库完成
+        - to: 结果归档
+          condition:
+            verdict: conditional_pass
+          priority: 2
+          label: 上库部分完成或需归档记录
+        - to: 结果归档
+          condition:
+            verdict: fail
+          priority: 3
+          label: 上库失败，归档
+      position:
+        x: 1820
+        y: 160
+      isInitial: false
+      isFinal: false
+      maxSelfTransitions: 3
+    - name: 结果归档
+      description: 输出结构化修复报告并归档全过程
+      type: normal
+      requireHumanApproval: false
+      steps:
+        - name: 生成修复报告
+          agent: arkweb-security-patch-report-writer
+          task: >
+            汇总本次运行全过程，输出最终《ArkWeb漏洞修复报告》并写入
+
+            .ace-outputs/{runId}/13_final_report.md。批量模式下该文件是批量总报告，同时每个 issue
+
+            需要写入 .ace-outputs/{runId}/issues/{issue_id}/13_final_report.md。
+
+
+            报告至少包含：
+
+            1. 输入归档目录：需求描述中提供的单个 issue 目录或批量 run 目录，例如
+            .ace-outputs/{archiveRunId}/{issue_id}/
+               或 .ace-outputs/{archiveRunId}/；
+            2. 归档目录中的 issue 基础信息、上游修复 PR/CL、patch 来源、修改文件列表、影响判定、责任田和影响特性；
+
+            3. ArkWeb 合入方式、冲突与解决方案；
+
+            4. 代码审查结论；
+
+            5. 编译验证结果（这是自动化门禁结论）；
+
+            6. 风险评估摘要；
+
+            7. 提交 / 上库结果；
+
+            8. 未解决问题、后续建议、回滚建议；
+
+            9. 批量模式必须包含 issue 汇总表，字段至少包含
+            issue_id、CVE、impact、target_repo、commit、branch、
+               GitCode Issue、PR、build、status、失败原因；
+            10. 附一个 JSON 摘要块，字段至少包含：
+
+            {
+              "automation_result": "success|partial|failed",
+              "source_archive_dir": "需求描述中提供的输入归档目录",
+              "issue_id": "",
+              "batch_issue_count": 0,
+              "arkweb_affected": true,
+              "build_passed": true,
+              "submitted": true,
+              "report_path": ".ace-outputs/{runId}/13_final_report.md"
+            }
+          role: defender
+          skills:
+            - arkweb-security-patch-report
+      transitions: []
+      position:
+        x: 2040
+        y: 160
+      isInitial: false
+      isFinal: true
+      maxSelfTransitions: 3
+  maxTransitions: 46
+  supervisor:
+    enabled: true
+    agent: default-supervisor
+    stageReviewEnabled: true
+    checkpointAdviceEnabled: true
+    scoringEnabled: true
+    experienceEnabled: true
+context:
+  projectRoot: <workflow_output_root>
+  workspaceMode: in-place
+  requirements: >-
+    本工作流用于根据目录中规定的本地 issue HTML/MHTML 文件解析 issue，自动获取修复 patch，判断 ArkWeb 影响，并在同一次
+    run 中继续执行自动合入、编译验证、提交上库和最终归档。
+
+
+    默认输入：
+
+    1. 本地 issue 归档目录:<issue_archive_dir>
+
+    2. ArkWeb 工程根目录:<arkweb_project_root>
+       真实源码根目录使用 context.codebase；context.projectRoot 只用于工作流输出和轻量运行上下文，避免 ACEHarness 启动时对 ArkWeb 大仓建立 Git 基线。
+
+    3. 支持 issue 文件类型：*.html、*.htm、*.mhtml、*.mht；如果存在 issue.zip，可作为同源归档参考
+
+    4. patch 获取优先级：漏洞解析阶段确认的 Gerrit CL / Gitiles commit / Chromium review / PR /
+    patch 下载地址
+
+    5. 若网络不可用，必须输出可复现获取命令和阻塞原因
+
+    6. 是否强制合入：是。该字段是 Web 页面可编辑的主开关；写“是”表示不管影响判定为 affected、unaffected 还是
+    unknown，都继续执行自动合入、编译验证和提交上库；写“否”表示不启用强制合入。影响判定阶段仍必须如实记录真实 arkweb_impact
+    和证据链，后续阶段只能把强制合入作为用户策略记录，不能篡改影响结论。
+
+
+    集成执行规则：
+
+    - 漏洞解析、Patch抓取、影响判定和分析归档产物写入
+    <context.projectRoot>/.ace-outputs/{runId}/{issue_id}/；源码核验、合入、编译和提交使用
+    context.codebase。
+
+    - 自动合入默认消费当前 run 的分析归档目录
+    <context.projectRoot>/.ace-outputs/{runId}，不需要用户手工复制目录。
+
+    - 若 requirements 明确指定已有单 issue 归档目录或批量 run 归档目录，可跳过前序输入发现并使用该目录作为外部归档输入。
+
+    - 自动合入、编译验证、提交上库和最终归档产物继续写入同一个 <context.projectRoot>/.ace-outputs/{runId}。
+
+    - 不修改本地 issue 原始归档文件；不创建 git worktree；合入范围只限 patch 和前序产物明确允许的文件。
+  codebase: <arkweb_project_root>
+  timeoutMinutes: 240
+  engine: codex
+  executionPolicy:
+    defaultEngine: codex
+    autoCompactOnStepChange: false
+    agentOverrides: {}
+  skills: []
+  mcpServers: []
