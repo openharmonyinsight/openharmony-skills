@@ -452,7 +452,7 @@ workflow:
             编译验证流程。
 
             【编译命令（固定，不要使用其他命令）】：
-            cd /mnt/vdb_new/user_home/gzwoh/code/arkweb_144 && ./build_arkweb.sh rk3568_64 -t n -A
+            cd {project_root} && ./build_arkweb.sh rk3568_64 -t w -A
 
             【文件读取约束 — 严格遵守，避免上下文膨胀】：
             - 必读：上一步 <step-conclusion> 中的变更文件清单（确定编译目标）
@@ -463,7 +463,7 @@ workflow:
 
             编译验证步骤：
             1. 从上一步 <step-conclusion> 获取变更文件清单，确认编译范围
-            2. 执行编译命令：cd /mnt/vdb_new/user_home/gzwoh/code/arkweb_144 && ./build_arkweb.sh rk3568_64 -t n -A
+            2. 执行编译命令：cd {project_root} && ./build_arkweb.sh rk3568_64 -t w -A
             3. 编译-修复循环（max 10 轮）：
                a. 如果编译成功（exit code 0，输出 "Build completed"）：跳出循环
                b. 如果编译失败：
@@ -528,14 +528,7 @@ workflow:
       transitions: []
 
 context:
-  projectRoot: {project_root}
-  docsDir: {ACE_HOME}/workspaces/arkweb-video-fullscreen-title-0514
-  analysisDir: {ACE_HOME}/workspaces/arkweb-video-fullscreen-title-0514/analysis
-  referencesDir: {ACE_HOME}/references
-  templatesDir: {ACE_HOME}/assets/templates
-  docs_dir: {ACE_HOME}/workspaces/arkweb-video-fullscreen-title-0514
-  analysis_dir: {ACE_HOME}/workspaces/arkweb-video-fullscreen-title-0514/analysis
-  references_dir: {ACE_HOME}/references
+  projectRoot: "{project_root}"
   requirements: |
     ArkWeb项目中网页视频全屏时，支持开发者通过设置HTML扩展属性，在网页video元素播放点击全屏时不显示HTML标题。
     当开发者不设置新增的HTML扩展属性时，默认保持当前规格不变，在网页video元素播放点击全屏时显示标题。
