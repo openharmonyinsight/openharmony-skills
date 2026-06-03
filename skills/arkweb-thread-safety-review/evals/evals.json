@@ -1,0 +1,167 @@
+{
+  "skill_name": "arkweb-thread-safety-review",
+  "evals": [
+    {
+      "id": "standard_rule1_bad",
+      "source_example": "examples/bad/standard_rule1_unretained_this.md",
+      "prompt": "请使用 arkweb-thread-safety-review 审查下面 ArkWeb/Chromium C++ 单文件代码。严格只输出一个 JSON 对象：输出第一字符必须是 `{`，最后字符必须是 `}`，不要输出 Markdown、代码围栏或解释文字。\n\n```cpp\nclass RefreshListener {\n public:\n  explicit RefreshListener(scoped_refptr<base::SequencedTaskRunner> ui_runner)\n      : ui_runner_(std::move(ui_runner)) {}\n\n  void ScheduleRepeat(float delta) {\n    ui_runner_->PostTask(\n        FROM_HERE,\n        base::BindOnce(&RefreshListener::OnAnimationRepeat,\n                       base::Unretained(this), delta));\n  }\n\n  void Stop() {\n    delete this;\n  }\n\n private:\n  void OnAnimationRepeat(float delta);\n  scoped_refptr<base::SequencedTaskRunner> ui_runner_;\n};\n```",
+      "expected_output": "Reports one standard_rule1 violation for async raw this capture without visible WeakPtr, cancellation, or owner lifetime guarantee.",
+      "files": [],
+      "expectations": [
+        "Output is valid JSON and follows the SKILL.md schema without Markdown.",
+        "At least one violation has rule_id standard_rule1 and rule_level P1.",
+        "The evidence mentions the async PostTask boundary and base::Unretained(this).",
+        "The issue or impact explains that Stop/delete this can make the posted callback dereference a destroyed object.",
+        "The required_fix recommends WeakPtr, cancellation, or equivalent lifetime protection."
+      ]
+    },
+    {
+      "id": "standard_rule2_bad",
+      "source_example": "examples/bad/standard_rule2_gpu_mojo_thread.md",
+      "prompt": "请使用 arkweb-thread-safety-review 审查下面 ArkWeb/Chromium C++ 单文件代码。严格只输出一个 JSON 对象：输出第一字符必须是 `{`，最后字符必须是 `}`，不要输出 Markdown、代码围栏或解释文字。\n\n```cpp\nclass GpuBridge {\n public:\n  void BindReceiverOnIpcThread(mojo::PendingReceiver<mojom::GpuBridge> receiver) {\n    DCHECK(ipc_task_runner_->RunsTasksInCurrentSequence());\n    receiver_.Bind(std::move(receiver));\n  }\n\n  void OnCreateSharedImage(const gpu::Mailbox& mailbox) override {\n    DCHECK(ipc_task_runner_->RunsTasksInCurrentSequence());\n    shared_image_manager_->CreateSharedImage(mailbox);\n  }\n\n private:\n  mojo::Receiver<mojom::GpuBridge> receiver_{this};\n  scoped_refptr<base::SequencedTaskRunner> ipc_task_runner_;\n  scoped_refptr<base::SequencedTaskRunner> gpu_task_runner_;\n  raw_ptr<gpu::SharedImageManager> shared_image_manager_;\n};\n```",
+      "expected_output": "Reports one standard_rule2 violation for directly touching GPU resource state from an IPC/mojo callback sequence.",
+      "files": [],
+      "expectations": [
+        "At least one violation has rule_id standard_rule2 and rule_level P1.",
+        "The evidence identifies the IPC sequence in BindReceiverOnIpcThread or OnCreateSharedImage.",
+        "The evidence identifies shared_image_manager_->CreateSharedImage as GPU resource work.",
+        "The required_fix says to post GPU work to the GPU task runner or GPU sequence.",
+        "The output does not replace this with a generic missing-thread-check finding."
+      ]
+    },
+    {
+      "id": "standard_rule3_bad",
+      "source_example": "examples/bad/standard_rule3_drdc_thread.md",
+      "prompt": "请使用 arkweb-thread-safety-review 审查下面 ArkWeb/Chromium C++ 单文件代码。严格只输出一个 JSON 对象：输出第一字符必须是 `{`，最后字符必须是 `}`，不要输出 Markdown、代码围栏或解释文字。\n\n```cpp\nvoid DisplayScheduler::RequestComposite(const FrameSinkId& frame_sink_id) {\n  compositor_gpu_thread_->ScheduleComposite(frame_sink_id);\n}\n```",
+      "expected_output": "Reports standard_rule3 because compositor_gpu_thread_ is directly invoked without DrDC sequence evidence or dispatch.",
+      "files": [],
+      "expectations": [
+        "At least one violation has rule_id standard_rule3 and rule_level P1.",
+        "The evidence names compositor_gpu_thread_->ScheduleComposite.",
+        "The issue explains that compositor_gpu_thread_ access must be confined to the DrDC/GPU sequence.",
+        "The required_fix recommends dispatching to the DrDC task runner or verified owner sequence."
+      ]
+    },
+    {
+      "id": "standard_rule4_bad",
+      "source_example": "examples/bad/standard_rule4_ndk_ui_thread.md",
+      "prompt": "请使用 arkweb-thread-safety-review 审查下面 ArkWeb/Chromium C++ 单文件代码。严格只输出一个 JSON 对象：输出第一字符必须是 `{`，最后字符必须是 `}`，不要输出 Markdown、代码围栏或解释文字。\n\n```cpp\nclass BrowserHost {\n public:\n  void OnNativeColorResultFromWorker(bool success, uint32_t color) {\n    DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());\n    NotifyNativeColorListener(success, color);\n  }\n\n private:\n  void NotifyNativeColorListener(bool success, uint32_t color) {\n    if (success) {\n      OH_NativeColorPicker_ColorSelected(ndk_listener_, color);\n    } else {\n      OH_NativeColorPicker_ColorSelectionCanceled(ndk_listener_);\n    }\n  }\n\n  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;\n  OH_NativeColorPickerListener* ndk_listener_ = nullptr;\n};\n```",
+      "expected_output": "Reports standard_rule4 when a worker-thread entry directly invokes an external NDK listener without UI-thread dispatch.",
+      "files": [],
+      "expectations": [
+        "At least one violation has rule_id standard_rule4 and rule_level P2.",
+        "The evidence identifies OnNativeColorResultFromWorker or worker_task_runner_ as non-UI sequence evidence.",
+        "The evidence identifies OH_NativeColorPicker_ColorSelected or OH_NativeColorPicker_ColorSelectionCanceled as external NDK listener invocation.",
+        "The issue explains that the external listener call lacks UI-thread dispatch or UI-thread proof.",
+        "The required_fix recommends checking UI thread or posting to UI before invoking the NDK listener."
+      ]
+    },
+    {
+      "id": "standard_rule5_bad",
+      "source_example": "examples/bad/standard_rule5_nweb_ui_thread.md",
+      "prompt": "请使用 arkweb-thread-safety-review 审查下面 ArkWeb/Chromium C++ 单文件代码。严格只输出一个 JSON 对象：输出第一字符必须是 `{`，最后字符必须是 `}`，不要输出 Markdown、代码围栏或解释文字。\n\n```cpp\nclass PreferenceMigrator {\n public:\n  void StartFromWorker(std::string path, bool value) {\n    DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());\n    WriteBrowserPreference(path, value);\n  }\n\n private:\n  void WriteBrowserPreference(std::string path, bool value) {\n    browser_context_->GetPrefs()->SetBoolean(path, value);\n    browser_context_->GetPrefs()->CommitPendingWrite();\n  }\n\n  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;\n  raw_ptr<content::BrowserContext> browser_context_;\n};\n```",
+      "expected_output": "Reports standard_rule5 because worker-thread code directly touches BrowserContext/NWeb-adjacent preference state.",
+      "files": [],
+      "expectations": [
+        "At least one violation has rule_id standard_rule5 and rule_level P2.",
+        "The evidence identifies StartFromWorker as worker sequence evidence.",
+        "The evidence identifies browser_context_->GetPrefs() access as the constrained NWeb/BrowserContext-related object.",
+        "The required_fix recommends posting to UI before BrowserContext preference state access."
+      ]
+    },
+    {
+      "id": "standard_rule6_bad",
+      "source_example": "examples/bad/standard_rule6_ui_object_access.md",
+      "prompt": "请使用 arkweb-thread-safety-review 审查下面 ArkWeb/Chromium C++ 单文件代码。严格只输出一个 JSON 对象：输出第一字符必须是 `{`，最后字符必须是 `}`，不要输出 Markdown、代码围栏或解释文字。\n\n```cpp\nclass PrintAdapter {\n public:\n  void OnStartLayoutWriteFromWorker() {\n    DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());\n    auto* web_contents = content::WebContents::FromRenderFrameHost(rfh_);\n    if (web_contents) {\n      title_ = web_contents->GetTitle();\n    }\n  }\n\n private:\n  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;\n  raw_ptr<content::RenderFrameHost> rfh_;\n  std::u16string title_;\n};\n```",
+      "expected_output": "Reports standard_rule6 for direct Chromium UI-thread object access from a worker callback.",
+      "files": [],
+      "expectations": [
+        "At least one violation has rule_id standard_rule6 and rule_level P1.",
+        "The evidence identifies worker_task_runner_ or OnStartLayoutWriteFromWorker as non-UI sequence evidence.",
+        "The evidence identifies RenderFrameHost or WebContents access.",
+        "The issue explains that WebContents/RenderFrameHost are UI-thread objects.",
+        "The required_fix recommends posting to UI and resolving the live object there, preferably by id."
+      ]
+    },
+    {
+      "id": "standard_rule7_bad",
+      "source_example": "examples/bad/standard_rule7_mojo_connector.md",
+      "prompt": "请使用 arkweb-thread-safety-review 审查下面 ArkWeb/Chromium C++ 单文件代码。严格只输出一个 JSON 对象：输出第一字符必须是 `{`，最后字符必须是 `}`，不要输出 Markdown、代码围栏或解释文字。\n\n```cpp\nclass MessageProxy {\n public:\n  void BindOnIoSequence(mojo::ScopedMessagePipeHandle handle) {\n    DCHECK(io_task_runner_->RunsTasksInCurrentSequence());\n    connector_ = std::make_unique<mojo::Connector>(std::move(handle));\n  }\n\n  void SendFromWorker(mojo::Message message) {\n    DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());\n    connector_->Accept(&message);\n  }\n\n private:\n  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;\n  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;\n  std::unique_ptr<mojo::Connector> connector_;\n};\n```",
+      "expected_output": "Reports standard_rule7 because mojo::Connector is created on IO sequence and used on worker sequence.",
+      "files": [],
+      "expectations": [
+        "At least one violation has rule_id standard_rule7 and rule_level P1.",
+        "The evidence identifies BindOnIoSequence as creation or owner sequence evidence.",
+        "The evidence identifies SendFromWorker and connector_->Accept as different-sequence use.",
+        "The required_fix recommends returning connector use to its owner sequence."
+      ]
+    },
+    {
+      "id": "standard_rule8_bad",
+      "source_example": "examples/bad/standard_rule8_audio_thread.md",
+      "prompt": "请使用 arkweb-thread-safety-review 审查下面 ArkWeb/Chromium C++ 单文件代码。严格只输出一个 JSON 对象：输出第一字符必须是 `{`，最后字符必须是 `}`，不要输出 Markdown、代码围栏或解释文字。\n\n```cpp\nclass AudioOutputStream {\n public:\n  void OnUiResume() {\n    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);\n    if (callback_) {\n      Start(weak_factory_.GetWeakPtr(), callback_);\n    }\n  }\n\n private:\n  void Start(base::WeakPtr<AudioOutputStream> stream, AudioCallback* callback);\n  AudioCallback* callback_ = nullptr;\n  base::WeakPtrFactory<AudioOutputStream> weak_factory_{this};\n};\n```",
+      "expected_output": "Reports standard_rule8 because Audio stream lifecycle work is invoked from UI instead of Audio thread.",
+      "files": [],
+      "expectations": [
+        "At least one violation has rule_id standard_rule8 and rule_level P2.",
+        "The evidence identifies OnUiResume as UI-thread entry evidence.",
+        "The evidence identifies Start as an Audio lifecycle operation.",
+        "The required_fix recommends posting to audio_task_runner_ or otherwise running on the Audio thread."
+      ]
+    },
+    {
+      "id": "standard_rule9_bad",
+      "source_example": "examples/bad/standard_rule9_cef_post_task.md",
+      "prompt": "请使用 arkweb-thread-safety-review 审查下面 ArkWeb/Chromium C++ 单文件代码。严格只输出一个 JSON 对象：输出第一字符必须是 `{`，最后字符必须是 `}`，不要输出 Markdown、代码围栏或解释文字。\n\n```cpp\nclass NWebDelegate {\n public:\n  void NotifyScreenInfoChanged(RotationType rotation) {\n    CEF_POST_TASK(CEF_UIT,\n        base::BindOnce(&NWebDelegate::SetRotationType,\n                       weak_factory_.GetWeakPtr(), rotation));\n  }\n\n private:\n  void SetRotationType(RotationType rotation) {\n    browser_->GetHost()->SetRotation(rotation);\n  }\n\n  void OnWebInstanceCreated(CefRefPtr<CefBrowser> browser) {\n    browser_ = browser;\n  }\n\n  CefRefPtr<CefBrowser> browser_;\n  base::WeakPtrFactory<NWebDelegate> weak_factory_{this};\n};\n```",
+      "expected_output": "Reports standard_rule9 because CEF_POST_TASK schedules Web-instance-dependent work before proving the browser/Web instance exists.",
+      "files": [],
+      "expectations": [
+        "At least one violation has rule_id standard_rule9 and rule_level P2.",
+        "The evidence identifies CEF_POST_TASK and the posted SetRotationType task.",
+        "The evidence identifies browser_ or browser_->GetHost() as the Web instance dependency.",
+        "The issue explains the missing browser/Web instance creation or availability check before posting.",
+        "The required_fix recommends checking the Web/browser instance before posting the task."
+      ]
+    },
+    {
+      "id": "standard_rule10_bad",
+      "source_example": "examples/bad/standard_rule10_scoped_refptr.md",
+      "prompt": "请使用 arkweb-thread-safety-review 审查下面 ArkWeb/Chromium C++ 单文件代码。严格只输出一个 JSON 对象：输出第一字符必须是 `{`，最后字符必须是 `}`，不要输出 Markdown、代码围栏或解释文字。\n\n```cpp\nclass BackendFactory : public base::RefCounted<BackendFactory> {\n public:\n  void CreateBackend();\n\n private:\n  friend class base::RefCounted<BackendFactory>;\n  ~BackendFactory() = default;\n};\n\nscoped_refptr<BackendFactory> factory_;\n\nvoid Service::CreateOnWorker() {\n  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());\n  worker_task_runner_->PostTask(\n      FROM_HERE,\n      base::BindOnce(&BackendFactory::CreateBackend, factory_));\n}\n```",
+      "expected_output": "Reports standard_rule10 because scoped_refptr crosses threads while the managed object uses base::RefCounted rather than thread-safe ref counting.",
+      "files": [],
+      "expectations": [
+        "At least one violation has rule_id standard_rule10 and rule_level P1.",
+        "The evidence identifies factory_ crossing from UI sequence into worker_task_runner_->PostTask.",
+        "The evidence identifies BackendFactory as base::RefCounted, not base::RefCountedThreadSafe.",
+        "The issue does not claim scoped_refptr itself is always unsafe.",
+        "The required_fix recommends thread-safe ref counting or confining ownership and release to one sequence."
+      ]
+    },
+    {
+      "id": "no_violation_id_transfer",
+      "source_example": "examples/good/no_violation_id_transfer.md",
+      "prompt": "请使用 arkweb-thread-safety-review 审查下面 ArkWeb/Chromium C++ 单文件代码。严格只输出一个 JSON 对象：输出第一字符必须是 `{`，最后字符必须是 `}`，不要输出 Markdown、代码围栏或解释文字。\n\n```cpp\nvoid NavigationTracker::CollectOnUiThread(content::WebContents* web_contents) {\n  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);\n  const int frame_tree_node_id =\n      web_contents->GetPrimaryMainFrame()->GetFrameTreeNodeId();\n  io_task_runner_->PostTask(\n      FROM_HERE,\n      base::BindOnce(&NavigationTracker::UseFrameIdOnIoThread,\n                     weak_factory_.GetWeakPtr(), frame_tree_node_id));\n}\n\nvoid NavigationTracker::UseFrameIdOnIoThread(int frame_tree_node_id) {\n  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);\n  RecordFrame(frame_tree_node_id);\n}\n```",
+      "expected_output": "Reports no violation because WebContents is accessed on UI and only an integer id crosses to IO.",
+      "files": [],
+      "expectations": [
+        "Output is valid JSON and follows the SKILL.md schema without Markdown.",
+        "summary.total_violations is 0.",
+        "violations is an empty array.",
+        "The output does not report standard_rule6 for stable id transfer."
+      ]
+    },
+    {
+      "id": "no_violation_uncertain_thread",
+      "source_example": "examples/good/no_violation_uncertain_thread.md",
+      "prompt": "请使用 arkweb-thread-safety-review 审查下面 ArkWeb/Chromium C++ 单文件代码。严格只输出一个 JSON 对象：输出第一字符必须是 `{`，最后字符必须是 `}`，不要输出 Markdown、代码围栏或解释文字。\n\n```cpp\nclass AudioController {\n public:\n  void ResumeIfNeeded() {\n    if (stream_) {\n      stream_->Start();\n    }\n  }\n\n private:\n  std::unique_ptr<AudioStream> stream_;\n};\n```",
+      "expected_output": "Reports no violation because the current file lacks entry-thread, Audio task runner, or object-thread evidence.",
+      "files": [],
+      "expectations": [
+        "summary.total_violations is 0.",
+        "violations is an empty array.",
+        "The output does not report standard_rule8 from method names alone.",
+        "The output does not add non-schema uncertain, finding, note, or risk fields."
+      ]
+    }
+  ]
+}
