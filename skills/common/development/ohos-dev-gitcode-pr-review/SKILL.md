@@ -39,12 +39,12 @@ Use `scripts/collect_pr_context.py` to fetch and save the PR context before revi
 
 The script gathers:
 
-- `oh-gc pr:view NUMBER --json`
-- `oh-gc pr:diff NUMBER --json`
-- `oh-gc pr:diff NUMBER --name-only`
-- `oh-gc pr:diff NUMBER --color never`
-- `oh-gc pr:comments NUMBER --json --comment-type pr_comment`
-- `oh-gc pr:comments NUMBER --json --comment-type diff_comment`
+- `oh-gc pr view NUMBER --json`
+- `oh-gc pr diff NUMBER --json`
+- `oh-gc pr diff NUMBER --name-only`
+- `oh-gc pr diff NUMBER --color never`
+- `oh-gc pr comments NUMBER --json --comment-type pr_comment`
+- `oh-gc pr comments NUMBER --json --comment-type diff_comment`
 
 Review the generated artifact directory before making claims. Read artifacts in this order:
 
@@ -168,9 +168,9 @@ The draft may include:
 Approval gate:
 
 - Set `approve: true` only when no blocking or high-severity findings remain and the user explicitly wants approval.
-- If the review contains blocking findings, submit comments only; do not call `oh-gc pr:review`.
+- If the review contains blocking findings, submit comments only; do not call `oh-gc pr review`.
 
-Important: `oh-gc pr:review` only supports approval. It is not a general "submit review" endpoint.
+Important: `oh-gc pr review` only supports approval. It is not a general "submit review" endpoint.
 
 For submitted comments, follow the Markdown and Chinese-writing rules in `references/review-draft-schema.md`.
 
@@ -189,10 +189,14 @@ If execution fails partway through, report exactly which comments succeeded and 
 
 ## Quick Flow
 
-Use these commands only as a compact reminder after reading the workflow above. Run them from the directory that contains this `SKILL.md`; script paths are relative to this skill directory, not to the repository being reviewed.
+Use these commands only as a compact reminder after reading the workflow above.
+
+Run `collect_pr_context.py` from the local checkout of the repository being reviewed so it can infer `OWNER/REPO` from that checkout's GitCode remote and write `.review-gitcode-pr` artifacts beside the code you will inspect. If you run it from another directory, pass `--repo OWNER/REPO` and `--out-dir PATH` explicitly.
+
+The example below assumes the skill directory is available through `$SKILL_DIR` and the current working directory is the repository being reviewed.
 
 ```bash
-python3 scripts/collect_pr_context.py 123
+python3 "$SKILL_DIR/scripts/collect_pr_context.py" 123
 ```
 
 Primary review artifacts:
@@ -211,7 +215,7 @@ Depth reminder:
 Preview a draft submission:
 
 ```bash
-python3 scripts/prepare_review_submission.py \
+python3 "$SKILL_DIR/scripts/prepare_review_submission.py" \
   --context-dir .review-gitcode-pr/pr-123 \
   --findings findings.json \
   --write-draft review-draft.json
@@ -220,7 +224,7 @@ python3 scripts/prepare_review_submission.py \
 Preview an existing draft submission:
 
 ```bash
-python3 scripts/prepare_review_submission.py \
+python3 "$SKILL_DIR/scripts/prepare_review_submission.py" \
   --context-dir .review-gitcode-pr/pr-123 \
   --draft review-draft.json
 ```
@@ -228,7 +232,7 @@ python3 scripts/prepare_review_submission.py \
 Execute only after explicit user confirmation:
 
 ```bash
-python3 scripts/prepare_review_submission.py \
+python3 "$SKILL_DIR/scripts/prepare_review_submission.py" \
   --context-dir .review-gitcode-pr/pr-123 \
   --draft review-draft.json \
   --execute
@@ -262,7 +266,7 @@ Handle failures explicitly. For each blocker, report:
 
 ### Diff JSON missing, malformed, or incomplete
 
-- Blocker: `pr:diff --json` changes shape, omits hunks, or cannot be parsed reliably enough for structured line mapping.
+- Blocker: `pr diff --json` changes shape, omits hunks, or cannot be parsed reliably enough for structured line mapping.
 - Fallback: use `pr-diff.txt` as the source of truth for diff reasoning. Only emit line comments when a new-side line can still be verified confidently from raw diff text; otherwise fall back to file-level or general comments.
 - Next step: tell the user that structured diff parsing degraded and that submission precision may be reduced until the JSON format is fixed.
 
