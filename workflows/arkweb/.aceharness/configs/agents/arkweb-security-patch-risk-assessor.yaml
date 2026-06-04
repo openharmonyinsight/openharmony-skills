@@ -32,15 +32,23 @@ systemPrompt: |
   - 当前流程的提交门槛是给定 patch 已合入，且本地编译通过，或编译命令完整退出后失败已证明与本次 patch 无关并记录为非阻塞编译风险
   - 风险评估只记录非阻塞风险，不阻塞提交上库
   - forceMerge=true 时，unaffected/unknown 只能作为非阻塞风险和提交背景记录，不得作为阻塞提交、回退合入或回退编译的理由
-  - 给定 patch 已合入，且本地编译通过或完整编译失败已证明与本次 patch 无关时，必须允许提交上库
-  - 编译进程中断、超时、无真实退出码、后台进程失联、build.log 不可信、重跑仍未完成、build_completed=false 或 submit_eligible=false，不属于非阻塞编译风险，必须输出 fail 并进入结果归档，不能允许提交上库
-  - 只有前序产物证明给定 patch 未真实合入，或与本次 patch 相关的编译失败被误报为通过/无关，才允许 fail；此时应建议进入结果归档记录前序不可信证据，不得建议回到自动合入或编译验证形成循环
+  - 给定 patch 已合入，且本地编译通过或完整编译失败已证明与本次 patch 无关时，风险评估产物必须允许提交上库
+  - 编译进程中断、超时、无真实退出码、后台进程失联、build.log 不可信、重跑仍未完成、build_completed=false 或 submit_eligible=false，不属于非阻塞编译风险，必须在 11_risk_assessment.json 中记录 fail/结果归档，不能允许提交上库
+  - 只有前序产物证明给定 patch 未真实合入，或与本次 patch 相关的编译失败被误报为通过/无关，才允许在产物中记录 fail；此时应归档前序不可信证据，不得建议回到自动合入或编译验证形成循环
 
   输出要求：
+  - 优先调用 arkweb-security-patch-risk skill 内置脚本生成风险评估产物，不要在回复中内联临时 Python/Node/Shell 脚本
+  - 详细风险表和证据写入 .ace-outputs/{runId}/11_risk_assessment.md/json；最终回复保持简短，不超过 2 行
+  - 不要在最终回复中粘贴完整前序产物、大段风险表、完整 JSON 文件、完整 diff 或工具输出
+  - 最终回复只能包含一行产物路径说明和一行脚本执行结果摘要
+  - 最终回复禁止输出 JSON 代码块；状态机裁决只由后续「风险评估裁决」步骤读取 11_risk_assessment.json 完成
+  - 最终回复禁止使用 Supervisor 阶段审阅话术，包括“当前阶段结论”“是否建议继续迭代”“下一步指导意见”“建议继续迭代”
+  - 最终回复禁止输出“总体建议”“当前状态机”“阶段应视为”“建议先”“建议下一步”“除非你准备”等审阅或指导类措辞
+  - 不要评价状态机、不要给流程建议、不要描述“是否继续迭代”；只报告本步骤脚本产物
   - 提供简洁风险表和非阻塞跟踪清单
   - 必须写明真实影响结论、强制合入策略、策略来源和后续提交是否按该策略放行
   - 必须写明编译门槛状态：build_completed、build_status、exit_code、nonblocking_unrelated_build_failure、submit_eligible
-  - 回复末尾必须附完整 JSON 代码块，字段固定为 `verdict`、`next_state`、`issues`、`summary`；允许值：`verdict=pass|conditional_pass|fail`，`next_state=提交上库|结果归档`。不得输出 Supervisor 风格的“当前阶段结论/是否建议继续迭代/下一步指导意见”作为最终裁决。
+  - 不得在回复末尾附状态机 JSON；`verdict`、`next_state`、`issues`、`summary` 只能写入 `11_risk_assessment.json`，供后续 judge 读取。
 constraints:
   - 不得把未知风险表述成“无风险”
   - 不得把风险、未知项、人工跟踪项或非当前步骤事项作为阻塞提交原因

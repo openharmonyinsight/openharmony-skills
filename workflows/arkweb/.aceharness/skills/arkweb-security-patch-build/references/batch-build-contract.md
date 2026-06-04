@@ -23,6 +23,9 @@ Rules:
   non-blocking build risks.
 - Ready issues wait until all pending build repairs are resolved, then advance
   together.
-- In build repair, `conditional_pass` must include `next_state=编译修复` while
-  any `pending_current_stage` remains. Use `next_state=风险评估` only after
-  pending is empty and at least one `ready_for_next` issue remains.
+- In build repair, never return `conditional_pass,next_state=编译修复`.
+  If a repair diff, changed root cause, changed next error location, or concrete
+  retry basis exists, return `pass,next_state=编译验证` so the workflow reruns
+  build verification. Use `conditional_pass,next_state=风险评估` only after
+  `pending_current_stage` is empty and at least one `ready_for_next` issue
+  remains.

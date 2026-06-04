@@ -70,11 +70,19 @@ def normalize_mhtml_text(raw: str) -> str:
 def clean_url(url: str) -> str:
     url = html.unescape(unquote(url)).rstrip(".,;]")
     url = re.sub(r"[\"'>]+$", "", url)
+    url = re.sub(r"\s+", "", url)
     parsed = urlparse(url)
     if parsed.netloc.endswith("google.com") and parsed.path == "/url":
         target = parse_qs(parsed.query).get("q", [""])[0]
         if target:
             url = html.unescape(unquote(target)).rstrip(".,;]")
+            url = re.sub(r"\s+", "", url)
+    parsed = urlparse(url)
+    if parsed.netloc.endswith("-review.googlesource.com") and parsed.path.startswith("/c/"):
+        parts = [part for part in parsed.path.split("/") if part]
+        if len(parts) >= 4 and parts[0] == "c" and parts[-1].isdigit() and parts[-2] != "+":
+            parts.insert(len(parts) - 1, "+")
+            url = parsed._replace(path="/" + "/".join(parts)).geturl()
     url = re.sub(r"#.*$", "", url)
     return url
 
@@ -161,13 +169,14 @@ def extract_commit_hash(context: str, url: str) -> str:
 
 
 def infer_subject(context: str) -> str:
+    context = re.sub(r"\s+", " ", context)
     bug_split = re.split(r"\b(?:Bug|Fixed|Change-Id):", context, maxsplit=1)
     head = bug_split[0].strip()
     if head:
-        head = re.sub(r"\s+", " ", head)
         head = re.sub(r"^[^A-Za-z\"\[]+", "", head)
+        head = re.sub(r"[<>]", "", head)
         if 12 <= len(head) <= 180 and "http" not in head and "Issue Tracker" not in head:
-            return head
+            return head[:180]
     for pattern in (
         r'(Reland "[^"]+")',
         r'(Revert "[^"]+")',
@@ -214,6 +223,27 @@ def build_fix_entry(item: dict[str, str]) -> dict[str, str]:
         "source_comment_id": item["comment_id"],
         "confidence": confidence,
     }
+
+
+def score_fix_entry(item: dict[str, str], entry: dict[str, str]) -> tuple[int, int, int, int]:
+    url = entry["url"]
+    semantic = item["semantic_type"]
+    return (
+        1 if semantic == "relanded fix" else 0,
+        1 if "/c/" in url else 0,
+        1 if entry["type"] == "gerrit_cl" else 0,
+        1 if entry["status"] == "merged" else 0,
+    )
+
+
+def normalize_subject(subject: str) -> str:
+    subject = subject.strip()
+    subject = re.sub(r'^(?:Reland|Revert)\s+"([^"]+)"$', r"\1", subject, flags=re.I)
+    subject = re.sub(r"^Reland\s+", "", subject, flags=re.I)
+    subject = re.sub(r"^Revert\s+", "", subject, flags=re.I)
+    subject = subject.strip("\"' ")
+    subject = re.sub(r"\s+", " ", subject)
+    return subject.lower()
 
 
 def classify_links(raw: str) -> list[dict[str, str]]:
@@ -265,25 +295,49 @@ def classify_links(raw: str) -> list[dict[str, str]]:
 
 
 def dedupe_fix_links(audits: list[dict[str, str]]) -> list[dict[str, str]]:
-    by_key: dict[str, dict[str, str]] = {}
+    by_key: dict[str, tuple[dict[str, str], dict[str, str]]] = {}
     for item in audits:
         if item["decision"] != "accepted":
             continue
-        key = item["url"]
-        cl = re.search(
-            r"(?:chromium-review|skia-review)\.googlesource\.com/(?:c/[^?#]+/\+/|changes/[^?#]*~)?(\d+)(?:[/?#]|$)",
-            key,
-        )
-        if cl:
-            key = f"cl:{cl.group(1)}"
-        commit = re.search(r"/\+/([0-9a-f]{7,40})(?:[/?#]|$)", item["url"], re.I)
-        if commit and "googlesource.com" in item["url"] and "-review.googlesource.com" not in item["url"]:
-            key = f"commit:{commit.group(1)}"
-        existing = by_key.get(key)
-        if existing and ("/c/" not in item["url"] or "/c/" in existing["url"]):
+        if item["semantic_type"] == "revert event":
             continue
-        by_key[key] = build_fix_entry(item)
-    return list(by_key.values())
+        entry = build_fix_entry(item)
+        if entry["subject"].lower().startswith("revert "):
+            continue
+        keys: list[str] = []
+        if entry["change_id"]:
+            keys.append(f"change:{entry['change_id']}")
+        if entry["cl_number"]:
+            keys.append(f"cl:{entry['cl_number']}")
+        if entry["commit_hash"]:
+            keys.append(f"commit:{entry['commit_hash']}")
+        if not keys:
+            keys.append(f"url:{entry['url']}")
+
+        existing_key = next((key for key in keys if key in by_key), None)
+        if existing_key is None:
+            by_key[keys[0]] = (item, entry)
+            continue
+
+        existing_item, existing_entry = by_key[existing_key]
+        if score_fix_entry(item, entry) > score_fix_entry(existing_item, existing_entry):
+            by_key[existing_key] = (item, entry)
+
+    reland_subjects = {
+        normalize_subject(entry["subject"])
+        for item, entry in by_key.values()
+        if item["semantic_type"] == "relanded fix" and entry["subject"]
+    }
+    if not reland_subjects:
+        return [entry for _item, entry in by_key.values()]
+
+    filtered: list[dict[str, str]] = []
+    for item, entry in by_key.values():
+        subject_key = normalize_subject(entry["subject"]) if entry["subject"] else ""
+        if subject_key and subject_key in reland_subjects and item["semantic_type"] != "relanded fix":
+            continue
+        filtered.append(entry)
+    return filtered
 
 
 def parse_one(path: Path, output_root: Path) -> dict[str, object]:

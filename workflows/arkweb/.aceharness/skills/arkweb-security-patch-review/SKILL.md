@@ -54,6 +54,25 @@ tags: [ArkWeb, review, security]
 
 批量模式每个 active issue 写入 `.ace-outputs/{runId}/issues/{issue_id}/08_code_review.md`，总览写入 `.ace-outputs/{runId}/08_code_review.md`。总览只能汇总，不得替代每个 active issue 的独立审查结论。非 active 的 `terminal_failed` / `deferred_for_archive` issue 只列入归档清单。
 
+## 稳定脚本优先
+
+优先使用内置脚本生成代码审查产物，不要在运行时拼接临时 Python/Node/Shell 脚本：
+
+```bash
+python3 skills/arkweb-security-patch-review/scripts/generate_code_review.py \
+  --run-root <context.projectRoot>/.ace-outputs/<runId>
+```
+
+脚本会读取 `batch_status.json`、`06_merge_result.json` 和 `issues/{issue_id}/06_merge_result.json`，为每个 active issue 写入 `issues/{issue_id}/08_code_review.md`，并写入根级 `08_code_review.md` 和 `08_code_review.json`。脚本只聚合 active/ready/pending issue；`terminal_failed` 和 `deferred_for_archive` 只进入归档清单，不参与 `verdict`。
+
+脚本执行后，agent 回复只允许包含：
+
+- 一句结果摘要；
+- 产物路径；
+- 最后一个完整 JSON 代码块。
+
+不要在回复中粘贴脚本源码、完整工具输出、大段 `06_merge_result` 内容或完整 diff。详细证据只写入 `08_code_review.md/json`。
+
 审查步骤和裁决步骤都必须在回复末尾输出最后一个完整 JSON 代码块。不要输出只有 `remaining_issues` 的半截 JSON；`next_state` 和 `issues` 不能省略。
 
 ```json
