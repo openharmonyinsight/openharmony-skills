@@ -9,10 +9,10 @@ evidence table and a modification coverage matrix from source evidence.
 
 用法:
     python3 ohos_callgraph.py <function_name> [options]
-    python3 ohos_callgraph.py UpdateMouseTarget --depth 3
-    python3 ohos_callgraph.py HandleKeyboardEvent --depth 4 --reverse
-    python3 ohos_callgraph.py CreateWindow --repo window_manager --depth 2
-    python3 ohos_callgraph.py UpdateMouseTarget --name-keyword groupId
+    python3 ohos_callgraph.py <entry-function> --depth 3
+    python3 ohos_callgraph.py <target-function> --depth 4 --reverse
+    python3 ohos_callgraph.py <entry-function> --repo <repo-filter> --depth 2
+    python3 ohos_callgraph.py <entry-function> --name-keyword <keyword>
 
 要求:
     - OpenHarmony 已编译成功（需要 .o bitcode 文件）
@@ -78,7 +78,7 @@ def detect_repo_filter():
     # 匹配 .../code/foundation/xxx/yyy/... 或 .../code/base/xxx/yyy/...
     m = re.search(r'/code/(?:foundation|base|drivers|third_party)/([^/]+)/([^/]+)', cwd)
     if m:
-        return m.group(2)  # 仓库名，如 window_manager
+        return m.group(2)  # 仓库名
     m = re.search(r'/code/([^/]+/[^/]+)', cwd)
     if m:
         return m.group(1).replace("/", "_")
@@ -383,7 +383,7 @@ def main():
     parser.add_argument("--reverse", action="store_true",
                         help="反向查询 direct callers；vtable/dlopen 需人工证据或 trace")
     parser.add_argument("--oh-root", help="OpenHarmony 根目录；建议由 agent 显式传入")
-    parser.add_argument("--repo", help="只分析指定仓（如 window_manager）")
+    parser.add_argument("--repo", help="只分析指定仓")
     parser.add_argument("--product", help="产品名；建议由 agent 显式传入")
     parser.add_argument("--name-keyword", metavar="KEYWORD",
                         help="仅检查 demangled 函数名和直接子函数名的启发式关键字")
