@@ -2,6 +2,7 @@ import importlib.util
 import io
 import subprocess
 import sys
+import tempfile
 import unittest
 from collections import defaultdict
 from contextlib import redirect_stderr, redirect_stdout
@@ -129,6 +130,35 @@ class OhosCallgraphTest(unittest.TestCase):
         self.assertNotEqual(cm.exception.code, 0)
         self.assertIn("--oh-root", err.getvalue())
         self.assertIn("--repo", err.getvalue())
+
+    def test_source_root_comes_from_explicit_oh_root_and_repo(self):
+        with tempfile.TemporaryDirectory() as td:
+            oh_root = Path(td)
+            repo_root = oh_root / "foundation" / "multimodalinput" / "input"
+            repo_root.mkdir(parents=True)
+
+            self.assertEqual(
+                ohos_callgraph.resolve_source_root(str(oh_root), "input"),
+                str(repo_root),
+            )
+
+    def test_source_root_accepts_subsystem_filter(self):
+        with tempfile.TemporaryDirectory() as td:
+            oh_root = Path(td)
+            subsystem_root = oh_root / "foundation" / "multimodalinput"
+            (subsystem_root / "input").mkdir(parents=True)
+
+            self.assertEqual(
+                ohos_callgraph.resolve_source_root(str(oh_root), "multimodalinput"),
+                str(subsystem_root),
+            )
+
+    def test_source_root_falls_back_to_oh_root_when_repo_not_found(self):
+        with tempfile.TemporaryDirectory() as td:
+            self.assertEqual(
+                ohos_callgraph.resolve_source_root(td, "missing_repo"),
+                td,
+            )
 
 
 if __name__ == "__main__":

@@ -53,6 +53,24 @@ def find_product(oh_root):
     return None
 
 
+def resolve_source_root(oh_root, repo_filter):
+    """Use explicit agent-provided context to choose the source scan root."""
+    if not repo_filter:
+        return oh_root
+    for scope in ["foundation", "base", "drivers", "third_party"]:
+        scope_dir = os.path.join(oh_root, scope)
+        if not os.path.isdir(scope_dir):
+            continue
+        subsystem_candidate = os.path.join(scope_dir, repo_filter)
+        if os.path.isdir(subsystem_candidate):
+            return subsystem_candidate
+        for subsystem in os.listdir(scope_dir):
+            candidate = os.path.join(scope_dir, subsystem, repo_filter)
+            if os.path.isdir(candidate):
+                return candidate
+    return oh_root
+
+
 @dataclass
 class CommandResult:
     """Result from an external command."""
@@ -386,9 +404,9 @@ def main():
     print(f"Product:  {product}", file=sys.stderr)
     print(f"Repo:     {repo_filter or '(all)'}", file=sys.stderr)
 
-    # 发现 dlopen 映射（从当前目录启发式扫描）
-    src_root = os.getcwd()
-    print("发现 dlopen 映射...", file=sys.stderr)
+    # 发现 dlopen 映射（基于 agent 显式传入的源码根和仓过滤）
+    src_root = resolve_source_root(oh_root, repo_filter)
+    print(f"发现 dlopen 映射 (source={src_root})...", file=sys.stderr)
     dlopen_map = discover_dlopen_map(src_root)
     for iface, info in dlopen_map.items():
         print(f"  {iface} -> {info['so']}", file=sys.stderr)
