@@ -14,20 +14,20 @@ Download daily build, flash via hdc updater mode, update source. Scripts are gen
 | `download_daily.py` | Query DCP API, download + extract device image |
 | `flash_device.py` | Parse `parameter.txt` for partitions, flash via hdc updater mode |
 
-Location: `~/.claude/skills/flash-dayu200/`
+Use the actual installed skill directory when running the helper scripts.
 
 ## Usage
 
 ### Direct (on Windows with USB to board)
 
 ```bash
-SKILL=~/.claude/skills/flash-dayu200
+SKILL_DIR=<installed-skill-dir>/flash-dayu200
 
 # Download
-python3 $SKILL/download_daily.py --component dayu200
+python3 "$SKILL_DIR/download_daily.py" --component dayu200
 
 # Flash (partitions auto-parsed from parameter.txt)
-python3 $SKILL/flash_device.py --img-dir ~/Desktop/daily_build
+python3 "$SKILL_DIR/flash_device.py" --img-dir <daily-build-image-dir>
 ```
 
 ### Via SSH tunnel
@@ -35,20 +35,20 @@ python3 $SKILL/flash_device.py --img-dir ~/Desktop/daily_build
 The scripts run on the Windows target that has USB to the board. Upload via SSH then execute remotely.
 
 ```bash
-SKILL=~/.claude/skills/flash-dayu200
-SSH_PORT=2222  # default; adjust if different
-SSH_USER=user
-SSH_HOST=localhost
+SKILL_DIR=<installed-skill-dir>/flash-dayu200
+SSH_PORT=<ssh-port>
+SSH_USER=<ssh-user>
+SSH_HOST=<ssh-host>
 
-# Test connection (try default port 2222 first)
+# Test connection
 ssh -p $SSH_PORT $SSH_USER@$SSH_HOST "echo connected" || {
-    echo "Port 2222 failed. Enter SSH port:"
+    echo "SSH connection failed. Enter SSH port:"
     read SSH_PORT
 }
 
 # Upload scripts
-scp -P $SSH_PORT $SKILL/download_daily.py $SSH_USER@$SSH_HOST:download_daily.py
-scp -P $SSH_PORT $SKILL/flash_device.py $SSH_USER@$SSH_HOST:flash_device.py
+scp -P $SSH_PORT "$SKILL_DIR/download_daily.py" $SSH_USER@$SSH_HOST:download_daily.py
+scp -P $SSH_PORT "$SKILL_DIR/flash_device.py" $SSH_USER@$SSH_HOST:flash_device.py
 
 # Download on Windows
 ssh -p $SSH_PORT $SSH_USER@$SSH_HOST "python download_daily.py --component dayu200"
@@ -92,4 +92,4 @@ Normal mode mounts system/vendor read-only — dd silently fails. Updater mode k
 | dd 无输出 | 必须 updater 模式 |
 | userdata 失败 | 先 umount /data |
 | 推包后 mmi_service 不启动 | IDL 接口变了需全量刷机，不能只推部分 .so |
-| SSH 连不上 | 先运行 `~/ssh_reserv_hdc.sh`，确认端口 |
+| SSH 连不上 | 先启动目标机器的 SSH 或端口转发服务，确认端口 |
