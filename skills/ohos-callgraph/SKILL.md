@@ -49,24 +49,24 @@ When LSP is unavailable or incomplete, say so in the evidence table and fall bac
 
 #### Helper Script
 
-Recommended helper invocation when the agent knows the context:
+Recommended helper invocation when the agent knows the context. Replace the placeholders with the current source tree, product, repository filter, and function name:
 
 ```bash
 SCRIPT=/path/to/skills/ohos-callgraph/ohos_callgraph.py
-python3 "$SCRIPT" HandleMouseEvent \
-  --oh-root /home/libing/work/ohos_master \
-  --product rk3568 \
-  --repo multimodalinput \
+python3 "$SCRIPT" <entry-function> \
+  --oh-root <openharmony-source-root> \
+  --product <product-name> \
+  --repo <repo-filter> \
   --depth 4
 ```
 
 Reverse direct callers:
 
 ```bash
-python3 "$SCRIPT" UpdateMouseTarget \
-  --oh-root /home/libing/work/ohos_master \
-  --product rk3568 \
-  --repo multimodalinput \
+python3 "$SCRIPT" <target-function> \
+  --oh-root <openharmony-source-root> \
+  --product <product-name> \
+  --repo <repo-filter> \
   --reverse \
   --depth 3
 ```

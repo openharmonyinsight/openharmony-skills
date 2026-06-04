@@ -78,7 +78,7 @@ def detect_repo_filter():
     # 匹配 .../code/foundation/xxx/yyy/... 或 .../code/base/xxx/yyy/...
     m = re.search(r'/code/(?:foundation|base|drivers|third_party)/([^/]+)/([^/]+)', cwd)
     if m:
-        return m.group(2)  # 仓库名，如 multimodalinput、window_manager
+        return m.group(2)  # 仓库名，如 window_manager
     m = re.search(r'/code/([^/]+/[^/]+)', cwd)
     if m:
         return m.group(1).replace("/", "_")
@@ -383,7 +383,7 @@ def main():
     parser.add_argument("--reverse", action="store_true",
                         help="反向查询 direct callers；vtable/dlopen 需人工证据或 trace")
     parser.add_argument("--oh-root", help="OpenHarmony 根目录；建议由 agent 显式传入")
-    parser.add_argument("--repo", help="只分析指定仓（如 multimodalinput, window_manager）")
+    parser.add_argument("--repo", help="只分析指定仓（如 window_manager）")
     parser.add_argument("--product", help="产品名；建议由 agent 显式传入")
     parser.add_argument("--name-keyword", metavar="KEYWORD",
                         help="仅检查 demangled 函数名和直接子函数名的启发式关键字")
