@@ -74,7 +74,7 @@ def parse_name_only(text: str) -> list[str]:
         if not line:
             continue
 
-        # `oh-gc pr:diff --name-only` may prefix each entry with a status marker
+        # `oh-gc pr diff --name-only` may prefix each entry with a status marker
         # such as "? ". Normalize those lines back to repository-relative paths.
         match = re.match(r"^(?:\?\??|[ACDMRTUXB])\s+(.+)$", line)
         if match:
@@ -225,13 +225,14 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     commands = {
-        "pr-view.json": ["oh-gc", "pr:view", str(number), "--json"],
-        "pr-diff.json": ["oh-gc", "pr:diff", str(number), "--json"],
-        "pr-diff-name-only.txt": ["oh-gc", "pr:diff", str(number), "--name-only"],
-        "pr-diff.txt": ["oh-gc", "pr:diff", str(number), "--color", "never"],
+        "pr-view.json": ["oh-gc", "pr", "view", str(number), "--json"],
+        "pr-diff.json": ["oh-gc", "pr", "diff", str(number), "--json"],
+        "pr-diff-name-only.txt": ["oh-gc", "pr", "diff", str(number), "--name-only"],
+        "pr-diff.txt": ["oh-gc", "pr", "diff", str(number), "--color", "never"],
         "pr-comments.json": [
             "oh-gc",
-            "pr:comments",
+            "pr",
+            "comments",
             str(number),
             "--json",
             "--comment-type",
@@ -241,7 +242,8 @@ def main() -> int:
         ],
         "pr-diff-comments.json": [
             "oh-gc",
-            "pr:comments",
+            "pr",
+            "comments",
             str(number),
             "--json",
             "--comment-type",
