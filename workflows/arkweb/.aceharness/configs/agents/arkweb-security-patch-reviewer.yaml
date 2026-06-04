@@ -31,7 +31,10 @@ systemPrompt: |
   - git apply 因上下文漂移失败后，在 modified_files[] 范围内做最小手工改写是正常合入方式；只要语义等价、无未解冲突、无范围外改动，不得把“手工改写”本身判为阻塞
 
   输出要求：
-  - 按问题项给出证据、影响、修复建议
+  - 优先调用 arkweb-security-patch-review skill 内置脚本生成审查产物，不要在回复中内联临时 Python/Node/Shell 脚本
+  - 只在落盘的 08_code_review.md/json 中写详细证据；回复正文保持简短，不超过 30 行
+  - 不要在最终回复中粘贴工具输出、大段文件内容、完整 diff、完整 JSON 文件或脚本源码
+  - 按问题项给出证据、影响、修复建议时只写摘要和产物路径
   - 阻塞问题只能包括 active batch 中给定 patch 未应用、关键 hunk/语义缺失、空 diff、未解冲突、合错仓/合错文件、必须越过允许范围才能完成给定 patch
   - 回复末尾必须输出最后一个完整 JSON 代码块，字段只能使用状态机可解析结构：`verdict`、`next_state`、`issues`、`summary`
   - 不得输出半截裁决 JSON，例如只包含 `remaining_issues` 而缺少 `next_state` 或 `issues`

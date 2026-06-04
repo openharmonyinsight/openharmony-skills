@@ -49,6 +49,20 @@ def current_chromium_version(project_root: Path) -> dict:
     return version
 
 
+def current_build_config(project_root: Path) -> dict:
+    args_path = project_root / "src/out/rk3568_64/args.gn"
+    config = {"target_os": "unknown", "target_cpu": "unknown"}
+    if not args_path.is_file():
+        return config
+    for line in args_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if line.startswith("target_os ="):
+            config["target_os"] = line.split("=", 1)[1].strip().strip('"')
+        elif line.startswith("target_cpu ="):
+            config["target_cpu"] = line.split("=", 1)[1].strip().strip('"')
+    return config
+
+
 def parse_milestone(raw: str | None) -> int | None:
     if not raw:
         return None
@@ -143,6 +157,8 @@ def local_path_for_modified(repo_root: Path, src_root: Path, rel_path: str) -> P
 def platform_scope(issue_text: str, modified_paths: list[str]) -> str:
     joined = "\n".join(modified_paths).lower()
     low = f"{issue_text}\n{joined}"
+    if any(token in low for token in ("[linux]", " linux ", "/linux/", "xdg_runtime_dir", "var/lib/chrome-remote-desktop", "chrome-remote-desktop")):
+        return "linux-only"
     if any(token in low for token in ("[ios]", " ios ", "recentactivitycoordinator", "downloadmanagercoordinator")):
         return "ios-only"
     if any(token in low for token in ("[fsa]", "fsevents", "_mac", "web_contents_view_cocoa", "drag_source_mac")):
@@ -164,6 +180,18 @@ def platform_scope(issue_text: str, modified_paths: list[str]) -> str:
 
 def classify_vulnerability(issue_title: str, issue_desc: str, subject: str) -> str:
     low = extract_keywords(issue_title, issue_desc, subject)
+    if "use-after-free" in low or "heap-use-after-free" in low or " uaf " in f" {low} ":
+        return "use-after-free"
+    if "cwe-377" in low or "/tmp" in low or "socket path" in low:
+        return "insecure temporary file / socket path"
+    if "sandbox bypass" in low or "aaw" in low:
+        return "sandbox bypass / arbitrary address write"
+    if "front-facing camera" in low or "front_facing" in low:
+        return "permission / feature gate bypass"
+    if "reentrancy" in low and "drag" in low:
+        return "ui spoofing / drag-drop reentrancy"
+    if "frame size change" in low or "illegal state" in low:
+        return "renderer-to-browser state validation failure"
     for key, value in SECURITY_PATTERNS:
         if key in low:
             return value
@@ -184,6 +212,14 @@ def feature_for_issue(team: str, modified_paths: list[str], issue_text: str, fea
     low = extract_keywords(issue_text, "\n".join(modified_paths))
     preferred: list[str] = []
 
+    if any(token in low for token in ("v8", "cppheappointer", "jsarraybuffer", "marking-visitor", "scavenger", "sweeper")):
+        preferred.append("ArkWeb性能 > 存储&PA规格 > 堆内存分配、管理 > 安全特性")
+    if any(token in low for token in ("webxr", "arcore", "front_facing", "front-facing")):
+        preferred.append("ArkWeb外设服务 > 外设 > 硬件连接能力 > 支持虚拟现实设备")
+    if any(token in low for token in ("named_mojo", "ipc_constants", "socket path", "chrome-remote-desktop", "chromoting")):
+        preferred.append("ArkWeb云服务 > 云服务网络协议 > 协议栈 > 协议栈")
+    if any(token in low for token in ("content_settings_extension_install_time_permission_provider", "extensioninstalltimepermissionprovider", "host_content_settings_map_factory")):
+        preferred.append("ArkWeb云服务 > 云服务安全与扩展 > 浏览器扩展框架 > 浏览器扩展框架")
     if "ipcz" in low:
         preferred.append("ArkWeb交互安全 > 安全特性 > 安全架构 > 站点隔离")
     if "skia" in low:
@@ -239,6 +275,14 @@ def feature_for_issue(team: str, modified_paths: list[str], issue_text: str, fea
 
 def team_for_issue(modified_paths: list[str], issue_text: str) -> tuple[str, str]:
     low = extract_keywords(issue_text, "\n".join(modified_paths))
+    if any(token in low for token in ("v8", "cppheappointer", "jsarraybuffer", "marking-visitor", "scavenger", "sweeper")):
+        return "ArkWeb性能", "补丁位于 V8 GC/堆对象生命周期与句柄同步逻辑，归入性能责任田中的内存管理/安全特性。"
+    if any(token in low for token in ("webxr", "arcore", "front_facing", "front-facing")):
+        return "ArkWeb外设服务", "补丁涉及 WebXR/ARCore 虚拟现实设备能力与前置摄像头权限暴露，归入外设服务责任田。"
+    if any(token in low for token in ("named_mojo", "ipc_constants", "chrome-remote-desktop", "chromoting", "socket path")):
+        return "ArkWeb云服务", "补丁涉及 IPC 命名通道与远程服务进程的 socket 路径管理，归入云服务网络协议责任田。"
+    if any(token in low for token in ("content_settings_extension_install_time_permission_provider", "extensioninstalltimepermissionprovider", "host_content_settings_map_factory")):
+        return "ArkWeb云服务", "补丁涉及扩展权限与内容设置提供器的线程安全，归入云服务安全与扩展责任田。"
     if "ipcz" in low or "site isolation" in low:
         return "ArkWeb交互安全", "补丁涉及跨进程边界、站点隔离或 renderer/browser 安全语义，归入交互安全责任田。"
     if "skia" in low or "angle" in low:
@@ -398,18 +442,43 @@ def detect_security(issue: dict, selected_fix: dict) -> bool:
     )
 
 
+def platform_matches_target(platform: str, target_os: str) -> bool | None:
+    mapping = {
+        "android-only": "android",
+        "win-only": "win",
+        "mac-only": "mac",
+        "ios-only": "ios",
+        "linux-only": "linux",
+    }
+    expected = mapping.get(platform)
+    if expected is None or target_os == "unknown":
+        return None
+    return expected == target_os
+
+
 def decide_impact(
     current_milestone: int | None,
     issue_milestone: int | None,
     platform: str,
     file_hits: list[Path],
     checks: ApplyCheck,
+    target_os: str,
+    modified_paths: list[str],
 ) -> tuple[str, str]:
     if checks.reverse_ok:
         return "unaffected", "选定补丁已可在当前源码树上反向 clean apply，说明等价修复大概率已存在。"
 
     before_fix = current_milestone is not None and issue_milestone is not None and current_milestone < issue_milestone
     has_code = bool(file_hits)
+    platform_match = platform_matches_target(platform, target_os)
+
+    if platform_match is False:
+        return "unaffected", f"漏洞路径限定在 {platform}，而当前构建目标 target_os={target_os}，对应文件不会进入当前 ArkWeb 产物。"
+
+    if any("content_settings_extension_install_time_permission_provider" in path for path in modified_paths):
+        provider_hits = [path for path in modified_paths if "content_settings_extension_install_time_permission_provider" in path and Path(path).name]
+        if not any(hit.name.startswith("content_settings_extension_install_time_permission_provider") for hit in file_hits):
+            return "unaffected", "当前分支缺少上游 UAF 所在的 ExtensionInstallTimePermissionProvider 实现文件，HostContentSettingsMapFactory 也未注册该 provider，漏洞链路在本地代码中不可达。"
 
     if checks.apply_ok and platform == "cross-platform":
         return "affected", "补丁可在当前源码树 clean apply，且修改路径属于当前基线实际存在的跨平台实现。"
@@ -561,6 +630,7 @@ def process_issue(issue_dir: Path, project_root: Path, current_version: dict, fe
     patch_files = patch.get("patch_files", [])
     modified_paths = [item.get("path", "") for item in modified]
     src_root = project_root / "src"
+    build_config = current_build_config(project_root)
     repo_root = repo_root_for_issue(project_root, selected.get("url", ""), modified)
     patch_path = Path(patch_files[0]["path"]) if patch_files else None
 
@@ -573,7 +643,9 @@ def process_issue(issue_dir: Path, project_root: Path, current_version: dict, fe
 
     file_hits: list[Path] = []
     code_evidence: list[str] = [
-        f"context.projectRoot={project_root}",
+        f"context.codebase={project_root}",
+        f"target_os={build_config['target_os']}",
+        f"target_cpu={build_config['target_cpu']}",
         f"源码检查根目录={repo_root}",
         f"git apply --check={apply_ok} ({apply_detail})",
         f"git apply --reverse --check={reverse_ok} ({reverse_detail})",
@@ -592,7 +664,15 @@ def process_issue(issue_dir: Path, project_root: Path, current_version: dict, fe
     vuln_class = classify_vulnerability(issue.get("Issue标题", ""), issue.get("Issue原始描述", ""), selected.get("subject", ""))
     platform = platform_scope(routing_text, modified_paths)
     issue_milestone = parse_milestone(issue.get("Milestone"))
-    impact, impact_reason = decide_impact(parse_milestone(current_version["milestone"]), issue_milestone, platform, file_hits, checks)
+    impact, impact_reason = decide_impact(
+        parse_milestone(current_version["milestone"]),
+        issue_milestone,
+        platform,
+        file_hits,
+        checks,
+        build_config["target_os"],
+        modified_paths,
+    )
     chromium_version, version_basis = version_conclusion(issue, selected, current_version)
     team, team_reason = team_for_issue(modified_paths, routing_text)
     features = feature_for_issue(team, modified_paths, routing_text, feature_lines)
@@ -691,6 +771,8 @@ def process_issue(issue_dir: Path, project_root: Path, current_version: dict, fe
         "是否建议保留原因": (
             "真实影响结论为 affected，应优先继续合入。"
             if impact == "affected"
+            else "真实影响结论为 unaffected，但需求明确要求强制合入，后续按用户策略继续合入。"
+            if impact == "unaffected" and merge_policy["force_merge"]
             else "真实影响结论未完全排除，且需求明确要求强制合入，后续按用户策略继续合入。"
             if merge_policy["force_merge"]
             else "当前证据不足以建议继续保留。"

@@ -39,6 +39,12 @@ systemPrompt: |
   - 批量模式不得把多个 issue 的提交/PR 合并成一个结果；每个 issue 必须独立呈现 commit、GitCode Issue、PR、start build、状态和失败原因
 
   输出要求：
+  - 详细报告只写入 04_final_archive.md/json、summary.md/json 或 13_final_report.md/json；最终回复保持简短，不超过 30 行
+  - 不要在最终回复中粘贴完整报告、完整前序产物、大段表格、完整 JSON 文件或工具输出
+  - 最终回复只给归档结果摘要、产物路径和必要 JSON 摘要
+  - 最终回复禁止使用 Supervisor 阶段审阅话术，包括“当前阶段结论”“是否建议继续迭代”“下一步指导意见”“建议继续迭代”
+  - 最终回复禁止输出“总体建议”“当前状态机”“阶段应视为”“建议先”“建议下一步”“除非你准备”等审阅或指导类措辞
+  - 不要评价状态机、不要给流程建议、不要描述“是否继续迭代”；只报告归档产物和摘要 JSON
   - 分析归档写入 .ace-outputs/{runId}/{issue_id}/04_final_archive.md/json 与 summary.md/json
   - 最终归档写入 .ace-outputs/{runId}/13_final_report.md，可同时写 13_final_report.json
   - 批量最终归档下根目录 13_final_report.md 是总览；每个 issue 还必须写入 .ace-outputs/{runId}/issues/{issue_id}/13_final_report.md

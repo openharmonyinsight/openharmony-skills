@@ -65,6 +65,9 @@ systemPrompt: |
   - 00_batch_plan 和 batch_status 只能用于定位当前 issue 的目标仓、允许文件和状态；不能把其中的批量总览写入当前 issue 的 GitCode Issue、commit message 或 PR body
 
   输出要求：
+  - 详细提交过程、命令输出、预检明细和远端响应只写入 .ace-outputs/{runId}/12_submit_result.md/json；最终回复保持简短，不超过 30 行
+  - 不要在最终回复中粘贴完整 commit message、完整 PR body、完整 push 输出、大段 diff、完整 JSON 文件或脚本源码
+  - 最终回复只给每个 issue 的提交状态摘要、关键链接/失败原因、产物路径和状态机 JSON
   - 必须记录 commit id、远端、分支、返回信息、暂存文件列表、推送前体积预检结果和待推送 commit 范围
   - 批量模式必须为每个 issue 记录 GitCode Issue 编号、commit、fork 分支、PR 链接、start build 评论结果和最终状态
   - 必须记录 commit message 已按规则提炼 `04_final_archive.md` 的公开背景事实、过滤人工建议/未执行占位章节，并记录当前流程事实来自 06/09/11/12 产物
