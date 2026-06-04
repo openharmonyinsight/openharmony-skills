@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 """
-ohos_callgraph.py — OpenHarmony 函数调用图分析器（通用版）
+ohos_callgraph.py — OpenHarmony candidate call-edge finder.
 
-从 LLVM bitcode (.o) 提取调用图，自动穿越 dlopen/dlsym 动态加载边界
-和 vtable 虚函数间接调用，输出从指定函数出发的完整调用树。
-
-适用于任何 OpenHarmony 仓库（只要用 -flto=thin 编译产出 bitcode .o）。
+This script is an auxiliary tool for the ohos-callgraph skill. It discovers
+candidate direct edges from LLVM bitcode and best-effort vtable/dlopen hints.
+It does not prove call-chain completeness. The skill must still build an
+evidence table and a modification coverage matrix from source evidence.
 
 用法:
     python3 ohos_callgraph.py <function_name> [options]
     python3 ohos_callgraph.py UpdateMouseTarget --depth 3
     python3 ohos_callgraph.py HandleKeyboardEvent --depth 4 --reverse
     python3 ohos_callgraph.py CreateWindow --repo window_manager --depth 2
-    python3 ohos_callgraph.py --check-isolation groupId UpdateMouseTarget
+    python3 ohos_callgraph.py UpdateMouseTarget --name-keyword groupId
 
 要求:
     - OpenHarmony 已编译成功（需要 .o bitcode 文件）
     - LLVM 工具链可用（opt, llvm-dis, llvm-cxxfilt）
-    - 从 OpenHarmony 源码树内任意目录运行
+    - Agent should pass --oh-root, --product, and --repo explicitly when known
 """
 
 import argparse
@@ -27,6 +27,7 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 
 
@@ -84,13 +85,47 @@ def detect_repo_filter():
     return None
 
 
+@dataclass
+class CommandResult:
+    """Result from an external command."""
+    cmd: list
+    returncode: int
+    stdout: str = ""
+    stderr: str = ""
+    timed_out: bool = False
+    missing_tool: bool = False
+
+    @property
+    def ok(self):
+        return self.returncode == 0 and not self.timed_out and not self.missing_tool
+
+    @property
+    def output(self):
+        return self.stdout + self.stderr
+
+
 def run(cmd, timeout=120):
-    """执行命令，返回 stdout"""
+    """执行命令，返回结构化结果"""
     try:
         r = subprocess.run(cmd, capture_output=True, timeout=timeout)
-        return (r.stdout + r.stderr).decode("utf-8", errors="replace")
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        return ""
+        return CommandResult(
+            cmd=cmd,
+            returncode=r.returncode,
+            stdout=r.stdout.decode("utf-8", errors="replace"),
+            stderr=r.stderr.decode("utf-8", errors="replace"),
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout.decode("utf-8", errors="replace") if exc.stdout else ""
+        stderr = exc.stderr.decode("utf-8", errors="replace") if exc.stderr else ""
+        stderr += f"\ncommand timed out after {timeout}s: {' '.join(cmd)}"
+        return CommandResult(cmd=cmd, returncode=-1, stdout=stdout, stderr=stderr, timed_out=True)
+    except FileNotFoundError as exc:
+        return CommandResult(
+            cmd=cmd,
+            returncode=-1,
+            stderr=f"missing tool: {exc.filename}",
+            missing_tool=True,
+        )
 
 
 def demangle_batch(llvm_bin, symbols):
@@ -123,10 +158,12 @@ def find_bitcode_files(obj_dir, repo_filter=None):
 
 def extract_callgraph(llvm_bin, obj_file):
     """从单个 .o bitcode 提取调用图"""
-    output = run([os.path.join(llvm_bin, "opt"), "--print-callgraph", obj_file], timeout=60)
+    result = run([os.path.join(llvm_bin, "opt"), "--print-callgraph", obj_file], timeout=60)
     graph = defaultdict(set)
     current_func = None
-    for line in output.split("\n"):
+    if not result.ok:
+        return graph, result.output.strip() or f"opt failed for {obj_file}"
+    for line in result.output.split("\n"):
         m = re.match(r"Call graph node for function: '([^']+)'", line)
         if m:
             current_func = m.group(1)
@@ -139,16 +176,18 @@ def extract_callgraph(llvm_bin, obj_file):
                 graph[current_func].add(("indirect", None))
         if line.strip() == "":
             current_func = None
-    return graph
+    return graph, None
 
 
 def extract_vtable_calls(llvm_bin, obj_file):
     """从 LLVM IR 提取虚函数间接调用的接口类型"""
     ll_path = f"/tmp/ohos_cg_{os.getpid()}_{os.path.basename(obj_file)}.ll"
-    run([os.path.join(llvm_bin, "llvm-dis"), "-o", ll_path, obj_file], timeout=60)
+    result = run([os.path.join(llvm_bin, "llvm-dis"), "-o", ll_path, obj_file], timeout=60)
     vtable_calls = defaultdict(set)
+    if not result.ok:
+        return vtable_calls, result.output.strip() or f"llvm-dis failed for {obj_file}"
     if not os.path.exists(ll_path):
-        return vtable_calls
+        return vtable_calls, f"llvm-dis did not create {ll_path}"
     current_func = None
     try:
         with open(ll_path, "r", errors="replace") as f:
@@ -169,18 +208,18 @@ def extract_vtable_calls(llvm_bin, obj_file):
             os.unlink(ll_path)
         except OSError:
             pass
-    return vtable_calls
+    return vtable_calls, None
 
 
 def discover_dlopen_map(src_root):
     """自动发现 dlopen 映射：Interface -> .so -> ConcreteClass"""
     registry = {}
     load_calls = run(["grep", "-rn", "LoadLibrary<", src_root,
-                       "--include=*.cpp", "--include=*.h"], timeout=30)
+                       "--include=*.cpp", "--include=*.h"], timeout=30).output
     so_names = run(["grep", "-rn", 'constexpr.*char.*LIB_.*"', src_root,
-                     "--include=*.cpp", "--include=*.h"], timeout=30)
+                     "--include=*.cpp", "--include=*.h"], timeout=30).output
     create_calls = run(["grep", "-rn", "extern.*C.*CreateInstance", src_root,
-                         "--include=*.cpp"], timeout=30)
+                         "--include=*.cpp"], timeout=30).output
 
     so_map = {}
     for line in so_names.split("\n"):
@@ -231,7 +270,7 @@ SKIP_PREFIXES = ["HiLog", "std::__h::", "OHOS::MMI::FormatLog", "OHOS::MMI::GetS
 
 def build_call_tree(target_func, all_graphs, vtable_info, dlopen_map,
                     llvm_bin, max_depth=5, reverse=False, check_keyword=None):
-    """构建调用树并可选检查关键字覆盖"""
+    """构建候选调用树并可选检查函数名关键字"""
     merged = defaultdict(set)
     for graph in all_graphs:
         for caller, callees in graph.items():
@@ -247,6 +286,7 @@ def build_call_tree(target_func, all_graphs, vtable_info, dlopen_map,
         for _, callee in callees:
             if callee:
                 all_funcs.add(callee)
+    all_funcs.update(merged_vtable.keys())
 
     demangled = demangle_batch(llvm_bin, list(all_funcs))
 
@@ -264,9 +304,12 @@ def build_call_tree(target_func, all_graphs, vtable_info, dlopen_map,
 
     root_mangled, root_demangled = matches[0]
     print(f"\n{'=' * 80}")
-    print(f"调用图: {root_demangled}")
+    print(f"候选调用边: {root_demangled}")
+    print("说明: 这是静态候选边发现结果，不证明调用链完整。")
+    if reverse:
+        print("Reverse 说明: 当前只反查 direct call；vtable/dlopen 需要人工证据或运行时 trace。")
     if check_keyword:
-        print(f"关键字检查: {check_keyword}")
+        print(f"函数名关键字启发式: {check_keyword}（不检查参数名、实参、成员访问或 IPC 序列化）")
     print(f"{'=' * 80}\n")
 
     if reverse:
@@ -286,7 +329,7 @@ def build_call_tree(target_func, all_graphs, vtable_info, dlopen_map,
 
 def _print_tree(func, graph, vtable_info, demangled, dlopen_map,
                 llvm_bin, max_depth, depth, visited, check_keyword=None, is_reverse=False):
-    """递归打印调用树"""
+    """递归打印候选调用树"""
     if depth > max_depth or func in visited:
         return
     visited.add(func)
@@ -306,16 +349,16 @@ def _print_tree(func, graph, vtable_info, demangled, dlopen_map,
 
         tag = ""
         if check_keyword:
-            # 检查这个函数的源码是否包含关键字
             if check_keyword.lower() in callee_dm.lower():
                 tag = " ✅"
             elif any(check_keyword.lower() in demangled.get(cc, "").lower()
-                     for _, cc in graph.get(callee, set()) if cc):
+                     for cc in _child_symbols(graph, callee, is_reverse)):
                 tag = " ⚡"  # 子节点包含关键字
 
         print(f"{indent}├── {short_name(callee_dm)}{tag}")
         _print_tree(callee, graph, vtable_info, demangled, dlopen_map,
-                    llvm_bin, max_depth, depth + 1, visited, check_keyword)
+                    llvm_bin, max_depth, depth + 1, visited, check_keyword,
+                    is_reverse=is_reverse)
 
     if not is_reverse:
         for vtype in sorted(vtable_info.get(func, set())):
@@ -324,18 +367,28 @@ def _print_tree(func, graph, vtable_info, demangled, dlopen_map,
                 print(f"{indent}├── {iface_name} {impl}")
 
 
+def _child_symbols(graph, func, is_reverse=False):
+    """Return child symbols from either forward or reverse graph shape."""
+    if is_reverse:
+        return list(graph.get(func, set()))
+    return [callee for _, callee in graph.get(func, set()) if callee]
+
+
 def main():
     parser = argparse.ArgumentParser(
-        description="OpenHarmony 函数调用图分析器（支持 dlopen/vtable 穿越）"
+        description="OpenHarmony candidate call-edge finder (not a completeness proof)"
     )
-    parser.add_argument("function", help="要分析的函数名（支持部分匹配）")
-    parser.add_argument("--depth", type=int, default=3, help="调用树深度（默认 3）")
-    parser.add_argument("--reverse", action="store_true", help="反向：谁调用了这个函数")
-    parser.add_argument("--oh-root", help="OpenHarmony 根目录（默认自动检测）")
+    parser.add_argument("function", help="目标函数名（支持部分匹配）")
+    parser.add_argument("--depth", type=int, default=3, help="候选边展开深度（默认 3）")
+    parser.add_argument("--reverse", action="store_true",
+                        help="反向查询 direct callers；vtable/dlopen 需人工证据或 trace")
+    parser.add_argument("--oh-root", help="OpenHarmony 根目录；建议由 agent 显式传入")
     parser.add_argument("--repo", help="只分析指定仓（如 multimodalinput, window_manager）")
-    parser.add_argument("--product", help="产品名（默认自动检测）")
+    parser.add_argument("--product", help="产品名；建议由 agent 显式传入")
+    parser.add_argument("--name-keyword", metavar="KEYWORD",
+                        help="仅检查 demangled 函数名和直接子函数名的启发式关键字")
     parser.add_argument("--check-isolation", metavar="KEYWORD",
-                        help="检查调用链上每个节点是否包含指定关键字（如 groupId）")
+                        help=argparse.SUPPRESS)
     args = parser.parse_args()
 
     oh_root = args.oh_root or find_oh_root()
@@ -364,7 +417,7 @@ def main():
     print(f"Product:  {product}", file=sys.stderr)
     print(f"Repo:     {repo_filter or '(all)'}", file=sys.stderr)
 
-    # 发现 dlopen 映射（从当前仓或整个源码树）
+    # 发现 dlopen 映射（从当前目录启发式扫描）
     src_root = os.getcwd()
     print("发现 dlopen 映射...", file=sys.stderr)
     dlopen_map = discover_dlopen_map(src_root)
@@ -382,22 +435,41 @@ def main():
 
     all_graphs = []
     all_vtable = []
+    failures = []
     for i, obj_file in enumerate(obj_files):
         if (i + 1) % 20 == 0:
             print(f"  分析 {i+1}/{len(obj_files)}...", file=sys.stderr)
-        graph = extract_callgraph(llvm_bin, obj_file)
+        graph, graph_error = extract_callgraph(llvm_bin, obj_file)
+        if graph_error:
+            failures.append((obj_file, "opt", graph_error))
         if graph:
             all_graphs.append(graph)
-        vtable = extract_vtable_calls(llvm_bin, obj_file)
+        vtable, vtable_error = extract_vtable_calls(llvm_bin, obj_file)
+        if vtable_error:
+            failures.append((obj_file, "llvm-dis", vtable_error))
         if vtable:
             all_vtable.append(vtable)
 
+    if failures:
+        print(f"警告: {len(failures)} 个工具调用失败，候选边可能缺失。示例：", file=sys.stderr)
+        for obj_file, tool, error in failures[:5]:
+            print(f"  [{tool}] {obj_file}: {error.splitlines()[0] if error else 'unknown'}",
+                  file=sys.stderr)
+        if len(failures) > max(5, len(obj_files) // 5):
+            print("错误：失败比例过高，停止输出不可信候选图。", file=sys.stderr)
+            sys.exit(1)
+
     print(f"分析完成，共 {sum(len(g) for g in all_graphs)} 个调用节点", file=sys.stderr)
+
+    keyword = args.name_keyword or args.check_isolation
+    if args.check_isolation:
+        print("警告: --check-isolation 已降级为函数名启发式；请改用 --name-keyword。",
+              file=sys.stderr)
 
     build_call_tree(
         args.function, all_graphs, all_vtable, dlopen_map,
         llvm_bin, max_depth=args.depth, reverse=args.reverse,
-        check_keyword=args.check_isolation
+        check_keyword=keyword
     )
 
 
