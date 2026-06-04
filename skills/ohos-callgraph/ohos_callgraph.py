@@ -17,7 +17,7 @@ evidence table and a modification coverage matrix from source evidence.
 要求:
     - OpenHarmony 已编译成功（需要 .o bitcode 文件）
     - LLVM 工具链可用（opt, llvm-dis, llvm-cxxfilt）
-    - Agent should pass --oh-root, --product, and --repo explicitly when known
+    - Agent must pass --oh-root and --repo explicitly; pass --product when known
 """
 
 import argparse
@@ -28,25 +28,6 @@ import subprocess
 import sys
 from collections import defaultdict
 from dataclasses import dataclass
-from pathlib import Path
-
-
-def find_oh_root():
-    """从当前目录向上查找 OpenHarmony 根目录"""
-    p = Path.cwd()
-    while p != p.parent:
-        if (p / "build" / "ohos.gni").exists():
-            return str(p)
-        if (p / "out").exists() and any((p / "out").iterdir()):
-            for d in (p / "out").iterdir():
-                if (d / "build.ninja").exists() or (d / "build.log").exists():
-                    return str(p)
-        p = p.parent
-    for env in ["OH_ROOT", "OHOS_ROOT"]:
-        v = os.environ.get(env)
-        if v and os.path.isdir(v):
-            return v
-    return None
 
 
 def find_llvm_tools(oh_root):
@@ -69,19 +50,6 @@ def find_product(oh_root):
     for d in os.listdir(out_dir):
         if os.path.isdir(os.path.join(out_dir, d, "obj")):
             return d
-    return None
-
-
-def detect_repo_filter():
-    """从当前工作目录推断仓库过滤关键词"""
-    cwd = os.getcwd()
-    # 匹配 .../code/foundation/xxx/yyy/... 或 .../code/base/xxx/yyy/...
-    m = re.search(r'/code/(?:foundation|base|drivers|third_party)/([^/]+)/([^/]+)', cwd)
-    if m:
-        return m.group(2)  # 仓库名
-    m = re.search(r'/code/([^/]+/[^/]+)', cwd)
-    if m:
-        return m.group(1).replace("/", "_")
     return None
 
 
@@ -382,8 +350,8 @@ def main():
     parser.add_argument("--depth", type=int, default=3, help="候选边展开深度（默认 3）")
     parser.add_argument("--reverse", action="store_true",
                         help="反向查询 direct callers；vtable/dlopen 需人工证据或 trace")
-    parser.add_argument("--oh-root", help="OpenHarmony 根目录；建议由 agent 显式传入")
-    parser.add_argument("--repo", help="只分析指定仓")
+    parser.add_argument("--oh-root", required=True, help="OpenHarmony 根目录；由 agent 显式传入")
+    parser.add_argument("--repo", required=True, help="只分析指定仓；由 agent 显式传入")
     parser.add_argument("--product", help="产品名；建议由 agent 显式传入")
     parser.add_argument("--name-keyword", metavar="KEYWORD",
                         help="仅检查 demangled 函数名和直接子函数名的启发式关键字")
@@ -391,10 +359,7 @@ def main():
                         help=argparse.SUPPRESS)
     args = parser.parse_args()
 
-    oh_root = args.oh_root or find_oh_root()
-    if not oh_root:
-        print("错误：找不到 OpenHarmony 根目录，请用 --oh-root 指定或从源码树内运行", file=sys.stderr)
-        sys.exit(1)
+    oh_root = args.oh_root
 
     llvm_bin = find_llvm_tools(oh_root)
     if not llvm_bin:
@@ -411,7 +376,7 @@ def main():
         print(f"错误：{obj_dir} 不存在，请先编译", file=sys.stderr)
         sys.exit(1)
 
-    repo_filter = args.repo or detect_repo_filter()
+    repo_filter = args.repo
 
     print(f"OH root:  {oh_root}", file=sys.stderr)
     print(f"Product:  {product}", file=sys.stderr)

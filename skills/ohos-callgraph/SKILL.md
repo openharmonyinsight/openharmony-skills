@@ -49,7 +49,7 @@ When LSP is unavailable or incomplete, say so in the evidence table and fall bac
 
 #### Helper Script
 
-Recommended helper invocation when the agent knows the context. Replace the placeholders with the current source tree, product, repository filter, and function name:
+Required helper invocation shape. The agent must resolve the source tree and repository filter before calling the script, then pass them explicitly:
 
 ```bash
 SCRIPT=/path/to/skills/ohos-callgraph/ohos_callgraph.py
