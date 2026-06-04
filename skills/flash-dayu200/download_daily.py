@@ -16,9 +16,27 @@ import sys
 import tarfile
 import urllib.request
 from datetime import datetime, timedelta
+from pathlib import Path
 
 
 DCP_API = "https://dcp.openharmony.cn/api/daily_build/build"
+
+
+def build_arg_parser():
+    parser = argparse.ArgumentParser(description="下载 OpenHarmony 日构建镜像")
+    parser.add_argument("--component", default="dayu200", help="设备组件名（默认 dayu200）")
+    parser.add_argument("--output-dir", default="daily_build")
+    parser.add_argument("--days", type=int, default=7, help="搜索最近N天（默认7）")
+    return parser
+
+
+def safe_extract(tar, output_dir):
+    output_path = Path(output_dir).resolve()
+    for member in tar.getmembers():
+        target_path = (output_path / member.name).resolve()
+        if output_path != target_path and output_path not in target_path.parents:
+            raise ValueError(f"unsafe tar member path: {member.name}")
+    tar.extractall(output_path)
 
 
 def query_dcp(date_str):
@@ -38,10 +56,7 @@ def query_dcp(date_str):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="下载 OpenHarmony 日构建镜像")
-    parser.add_argument("--component", default="dayu200", help="设备组件名（默认 dayu200）")
-    parser.add_argument("--output-dir", default=os.path.join(os.path.expanduser("~"), "Desktop", "daily_build"))
-    parser.add_argument("--days", type=int, default=7, help="搜索最近N天（默认7）")
+    parser = build_arg_parser()
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
@@ -83,7 +98,7 @@ def main():
 
     print("Extracting...")
     with tarfile.open(tar_path) as tf:
-        tf.extractall(args.output_dir)
+        safe_extract(tf, args.output_dir)
 
     img_dir = args.output_dir
     for d in os.listdir(args.output_dir):

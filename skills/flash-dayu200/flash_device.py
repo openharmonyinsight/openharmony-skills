@@ -21,6 +21,8 @@ def hdc_cmd(hdc, *args):
     r = subprocess.run([hdc]+list(args), capture_output=True, text=True, timeout=600)
     out = (r.stdout+r.stderr).strip()
     if out: print(f"    {out}")
+    if r.returncode != 0:
+        raise RuntimeError(f"hdc {' '.join(args)} failed with {r.returncode}: {out}")
     return r
 
 def find_img_dir(base):
@@ -46,9 +48,13 @@ def parse_partitions(img_dir):
                 parts.append((img, name))
     return parts
 
-def main():
+def build_arg_parser():
     ap = argparse.ArgumentParser(description="Flash OpenHarmony device via hdc updater mode")
-    ap.add_argument("--img-dir", default=os.path.join(os.path.expanduser("~"), "Desktop", "daily_build"))
+    ap.add_argument("--img-dir", default="daily_build")
+    return ap
+
+def main():
+    ap = build_arg_parser()
     args = ap.parse_args()
     img_dir = find_img_dir(args.img_dir)
     if not img_dir: print(f"FAIL: system.img not found in {args.img_dir}"); sys.exit(1)

@@ -1,11 +1,11 @@
 ---
 name: flash-dayu200
-description: Use when the user wants to download OpenHarmony daily build images, flash them to a real device (DAYU200/RK3568 or others), or update the source tree. Triggers on daily build, DAYU200, RK3568, flashing, burning, hdc reboot, upgrading firmware.
+description: Use when the user wants to download OpenHarmony daily build images or flash them to a real device (DAYU200/RK3568 or others). Triggers on daily build, DAYU200, RK3568, flashing, burning, hdc reboot, upgrading firmware.
 ---
 
 # Flash OpenHarmony Device with Daily Build
 
-Download daily build, flash via hdc updater mode, update source. Scripts are generic — not hardcoded to any specific repo or device.
+Download daily build and flash via hdc updater mode. Scripts are generic — not hardcoded to any specific repo or device.
 
 ## Scripts
 
@@ -27,7 +27,7 @@ SKILL_DIR=<installed-skill-dir>/flash-dayu200
 python3 "$SKILL_DIR/download_daily.py" --component dayu200
 
 # Flash (partitions auto-parsed from parameter.txt)
-python3 "$SKILL_DIR/flash_device.py" --img-dir <daily-build-image-dir>
+python3 "$SKILL_DIR/flash_device.py" --img-dir daily_build
 ```
 
 ### Via SSH tunnel
@@ -79,6 +79,10 @@ ssh -p $SSH_PORT $SSH_USER@$SSH_HOST "hdc shell reboot"
 **SSH port fallback:** Scripts default to port 2222. If connection fails, prompt the user for the correct port rather than failing silently.
 
 **DCP API:** Response path is `data.builds.dataList[].component`. Auto-searches last 7 days if today's build is missing.
+
+**Archive safety:** `download_daily.py` rejects archive entries that would extract outside the output directory.
+
+**Command failure handling:** `flash_device.py` stops immediately when an `hdc` command exits non-zero.
 
 ## Why Updater Mode
 
