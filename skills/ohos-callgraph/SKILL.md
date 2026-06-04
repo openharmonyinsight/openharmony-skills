@@ -49,19 +49,19 @@ When LSP is unavailable or incomplete, say so in the evidence table and fall bac
 
 #### Helper Script
 
-The helper script auto-detects `oh_root` and `product` from cwd. Override with explicit arguments when needed:
+The helper script `ohos_callgraph.py` lives alongside this SKILL.md. It auto-detects `oh_root` and `product` from cwd.
+
+When the agent invokes this skill, it should locate `ohos_callgraph.py` relative to this skill's directory (not a hardcoded path). Example:
 
 ```bash
-SCRIPT=~/.claude/skills/ohos-callgraph/ohos_callgraph.py
-
-# Forward: what does this function call?
-python3 "$SCRIPT" <function_name> --depth 4
+# The script is in the same directory as this SKILL.md
+python3 ./ohos_callgraph.py <function_name> --depth 4
 
 # Reverse: who calls this function?
-python3 "$SCRIPT" <function_name> --reverse --depth 3
+python3 ./ohos_callgraph.py <function_name> --reverse --depth 3
 
-# Explicit overrides (when auto-detection fails or analyzing a different repo)
-python3 "$SCRIPT" <function_name> \
+# Explicit overrides (when auto-detection fails)
+python3 ./ohos_callgraph.py <function_name> \
   --oh-root <oh_root> \
   --product <product> \
   --repo <repo_filter> \
