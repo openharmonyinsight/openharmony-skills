@@ -1,0 +1,67 @@
+{
+  "skill_name": "ohos-issue-arkruntime-thread-safety-audit",
+  "evals": [
+    {
+      "id": "lazy_singleton_race",
+      "prompt": "Audit the following ETS stdlib code for thread safety. getInstance can be called concurrently from taskpool and EAWorker:\n\n```ets\nclass Console {\n  private static instance: Console | undefined = undefined\n\n  public static getInstance(): Console {\n    if (Console.instance == undefined) {\n      Console.instance = new Console()\n    }\n    return Console.instance!\n  }\n}\n```",
+      "expected_output": "Identifies check-then-act race in lazy singleton init. Recommends QueueSpinlock.guard or ConcurrencyHelpers.lockGuard wrapping the entire if-check plus assignment. Risk at least Medium.",
+      "files": [],
+      "expectations": [
+        "Identifies the check-then-act race: if-check and assignment are not in one critical section.",
+        "Recommends QueueSpinlock.guard or ConcurrencyHelpers.lockGuard protecting the full check-and-assign sequence.",
+        "Risk level is at least Medium with a concrete failure mode (duplicate instance creation).",
+        "Does not recommend locking only the assignment while leaving the if-check outside the lock."
+      ]
+    },
+    {
+      "id": "unsynchronized_counter",
+      "prompt": "Review the following Proxy factory code. uniqueNameCounter is a static field called from multiple taskpool tasks:\n\n```ets\nclass Proxy {\n  private static uniqueNameCounter: long = -1\n\n  public static nextName(): string {\n    return (++Proxy.uniqueNameCounter).toString()\n  }\n}\n```",
+      "expected_output": "Identifies unsynchronized counter. Recommends AtomicLong with fetchAdd(1) and adjusting initial value from -1 to 0 to preserve the pre-increment visible sequence.",
+      "files": [],
+      "expectations": [
+        "Identifies ++uniqueNameCounter as a non-atomic read-modify-write.",
+        "Recommends replacing long with AtomicLong and using fetchAdd(1).",
+        "Notes that pre-increment ++x maps to fetchAdd(1) with initial value adjusted from -1 to 0 to produce the same visible output sequence.",
+        "Does not recommend Mutex or QueueSpinlock for a single counter (over-synchronization)."
+      ]
+    },
+    {
+      "id": "safe_readonly_and_local",
+      "prompt": "Audit the following code for thread safety. Both methods are public APIs callable from taskpool:\n\n```ets\nclass Config {\n  public static readonly MAX_RETRIES: int = 3\n\n  public static computeKey(id: long): string {\n    let prefix = 'key_'\n    let suffix = id.toString()\n    return prefix + suffix\n  }\n}\n```",
+      "expected_output": "No risk. static readonly is immutable; computeKey uses only local variables with no shared mutable state.",
+      "files": [],
+      "expectations": [
+        "Rates as No risk or no thread-safety issue.",
+        "Explicitly states that static readonly constants are safe across threads.",
+        "Recognizes that computeKey has only local variables, no shared mutable state.",
+        "Does not recommend adding any synchronization.",
+        "Does not upgrade risk due to concurrent callability."
+      ]
+    },
+    {
+      "id": "incomplete_fix_review",
+      "prompt": "Someone submitted this fix for the Console.getInstance race. Review whether the fix is correct:\n\nBefore fix:\n```ets\nclass Console {\n  private static instance: Console | undefined = undefined\n  public static getInstance(): Console {\n    if (Console.instance == undefined) {\n      Console.instance = new Console()\n    }\n    return Console.instance!\n  }\n}\n```\n\nAfter fix:\n```ets\nclass Console {\n  private static instance: Console | undefined = undefined\n  private static instanceLock: QueueSpinlock = new QueueSpinlock()\n\n  public static getInstance(): Console {\n    if (Console.instance == undefined) {\n      Console.instanceLock.guard(() => {\n        Console.instance = new Console()\n      })\n    }\n    return Console.instance!\n  }\n}\n```",
+      "expected_output": "Fix is incomplete: the if-check remains outside the lock, so two threads can both pass the check and enter the guard sequentially, still creating duplicate instances. Both the check and assignment must be inside the guard (double-check locking).",
+      "files": [],
+      "expectations": [
+        "Identifies that the if-check is still outside the critical section.",
+        "Explains that two threads can both pass the outer if-check, producing duplicate instances.",
+        "Recommends moving the if-check inside the guard callback for double-check locking.",
+        "Does not accept the fix as correctly resolving the race."
+      ]
+    },
+    {
+      "id": "candidate_not_high",
+      "prompt": "Audit the following code for thread safety. initRegistry is called once at module load, registerHandler only during app startup (single-threaded), then only reads follow:\n\n```ets\nclass HandlerRegistry {\n  private static handlers: Map<string, Function> = new Map()\n\n  public static initRegistry(): void {\n    HandlerRegistry.handlers.set('default', () => {})\n  }\n\n  public static registerHandler(name: string, fn: Function): void {\n    HandlerRegistry.handlers.set(name, fn)\n  }\n\n  public static getHandler(name: string): Function | undefined {\n    return HandlerRegistry.handlers.get(name)\n  }\n}\n```",
+      "expected_output": "Candidate or Low. Static mutable Map has theoretical risk, but without evidence that registerHandler is called concurrently after workers start, actual risk is low. No code change recommended unless concurrent path is proven.",
+      "files": [],
+      "expectations": [
+        "Recognizes the static mutable Map as theoretically racy.",
+        "Does not rate as High or Medium without evidence of concurrent calls to registerHandler.",
+        "Considers the single-threaded startup usage pattern.",
+        "Does not recommend code changes unless a concurrent path is proven.",
+        "Risk level is Candidate or Low, not higher."
+      ]
+    }
+  ]
+}
