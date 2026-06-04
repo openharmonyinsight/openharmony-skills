@@ -4,7 +4,7 @@ import subprocess
 import sys
 import unittest
 from collections import defaultdict
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
@@ -77,6 +77,58 @@ class OhosCallgraphTest(unittest.TestCase):
         text = out.getvalue()
         self.assertIn("HandleMouseEvent ⚡", text)
         self.assertIn("DispatchGroupId ✅", text)
+
+    def test_keyword_hint_warns_it_does_not_validate_state_propagation(self):
+        graph = defaultdict(set)
+        graph["RootFunc"] = {("direct", "ChildFunc")}
+
+        out = io.StringIO()
+        with redirect_stdout(out):
+            ohos_callgraph.build_call_tree(
+                "RootFunc", [graph], [], {}, "/fake/llvm",
+                max_depth=1, check_keyword="groupId"
+            )
+
+        text = out.getvalue()
+        self.assertIn("仅检查 demangled 函数名", text)
+        self.assertIn("不能验证参数、调用实参、成员访问或状态传递", text)
+
+    def test_reverse_output_states_vtable_dlopen_are_not_reversed(self):
+        graph = defaultdict(set)
+        graph["CallerFunc"] = {("direct", "TargetFunc")}
+
+        out = io.StringIO()
+        with redirect_stdout(out):
+            ohos_callgraph.build_call_tree(
+                "TargetFunc", [graph], [{"CallerFunc": {"_ZTSIface"}}],
+                {}, "/fake/llvm", max_depth=1, reverse=True
+            )
+
+        text = out.getvalue()
+        self.assertIn("Reverse 说明", text)
+        self.assertIn("只反查 direct call", text)
+        self.assertIn("不反查 vtable/dlopen 候选边", text)
+
+    def test_extract_callgraph_reports_tool_failure(self):
+        failed = ohos_callgraph.CommandResult(
+            cmd=["opt"], returncode=1, stderr="not a bitcode file"
+        )
+
+        with patch.object(ohos_callgraph, "run", return_value=failed):
+            graph, error = ohos_callgraph.extract_callgraph("/fake/llvm", "/tmp/a.o")
+
+        self.assertFalse(graph)
+        self.assertIn("not a bitcode file", error)
+
+    def test_main_rejects_missing_explicit_context_before_scanning_workspace(self):
+        err = io.StringIO()
+        with patch.object(sys, "argv", ["ohos_callgraph.py", "TargetFunc"]):
+            with redirect_stderr(err), self.assertRaises(SystemExit) as cm:
+                ohos_callgraph.main()
+
+        self.assertNotEqual(cm.exception.code, 0)
+        self.assertIn("--oh-root", err.getvalue())
+        self.assertIn("--repo", err.getvalue())
 
 
 if __name__ == "__main__":

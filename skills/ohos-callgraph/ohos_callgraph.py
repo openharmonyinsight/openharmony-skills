@@ -275,9 +275,13 @@ def build_call_tree(target_func, all_graphs, vtable_info, dlopen_map,
     print(f"候选调用边: {root_demangled}")
     print("说明: 这是静态候选边发现结果，不证明调用链完整。")
     if reverse:
-        print("Reverse 说明: 当前只反查 direct call；vtable/dlopen 需要人工证据或运行时 trace。")
+        print("Reverse 说明: 当前只反查 direct call；不反查 vtable/dlopen 候选边，相关边需要人工证据或运行时 trace。")
     if check_keyword:
-        print(f"函数名关键字启发式: {check_keyword}（不检查参数名、实参、成员访问或 IPC 序列化）")
+        print(
+            f"函数名关键字启发式: {check_keyword}"
+            "（仅检查 demangled 函数名和直接子函数名；"
+            "不能验证参数、调用实参、成员访问或状态传递）"
+        )
     print(f"{'=' * 80}\n")
 
     if reverse:
@@ -349,12 +353,12 @@ def main():
     parser.add_argument("function", help="目标函数名（支持部分匹配）")
     parser.add_argument("--depth", type=int, default=3, help="候选边展开深度（默认 3）")
     parser.add_argument("--reverse", action="store_true",
-                        help="反向查询 direct callers；vtable/dlopen 需人工证据或 trace")
+                        help="反向查询 direct callers；不反查 vtable/dlopen 候选边")
     parser.add_argument("--oh-root", required=True, help="OpenHarmony 根目录；由 agent 显式传入")
     parser.add_argument("--repo", required=True, help="只分析指定仓；由 agent 显式传入")
     parser.add_argument("--product", help="产品名；建议由 agent 显式传入")
     parser.add_argument("--name-keyword", metavar="KEYWORD",
-                        help="仅检查 demangled 函数名和直接子函数名的启发式关键字")
+                        help="仅检查 demangled 函数名和直接子函数名；不验证参数、实参或成员访问")
     parser.add_argument("--check-isolation", metavar="KEYWORD",
                         help=argparse.SUPPRESS)
     args = parser.parse_args()
@@ -428,8 +432,11 @@ def main():
 
     keyword = args.name_keyword or args.check_isolation
     if args.check_isolation:
-        print("警告: --check-isolation 已降级为函数名启发式；请改用 --name-keyword。",
-              file=sys.stderr)
+        print(
+            "警告: --check-isolation 已降级为函数名启发式；请改用 --name-keyword。"
+            "它不验证参数、调用实参、成员访问或状态传递。",
+            file=sys.stderr
+        )
 
     build_call_tree(
         args.function, all_graphs, all_vtable, dlopen_map,

@@ -72,6 +72,7 @@ python3 "$SCRIPT" <target-function> \
 ```
 
 The helper script output is a candidate list. Every important edge still needs source evidence.
+In reverse mode, the helper script only reverses direct call edges. It does not reverse vtable or dlopen/dlsym hint edges.
 
 ### 3. Classify Every Edge
 
@@ -141,7 +142,7 @@ Use these labels:
 - Direct IR call edges from `opt --print-callgraph`
 - Best-effort vtable interface hints from LLVM IR metadata
 - Best-effort dlopen hints from common `LoadLibrary<>` / `CreateInstance` patterns
-- Reverse direct callers
+- Reverse direct callers only; reverse mode does not include vtable or dlopen/dlsym hint edges
 
 Limitations:
 
@@ -149,7 +150,7 @@ Limitations:
 - It does not resolve runtime virtual dispatch to a unique override.
 - It does not prove callback, function pointer, or `std::function` targets.
 - It does not prove IPC parameter propagation.
-- It does not prove `groupId`/`displayId` propagation. `--name-keyword` only checks demangled function names as a rough hint.
+- It does not prove `groupId`/`displayId` propagation. `--name-keyword` only checks demangled function names and direct child function names as a rough hint; it does not inspect C++ parameter names, call arguments, member access, local variables, or IPC serialization.
 - It may miss edges when build artifacts are stale, missing bitcode, optimized differently, or external tools fail.
 
 Use the helper script only as a candidate discovery aid for the evidence workflow.
