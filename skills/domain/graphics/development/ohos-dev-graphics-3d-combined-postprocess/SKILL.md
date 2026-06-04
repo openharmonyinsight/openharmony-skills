@@ -5,7 +5,9 @@ description: >
   LumeRender, Lume3D, and LumeScene. Use when adding or modifying single-pass
   fullscreen effects such as tone mapping, color grading, vignette, white
   balance, color adjustments, shader factors, ECS components, or scene-facing
-  post-process APIs in the Combined post-process pipeline.
+  post-process APIs in the Combined post-process pipeline. Triggers on:
+  "Combined post-process", "post-processing effect", "fullscreen shader effect",
+  "LumeRender post-process", "Combined 后处理", "后处理效果".
 metadata:
   display_name: OpenHarmony Graphics3D Combined Post-Process Implementation
   scope: domain
@@ -53,10 +55,7 @@ LumeScene
 **Before implementing any Combined post-process effect, ask yourself:**
 
 1. **Visual Effect Goal**: What visual effect do you want to achieve? (tone mapping, color grading, vignette, custom effect)
-2. **Parameter Complexity**: How many parameters does the effect need?
-   - 1-4 parameters: Use `factors[]` Vec4 only
-   - 5-8 parameters: Split into `factors[]` + `userFactors[]`
-   - >8 parameters: Consider if this is appropriate for Combined system
+2. **Parameter Complexity**: ≤4 params → `factors[]` only; 5-8 → split `factors[]` + `userFactors[]`; >8 → reconsider if Combined is appropriate
 3. **Render Pass Requirement**: Does the effect need intermediate framebuffers?
    - Single fullscreen pass: ✓ Use Combined post-process (this skill)
    - Blur passes, downscale/upscale, temporal: ✗ Use multi-pass system (not this skill)
@@ -79,8 +78,33 @@ Index 0-7 available? ──────YES──→ Continue with Combined imple
                          │
                          NO
                          ↓
-Need to register new index → Follow LumeRender Step 1-3 first
+REJECT: Combined slots 0-7 are full. EXIT this skill.
+  - Do NOT register index 8+ in Combined — indices 8+ belong to multi-pass post-process system.
+  - Options: (a) free an existing 0-7 slot by removing/relocating its effect, or
+             (b) implement the effect via the multi-pass post-process path (not this skill).
 ```
+
+## Fallback: When Combined Doesn't Apply
+
+When the decision tree exits (multi-pass effect or indices full), use the **multi-pass post-process system** instead:
+
+- **Architecture**: Separate render node graph with intermediate framebuffers, not the Combined fullscreen pass
+- **Index range**: Multi-pass effects use indices 8+ (outside Combined's 0-7 range)
+- **Key files**: Look for `render_post_process_multipass_*` files and dedicated render node configurations
+- **When to free a Combined slot**: If an existing 0-7 effect is deprecated or can be merged, free its index and re-run this skill's decision tree
+
+> For multi-pass implementation details, consult the OpenHarmony Graphics3D multi-pass post-process documentation or the `ohos-dev-graphics-3d-multipass-postprocess` skill (if available).
+
+## NEVER Do (Critical Anti-Patterns)
+
+- **NEVER apply to multi-pass effects** (bloom with blur, depth-of-field, motion blur, FXAA, TAA) — Combined shader only handles indices 0-7; multi-pass effects use indices 8+ with separate framebuffers → effect silently ignored or GPU data corruption
+- **NEVER mismatch shader-C++ indices** — `POST_PROCESS_INDEX_*` in GLSL must exactly match `PostProcessConfiguration::INDEX_*` in C++ across 3 files (`render_post_process_structs_common.h`, `render_data_store_render_pods.h`, `render_data_store_post_process.cpp`) → visual artifacts, wrong colors, or GPU validation error "array index out of bounds"
+- **NEVER forget userFactors for >4 parameters** — Vec4 only holds 4 floats; effects with 5-8 params must define `USER_INDEX_*` constant + `GetFactorXXX()` conversion for `userFactors[]` → shader compilation error "undefined macro" or zero parameters applied
+- **NEVER skip any module** — LumeRender→Lume3D→LumeScene chain must be complete (all 22 steps): skip LumeRender → shader compilation error; skip Lume3D → ECS won't propagate config → shader receives zero factors; skip LumeScene → user API missing → unusable
+
+> Full WHY/CONSEQUENCE/VALIDATION details in [`references/advanced_reference.md`](references/advanced_reference.md#prohibited-practices) — load when troubleshooting specific issues.
+
+---
 
 ## Workflow
 
@@ -192,9 +216,11 @@ Implement GLSL shader processing function with effect logic.
 
 ### Step 8: Integrate into Render Pipeline
 
-**File**: `assets/render/shaders/shader/fullscreen_combined_post_process.frag`
+**Files**:
+- `assets/render/shaders/shader/fullscreen_combined_post_process.frag`
+- `assets/render/shaders/shader/fullscreen_combined_post_process_layer.frag` (if layer rendering is used)
 
-Call shader processing function in fullscreen render pipeline.
+Call shader processing function in fullscreen render pipeline. If your project uses layer rendering, you MUST also integrate into the layer fragment shader — see the layer template in code_templates.md Step 8.
 
 **Details**: See [references/code_templates.md#step-8-integrate-into-render-pipeline](references/code_templates.md#step-8-integrate-into-render-pipeline)
 
@@ -359,92 +385,12 @@ Add interface and source files to build targets.
 
 ---
 
-## Prohibited Practices
-
-### NEVER Apply to Multi-Pass Effects
-
-**Effects requiring separate render passes** (bloom with blur, depth-of-field, motion blur, FXAA, TAA):
-
-- **WHY**: Combined post-process shader (`fullscreen_combined_post_process.frag`) only handles indices 0-7. Multi-pass effects use indices 8+ with separate shaders and intermediate framebuffers.
-- **CONSEQUENCE**: Attempting Combined approach causes `factors[INDEX_BLOOM]` (index 9) to be ignored in Combined shader. Effect won't render, or may read garbage data from wrong memory offset.
-- **VALIDATION**: Check if effect needs intermediate render passes (blur passes, downscale/upscale). If yes → use multi-pass system, not Combined.
-- **CORRECT**: Use dedicated multi-pass post-process implementation with separate render node graph.
-
----
-
-### NEVER Mismatch Shader-C++ Indices
-
-**Index consistency between GLSL constants and C++ enums**:
-
-- **WHY**: Shader accesses `uGlobalData.factors[POST_PROCESS_INDEX_TONEMAP]` directly. If shader defines `POST_PROCESS_INDEX_TONEMAP 0` but C++ defines `INDEX_TONEMAP 1`, shader reads wrong Vec4 from factors array.
-- **CONSEQUENCE**: Visual artifacts (wrong colors, parameters not applied) or GPU validation error "array index out of bounds" if index exceeds `POST_PROCESS_GLOBAL_VEC4_FACTOR_COUNT (14)`.
-- **VALIDATION**: Cross-check three files:
-  1. Shader: `render_post_process_structs_common.h` → `POST_PROCESS_INDEX_*` values
-  2. C++ config: `render_data_store_render_pods.h` → `PostProcessConfiguration::INDEX_*` values
-  3. DataStore conversion: `render_data_store_post_process.cpp` → `factors[INDEX_*]` assignment
-- **CORRECT**: Ensure all three locations use same numeric value. File comment explicitly states: "needs to match api/core/render/render_data_store_render_pods.h".
-
----
-
-### NEVER Forget userFactors for >4 Parameters
-
-**Effects needing more than 4 float parameters**:
-
-- **WHY**: Vec4 only holds 4 floats. GlobalPostProcessStruct has `factors[14]` (Vec4 array) and `userFactors[16]` (Vec4 array). If effect has 5+ parameters, must split into factors + userFactors.
-- **CONSEQUENCE**: Shader tries to read `uGlobalData.userFactors[USER_INDEX_*]` but constant undefined → compilation error "undefined macro". Or if defined but not filled → shader reads zero Vec4 → effect parameters wrong.
-- **VALIDATION**: Count effect parameters. If >4, verify:
-  1. `USER_INDEX_*` constant defined in `render_data_store_render_pods.h`
-  2. `GetFactorXXX()` function for userFactors in `render_data_store_post_process.h`
-  3. Shader uses correct userFactors index: `uGlobalData.userFactors[POST_PROCESS_USER_INDEX_*]`
-- **CORRECT**: For 5-8 parameters: use factors[0-3] + userFactors[0-3]. Define `USER_INDEX_*` constant, implement conversion function, call in FillDefaultPostProcessData.
-
----
-
-### NEVER Skip LumeRender/Lume3D/LumeScene Consistency
-
-**All three modules must be updated**:
-
-- **WHY**: Combined post-process flows through three modules: LumeRender defines shader constants → Lume3D integrates into ECS → LumeScene wraps API. Skipping one module breaks the chain.
-- **CONSEQUENCE**: 
-  - Skip LumeRender: Shader can't find `PostProcessXXXBlock()` function → compilation error
-  - Skip Lume3D: `PostProcessComponent` missing property → ECS system won't propagate configuration → shader receives zero factors
-  - Skip LumeScene: User API missing → developers can't configure effect → unusable
-- **VALIDATION**: Use implementation checklist (22 steps across 3 modules). Check each module's key files exist and are modified.
-- **CORRECT**: Follow all 22 steps. LumeRender (8) → Lume3D (5) → LumeScene (9) in sequence.
-
----
-
-## Exceptions and Fallbacks
-
-### Effect Requires Multiple Render Passes
-
-**Symptom**: Effect needs blur passes, downscale/upscale, temporal accumulation.
-
-- **Fallback**: This skill doesn't apply. Use dedicated multi-pass post-process system with separate render node graph.
-- **Evidence**: Check if shader needs `uImgSampler` + `uBloomSampler` + intermediate framebuffers (like bloom). If yes → multi-pass.
-
-### Shader Compilation Error
-
-**Symptom**: "undefined macro POST_PROCESS_INDEX_XXX" or "array index out of bounds".
-
-- **Diagnosis**: Index mismatch or missing constant definition.
-- **Fix**: Check shader constant matches C++ enum value. Verify index < 14 (POST_PROCESS_GLOBAL_VEC4_FACTOR_COUNT).
-
-### Visual Artifacts or Effect Not Applied
-
-**Symptom**: Wrong colors, parameters ignored, effect invisible.
-
-- **Diagnosis**: Wrong factors index, or GetFactorXXX() not called in DataStore.
-- **Fix**: Verify conversion function called in both `render_data_store_post_process.cpp` (Step 5) and `render_node_util.cpp` (Step 6).
-
----
-
 ## References
 
 ### Primary Reference Files
 
-- **[`references/code_templates.md`](references/code_templates.md)** (785 lines): Complete code templates with Generic Template and Tone Mapping Example for all 22 steps. **MANDATORY loading during implementation**.
-- **[`references/advanced_reference.md`](references/advanced_reference.md)** (306 lines): Advanced reference with data flow diagrams, implementation checklists, and troubleshooting guide. **Load ONLY when troubleshooting or need data flow understanding**.
+- **[`references/code_templates.md`](references/code_templates.md)**: Complete code templates with Generic Template and Tone Mapping Example for all 22 steps. **MANDATORY loading during implementation**.
+- **[`references/advanced_reference.md`](references/advanced_reference.md)**: Advanced reference with data flow diagrams, prohibited practices, exceptions/fallbacks, implementation checklists, and troubleshooting guide. **Load ONLY when troubleshooting or need data flow understanding**.
 
 ### Loading Strategy
 
@@ -453,27 +399,5 @@ Add interface and source files to build targets.
 - ❌ **Do NOT load**: `advanced_reference.md` (save for later)
 
 **Phase 2 - Troubleshooting**:
-- ✅ **Load when needed**: `advanced_reference.md` if encountering errors, need data flow diagrams, or implementation checklists
+- ✅ **Load when needed**: `advanced_reference.md` if encountering errors, need data flow diagrams, prohibited practices, or implementation checklists
 - ❌ **Do NOT reload**: `code_templates.md` if already loaded
-
----
-
-## Key Points
-
-1. **Architecture: Configuration-Conversion Separation**
-   - Configuration structs for user interfaces
-   - Conversion functions pack into shader-friendly Vec4
-   
-2. **Critical: Shader-C++ Index/Bit Consistency**
-   - `POST_PROCESS_INDEX_*` ↔ `PostProcessConfiguration::INDEX_*`
-   - `POST_PROCESS_SPECIALIZATION_*_BIT` ↔ `FlagBits` enum
-   - Mismatch causes GPU validation errors or visual artifacts
-   
-3. **Mandatory: Dual Path Support**
-   - Add conversions in BOTH DataStore (Step 5) AND RenderNodeUtil (Step 6)
-   - Single-path implementation fails in some scenarios
-   
-4. **Naming and Macro Conventions**
-   - Shader function: `PostProcess<Effect>Block` naming
-   - META_TYPE: include only when interface has enum types
-   - META_READONLY_PROPERTY: must add to IPostProcess interface
