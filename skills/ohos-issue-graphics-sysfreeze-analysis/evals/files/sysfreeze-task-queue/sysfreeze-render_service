@@ -1,0 +1,58 @@
+DOMAIN:DEVICE_INFO
+PRODUCTMODEL:XXXX
+DOMAIN:FREEZE_INFO
+TIMESTAMP:2026-05-28 11:30:00.000
+PID:700
+UID:1000
+PACKAGE:render_service
+PROCESSNAME:render_service
+Reason:THREAD_BLOCK_6S
+Action:3
+DOMAIN:FRAMEWORK
+FIRST_STACK (THREAD_BLOCK_3S):
+Tid:7500, Name:render_service
+#00 pc 00191e0c /system/lib64/ld-musl-aarch64.so.1(ioctl)
+#01 pc 0000f030 /system/lib64/platformsdk/libipc_common.z.so(OHOS::BinderConnector::WriteBinder)
+#02 pc 00071c54 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::TransactWithDriver)
+#03 pc 00070654 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::WaitForCompletion)
+#04 pc 0006fb24 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::SendRequest)
+#05 pc 00048c74 /system/lib64/platformsdk/libipc_single.z.so(OHOS::IPCObjectProxy::SendRequestInner)
+#06 pc 00049690 /system/lib64/platformsdk/libipc_single.z.so(OHOS::IPCObjectProxy::SendRequest)
+#07 pc 001a5fbc /system/lib64/librender_service.z.so(OHOS::Rosen::RSRenderService::CommitTransaction)
+state:S
+utime:1000
+stime:500
+
+SECOND_STACK (THREAD_BLOCK_6S):
+Tid:7500, Name:render_service
+#00 pc 00191e0c /system/lib64/ld-musl-aarch64.so.1(ioctl)
+#01 pc 0000f030 /system/lib64/platformsdk/libipc_common.z.so(OHOS::BinderConnector::WriteBinder)
+#02 pc 00071c54 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::TransactWithDriver)
+#03 pc 00070654 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::WaitForCompletion)
+#04 pc 0006fb24 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::SendRequest)
+#05 pc 00048c74 /system/lib64/platformsdk/libipc_single.z.so(OHOS::IPCObjectProxy::SendRequestInner)
+#06 pc 00049690 /system/lib64/platformsdk/libipc_single.z.so(OHOS::IPCObjectProxy::SendRequest)
+#07 pc 001a5fbc /system/lib64/librender_service.z.so(OHOS::Rosen::RSRenderService::CommitTransaction)
+state:S
+utime:1000
+stime:500
+
+TASK_QUEUE_INFO:
+VIP Queue:
+  taskName:CommitTransaction, triggerTime:2026-05-28 11:29:55.000, priority:VIP, submitTid:7500
+  taskName:Watchdog, triggerTime:2026-05-28 11:30:00.000, priority:VIP
+Immediate Queue: empty
+High Queue:
+  taskName:RenderFrame_Task1, triggerTime:2026-05-28 11:29:50.000, priority:High, completeTime:2026-05-28 11:29:52.000
+  taskName:RenderFrame_Task2, triggerTime:2026-05-28 11:29:53.000, priority:High, completeTime:null
+Low Queue: empty
+Idle Queue: empty
+
+DOMAIN:BINDER_CATCHER
+Caller:700:7500 -> Peer:4000:4100
+WaitTime:6s
+SyncCall:true
+
+DOMAIN:HILOG
+2026-05-28 11:29:50.000 0700/07500 I [RS] TransactionDataStatistics cmdCount=500 dataSize=2MB
+2026-05-28 11:29:55.000 0700/07500 I [RS] IDisplayComposer duration=800ms

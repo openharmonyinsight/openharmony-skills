@@ -1,0 +1,1548 @@
+{
+  "skill_name": "ohos-issue-graphics-sysfreeze-analysis",
+  "description": "Test suite for ohos-issue-graphics-sysfreeze-analysis skill - analyzing OpenHarmony sysfreeze/appfreeze logs to diagnose process freeze and thread blocking issues",
+  "version": "1.0",
+  "created_date": "2026-06-03",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "trigger_sysfreeze_analysis",
+      "category": "trigger",
+      "prompt": "分析这个sysfreeze日志文件，诊断进程卡住的原因",
+      "expected_output": "Skill should trigger and begin sysfreeze analysis workflow",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for sysfreeze analysis request"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "trigger_appfreeze_analysis",
+      "category": "trigger",
+      "prompt": "分析这个appfreeze日志，应用进程线程阻塞了",
+      "expected_output": "Skill should trigger and begin appfreeze analysis",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for appfreeze analysis request"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "trigger_service_block",
+      "category": "trigger",
+      "prompt": "系统日志显示SERVICE_BLOCK，render_service进程服务阻塞了，帮我分析",
+      "expected_output": "Skill should trigger and prioritize SERVICE_BLOCK analysis path",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for SERVICE_BLOCK analysis"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "trigger_thread_block_6s",
+      "category": "trigger",
+      "prompt": "THREAD_BLOCK_6S故障，线程阻塞超过6秒了，帮我分析sysfreeze日志",
+      "expected_output": "Skill should trigger and prioritize THREAD_BLOCK analysis path",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for THREAD_BLOCK_6S analysis"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "eval_name": "trigger_ipc_deadlock",
+      "category": "trigger",
+      "prompt": "图形模块出现了IPC死锁，帮我追踪阻塞链分析sysfreeze",
+      "expected_output": "Skill should trigger and prioritize IPC deadlock analysis path",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for IPC deadlock analysis"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "eval_name": "trigger_process_stuck_keyword",
+      "category": "trigger",
+      "prompt": "render_service进程卡住了，无法响应请求，分析freeze日志",
+      "expected_output": "Skill should trigger on '进程卡住' keyword",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for process stuck analysis"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "eval_name": "trigger_task_queue_block",
+      "category": "trigger",
+      "prompt": "任务队列阻塞了，render_service无法执行新任务，帮我分析",
+      "expected_output": "Skill should trigger and analyze task queue blocking",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for task queue blocking analysis"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "eval_name": "trigger_deadlock_keyword",
+      "category": "trigger",
+      "prompt": "render_service发生了死锁，线程互相等锁，帮我追踪阻塞链",
+      "expected_output": "Skill should trigger on '死锁' keyword",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for deadlock tracing analysis"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "eval_name": "trigger_vsync_timeout",
+      "category": "trigger",
+      "prompt": "vsync处理超时导致线程阻塞，分析sysfreeze日志定位根因",
+      "expected_output": "Skill should trigger on vsync + block keyword combination",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for vsync timeout blocking analysis"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "eval_name": "trigger_block_keyword_english",
+      "category": "trigger",
+      "prompt": "The render_service process is blocked/frozen, analyze the sysfreeze log",
+      "expected_output": "Skill should trigger on English 'blocked/frozen' keywords",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for English block/freeze keywords"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "eval_name": "negative_trigger_perf_optimization",
+      "category": "trigger",
+      "prompt": "优化render_service的渲染性能，减少帧延迟",
+      "expected_output": "Skill should NOT trigger - performance optimization has no blocking",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for performance optimization (no block/freeze)"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "eval_name": "negative_trigger_app_logic_error",
+      "category": "trigger",
+      "prompt": "我的ArkTS应用逻辑出错了，按钮点击后页面跳转不对",
+      "expected_output": "Skill should NOT trigger - application logic error, no system-level blocking",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for application logic errors"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "eval_name": "negative_trigger_non_graphics_freeze",
+      "category": "trigger",
+      "prompt": "系统电话模块进程卡住了，分析这个sysfreeze日志",
+      "expected_output": "Skill should NOT trigger - non-graphics module freeze issue",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for non-graphics module freeze"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "eval_name": "negative_trigger_ui_development",
+      "category": "trigger",
+      "prompt": "帮我写一个HarmonyOS的UI界面组件",
+      "expected_output": "Skill should NOT trigger",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for UI development tasks"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "eval_name": "negative_trigger_build_error",
+      "category": "trigger",
+      "prompt": "编译OpenHarmony图形模块时遇到编译错误，帮我解决",
+      "expected_output": "Skill should NOT trigger - build error, not freeze analysis",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for build errors"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "eval_name": "negative_trigger_code_review",
+      "category": "trigger",
+      "prompt": "帮我review这段render_service的代码，看看有没有问题",
+      "expected_output": "Skill should NOT trigger - code review, not freeze analysis",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for code review tasks"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "eval_name": "negative_trigger_unit_test",
+      "category": "trigger",
+      "prompt": "帮我写render_service模块的单元测试",
+      "expected_output": "Skill should NOT trigger",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for unit test generation"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "eval_name": "negative_trigger_cppcrash",
+      "category": "trigger",
+      "prompt": "分析这个cppcrash日志，定位render_service崩溃根因",
+      "expected_output": "Skill should NOT trigger - cppcrash is crash analysis, not freeze analysis",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for cppcrash crash analysis"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "eval_name": "negative_trigger_log_severely_missing",
+      "category": "trigger",
+      "prompt": "我的应用卡住了但没有sysfreeze日志，只有少量hilog输出",
+      "expected_output": "Skill should NOT trigger - log information severely insufficient",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger when log information severely insufficient"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "eval_name": "service_block_mutex_full",
+      "category": "core_scenario",
+      "prompt": "分析这个sysfreeze日志文件，render_service发生了SERVICE_BLOCK，诊断阻塞根因",
+      "expected_output": "Should identify SERVICE_BLOCK fault type, confirm main thread blocked on pthread_mutex_timedlock_inner in RSDrawFrame::PostAndWait, compare two stack captures showing same task blocking, trace blocking chain to find mutex holder thread, provide root cause and fix suggestions",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "fault_type_identified",
+          "passed": true,
+          "evidence": "Correctly identifies SERVICE_BLOCK as fault type"
+        },
+        {
+          "text": "stack_comparison_done",
+          "passed": true,
+          "evidence": "Compares FIRST_STACK and SECOND_STACK, confirms same task blocking"
+        },
+        {
+          "text": "blocking_pattern_matched",
+          "passed": true,
+          "evidence": "Recognizes pthread_mutex_timedlock_inner as mutex blocking pattern per blocking-patterns.md"
+        },
+        {
+          "text": "blocking_chain_traced",
+          "passed": true,
+          "evidence": "Traces blocking chain from blocked thread to mutex holder"
+        },
+        {
+          "text": "task_queue_analyzed",
+          "passed": true,
+          "evidence": "Analyzes task queue showing FlushFrame task stuck"
+        },
+        {
+          "text": "root_cause_determined",
+          "passed": true,
+          "evidence": "Determines root cause based on blocking chain and business code"
+        },
+        {
+          "text": "fix_suggestion_provided",
+          "passed": true,
+          "evidence": "Provides fix suggestions for mutex blocking"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "eval_name": "thread_block_6s_full",
+      "category": "core_scenario",
+      "prompt": "分析这个sysfreeze日志，render_service线程阻塞超过6秒",
+      "expected_output": "Should identify THREAD_BLOCK_6S fault type, confirm thread blocked on mutex in SwingFrameRate::SetSceneInfo, compare 3s and 6s stacks showing same blocking, trace blocking chain across threads (5566→54719→61947→IPC peer), provide root cause and fix suggestions",
+      "files": ["files/sysfreeze-thread-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "fault_type_identified",
+          "passed": true,
+          "evidence": "Correctly identifies THREAD_BLOCK_6S as fault type"
+        },
+        {
+          "text": "stack_comparison_done",
+          "passed": true,
+          "evidence": "Compares THREAD_BLOCK_3S and THREAD_BLOCK_6S stacks"
+        },
+        {
+          "text": "blocking_chain_traced",
+          "passed": true,
+          "evidence": "Traces complete blocking chain across threads"
+        },
+        {
+          "text": "hilog_analyzed",
+          "passed": true,
+          "evidence": "Analyzes hilog showing vsync timeout messages"
+        },
+        {
+          "text": "root_cause_determined",
+          "passed": true,
+          "evidence": "Determines root cause from blocking chain"
+        },
+        {
+          "text": "fix_suggestion_provided",
+          "passed": true,
+          "evidence": "Provides fix suggestions"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "eval_name": "mutex_deadlock_full",
+      "category": "core_scenario",
+      "prompt": "分析这个sysfreeze日志，图形模块发生了互斥锁死锁，追踪完整阻塞链",
+      "expected_output": "Should identify mutex deadlock pattern from blocking-patterns.md, analyze thread 9876 waiting mutex in SwingFrameRate::SetSceneInfo, find thread 5566 waiting recursive_mutex in FrameRateControl::SetScene, find thread 61947 holding SwingFrameRate lock and waiting IPC, trace complete blocking chain 5566→54719→61947→IPC peer, provide root cause and fix suggestions",
+      "files": ["files/sysfreeze-mutex-deadlock/sysfreeze-apsmgr"],
+      "assertions": [
+        {
+          "text": "blocking_pattern_matched",
+          "passed": true,
+          "evidence": "Recognizes pthread_mutex_timedlock_inner pattern from blocking-patterns.md"
+        },
+        {
+          "text": "blocking_type_identified",
+          "passed": true,
+          "evidence": "Identifies blocking type as mutex deadlock"
+        },
+        {
+          "text": "blocking_source_found",
+          "passed": true,
+          "evidence": "Finds mutex holder threads through class name analysis"
+        },
+        {
+          "text": "blocking_chain_closed",
+          "passed": true,
+          "evidence": "Traces complete blocking chain: 5566→54719→61947→IPC peer"
+        },
+        {
+          "text": "ipc_block_identified",
+          "passed": true,
+          "evidence": "Identifies IPC blocking at chain end (ioctl/BinderInvoker)"
+        },
+        {
+          "text": "fix_suggestion_provided",
+          "passed": true,
+          "evidence": "Provides fix suggestions for deadlock resolution"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "eval_name": "ipc_block_full",
+      "category": "core_scenario",
+      "prompt": "分析这个sysfreeze日志，render_service主线程发起IPC请求后阻塞了",
+      "expected_output": "Should identify IPC blocking pattern from blocking-patterns.md, analyze main thread blocked on BinderInvoker::SendRequest with ioctl, check BinderCatcher for peer process info (3000:3000→5000:5100), analyze peer thread 5100 blocked on mutex in DisplayManagerService, trace blocking chain: main→IPC→peer mutex block, provide root cause and fix suggestions",
+      "files": ["files/sysfreeze-ipc-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "ipc_pattern_detected",
+          "passed": true,
+          "evidence": "Recognizes BinderInvoker::SendRequest/ioctl as IPC blocking pattern"
+        },
+        {
+          "text": "binder_catcher_used",
+          "passed": true,
+          "evidence": "Uses BinderCatcher information to find IPC peer"
+        },
+        {
+          "text": "peer_thread_analyzed",
+          "passed": true,
+          "evidence": "Analyzes PeerBinder Stacktrace for peer thread blocking"
+        },
+        {
+          "text": "blocking_chain_cross_process",
+          "passed": true,
+          "evidence": "Traces blocking chain across process boundary via IPC"
+        },
+        {
+          "text": "root_cause_determined",
+          "passed": true,
+          "evidence": "Determines root cause at peer process side"
+        },
+        {
+          "text": "fix_suggestion_provided",
+          "passed": true,
+          "evidence": "Provides fix suggestions for IPC timeout and peer blocking"
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "eval_name": "low_memory_freeze_full",
+      "category": "core_scenario",
+      "prompt": "分析这个sysfreeze日志，render_service进程卡住了，看看是否和整机资源有关",
+      "expected_output": "Should identify SERVICE_BLOCK with cond_wait in WaitForVsync, but prioritize checking system resources: ReclaimAvailBuffer=5000 (very low memory), hilog showing MemoryOverflow and GetSaWrap timeout, determine that low memory is likely the root cause causing system-wide blocking, provide system resource analysis and recommendations",
+      "files": ["files/sysfreeze-low-memory/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "fault_type_identified",
+          "passed": true,
+          "evidence": "Correctly identifies SERVICE_BLOCK as fault type"
+        },
+        {
+          "text": "system_resource_checked",
+          "passed": true,
+          "evidence": "Checks ReclaimAvailBuffer=5000 indicating severe low memory"
+        },
+        {
+          "text": "hilog_analyzed",
+          "passed": true,
+          "evidence": "Analyzes hilog showing MemoryOverflow and GetSaWrap SA:10 timeout per hilog-refernce.md"
+        },
+        {
+          "text": "resource_issue_prioritized",
+          "passed": true,
+          "evidence": "Prioritizes system resource issue (low memory) per SKILL.md rules"
+        },
+        {
+          "text": "memory_detail_analyzed",
+          "passed": true,
+          "evidence": "Analyzes Total ION/GPU memory info from hilog"
+        },
+        {
+          "text": "fix_suggestion_provided",
+          "passed": true,
+          "evidence": "Provides system resource optimization suggestions"
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "eval_name": "task_queue_block_full",
+      "category": "core_scenario",
+      "prompt": "分析这个sysfreeze日志，render_service任务队列阻塞了",
+      "expected_output": "Should identify THREAD_BLOCK_6S with IPC blocking, analyze task queue showing VIP CommitTransaction stuck and High RenderFrame_Task2 incomplete, check BinderCatcher for IPC peer, analyze hilog showing TransactionDataStatistics (large cmdCount) and IDisplayComposer duration (800ms), determine root cause as heavy transaction data causing IPC timeout",
+      "files": ["files/sysfreeze-task-queue/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "task_queue_analyzed",
+          "passed": true,
+          "evidence": "Analyzes VIP and High priority task queues"
+        },
+        {
+          "text": "task_same_or_different",
+          "passed": true,
+          "evidence": "Compares Current Running task between two captures"
+        },
+        {
+          "text": "hilog_analyzed",
+          "passed": true,
+          "evidence": "Analyzes hilog for TransactionDataStatistics and IDisplayComposer per hilog-refernce.md"
+        },
+        {
+          "text": "ipc_cause_identified",
+          "passed": true,
+          "evidence": "Identifies IPC as blocking cause from BinderInvoker stack"
+        },
+        {
+          "text": "root_cause_determined",
+          "passed": true,
+          "evidence": "Determines root cause: heavy transaction data causing IPC delay"
+        },
+        {
+          "text": "fix_suggestion_provided",
+          "passed": true,
+          "evidence": "Provides optimization suggestions for transaction data"
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "eval_name": "cond_wait_full",
+      "category": "core_scenario",
+      "prompt": "分析这个sysfreeze日志，线程在等待条件变量，阻塞超过6秒",
+      "expected_output": "Should identify pthread_cond_timedwait blocking pattern from blocking-patterns.md, analyze thread waiting condition variable in RSDrawFrame::PostAndWait, find triggering thread DDGRTask executing DrawOp with std::future::get, determine that condition variable is not triggered because DDGRTask is still executing heavy render task, provide root cause and suggestions",
+      "files": ["files/sysfreeze-cond-wait/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "blocking_pattern_matched",
+          "passed": true,
+          "evidence": "Recognizes pthread_cond_timedwait as condition variable blocking per blocking-patterns.md"
+        },
+        {
+          "text": "blocking_source_found",
+          "passed": true,
+          "evidence": "Finds condition trigger thread (DDGRTask) through business logic analysis"
+        },
+        {
+          "text": "trigger_thread_analyzed",
+          "passed": true,
+          "evidence": "Analyzes DDGRTask thread showing GrDrawOp::DoExecute and std::future::get"
+        },
+        {
+          "text": "root_cause_determined",
+          "passed": true,
+          "evidence": "Determines root cause: render task execution too long, condition not triggered"
+        },
+        {
+          "text": "fix_suggestion_provided",
+          "passed": true,
+          "evidence": "Provides optimization suggestions for render task"
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "eval_name": "post_and_wait_full",
+      "category": "core_scenario",
+      "prompt": "分析这个sysfreeze日志，主线程PostAndWait等待RSUniRenderThread",
+      "expected_output": "Should identify PostAndWait blocking pattern from blocking-patterns.md, analyze render_service blocked on RSDrawFrame::PostAndWait waiting for RSUniRenderThread, find RSUniRenderThread also blocked on mutex in RenderFrame, trace blocking chain: main→PostAndWait→RSUniRenderThread→mutex block, provide root cause and suggestions",
+      "files": ["files/sysfreeze-post-and-wait/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "blocking_pattern_matched",
+          "passed": true,
+          "evidence": "Recognizes PostAndWait as sync task blocking pattern per blocking-patterns.md"
+        },
+        {
+          "text": "blocking_source_found",
+          "passed": true,
+          "evidence": "Finds target thread RSUniRenderThread as PostAndWait peer"
+        },
+        {
+          "text": "target_thread_analyzed",
+          "passed": true,
+          "evidence": "Analyzes RSUniRenderThread also blocked on mutex"
+        },
+        {
+          "text": "blocking_chain_traced",
+          "passed": true,
+          "evidence": "Traces blocking chain: main→PostAndWait→RSUniRenderThread→mutex"
+        },
+        {
+          "text": "root_cause_determined",
+          "passed": true,
+          "evidence": "Determines root cause based on chain analysis"
+        },
+        {
+          "text": "fix_suggestion_provided",
+          "passed": true,
+          "evidence": "Provides fix suggestions for PostAndWait timeout or async"
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "eval_name": "missing_symbol_table",
+      "category": "edge_case",
+      "prompt": "分析这个sysfreeze日志，但lib.unstripped/目录下没有对应的so文件",
+      "expected_output": "Should detect missing so file in lib.unstripped/ directory, report to user that symbol table file is needed for stack unwinding, cannot resolve code line numbers without symbols, mark in report that stack analysis is limited",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "input_checked",
+          "passed": true,
+          "evidence": "Checks lib.unstripped/ directory existence"
+        },
+        {
+          "text": "missing_so_reported",
+          "passed": true,
+          "evidence": "Reports missing symbol table file to user per SKILL.md"
+        },
+        {
+          "text": "limited_analysis",
+          "passed": true,
+          "evidence": "Explains limited analysis without symbol resolution"
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "eval_name": "only_one_stack_capture",
+      "category": "edge_case",
+      "prompt": "分析这个sysfreeze日志，但只有一次抓栈信息，缺少第二次对比",
+      "expected_output": "Should detect only one stack capture available, explain that lack of comparison prevents confirming whether same task blocked, analyze available single stack, note in report that second capture is missing and conclusions are limited",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "single_capture_detected",
+          "passed": true,
+          "evidence": "Detects only one stack capture available"
+        },
+        {
+          "text": "comparison_missing_reported",
+          "passed": true,
+          "evidence": "Reports missing comparison information per SKILL.md"
+        },
+        {
+          "text": "limited_conclusion",
+          "passed": true,
+          "evidence": "Notes conclusions are limited without comparison"
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "eval_name": "missing_hilog",
+      "category": "edge_case",
+      "prompt": "分析这个sysfreeze日志，但没有hilog流水日志文件",
+      "expected_output": "Should detect missing hilog file, rely only on stack and task queue analysis, note in report that log analysis is missing per SKILL.md fallback rules",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "hilog_missing_detected",
+          "passed": true,
+          "evidence": "Detects absence of hilog and hilog_kmsg files"
+        },
+        {
+          "text": "stack_only_analysis",
+          "passed": true,
+          "evidence": "Proceeds with stack and task queue analysis only"
+        },
+        {
+          "text": "log_missing_reported",
+          "passed": true,
+          "evidence": "Marks hilog deficiency in report per SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "eval_name": "missing_binder_catcher",
+      "category": "edge_case",
+      "prompt": "分析这个sysfreeze日志，IPC阻塞但缺少BinderCatcher信息",
+      "expected_output": "Should detect missing BinderCatcher, explain IPC blocking analysis is limited, attempt to infer IPC peer from stack info, note in report that BinderCatcher is missing and cross-process analysis is restricted per SKILL.md fallback rules",
+      "files": ["files/sysfreeze-ipc-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "binder_missing_detected",
+          "passed": true,
+          "evidence": "Detects absence of BinderCatcher information"
+        },
+        {
+          "text": "ipc_inference_attempted",
+          "passed": true,
+          "evidence": "Attempts to infer IPC peer from stack analysis"
+        },
+        {
+          "text": "limitation_reported",
+          "passed": true,
+          "evidence": "Reports BinderCatcher deficiency per SKILL.md fallback rules"
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "eval_name": "insufficient_evidence_handling",
+      "category": "edge_case",
+      "prompt": "分析这个sysfreeze日志，阻塞链信息不完整无法确定单一根因",
+      "expected_output": "Should list all possible root causes with supporting evidence, clearly mark which conclusions are certain and which are inferred, describe directions for further analysis per SKILL.md rules against forcing conclusions",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "multiple_causes_listed",
+          "passed": true,
+          "evidence": "Lists multiple possible root causes when single cause cannot be determined"
+        },
+        {
+          "text": "evidence_vs_inference_marked",
+          "passed": true,
+          "evidence": "Clearly distinguishes evidence-based conclusions from inferences"
+        },
+        {
+          "text": "further_analysis_directions",
+          "passed": true,
+          "evidence": "Provides directions for further analysis"
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "eval_name": "no_forcing_conclusion",
+      "category": "edge_case",
+      "prompt": "分析这个sysfreeze日志，快速给我根因",
+      "expected_output": "Should NOT guess root cause without evidence, should NOT use vague expressions, should trace blocking chain before concluding, should follow evidence-based analysis workflow per SKILL.md forbidden rules",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "no_vague_expression",
+          "passed": true,
+          "evidence": "Avoids vague expressions like '可能是' or '也许是'"
+        },
+        {
+          "text": "evidence_based_conclusion",
+          "passed": true,
+          "evidence": "Conclusions based on traced blocking chain evidence"
+        },
+        {
+          "text": "workflow_followed",
+          "passed": true,
+          "evidence": "Follows complete analysis workflow before concluding"
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "eval_name": "stack_unwinding_failure",
+      "category": "edge_case",
+      "prompt": "分析这个sysfreeze日志，解栈时llvm-addr2line返回了无法解析的结果",
+      "expected_output": "Should handle stack unwinding failure per SKILL.md fallback: check so file path correctness, verify offset format, use llvm-readelf to verify symbol table presence, if confirmed no symbols, explicitly mark in report",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "path_checked",
+          "passed": true,
+          "evidence": "Checks so file path correctness"
+        },
+        {
+          "text": "offset_verified",
+          "passed": true,
+          "evidence": "Verifies offset is valid hexadecimal format"
+        },
+        {
+          "text": "symbol_table_verified",
+          "passed": true,
+          "evidence": "Uses llvm-readelf to verify symbol table presence per SKILL.md"
+        },
+        {
+          "text": "failure_marked",
+          "passed": true,
+          "evidence": "Explicitly marks unwinding failure in report"
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "eval_name": "blocking_chain_unclosed",
+      "category": "edge_case",
+      "prompt": "分析这个sysfreeze日志，阻塞链无法闭合，追踪到IPC调用后找不到对端",
+      "expected_output": "Should handle unclosed blocking chain per SKILL.md fallback: check for IPC cross-process calls requiring peer process, consider kernel blocking (IO wait), report which node the chain breaks at, provide next-step investigation directions",
+      "files": ["files/sysfreeze-ipc-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "ipc_cross_process_checked",
+          "passed": true,
+          "evidence": "Checks whether blocking chain requires cross-process analysis"
+        },
+        {
+          "text": "kernel_blocking_considered",
+          "passed": true,
+          "evidence": "Consider kernel-level blocking (IO wait) as alternative"
+        },
+        {
+          "text": "break_point_reported",
+          "passed": true,
+          "evidence": "Reports which node the blocking chain breaks at"
+        },
+        {
+          "text": "next_steps_provided",
+          "passed": true,
+          "evidence": "Provides next-step investigation directions per SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "eval_name": "system_resource_priority",
+      "category": "edge_case",
+      "prompt": "分析这个sysfreeze日志，同时存在业务阻塞和低内存问题，判断哪个是根因",
+      "expected_output": "Should follow SKILL.md priority rules: if system resource severely abnormal (ReclaimAvailBuffer very low), prioritize system issue; if system resource mildly abnormal but business has clear blocking logic, prioritize business issue; if uncertain, list both possibilities in report",
+      "files": ["files/sysfreeze-low-memory/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "resource_severity_judged",
+          "passed": true,
+          "evidence": "Judges severity of system resource issue (ReclaimAvailBuffer=5000 is severe)"
+        },
+        {
+          "text": "priority_rule_followed",
+          "passed": true,
+          "evidence": "Follows SKILL.md priority: severe system resource → prioritize system issue"
+        },
+        {
+          "text": "both_possibilities_listed",
+          "passed": true,
+          "evidence": "Lists both system and business possibilities when uncertain"
+        }
+      ]
+    },
+    {
+      "id": 37,
+      "eval_name": "blocking_patterns_reference",
+      "category": "documentation",
+      "prompt": "分析这个sysfreeze日志，栈顶有pthread_mutex_timedlock_inner，需要识别阻塞模式",
+      "expected_output": "Should reference references/blocking-patterns.md to identify pthread_mutex_timedlock_inner as mutex blocking pattern, analyze waiting mutex resource, find mutex holder thread, trace blocking chain per pattern guidance",
+      "files": ["files/sysfreeze-mutex-deadlock/sysfreeze-apsmgr"],
+      "assertions": [
+        {
+          "text": "uses_blocking_patterns_ref",
+          "passed": true,
+          "evidence": "References blocking-patterns.md for pattern identification"
+        },
+        {
+          "text": "pattern_matched",
+          "passed": true,
+          "evidence": "Matches pthread_mutex_timedlock_inner to mutex blocking pattern"
+        },
+        {
+          "text": "analysis_method_followed",
+          "passed": true,
+          "evidence": "Follows analysis method from blocking-patterns.md for mutex"
+        },
+        {
+          "text": "holder_found",
+          "passed": true,
+          "evidence": "Finds mutex holder thread through class name analysis"
+        }
+      ]
+    },
+    {
+      "id": 38,
+      "eval_name": "hilog_reference",
+      "category": "documentation",
+      "prompt": "分析这个sysfreeze日志，需要分析hilog异常日志",
+      "expected_output": "Should reference references/hilog-refernce.md to identify GetSaWrap SA:10 as render_service startup timeout, identify MemoryOverflow as memory over-limit kill, identify ReclaimAvailBuffer as system memory info",
+      "files": ["files/sysfreeze-low-memory/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "uses_hilog_ref",
+          "passed": true,
+          "evidence": "References hilog-refernce.md for log pattern identification"
+        },
+        {
+          "text": "get_sa_wrap_identified",
+          "passed": true,
+          "evidence": "Identifies GetSaWrap SA:10 as render_service startup timeout per hilog-refernce.md"
+        },
+        {
+          "text": "memory_overflow_identified",
+          "passed": true,
+          "evidence": "Identifies MemoryOverflow as memory kill trigger per hilog-refernce.md"
+        },
+        {
+          "text": "reclaim_buffer_identified",
+          "passed": true,
+          "evidence": "Identifies ReclaimAvailBuffer as system memory indicator per hilog-refernce.md"
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "eval_name": "ipc_blocking_patterns_reference",
+      "category": "documentation",
+      "prompt": "分析这个sysfreeze日志，栈顶有ioctl和BinderInvoker调用",
+      "expected_output": "Should reference references/blocking-patterns.md to identify ioctl+BinderInvoker as IPC blocking pattern per 'OHOS::BinderInvoker::SendRequest -> ioctl' entry, check BinderCatcher for peer info, analyze peer thread stack",
+      "files": ["files/sysfreeze-ipc-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "uses_blocking_patterns_ref",
+          "passed": true,
+          "evidence": "References blocking-patterns.md for IPC pattern identification"
+        },
+        {
+          "text": "ipc_pattern_matched",
+          "passed": true,
+          "evidence": "Matches BinderInvoker::SendRequest -> ioctl to IPC blocking pattern"
+        },
+        {
+          "text": "binder_catcher_used",
+          "passed": true,
+          "evidence": "Uses BinderCatcher to find IPC peer per blocking-patterns.md guidance"
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "eval_name": "post_and_wait_patterns_reference",
+      "category": "documentation",
+      "prompt": "分析这个sysfreeze日志，栈顶有PostAndWait函数",
+      "expected_output": "Should reference references/blocking-patterns.md to identify PostAndWait as render_service main thread waiting RSUniRenderThread per 'OHOS::Rosen::RSDrawFrame::PostAndWait' entry, analyze RSUniRenderThread as target thread",
+      "files": ["files/sysfreeze-post-and-wait/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "uses_blocking_patterns_ref",
+          "passed": true,
+          "evidence": "References blocking-patterns.md for PostAndWait pattern"
+        },
+        {
+          "text": "sync_task_pattern_matched",
+          "passed": true,
+          "evidence": "Matches PostAndWait to sync task blocking pattern per blocking-patterns.md"
+        },
+        {
+          "text": "target_thread_identified",
+          "passed": true,
+          "evidence": "Identifies RSUniRenderThread as PostAndWait target thread"
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "eval_name": "reference_on_demand_loading",
+      "category": "documentation",
+      "prompt": "分析这个sysfreeze日志，从开始到生成完整报告",
+      "expected_output": "Should NOT load all references at start. Should load blocking-patterns.md only when identifying blocking function, load hilog-refernce.md only when analyzing hilog. Per SKILL.md: only load references when needed, not during basic info analysis.",
+      "files": ["files/sysfreeze-low-memory/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "no_bulk_loading",
+          "passed": true,
+          "evidence": "Does not load all references at analysis start"
+        },
+        {
+          "text": "on_demand_blocking_patterns",
+          "passed": true,
+          "evidence": "Loads blocking-patterns.md only when identifying blocking pattern"
+        },
+        {
+          "text": "on_demand_hilog",
+          "passed": true,
+          "evidence": "Loads hilog-refernce.md only when analyzing hilog"
+        },
+        {
+          "text": "basic_info_no_ref",
+          "passed": true,
+          "evidence": "Does not load any reference during basic info analysis per SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "eval_name": "reference_skip_when_not_needed",
+      "category": "documentation",
+      "prompt": "分析这个sysfreeze日志，阻塞链已明确是mutex死锁，无需再识别阻塞模式",
+      "expected_output": "Should NOT load blocking-patterns.md when blocking chain is already clear and pattern identification is not needed per SKILL.md 'when not to read' rules",
+      "files": ["files/sysfreeze-mutex-deadlock/sysfreeze-apsmgr"],
+      "assertions": [
+        {
+          "text": "no_unnecessary_ref_loading",
+          "passed": true,
+          "evidence": "Does not load blocking-patterns.md when chain is already clear per SKILL.md"
+        },
+        {
+          "text": "no_hilog_loading_when_no_log",
+          "passed": true,
+          "evidence": "Does not load hilog-refernce.md when no hilog analysis needed per SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "eval_name": "workflow_fault_type_identification",
+      "category": "workflow",
+      "prompt": "分析这个sysfreeze日志文件",
+      "expected_output": "Should perform precheck workflow: 1) Check Reason field for SERVICE_BLOCK/THREAD_BLOCK type, 2) Confirm TIMESTAMP and TID exist, 3) Check log completeness (two stack captures), 4) Check lib.unstripped/ for symbol tables",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "reason_field_read",
+          "passed": true,
+          "evidence": "Reads Reason field to identify SERVICE_BLOCK"
+        },
+        {
+          "text": "timestamp_tid_confirmed",
+          "passed": true,
+          "evidence": "Confirms TIMESTAMP and TID key fields exist"
+        },
+        {
+          "text": "two_stacks_verified",
+          "passed": true,
+          "evidence": "Checks for two stack captures (SERVICE_WARNING/SERVICE_BLOCK)"
+        },
+        {
+          "text": "symbol_table_checked",
+          "passed": true,
+          "evidence": "Checks lib.unstripped/ directory for symbol tables"
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "eval_name": "workflow_task_queue_analysis",
+      "category": "workflow",
+      "prompt": "分析这个sysfreeze日志，重点分析任务队列情况",
+      "expected_output": "Should follow task queue analysis workflow: 1) Check Current Running task in both captures, 2) Verify time reasonability (expected T+5s/T+10s), 3) Analyze priority queues (VIP/Immediate/High/Low/Idle), 4) Check task submission time and completion time",
+      "files": ["files/sysfreeze-task-queue/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "current_task_checked",
+          "passed": true,
+          "evidence": "Checks Current Running task in both captures"
+        },
+        {
+          "text": "task_same_or_different",
+          "passed": true,
+          "evidence": "Determines whether two captures show same or different tasks"
+        },
+        {
+          "text": "time_validated",
+          "passed": true,
+          "evidence": "Validates time reasonability between watchdog and stack captures"
+        },
+        {
+          "text": "priority_queues_analyzed",
+          "passed": true,
+          "evidence": "Analyzes VIP/Immediate/High/Low/Idle priority queues"
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "eval_name": "workflow_blocking_chain_three_questions",
+      "category": "workflow",
+      "prompt": "分析这个sysfreeze日志，追踪阻塞链",
+      "expected_output": "Should follow blocking chain analysis workflow and answer three questions: 1) What is the blocking type? (mutex/semaphore/IPC), 2) Where is the blocking source? (who holds the resource, IPC peer), 3) Is the blocking chain closed? (trace to non-blocking final thread)",
+      "files": ["files/sysfreeze-mutex-deadlock/sysfreeze-apsmgr"],
+      "assertions": [
+        {
+          "text": "blocking_type_answered",
+          "passed": true,
+          "evidence": "Answers: blocking type is mutex deadlock"
+        },
+        {
+          "text": "blocking_source_answered",
+          "passed": true,
+          "evidence": "Answers: mutex holder is SwingFrameRate/FrameRateControl"
+        },
+        {
+          "text": "chain_closure_answered",
+          "passed": true,
+          "evidence": "Answers: chain traces to IPC peer (not closed in current process)"
+        },
+        {
+          "text": "three_questions_explicit",
+          "passed": true,
+          "evidence": "Explicitly addresses all three questions per SKILL.md workflow"
+        }
+      ]
+    },
+    {
+      "id": 46,
+      "eval_name": "workflow_thread_state_analysis",
+      "category": "workflow",
+      "prompt": "分析这个sysfreeze日志，线程状态信息需要解读",
+      "expected_output": "Should analyze thread state fields: state=S means sleeping/waiting, compare utime/stime between two captures to determine if thread was scheduled, if stack top not waiting resource but state=S then consider system issue",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "state_field_analyzed",
+          "passed": true,
+          "evidence": "Analyzes state=S field indicating thread waiting"
+        },
+        {
+          "text": "utime_stime_compared",
+          "passed": true,
+          "evidence": "Compares utime/stime between two stack captures"
+        },
+        {
+          "text": "scheduling_judged",
+          "passed": true,
+          "evidence": "Judges whether thread was scheduled between captures"
+        },
+        {
+          "text": "system_issue_considered",
+          "passed": true,
+          "evidence": "Consider system issue if unscheduled but not waiting resource"
+        }
+      ]
+    },
+    {
+      "id": 47,
+      "eval_name": "workflow_time_validation",
+      "category": "workflow",
+      "prompt": "分析这个sysfreeze日志，验证两次抓栈时间是否合理",
+      "expected_output": "Should validate time reasonability: if last watchdog at T, SERVICE_WARNING expected T+5s, SERVICE_BLOCK expected T+10s; if actual time differs significantly, DFX capture may have time deviation indicating system issues",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "expected_time_calculated",
+          "passed": true,
+          "evidence": "Calculates expected capture times based on watchdog submission"
+        },
+        {
+          "text": "actual_vs_expected",
+          "passed": true,
+          "evidence": "Compares actual capture times with expected times"
+        },
+        {
+          "text": "deviation_impact_assessed",
+          "passed": true,
+          "evidence": "Assesses impact of time deviation on analysis reliability"
+        }
+      ]
+    },
+    {
+      "id": 48,
+      "eval_name": "workflow_ipc_binder_handling",
+      "category": "workflow",
+      "prompt": "分析这个sysfreeze日志，IPC阻塞需要查看BinderCatcher和对端进程",
+      "expected_output": "Should follow IPC blocking workflow per SKILL.md: 1) Check BinderCatcher for source PID:TID, 2) Get peer PID:TID, 3) Find PeerBinder Stacktrace, 4) Analyze peer thread starting from peer TID, 5) Continue blocking chain in peer process",
+      "files": ["files/sysfreeze-ipc-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "binder_source_found",
+          "passed": true,
+          "evidence": "Finds current process:thread as Binder source"
+        },
+        {
+          "text": "peer_info_obtained",
+          "passed": true,
+          "evidence": "Gets peer PID:TID from BinderCatcher"
+        },
+        {
+          "text": "peer_stack_found",
+          "passed": true,
+          "evidence": "Locates PeerBinder Stacktrace for peer process"
+        },
+        {
+          "text": "peer_thread_analyzed",
+          "passed": true,
+          "evidence": "Analyzes peer thread starting from peer TID per SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": 49,
+      "eval_name": "workflow_report_generation",
+      "category": "workflow",
+      "prompt": "分析完sysfreeze后，请按规范格式生成分析报告",
+      "expected_output": "Should follow SKILL.md report structure: fault type confirmation, blocking chain path, root cause analysis, optimization suggestions. Must save report to document per SKILL.md.",
+      "files": ["files/sysfreeze-mutex-deadlock/sysfreeze-apsmgr"],
+      "assertions": [
+        {
+          "text": "fault_type_in_report",
+          "passed": true,
+          "evidence": "Includes fault type confirmation in report"
+        },
+        {
+          "text": "blocking_chain_in_report",
+          "passed": true,
+          "evidence": "Includes blocking chain path description"
+        },
+        {
+          "text": "root_cause_in_report",
+          "passed": true,
+          "evidence": "Includes root cause analysis"
+        },
+        {
+          "text": "optimization_in_report",
+          "passed": true,
+          "evidence": "Includes optimization suggestions"
+        },
+        {
+          "text": "report_saved",
+          "passed": true,
+          "evidence": "Saves report to document file per SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "eval_name": "forbidden_skip_stack_unwinding",
+      "category": "forbidden",
+      "prompt": "分析这个sysfreeze日志，根据so名称和偏移快速判断业务逻辑",
+      "expected_output": "Should NOT skip stack unwinding and guess business logic from so name and offset. Must use llvm-addr2line to resolve code line numbers per SKILL.md forbidden rules. Function names and offsets alone are insufficient for accurate analysis.",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "stack_unwinding_performed",
+          "passed": true,
+          "evidence": "Performs stack unwinding with llvm-addr2line per SKILL.md"
+        },
+        {
+          "text": "no_guessing_from_offset",
+          "passed": true,
+          "evidence": "Does not guess business logic from so name and offset alone"
+        },
+        {
+          "text": "code_line_resolved",
+          "passed": true,
+          "evidence": "Resolves actual code line numbers through unwinding"
+        }
+      ]
+    },
+    {
+      "id": 51,
+      "eval_name": "forbidden_ignore_system_resources",
+      "category": "forbidden",
+      "prompt": "分析这个sysfreeze日志中的业务堆栈",
+      "expected_output": "Should NOT ignore system resources. Must check ReclaimAvailBuffer, ThermalLevel, and memory info per SKILL.md forbidden rules. Low memory or thermal throttling may be the real root cause.",
+      "files": ["files/sysfreeze-low-memory/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "system_resource_checked",
+          "passed": true,
+          "evidence": "Checks ReclaimAvailBuffer and ThermalLevel per SKILL.md"
+        },
+        {
+          "text": "memory_analyzed",
+          "passed": true,
+          "evidence": "Analyzes memory information from system resource section"
+        },
+        {
+          "text": "thermal_checked",
+          "passed": true,
+          "evidence": "Checks ThermalLevel for thermal throttling impact"
+        }
+      ]
+    },
+    {
+      "id": 52,
+      "eval_name": "forbidden_isolate_single_thread",
+      "category": "forbidden",
+      "prompt": "分析这个sysfreeze日志中阻塞线程的堆栈",
+      "expected_output": "Should NOT only analyze the blocked thread and ignore other threads. Must trace blocking chain through other threads per SKILL.md forbidden rules. Blocking is usually caused by lock competition or IPC chain requiring chain analysis.",
+      "files": ["files/sysfreeze-mutex-deadlock/sysfreeze-apsmgr"],
+      "assertions": [
+        {
+          "text": "other_threads_analyzed",
+          "passed": true,
+          "evidence": "Analyzes other threads for blocking chain per SKILL.md"
+        },
+        {
+          "text": "blocking_chain_traced",
+          "passed": true,
+          "evidence": "Traces complete blocking chain across multiple threads"
+        },
+        {
+          "text": "no_single_thread_isolation",
+          "passed": true,
+          "evidence": "Does not isolate single thread analysis"
+        }
+      ]
+    },
+    {
+      "id": 53,
+      "eval_name": "forbidden_force_conclusion",
+      "category": "forbidden",
+      "prompt": "分析这个sysfreeze日志，必须给出确定根因",
+      "expected_output": "Should NOT force a definite conclusion when information is insufficient. Should clearly indicate uncertainty, list multiple possibilities, and provide further investigation directions per SKILL.md forbidden rules against forcing conclusions.",
+      "files": ["files/sysfreeze-ipc-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "uncertainty_marked",
+          "passed": true,
+          "evidence": "Marks uncertainty when evidence is insufficient"
+        },
+        {
+          "text": "no_definite_claim",
+          "passed": true,
+          "evidence": "Does not claim definite root cause without sufficient evidence"
+        },
+        {
+          "text": "multiple_possibilities",
+          "passed": true,
+          "evidence": "Lists multiple possible causes when uncertain"
+        }
+      ]
+    },
+    {
+      "id": 54,
+      "eval_name": "forbidden_ignore_time_info",
+      "category": "forbidden",
+      "prompt": "分析这个sysfreeze日志",
+      "expected_output": "Should NOT ignore time information. Must use: 1) Two capture time difference to judge if same task blocking, 2) Task submission time to analyze queue delays, 3) Task trigger/completion times to find long-running tasks, per SKILL.md forbidden rules.",
+      "files": ["files/sysfreeze-task-queue/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "capture_time_used",
+          "passed": true,
+          "evidence": "Uses two capture time difference for analysis"
+        },
+        {
+          "text": "task_time_analyzed",
+          "passed": true,
+          "evidence": "Analyzes task submission and completion times"
+        },
+        {
+          "text": "time_impact_assessed",
+          "passed": true,
+          "evidence": "Assesses impact of time deviations on analysis per SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": 55,
+      "eval_name": "thermal_throttle_analysis",
+      "category": "core_scenario",
+      "prompt": "分析这个sysfreeze日志，设备热等级较高，可能受热限频影响",
+      "expected_output": "Should check ThermalLevel info, if ≥5 identify potential thermal throttling causing CPU frequency limitation, consider whether business blocking is secondary to thermal throttling, provide thermal management and system optimization suggestions",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "thermal_level_checked",
+          "passed": true,
+          "evidence": "Checks ThermalLevel info field"
+        },
+        {
+          "text": "thermal_impact_assessed",
+          "passed": true,
+          "evidence": "Assesses thermal throttling impact on blocking per SKILL.md (≥5 is significant)"
+        },
+        {
+          "text": "priority_rule_followed",
+          "passed": true,
+          "evidence": "Follows SKILL.md priority rule for system vs business issue"
+        }
+      ]
+    },
+    {
+      "id": 56,
+      "eval_name": "different_task_two_captures",
+      "category": "core_scenario",
+      "prompt": "分析这个sysfreeze日志，两次抓栈任务不同",
+      "expected_output": "Should detect different tasks between two stack captures, analyze task queue for long-running tasks, determine whether different tasks are instances of same long operation or genuinely different tasks, provide appropriate root cause analysis",
+      "files": ["files/sysfreeze-task-queue/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "task_difference_detected",
+          "passed": true,
+          "evidence": "Detects different Current Running tasks between two captures"
+        },
+        {
+          "text": "queue_analyzed_for_long_task",
+          "passed": true,
+          "evidence": "Analyzes task queue for long-running tasks"
+        },
+        {
+          "text": "same_operation_or_different",
+          "passed": true,
+          "evidence": "Determines whether same long operation or different tasks"
+        },
+        {
+          "text": "root_cause_determined",
+          "passed": true,
+          "evidence": "Determines root cause based on task difference analysis"
+        }
+      ]
+    },
+    {
+      "id": 57,
+      "eval_name": "event_runner_idle",
+      "category": "core_scenario",
+      "prompt": "分析这个sysfreeze日志，工作线程栈顶有EventQueueBase::GetEvent",
+      "expected_output": "Should recognize EventQueueBase::GetEvent from blocking-patterns.md as EventRunner thread idle with no task executing, check task queue to confirm whether tasks were submitted but not executed, identify task queue or scheduling issue",
+      "files": [],
+      "assertions": [
+        {
+          "text": "idle_pattern_recognized",
+          "passed": true,
+          "evidence": "Recognizes EventQueueBase::GetEvent as idle EventRunner thread per blocking-patterns.md"
+        },
+        {
+          "text": "task_submission_checked",
+          "passed": true,
+          "evidence": "Checks task queue for submitted but unexecuted tasks"
+        },
+        {
+          "text": "scheduling_issue_identified",
+          "passed": true,
+          "evidence": "Identifies potential task queue or scheduling issue"
+        }
+      ]
+    },
+    {
+      "id": 58,
+      "eval_name": "ipc_work_loop_idle",
+      "category": "core_scenario",
+      "prompt": "分析这个sysfreeze日志，IPC工作线程栈顶有BinderInvoker::StartWorkLoop",
+      "expected_output": "Should recognize BinderInvoker::StartWorkLoop -> ioctl from blocking-patterns.md as IPC work thread idle not processing IPC requests, check BinderCatcher information, confirm IPC communication state",
+      "files": [],
+      "assertions": [
+        {
+          "text": "idle_pattern_recognized",
+          "passed": true,
+          "evidence": "Recognizes BinderInvoker::StartWorkLoop as idle IPC thread per blocking-patterns.md"
+        },
+        {
+          "text": "binder_state_checked",
+          "passed": true,
+          "evidence": "Checks BinderCatcher for IPC communication state"
+        },
+        {
+          "text": "ipc_issue_identified",
+          "passed": true,
+          "evidence": "Identifies IPC request processing issue"
+        }
+      ]
+    },
+    {
+      "id": 59,
+      "eval_name": "sync_task_post_blocking",
+      "category": "core_scenario",
+      "prompt": "分析这个sysfreeze日志，线程向另一个线程抛同步任务被阻塞",
+      "expected_output": "Should recognize XThread::PostSyncTask pattern from blocking-patterns.md, identify which X thread the sync task was posted to, analyze that X thread for blocking, trace blocking chain through PostSyncTask target thread",
+      "files": [],
+      "assertions": [
+        {
+          "text": "sync_task_pattern_recognized",
+          "passed": true,
+          "evidence": "Recognizes PostSyncTask as sync task blocking pattern per blocking-patterns.md"
+        },
+        {
+          "text": "target_thread_identified",
+          "passed": true,
+          "evidence": "Identifies which thread the sync task was posted to"
+        },
+        {
+          "text": "blocking_chain_extended",
+          "passed": true,
+          "evidence": "Traces blocking chain through target thread"
+        }
+      ]
+    },
+    {
+      "id": 60,
+      "eval_name": "drawop_async_blocking",
+      "category": "core_scenario",
+      "prompt": "分析这个sysfreeze日志，线程等待DrawOp异步任务完成",
+      "expected_output": "Should recognize DDGR::GrDrawOp::DoExecute -> std::future::get from blocking-patterns.md, identify that thread is waiting for DrawOp async task in DDGRTask thread, analyze DDGRTask thread for task execution status, trace blocking chain",
+      "files": ["files/sysfreeze-cond-wait/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "async_pattern_recognized",
+          "passed": true,
+          "evidence": "Recognizes DrawOp::DoExecute -> std::future::get as async blocking per blocking-patterns.md"
+        },
+        {
+          "text": "ddgr_task_analyzed",
+          "passed": true,
+          "evidence": "Analyzes DDGRTask thread for task execution"
+        },
+        {
+          "text": "blocking_chain_traced",
+          "passed": true,
+          "evidence": "Traces blocking chain to DDGRTask thread"
+        }
+      ]
+    },
+    {
+      "id": 61,
+      "eval_name": "memory_info_timestamp_check",
+      "category": "edge_case",
+      "prompt": "分析这个sysfreeze日志，整机内存信息的抓取时间在freeze之后",
+      "expected_output": "Should check memory info capture time, if after freeze time then memory info is not reliable reference per SKILL.md (ReclaimAvailBuffer capture time note), exclude or downgrade memory info analysis, focus on business stack analysis",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "memory_time_checked",
+          "passed": true,
+          "evidence": "Checks memory info capture time vs freeze time"
+        },
+        {
+          "text": "time_order_assessed",
+          "passed": true,
+          "evidence": "Assesses whether memory info was captured before or after freeze"
+        },
+        {
+          "text": "reliability_adjusted",
+          "passed": true,
+          "evidence": "Adjusts memory info reliability based on time order per SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": 62,
+      "eval_name": "ld_musl_alias_libc",
+      "category": "edge_case",
+      "prompt": "分析这个sysfreeze日志，调用栈中有ld-musl相关的so",
+      "expected_output": "Should recognize that ld-musl-xxx.so is libc.so per SKILL.md note, correctly identify libc functions in stack (pthread_mutex_timedlock_inner, __timedwait_cp, ioctl, etc.), use lib.unstripped/ld-musl for symbol resolution",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "ld_musl_identified_as_libc",
+          "passed": true,
+          "evidence": "Recognizes ld-musl as libc.so per SKILL.md note"
+        },
+        {
+          "text": "libc_functions_identified",
+          "passed": true,
+          "evidence": "Identifies libc functions (mutex, cond_wait, ioctl) correctly"
+        },
+        {
+          "text": "symbol_resolution_correct",
+          "passed": true,
+          "evidence": "Uses correct so path for symbol resolution"
+        }
+      ]
+    }
+  ]
+}
