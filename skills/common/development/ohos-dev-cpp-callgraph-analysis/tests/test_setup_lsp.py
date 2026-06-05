@@ -1,6 +1,7 @@
 import importlib.util
 import io
 import json
+import shlex
 import tempfile
 import unittest
 from pathlib import Path
@@ -118,6 +119,19 @@ class SetupLspTest(unittest.TestCase):
             command[:6],
             ["claude", "mcp", "add", "--scope", "project", "ohos-lsp"],
         )
+
+    def test_bridge_command_can_be_registered_by_other_mcp_clients(self):
+        command = setup_lsp.bridge_command(
+            Path("/cache/mcp language server"),
+            Path("/src/input"),
+            Path("/src/prebuilts/clangd"),
+            Path("/cache/compdb"),
+        )
+
+        rendered = shlex.join(command)
+        self.assertIn("'/cache/mcp language server'", rendered)
+        self.assertIn("--workspace /src/input", rendered)
+        self.assertIn("--compile-commands-dir=/cache/compdb", rendered)
 
     def test_auto_clients_only_returns_available_clients(self):
         with patch.object(setup_lsp.shutil, "which", side_effect=lambda name: {

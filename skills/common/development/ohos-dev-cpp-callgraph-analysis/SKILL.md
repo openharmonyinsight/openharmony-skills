@@ -22,45 +22,13 @@ Do not claim a call chain is complete from script output alone.
 
 ## Bootstrap Repository-Scoped LSP
 
-Before analysis, check whether the current agent already exposes a working LSP/MCP tool backed by
-the correct OpenHarmony product compile context. If it does, use it and skip bootstrap.
+Before analysis, check whether a working LSP/MCP tool is already backed by the correct OpenHarmony
+product compile context. Use it when available.
 
-If LSP is missing or cannot resolve the repository correctly:
-
-1. Resolve the OpenHarmony source root, current repository root, product, and build target from the
-   current task/environment. Pass them explicitly; do not make the setup script search for them.
-2. Tell the user that setup may download Go/MCP dependencies, invoke an OpenHarmony build to
-   generate the full compile database, and modify detected MCP client configuration. Obtain approval
-   before network access, a build, or client registration.
-3. Run the bundled setup script:
-
-```bash
-SETUP=/path/to/skills/common/development/ohos-dev-cpp-callgraph-analysis/scripts/setup_lsp.py
-python3 "$SETUP" \
-  --oh-root <openharmony-source-root> \
-  --repo-root <current-repository-root> \
-  --product <product-name> \
-  --build-target <build-target> \
-  --generate-compile-db \
-  --client auto
-```
-
-If `<oh-root>/out/<product>/compile_commands.json` already exists, omit
-`--generate-compile-db`. The script streams and filters the product-wide database into a persistent,
-repository-scoped cache; it does not load the full database into memory. It locates the OpenHarmony
-prebuilt clangd, installs pinned `mcp-language-server` dependencies when missing, registers detected
-Codex/Claude MCP clients, and runs MCP tool-discovery plus clangd semantic smoke tests.
-
-The generated MCP service is tool-neutral. `--client auto` only registers supported clients found
-in the environment. Use repeated `--client codex` / `--client claude`, or `--client none` to prepare
-without client registration.
-
-After bootstrap, start semantic analysis with `hover` on a relevant source/header location before
-the first global `definition` or `references` query. A fresh clangd process may return `not found`
-for a global query until at least one relevant file is opened.
-
-If bootstrap or smoke testing fails, record LSP as unavailable/incomplete and continue with source,
-build, symbol, helper, and runtime evidence. Do not block the entire call-chain analysis on LSP.
+If LSP is missing or resolves the repository incorrectly, read
+[`references/lsp-bootstrap.md`](references/lsp-bootstrap.md) and follow it before analysis. The
+bootstrap is optional support, not a prerequisite: if setup or smoke testing fails, record LSP as
+unavailable/incomplete and continue with source, build, symbol, helper, and runtime evidence.
 
 ## Required Workflow
 

@@ -8,6 +8,7 @@ import os
 import platform
 import re
 import selectors
+import shlex
 import shutil
 import subprocess
 import sys
@@ -400,6 +401,7 @@ def main():
 
     binary = install_mcp_language_server(cache_dir)
     command = bridge_command(binary, repo_root, clangd, filtered.parent)
+    print(f"MCP bridge command: {shlex.join(command)}")
     if not args.skip_smoke_test:
         sample_file = first_compile_file(filtered)
         if not sample_file:

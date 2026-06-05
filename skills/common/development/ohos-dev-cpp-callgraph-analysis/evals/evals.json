@@ -70,6 +70,8 @@
         "The response resolves and explicitly passes the OpenHarmony root, repository root, product, and build target instead of asking the setup script to search for them.",
         "The response obtains approval before downloading dependencies, invoking an OpenHarmony build, or modifying MCP client configuration.",
         "The response uses scripts/setup_lsp.py and avoids configuring clangd directly against a product-wide compile database.",
+        "The response warns about build-target validity and indexing resource cost when they are relevant to the environment.",
+        "For unsupported MCP clients, the response uses --client none and registers the printed tool-neutral bridge command manually.",
         "The response verifies MCP tool discovery, warms clangd with hover before global definition or references, and falls back without blocking analysis if setup fails."
       ]
     }
