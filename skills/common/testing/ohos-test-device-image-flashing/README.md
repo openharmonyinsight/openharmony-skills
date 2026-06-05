@@ -16,7 +16,12 @@ Use this skill to download OpenHarmony daily build images and flash supported re
 - `download_daily.py` queries and safely extracts a daily build image.
 - `flash_device.py` discovers image partitions and flashes them through `hdc`.
 - `evals/` contains seed prompts and expected behaviors for skill evaluation.
+- `tests/` contains helper regression tests.
 
 ## Verification
 
-Repository-level regression tests live in `tests/test_device_image_flashing.py`.
+Run:
+
+```bash
+python3 -m unittest skills/common/testing/ohos-test-device-image-flashing/tests/test_device_image_flashing.py
+```

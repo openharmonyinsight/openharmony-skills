@@ -8,9 +8,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 
-ROOT = Path(__file__).resolve().parents[1]
-
-
 def load_module(name, path):
     spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
@@ -18,7 +15,7 @@ def load_module(name, path):
     return module
 
 
-SKILL_DIR = ROOT / "skills" / "common" / "testing" / "ohos-test-device-image-flashing"
+SKILL_DIR = Path(__file__).resolve().parents[1]
 download_daily = load_module("download_daily", SKILL_DIR / "download_daily.py")
 flash_device = load_module("flash_device", SKILL_DIR / "flash_device.py")
 
