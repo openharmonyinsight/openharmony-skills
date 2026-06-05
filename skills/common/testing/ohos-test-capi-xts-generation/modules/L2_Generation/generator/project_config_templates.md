@@ -6,7 +6,7 @@
 > - **[测试用例生成模块](./test_generation_c.md)** - 测试用例生成策略和规范 ⭐
 > - **[N-API 和 ETS 公共模式](./test_patterns_napi_ets.md)** - N-API 封装和 ETS 测试的公共模式
 > - **[N-API 和 ETS 高级模式](./test_patterns_napi_ets_advance.md)** - N-API 封装和 ETS 测试的高级模式
-> - **[测试套结构检查清单](./test_suite_structure_checklist.md)** - 文件结构完整性检查 ⭐
+> - **[通用校验模块](./verification_common.md)** - N-API 三重校验 + 工程结构校验 ⭐
 
 ## 概述
 
@@ -247,7 +247,7 @@
 │                   └── [其他测试].test.ets   # 其他测试文件（可选）
 ```
 
-> 📋 **完整文件清单和校验详见**：[测试套结构检查清单](./test_suite_structure_checklist.md)
+> 📋 **完整文件清单和校验详见**：[通用校验模块](./verification_common.md)
 
 ### ETS 测试文件路径规范（⭐ 重要）
 
@@ -602,8 +602,7 @@ cat {OH_ROOT}/test/xts/acts/{子系统}/{参考测试套}/build-profile.json5
 ## ⭐ 工程结构同步校验
 
 > 📋 **工程结构三步同步校验（目录完整性 + 配置一致性 + BUILD.gn 同步）详见**：
-> - [通用校验模块 - 编译前工程结构校验](./verification_common.md#二编译前工程结构校验)
-> - [测试套结构检查清单](./test_suite_structure_checklist.md)
+> - [通用校验模块 - 编译前工程结构校验](./verification_common.md)
 
 ---
 

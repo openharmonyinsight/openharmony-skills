@@ -152,96 +152,16 @@ it('TestMyFunction', () => {
 
 ### 1.5 自动化校验脚本
 
+**脚本位置**：`scripts/verify_napi_triple.sh`
+
 ```bash
-#!/bin/bash
-# 三重Napi校验脚本
-# 用法：./verify_napi_triple.sh <测试套路径>
-
-SUITE_PATH="${1:-.}"
-ERRORS=0
-
-echo "========================================="
-echo "三重Napi校验"
-echo "========================================="
-echo "测试套路径: ${SUITE_PATH}"
-echo ""
-
-# 步骤 1：N-API 函数注册校验
-echo "【步骤 1：N-API 函数注册校验】"
-cpp_file="${SUITE_PATH}/entry/src/main/cpp/NapiTest.cpp"
-if [ ! -f "$cpp_file" ]; then
-    cpp_file="${SUITE_PATH}/entry/src/main/cpp/napi_init.cpp"
-fi
-
-if [ -f "$cpp_file" ]; then
-    defined_funcs=$(grep -oP 'static napi_value\s+\K[A-Za-z0-9_]+(?=\s*\()' "$cpp_file" | sort | uniq)
-    registered_funcs=$(grep -A 100 'napi_property_descriptor desc\[\]' "$cpp_file" | grep -oP '(DECLARE_NAPI_PROPERTY\s*\(\s*"[^"]+"|"[^"]+"\s*,\s*nullptr\s*,\s*[A-Za-z0-9_]+)' | grep -oP '[A-Za-z0-9_]+$' | sort | uniq)
-    
-    missing=$(comm -23 <(echo "$defined_funcs") <(echo "$registered_funcs"))
-    if [ -n "$missing" ]; then
-        echo "❌ 定义但未注册的函数："
-        echo "$missing"
-        ERRORS=$((ERRORS + 1))
-    else
-        echo "✅ 所有函数都已注册"
-    fi
-else
-    echo "❌ 找不到 NapiTest.cpp 或 napi_init.cpp"
-    ERRORS=$((ERRORS + 1))
-fi
-
-# 步骤 2：TypeScript 接口声明校验
-echo ""
-echo "【步骤 2：TypeScript 接口声明校验】"
-ts_file="${SUITE_PATH}/entry/src/main/cpp/types/libentry/index.d.ts"
-if [ -f "$ts_file" ]; then
-    js_names=$(grep -A 100 'napi_property_descriptor desc\[\]' "$cpp_file" 2>/dev/null | grep -oP 'DECLARE_NAPI_PROPERTY\s*\(\s*"\K[^"]+' | sort | uniq)
-    declared_names=$(grep 'export const' "$ts_file" | grep -oP 'export const\s+\K[A-Za-z0-9_]+' | sort | uniq)
-    
-    missing=$(comm -23 <(echo "$js_names") <(echo "$declared_names"))
-    if [ -n "$missing" ]; then
-        echo "❌ 注册但未声明的函数："
-        echo "$missing"
-        ERRORS=$((ERRORS + 1))
-    else
-        echo "✅ 所有函数都已声明"
-    fi
-else
-    echo "❌ 找不到 index.d.ts"
-    ERRORS=$((ERRORS + 1))
-fi
-
-# 步骤 3：ETS 测试接口使用校验
-echo ""
-echo "【步骤 3：ETS 测试接口使用校验】"
-test_dir="${SUITE_PATH}/entry/src/ohosTest/ets/test"
-if [ -d "$test_dir" ]; then
-    used_interfaces=$(grep -h 'testNapi\.' "$test_dir"/*.test.ets 2>/dev/null | grep -oP 'testNapi\.\K[A-Za-z0-9_]+' | sort | uniq)
-    declared_interfaces=$(grep 'export const' "$ts_file" 2>/dev/null | grep -oP 'export const\s+\K[A-Za-z0-9_]+' | sort | uniq)
-    
-    missing=$(comm -23 <(echo "$used_interfaces") <(echo "$declared_interfaces"))
-    if [ -n "$missing" ]; then
-        echo "❌ 使用但未声明的接口："
-        echo "$missing"
-        ERRORS=$((ERRORS + 1))
-    else
-        echo "✅ 所有接口都已声明"
-    fi
-else
-    echo "❌ 找不到测试目录"
-    ERRORS=$((ERRORS + 1))
-fi
-
-echo ""
-echo "========================================="
-if [ $ERRORS -eq 0 ]; then
-    echo "✅ 三重校验通过！"
-    exit 0
-else
-    echo "❌ 发现 $ERRORS 个错误"
-    exit 1
-fi
+bash scripts/verify_napi_triple.sh <测试套路径>
 ```
+
+校验内容：
+- 步骤 1：N-API 函数注册校验（C++ 定义 vs desc[] 注册）
+- 步骤 2：TypeScript 接口声明校验（desc[] 注册 vs index.d.ts 声明）
+- 步骤 3：ETS 测试接口使用校验（testNapi.xxx 调用 vs index.d.ts 声明）
 
 ---
 
@@ -334,176 +254,53 @@ fi
 
 ### 2.4 自动化校验脚本
 
+**脚本位置**：`scripts/check_test_suite_structure.sh`
+
 ```bash
-#!/bin/bash
-# 编译前工程结构校验脚本
-# 用法：./verify_project_structure.sh <测试套路径>
-
-SUITE_PATH="${1:-.}"
-ERRORS=0
-WARNINGS=0
-
-echo "========================================="
-echo "编译前工程结构校验"
-echo "========================================="
-echo "测试套路径: ${SUITE_PATH}"
-echo ""
-
-# 颜色定义
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-check_file() {
-    local file="$1"
-    local desc="$2"
-    local required="$3"
-    
-    if [ -f "${SUITE_PATH}/${file}" ]; then
-        echo -e "${GREEN}✅${NC} $desc"
-    else
-        if [ "$required" = "required" ]; then
-            echo -e "${RED}❌${NC} $desc (缺失)"
-            ERRORS=$((ERRORS + 1))
-        else
-            echo -e "${YELLOW}⚠️${NC} $desc (可选，缺失)"
-            WARNINGS=$((WARNINGS + 1))
-        fi
-    fi
-}
-
-check_dir() {
-    local dir="$1"
-    local desc="$2"
-    local required="$3"
-    
-    if [ -d "${SUITE_PATH}/${dir}" ]; then
-        echo -e "${GREEN}✅${NC} $desc"
-    else
-        if [ "$required" = "required" ]; then
-            echo -e "${RED}❌${NC} $desc (缺失)"
-            ERRORS=$((ERRORS + 1))
-        else
-            echo -e "${YELLOW}⚠️${NC} $desc (可选，缺失)"
-            WARNINGS=$((WARNINGS + 1))
-        fi
-    fi
-}
-
-echo "【顶层配置检查】"
-check_file "BUILD.gn" "BUILD.gn 文件" "required"
-check_file "Test.json" "Test.json 文件" "required"
-check_file "build-profile.json5" "build-profile.json5 文件" "required"
-check_file "oh-package.json5" "oh-package.json5 文件" "required"
-check_file "hvigorfile.ts" "hvigorfile.ts 文件" "required"
-check_dir "signature/" "signature/ 目录" "required"
-check_file "signature/openharmony.p7b" "签名文件" "required"
-
-echo ""
-echo "【AppScope 检查】"
-check_dir "AppScope/" "AppScope/ 目录" "required"
-check_file "AppScope/app.json5" "AppScope/app.json5 文件" "required"
-check_dir "AppScope/resources/base/" "AppScope/resources/base/ 目录" "required"
-
-echo ""
-echo "【entry 模块检查】"
-check_file "entry/build-profile.json5" "entry/build-profile.json5 文件" "required"
-check_file "entry/oh-package.json5" "entry/oh-package.json5 文件" "required"
-check_file "entry/hvigorfile.ts" "entry/hvigorfile.ts 文件" "required"
-
-echo ""
-echo "【C++ 代码检查】"
-check_dir "entry/src/main/cpp/" "entry/src/main/cpp/ 目录" "required"
-check_file "entry/src/main/cpp/NapiTest.cpp" "NapiTest.cpp 文件" "required"
-check_file "entry/src/main/cpp/CMakeLists.txt" "CMakeLists.txt 文件" "required"
-check_file "entry/src/main/cpp/types/libentry/index.d.ts" "index.d.ts 文件" "required"
-check_file "entry/src/main/cpp/types/libentry/oh-package.json5" "types oh-package.json5 文件" "required"
-
-echo ""
-echo "【ETS 代码检查】"
-check_dir "entry/src/main/ets/entryability/" "entry/src/main/ets/entryability/ 目录" "required"
-check_file "entry/src/main/ets/entryability/EntryAbility.ts" "EntryAbility.ts 文件（注意后缀 .ts）" "required"
-check_file "entry/src/main/ets/pages/Index.ets" "Index.ets 文件" "required"
-check_file "entry/src/main/module.json5" "module.json5 文件" "required"
-check_file "entry/src/main/syscap.json" "syscap.json 文件" "required"
-
-echo ""
-echo "【测试模块检查】"
-check_dir "entry/src/ohosTest/ets/test/" "测试用例目录" "required"
-check_file "entry/src/ohosTest/ets/test/List.test.ets" "List.test.ets 文件" "required"
-check_file "entry/src/ohosTest/ets/testability/TestAbility.ets" "TestAbility.ets 文件" "required"
-check_file "entry/src/ohosTest/ets/testrunner/OpenHarmonyTestRunner.ts" "OpenHarmonyTestRunner.ts 文件" "required"
-check_file "entry/src/ohosTest/module.json5" "测试模块 module.json5 文件" "required"
-check_file "entry/src/ohosTest/syscap.json" "测试模块 syscap.json 文件" "required"
-
-echo ""
-echo "【配置文件参数检查】"
-
-# BUILD.gn 模板检查
-if grep -q "ohos_app_assist_suite" "${SUITE_PATH}/BUILD.gn" 2>/dev/null; then
-    echo -e "${GREEN}✅${NC} BUILD.gn 包含 ohos_app_assist_suite 模板"
-else
-    echo -e "${RED}❌${NC} BUILD.gn 缺少 ohos_app_assist_suite 模板"
-    ERRORS=$((ERRORS + 1))
-fi
-
-if grep -q "ohos_js_app_suite" "${SUITE_PATH}/BUILD.gn" 2>/dev/null; then
-    echo -e "${GREEN}✅${NC} BUILD.gn 包含 ohos_js_app_suite 模板"
-else
-    echo -e "${RED}❌${NC} BUILD.gn 缺少 ohos_js_app_suite 模板"
-    ERRORS=$((ERRORS + 1))
-fi
-
-# hap 包名对应检查
-hap_name=$(grep "hap_name" "${SUITE_PATH}/BUILD.gn" 2>/dev/null | grep -oP '"[^"]+"' | head -1 | tr -d '"')
-test_file=$(grep "test-file-name" "${SUITE_PATH}/Test.json" 2>/dev/null | grep -oP '"[^"]+\.hap"' | head -1 | sed 's/\.hap"//' | tr -d '"')
-
-if [ -n "$hap_name" ] && [ -n "$test_file" ]; then
-    if [ "$hap_name" = "$test_file" ]; then
-        echo -e "${GREEN}✅${NC} hap 包名对应正确 (BUILD.gn: $hap_name, Test.json: $test_file)"
-    else
-        echo -e "${RED}❌${NC} hap 包名不对应 (BUILD.gn: $hap_name, Test.json: $test_file)"
-        ERRORS=$((ERRORS + 1))
-    fi
-else
-    echo -e "${YELLOW}⚠️${NC} 无法验证 hap 包名对应关系"
-    WARNINGS=$((WARNINGS + 1))
-fi
-
-# 上层 BUILD.gn 注册检查
-parent_dir=$(dirname "${SUITE_PATH}")
-suite_dir_name=$(basename "${SUITE_PATH}")
-suite_name=$(grep "ohos_js_app_suite" "${SUITE_PATH}/BUILD.gn" 2>/dev/null | grep -oP '"[^"]+"' | head -1 | tr -d '"')
-
-if [ -n "$suite_name" ] && [ -f "${parent_dir}/BUILD.gn" ]; then
-    if grep -q "${suite_dir_name}:${suite_name}" "${parent_dir}/BUILD.gn" 2>/dev/null; then
-        echo -e "${GREEN}✅${NC} 上层 BUILD.gn 已注册测试套"
-    else
-        echo -e "${RED}❌${NC} 上层 BUILD.gn 未注册测试套 (${suite_dir_name}:${suite_name})"
-        ERRORS=$((ERRORS + 1))
-    fi
-else
-    echo -e "${YELLOW}⚠️${NC} 无法验证上层 BUILD.gn 注册"
-    WARNINGS=$((WARNINGS + 1))
-fi
-
-echo ""
-echo "========================================="
-echo "校验结果统计"
-echo "========================================="
-echo "错误数: $ERRORS"
-echo "警告数: $WARNINGS"
-echo ""
-
-if [ $ERRORS -eq 0 ]; then
-    echo -e "${GREEN}✅ 工程结构校验通过！${NC}"
-    exit 0
-else
-    echo -e "${RED}❌ 发现 $ERRORS 个错误，请修复后再编译${NC}"
-    exit 1
-fi
+bash scripts/check_test_suite_structure.sh <测试套路径>
 ```
+
+校验内容：
+- 顶层配置文件检查（BUILD.gn、Test.json、签名文件等）
+- AppScope 目录检查
+- entry 模块检查（C++ 代码、ETS 代码、module.json5、syscap.json）
+- 测试模块检查（List.test.ets、TestAbility、TestRunner）
+- BUILD.gn 模板检查（ohos_app_assist_suite、ohos_js_app_suite）
+- hap 包名对应检查（BUILD.gn hap_name vs Test.json test-file-name）
+- 上层 BUILD.gn 注册检查
+
+### 2.5 文件优先级分层
+
+**一级必需文件（缺失会导致编译失败）**（10 个）：
+- `BUILD.gn`、`Test.json`、`build-profile.json5`、`oh-package.json5`、`hvigorfile.ts`、`hvigor/hvigor-config.json5`
+- `AppScope/app.json5`、`AppScope/resources/base/element/string.json`
+- `signature/openharmony.p7b`
+- `.gitignore`
+
+**二级必需文件（缺失会导致编译或运行时错误）**（14 个）：
+- `entry/build-profile.json5`、`entry/oh-package.json5`、`entry/hvigorfile.ts`
+- `entry/src/main/cpp/NapiTest.cpp`、`entry/src/main/cpp/CMakeLists.txt`
+- `entry/src/main/cpp/types/libentry/index.d.ts`、`entry/src/main/cpp/types/libentry/oh-package.json5`
+- `entry/src/main/ets/entryability/EntryAbility.ts`（⚠️ 后缀是 .ts 不是 .ets）
+- `entry/src/main/ets/pages/Index.ets`、`entry/src/main/module.json5`、`entry/src/main/syscap.json`
+- 资源文件：`color.json`、`string.json`、`main_pages.json`、`icon.png`
+
+**三级必需文件（缺失会导致测试无法运行）**（11 个）：
+- `entry/src/ohosTest/ets/test/List.test.ets`（⭐ 测试套注册文件）
+- `entry/src/ohosTest/ets/test/*.test.ets`（实际测试用例）
+- `entry/src/ohosTest/ets/testability/TestAbility.ets`、`pages/Index.ets`
+- `entry/src/ohosTest/ets/testrunner/OpenHarmonyTestRunner.ts`
+- `entry/src/ohosTest/module.json5`、`entry/src/ohosTest/syscap.json`
+- 测试资源文件：`color.json`、`string.json`、`test_pages.json`、`icon.png`
+
+### 2.6 常见错误速查
+
+| 错误 | 错误示例 | 正确做法 |
+|------|---------|---------|
+| EntryAbility 后缀错误 | `EntryAbility.ets` | `EntryAbility.ts` |
+| 签名文件名错误 | `openharmony_sx.p7b` | `openharmony.p7b` |
+| 缺少 syscap.json | — | `entry/src/main/syscap.json` 和 `entry/src/ohosTest/syscap.json` 都必需 |
+| 缺少 List.test.ets | — | `entry/src/ohosTest/ets/test/List.test.ets` 是测试套注册文件，必须存在 |
 
 ---
 
@@ -724,7 +521,7 @@ bash scripts/auto_fix_napi_triple.sh /path/to/test/suite
 
 ### 4.2 模板文件清单
 
-详见 `test_suite_structure_checklist.md` 中的完整性检查清单。
+详见本文档 2.5 节「文件优先级分层」中的完整性检查清单。
 
 ---
 

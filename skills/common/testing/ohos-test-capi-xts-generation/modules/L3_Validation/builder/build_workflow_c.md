@@ -8,7 +8,6 @@
 >
 > **相关文档**：
 > - [编译环境配置参考](../../references/env_setup_reference.md) - 环境搭建详细步骤
-> - [Linux 编译工作流](./linux_compile_workflow_c.md) - Linux CAPI 编译工作流
 > - [编译环境配置](./linux_compile_env_setup_c.md) - Linux 编译环境配置
 
 > **重要提示**
@@ -253,7 +252,42 @@ wsl.exe --version && cat /etc/os-release | grep PRETTY_NAME
 gcc --version && g++ --version
 ```
 
-### 7.3 推荐工作流
+### 7.3 错误修复示例
+
+**错误1：测试套名称不正确**
+```bash
+# ❌ 错误：使用目录名（小写开头）
+./test/xts/acts/build.sh product_name=rk3568 system_size=standard suite=actszlibcapiapitest
+# ninja: error: unknown target 'actszlibcapiapitest'
+
+# ✅ 正确：从 BUILD.gn 提取的名称（大写开头）
+./test/xts/acts/build.sh product_name=rk3568 system_size=standard suite=ActsZlibCapiTest
+```
+
+**错误2：使用了错误的编译命令**
+```bash
+# ❌ 错误：使用系统 build.sh
+./build.sh --product-name rk3568 --build-target ActsZlibCapiTest
+
+# ❌ 错误：使用 hvigorw
+cd test/xts/acts/bundlemanager/zlib/actszlibcapiapitest && hvigorw assembleHap
+
+# ✅ 正确：使用 XTS 专用编译脚本
+./test/xts/acts/build.sh product_name=rk3568 system_size=standard suite=ActsZlibCapiTest
+```
+
+**错误3：不在正确的目录**
+```bash
+# ❌ 错误：在测试套目录下执行
+cd test/xts/acts/bundlemanager/zlib/actszlibcapiapitest
+../../build.sh product_name=rk3568 system_size=standard suite=ActsZlibCapiTest
+
+# ✅ 正确：在 OpenHarmony 根目录执行
+cd /path/to/openharmony
+./test/xts/acts/build.sh product_name=rk3568 system_size=standard suite=ActsZlibCapiTest
+```
+
+### 7.4 推荐工作流
 
 ```bash
 # 1. 清理历史产物
@@ -277,6 +311,78 @@ ls out/rk3568/suites/acts/acts/testcases/*.hap
 
 ---
 
-**版本**: 1.2.0
-**更新日期**: 2026-03-28
+## 八、多测试套批量编译
+
+```bash
+for suite in ActsZlibCapiTest ActsZlibCapiTest2 ActsZlibCapiTest3; do
+    echo "编译测试套: $suite"
+    ./test/xts/acts/build.sh product_name=rk3568 system_size=standard suite=$suite
+done
+```
+
+## 九、BUILD.gn 目标类型详解
+
+### 9.1 ohos_js_app_suite（JS/N-API 封装测试套）
+
+```gni
+ohos_js_app_suite("ActsBmsGetAbilityResourceNdkEnterpriseTest") {
+  test_hap = true
+  testonly = true
+  certificate_profile = "./signature/openharmony.p7b"
+  hap_name = "ActsBmsGetAbilityResourceNdkEnterpriseTest"
+  part_name = "bundle_framework"
+  subsystem_name = "bundlemanager"
+}
+```
+特点：生成 HAP 包，支持 ETS/ArkTS 测试代码，可包含 N-API 封装 C/C++ 代码。
+
+### 9.2 ohos_js_app_static_suite（静态 JS 测试套）
+
+```gni
+ohos_js_app_static_suite("ActsUiStaticTest") {
+  testonly = true
+  certificate_profile = "./signature/openharmony_sx.p7b"
+  hap_name = "ActsUiStaticTest"
+  part_name = "arkxtest"
+  subsystem_name = "testfwk"
+  external_deps = [ "hilog:libhilog", "ui_component:libui_component" ]
+}
+```
+特点：生成原生测试可执行文件，使用 gtest/HWTEST_F 框架，直接测试 C/C++ 函数。
+
+### 9.3 ohos_app_assist_suite（辅助测试套）
+
+```gni
+ohos_app_assist_suite("ActsBmsGetAbilityResourceTwoNdkEnterpriseTest") {
+  testonly = true
+  certificate_profile = "./signature/openharmony.p7b"
+  hap_name = "ActsBmsGetAbilityResourceTwoNdkEnterpriseTest"
+  part_name = "bundle_framework"
+  subsystem_name = "bundlemanager"
+}
+```
+特点：生成辅助 HAP 包，通常被主测试套通过 deps 依赖，不直接作为 suite 参数使用。
+
+## 十、编译最佳实践
+
+1. 始终在 OpenHarmony 根目录下执行编译命令
+2. 使用正确的编译脚本：`./test/xts/acts/build.sh`
+3. 从 BUILD.gn 文件中提取正确的测试套名称
+4. 编译前确认测试套目录和 BUILD.gn 文件存在
+5. 编译后验证 HAP 包是否正确生成
+6. 遇到错误时，先查看错误日志再进行修复
+7. 不要混用不同的编译命令和工具
+
+## 十一、编译前验证清单
+
+- [ ] 已从 BUILD.gn 中提取测试套名称
+- [ ] 验证 BUILD.gn 中确实存在该测试套定义
+- [ ] 确认测试套名称格式正确（通常以 Acts 开头，Test 结尾）
+- [ ] 确认编译命令参数正确（product_name=rk3568 system_size=standard）
+- [ ] 确认在 OH_ROOT 目录下执行编译命令
+
+---
+
+**版本**: 1.3.0
+**更新日期**: 2026-06-05
 **兼容性**: OpenHarmony API 10+

@@ -450,7 +450,7 @@ static napi_value [API名称]_BoundaryTest(napi_env env, napi_callback_info info
 
 ## 四、测试设计文档生成
 
-> **⚠️ 本节已迁移至独立模块**: [`design_doc_generator_c.md`](./design_doc_generator_c.md)
+> **⚠️ 本节已迁移至 Phase 4 prompt**: `prompts/phase-4-design.md`
 >
 > 测试设计文档在 Phase 4 独立完成，本文件（Phase 5）基于设计文档生成代码。
 > 禁止跳过设计文档直接生成代码。
