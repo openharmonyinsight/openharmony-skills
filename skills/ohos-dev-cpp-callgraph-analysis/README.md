@@ -1,9 +1,9 @@
 # OpenHarmony C++ Callgraph Analysis Skill
 
-This skill is registered as `ohos-dev-cpp-callgraph-analysis` and lives under the common development namespace:
+This skill is registered as `ohos-dev-cpp-callgraph-analysis`:
 
 ```text
-skills/common/development/ohos-dev-cpp-callgraph-analysis/
+skills/ohos-dev-cpp-callgraph-analysis/
 ```
 
 ## Scope
@@ -24,6 +24,6 @@ Run:
 
 ```bash
 python3 -m unittest discover \
-  -s skills/common/development/ohos-dev-cpp-callgraph-analysis/tests \
+  -s skills/ohos-dev-cpp-callgraph-analysis/tests \
   -p 'test_*.py'
 ```

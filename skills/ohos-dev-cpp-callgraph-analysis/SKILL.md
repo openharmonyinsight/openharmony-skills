@@ -70,7 +70,7 @@ When LSP is unavailable or incomplete, say so in the evidence table and fall bac
 Required helper invocation shape. The agent must resolve the source tree and repository filter before calling the script, then pass them explicitly:
 
 ```bash
-SCRIPT=/path/to/skills/common/development/ohos-dev-cpp-callgraph-analysis/ohos_callgraph.py
+SCRIPT=/path/to/skills/ohos-dev-cpp-callgraph-analysis/ohos_callgraph.py
 python3 "$SCRIPT" <entry-function> \
   --oh-root <openharmony-source-root> \
   --product <product-name> \
