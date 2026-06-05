@@ -104,85 +104,6 @@ metadata:
 
 **语法类型**：支持 ArkTS-Dyn（动态，默认）和 ArkTS-Sta（静态）。通过目标工程的 `build-profile.json5` 中 `arkTSVersion` 字段判断。两者在 API 可用性、测试目录、编译工具链上有差异，详细处理逻辑见 `prompts/phase-1-config-loading.md` 步骤 9。
 
-## Execution Modes
-
-本 Skill 支持两种运行时环境，自动适配：
-
-### OpenCode 模式（原生）
-
-在 OpenCode 中，Skill 以 `mode: all` + `permission: allow` 在主会话中执行，拥有完整权限，每个 Phase 自主读取 prompt 文件并执行。
-
-### Claude Code 模式（Skill + Agent 混合编排）
-
-在 Claude Code 中，采用 **Skill 主编排 + Agent 子代理并行** 的混合架构：
-
-```
-┌─────────────────────────────────────────────────┐
-│  Skill（主会话）- 流程编排 & 状态管理             │
-│                                                   │
-│  Phase 0  初始化配置    ─── 主会话（首次/配置异常时）│
-│  Phase 1  配置加载      ─── 主会话直接执行         │
-│  Phase 2  覆盖率扫描    ─── 主会话启动脚本，Cron 轮询 │
-│  Phase 3  API 解析      ─── Agent 并行（多 d.ts）   │
-│  Phase 4  测试设计      ─── Agent 并行（多 API 组）  │
-│  Phase 5A Demo 生成     ─── Agent 并行（多页面）     │
-│  Phase 5  测试代码生成  ─── Agent 并行（多文件）     │
-│  Phase 5B UiTest 生成   ─── Agent 并行（与 5A/5）   │
-│  Phase 6  注册          ─── 主会话直接执行（快速）    │
-│  Phase 7  验证          ─── 主会话直接执行（强制）    │
-│  Phase 8  编译          ─── 主会话启动脚本           │
-│  Phase 9  设备测试      ─── 主会话启动脚本（可选）    │
-│  Phase 10 覆盖率对比    ─── 主会话启动脚本           │
-│  Phase 11 输出报告      ─── 主会话汇总              │
-└─────────────────────────────────────────────────┘
-```
-
-**执行原则**：
-
-| 原则 | 说明 |
-|------|------|
-| **主会话负责编排** | 读取 Phase prompt、判断 Flow 类型、管理状态追踪 |
-| **Agent 负责计算** | 文件解析、代码生成、多文件并行处理 |
-| **主会话负责写入** | Agent 返回结果后，主会话执行 Write/Edit（确保权限可控） |
-| **主会话负责验证** | Phase 7 必须在主会话执行，不可委托 Agent |
-
-**Phase → 执行方式映射**：
-
-| Phase | 执行方式 | 原因 |
-|-------|---------|------|
-| 1 配置加载 | **主会话** | 需要交互式确认配置、AskUserQuestion |
-| 2 覆盖率扫描 | **主会话** + Cron | 启动脚本后轮询等待，可能需要 10-30 分钟 |
-| 3 API 解析 | **Agent** | 纯读取+分析任务，可并行处理多个 d.ts 文件 |
-| 4 测试设计 | **Agent** | 分析型任务，可按 API 组分批并行设计 |
-| 5A Demo 生成 | **Agent** | 代码生成任务，可并行 |
-| 5 测试代码 | **Agent** | 代码生成任务，可并行 |
-| 5B UiTest | **Agent** | 可与 5A/5 并行 |
-| 6 注册 | **主会话** | 调用 register_test.py + 编辑 main_pages.json，需写入权限 |
-| 7 验证 | **主会话** | 强制在主会话执行，确保验证不被跳过 |
-| 8 编译 | **主会话** + Cron | 启动编译脚本后轮询 |
-| 9 设备测试 | **主会话** + Cron | 可选，启动 hdc 测试后轮询 |
-| 10 覆盖率对比 | **主会话** | 启动扫描脚本后轮询 |
-| 11 输出 | **主会话** | 汇总所有 Phase 结果 |
-
-**Agent 调用模板**（Phase 3/4/5 使用）：
-
-```
-使用 Agent 工具启动子代理，subagent_type 使用 "claude"（通用类型），prompt 中包含：
-
-1. 当前 Phase 的 prompt 文件内容（从 {skill_root}/prompts/phase-N-xxx.md 读取后注入）
-2. 具体任务数据（API 列表、设计文档路径等）
-3. 输出格式要求（返回 JSON 或 Markdown）
-
-Agent 执行完毕后，主会话：
-- 读取 Agent 返回的结果
-- 验证结果完整性
-- 执行 Write/Edit 将文件写入磁盘
-```
-
-**环境检测**：Skill 启动时自动判断运行环境：
-- 检查 `{skill_root}/.oh-xts-config.json` 中 `skill_root` 是否包含 `.claude/` → Claude Code 模式
-- 否则 → OpenCode 模式（默认，完整权限）
-
 ## Architecture Overview
 
 ```
@@ -215,22 +136,22 @@ Agent 执行完毕后，主会话：
 | 2 | 用户提供了覆盖率报告（CSV/XLSX/JSON/MD） | **Flow A** | 基于用户报告解析覆盖缺口 |
 | 3 | 以上均不满足 | **Flow B** | 标准 APICoverageDetector 扫描 |
 
-| Phase | Name | Prompt File | Flow A（有覆盖率报告） | Flow B（无覆盖率报告） | Flow C（新增接口） |
-|-------|------|-------------|----------------------|----------------------|-------------------|
-| 0 | Init Config | `prompts/phase-0-init-config.md` | 仅首次 | 仅首次 | 仅首次 |
-| 1 | Task Config & Subsystem | `prompts/phase-1-config-loading.md` | 相同 | 相同 | 相同（额外检测 new_api_mode） |
-| 2 | Initial Coverage Scan | `prompts/phase-2-coverage.md` | 仅 `extract_uncovered.py` 精准筛选 | APICoverageDetector 精确扫描 + `extract_uncovered.py` 精准筛选 | **跳过**（默认覆盖率为 0） |
-| 3 | Targeted API Info Parsing | `prompts/phase-3-api-parsing.md` | 仅解析报告中的未覆盖项 | 仅解析 Phase 2 识别的未覆盖项 | 直接解析用户提供的全部新增 API |
-| 4 | Generate Test Design | `prompts/phase-4-design.md` | 仅设计报告中的未覆盖项 | 设计全部目标 API 的测试 | 设计全部新增 API 的测试 |
-| 5A | Generate Demo (UI类用例) | `prompts/phase-5-demo-generation.md` | 用例分类 + Demo 生成（仅UI类用例） | 用例分类 + Demo 生成（仅UI类用例） | 相同 |
-| 5 | Generate Test Cases (非UI类) | `prompts/phase-5-generation.md` | 依据设计文档生成非UI类用例 | 依据设计文档生成非UI类用例 | 相同 |
-| 5B | Generate UiTest (UI类用例) | `prompts/phase-5-uitest-generation.md` | 依据设计文档生成UiTest代码（仅UI类用例） | 依据设计文档生成UiTest代码（仅UI类用例） | 相同 |
-| 6 | Register Test Suites | `prompts/phase-6-registration.md` | 相同 | 相同 | 相同 |
-| 7 | Format & Validate | `prompts/phase-7-validation.md` | 步骤A + 步骤B | 步骤A + 步骤B | 步骤A + 步骤B |
-| 8 | Build Verification | `prompts/phase-8-build.md` | 推荐 | 推荐 | 推荐 |
-| 9 | Device Test Execution | `prompts/phase-9-test-execution.md` | 可选 | 可选 | 可选 |
-| 10 | Coverage Verification | `prompts/phase-10-coverage.md` | 可选 | 必须（before/after 对比） | 必须（**仅 after 扫描**，无 before baseline） |
-| 11 | Output Results | `prompts/phase-11-output.md` | 相同 | 相同 | 覆盖率表标注"生成前: 0（新增接口）" |
+| Phase | Name | Prompt File | Flow A（有覆盖率报告） | Flow B（无覆盖率报告） | Flow C（新增接口） | 并行 |
+|-------|------|-------------|----------------------|----------------------|-------------------|------|
+| 0 | Init Config | `prompts/phase-0-init-config.md` | 仅首次 | 仅首次 | 仅首次 | — |
+| 1 | Task Config & Subsystem | `prompts/phase-1-config-loading.md` | 相同 | 相同 | 相同（额外检测 new_api_mode） | — |
+| 2 | Initial Coverage Scan | `prompts/phase-2-coverage.md` | 仅 `extract_uncovered.py` 精准筛选 | APICoverageDetector 精确扫描 + `extract_uncovered.py` 精准筛选 | **跳过**（默认覆盖率为 0） | — |
+| 3 | Targeted API Info Parsing | `prompts/phase-3-api-parsing.md` | 仅解析报告中的未覆盖项 | 仅解析 Phase 2 识别的未覆盖项 | 直接解析用户提供的全部新增 API | ✅ 多 d.ts |
+| 4 | Generate Test Design | `prompts/phase-4-design.md` | 仅设计报告中的未覆盖项 | 设计全部目标 API 的测试 | 设计全部新增 API 的测试 | ✅ 多 API 组 |
+| 5A | Generate Demo (UI类用例) | `prompts/phase-5-demo-generation.md` | 用例分类 + Demo 生成（仅UI类用例） | 用例分类 + Demo 生成（仅UI类用例） | 相同 | ✅ 多页面 |
+| 5 | Generate Test Cases (非UI类) | `prompts/phase-5-generation.md` | 依据设计文档生成非UI类用例 | 依据设计文档生成非UI类用例 | 相同 | ✅ 多文件 |
+| 5B | Generate UiTest (UI类用例) | `prompts/phase-5-uitest-generation.md` | 依据设计文档生成UiTest代码（仅UI类用例） | 依据设计文档生成UiTest代码（仅UI类用例） | 相同 | ✅ 与 5A/5 并行 |
+| 6 | Register Test Suites | `prompts/phase-6-registration.md` | 相同 | 相同 | 相同 | — |
+| 7 | Format & Validate | `prompts/phase-7-validation.md` | 步骤A + 步骤B | 步骤A + 步骤B | 步骤A + 步骤B | — |
+| 8 | Build Verification | `prompts/phase-8-build.md` | 推荐 | 推荐 | 推荐 | — |
+| 9 | Device Test Execution | `prompts/phase-9-test-execution.md` | 可选 | 可选 | 可选 | ✅ 与 10 并行 |
+| 10 | Coverage Verification | `prompts/phase-10-coverage.md` | 可选 | 必须（before/after 对比） | 必须（**仅 after 扫描**，无 before baseline） | ✅ 与 9 并行 |
+| 11 | Output Results | `prompts/phase-11-output.md` | 相同 | 相同 | 覆盖率表标注"生成前: 0（新增接口）" | — |
 
 **Phase 5 执行顺序**：
 1. Phase 5A（Step 0 用例分类 + Step 1 Demo 生成）— 仅存在 UI 类用例时执行
