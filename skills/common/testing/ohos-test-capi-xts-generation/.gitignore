@@ -1,1 +1,4 @@
 skills/common/testing/ohos-test-capi-xts-generation/.oh-capi-xts-config.json
+
+# 评估报告（不提交到远端）
+EVALUATION_REPORT.md
