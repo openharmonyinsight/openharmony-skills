@@ -1,6 +1,16 @@
 ---
 name: ohos-test-capi-xts-generation
-description: Use this skill when generating XTS test cases for OpenHarmony C/C++ CAPI via N-API wrapping. Automatically parses .h header files to generate C++ N-API bindings and ETS/ArkTS test code. Triggers include CAPI, C testing, Native testing, .h file parsing, N-API wrapper generation, coverage report driven test supplement, async build verification, and subsystem-level XTS testing.
+description: >
+  OpenHarmony CAPI XTS测试用例生成器。解析.h头文件，生成C++ N-API封装和ETS/ArkTS测试代码，支持覆盖率分析和编译验证。
+  Use when: (1) 用户提到CAPI、C测试、Native测试、原生测试、头文件解析,
+  (2) 用户需要生成N-API封装测试（不是gtest）,
+  (3) 用户提到覆盖率报告、补充测试、缺失测试,
+  (4) 用户需要编译或验证CAPI测试套,
+  (5) 用户提到异步编译、后台编译、编译验证,
+  (6) 用户提到XTS测试、OpenHarmony测试、子系统测试。
+  Trigger keywords: CAPI, N-API, napi, .h文件, 头文件解析, Native测试, C测试,
+  原生测试, 编译, build, compile, 覆盖率报告, 未覆盖API, 测试套编译, XTS,
+  async_build, cleanup_group, N-API封装, 三重校验
 metadata:
   author: openharmony
   scope: common
@@ -288,6 +298,44 @@ Module:    references/subsystems/{Subsystem}/{Module}.md  (module-specific rules
 5. **Template copy required** — Creating new test suite must copy from `template_project/capi_test_template/`
 6. **@tc annotation required** — Every test case must have standard `@tc` block
 7. **Error handling uses `napi_throw_error`** — Do not return error objects from N-API functions
+
+## Anti-Patterns
+
+### NEVER 使用未在.h头文件中声明的接口
+- **原因**：N-API封装的C++函数签名必须与.h声明完全匹配，未声明的函数在编译时找不到符号
+- **正确做法**：仅使用.h中明确声明的函数签名、参数类型和返回值类型
+
+### NEVER 跳过Phase 6（N-API三重校验）
+- **原因**：C++/TypeScript/ETS三层之间的函数注册、名称映射、类型转换任一不匹配都会导致运行时崩溃
+- **后果**：运行时crash、函数未注册、类型不匹配——修复成本远高于预防
+
+### NEVER 跳过Phase 4（测试设计文档）
+- **原因**：没有设计文档，SUB_编号可能冲突，N-API函数名映射无据可查，测试覆盖率无法审计
+- **正确做法**：Phase 4必须在Phase 5前完成，所有模式下（Flow A/B）都必须生成.design.md
+
+### NEVER 在N-API函数中返回错误对象
+- **原因**：N-API函数必须返回`napi_value`类型，错误处理应使用`napi_throw_error`抛出异常
+- **正确做法**：错误时调用`napi_throw_error(env, nullptr, "error message")`并返回`nullptr`
+
+### NEVER 修改已有工程的非测试文件
+- **原因**：修改BUILD.gn、oh-package.json5等配置文件会影响其他开发者的编译环境
+- **正确做法**：仅在指定目录创建/修改测试相关文件
+
+### NEVER 在测试用例中省略@tc注解
+- **原因**：测试报告系统无法识别没有@tc的用例元数据
+- **正确做法**：每个测试用例必须有标准@tc块，包含编号、描述、步骤、预期结果
+
+### NEVER 创建新工程时不从模板复制
+- **原因**：CAPI测试套需要完整的工程结构（CMakeLists.txt、module.json5、Test.json等），手动创建容易遗漏关键文件
+- **正确做法**：必须从`template_project/capi_test_template/`复制完整模板，再修改测试内容
+
+### NEVER 硬编码模块名（module name）
+- **原因**：OpenHarmony N-API要求`nm_modname`必须为`"entry"`，ETS侧从`libentry.so`导入，不一致会导致加载失败
+- **正确做法**：统一使用`nm_modname = "entry"`，`oh-package.json5`中`name`字段对应
+
+### NEVER 在Flow A模式下创建新工程
+- **原因**：Flow A是覆盖率报告驱动模式，明确目标是补充已有工程的缺失测试
+- **正确做法**：仅在已有工程中补充测试用例，如果报告对应的工程不存在应向用户确认
 
 ## Mandatory Phase 6: N-API Triple Verification
 

@@ -1,7 +1,8 @@
 ---
 name: ohos-test-arkts-xts-generation
 description: >
-  OpenHarmony ArkTS XTS测试用例生成器。解析.d.ts API定义，生成符合Hypium框架的测试用例，支持覆盖率分析和编译验证。
+  OpenHarmony ArkTS XTS测试用例生成器。解析.d.ts API定义，生成符合Hypium框架的测试用例，支持覆盖率分析、编译验证和Demo+UiTest生成。
+  支持ArkTS-Dyn（动态）和ArkTS-Sta（静态）两种语法模式，覆盖12-Phase完整工作流。
   Use when: (1) 用户提到XTS测试、ArkTS测试用例生成、API覆盖率扫描,
   (2) 用户需要为@kit.* SDK生成测试,
   (3) 用户提到APICoverageDetector、未覆盖API、测试补充,
@@ -165,43 +166,76 @@ metadata:
 **强制 Phase**：Phase 4（测试设计文档）和 Phase 7（格式验证）**不可跳过**。
 
 ```bash
-# 初始化追踪（Phase 1 开始前执行）
-python {skill_root}/scripts/phase_tracker.py init --output .coverage_data
-
-# 标记 Phase 开始（自动检查前置 Phase 是否完成）
-python {skill_root}/scripts/phase_tracker.py start 4 --output .coverage_data
-
-# 标记 Phase 完成（可附加输出文件路径）
-python {skill_root}/scripts/phase_tracker.py complete 4 --output-file path/to/design.md --output .coverage_data
-
-# 跳过非强制 Phase（Phase 4/7 不可跳过）
-python {skill_root}/scripts/phase_tracker.py skip 8 --reason "SDK缺失" --output .coverage_data
-
-# 检查前置条件
+# 每个 Phase 开始前必须执行 check（确认前置 Phase 已完成）
 python {skill_root}/scripts/phase_tracker.py check 5 --output .coverage_data
 
-# 查看所有 Phase 状态
-python {skill_root}/scripts/phase_tracker.py status --output .coverage_data
-
-# 生成工作流执行检查清单（Phase 10 输出时执行）
-python {skill_root}/scripts/phase_tracker.py report --output .coverage_data
+# Phase 完成后标记（可附加输出文件路径）
+python {skill_root}/scripts/phase_tracker.py complete 4 --output-file path/to/design.md --output .coverage_data
 ```
 
-**追踪文件**：`.coverage_data/phase_progress.json`
-
-```json
-{
-  "created_at": "2026-05-23T14:00:00",
-  "current_phase": 5,
-  "phases": {
-    "1": {"status": "completed", "timestamp": "...", "output": null},
-    "4": {"status": "completed", "timestamp": "...", "output": "path/to/design.md"},
-    "7": {"status": "pending", "timestamp": null, "output": null}
-  }
-}
-```
+其他子命令：`init`（初始化）、`start`（标记开始）、`skip`（跳过非强制 Phase，需 `--reason`）、`status`（查看状态）、`report`（生成检查清单）。详细用法见 `scripts/phase_tracker.py --help`。
 
 **每个 Phase 开始前必须执行 `check` 命令**，确认前置 Phase 已完成。若前置 Phase 为 pending 或 in_progress，则阻止当前 Phase 开始。
+
+### Phase 内联指导
+
+> 以下为关键 Phase 的简短指导，帮助在不加载完整 prompt 文件的情况下做出初步决策。详细步骤仍需加载对应 prompt 文件。
+
+#### Phase 2: Initial Coverage Scan
+- **核心目标**：识别哪些 API 未被现有测试覆盖
+- **Flow A**：直接运行 `extract_uncovered.py` 从覆盖率报告精准筛选未覆盖项
+- **Flow B**：运行 APICoverageDetector 全量扫描，再用 `extract_uncovered.py` 8维度判断筛选
+- **Flow C**：跳过（新增接口覆盖率为 0）
+- **关键输出**：`.coverage_data/uncovered_apis.json` — 未覆盖 API 列表
+
+#### Phase 3: Targeted API Info Parsing
+- **核心目标**：从 .d.ts 文件中提取目标 API 的完整签名（参数、返回值、@since、@throws、@deprecated）
+- **信息源优先级**：`.d.ts` 声明（最高）→ 子系统配置 → 参考示例 → API 文档
+- **支持并行**：多个 .d.ts 文件可并行解析
+- **关键输出**：每个 API 的结构化信息（参数类型、可选/必选、错误码、版本标签）
+
+#### Phase 4: Generate Test Design Document
+- **核心目标**：生成 `.design.md` 文件，定义每个 API 的测试用例列表、控件 ID（UI 类）、N-API 函数映射
+- **不可跳过**：所有模式（Flow A/B/C、ArkTS-Sta）都必须生成设计文档
+- **测试类型覆盖**：PARAM（参数测试）、ERROR（错误码测试）、RETURN（返回值测试）、BOUNDARY（边界值测试）
+- **UI 类判定**：API 涉及组件创建/属性设置/事件回调/动效 → UI 类，需要 Phase 5A/5B
+- **关键输出**：`{TestFileName}.design.md` — 测试设计文档
+
+#### Phase 5: Generate Test Cases
+- **核心目标**：基于 Phase 4 设计文档，生成非 UI 类测试代码（.test.ets）
+- **仅使用 .d.ts 中声明的接口** — 禁止猜测或使用未声明的 API
+- **每个用例必须包含 @tc 注解块** — 测试报告系统依赖此元数据
+- **cleanup 必须处理异常** — 资源泄漏会影响后续用例执行
+- **支持并行**：多个测试文件可并行生成
+
+#### Phase 5A: Generate Demo (仅 UI 类用例)
+- **触发条件**：Phase 4 设计文档中存在 UI 类用例
+- **核心目标**：生成可交互的 Demo 应用，暴露控件 ID 供 UiTest 驱动
+- **三方契约**：设计文档中预定义的控件 ID ↔ Demo 代码中的控件 ID ↔ UiTest 代码中的控件 ID 必须一致
+- **依赖技能**：`demo-pipeline`
+
+#### Phase 5B: Generate UiTest (仅 UI 类用例)
+- **核心目标**：生成 UiTest 自动化测试代码，通过控件 ID 驱动 Demo 界面
+- **与 Phase 5A 并行**：均从 Phase 4 设计文档读取控件 ID 清单
+- **编译单元**：Demo + UiTest 作为同一 HAP 编译
+
+#### Phase 7: Format & Validate
+- **核心目标**：验证生成代码的格式、命名、断言、资源释放、@tc 注解完整性
+- **不可跳过**：未验证的代码可能包含资源泄漏、无效断言、格式错误
+- **步骤 A**：格式和上下文检查（使用 `validate_test_context.py`，5/9 项自动检查）
+- **步骤 B**：代码质量深度扫描（使用 `check-test-code-quality` 技能，11 条规则）
+- **ArkTS-Sta 额外**：静态语法校验（使用 `arkts-static-spec` 技能）
+
+#### Phase 8: Build Verification
+- **核心目标**：编译测试套，验证代码在目标编译环境中可通过
+- **支持独立模式**：用户仅要求编译时，跳过 Phase 1-7 直接进入
+- **异步编译**：使用 `scripts/async_build.sh` 后台编译
+- **编译失败处理**：自动分析错误日志，修复后重试（最多 3 次）
+
+#### Phase 10: Coverage Verification
+- **核心目标**：对比 before/after 覆盖率，量化测试用例的覆盖率贡献
+- **Flow A/B**：Phase 2 生成 before baseline，Phase 10 生成 after 并用 `compare_uncovered.py` 对比
+- **Flow C**：仅执行 after 扫描（无 before baseline），覆盖率表标注"生成前: 0（新增接口）"
 
 ## Module Loading
 
@@ -293,6 +327,51 @@ Note: 覆盖率扫描环境通过文件复制方式自动准备
 - **原因**：废弃接口在后续版本可能被移除，生成的测试将无法维护
 - **正确做法**：参考历史代码时若发现 @deprecated 接口，在新生成的代码中使用已知的新接口替代（不修改历史代码）
 - **后果**：依赖废弃接口的测试用例在 SDK 升级后编译失败
+
+## Thinking Framework: Before You Generate
+
+在 Phase 5 生成任何测试代码之前，对每个目标 API 问自己以下问题：
+
+### API 特性分析
+
+| 问题 | 为什么重要 | 影响生成策略 |
+|------|----------|-------------|
+| **是否有副作用？** | 有副作用的 API 调用顺序不可随意更改 | 测试间需要 cleanup/restore，不能并行 |
+| **是否依赖系统状态？** | 依赖蓝牙/WiFi/位置等硬件状态的 API 需要特定环境 | 需要 beforeAll/afterAll 管理状态，断言可能因环境不可用而跳过 |
+| **是否有资源分配？** | 打开文件/创建连接/分配内存的 API 必须释放资源 | cleanup 步骤中必须处理异常和释放 |
+| **是否是异步/回调？** | 异步 API 返回 Promise 或接受回调，断言时机不同 | 使用 done() 或 async/await，不能同步断言 |
+| **是否涉及 UI 组件？** | UI 类 API 需要组件树渲染后才能测试 | 需要 Demo 应用（Phase 5A）+ UiTest（Phase 5B），不能直接单元测试 |
+| **是否有 @throws 声明？** | .d.ts 中声明了 @throws 的 API 有明确错误码可测试 | 生成 ERROR 类型测试；未声明的不要构造错误码测试 |
+| **是否标记 @deprecated？** | 废弃接口测试价值低，可能在后续版本被移除 | 跳过该接口（除非用户要求），参考 @useinstead 使用新接口 |
+| **@since 版本是否匹配目标？** | API 可能在目标 SDK 版本中不存在 | 检查 @since 标签，高于目标版本的 API 不可用 |
+
+### 测试设计决策树
+
+```
+API 是否有 @throws？
+├── 是 → 生成 ERROR 类型测试（错误码断言）
+│        是否有副作用？
+│        ├── 是 → 测试间需要 cleanup
+│        └── 否 → 可并行执行
+└── 否 → 不生成错误码测试
+         是否涉及 UI 组件？
+         ├── 是 → Phase 5A 生成 Demo + Phase 5B 生成 UiTest
+         │        控件 ID 从 Phase 4 设计文档读取
+         └── 否 → Phase 5 生成标准 .test.ets
+                  是否有资源分配？
+                  ├── 是 → cleanup 中必须 try-catch 释放
+                  └── 否 → 标准参数/返回值/边界值测试
+```
+
+### 用例数量估算
+
+| API 类型 | 建议用例数 | 覆盖维度 |
+|----------|-----------|---------|
+| 简单 get/set 属性 | 3-5 | 正常值 + 边界值 + 特殊值 |
+| 带回调的事件 API | 5-8 | 正常触发 + 参数校验 + 回调异常 + 多次触发 |
+| 系统能力 API | 8-12 | 各参数组合 + 错误码 + 边界值 + 并发/状态 |
+| UI 组件创建型 | 5-8 | 创建 + 销毁 + 属性设置 + 事件触发 |
+| 异步操作 API | 5-8 | 正常完成 + 超时 + 取消 + 并发调用 |
 
 ## Common Failure Patterns
 
