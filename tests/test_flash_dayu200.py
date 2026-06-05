@@ -18,8 +18,9 @@ def load_module(name, path):
     return module
 
 
-download_daily = load_module("download_daily", ROOT / "skills" / "flash-dayu200" / "download_daily.py")
-flash_device = load_module("flash_device", ROOT / "skills" / "flash-dayu200" / "flash_device.py")
+SKILL_DIR = ROOT / "skills" / "common" / "cicd" / "ohos-ci-device-image-flashing"
+download_daily = load_module("download_daily", SKILL_DIR / "download_daily.py")
+flash_device = load_module("flash_device", SKILL_DIR / "flash_device.py")
 
 
 class FlashDayu200Test(unittest.TestCase):
