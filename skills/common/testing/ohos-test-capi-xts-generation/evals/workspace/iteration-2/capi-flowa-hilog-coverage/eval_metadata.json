@@ -1,0 +1,6 @@
+{
+  "eval_id": 2,
+  "eval_name": "capi-flowa-hilog-coverage",
+  "prompt": "覆盖率报告显示 hilog 模块以下 API 未被覆盖：OH_LOG_PrintMsg、OH_LOG_PrintMsgByLen、OH_LOG_VPrint、PreferStrategy 枚举。请补充这些 API 的 N-API 封装测试",
+  "assertions": []
+}

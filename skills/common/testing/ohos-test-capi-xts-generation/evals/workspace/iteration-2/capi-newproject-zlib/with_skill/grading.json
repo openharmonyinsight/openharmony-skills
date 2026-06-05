@@ -1,0 +1,27 @@
+{
+  "run": "capi-newproject-zlib/with_skill",
+  "total_passed": 16,
+  "total_failed": 4,
+  "expectations": [
+    {"text": "A1: @tc annotations — every it() has @tc JSDoc block", "passed": true, "evidence": "All 7 it() blocks have @tc.name/@tc.desc/@tc.type JSDoc annotations"},
+    {"text": "A2: Hypium imports — from @ohos/hypium with describe/it/expect", "passed": true, "evidence": "Line 17: import { describe, it, expect, TestType, Size, Level } from '@ohos/hypium'"},
+    {"text": "A3: Correct C API header include in NapiTest.cpp", "passed": true, "evidence": "Line 19: #include <zlib.h>"},
+    {"text": "A4: Error handling — uses napi_throw_error or proper error patterns", "passed": true, "evidence": "Extensive napi_throw_error usage: lines 57, 64, 71, 79, 89, 99, 106, etc. with input validation and specific error codes (e.g. '-5' for Z_BUF_ERROR)"},
+    {"text": "A5: No BUILD.gn modifications to existing projects", "passed": true, "evidence": "New project created (ActsZlibCapiApiTest/)"},
+    {"text": "A6: Test design doc (.design.md) exists with SUB_ IDs, test steps, expected results, and coverage stats", "passed": true, "evidence": "ZlibCompressTest.test.ets.design.md (146 lines) with 7 test cases using SUB_ZLIB_* IDs, detailed steps, expected results, coverage statistics"},
+    {"text": "A7: Valid C++ and ArkTS syntax", "passed": true, "evidence": "Both files have syntactically valid code"},
+    {"text": "A8: Cleanup/afterAll present with state restoration", "passed": false, "evidence": "No afterAll or beforeAll hook in ZlibCompressTest.test.ets; no cleanup present"},
+    {"text": "A9: API-only usage — only C APIs from header are called", "passed": true, "evidence": "Only compress, uncompress, compressBound from zlib.h are called"},
+    {"text": "A10: Describe block naming", "passed": true, "evidence": "describe('ZlibCompressTest', () => {...})"},
+    {"text": "C1: THREE code artifacts — NapiTest.cpp + index.d.ts + .test.ets", "passed": true, "evidence": "All three files present in full project structure"},
+    {"text": "C2: napi_property_descriptor registration in Init", "passed": true, "evidence": "Lines 389-400: desc[] with 7 entries, napi_define_properties() call"},
+    {"text": "C3: index.d.ts export const matches desc[]", "passed": true, "evidence": "7 exports in index.d.ts match 7 entries in desc[]"},
+    {"text": "C4: ETS imports from libentry.so (or correct native module)", "passed": true, "evidence": "Line 18: import testNapi from 'libentry.so' matches nm_modname 'entry'"},
+    {"text": "C5: SUB_ test naming convention", "passed": false, "evidence": "it() names are 'Compress_NormalData', 'Compress_EmptyData', etc. — no SUB_ prefix in actual it() identifiers"},
+    {"text": "C6: TestType/Size/Level decorators", "passed": true, "evidence": "All it() calls use TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL*"},
+    {"text": "F1: Design doc has coverage statistics table (API x Type matrix)", "passed": true, "evidence": "Lines 138-145: Coverage table with compress/uncompress/compressBound x PARAM/ERROR/RETURN/BOUNDARY"},
+    {"text": "F2: Design doc has N-API function name mapping for each test case", "passed": true, "evidence": "Each test case has 'N-API 函数名' field, e.g. compressNormalData, uncompressRoundTrip, compressBoundZeroLength"},
+    {"text": "F3: Design doc test case IDs match actual .test.ets test case IDs (>=50% match)", "passed": false, "evidence": "Design doc IDs are SUB_ZLIB_* but actual it() names are different (e.g. 'Compress_NormalData'). 0% match rate"},
+    {"text": "F4: Design doc has detailed test steps (not vague)", "passed": true, "evidence": "Each test case has specific steps with function calls and parameters, e.g. '编码字符串为 ArrayBuffer → 调用 testNapi.compressNormalData(arrayBuffer) → 获取返回的压缩后 ArrayBuffer'"}
+  ]
+}

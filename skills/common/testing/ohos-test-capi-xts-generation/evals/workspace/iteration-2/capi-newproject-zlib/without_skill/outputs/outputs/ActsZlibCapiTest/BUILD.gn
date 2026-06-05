@@ -1,0 +1,13 @@
+# Copyright (c) 2026 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+
+import("//test/xts/tools/build/suite.gni")
+
+ohos_js_app_suite("ActsZlibCapiTest") {
+  test_hap = true
+  testonly = true
+  certificate_profile = "signature/com.actszlibcapitest.test.p7b"
+  hap_name = "ActsZlibCapiTest"
+  subsystem_name = "bundlemanager"
+  part_name = "bundle_framework"
+}

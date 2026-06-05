@@ -1,0 +1,114 @@
+{
+  "expectations": [
+    {
+      "text": "A1: @tc annotations present",
+      "passed": true,
+      "evidence": "All 10 it() blocks in ZlibCapiApi.test.ets have @tc.name, @tc.desc, @tc.type JSDoc blocks (lines 28-32, 55-59, 80-84, 110-114, 146-150, 176-180, 206-210, 232-236, 255-259, 280-284)"
+    },
+    {
+      "text": "A2: Hypium imports",
+      "passed": true,
+      "evidence": "Line 17: import { describe, it, expect, TestType, Size, Level } from '@ohos/hypium'"
+    },
+    {
+      "text": "A3: Correct C API header include",
+      "passed": true,
+      "evidence": "NapiTest.cpp line 19: #include \"zlib.h\""
+    },
+    {
+      "text": "A4: Error handling",
+      "passed": true,
+      "evidence": "NapiTest.cpp uses napi_throw_error extensively (lines 57, 64, 71, 78, 85, 106, 113, 120, 127, etc.) with descriptive error messages"
+    },
+    {
+      "text": "A5: No BUILD.gn modifications",
+      "passed": true,
+      "evidence": "New project created with BUILD.gn as part of project structure; not modifying an existing project"
+    },
+    {
+      "text": "A6: Test design doc (.design.md) exists with SUB_ IDs",
+      "passed": false,
+      "evidence": "No .design.md file generated in iteration-1"
+    },
+    {
+      "text": "A7: Valid C++ and ArkTS syntax",
+      "passed": true,
+      "evidence": "NapiTest.cpp uses proper C++ with napi/zlib; ZlibCapiApi.test.ets uses valid ArkTS with proper typing, async/await, and Hypium framework"
+    },
+    {
+      "text": "A8: Cleanup/afterAll present with state restoration",
+      "passed": false,
+      "evidence": "No afterAll(), afterEach(), or beforeEach() blocks present in ZlibCapiApi.test.ets describe block; no explicit cleanup routines"
+    },
+    {
+      "text": "A9: API-only usage",
+      "passed": true,
+      "evidence": "NapiTest.cpp only calls zlib.h APIs: compress() (lines 82,130,178), uncompress() (lines 240,298,352,497), compressBound() (lines 75,123,172,389,403,439,475)"
+    },
+    {
+      "text": "A10: Describe block naming",
+      "passed": true,
+      "evidence": "Line 26: describe('ActsZlibCapiApiTest', () => {...})"
+    },
+    {
+      "text": "C1: THREE artifacts generated",
+      "passed": true,
+      "evidence": "NapiTest.cpp + entry/src/main/cpp/types/libentry/index.d.ts + entry/src/ohosTest/ets/test/ZlibCapiApi.test.ets all exist"
+    },
+    {
+      "text": "C2: napi_property_descriptor registration",
+      "passed": true,
+      "evidence": "NapiTest.cpp lines 523-534: napi_property_descriptor desc[] with 10 entries registered via napi_define_properties"
+    },
+    {
+      "text": "C3: index.d.ts export const matches desc[]",
+      "passed": true,
+      "evidence": "index.d.ts exports 10 const functions (compressNormalData, compressEmptyData, compressLargeData, uncompressNormalData, uncompressCorruptedData, uncompressSmallBuffer, compressBoundNormalLength, compressBoundZeroLength, compressBoundLargeLength, compressUncompressRoundTrip) — all match desc[] names exactly"
+    },
+    {
+      "text": "C4: ETS imports from libentry",
+      "passed": true,
+      "evidence": "ZlibCapiApi.test.ets line 18: import testNapi from 'libentry.so'"
+    },
+    {
+      "text": "C5: SUB_ test naming",
+      "passed": true,
+      "evidence": "All @tc.name values use SUB_ prefix: SUB_BUNDLEMANAGER_ZLIB_Compress_PARAM_001, SUB_BUNDLEMANAGER_ZLIB_Compress_BOUNDARY_001, SUB_BUNDLEMANAGER_ZLIB_Uncompress_PARAM_001, etc."
+    },
+    {
+      "text": "C6: TestType/Size/Level decorators",
+      "passed": true,
+      "evidence": "All 10 it() calls use TestType.FUNCTION | Size.MEDIUMTEST/SMALLTEST | Level.LEVEL0/1/2 pattern"
+    },
+    {
+      "text": "F1: Design doc has coverage statistics table",
+      "passed": false,
+      "evidence": "No .design.md file generated in iteration-1"
+    },
+    {
+      "text": "F2: Design doc has N-API function name mapping",
+      "passed": false,
+      "evidence": "No .design.md file generated in iteration-1"
+    },
+    {
+      "text": "F3: Design doc test case IDs match code IDs",
+      "passed": false,
+      "evidence": "No .design.md file generated in iteration-1"
+    },
+    {
+      "text": "F4: Design doc has detailed test steps",
+      "passed": false,
+      "evidence": "No .design.md file generated in iteration-1"
+    }
+  ],
+  "summary": {
+    "total": 20,
+    "passed": 18,
+    "failed": 2,
+    "pass_rate": "90.0%",
+    "failures": [
+      "A6: No design doc found",
+      "A8: No afterAll/cleanup block present"
+    ]
+  }
+}

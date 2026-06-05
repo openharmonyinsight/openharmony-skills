@@ -1,0 +1,56 @@
+{
+  "metadata": {
+    "skill_name": "ohos-test-capi-xts-generation",
+    "skill_path": "/home/chen/openharmony-skills_4397/skills/common/testing/ohos-test-capi-xts-generation",
+    "executor_model": "glm-5.1",
+    "timestamp": "2026-06-03T17:30:00Z",
+    "evals_run": ["capi-flowb-hilog-core", "capi-flowa-hilog-coverage", "capi-newproject-zlib"],
+    "runs_per_configuration": 1,
+    "assertions_version": 4,
+    "total_assertions": 20,
+    "note": "Recalculated with same 20 assertions as iteration-2 (A1-A10 + C1-C6 + F1-F4). A6/F1-F4 all FAIL because design doc was not generated."
+  },
+  "configurations": [
+    {
+      "name": "with_skill",
+      "pass_rate": 0.70,
+      "total_evals": 3,
+      "total_assertions": 60,
+      "passed_assertions": 42
+    },
+    {
+      "name": "without_skill",
+      "pass_rate": 0.617,
+      "total_evals": 3,
+      "total_assertions": 60,
+      "passed_assertions": 37
+    }
+  ],
+  "run_summary": {
+    "delta": {
+      "pass_rate": "+0.083"
+    }
+  },
+  "evals": [
+    {
+      "name": "capi-flowb-hilog-core",
+      "with_skill": {"pass_rate": 0.75, "assertions_passed": "15/20"},
+      "without_skill": {"pass_rate": 0.70, "assertions_passed": "14/20"}
+    },
+    {
+      "name": "capi-flowa-hilog-coverage",
+      "with_skill": {"pass_rate": 0.65, "assertions_passed": "13/20"},
+      "without_skill": {"pass_rate": 0.50, "assertions_passed": "10/20"}
+    },
+    {
+      "name": "capi-newproject-zlib",
+      "with_skill": {"pass_rate": 0.70, "assertions_passed": "14/20"},
+      "without_skill": {"pass_rate": 0.65, "assertions_passed": "13/20"}
+    }
+  ],
+  "notes": [
+    "A6/F1-F4 all FAIL for both with_skill and without_skill — design doc was not required before skill update",
+    "C4 (libentry.so) and C5 (SUB_ naming) remain strongest discriminators even without design doc",
+    "This iteration serves as baseline for comparing iteration-2 design doc improvement"
+  ]
+}

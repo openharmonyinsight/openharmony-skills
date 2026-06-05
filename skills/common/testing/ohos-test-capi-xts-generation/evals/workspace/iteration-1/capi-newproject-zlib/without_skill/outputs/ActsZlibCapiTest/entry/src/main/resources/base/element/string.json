@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "ActsZlibCapiTest entry module"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "ActsZlibCapiTest Entry Ability"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "ActsZlibCapiTest"
+    }
+  ]
+}

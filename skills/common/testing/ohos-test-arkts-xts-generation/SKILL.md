@@ -46,42 +46,24 @@ metadata:
 
 > OpenHarmony ArkTS XTS 测试用例生成器
 
-## 路径说明
-
-**本文档中所有相对路径均以本技能的根目录（skill-root）为起点。**
-
-具体路径以 `{skill_root}/.oh-xts-config.json` 中 `skill_root` 字段的值为准。
-
 ## 配置加载（优先级最高）
 
-**必须首先读取配置文件**：`{skill_root}/.oh-xts-config.json`
+**所有相对路径以 `{skill_root}` 为起点**，具体值从 `{skill_root}/.oh-xts-config.json` 的 `skill_root` 字段读取（不存在则从 `.oh-xts-config.example.json` 自动初始化，详见 `prompts/phase-1-config-loading.md` 步骤 0）。
 
-配置文件核心字段：`platform`（运行环境：`wsl`/`windows`/`linux`）、`skill_root`（所有相对路径的基准）、`OH_ROOT`（OpenHarmony 源码根目录，自动推导其他路径）、`scan_tool_root`（APICoverageDetector 路径）。
+核心字段：`platform`（`wsl`/`windows`/`linux`）、`skill_root`、`OH_ROOT`（源码根目录）、`scan_tool_root`（APICoverageDetector 路径，无效时向用户确认：更新路径 / 提供扫描结果 / 跳过扫描）。
 
-首次使用时自动初始化：将 `.oh-xts-config.example.json` 复制为 `.oh-xts-config.json`，从用户消息提取路径或交互式询问。详见 `prompts/phase-1-config-loading.md` 步骤 0。
-
-**工具路径**（基于配置文件和 skill_root）：
-- 覆盖率工具: `{scan_tool_root}/`（路径无效时向用户确认：更新路径 / 提供扫描结果 / 跳过扫描）
-- 脚本工具: `{skill_root}/scripts/`
-- 提示词: `{skill_root}/prompts/`
-- 参考配置: `{skill_root}/references/subsystems/`
-- 组件映射: `{skill_root}/references/component_subsystem_mapping.json`（Phase 1 加载，360+ 组件 → 56 子系统映射）
-- 工具模板: `{skill_root}/references/templates/`（Utils_dyn.ets / Utils_sta.ets）
-
-**脚本工具速查**：
+**脚本工具**（`{skill_root}/scripts/`）：
 
 | 脚本 | 用途 | 调用时机 |
 |------|------|---------|
-| `manage_scan_env.py` | 文件复制到扫描目录 + arkts_config.json 配置（支持 `setup`/`sync`/`teardown`/`status`） | Phase 2 步骤 1、Phase 10 增量同步 |
-| `validate_test_context.py` | 测试文件生成上下文检查（5/9 项） | Phase 7 步骤 A |
-| `register_test.py` | List.test.ets 注册新测试文件 | Phase 6 |
-| `extract_uncovered.py` | 提取未覆盖 API 列表（直接读 Excel、8维度判断、双输出文件） | Phase 2 步骤 3、Phase 3 |
-| `compare_uncovered.py` | 覆盖率 before/after 对比（对比两次 extract_uncovered 结果） | Phase 10 |
-| `sync_ets_version.py` | 同步 ets_version 到 arkts_config.json | Phase 1 |
-| `async_coverage_scan.py` | 异步覆盖率扫描（启动前自动清理旧残留文件、统一 PID 检查） | Phase 2、Phase 10 |
-| `batch_manager.py` | 分批执行管理器（计划/执行/续传） | Phase 3-5 批量模式 |
-| `batch_lock.py` | 文件锁（多 subagent 并发写入保护） | batch_manager.py 内部依赖 |
-| `phase_tracker.py` | Phase 执行状态追踪（init/start/complete/skip/check/status/report） | 每个 Phase 开始前检查、Phase 10 输出报告 |
+| `async_coverage_scan.py` | 异步覆盖率扫描（自动清理旧残留、PID 检查） | Phase 2、10 |
+| `extract_uncovered.py` | 提取未覆盖 API（8维度判断、双输出） | Phase 2、3 |
+| `compare_uncovered.py` | 覆盖率 before/after 对比 | Phase 10 |
+| `manage_scan_env.py` | 扫描环境准备（`setup`/`sync`/`teardown`） | Phase 2、10 |
+| `validate_test_context.py` | 生成上下文检查（5/9 项） | Phase 7A |
+| `register_test.py` | List.test.ets 注册 | Phase 6 |
+| `phase_tracker.py` | Phase 状态追踪 | 每个 Phase |
+| `batch_manager.py` | 分批执行管理 | Phase 3-5 |
 
 **必需依赖技能**：
 
@@ -137,8 +119,8 @@ metadata:
 | 2 | 用户提供了覆盖率报告（CSV/XLSX/JSON/MD） | **Flow A** | 基于用户报告解析覆盖缺口 |
 | 3 | 以上均不满足 | **Flow B** | 标准 APICoverageDetector 扫描 |
 
-| Phase | Name | Prompt File | Flow A（有覆盖率报告） | Flow B（无覆盖率报告） | Flow C（新增接口） | 并行 |
-|-------|------|-------------|----------------------|----------------------|-------------------|------|
+| Phase | Name | Prompt File | Flow A | Flow B | Flow C | 并行 |
+|-------|------|-------------|--------|--------|--------|------|
 | 0 | Init Config | `prompts/phase-0-init-config.md` | 仅首次 | 仅首次 | 仅首次 | — |
 | 1 | Task Config & Subsystem | `prompts/phase-1-config-loading.md` | 相同 | 相同 | 相同（额外检测 new_api_mode） | — |
 | 2 | Initial Coverage Scan | `prompts/phase-2-coverage.md` | 仅 `extract_uncovered.py` 精准筛选 | APICoverageDetector 精确扫描 + `extract_uncovered.py` 精准筛选 | **跳过**（默认覆盖率为 0） | — |
@@ -260,27 +242,13 @@ Module:    references/subsystems/{Subsystem}/{Module}.md  (module-specific rules
 Note: 覆盖率扫描环境通过文件复制方式自动准备
 ```
 
-## Key Constraints
-
-1. **Validation is mandatory** — Phase 7 can never be skipped（跳过会导致无效测试、资源泄漏、编译失败等问题流入下游）
-2. **Strict API adherence** — Only use interfaces declared in `.d.ts` files（未声明的接口在编译环境中不存在，生成的代码无法编译）
-3. **No project config modification** — Only create test files in designated directories（修改 BUILD.gn 等配置会导致编译环境损坏、影响其他开发者）
-4. **@tc annotation required** — Every test case must have standard `@tc` block（缺少 @tc 则测试报告系统无法识别用例元数据）
-5. **Design-driven generation** — Phase 4 generates design docs, Phase 5 generates test code based on design docs（确保从测试代码到需求的完整可追溯性）。Phase 4 在所有模式下（Flow A 补充用例、Flow B 标准扫描、Flow C 新增接口、ArkTS-Sta 静态模式）都不可跳过，必须先生成设计文档再生成测试代码。跳过会导致：控件 ID 无从追溯、测试意图不明确、后续维护困难
-6. **Conventions shared across phases** — `references/conventions/` is loaded in both Phase 5 (generation) and Phase 7 (validation)（生成和验证使用同一套规范，确保一致性）
-7. **Error handling** — When any Phase execution fails or encounters unexpected results, read `references/error_handling.md` for recovery guidance
-8. **Demo-UiTest contract** — 控件 ID 在 Phase 4 设计文档中预定义，Demo 生成和 UiTest 测试代码生成均从设计文档读取，三方（设计文档 ↔ Demo ↔ UiTest）必须一致
-9. **ETS 版本命名规范** — 目录名、bundleName、hap_name、用例名必须遵循 `references/conventions/ets_version_naming.md` 中的版本差异矩阵，否则 CodeCheck 门禁拦截（门禁使用 `Acts.*Test` 正则校验 hap_name，Static 后缀位置错误会被拦截）
-10. **prebuilts 保护** — 修改 `{OH_ROOT}/prebuilts/` 下的任何文件前，必须先创建备份（同级别加 `.bak.{timestamp}` 后缀）
-11. **已废弃接口处理** — 若接口在 .d.ts 中标记了 @deprecated，且无特殊要求，跳过该接口不生成用例；新生成的测试代码中禁止调用已废弃接口，参考历史代码发现废弃接口时用已知新接口替代（不修改历史代码）
-
 ## Anti-Patterns
 
 ### NEVER 使用未在.d.ts中声明的接口
 - **原因**：编译环境中不存在该接口，代码无法编译
 - **正确做法**：仅使用.d.ts中明确声明的接口和参数
 
-### NEVER 修改BUILD.gn等项目配置文件
+### NEVER 修改BUILD.gn、build-profile.json5等项目配置文件
 - **原因**：会影响其他开发者的编译环境
 - **正确做法**：仅在指定目录创建测试文件
 
@@ -306,8 +274,8 @@ Note: 覆盖率扫描环境通过文件复制方式自动准备
 
 ### NEVER 跳过 Phase 4 测试设计文档
 - **原因**：没有设计文档，Demo/UiTest/测试代码之间的控件 ID 契约无法保证，用例缺乏可追溯性
-- **正确做法**：Phase 4 在所有模式下（Flow A 补充用例、Flow B 标准扫描、Flow C 新增接口、ArkTS-Sta 静态模式）都必须生成设计文档（`.design.md`），Phase 5 基于设计文档生成代码。无论用例数量多少，都必须先生成设计文档再生成测试代码
-- **后果**：跳过会导致控件 ID 不一致、测试意图无法追溯、后续维护困难。且不生成设计文档的测试代码无法通过 Phase 7 验证中的 A.10/A.11 检查项
+- **正确做法**：Phase 4 在所有模式下（Flow A/B/C、ArkTS-Sta）都必须生成设计文档（`.design.md`），Phase 5 基于设计文档生成代码
+- **后果**：跳过会导致控件 ID 不一致、测试意图无法追溯。且无法通过 Phase 7 的 A.10/A.11 检查项
 
 ### NEVER 跳过 Phase 2 before/after 覆盖率对比
 - **原因**：没有 before baseline 无法量化测试用例的覆盖率贡献
@@ -320,13 +288,23 @@ Note: 覆盖率扫描环境通过文件复制方式自动准备
 
 ### NEVER 为已废弃接口生成测试用例
 - **原因**：标记 @deprecated 的接口已被弃用，测试价值低且维护成本高
-- **正确做法**：跳过 @deprecated 接口（除非用户明确要求），参考历史代码时若发现废弃接口，依据 .d.ts 中的 @useinstead 使用新接口替代
+- **正确做法**：跳过 @deprecated 接口（除非用户明确要求），依据 .d.ts 中的 @useinstead 使用新接口替代
 - **后果**：生成废弃接口测试浪费资源，且废弃接口可能在后续版本被移除
 
 ### NEVER 在新生成的代码中调用已废弃接口
 - **原因**：废弃接口在后续版本可能被移除，生成的测试将无法维护
 - **正确做法**：参考历史代码时若发现 @deprecated 接口，在新生成的代码中使用已知的新接口替代（不修改历史代码）
 - **后果**：依赖废弃接口的测试用例在 SDK 升级后编译失败
+
+### NEVER 在ArkTS-Sta项目中使用 as any 类型断言
+- **原因**：`as any` 是动态语法特性，ArkTS-Sta 静态编译模式下不通过
+- **正确做法**：使用具体的类型声明或类型守卫（type guard）。参考 `arkts-static-spec` 技能转换语法
+- **后果**：静态编译失败，错误码 `ESE0143` 或 `ESE0046`
+
+### NEVER 直接调用APICoverageDetector可执行文件
+- **原因**：直接调用跳过了环境准备（文件复制、arkts_config.json 配置）和残留文件清理
+- **正确做法**：使用 `scripts/async_coverage_scan.py` 或 `scripts/manage_scan_env.py` 封装脚本
+- **后果**：扫描结果不准确或扫描失败
 
 ## Thinking Framework: Before You Generate
 
@@ -372,6 +350,24 @@ API 是否有 @throws？
 | 系统能力 API | 8-12 | 各参数组合 + 错误码 + 边界值 + 并发/状态 |
 | UI 组件创建型 | 5-8 | 创建 + 销毁 + 属性设置 + 事件触发 |
 | 异步操作 API | 5-8 | 正常完成 + 超时 + 取消 + 并发调用 |
+
+### 测试价值优先级
+
+在 Phase 4 设计阶段，按以下优先级决定 API 的测试深度：
+
+| 优先级 | API 特征 | 测试策略 |
+|--------|---------|---------|
+| **P0 必测** | 有可观察行为的 API（返回值、状态变更、事件触发） | 完整覆盖 PARAM + RETURN + ERROR + BOUNDARY |
+| **P0 必测** | 生命周期/资源管理 API（create/destroy/open/close） | 完整覆盖 + 资源泄漏检查 + 异常 cleanup |
+| **P1 重点** | 权限/安全相关 API | 错误码 + 权限缺失场景 |
+| **P1 重点** | 异步/回调 API | 超时 + 取消 + 并发调用 + 回调异常 |
+| **P2 基础** | 简单属性读写 API | 正常值 + 边界值（不扩展参数组合） |
+| **跳过** | 无行为声明（纯类型定义、interface、type alias） | 不生成测试 |
+
+**停止扩展信号** — 以下情况停止增加用例：
+- 参数组合产生的用例不增加**行为覆盖**（只是换了个合法值）
+- ERROR 用例的错误码在 .d.ts @throws 中未声明
+- BOUNDARY 用例的边界值无文档依据
 
 ## Common Failure Patterns
 
@@ -435,17 +431,17 @@ API 是否有 @throws？
 
 集成于 Phase 2/9，**支持 Windows 原生和 WSL 环境**（WSL 通过 `/mnt/d/...` 路径调用 `.exe`）。Linux 计算云/远程服务器不可用，需用户提供扫描结果或跳过扫描。路径无效时向用户确认：1）更新路径；2）提供扫描结果（CSV/XLSX）；3）跳过扫描。详细用法见 `docs/ASYNC_COVERAGE_SCAN.md`，扫描流程见 `prompts/phase-2-coverage.md`。
 
+**覆盖率结果标签**（Phase 11 输出时必须标注）：
+
+| 标签 | 含义 | 触发条件 |
+|------|------|---------|
+| `coverage verified` | before/after 对比完成，覆盖率提升已量化 | Flow A/B Phase 10 正常完成 |
+| `coverage report provided` | 用户提供了覆盖率报告，基于报告生成测试 | Flow A 用户提供报告 |
+| `coverage scan skipped` | 扫描不可用（Linux/路径无效），用户确认跳过 | Phase 2 路径确认时用户选择跳过 |
+| `coverage: new API (baseline=0)` | 新增接口，生成前覆盖率为 0 | Flow C |
+
+**NEVER 将 `coverage scan skipped` 标注为 `coverage verified`** — 跳过扫描意味着覆盖率未经验证。
+
 ## Documentation
 
-**所有文档路径使用 `{skill_root}/docs/` 前缀**，其中 `skill_root` 从配置文件读取。
-
-> **注意**：`docs/` 目录下的文件供**人类用户参考**，Agent 在执行期间**不加载**这些文件。如需特定知识（如异步扫描流程），请加载对应的 prompt 文件（如 `prompts/phase-2-coverage.md`）。
-
-| Doc | Path | Purpose |
-|-----|------|---------|
-| Usage Guide | `docs/USAGE.md` | 3 usage methods with examples |
-| Cross-Platform Config | `docs/CROSS_PLATFORM_CONFIG.md` | Cross-platform configuration with hvigor support |
-| Config Guide | `docs/CONFIG.md` | Configuration mechanism |
-| Troubleshooting | `docs/TROUBLESHOOTING.md` | 11 FAQ items |
-| Async Coverage Scan | `docs/ASYNC_COVERAGE_SCAN.md` | APICoverageDetector 工具详解 + 异步扫描流程 |
-| Demo Integration Plan | `docs/DEMO_INTEGRATION_PLAN.md` | Demo Pipeline 整合方案（Phase 5A/5B） |
+> **注意**：`{skill_root}/docs/` 下的文件供**人类用户参考**，Agent 在执行期间**不加载**这些文件。如需特定知识（如异步扫描流程），请加载对应的 prompt 文件（如 `prompts/phase-2-coverage.md`）。

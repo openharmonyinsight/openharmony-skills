@@ -1,0 +1,11 @@
+export const ohLogPrintNormalParam: () => boolean;
+export const ohLogPrintAllLevels: () => boolean;
+export const ohLogPrintReturn: () => number;
+export const ohLogPrintDomainBoundary: () => boolean;
+export const ohLogIsLoggableTrue: () => boolean;
+export const ohLogIsLoggableFalse: () => boolean;
+export const ohLogIsLoggableEmptyTag: () => boolean;
+export const ohLogIsLoggableInvalidLevel: () => boolean;
+export const ohLogSetMinLogLevelInfo: () => boolean;
+export const ohLogSetMinLogLevelFatal: () => boolean;
+export const ohLogSetMinLogLevelRestore: () => boolean;

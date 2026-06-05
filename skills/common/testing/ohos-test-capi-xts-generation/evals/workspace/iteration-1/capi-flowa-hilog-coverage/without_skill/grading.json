@@ -1,0 +1,104 @@
+{
+  "expectations": [
+    {
+      "text": "A1: @tc annotations present",
+      "passed": false,
+      "evidence": "No @tc JSDoc annotations on any it() block in HilogCoverage.test.ets — all tests have bare it() calls without @tc comments"
+    },
+    {
+      "text": "A2: Hypium imports",
+      "passed": true,
+      "evidence": "Line 17: import { describe, beforeAll, afterAll, it, expect, TestType, Size, Level } from '@ohos/hypium'"
+    },
+    {
+      "text": "A3: Correct C API header include",
+      "passed": true,
+      "evidence": "NapiTest.cpp line 16: #include <hilog/log.h>"
+    },
+    {
+      "text": "A4: Error handling",
+      "passed": false,
+      "evidence": "NapiTest.cpp has no argument validation or napi_throw_error. ETS catch blocks just call done() without assertions — swallow errors silently"
+    },
+    {
+      "text": "A5: No BUILD.gn modifications",
+      "passed": true,
+      "evidence": "No BUILD.gn file found in outputs directory"
+    },
+    {
+      "text": "A6: Test design doc (.design.md) exists with SUB_ IDs",
+      "passed": false,
+      "evidence": "No .design.md file generated in iteration-1"
+    },
+    {
+      "text": "A7: Valid C++ and ArkTS syntax",
+      "passed": true,
+      "evidence": "C++ uses standard napi patterns, ArkTS uses proper Hypium syntax with async done callbacks"
+    },
+    {
+      "text": "A8: Cleanup/afterAll present with state restoration",
+      "passed": false,
+      "evidence": "Lines 36-37: beforeAll and afterAll are empty — no log level restoration after tests that call OHLogSetLogLevel"
+    },
+    {
+      "text": "A9: API-only usage",
+      "passed": true,
+      "evidence": "NapiTest.cpp only calls OH_LOG_PrintMsg, OH_LOG_PrintMsgByLen, OH_LOG_VPrint, OH_LOG_SetLogLevel from hilog/log.h"
+    },
+    {
+      "text": "A10: Describe block naming",
+      "passed": true,
+      "evidence": "Line 33: describe('HilogCoverageTest', () => ...)"
+    },
+    {
+      "text": "C1: THREE artifacts generated",
+      "passed": true,
+      "evidence": "NapiTest.cpp + index.d.ts + HilogCoverage.test.ets all exist"
+    },
+    {
+      "text": "C2: napi_property_descriptor registration",
+      "passed": true,
+      "evidence": "Lines 164-175: Init function with desc[] array registering 4 wrapper functions"
+    },
+    {
+      "text": "C3: index.d.ts export const",
+      "passed": true,
+      "evidence": "4 export const declarations matching all desc[] JS names"
+    },
+    {
+      "text": "C4: ETS imports from libentry",
+      "passed": false,
+      "evidence": "Line 16: import hilogNapi from 'libhilog_napi.so' — uses custom module name instead of standard 'libentry.so'"
+    },
+    {
+      "text": "C5: SUB_ test naming",
+      "passed": false,
+      "evidence": "Test names do NOT use SUB_ prefix: 'OHLogPrintMsg_0100', 'OHLogPrintMsgByLen_0100', 'PreferStrategy_UNSET_LOGLEVEL_0100', etc."
+    },
+    {
+      "text": "C6: TestType/Size/Level decorators",
+      "passed": true,
+      "evidence": "All it() calls use TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVELn"
+    },
+    {
+      "text": "F1: Design doc has coverage statistics table",
+      "passed": false,
+      "evidence": "No .design.md file generated in iteration-1"
+    },
+    {
+      "text": "F2: Design doc has N-API function name mapping",
+      "passed": false,
+      "evidence": "No .design.md file generated in iteration-1"
+    },
+    {
+      "text": "F3: Design doc test case IDs match code IDs",
+      "passed": false,
+      "evidence": "No .design.md file generated in iteration-1"
+    },
+    {
+      "text": "F4: Design doc has detailed test steps",
+      "passed": false,
+      "evidence": "No .design.md file generated in iteration-1"
+    }
+  ]
+}

@@ -68,6 +68,9 @@ OpenHarmony CAPI XTS 测试用例生成器 — 方式2（N-API 封装测试）
 | Linux 编译流程 | `modules/L3_Validation/builder/linux_compile_workflow_c.md` |
 | 提取测试套名称 | `modules/L3_Validation/builder/quick_reference_extract_suite_name.md` |
 | 自动修复 N-API 三重校验问题 | `scripts/auto_fix_napi_triple.sh` |
+| CAPI 测试模式参考（参数验证、内存释放、边界值） | `references/test_patterns_c.md` |
+| 测试设计文档格式模板 | `references/design_doc_guide.md` |
+| 编译/运行错误排查 | `references/error_handling.md` |
 
 ## Prerequisites
 
@@ -337,47 +340,24 @@ Module:    references/subsystems/{Subsystem}/{Module}.md  (module-specific rules
 - **原因**：Flow A是覆盖率报告驱动模式，明确目标是补充已有工程的缺失测试
 - **正确做法**：仅在已有工程中补充测试用例，如果报告对应的工程不存在应向用户确认
 
-## Mandatory Phase 6: N-API Triple Verification
+## Phase 6: N-API Triple Verification
 
-This phase is the **core quality gate**. Skipping it will cause runtime crashes, missing function registrations, and type mismatches between C++, TypeScript, and ETS.
+**MANDATORY - READ ENTIRE FILE**: Read [`modules/L2_Generation/generator/verification_common.md`](modules/L2_Generation/generator/verification_common.md) (~600 lines) completely.
 
-### Self-Verification Method (perform after generating all files)
+**MANDATORY - NEVER SKIP**: Skipping causes runtime crashes, missing function registrations, and type mismatches between C++, TypeScript, and ETS.
 
-After generating NapiTest.cpp, index.d.ts, and .test.ets files, you MUST perform the following cross-checks before considering generation complete. For each check, list the extracted items and confirm they match.
-
-#### Check 1: C++ Registration Completeness
-
-Extract all `static napi_value` function definitions from NapiTest.cpp, then verify each one appears in the `napi_property_descriptor desc[]` array in `Init`. Report any missing registrations.
-
-#### Check 2: TypeScript ↔ C++ Consistency
-
-Extract all JS function names (the first string parameter) from `napi_property_descriptor desc[]`, then verify each one has a matching `export const` in `index.d.ts`. Report any missing declarations.
-
-#### Check 3: ETS ↔ TypeScript Consistency
-
-Extract all `testNapi.xxx` calls from .test.ets files, then verify each `xxx` has a matching `export const` in `index.d.ts`. Report any undefined references.
-
-#### Output Format
-
-After completing all checks, output a summary:
-
-```
-=== N-API Triple Verification ===
-C++ functions defined: N
-C++ functions registered: N (missing: none)
-TypeScript declarations: N (missing: none)
-ETS testNapi calls: N (undefined: none)
-Result: PASS
-```
-
-If any check fails, fix the generated files immediately before proceeding.
-
-### Automated Verification Scripts (run if target path exists)
-
+**Automated Verification Scripts** (run if target path exists):
 ```bash
 bash scripts/verify_napi_triple.sh ${TARGET_PATH}
 bash scripts/check_test_suite_structure.sh ${TARGET_PATH}
 ```
+
+**Auto-Fix Script** (use when verification fails):
+```bash
+bash scripts/auto_fix_napi_triple.sh ${TARGET_PATH}
+```
+
+**编译/运行失败时**：加载 [`references/error_handling.md`](references/error_handling.md)（错误分级、重试策略、6 条 Common Failure Patterns 及排查路径）。
 
 ## Generation Strategy
 

@@ -1,0 +1,22 @@
+{
+  "string": [
+    {
+      "name": "module_test_desc",
+      "value": "ActsZlibCapiTest test module"
+    },
+    {
+      "name": "TestAbility_desc",
+      "value": "ActsZlibCapiTest Test Ability"
+    },
+    {
+      "name": "TestAbility_label",
+      "value": "ActsZlibCapiTest"
+    }
+  ],
+  "color": [
+    {
+      "name": "start_window_background",
+      "value": "#FFFFFF"
+    }
+  ]
+}

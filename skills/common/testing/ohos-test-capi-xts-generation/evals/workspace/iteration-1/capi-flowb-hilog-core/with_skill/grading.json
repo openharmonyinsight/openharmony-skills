@@ -1,0 +1,104 @@
+{
+  "expectations": [
+    {
+      "text": "A1: @tc annotations present",
+      "passed": true,
+      "evidence": "All 11 it() blocks have @tc.name/@tc.desc/@tc.type/@tc.size/@tc.level JSDoc blocks, e.g. lines 36-41, 56-61"
+    },
+    {
+      "text": "A2: Hypium imports",
+      "passed": true,
+      "evidence": "Line 16: import { describe, beforeAll, afterEach, afterAll, it, expect, TestType, Size, Level } from '@ohos/hypium'"
+    },
+    {
+      "text": "A3: Correct C API header include",
+      "passed": true,
+      "evidence": "NapiTest.cpp line 17: #include \"hilog/log.h\""
+    },
+    {
+      "text": "A4: Error handling",
+      "passed": true,
+      "evidence": "NapiTest.cpp uses proper napi patterns, no napi_throw_error needed since wrappers have no invalid args. ETS uses try/catch with expect().assertFail()"
+    },
+    {
+      "text": "A5: No BUILD.gn modifications",
+      "passed": true,
+      "evidence": "No BUILD.gn file found in outputs directory"
+    },
+    {
+      "text": "A6: Test design doc (.design.md) exists with SUB_ IDs",
+      "passed": false,
+      "evidence": "No .design.md file generated in iteration-1"
+    },
+    {
+      "text": "A7: Valid C++ and ArkTS syntax",
+      "passed": true,
+      "evidence": "C++ uses standard napi patterns, ArkTS uses proper Hypium describe/it/expect syntax"
+    },
+    {
+      "text": "A8: Cleanup/afterAll present with state restoration",
+      "passed": true,
+      "evidence": "Lines 30-33: afterAll restores hilog.setMinLogLevel(hilog.LogLevel.INFO)"
+    },
+    {
+      "text": "A9: API-only usage",
+      "passed": true,
+      "evidence": "NapiTest.cpp only calls OH_LOG_Print, OH_LOG_IsLoggable, OH_LOG_SetMinLogLevel from hilog/log.h"
+    },
+    {
+      "text": "A10: Describe block naming",
+      "passed": true,
+      "evidence": "Line 24: describe('HilogNdkTest', function () ...)"
+    },
+    {
+      "text": "C1: THREE artifacts generated",
+      "passed": true,
+      "evidence": "NapiTest.cpp + index.d.ts + HilogNdkTest.test.ets all exist"
+    },
+    {
+      "text": "C2: napi_property_descriptor registration",
+      "passed": true,
+      "evidence": "Lines 136-165: Init function with desc[] array registering 11 wrapper functions via napi_define_properties"
+    },
+    {
+      "text": "C3: index.d.ts export const",
+      "passed": true,
+      "evidence": "11 export const declarations matching all desc[] JS names (ohLogPrintNormalParam, ohLogPrintAllLevels, etc.)"
+    },
+    {
+      "text": "C4: ETS imports from libentry",
+      "passed": true,
+      "evidence": "Line 18: import testNapi from 'libentry.so'"
+    },
+    {
+      "text": "C5: SUB_ test naming",
+      "passed": true,
+      "evidence": "All test names use SUB_HIVIEWDFX_HILOG_ prefix, e.g. 'SUB_HIVIEWDFX_HILOG_OH_LOG_Print_PARAM_001'"
+    },
+    {
+      "text": "C6: TestType/Size/Level decorators",
+      "passed": true,
+      "evidence": "All it() calls use TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVELn, e.g. line 42"
+    },
+    {
+      "text": "F1: Design doc has coverage statistics table",
+      "passed": false,
+      "evidence": "No .design.md file generated in iteration-1"
+    },
+    {
+      "text": "F2: Design doc has N-API function name mapping",
+      "passed": false,
+      "evidence": "No .design.md file generated in iteration-1"
+    },
+    {
+      "text": "F3: Design doc test case IDs match code IDs",
+      "passed": false,
+      "evidence": "No .design.md file generated in iteration-1"
+    },
+    {
+      "text": "F4: Design doc has detailed test steps",
+      "passed": false,
+      "evidence": "No .design.md file generated in iteration-1"
+    }
+  ]
+}

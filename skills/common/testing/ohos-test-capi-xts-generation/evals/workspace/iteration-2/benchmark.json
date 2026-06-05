@@ -1,0 +1,72 @@
+{
+  "metadata": {
+    "skill_name": "ohos-test-capi-xts-generation",
+    "skill_path": "/home/chen/openharmony-skills_4397/skills/common/testing/ohos-test-capi-xts-generation",
+    "executor_model": "glm-5.1",
+    "timestamp": "2026-06-03T18:00:00Z",
+    "evals_run": ["capi-flowb-hilog-core", "capi-flowa-hilog-coverage", "capi-newproject-zlib"],
+    "runs_per_configuration": 1,
+    "assertions_version": 4,
+    "total_assertions": 20,
+    "change_from_iter1": "Added Phase 4 (design doc generator) as mandatory, A6 now enforced"
+  },
+  "configurations": [
+    {
+      "name": "with_skill",
+      "pass_rate": 0.85,
+      "total_evals": 3,
+      "total_assertions": 60,
+      "passed_assertions": 51
+    },
+    {
+      "name": "without_skill",
+      "pass_rate": 0.667,
+      "total_evals": 3,
+      "total_assertions": 60,
+      "passed_assertions": 40
+    }
+  ],
+  "run_summary": {
+    "delta": {
+      "pass_rate": "+0.183"
+    }
+  },
+  "evals": [
+    {
+      "name": "capi-flowb-hilog-core",
+      "with_skill": {"pass_rate": 0.95, "assertions_passed": "19/20"},
+      "without_skill": {"pass_rate": 0.70, "assertions_passed": "14/20"}
+    },
+    {
+      "name": "capi-flowa-hilog-coverage",
+      "with_skill": {"pass_rate": 0.80, "assertions_passed": "16/20"},
+      "without_skill": {"pass_rate": 0.60, "assertions_passed": "12/20"}
+    },
+    {
+      "name": "capi-newproject-zlib",
+      "with_skill": {"pass_rate": 0.80, "assertions_passed": "16/20"},
+      "without_skill": {"pass_rate": 0.70, "assertions_passed": "14/20"}
+    }
+  ],
+  "design_doc_assertions": {
+    "A6_design_doc_exists": {"with_skill": "3/3 PASS", "without_skill": "0/3 FAIL", "delta": "+3"},
+    "F1_coverage_stats": {"with_skill": "3/3 PASS", "without_skill": "0/3 FAIL", "delta": "+3"},
+    "F2_napi_mapping": {"with_skill": "3/3 PASS", "without_skill": "0/3 FAIL", "delta": "+3"},
+    "F3_id_match": {"with_skill": "1/3 PASS", "without_skill": "0/3 FAIL", "delta": "+1"},
+    "F4_detailed_steps": {"with_skill": "3/3 PASS", "without_skill": "0/3 FAIL", "delta": "+3"}
+  },
+  "iteration_comparison": {
+    "iter1_with_skill_pass_rate": 0.877,
+    "iter2_with_skill_pass_rate": 0.85,
+    "delta": "-0.027 (new assertions F1-F4 added, A6 now enforced)"
+  },
+  "notes": [
+    "Phase 4 design doc change SUCCESSFUL: with_skill 3/3 generate .design.md, without_skill 0/3",
+    "F1 (coverage stats), F2 (N-API mapping), F4 (detailed steps): with_skill 3/3 PASS — design doc quality good",
+    "F3 (ID match between design doc and code): only 1/3 PASS — design doc uses SUB_ IDs but test code uses descriptive names. Skill needs to enforce SUB_ IDs in it() names",
+    "A6 (design doc): 0/3 in iter1 → 3/3 in iter2 for with_skill — mandatory Phase 4 is working",
+    "Pass rate delta: iter1 +4.6% → iter2 +18.3% — design doc assertions dramatically increase skill value",
+    "A8 (cleanup) remains weak: 1/3 for both with_skill and without_skill",
+    "C5 (SUB_ naming in code): 1/3 with_skill, 0/3 without_skill — only FlowB hilog uses SUB_ in it()"
+  ]
+}
