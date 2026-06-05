@@ -1,6 +1,0 @@
-{
-  "eval_id": 3,
-  "eval_name": "capi-newproject-zlib",
-  "prompt": "请为 zlib 子系统生成 N-API 封装 XTS 测试用例。头文件路径 interface/sdk_c/third_party/zlib/zlib.h，重点关注 compress、uncompress、compressBound 三个函数。用户未指定目标测试套路径，请根据 subsystem_mapping 确定路径。",
-  "assertions": []
-}

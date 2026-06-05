@@ -1,6 +1,0 @@
-{
-  "eval_id": 1,
-  "eval_name": "capi-flowb-hilog-core",
-  "prompt": "请为 hilog 子系统的 log.h 生成 N-API 封装 XTS 测试用例。头文件路径 interface/sdk_c/hiviewdfx/hilog/include/hilog/log.h，重点关注 OH_LOG_Print、OH_LOG_IsLoggable、OH_LOG_SetMinLogLevel 三个函数。目标测试套路径 test/xts/acts/hiviewdfx/hilogndktest",
-  "assertions": []
-}

@@ -1,6 +1,0 @@
-{
-  name: "libzlibcapitest.so",
-  types: "./Index.d.ts",
-  version: "1.0.0",
-  description: "zlib capi napi wrapper test library",
-}
