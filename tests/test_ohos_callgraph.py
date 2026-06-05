@@ -10,7 +10,10 @@ from pathlib import Path
 from unittest.mock import patch
 
 
-SCRIPT_PATH = Path(__file__).resolve().parents[1] / "skills" / "ohos-callgraph" / "ohos_callgraph.py"
+SCRIPT_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "skills" / "common" / "development" / "ohos-dev-cpp-callgraph-analysis" / "ohos_callgraph.py"
+)
 SPEC = importlib.util.spec_from_file_location("ohos_callgraph", SCRIPT_PATH)
 ohos_callgraph = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(ohos_callgraph)
