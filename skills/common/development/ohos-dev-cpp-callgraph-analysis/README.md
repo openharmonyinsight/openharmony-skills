@@ -14,6 +14,7 @@ Use this skill for cross-subsystem OpenHarmony C++ call-chain completeness analy
 
 - `SKILL.md` is the agent entry point.
 - `ohos_callgraph.py` is an optional candidate-edge discovery helper. Its output is not completeness proof.
+- `evals/` contains seed prompts and expected behaviors for skill evaluation.
 
 ## Verification
 
