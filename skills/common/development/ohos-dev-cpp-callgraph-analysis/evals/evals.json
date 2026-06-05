@@ -60,6 +60,18 @@
         "The response uses alternative source, build, symbol, or runtime evidence where available.",
         "The response concludes Not provable if important edges remain unknown."
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "在一个新的 OpenHarmony C++ 仓环境中运行调用链分析。当前没有可用 LSP/MCP，但已知源码根、当前仓、产品和构建目标。请自动准备 LSP 后再开始分析。",
+      "expected_output": "Bootstraps a repository-scoped, tool-neutral clangd MCP service with explicit environment context and validates it before analysis.",
+      "files": [],
+      "expectations": [
+        "The response resolves and explicitly passes the OpenHarmony root, repository root, product, and build target instead of asking the setup script to search for them.",
+        "The response obtains approval before downloading dependencies, invoking an OpenHarmony build, or modifying MCP client configuration.",
+        "The response uses scripts/setup_lsp.py and avoids configuring clangd directly against a product-wide compile database.",
+        "The response verifies MCP tool discovery, warms clangd with hover before global definition or references, and falls back without blocking analysis if setup fails."
+      ]
     }
   ]
 }

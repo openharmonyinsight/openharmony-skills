@@ -9,3 +9,4 @@ The cases cover:
 - Helper reverse and keyword-analysis limitations.
 - Dynamic loading evidence.
 - Incomplete LSP and build-artifact failure handling.
+- Repository-scoped LSP bootstrap in a new environment.

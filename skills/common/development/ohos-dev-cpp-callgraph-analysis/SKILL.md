@@ -20,6 +20,48 @@ This skill has two layers:
 
 Do not claim a call chain is complete from script output alone.
 
+## Bootstrap Repository-Scoped LSP
+
+Before analysis, check whether the current agent already exposes a working LSP/MCP tool backed by
+the correct OpenHarmony product compile context. If it does, use it and skip bootstrap.
+
+If LSP is missing or cannot resolve the repository correctly:
+
+1. Resolve the OpenHarmony source root, current repository root, product, and build target from the
+   current task/environment. Pass them explicitly; do not make the setup script search for them.
+2. Tell the user that setup may download Go/MCP dependencies, invoke an OpenHarmony build to
+   generate the full compile database, and modify detected MCP client configuration. Obtain approval
+   before network access, a build, or client registration.
+3. Run the bundled setup script:
+
+```bash
+SETUP=/path/to/skills/common/development/ohos-dev-cpp-callgraph-analysis/scripts/setup_lsp.py
+python3 "$SETUP" \
+  --oh-root <openharmony-source-root> \
+  --repo-root <current-repository-root> \
+  --product <product-name> \
+  --build-target <build-target> \
+  --generate-compile-db \
+  --client auto
+```
+
+If `<oh-root>/out/<product>/compile_commands.json` already exists, omit
+`--generate-compile-db`. The script streams and filters the product-wide database into a persistent,
+repository-scoped cache; it does not load the full database into memory. It locates the OpenHarmony
+prebuilt clangd, installs pinned `mcp-language-server` dependencies when missing, registers detected
+Codex/Claude MCP clients, and runs MCP tool-discovery plus clangd semantic smoke tests.
+
+The generated MCP service is tool-neutral. `--client auto` only registers supported clients found
+in the environment. Use repeated `--client codex` / `--client claude`, or `--client none` to prepare
+without client registration.
+
+After bootstrap, start semantic analysis with `hover` on a relevant source/header location before
+the first global `definition` or `references` query. A fresh clangd process may return `not found`
+for a global query until at least one relevant file is opened.
+
+If bootstrap or smoke testing fails, record LSP as unavailable/incomplete and continue with source,
+build, symbol, helper, and runtime evidence. Do not block the entire call-chain analysis on LSP.
+
 ## Required Workflow
 
 ### 1. Define the Analysis Target
@@ -166,6 +208,11 @@ Use the helper script only as a candidate discovery aid for the evidence workflo
 ## LSP Guidance
 
 Use LSP/clangd as evidence when it is backed by the correct compile context for the OpenHarmony product under review. If the repository lacks `compile_commands.json` or clangd cannot resolve includes/macros, mark LSP evidence as incomplete and rely on source/build evidence instead.
+
+When LSP is unavailable and the environment permits setup, follow **Bootstrap Repository-Scoped
+LSP** before falling back. Do not use a product-wide compilation database directly when a
+repository-scoped database can be generated; the product database can be several gigabytes and
+causes unnecessary indexing cost.
 
 Recommended LSP-backed checks:
 
