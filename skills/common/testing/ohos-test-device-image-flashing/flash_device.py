@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-flash_device.py — Flash an OpenHarmony device via hdc updater mode.
+flash_device.py — Flash an OpenHarmony test device via hdc updater mode.
 Parses partition table from parameter.txt automatically.
 """
 import argparse, glob, os, re, shutil, subprocess, sys, time

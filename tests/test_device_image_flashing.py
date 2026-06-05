@@ -18,12 +18,12 @@ def load_module(name, path):
     return module
 
 
-SKILL_DIR = ROOT / "skills" / "common" / "cicd" / "ohos-ci-device-image-flashing"
+SKILL_DIR = ROOT / "skills" / "common" / "testing" / "ohos-test-device-image-flashing"
 download_daily = load_module("download_daily", SKILL_DIR / "download_daily.py")
 flash_device = load_module("flash_device", SKILL_DIR / "flash_device.py")
 
 
-class FlashDayu200Test(unittest.TestCase):
+class DeviceImageFlashingTest(unittest.TestCase):
     def test_safe_extract_rejects_path_traversal_member(self):
         with tempfile.TemporaryDirectory() as td:
             archive = Path(td) / "image.tar.gz"

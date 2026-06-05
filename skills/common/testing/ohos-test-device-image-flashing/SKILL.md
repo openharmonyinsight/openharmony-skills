@@ -1,10 +1,10 @@
 ---
-name: ohos-ci-device-image-flashing
+name: ohos-test-device-image-flashing
 description: Use when the user wants to download OpenHarmony daily build images or flash them to a real device (DAYU200/RK3568 or others). Triggers on daily build, DAYU200, RK3568, flashing, burning, hdc reboot, upgrading firmware.
 metadata:
   author: openharmony
   scope: common
-  stage: cicd
+  stage: testing
   domain: device
   capability: image-flashing
   version: 0.1.0
@@ -29,7 +29,7 @@ Use the actual installed skill directory when running the helper scripts.
 ### Direct (on Windows with USB to board)
 
 ```bash
-SKILL_DIR=<installed-skill-dir>/ohos-ci-device-image-flashing
+SKILL_DIR=<installed-skill-dir>/ohos-test-device-image-flashing
 
 # Download
 python3 "$SKILL_DIR/download_daily.py" --component dayu200
@@ -43,7 +43,7 @@ python3 "$SKILL_DIR/flash_device.py" --img-dir daily_build
 The scripts run on the Windows target that has USB to the board. Upload via SSH then execute remotely.
 
 ```bash
-SKILL_DIR=<installed-skill-dir>/ohos-ci-device-image-flashing
+SKILL_DIR=<installed-skill-dir>/ohos-test-device-image-flashing
 SSH_PORT=<ssh-port>
 SSH_USER=<ssh-user>
 SSH_HOST=<ssh-host>

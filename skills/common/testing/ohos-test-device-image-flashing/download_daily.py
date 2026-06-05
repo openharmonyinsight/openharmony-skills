@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-download_daily.py — 下载 OpenHarmony 日构建设备镜像
+download_daily.py — 下载 OpenHarmony 测试设备日构建镜像
 
 从 DCP API 查询最近的 master 分支日构建，下载并解压。
 支持指定设备组件名（默认 dayu200）。
