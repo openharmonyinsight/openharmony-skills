@@ -110,6 +110,40 @@ validate_params() {
         echo -e "${RED}❌ 编译脚本不存在: $OH_ROOT/test/xts/acts/build.sh${NC}"
         exit 1
     fi
+
+    resolve_suite_name
+}
+
+resolve_suite_name() {
+    if [[ "$SUITE_NAME" == Acts* ]]; then
+        return 0
+    fi
+
+    local acts_dir="$OH_ROOT/test/xts/acts"
+    if [ ! -d "$acts_dir" ]; then
+        return 0
+    fi
+
+    local found_gn
+    found_gn=$(find "$acts_dir" -path "*${SUITE_NAME}" -name "BUILD.gn" 2>/dev/null | head -1)
+    if [ -z "$found_gn" ]; then
+        return 0
+    fi
+
+    local target_name
+    target_name=$(grep -oP 'ohos_js_app_suite\("\K[^"]+' "$found_gn" 2>/dev/null | head -1)
+    if [ -z "$target_name" ]; then
+        return 0
+    fi
+
+    echo -e "${YELLOW}ℹ️  SUITE_NAME 解析: '$SUITE_NAME' -> '$target_name'${NC}"
+    echo -e "${YELLOW}   BUILD.gn: $found_gn${NC}"
+
+    SUITE_NAME="$target_name"
+    LOG_FILE="${LOG_DIR}/${SUITE_NAME}.log"
+    PID_FILE="${LOG_DIR}/${SUITE_NAME}.pid"
+    STATUS_FILE="${LOG_DIR}/${SUITE_NAME}.status"
+    ERROR_FILE="${LOG_DIR}/${SUITE_NAME}.error"
 }
 
 # 创建日志目录

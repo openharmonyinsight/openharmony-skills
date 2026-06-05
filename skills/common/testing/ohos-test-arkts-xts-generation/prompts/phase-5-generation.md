@@ -2,15 +2,17 @@
 
 ---
 
-### 📦 MANDATORY - 必须先加载以下模块
+> **`knowledge_root` 降级**：下文中所有 `{knowledge_root}/...` 路径，若 `knowledge_root` 未配置或路径不存在，则降级从 `{skill_root}/modules/` 和 `{skill_root}/references/` 加载对应内置知识。完整映射表见 `system.md`「知识库路径与降级规则」。
 
-**在执行本 Phase 前，你必须完整阅读以下文件**（不得设置行数限制）：
+### 📚 参考文档（按需查阅）
 
-```
-{skill_root}/modules/L2_Generation/generator/test_generator.md
-{skill_root}/modules/L2_Generation/generator/templates.md
-{skill_root}/modules/L2_Generation/generator/quality_constraints.md
-```
+本 Phase 执行过程中可参考以下文件，遇到具体问题时按需查阅：
+
+| 文件 | 内容 | 何时查阅 |
+|------|------|---------|
+| `{knowledge_root}/common/xts_experience/09_methodology/08_test_generator.md` | 测试代码生成方法论（生成流程、用例结构、断言模式） | 生成策略不确定、用例结构模板需要参考时 |
+| `{knowledge_root}/common/xts_experience/09_methodology/12_code_templates.md` | 代码模板库（PARAM/ERROR/RETURN/BOUNDARY 各类型模板） | 需要具体代码模板作为生成参考时 |
+| `{knowledge_root}/common/xts_experience/09_methodology/16_quality_constraints.md` | 质量约束规则（命名、断言、导入规范） | 不确定编码规范、需要校验生成代码质量时 |
 
 ---
 
@@ -20,14 +22,26 @@
 
 | 任务 | 加载文件 | 说明 |
 |------|---------|------|
-| 生成参数/返回值/边界值测试 | `{skill_root}/modules/L2_Generation/generator/param_test.md` | 参数测试详细规则 |
-| 生成错误码测试 | `{skill_root}/modules/L2_Generation/generator/error_test.md` | 错误码提取和测试规则 |
-| 需要状态机/生命周期等特有场景 | `{skill_root}/modules/L2_Generation/generator/HarmonyOS_Test_Design_Spec.md` | HarmonyOS 特有测试知识 |
-| ArkTS-Sta 静态项目 | `{skill_root}/modules/L2_Generation/generator/arkts_static_constraints.md` | 静态语法约束 |
-| 需要 ArkTS 语法参考 | `{skill_root}/references/conventions/arkts_standards.md` | 语法规范 |
-| 需要命名参考 | `{skill_root}/references/conventions/test_conventions.md` | 命名规范 |
+| 生成参数/返回值/边界值测试 | `{knowledge_root}/common/xts_experience/09_methodology/10_param_test.md` | 参数测试详细规则 |
+| 生成错误码测试 | `{knowledge_root}/common/xts_experience/09_methodology/11_error_test.md` | 错误码提取和测试规则 |
+| 需要状态机/生命周期等特有场景 | `{knowledge_root}/common/xts_experience/09_methodology/17_test_design_spec.md` | HarmonyOS 特有测试知识 |
+| ArkTS-Sta 静态项目 | `{knowledge_root}/common/xts_experience/09_methodology/18_arkts_static_constraints.md` | 静态语法约束 |
+| 需要 ArkTS 语法参考 | `{knowledge_root}/common/xts_experience/02_arkts/01_dynamic_syntax_rules.md` | 语法规范 |
+| 需要命名参考 | `{knowledge_root}/common/xts_experience/03_standards/01_test_naming_convention.md` | 命名规范 |
+| **ArkUI 子系统测试** | `{knowledge_root}/domains/ArkUI/xts_experience/_common.md` | ArkUI 6类分类模型+约束+V1/V2装饰器 |
+| ArkUI 动态/静态语法差异 | `{knowledge_root}/domains/ArkUI/xts_experience/syntax_diff.md` | 6维语法差异速查 |
+| ArkUI Inspector断言/颜色 | `{knowledge_root}/domains/ArkUI/xts_experience/arkui_test_patterns.md` | Inspector断言+颜色格式+Scroll规则 |
+| ArkUI 静态导入 | `{knowledge_root}/domains/ArkUI/xts_experience/arkui_static_imports.md` | 仅ArkTS-Sta项目 |
+| ArkUI 组件创建型API | `{knowledge_root}/domains/ArkUI/xts_experience/category1_组件创建型.md` | 触发：构造方法/组件实例化 |
+| ArkUI 属性API | `{knowledge_root}/domains/ArkUI/xts_experience/category2_属性API.md` | 触发：设置/获取组件属性 |
+| ArkUI 回调类事件 | `{knowledge_root}/domains/ArkUI/xts_experience/category3_回调类事件.md` | 触发：事件回调/onXxx |
+| ArkUI 状态管理装饰器 | `{knowledge_root}/domains/ArkUI/xts_experience/category4_状态管理装饰器.md` | 触发：@State/@Prop/@Link/@Monitor等 |
+| ArkUI 系统能力API | `{knowledge_root}/domains/ArkUI/xts_experience/category5_系统能力API.md` | 触发：控制器/导航/FrameNode/手势 |
+| ArkUI 动效类API | `{knowledge_root}/domains/ArkUI/xts_experience/category6_动效类API.md` | 触发：animation/过渡/运动 |
 
-> **注意**：静态项目（ArkTS-Sta）时，使用 `arkts_static_constraints.md` 约束摘要，**不要在生成阶段调用完整的** `arkts-static-spec` 技能（token 开销大）。
+> **注意**：
+> 1. 静态项目（ArkTS-Sta）时，使用 `arkts_static_constraints.md` 约束摘要，**不要在生成阶段调用完整的** `arkts-static-spec` 技能（token 开销大）。
+> 2. ArkUI 子系统测试时，**必须先加载** `_common.md`（6类分类模型），然后根据API类型按需加载对应的 category 文件。同时加载 `arkui_test_patterns.md`（Inspector断言模式）。
 
 ---
 
@@ -36,21 +50,21 @@
 本 Phase 期间禁止加载以下模块：
 
 ```
-所有 L1_Analysis 模块（modules/L1_Analysis/）
-所有 L3_Validation 模块（modules/L3_Validation/）
+所有 L1_Analysis 相关模块
+所有 L3_Validation 相关模块
 ```
 
 ---
 
 **加载模块**:
-- `modules/L2_Generation/generator/test_generator.md`
-- `modules/L2_Generation/generator/templates.md`
-- `modules/L2_Generation/generator/quality_constraints.md`
-- `modules/L2_Generation/generator/param_test.md`（生成参数/返回值/边界值测试时按需加载）
-- `modules/L2_Generation/generator/error_test.md`（生成错误码测试时按需加载）
-- `modules/L2_Generation/generator/HarmonyOS_Test_Design_Spec.md`（需要状态机/生命周期/兼容性/安全性等特有场景知识时按需加载）
+- `{knowledge_root}/common/xts_experience/09_methodology/08_test_generator.md`
+- `{knowledge_root}/common/xts_experience/09_methodology/12_code_templates.md`
+- `{knowledge_root}/common/xts_experience/09_methodology/16_quality_constraints.md`
+- `{knowledge_root}/common/xts_experience/09_methodology/10_param_test.md`（生成参数/返回值/边界值测试时按需加载）
+- `{knowledge_root}/common/xts_experience/09_methodology/11_error_test.md`（生成错误码测试时按需加载）
+- `{knowledge_root}/common/xts_experience/09_methodology/17_test_design_spec.md`（需要状态机/生命周期/兼容性/安全性等特有场景知识时按需加载）
 - `arkts-static-spec` 技能（仅静态项目 ArkTS-Sta 时加载，使用以下约束摘要替代全量加载）
-- `modules/L2_Generation/generator/arkts_static_constraints.md`（仅静态项目 ArkTS-Sta 时加载）
+- `{knowledge_root}/common/xts_experience/09_methodology/18_arkts_static_constraints.md`（仅静态项目 ArkTS-Sta 时加载）
 
 **关键变更**：此阶段仅生成测试用例代码，严格依据 Phase 4 生成的测试设计文档执行。设计驱动生成确保测试用例的完整性和一致性。
 
@@ -66,6 +80,19 @@
 
 ### 生成流程
 
+> **⚠️ 生成前必读**：以下 8 条类型规范约束来源于实际编译错误（问题 6），违反将导致编译失败。在生成**每一行代码**时必须逐条对照检查。**Subagent 禁止"优化"模板中的任何类型注解、Level 值或 import 路径**（问题 10）。
+
+| # | 约束 | 禁止 | 正确 | 错误码 |
+|---|------|------|------|--------|
+| T1 | 禁止 `Function` 类型 | `done: Function` | `done: () => void` | 10605008 |
+| T2 | 禁止 `any` 类型 | `let x: any` | 使用具体类型 | 10605008 |
+| T3 | 禁止 `unknown` 类型 | `let x: unknown` | 使用具体类型 | 10605008 |
+| T4 | 禁止隐式 any | `let pages = router.getState()` | `let pages: router.RouterState = router.getState()` | 10605008 |
+| T5 | router 模块路径 | `@ohos/router` (斜杠) | `@ohos.router` (点号) | 10505001 |
+| T6 | JSON.parse 类型 | `Record<string, Object>` | `ESObject`（与现有代码风格一致） | — |
+| T7 | Level 枚举值 | `Level.Level0` | `Level.LEVEL0` ~ `Level.LEVEL4` | — |
+| T8 | Promise resolve 类型 | `resolve: Function` | `resolve: (value: void \| PromiseLike<void>) => void` | 10605008 |
+
 1. **读取 Phase 4 设计文档**：
    - 解析每个测试用例的设计字段
    - 确认用例编号、预置条件、测试步骤、预期结果
@@ -73,9 +100,9 @@
 
 2. **应用语法规范**：
    - 从 Phase 2 获取代码风格（导入顺序、describe/it 结构、断言方法、错误处理模式）
-   - 加载 `references/conventions/arkts_standards.md`（语法参考）
-   - 加载 `references/conventions/test_conventions.md`（命名参考）
-   - **静态项目（ArkTS-Sta）**：加载 `modules/L2_Generation/generator/arkts_static_constraints.md`，严格遵循 ArkTS 静态语法约束（禁止 any/unknown、字段初始化、不生成 ERROR_401 类型测试等）。不要在生成阶段调用完整的 `arkts-static-spec` 技能（token 开销大），仅在 Phase 7 验证阶段调用
+   - 加载 `{knowledge_root}/common/xts_experience/02_arkts/03_arkts_standards.md`（语法参考）
+   - 加载 `{knowledge_root}/common/xts_experience/03_standards/01_test_naming_convention.md`（命名参考）
+   - **静态项目（ArkTS-Sta）**：加载 `{knowledge_root}/common/xts_experience/09_methodology/18_arkts_static_constraints.md`，严格遵循 ArkTS 静态语法约束（禁止 any/unknown、字段初始化、不生成 ERROR_401 类型测试等）。不要在生成阶段调用完整的 `arkts-static-spec` 技能（token 开销大），仅在 Phase 7 验证阶段调用
 
 3. **应用子系统特有规则**（从 Phase 1 配置中获取）：
    - 使用子系统特有模板（如有）
@@ -183,9 +210,139 @@ it('normalValueParamTest001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3
    - 预期结果不能被改写
    - 不能跳过某些设计用例不生成代码
    - 测试步骤顺序不能打乱
+   - **组件id 必须与设计文档中预定义的一致，三方（设计文档、Demo页面、测试代码）必须完全一致**
 2. **必须包含 @tc 注解**：每个测试用例必须包含完整的 @tc 注解块
 3. **语法规范**：符合 ArkTS 静态检查要求
 4. **框架规范**：符合 Hypium 测试框架要求
 5. **子系统规则**：遵循 Phase 1 配置中的子系统特有规则
 6. **代码质量约束**：生成的代码必须满足 `quality_constraints.md` 中的全部规则（R002-R029），确保天然通过 check-test-code-quality 扫描
 7. **语法类型统一**：整个文件必须统一使用目标语法类型的规范（动态或静态），禁止混合使用
+8. **已废弃接口处理**：不为 .d.ts 中标记 @deprecated 的接口生成用例（除非用户明确要求）；新生成的测试代码中禁止调用已废弃接口，参考历史代码发现废弃接口时使用已知新接口替代（不修改历史代码）
+
+### 代码生成模板（动态项目标准骨架）
+
+```typescript
+import { afterEach, beforeEach, describe, expect, it, Level } from "@ohos/hypium";
+import router from '@ohos.router';  // 注意：点号，不是斜杠！
+
+function sleep(time: number) {
+  return new Promise<void>((resolve: (value: void | PromiseLike<void>) => void) => {
+    setTimeout(() => { resolve(); }, time * 1000);
+  }).then(() => { console.info(`sleep ${time} over...`); })
+}
+
+export default function XxxTest() {
+  describe('XxxTest', () => {
+    beforeEach(async (done: () => void) => {
+      let options: router.RouterOptions = {
+        url: 'MainAbility/pages/xxx',
+      }
+      try {
+        router.clear();
+        let pages: router.RouterState = router.getState();
+        if (!("XxxPage" == pages.name)) {
+          await router.pushUrl(options);
+        }
+      } catch (err) {
+        console.error("push page error " + JSON.stringify(err));
+      }
+      await sleep(2);
+      done();
+    });
+
+    afterEach(async (done: () => void) => {
+      await sleep(1);
+      done();
+    });
+
+    /**
+      * @tc.name   xxxTest010
+      * @tc.number SUB_ARKUI_XXX_PARAM_0010
+      * @tc.desc   Test ...
+      * @tc.type   FUNCTION
+      * @tc.size   MEDIUMTEST
+      * @tc.level  LEVEL1
+      */
+    it('xxxTest010', Level.LEVEL1, async (done: () => void) => {
+      let strJson: string = getInspectorByKey('component_id');
+      let obj: ESObject = JSON.parse(strJson);
+      expect(obj.$attrs.property).assertEqual('expected_value');
+      done();
+    });
+  });
+}
+```
+
+### 代码生成模板（静态项目 ArkTS-Sta 标准骨架）
+
+> 第二轮生成时使用此模板包裹迁移后的测试代码。`[sta-only]` 用例也使用此模板。
+
+```typescript
+import { afterEach, beforeEach, describe, expect, it, Level } from "../../../hypium/index";
+// 路径规则：hypium 固定位于 entry/src/hypium/index
+// 测试文件位于 entry/src/main/src/test/ 下，深度决定 ../ 数量：
+//   test/Xx.test.ets        → "../../../hypium/index"（3 层）
+//   test/ui/Xx.test.ets     → "../../../../hypium/index"（4 层）
+//   test/ui/sub/Xx.test.ets → "../../../../../hypium/index"（5 层）
+import router from '@ohos.router';
+
+function sleep(time: number): Promise<void> {
+  return new Promise<void>((resolve: (value: void | PromiseLike<void>) => void) => {
+    setTimeout(() => { resolve(); }, time * 1000);
+  }).then(() => { console.info(`sleep ${time} over...`); })
+}
+
+export default function XxxTest(): void {
+  describe('XxxTest', () => {
+    beforeEach(async (done: () => void): Promise<void> => {
+      const options: router.RouterOptions = {
+        url: 'MainAbility/pages/xxx',
+      }
+      try {
+        router.clear();
+        const pages: router.RouterState = router.getState();
+        if (!("XxxPage" == pages.name)) {
+          await router.pushUrl(options);
+        }
+      } catch (err) {
+        console.error("push page error " + JSON.stringify(err));
+      }
+      await sleep(2);
+      done();
+    });
+
+    afterEach(async (done: () => void): Promise<void> => {
+      await sleep(1);
+      done();
+    });
+
+    /**
+      * @tc.number SUB_ARKUI_XXX_PARAM_0010
+      * @tc.name ...
+      * @tc.desc ...
+      * @tc.type FUNCTION
+      * @tc.size MEDIUMTEST
+      * @tc.level LEVEL1
+      */
+    it('xxxTest010', Level.LEVEL1, async (done: () => void): Promise<void> => {
+      const strJson: string = getInspectorByKey('component_id');
+      const obj: ESObject = JSON.parse(strJson);
+      expect(obj.$attrs.property).assertEqual('expected_value');
+      done();
+    });
+  });
+}
+```
+
+**静态与动态模板关键差异**：
+
+| 差异项 | 动态（ets1.1） | 静态（ets1.2） |
+|-------|---------------|---------------|
+| hypium 导入 | `from "@ohos/hypium"` | `from "{相对路径}/hypium/index"`，hypium 固定位于 `entry/src/hypium/index`，按测试文件深度计算 `../` 数量 |
+| `export default function` 返回类型 | 省略 | `: void` |
+| `beforeEach`/`afterEach` 返回类型 | `async (done: () => void) =>` | `async (done: () => void): Promise<void> =>` |
+| `it` 回调返回类型 | `async function ()` | `async (done: () => void): Promise<void> =>` |
+| `let` vs `const` | `let pages` | `const pages`（所有非重新赋值的变量使用 const） |
+| 错误码 401 测试 | 生成 | 不生成（编译时已检查） |
+
+> **⚠️ 警告**：生成代码时必须严格使用上述模板中的类型注解。禁止 subagent 自行"优化"为其他类型（如 `Record<string, Object>`, `Level.Level0`, `Function` 等）。这些"优化"会导致 ArkTS 编译器报错。

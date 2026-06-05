@@ -4,7 +4,7 @@
 > - 层级：L1_Analysis
 > - 优先级：按需加载
 > - 适用范围：覆盖率验证
-> - 依赖：APICoverageDetector 工具（仅 Windows 环境，WSL 可通过 `/mnt/d/` 映射访问，Linux 计算云不可用）
+> - 依赖：APICoverageDetector 工具（支持 Windows 原生和 WSL 环境，WSL 通过 `/mnt/d/` 路径调用 .exe；Linux 计算云不可用）
 
 ---
 

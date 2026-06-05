@@ -320,8 +320,8 @@ MyApplication3/
 
 | ETS 版本 | 配置字段 | 用途 |
 |----------|---------|------|
-| ArkTS-Dyn（动态） | `for_windows.hvigor_path_1.1` | 动态语法项目编译 |
-| ArkTS-Sta（静态） | `for_windows.hvigor_path_1.2` | 静态语法项目编译 |
+| ArkTS-Dyn（动态） | `hvigor_path_1.1` | 动态语法项目编译 |
+| ArkTS-Sta（静态） | `hvigor_path_1.2` | 静态语法项目编译 |
 
 **选择逻辑**：
 1. 检查目标项目的 `build-profile.json5` 中的 `arkTSVersion` 字段
@@ -331,6 +331,13 @@ MyApplication3/
 **下文中所有 `{hvigor_path}` 表示根据上述规则选择的 hvigor 路径**：
 - ArkTS-Dyn 项目：`{hvigor_path}` = `.oh-xts-config.json` 中的 `hvigor_path_1.1` 值
 - ArkTS-Sta 项目：`{hvigor_path}` = `.oh-xts-config.json` 中的 `hvigor_path_1.2` 值
+
+> **⚠️ BUILD.gn 模板函数校验**：选择 hvigor 版本后，还应检查 BUILD.gn 中的模板函数是否匹配：
+> - ArkTS-Dyn 项目：BUILD.gn 应使用 `ohos_js_app_suite` 或 `ohos_js_hap_suite`
+> - ArkTS-Sta 项目：BUILD.gn **必须**使用 `ohos_js_app_static_suite`
+> - BUILD.gn 中 `test_hap` 字段必须注释掉（当前 ohosTest 不可用）
+>
+> 模板函数不匹配是静态编译失败的首要原因之一。详见 `references/conventions/ets_version_naming.md` §三。
 
 ### 3.1 IDE 同步（首次或 SDK 变更后必须执行）
 
@@ -407,8 +414,8 @@ cd /d {xts_acts_path}\testfwk\uitest
 
 ```powershell
 # 0. 根据 ETS 版本从 .oh-xts-config.json 读取 hvigor 路径
-# ArkTS-Dyn: $hvigorPath = (读取 for_windows.hvigor_path_1.1)
-# ArkTS-Sta: $hvigorPath = (读取 for_windows.hvigor_path_1.2)
+# ArkTS-Dyn: $hvigorPath = (读取 hvigor_path_1.1)
+# ArkTS-Sta: $hvigorPath = (读取 hvigor_path_1.2)
 
 # 1. 停止可能残留的 daemon
 & "$hvigorPath\hvigorw.bat" --stop-daemon

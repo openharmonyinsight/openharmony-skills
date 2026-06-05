@@ -88,6 +88,28 @@ out/{product_name}/suites/acts/acts/testcases/
 | 动态测试套 | `ohos_js_app_suite("Name")` | `test_hap = true` | 默认 |
 | 静态测试套 | `ohos_js_app_static_suite("Name")` | 不设置 | `xts_suitetype=hap_static` |
 
+> **⚠️ 模板函数必须与 ETS 版本匹配**：1.2 工程必须使用 `ohos_js_app_static_suite`，否则编译环境按 1.1 编译，静态语法测试用例全部编译失败。详见 `references/conventions/ets_version_naming.md` §三。
+
+### 2.1.1 BUILD.gn 模板函数校验（编译前必须执行）
+
+编译前验证 BUILD.gn 模板函数与目标 ETS 版本是否匹配：
+
+```bash
+# 提取模板函数名
+TEMPLATE=$(grep -E "ohos_(js_app_suite|js_app_static_suite)\(" BUILD.gn | head -1)
+
+# 校验
+if echo "$TEMPLATE" | grep -q "ohos_js_app_static_suite"; then
+    echo "静态测试套（1.2）"
+elif echo "$TEMPLATE" | grep -q "ohos_js_app_suite"; then
+    echo "动态测试套（1.1）"
+else
+    echo "❌ 未找到有效模板函数"
+fi
+```
+
+**同时检查 BUILD.gn 中 `test_hap` 字段是否已注释**（当前 ohosTest 不可用，未注释会编译报错）。
+
 ### 2.2 提取命令
 
 ```bash
