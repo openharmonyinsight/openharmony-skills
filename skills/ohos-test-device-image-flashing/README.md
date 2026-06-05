@@ -1,9 +1,9 @@
 # OpenHarmony Device Image Flashing Skill
 
-This skill is registered as `ohos-test-device-image-flashing` and lives under the common testing namespace:
+This skill is registered as `ohos-test-device-image-flashing`:
 
 ```text
-skills/common/testing/ohos-test-device-image-flashing/
+skills/ohos-test-device-image-flashing/
 ```
 
 ## Scope
@@ -23,5 +23,5 @@ Use this skill to download OpenHarmony daily build images and flash supported re
 Run:
 
 ```bash
-python3 -m unittest skills/common/testing/ohos-test-device-image-flashing/tests/test_device_image_flashing.py
+python3 -m unittest skills/ohos-test-device-image-flashing/tests/test_device_image_flashing.py
 ```
