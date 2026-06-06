@@ -1,0 +1,80 @@
+schemaVersion: 1
+
+id: ohos-dev-arkui-ace-engine-build
+title: ArkUI ACE Engine 编译
+summary: 指导 ACE Engine 及相关测试、SDK 和目标列表编译，判断快速编译是否安全并定位主要构建产物。
+
+category:
+  scope: domain
+  namespace: arkui
+  stage: development
+  domain: arkui
+  capability: ace-engine-build
+
+status:
+  maturity: trial
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - arkui
+  - ace-engine
+  - build
+  - fast-rebuild
+  - unittest
+  - sdk
+
+audience:
+  - ArkUI ACE Engine 开发者
+  - OpenHarmony 构建验证人员
+  - ArkUI 测试和 SDK 构建维护者
+
+useCases:
+  - title: 编译 ACE Engine 组件
+    description: 根据构建目标选择 ace_engine、ace_engine_test、unittest 或完整构建命令。
+  - title: 判断是否可以快速编译
+    description: 根据源码、BUILD.gn、*.gni 和 build.ninja 状态判断 --fast-rebuild 是否安全。
+  - title: 编译 ACE Engine 测试或 SDK
+    description: 处理测试覆盖率参数、测试目标列表和 ohos-sdk 构建约束。
+
+whenToUse:
+  - 用户需要编译 ace_engine、ace_engine_test、unittest 或 benchmark_linux。
+  - 需要判断当前改动是否可以使用 --fast-rebuild。
+  - 需要构建 ArkUI ACE Engine 测试、SDK 或多个 unittest_targets.txt 中的目标。
+  - 需要确认 ACE Engine 构建命令、产物位置或 build.log 路径。
+
+whenNotToUse:
+  - 构建目标不是 OpenHarmony ArkUI ACE Engine 或相关测试。
+  - 需求是分析具体编译错误根因，而不是选择或执行构建命令。
+  - 需求是通用 OpenHarmony 全仓构建诊断。
+
+inputs:
+  required:
+    - OpenHarmony 源码根目录或 ACE Engine 目录。
+    - 目标产品名，例如 rk3568、rk3588 或 ohos-sdk。
+    - 需要构建的目标或变更范围。
+  optional:
+    - unittest_targets.txt 测试目标列表。
+    - 最近修改文件范围。
+    - 是否需要覆盖率或 SDK 构建。
+
+outputs:
+  - 推荐的 build.sh 编译命令。
+  - 是否可使用 --fast-rebuild 的判断结果。
+  - ACE Engine 测试、SDK 或目标列表构建步骤。
+  - 构建产物和日志位置说明。
+
+quickStart:
+  steps:
+    - 在 OpenHarmony 根目录或 ACE Engine 目录准备源码和产品名。
+    - 说明变更类型、目标产物和是否需要测试覆盖率。
+    - 请求 Agent 使用该 Skill 生成或执行合适的 ACE Engine 构建命令。
+  examplePrompt: |
+    请使用 ohos-dev-arkui-ace-engine-build 为 rk3568 编译 ace_engine_test，
+    当前只改了 C++ 源码，请判断是否能使用 --fast-rebuild。
+
+related:
+  skills:
+    - ohos-dev-build-execution-diagnosis
+    - ohos-dev-arkui-build-error-analyzer
+  docs: []

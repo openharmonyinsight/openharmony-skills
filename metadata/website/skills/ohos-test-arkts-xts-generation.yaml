@@ -13,7 +13,7 @@ category:
 
 status:
   maturity: draft
-  version: 0.1.0
+  version: 0.4.0
   owner: openharmony
 
 tags:
@@ -78,11 +78,11 @@ related:
     - ohos-test-capi-xts-generation
   docs:
     - title: 使用指南
-      path: docs/USAGE.md
+      path: docs/USAGE_AND_WORKFLOW.md
     - title: 配置说明
-      path: docs/CONFIG.md
-    - title: 异步覆盖率扫描
-      path: docs/ASYNC_COVERAGE_SCAN.md
+      path: docs/SETUP_AND_CONFIG.md
+    - title: 故障处理和工具说明
+      path: docs/TROUBLESHOOTING_AND_TOOLS.md
 
 extractionNotes:
   confidence: high

@@ -1,0 +1,79 @@
+schemaVersion: 1
+
+id: ohos-dev-arkui-compile-analysis
+title: ArkUI 编译效率分析
+summary: 测量 ACE Engine 单文件编译耗时、峰值内存和头文件依赖树，支持优化前后可重复对比。
+
+category:
+  scope: domain
+  namespace: arkui
+  stage: development
+  domain: arkui
+  capability: compile-analysis
+
+status:
+  maturity: trial
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - arkui
+  - ace-engine
+  - compile-analysis
+  - header-dependency
+  - performance
+  - cpp
+
+audience:
+  - ArkUI ACE Engine 开发者
+  - 头文件依赖优化人员
+  - 编译性能分析人员
+
+useCases:
+  - title: 分析单个源文件编译成本
+    description: 提取 ninja 编译命令并执行单文件编译，记录编译时间和峰值内存。
+  - title: 生成头文件依赖树
+    description: 基于 .ii 预处理文件解析 ACE Engine 头文件依赖层级和路径。
+  - title: 做优化前后基准对比
+    description: 生成可复用单文件编译脚本，在相同条件下对比依赖优化效果。
+
+whenToUse:
+  - 需要分析 ACE Engine C++ 文件的编译耗时、峰值内存或依赖深度。
+  - 需要定位头文件依赖过重、include 链过深或模板实例化开销。
+  - 需要生成 compile_single_file 脚本做优化前后 benchmark。
+  - 需要解析 .ii 文件并输出 dependency_tree.txt。
+
+whenNotToUse:
+  - 目标不是 ACE Engine 源文件或构建产物。
+  - 需求是直接优化头文件结构，而不是先测量编译成本。
+  - 没有可用的 OpenHarmony 构建输出或 ninja 编译数据库。
+
+inputs:
+  required:
+    - ACE Engine 源文件路径。
+    - OpenHarmony 构建输出目录或目标产品名。
+  optional:
+    - 已生成的 .ii 文件。
+    - 已保存的 compile_single_file 脚本。
+    - 需要保存 dependency_tree.txt 的输出路径。
+
+outputs:
+  - 单文件编译耗时和峰值内存数据。
+  - 可复用的单文件编译脚本。
+  - ACE Engine 头文件依赖树。
+  - 优化优先级和可疑依赖链分析。
+
+quickStart:
+  steps:
+    - 准备 ACE Engine 源文件路径和产品输出目录。
+    - 运行分析脚本提取并执行单文件编译命令。
+    - 使用 .ii 文件解析头文件依赖树，并保存分析结果用于对比。
+  examplePrompt: |
+    请使用 ohos-dev-arkui-compile-analysis 分析 frameworks/core/components_ng/base/frame_node.cpp
+    在 rk3568 下的单文件编译耗时、峰值内存和头文件依赖树。
+
+related:
+  skills:
+    - ohos-dev-arkui-header-optimization
+    - ohos-dev-arkui-build-error-analyzer
+  docs: []
