@@ -1,0 +1,165 @@
+## Phase 4: Generate Test Design Document
+
+---
+
+### 📚 参考文档（按需查阅）
+
+| 文件 | 内容 | 何时查阅 |
+|------|------|---------|
+| `references/design_doc_guide.md` | 设计文档格式模板 | 输出格式参考 |
+
+---
+
+### ⚙️ 按需加载
+
+无额外模块。
+
+---
+
+### 🚫 Do NOT Load
+
+```
+所有 modules/L1_Analysis 模块
+所有 modules/L3_Validation 模块
+modules/L2_Generation/generator/test_generation_c.md（Phase 5 才加载）
+modules/L2_Generation/generator/test_patterns_napi_ets.md（Phase 5 才加载）
+```
+
+---
+
+**MANDATORY — NEVER SKIP**: 此阶段专注于生成测试设计文档，不生成测试代码。设计文档将作为 Phase 5 生成 N-API 封装和测试代码的依据。
+
+### 生成范围
+
+| 条件 | 生成范围 | 说明 |
+|------|---------|------|
+| Flow A（覆盖率报告） | 仅设计报告中的未覆盖项 | 精准：严格按照报告列出的未覆盖项设计 |
+| Flow C（新增接口） | 设计全部目标 API 的测试 | 基于 Phase 2 解析的 API 信息设计 |
+
+### 设计流程
+
+1. **从 Phase 2 获取 API 信息**：函数签名、参数类型、返回值、错误码、枚举
+2. **参照 SKILL.md Thinking Framework 中的 C API 特性分析**，对每个 API 评估：
+   - 是否分配内存？→ 需要 MEMORY 测试 + napi_finalize
+   - 是否有输出参数？→ N-API 返回值映射设计
+   - 是否接受回调？→ napi_create_threadsafe_function 设计
+   - 是否返回句柄？→ napi_wrap 生命周期设计
+3. **确定测试类型和级别**（见下方详细规则）
+4. **设计每个测试用例**（SUB_ 编号、N-API 函数名映射、测试步骤、预期结果）
+5. **输出 `.design.md` 文件**
+
+### 测试类型判定
+
+| 类型 | 适用条件 | 示例 |
+|------|---------|------|
+| PARAM | 所有 API | `compress(dest, &destLen, source, sourceLen)` 正常参数 |
+| ERROR | API 有可断言的错误返回值 | `uncompress` 返回 `Z_DATA_ERROR`、`Z_BUF_ERROR` |
+| RETURN | API 有有意义的返回值需验证 | `compressBound(sourceLen)` 返回值 >= sourceLen |
+| BOUNDARY | 参数有明确值域范围且边界行为可预测 | `compressBound(0)` 零长度、`destLen` 刚好等于压缩后大小 |
+| MEMORY | API 涉及动态内存分配/释放 | `malloc`/`free` 配对、缓冲区分配 |
+
+BOUNDARY 不是必选项——仅在参数同时满足以下条件时才生成：
+1. 有明确的值域范围（存在合法/非法的分界线）
+2. API 对输入做了有效性校验（超出范围的值被拒绝且有可断言的返回值）
+3. 边界行为可预测（能明确写出"传这个值应该得到什么结果"）
+
+### 测试级别评估
+
+| 评估维度 | Level1（高优先） | Level2-3（标准优先） | Level4（低优先） |
+|----------|------------------|---------------------|------------------|
+| API 重要性 | 子系统核心入口函数 | 一般功能函数 | 辅助/内部函数 |
+| 失败影响 | 功能完全不可用 | 功能降级/异常 | 极端边界才触发 |
+| 使用频率 | 高频常用路径 | 标准使用路径 | 罕见使用路径 |
+
+三个维度加权判断。核心 API 的正常值测试用 Level1；核心 API 的错误码测试用 Level2；辅助 API 的所有测试用 Level2-3；极端边界用 Level4。禁止所有测试都标为同一级别。
+
+### 测试用例字段
+
+| 字段 | 说明 | 示例 |
+|------|------|------|
+| 用例编号 | `SUB_[Subsystem]_[Module]_[API]_[Type]_[Seq]` | `SUB_HIVIEWDFX_HILOG_OH_LOG_Print_PARAM_001` |
+| 用例名 | 简洁描述 | `正常参数压缩测试` |
+| N-API 函数名 | 对应的 N-API 封装函数 JS 名 | `OH_LOG_Print_ParamTest` |
+| 预置条件 | 测试前需满足的条件 | `已分配 source 缓冲区，sourceLen > 0` |
+| 测试步骤 | 详细步骤（必须精确可执行） | `1. 调用 testNapi.compressNormalData(source, sourceLen)\n2. 获取返回值 result` |
+| 预期结果 | 期望输出或行为（禁止模糊描述） | `result 返回 0 (Z_OK)，destLen > 0 且 destLen <= compressBound(sourceLen)` |
+| 场景 | 测试场景分类 | `正常场景` / `异常场景` / `边界场景` |
+| 类型 | PARAM / ERROR / RETURN / BOUNDARY / MEMORY | `PARAM` |
+| 级别 | P0 / P1 / P2 | `P1` |
+| 依赖关系 | 依赖的其他用例 | `无` 或 `依赖 XXX_PARAM_001` |
+
+### N-API 封装设计
+
+每个测试用例对应一个 N-API 封装函数，设计时需明确：
+
+| 字段 | 说明 |
+|------|------|
+| N-API 函数名 | JS 端调用的函数名（如 `OH_LOG_Print_ParamTest`） |
+| ETS→N-API 参数 | 从 ETS 传入的参数类型和数量 |
+| N-API→C API 转换 | 如何从 `napi_value` 提取参数并调用 C API |
+| 返回值处理 | C API 返回值如何转换为 `napi_value` 返回给 ETS |
+
+### 参数测试设计规则
+
+| C 参数类型 | 测试场景 | 数量 |
+|-----------|----------|------|
+| int/unsigned int | 正常值、0、最大值、最小值 | 4 |
+| const char* | 正常字符串、空字符串、NULL | 3 |
+| size_t/unsigned long | 正常值、0、SIZE_MAX | 3 |
+| enum | 每个枚举值 + 无效值 | N+1 |
+| void* (buffer) | 正常缓冲区、NULL、空缓冲区 | 3 |
+| 指针+长度对 | 正常对、长度为0、NULL指针+非零长度 | 3 |
+
+### 错误码测试设计规则
+
+- 从 `.h` 头文件的返回值（如 `Z_OK`, `Z_MEM_ERROR`, `Z_BUF_ERROR`）和文档注释提取错误条件
+- 每个错误码设计一个测试用例
+- 场景标记为"异常场景"
+- 级别根据三维度评估设置
+
+### 设计约束
+
+- 所有函数名、参数类型、返回值、错误码必须与 `.h` 头文件声明**严格一致**
+- 禁止编造 `.h` 中不存在的函数或参数
+- 禁止模糊的预期结果（如"正常工作"、"行为正确"、"符合预期"）
+- 禁止模糊的测试步骤（如"测试各种参数"、"检查所有返回值"）
+- 每个测试用例只对应**一个确定的**错误码
+- N-API 函数名必须在设计文档中明确映射
+
+### 输出格式
+
+文件位置：与测试文件同目录，命名 `{TestFileName}.design.md`
+
+```markdown
+# {测试文件名} 测试设计文档
+
+## 接口 1: OH_XXX_FunctionName
+
+### 基本信息
+- **头文件**: `xxx/xxx.h`
+- **函数签名**: `int OH_XXX_FunctionName(const char *param1, size_t param2)`
+- **返回值**: 0 表示成功，负值表示失败
+- **错误码**: XXX_ERROR_1 (-1), XXX_ERROR_2 (-2)
+
+### 测试用例 1: SUB_MODULE_API_PARAM_001
+
+| 字段 | 内容 |
+|------|------|
+| 用例编号 | SUB_MODULE_API_PARAM_001 |
+| 用例名 | 正常参数测试 |
+| N-API 函数名 | XXX_FunctionName_ParamTest |
+| 预置条件 | 已分配输入缓冲区，param1 指向有效字符串 |
+| 测试步骤 | 1. 调用 testNapi.XXX_FunctionName_ParamTest("valid", 10)\n2. 获取返回值 result |
+| 预期结果 | result 等于 0 (成功) |
+| 场景 | 正常场景 |
+| 类型 | PARAM |
+| 级别 | P1 |
+| 依赖关系 | 无 |
+
+## 覆盖率统计
+
+| API | PARAM | ERROR | RETURN | BOUNDARY | 合计 |
+|-----|-------|-------|--------|----------|------|
+| OH_XXX_FunctionName | 1 | 1 | 0 | 0 | 2 |
+| **合计** | **1** | **1** | **0** | **0** | **2** |
+```

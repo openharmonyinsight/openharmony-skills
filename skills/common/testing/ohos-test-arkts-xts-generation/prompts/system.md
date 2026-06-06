@@ -10,6 +10,26 @@
 子系统配置: `references/subsystems/{Subsystem}/_common.md`
 模块配置: `references/subsystems/{Subsystem}/{Module}.md`
 
+## 知识库路径与降级规则
+
+`knowledge_root`（外部共享知识库路径，在 `.oh-xts-config.json` 中配置）控制知识的加载来源：
+
+| `knowledge_root` 状态 | 知识加载路径 |
+|----------------------|-------------|
+| 已配置且路径存在 | 从 `{knowledge_root}/` 加载所有知识 |
+| 未配置 或 路径不存在 | 降级从 `{skill_root}/modules/` 和 `{skill_root}/references/` 加载 |
+
+**路径映射关系**（降级时）：
+
+| 外部路径（`knowledge_root` 已配置） | 内部降级路径 |
+|----------------------------------|------------|
+| `{knowledge_root}/common/xts_experience/09_methodology/01~07` | `{skill_root}/modules/L1_Analysis/` |
+| `{knowledge_root}/common/xts_experience/09_methodology/08~18` | `{skill_root}/modules/L2_Generation/` |
+| `{knowledge_root}/common/xts_experience/09_methodology/19~25` | `{skill_root}/modules/L3_Validation/` |
+| `{knowledge_root}/common/xts_experience/01~05` | `{skill_root}/references/` |
+
+**降级模式限制**：降级模式下 `{knowledge_root}/domains/` 子系统特定知识不可用，后续 Phase 按通用规则处理。
+
 ## 通用约束
 
 1. 严格按照 `.d.ts` 文件声明的接口生成测试用例，禁止使用未声明的接口（未声明的接口在编译环境中不存在，生成的代码无法编译通过，且无法验证真实的 API 行为）

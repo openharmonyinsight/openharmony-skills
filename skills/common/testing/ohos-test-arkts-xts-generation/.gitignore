@@ -118,6 +118,9 @@ references/subsystems/ArkWeb/
 references/subsystems/multimedia/
 references/subsystems/security/
 
+# ==================== 评估报告 ====================
+EVALUATION_REPORT.md
+
 # ==================== 其他 ====================
 # 变更记录和优化建议（工作文件）
 docs/CHANGELOG_why_explanations.md

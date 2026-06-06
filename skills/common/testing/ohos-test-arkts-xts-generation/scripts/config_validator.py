@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 配置验证工具
-验证配置文件中的路径在当前平台下的有效性
+验证 .oh-xts-config.json 中的路径在当前平台下的有效性
 """
 
 import os
@@ -10,208 +10,159 @@ import sys
 import io
 import argparse
 import json
-import platform
 from pathlib import Path
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
+
+def _resolve_derived_paths(config):
+    platform_val = config.get('platform', '').lower()
+    oh_root = config.get('OH_ROOT', '')
+    derived = {}
+    if oh_root:
+        if not config.get('xts_acts_path'):
+            derived['xts_acts_path'] = os.path.join(oh_root, 'test', 'xts', 'acts')
+        # 源接口声明路径（兼容旧配置 sdk_path）
+        if not config.get('interface_path') and not config.get('sdk_path'):
+            derived['interface_path'] = os.path.join(oh_root, 'interface', 'sdk-js')
+        # 编译后 SDK 路径（仅 use_builtin_sdk=False 时需要）
+        use_builtin = config.get('use_builtin_sdk', True)
+        if not use_builtin and not config.get('sdk_local_path'):
+            ets_version = config.get('ets_version', ['ets1.1'])
+            ver_num = ets_version[0].replace('ets', '') if ets_version else '1.1'
+            derived['sdk_local_path'] = os.path.join(oh_root, 'prebuilts', 'ohos-sdk', 'linux', ver_num, 'ets')
+        if not config.get('docs_path'):
+            derived['docs_path'] = os.path.join(oh_root, 'docs')
+    return derived
+
+
 class ConfigValidator:
-    """配置验证器"""
-    
+
     def __init__(self):
-        """初始化验证器"""
         self.config_file = Path(__file__).parent.parent / '.oh-xts-config.json'
-        self.current_platform = platform.system()  # Windows, Linux, Darwin
-        
+
     def load_config(self):
-        """加载配置文件"""
         if not self.config_file.exists():
             print(f"❌ 配置文件不存在: {self.config_file}")
             return None
-        
         try:
             with open(self.config_file, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-            return config
+                return json.load(f)
         except json.JSONDecodeError as e:
             print(f"❌ 配置文件格式错误: {e}")
             return None
         except Exception as e:
             print(f"❌ 读取配置文件失败: {e}")
             return None
-    
+
     def validate_path(self, path, description, required=True):
-        """验证单个路径"""
-        if path is None:
+        if path is None or path == '':
             if required:
                 print(f"❌ {description}: 路径未配置")
                 return False
             else:
                 print(f"⚠️  {description}: 路径未配置（可选）")
                 return True
-        
-        path_obj = Path(path)
-        
-        if not path_obj.exists():
+        if not os.path.exists(path):
             print(f"❌ {description}: 路径不存在 - {path}")
             return False
-        
         if not os.access(path, os.R_OK):
             print(f"❌ {description}: 路径不可读 - {path}")
             return False
-        
         print(f"✅ {description}: 路径有效 - {path}")
         return True
-    
+
     def validate_config(self, config):
-        """验证配置"""
-        print(f"\n=== 配置验证（当前平台: {self.current_platform}）===\n")
-        
+        platform_val = config.get('platform', '').lower()
+        print(f"\n=== 配置验证（platform: {platform_val}）===\n")
         all_valid = True
-        
-        if self.current_platform == 'Windows':
-            win_config = config.get('for_windows', {})
-            linux_config = config.get('for_linux', {})
-            
-            print("Windows 环境路径验证:")
-            print("-" * 50)
-            
-            xts_acts_path = win_config.get('xts_acts_path')
-            sdk_path = win_config.get('sdk_path')
-            docs_path = win_config.get('docs_path')
-            hvigor_path_1_1 = win_config.get('hvigor_path_1.1')
-            hvigor_path_1_2 = win_config.get('hvigor_path_1.2')
-            deveco_studio_path = win_config.get('deveco_studio_path')
-            
-            if not self.validate_path(xts_acts_path, 'xts_acts_path', required=True):
-                all_valid = False
-            
-            if not self.validate_path(sdk_path, 'sdk_path', required=True):
-                all_valid = False
-            
-            self.validate_path(hvigor_path_1_1, 'hvigor_path_1.1', required=False)
-            self.validate_path(hvigor_path_1_2, 'hvigor_path_1.2', required=False)
-            self.validate_path(deveco_studio_path, 'deveco_studio_path', required=False)
-            
-            if docs_path:
-                self.validate_path(docs_path, 'docs_path', required=False)
-            
-            oh_root = linux_config.get('OH_ROOT')
-            if oh_root:
-                print(f"ℹ️  for_linux.OH_ROOT: Linux路径配置 - {oh_root}（当前Windows环境不使用）")
-            
-        elif self.current_platform == 'Linux':
-            linux_config = config.get('for_linux', {})
-            win_config = config.get('for_windows', {})
-            
-            print("Linux 环境路径验证:")
-            print("-" * 50)
-            
-            oh_root = linux_config.get('OH_ROOT')
-            if not self.validate_path(oh_root, 'OH_ROOT', required=True):
-                all_valid = False
-            
-            xts_acts_path = win_config.get('xts_acts_path')
-            sdk_path = win_config.get('sdk_path')
-            docs_path = win_config.get('docs_path')
-            
-            if xts_acts_path:
-                print(f"ℹ️  for_windows.xts_acts_path: Windows路径配置 - {xts_acts_path}（当前Linux环境不使用）")
-            if sdk_path:
-                print(f"ℹ️  for_windows.sdk_path: Windows路径配置 - {sdk_path}（当前Linux环境不使用）")
-            if docs_path:
-                print(f"ℹ️  for_windows.docs_path: Windows路径配置 - {docs_path}（当前Linux环境不使用）")
-        
-        else:
-            print(f"⚠️  不支持的平台: {self.current_platform}")
-            print("请根据实际需求配置路径")
-        
-        skill_root = config.get('skill_root')
-        if not self.validate_path(skill_root, 'skill_root', required=True):
+
+        all_valid &= self.validate_path(config.get('OH_ROOT'), 'OH_ROOT', required=True)
+        all_valid &= self.validate_path(config.get('skill_root'), 'skill_root', required=True)
+        all_valid &= self.validate_path(config.get('scan_tool_root'), 'scan_tool_root',
+                                          required=(platform_val != 'linux'))
+
+        xts_acts = config.get('xts_acts_path')
+        derived = _resolve_derived_paths(config)
+        if not xts_acts:
+            xts_acts = derived.get('xts_acts_path', '')
+        all_valid &= self.validate_path(xts_acts, 'xts_acts_path', required=True)
+
+        # 源接口声明路径（兼容旧字段名 sdk_path）
+        interface_path = config.get('interface_path') or config.get('sdk_path')
+        if not interface_path:
+            interface_path = derived.get('interface_path', '')
+        self.validate_path(interface_path, 'interface_path (源接口声明)', required=False)
+
+        # 编译后 SDK 路径
+        use_builtin = config.get('use_builtin_sdk', True)
+        if platform_val == 'wsl' and not use_builtin:
+            sdk_local = config.get('sdk_local_path') or derived.get('sdk_local_path', '')
+            all_valid &= self.validate_path(sdk_local, 'sdk_local_path (编译后 SDK)', required=True)
+        elif use_builtin:
+            builtin_sdk = os.path.join(config.get('scan_tool_root', ''), 'sdk', 'openharmony', 'ets')
+            self.validate_path(builtin_sdk, '内置SDK (scan_tool_root/sdk/openharmony/ets)', required=False)
+
+        if platform_val == 'windows':
+            self.validate_path(config.get('deveco_studio_path'), 'deveco_studio_path', required=False)
+            self.validate_path(config.get('hvigor_path_1.1'), 'hvigor_path_1.1', required=False)
+            self.validate_path(config.get('hvigor_path_1.2'), 'hvigor_path_1.2', required=False)
+
+        docs_path = config.get('docs_path') or derived.get('docs_path', '')
+        self.validate_path(docs_path, 'docs_path', required=False)
+
+        ets_version = config.get('ets_version', [])
+        if not ets_version:
+            print("❌ ets_version: 未配置")
             all_valid = False
-        
+        else:
+            print(f"✅ ets_version: {ets_version}")
+
         return all_valid
-    
+
     def show_config_status(self, config):
-        """显示配置状态"""
         print("\n=== 配置状态 ===\n")
-        
-        win_config = config.get('for_windows', {})
-        linux_config = config.get('for_linux', {})
-        
-        print("全局配置:")
-        for key in ['skill_root', 'ets_version']:
+        print(f"  platform: {config.get('platform', '未配置')}")
+        for key in ['OH_ROOT', 'skill_root', 'scan_tool_root', 'ets_version',
+                     'xts_acts_path', 'interface_path', 'sdk_local_path', 'use_builtin_sdk',
+                     'deveco_studio_path', 'hvigor_path_1.1', 'hvigor_path_1.2', 'docs_path']:
             value = config.get(key)
-            if value:
+            if value is not None and value != '':
                 print(f"  {key}: {value}")
-            else:
-                print(f"  {key}: 未配置")
-        
-        print("\nfor_windows 配置:")
-        if win_config:
-            for key, value in win_config.items():
+
+        derived = _resolve_derived_paths(config)
+        if derived:
+            print("\n  从 OH_ROOT 推导的路径:")
+            for key, value in derived.items():
                 if value:
-                    print(f"  {key}: {value}")
-                else:
-                    print(f"  {key}: 未配置")
-        else:
-            print("  (无)")
-        
-        print("\nfor_linux 配置:")
-        if linux_config:
-            for key, value in linux_config.items():
-                if value:
-                    print(f"  {key}: {value}")
-                else:
-                    print(f"  {key}: 未配置")
-        else:
-            print("  (无)")
-        
-        print(f"\n当前平台: {self.current_platform}")
-        
-        if self.current_platform == 'Windows':
-            print("所需路径: for_windows.xts_acts_path, for_windows.sdk_path")
-            print("可选路径: for_linux.OH_ROOT, for_windows.docs_path, for_windows.hvigor_path_1.1, for_windows.hvigor_path_1.2")
-        elif self.current_platform == 'Linux':
-            print("所需路径: for_linux.OH_ROOT")
-            print("可选路径: for_windows.*（Windows环境使用）")
-    
+                    print(f"    {key}: {value}")
+
     def validate(self):
-        """执行完整验证流程"""
         print("=== 配置验证工具 ===\n")
-        
-        # 加载配置
         config = self.load_config()
         if config is None:
             return False
-        
-        # 显示配置状态
         self.show_config_status(config)
-        
-        # 验证配置
         is_valid = self.validate_config(config)
-        
-        # 验证结果
         print("\n" + "=" * 50)
         if is_valid:
-            print("✅ 配置验证通过！当前平台所需的路径均有效。")
+            print("✅ 配置验证通过！")
             return True
         else:
-            print("❌ 配置验证失败！请检查上述错误信息并修正配置。")
+            print("❌ 配置验证失败！请检查上述错误信息。")
             print(f"💡 提示: 编辑配置文件 {self.config_file}")
             return False
 
+
 def main():
-    """主函数"""
     parser = argparse.ArgumentParser(
-        description='配置验证工具 - 验证 .oh-xts-config.json 中的路径在当前平台下的有效性'
+        description='配置验证工具 - 验证 .oh-xts-config.json 中的路径有效性'
     )
     parser.parse_args()
-
     validator = ConfigValidator()
     is_valid = validator.validate()
-    
     sys.exit(0 if is_valid else 1)
+
 
 if __name__ == "__main__":
     main()

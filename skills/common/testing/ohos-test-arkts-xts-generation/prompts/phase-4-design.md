@@ -2,13 +2,15 @@
 
 ---
 
-### 📦 MANDATORY - 必须先加载以下模块
+> **`knowledge_root` 降级**：下文中所有 `{knowledge_root}/...` 路径，若 `knowledge_root` 未配置或路径不存在，则降级从 `{skill_root}/modules/` 和 `{skill_root}/references/` 加载对应内置知识。完整映射表见 `system.md`「知识库路径与降级规则」。
 
-**在执行本 Phase 前，你必须完整阅读以下文件**（不得设置行数限制）：
+### 📚 参考文档（按需查阅）
 
-```
-{skill_root}/modules/L2_Generation/generator/design_doc_generator.md
-```
+本 Phase 执行过程中可参考以下文件，遇到具体问题时按需查阅：
+
+| 文件 | 内容 | 何时查阅 |
+|------|------|---------|
+| `{knowledge_root}/common/xts_experience/09_methodology/09_design_doc_generator.md` | 测试设计文档生成方法论（测试类型、边界条件、错误码映射） | 设计策略不确定、需要参考测试类型定义时 |
 
 ---
 
@@ -23,15 +25,15 @@
 本 Phase 期间禁止加载以下模块：
 
 ```
-所有 L1_Analysis 模块（modules/L1_Analysis/）
-所有 L3_Validation 模块（modules/L3_Validation/）
-references/conventions/ 目录
-references/error_handling.md
+{knowledge_root}/common/xts_experience/09_methodology/ 下的 L1_Analysis 相关文件（01~07号文件）
+{knowledge_root}/common/xts_experience/09_methodology/ 下的 L3_Validation 相关文件（19~25号文件）
+{knowledge_root}/common/xts_experience/ 下的 01_framework、02_arkts、03_standards、04_project、05_patterns 规范文件
+{knowledge_root}/common/xts_experience/03_standards/02_error_handling_guide.md
 ```
 
 ---
 
-**加载模块**: `modules/L2_Generation/generator/design_doc_generator.md`
+**加载模块**: `{knowledge_root}/common/xts_experience/09_methodology/09_design_doc_generator.md`
 
 **关键变更**：此阶段专注于生成测试设计文档，不生成测试代码。设计文档将作为 Phase 5 生成测试用例代码的依据。
 
@@ -112,6 +114,11 @@ references/error_handling.md
    - 文件命名: `{测试文件名}.design.md`
    - 按接口/方法分组组织
    - 每个测试用例占用一个章节
+   - **必须包含以下章节（问题 8+9 约束）**：
+     1. **文件清单**表格：测试文件、Demo页面（标注"新建"或"复用"）、设计文档路径
+     2. **Demo页面设计**：页面路由、页面结构、组件数量、验证方式（`getInspectorByKey`）
+     3. **每个用例必须包含 `**组件id**` 字段**：值为 `getInspectorByKey('xxx')` 中使用的 id，三方（设计文档、Demo页面、测试代码）必须完全一致
+     4. **Demo页面组件清单**表格：组件id → API → 属性值 → 预期Inspector值
 
 ### 参数测试设计规则
 
@@ -138,6 +145,21 @@ references/error_handling.md
 ```markdown
 # {测试文件名} 测试设计文档
 
+## 文件清单
+
+| 文件 | 路径 | 说明 |
+|------|------|------|
+| 测试文件 | `{测试文件路径}` | {用例数}个测试用例 |
+| Demo页面（新建/复用） | `{页面文件路径}` | {独立Demo页面/复用历史页面}，包含{N}个带id的组件 |
+| 设计文档 | `{设计文档路径}` | 本文件 |
+
+## Demo页面设计
+
+- **页面路由**: `MainAbility/pages/XXX`
+- **页面结构**: {Scroll > Column / Column 等}
+- **组件数量**: {N}个
+- **验证方式**: `getInspectorByKey` + `$attrs` 属性断言
+
 ## 接口/方法 1: methodName
 
 ### 测试用例 1: SUB_MODULE_METHOD_PARAM_001
@@ -146,9 +168,10 @@ references/error_handling.md
 |------|------|
 | 用例编号 | SUB_MODULE_METHOD_PARAM_001 |
 | 用例名 | 正常值参数测试 |
+| **组件id** | `{component_id}` |
 | 预置条件 | 已初始化测试环境，已导入 @kit.XXXKit |
 | 测试步骤 | 1. 调用 methodA(param1="test", param2=100)\n2. 等待 Promise 返回\n3. 验证无异常 |
-| 预期结果 | 返回 void，无异常抛出 |
+| 预期结果 | `obj.$attrs.xxx === 'expected_value'` (精确断言表达式) |
 | 场景 | 正常场景 |
 | 类型 | PARAM |
 | 级别 | P0 |
@@ -156,7 +179,13 @@ references/error_handling.md
 
 ### 测试用例 2: SUB_MODULE_METHOD_PARAM_002
 
-...（后续用例）
+...（后续用例，每个用例都必须有 **组件id** 字段）
+
+## Demo页面组件清单
+
+| 组件id | API | 属性值 | 预期Inspector值 |
+|--------|-----|--------|----------------|
+| `{text_xxx_value}` | {API名} | {属性值} | {预期值} |
 
 ## 接口/方法 2: anotherMethod
 

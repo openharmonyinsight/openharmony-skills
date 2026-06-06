@@ -58,7 +58,7 @@ import { Driver, ON, BY, Component } from '@ohos.UiTest';
 ```typescript
 import { Driver } from '@ohos.UiTest';
 
-let driver: Driver = await Driver.create();
+let driver: Driver = Driver.create();
 ```
 
 ### 3.2 Driver 生命周期
@@ -69,7 +69,7 @@ describe('ComponentTest', () => {
 
   beforeAll(async (done: Function) => {
     // 在所有测试前创建 Driver
-    driver = await Driver.create();
+    driver = Driver.create();
     done();
   });
 
@@ -261,7 +261,7 @@ describe('ComponentTest', () => {
   let driver: Driver;
 
   beforeEach(async () => {
-    driver = await Driver.create();
+    driver = Driver.create();
     await Utils.sleep(500);
   });
 
@@ -290,7 +290,7 @@ export default function testsuite() {
 ```typescript
 // ⚠️ 可以在 it() 中创建 Driver，但多个 it() 使用时推荐共享
 it('test001', Level.LEVEL1, async (done: Function) => {
-  let driver = await Driver.create();
+  let driver = Driver.create();
   const component = await driver.findComponent(ON.id('xxx'));
   // Driver 使用完成后自动销毁，无需手动关闭
   done();
@@ -343,7 +343,7 @@ import Utils from '../common/Utils';
 beforeAll(async (done: Function) => {
   await Utils.pushPage('MainAbility/pages/ComponentTestPage', done);
   await Utils.sleep(1000);
-  driver = await Driver.create();
+  driver = Driver.create();
   await Utils.sleep(1000);
   done();
 });

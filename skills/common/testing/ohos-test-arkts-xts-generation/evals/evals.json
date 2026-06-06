@@ -1,0 +1,37 @@
+{
+  "skill_name": "ohos-test-arkts-xts-generation",
+  "evals": [
+    {
+      "id": 1,
+      "name": "generate-flowb-uitest-core",
+      "prompt": "帮我为 testfwk 子系统的 @ohos.UiTest 模块生成 XTS 测试用例。d.ts 文件在 interface/sdk-js/api/@ohos.UiTest.d.ts，重点关注 Driver 类的 findComponent、findComponents、assertComponentExist、delayMs 方法，以及 On 类的 text、id、type 方法。目标测试套路径 test/xts/acts/testfwk/uitest",
+      "description": "Flow B 标准扫描模式：测试技能从 .d.ts 解析到测试代码生成的完整流程，聚焦 Driver 和 On 核心类",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "name": "generate-flowa-uitest-coverage",
+      "prompt": "覆盖率扫描报告显示 UiTest 模块以下API未被覆盖：MatchPattern 枚举（REG_EXP、REG_EXP_ICASE）、Driver.screenCap、UiWindow.resize、UiWindow.split、DisplayRotation 枚举。请为这些未覆盖 API 补充测试用例",
+      "description": "Flow A 覆盖率报告驱动：测试技能基于覆盖率缺口精准补充测试的能力",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 3,
+      "name": "generate-flowc-uitest-newapi",
+      "prompt": "API 22 新增了 WindowChangeType 枚举（WINDOW_UNDEFINED/WINDOW_ADDED/WINDOW_REMOVED/WINDOW_BOUNDS_CHANGED）、ComponentEventType 枚举（COMPONENT_UNDEFINED/CLICKED/LONG_CLICKED/SCROLL_START/SCROLL_END/TEXT_CHANGED）、以及 UIEventObserver 的 windowChange 和 componentEventOccur 监听方法。这是新增 API，请为它们生成 XTS 测试",
+      "description": "Flow C 新增接口模式：测试技能对新发布 API 的测试生成能力",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 4,
+      "name": "generate-uitest-static",
+      "prompt": "请为 testfwk 子系统的 @ohos.UiTest 模块生成 XTS 测试用例，使用 ArkTS-Sta 静态语法模式（arkTSVersion 1.2）。d.ts 文件在 interface/sdk-js/api/@ohos.UiTest.d.ts，重点关注 Driver 类的 create、delayMs、findComponent、assertComponentExist 方法，以及 On 类的 text、id 方法。目标测试套路径 test/xts/acts/testfwk/uitestStatic",
+      "description": "ArkTS-Sta 静态语法模式：测试技能在 ets1.2 静态约束下的测试生成能力",
+      "files": [],
+      "assertions": []
+    }
+  ]
+}
