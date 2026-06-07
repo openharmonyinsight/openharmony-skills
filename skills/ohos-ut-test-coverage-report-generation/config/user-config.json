@@ -1,0 +1,8 @@
+{
+  "hdc": {
+    "ip": "192.168.1.100",
+    "port": "8700",
+    "sn": "device_serial_number"
+  },
+  "code_root": "/path/to/code/"
+}
