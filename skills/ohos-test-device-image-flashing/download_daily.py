@@ -33,6 +33,10 @@ def build_arg_parser():
 def safe_extract(tar, output_dir):
     output_path = Path(output_dir).resolve()
     for member in tar.getmembers():
+        if member.issym() or member.islnk():
+            raise ValueError(f"unsafe tar link member: {member.name}")
+        if not (member.isfile() or member.isdir()):
+            raise ValueError(f"unsupported tar member type: {member.name}")
         target_path = (output_path / member.name).resolve()
         if output_path != target_path and output_path not in target_path.parents:
             raise ValueError(f"unsafe tar member path: {member.name}")

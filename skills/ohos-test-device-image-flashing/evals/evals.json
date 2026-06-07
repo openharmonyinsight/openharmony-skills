@@ -20,6 +20,7 @@
       "files": [],
       "expectations": [
         "The response uses `flash_device.py` with the image directory.",
+        "The response includes explicit destructive-action confirmation, such as `--yes` only after user approval.",
         "The response requires updater mode rather than normal-mode partition writes.",
         "The response states that a failed `hdc` command stops the workflow.",
         "The response includes a post-reboot version verification step."
@@ -47,6 +48,18 @@
         "The response warns that IDL, ABI, partition, or dependent image changes require a full flash.",
         "The response includes service or device verification after pushing libraries.",
         "The response does not present partial library push as universally safe."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "镜像包里缺少 parameter.txt，但我想继续刷机。请判断是否可以直接使用内置分区表。",
+      "expected_output": "Refuses implicit fallback partition use and requires explicit layout verification before using the RK3568 fallback option.",
+      "files": [],
+      "expectations": [
+        "The response says missing parameter.txt is a safety blocker by default.",
+        "The response only allows `--allow-fallback-partitions` after the RK3568 image layout has been verified.",
+        "The response does not claim the fallback partition list is generic for all devices.",
+        "The response recommends obtaining a complete image package with parameter.txt when layout cannot be verified."
       ]
     }
   ]

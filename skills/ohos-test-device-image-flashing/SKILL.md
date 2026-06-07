@@ -26,6 +26,9 @@ Use the actual installed skill directory when running the helper scripts.
 
 ## Usage
 
+Only pass `--yes` after the user has explicitly approved destructive device flashing. Otherwise let
+`flash_device.py` prompt for `FLASH`.
+
 ### Direct (on Windows with USB to board)
 
 ```bash
@@ -35,7 +38,7 @@ SKILL_DIR=<installed-skill-dir>/ohos-test-device-image-flashing
 python3 "$SKILL_DIR/download_daily.py" --component dayu200
 
 # Flash (partitions auto-parsed from parameter.txt)
-python3 "$SKILL_DIR/flash_device.py" --img-dir daily_build
+python3 "$SKILL_DIR/flash_device.py" --img-dir daily_build --yes
 ```
 
 ### Via SSH tunnel
@@ -62,7 +65,7 @@ scp -P $SSH_PORT "$SKILL_DIR/flash_device.py" $SSH_USER@$SSH_HOST:flash_device.p
 ssh -p $SSH_PORT $SSH_USER@$SSH_HOST "python download_daily.py --component dayu200"
 
 # Flash from Windows
-ssh -p $SSH_PORT $SSH_USER@$SSH_HOST "python flash_device.py"
+ssh -p $SSH_PORT $SSH_USER@$SSH_HOST "python flash_device.py --yes"
 
 # Verify (~60s after reboot)
 ssh -p $SSH_PORT $SSH_USER@$SSH_HOST "hdc shell param get const.product.software.version"
@@ -82,13 +85,15 @@ ssh -p $SSH_PORT $SSH_USER@$SSH_HOST "hdc shell reboot"
 
 ## Key Design Decisions
 
-**Partition table from parameter.txt:** `flash_device.py` parses `CMDLINE:mtdparts=...` from the image's `parameter.txt` to discover partitions. Falls back to a hardcoded list only if `parameter.txt` is missing.
+**Partition table from parameter.txt:** `flash_device.py` parses `CMDLINE:mtdparts=...` from the image's `parameter.txt` to discover partitions. The built-in RK3568 fallback partition list is used only when `--allow-fallback-partitions` is explicitly passed after verifying the image layout.
 
 **SSH port fallback:** Scripts default to port 2222. If connection fails, prompt the user for the correct port rather than failing silently.
 
 **DCP API:** Response path is `data.builds.dataList[].component`. Auto-searches last 7 days if today's build is missing.
 
 **Archive safety:** `download_daily.py` rejects archive entries that would extract outside the output directory.
+
+**Destructive action confirmation:** `flash_device.py` requires interactive `FLASH` confirmation unless `--yes` is passed by an already-approved workflow.
 
 **Command failure handling:** `flash_device.py` stops immediately when an `hdc` command exits non-zero.
 

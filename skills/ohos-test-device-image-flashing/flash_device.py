@@ -51,19 +51,35 @@ def parse_partitions(img_dir):
 def build_arg_parser():
     ap = argparse.ArgumentParser(description="Flash OpenHarmony device via hdc updater mode")
     ap.add_argument("--img-dir", default="daily_build")
+    ap.add_argument("--yes", action="store_true",
+                    help="confirm destructive device flashing without an interactive prompt")
+    ap.add_argument("--allow-fallback-partitions", action="store_true",
+                    help="use the built-in RK3568 fallback partition list if parameter.txt is missing")
     return ap
+
+def confirm_flash(args):
+    if args.yes:
+        return
+    answer = input("This will flash device partitions. Type FLASH to continue: ")
+    if answer != "FLASH":
+        raise RuntimeError("flash cancelled by user")
 
 def main():
     ap = build_arg_parser()
     args = ap.parse_args()
     img_dir = find_img_dir(args.img_dir)
     if not img_dir: print(f"FAIL: system.img not found in {args.img_dir}"); sys.exit(1)
+    confirm_flash(args)
     hdc = find_hdc()
     print(f"[1] hdc: {hdc}\n    images: {img_dir}")
     parts = parse_partitions(img_dir)
     if parts: print(f"    Parsed {len(parts)} partitions from parameter.txt")
     else:
-        print("    WARN: parameter.txt not found, using fallback")
+        if not args.allow_fallback_partitions:
+            raise RuntimeError(
+                "parameter.txt not found; pass --allow-fallback-partitions only for a verified RK3568 layout"
+            )
+        print("    WARN: parameter.txt not found, using verified fallback")
         parts = [("uboot.img","uboot"),("boot_linux.img","boot_linux"),("resource.img","resource"),
             ("ramdisk.img","ramdisk"),("updater.img","updater"),("sys_prod.img","sys-prod"),
             ("chip_prod.img","chip-prod"),("chip_ckm.img","chip_ckm"),

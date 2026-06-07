@@ -8,3 +8,4 @@ The cases cover:
 - Safe updater-mode flashing with fail-fast `hdc` handling.
 - Tool-neutral SSH execution.
 - The boundary between partial library push and full image flashing.
+- Safety gating for missing `parameter.txt` and fallback partition use.
