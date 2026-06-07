@@ -10,3 +10,4 @@ The cases cover:
 - Dynamic loading evidence.
 - Incomplete LSP and build-artifact failure handling.
 - Repository-scoped LSP bootstrap in a new environment.
+- LSP-primary behavior when clangd already covers direct calls.

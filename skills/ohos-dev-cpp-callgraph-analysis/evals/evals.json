@@ -74,6 +74,18 @@
         "For unsupported MCP clients, the response uses --client none and registers the printed tool-neutral bridge command manually.",
         "The response verifies MCP tool discovery, warms clangd with hover before global definition or references, and falls back without blocking analysis if setup fails."
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "当前 OpenHarmony 仓已经有可用 clangd/LSP，能正确解析定义、引用、call hierarchy 和 override。请检查一个普通 C++ direct-call 参数传递路径，是否还需要先跑 ohos_callgraph.py？",
+      "expected_output": "Uses LSP/source evidence as the primary path and does not run the helper unless artifact-level candidate discovery or an LSP/source evidence gap remains.",
+      "files": [],
+      "expectations": [
+        "The response states that LSP/source evidence is the primary path when clangd has the correct compile context.",
+        "The response skips ohos_callgraph.py for direct calls that LSP/source evidence already covers.",
+        "The response lists valid reasons to run the helper: LSP unavailable or incomplete, unexplained edges, or artifact-level candidate confirmation.",
+        "The response still refuses to treat helper output as proof of parameter propagation, callback, IPC, virtual dispatch, or dlopen completeness."
+      ]
     }
   ]
 }

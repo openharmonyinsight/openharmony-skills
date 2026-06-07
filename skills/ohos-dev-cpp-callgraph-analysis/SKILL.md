@@ -13,10 +13,10 @@ metadata:
 
 # OpenHarmony Call-Chain Completeness Analysis
 
-This skill has two layers:
+This skill has one decision layer plus optional tool support:
 
-1. **Agent workflow**: prove whether a change is complete from the call-chain perspective by using LSP/source evidence, edge classification, and a coverage matrix.
-2. **Helper script**: `ohos_callgraph.py` discovers candidate direct call edges and best-effort vtable/dlopen hints from build artifacts. It is not a precision oracle.
+1. **Agent workflow**: the only layer that can judge call-chain completeness. It uses LSP/source evidence, edge classification, and a coverage matrix.
+2. **Optional artifact fallback**: `ohos_callgraph.py` discovers candidate direct call edges and best-effort vtable/dlopen hints from build artifacts when LSP/source evidence leaves gaps or LSP is unavailable.
 
 Do not claim a call chain is complete from script output alone.
 
@@ -50,18 +50,20 @@ Use evidence sources in this order:
 1. **LSP / clangd**: preferred static source for definitions, declarations, references, call hierarchy, override candidates, and macro-aware symbol locations.
 2. **Source search**: use `rg` to find framework patterns that LSP does not model well, such as transaction codes, listener registration, `LoadLibrary<>`, `dlsym`, and generated-file names.
 3. **Build graph and symbol tools**: use GN/Ninja, `llvm-nm`, `llvm-readelf`, `llvm-objdump`, and `llvm-cxxfilt` for libraries, exports, link edges, and generated artifacts.
-4. **Helper script**: use `ohos_callgraph.py` to discover IR-level candidate direct edges and best-effort vtable/dlopen hints.
+4. **Helper script, only if needed**: use `ohos_callgraph.py` to discover IR-level candidate direct edges and best-effort vtable/dlopen hints when LSP/source/build evidence still has unexplained edges, when artifact-level confirmation is useful, or when LSP is unavailable/incomplete.
 5. **Runtime trace**: use logs, instrumentation, or symbolized traces when static evidence cannot uniquely resolve virtual, callback, IPC, or dlopen/dlsym edges.
 
 LSP is the first choice for language-level C++ facts, but it is not enough for runtime binding or OpenHarmony framework protocols.
 
-When LSP/clangd is available, use it before the helper script for:
+When LSP/clangd is available, use it as the primary path for:
 
 - `definition` / `declaration`
 - `references`
 - `call hierarchy` incoming/outgoing calls
 - override and implementation candidates
 - macro-expanded symbol locations
+
+Do not run the helper script just to duplicate LSP direct-call results. Run it only when it can answer a different question, such as "does this compiled artifact contain a candidate edge?" or "what candidates exist when LSP cannot resolve this path?".
 
 When LSP is unavailable or incomplete, say so in the evidence table and fall back to source search plus build/symbol evidence.
 
@@ -155,7 +157,7 @@ Use these labels:
 
 ## Helper Script Scope
 
-`ohos_callgraph.py` can help find candidates after LSP/source inspection:
+`ohos_callgraph.py` is an optional artifact fallback after LSP/source inspection:
 
 - Direct IR call edges from `opt --print-callgraph`
 - Best-effort vtable interface hints from LLVM IR metadata
@@ -171,7 +173,7 @@ Limitations:
 - It does not prove `groupId`/`displayId` propagation. `--name-keyword` only checks demangled function names and direct child function names as a rough hint; it does not inspect C++ parameter names, call arguments, member access, local variables, or IPC serialization.
 - It may miss edges when build artifacts are stale, missing bitcode, optimized differently, or external tools fail.
 
-Use the helper script only as a candidate discovery aid for the evidence workflow.
+Use the helper script only as a candidate discovery aid for the evidence workflow. Skip it when LSP/source evidence already covers the relevant direct calls and no artifact-level confirmation is needed.
 
 ## LSP Guidance
 
