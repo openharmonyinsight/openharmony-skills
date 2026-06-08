@@ -171,6 +171,22 @@
 2. Phase 4 读取降级标记，对降级 API 仅生成 PARAM 和 RETURN 类型测试，不生成 ERROR 类型（缺少错误码来源时）
 3. Phase 3 结束时向用户汇总：`"X 个 API 完整解析，Y 个 API 降级解析（缺少：文档 Z 个、测试参考 W 个），K 个 API 终止（.d.ts 缺失）"`
 
+#### 2.7 ArkTS 动态语法约束检测（仅动态项目 ArkTS-Dyn）
+
+**目的**：在解析阶段预检测 API 签名中的特征模式，查表获取对应的 ArkTS 动态语法约束，避免 Phase 5 生成代码时因语法违规导致编译失败。
+
+**步骤**：
+
+1. **查表**：读取 `{skill_root}/references/arkts_api_pattern_rules.md`，对照每个 API 的 .d.ts 签名检测特征模式（Promise、泛型、回调、集合、对象、类/接口、@Sendable 等 10 类模式）
+2. **写入约束**：命中的约束写入该 API 知识库条目的 `arkts_constraints` 数组（示例见下方输出结构）
+3. **未命中**：保持 `arkts_constraints: []`，表示该 API 无特殊语法约束
+
+**约束传递**：
+- Phase 5 从每个 API 的 `arkts_constraints` 读取约束，生成代码时逐条遵守
+- Phase 7 验证时，`arkts_constraints` 中的约束可作为校验依据
+
+> **兜底机制**：`arkts_api_pattern_rules.md` 覆盖 10 类常见模式（约 99% 场景）。若 Phase 8 编译失败且错误码不在映射表范围内，调用 `arkts-skill` 的 `search_docs.py` 兜底查询（详见 Phase 8）。
+
 #### 3. 构建完整 API 知识库（输出结构）
 
 为每个未覆盖 API 生成结构化的知识库条目：
@@ -220,6 +236,19 @@
     "priority": "HIGH",
     "estimated_tests": 5
   },
+  
+  "arkts_constraints": [
+    {
+      "pattern": "Promise<T>",
+      "rules": ["catch 不标注类型", "throw 只能抛 Error 实例", "finally 禁止 return/throw"],
+      "error_codes": [10605079, 10605087]
+    },
+    {
+      "pattern": "Array<T>",
+      "rules": ["禁止 for...in", "展开运算符仅限数组", "数组字面量必须可推断类型"],
+      "error_codes": [10605080, 10605099]
+    }
+  ],
   
   "reference_sources": {
     "dts_file": "path/to/module.d.ts",

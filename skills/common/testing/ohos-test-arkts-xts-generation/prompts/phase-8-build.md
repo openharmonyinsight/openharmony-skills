@@ -131,4 +131,25 @@ rm -rf {OH_ROOT}/prebuilts/ohos-sdk/linux
 
 - 需要 JAVA_HOME 配置
 - Hvigor 版本校验（目标: `6.0.0-arkts1.2-ohosTest-*`）
-- 需调用 `arkts-static-spec` 技能进行最终语法校验
+- 需调用 `ohos-dev-arkts-static-specification-reference` 技能进行最终语法校验
+
+### 常见编译失败排查
+
+#### 编译失败：API 不存在
+- **症状**：`Error: Cannot find name 'xxx'`
+- **根因**：使用了目标 SDK 版本中不存在的 API
+- **修复**：检查 API 的 @since 标签，确认目标版本支持
+
+#### 编译失败：静态语法不兼容
+- **症状**：`ESE0143 Unresolved reference` 或 `ESE0046 Type not compatible`
+- **根因**：ArkTS-Sta 项目中使用了动态语法特性
+- **修复**：参考 `ohos-dev-arkts-static-specification-reference` 技能转换语法
+
+#### 编译失败：动态语法违规（ArkTS-Dyn）
+- **症状**：错误码 `10605008`、`10605038`、`10605046`、`10605079` 等
+- **根因**：使用了 ArkTS 不支持的 TypeScript/JavaScript 语法
+- **修复**：
+  1. 先查 `{skill_root}/references/arkts_api_pattern_rules.md` 中的错误码对应约束
+  2. 若映射表中无此错误码，调用 `arkts-skill` 兜底查询：`python3 {arkts_skill_root}/scripts/search_docs.py --query "ESE0046 arkts type not compatible fix"`
+  3. 从返回结果的 `linter-summary` 和 `official-guide` 中获取精准修复方案
+  4. 应用修复后重新编译

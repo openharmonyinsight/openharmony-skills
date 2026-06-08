@@ -8,7 +8,7 @@
 
 | 错误类型 | 触发场景 | 处理策略 |
 |----------|----------|----------|
-| ArkTS 语法错误 | 静态语法违规 | 调用 arkts-static-spec 校验，自动修复 |
+| ArkTS 语法错误 | 静态语法违规 | 调用 ohos-dev-arkts-static-specification-reference 校验，自动修复 |
 | @tc 注释块缺失 | 验证阶段发现 | 按模板自动补全 |
 | hypium 导入错误 | 导入路径不正确 | 按规范自动修正 |
 | 命名不规范 | camelCase 违规 | 自动转换为 camelCase |
@@ -45,7 +45,7 @@
 
 ```
 编译失败 → 提取错误信息 → 判断错误类型
-  ├─ ArkTS 语法错误 → 调用 arkts-static-spec 校验 → 修复 → 重新编译
+  ├─ ArkTS 语法错误 → 调用 ohos-dev-arkts-static-specification-reference 校验 → 修复 → 重新编译
   ├─ hypium 导入错误 → 修正导入语句 → 重新编译
   ├─ 断言方法错误 → 替换断言 → 重新编译
   └─ 其他语法错误 → 展示错误 → 尝试修复 → 重新编译

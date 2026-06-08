@@ -32,6 +32,14 @@
       "description": "ArkTS-Sta 静态语法模式：测试技能在 ets1.2 静态约束下的测试生成能力",
       "files": [],
       "assertions": []
+    },
+    {
+      "id": 5,
+      "name": "generate-uitest-multiversion",
+      "prompt": "请为 testfwk 子系统的 @ohos.UiTest 模块同时生成 ets1.1（动态ArkTS-Dyn）和 ets1.2（静态ArkTS-Sta）两个版本的 XTS 测试用例。d.ts 文件在 interface/sdk-js/api/@ohos.UiTest.d.ts，重点关注 Driver 类的 create、findComponent、assertComponentExist、delayMs 方法，以及 On 类的 text、id 方法。动态版目标路径 test/xts/acts/testfwk/uitest，静态版目标路径 test/xts/acts/testfwk/uitestStatic",
+      "description": "多版本串行生成模式：测试技能在 ets1.1+ets1.2 双版本下的串行生成、prebuilts切换和编译能力",
+      "files": [],
+      "assertions": []
     }
   ]
 }

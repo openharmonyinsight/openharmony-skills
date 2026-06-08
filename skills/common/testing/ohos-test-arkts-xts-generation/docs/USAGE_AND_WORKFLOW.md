@@ -460,8 +460,8 @@ python {skill_root}/scripts/register_test.py
 
 | 步骤 | 内容 |
 |------|------|
-| A | `validate_test_context.py` 检查 5/9 项 + `arkts-static-spec` 校验（仅 ArkTS-Sta） |
-| B | `check-test-code-quality` 技能执行 11 条规则深度扫描 |
+| A | `validate_test_context.py` 检查 5/9 项 + `ohos-dev-arkts-static-specification-reference` 校验（仅 ArkTS-Sta） |
+| B | `ohos-test-xts-code-quality` 技能执行 17 条规则深度扫描 |
 
 ### Phase 8：编译验证（推荐）
 

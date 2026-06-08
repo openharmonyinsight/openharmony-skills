@@ -89,7 +89,7 @@
 
 ### 代码质量约束
 
-生成的代码必须满足 `quality_constraints.md` 中的全部规则（R002-R029），确保天然通过 check-test-code-quality 扫描。特别关注：
+生成的代码必须满足 `quality_constraints.md` 中的全部规则（R002-R029 + R201-R205），确保天然通过 ohos-test-xts-code-quality 扫描。特别关注：
 - 每条 `waitForComponent` 返回后必须判空
 - 禁止使用 `as any`
 - Driver 在 `beforeAll` 中创建，禁止在 `it` 中重复创建

@@ -4,12 +4,12 @@
 > - 层级：L2_Generation
 > - 子模块：generator/
 > - 用途：定义 ArkTS-Sta 静态项目测试代码生成时必须遵循的 ArkTS 静态语法约束
-> - 来源：提取自 arkts-static-spec 技能
+> - 来源：提取自 ohos-dev-arkts-static-specification-reference 技能
 > - 适用条件：仅当目标语法类型为 ArkTS-Sta（静态项目）时加载
 
 ---
 
-ArkTS 静态语法与动态语法有本质区别，生成的测试代码必须遵循以下约束，否则无法通过编译。详细的语法规范参考见 `arkts-static-spec` 技能，本文件只列出与测试代码生成直接相关的约束。
+ArkTS 静态语法与动态语法有本质区别，生成的测试代码必须遵循以下约束，否则无法通过编译。详细的语法规范参考见 `ohos-dev-arkts-static-specification-reference` 技能，本文件只列出与测试代码生成直接相关的约束。
 
 ---
 

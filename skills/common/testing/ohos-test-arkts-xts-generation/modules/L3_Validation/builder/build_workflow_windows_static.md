@@ -210,7 +210,7 @@ Type 'string' is not assignable to type 'number'
 1. 检查是否使用了 `any` 类型
 2. 确保所有函数参数和返回值都有类型注解
 3. 验证类型兼容性
-4. 参考：`references/arkts-static-spec/` 目录下的规范文档
+4. 参考：`ohos-dev-arkts-static-specification-reference` 技能目录下的规范文档
 
 #### 错误3：字段未初始化
 

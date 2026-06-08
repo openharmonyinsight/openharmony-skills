@@ -312,3 +312,10 @@ APICoverageDetector 的 `call` 维度能扫描到 Demo 页面 `build()` 中对 A
    - sessionId：本次会话的唯一标识（如使用启动时间戳 `HHmmss` 或自增序号）
    - 示例路径：`{skill_root}/.task_summary/session_20260528_204538.md`
    - 如果 `{skill_root}/.task_summary/` 目录不存在，先创建
+
+### 会话收尾（必须执行）
+
+1. 检查 `session_issues_{日期}.md` 中所有 issue 是否已解决
+2. 未解决的标记 `Status: Unresolved`，已解决的标记 `Status: Resolved`
+3. 向用户汇报 issue 摘要和优化建议
+4. 告知用户未解决的 issue 将在下次启动时自动回顾
