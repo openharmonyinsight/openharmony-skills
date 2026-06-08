@@ -31,6 +31,22 @@ metadata:
 - 需要证明重构/新特性不引入内存膨胀
 - 评审要求提供 RAM/ROM 数据
 
+## Safety and Comparability Gates
+
+Replacing system `.so` files, remounting `/` read-write, and rebooting a device are destructive test
+operations. Do them only after explicit user approval, keep `.bak` copies of every replaced library,
+and restore the device to the requested final state before ending the workflow.
+
+A RAM/ROM conclusion is only comparable when these conditions are recorded:
+
+- baseline and current image/build or `.so` provenance
+- exact libraries replaced
+- whether the same functional path was executed before both captures
+- whether process-level numbers are idle-vs-idle, exercised-vs-exercised, or mixed
+
+If baseline is idle but current is post-exercise, do not present process-level PSS delta as feature
+RAM cost. Use it only as context and rely on library PSS plus code-level theoretical analysis.
+
 ## 度量三支柱
 
 本 skill 要求从三个互相佐证的维度度量 RAM 影响：
@@ -43,18 +59,27 @@ metadata:
 
 三个维度**必须同时完成**，互相交叉验证。仅做段级估算会遗漏堆分配；仅做实测会受噪声影响；仅做理论分析无法确认实际表现。
 
-## 度量目标库
+## 度量目标库和进程范围
 
-multimodalinput 进程加载的核心 .so：
+先根据代码变更确定影响面，不要默认只看服务端进程。至少检查改动是否触达以下库：
 
-| 库 | 角色 | 部署路径 |
-|----|------|---------|
-| `libmmi-server.z.so` | 服务端主逻辑 | `/system/lib/` |
-| `libmmi-server-common.z.so` | 服务端公共 | `/system/lib/` |
-| `libmmi-util.z.so` | 工具库 | `/system/lib/` |
-| `libmmi-client.z.so` | 客户端库（不在 server 进程中） | `/system/lib/` |
+| 库 | 角色 | RAM 分析范围 |
+|----|------|-------------|
+| `libmmi-server.z.so` | 服务端主逻辑 | `multimodalinput` 进程 |
+| `libmmi-server-common.z.so` | 服务端公共 | `multimodalinput` 进程 |
+| `libmmi-util.z.so` | 工具库 | 所有加载该库的目标进程 |
+| `libmmi-client.z.so` | 客户端 API/代理 | 触发该 API 的客户端进程，不能用服务端进程 PSS 代表 |
 
-**注意**：`libmmi-client.z.so` 不在 multimodalinput 服务端进程中加载，ROM 变化不影响服务端 RAM。
+规则：
+
+- ROM 分析应覆盖所有受影响的 libmmi `.so`，包括 `libmmi-client.z.so`。
+- RAM 分析必须按实际加载进程归属。`libmmi-client.z.so` 通常不在 `multimodalinput`
+  服务端进程中加载；如果客户端 API、proxy、NAPI 或测试二进制路径受影响，需要选择一个会加载
+  `libmmi-client.z.so` 的客户端进程执行功能路径并采集该进程的 smaps/hidumper 数据。
+- 如果改动只影响服务端内部路径，可以说明 client so 未加载到服务端进程，但仍要用代码 diff、符号
+  或段级数据确认 `libmmi-client.z.so` 是否真的无变化或不参与本次 RAM 结论。
+- 最终报告要列出“库 → 进程 → 是否执行功能路径 → 是否纳入 RAM 结论”的映射，避免把服务端 PSS
+  误当成全量 MMI RAM 成本。
 
 ## ROM 度量方法
 
@@ -213,12 +238,16 @@ $HDC shell "reboot"
 部署 .so → 重启 → 等待系统稳定 (30s) → 执行功能路径 → 等待稳定 (5s) → 采集
 ```
 
-功能路径示例（以 display group 绑定为例）：
-1. 创建显示组（UpdateDisplayInfo）
-2. 注入窗口（UpdateWindowInfo）
-3. 创建设备 + 绑定（BindDeviceToDisplayGroupByDisplay）
-4. 注入事件（鼠标移动、按键、滚轮）触发所有状态路径
-5. 解绑 + 清理
+功能路径按变更内容定义，不要固定成某一个特性用例。通用模板：
+
+1. 初始化变更依赖的系统状态（如 display、window、device、session、permission）。
+2. 调用新增或修改的 public API、IPC、server handler、callback 或事件路径。
+3. 触发懒分配和缓存路径（如首次事件、重复事件、边界设备、窗口、显示组）。
+4. 覆盖清理路径（解绑、销毁、断连、窗口删除、服务重启前后状态）。
+5. 记录实际执行的步骤，并说明哪些受影响库和进程被该路径覆盖。
+
+例如 display group 绑定可以用 `UpdateDisplayInfo`、`UpdateWindowInfo`、
+`BindDeviceToDisplayGroupByDisplay` 和事件注入触发；其他特性必须替换成自己的最小完备功能路径。
 
 不执行功能路径的 RAM 采集会**低估**实际内存占用，因为懒分配的容器仍为空。
 
@@ -243,7 +272,7 @@ git diff <baseline>..HEAD -- '*.h' | grep -E '^\+.*struct |^\+.*class '
 | 新增容器成员 | grep diff 中的 `std::map`, `std::vector` 等 |
 | 每条目大小 | 分析 value type 的字段（见下方估算技巧） |
 | 分配时机 | 是否懒分配（仅在使用时创建） |
-| 条目数量上界 | 绑定的设备数、group 数 |
+| 条目数量上界 | 与变更相关的设备数、窗口数、显示组数、会话数、监听器数或事件序列数 |
 | 清理机制 | 是否有 erase/clear/remove 路径 |
 | 泄漏风险 | 是否所有分配路径都有对应释放 |
 
@@ -288,8 +317,8 @@ RS 资源通常是**最大的单项内存开销**。如果代码中 RS shared_pt
 | 场景 | 估算方法 |
 |------|---------|
 | 不使用特性（0 条目） | 仅容器头部 + 固定对象开销 |
-| 典型场景（如 2 设备 × 2 group） | 按条目数 × 条目大小估算 |
-| 极端场景（上界） | 最大设备数 × 最大 group 数 |
+| 典型场景 | 按实际业务基数 × 条目大小估算 |
+| 极端场景（上界） | 按设备、窗口、显示组、会话、监听器或事件序列等上界估算 |
 
 ### 4. 与实测数据交叉验证
 
@@ -320,6 +349,13 @@ RS 资源通常是**最大的单项内存开销**。如果代码中 RS shared_pt
 | .data | | | |
 | .bss | | | |
 
+### 影响范围映射
+
+| 库 | 受影响代码路径 | 目标进程 | 是否采集 RAM | 说明 |
+|----|--------------|----------|--------------|------|
+| libmmi-server.z.so | server handler / event path | multimodalinput | yes/no | |
+| libmmi-client.z.so | client API / proxy / NAPI | <client-process-or-test-binary> | yes/no | |
+
 ## RAM 影响
 
 ### 实测对比（libmmi 库 PSS）
@@ -331,10 +367,11 @@ RS 资源通常是**最大的单项内存开销**。如果代码中 RS shared_pt
 
 ### 理论分析
 
-| 场景 | 当前实现 | 完整实现(含RS) |
-|------|---------|--------------|
-| 不使用特性 | ~X B | ~X B |
-| 典型 N设备×N group | ~X KB | ~X KB |
+| 场景 | 当前实现 | 后续/完整实现（如适用） |
+|------|---------|------------------------|
+| 不使用路径 | ~X B | ~X B |
+| 典型功能路径 | ~X KB | ~X KB |
+| 极端上界 | ~X KB/MB | ~X KB/MB |
 
 ### 实测 vs 理论对照
 
@@ -343,7 +380,7 @@ RS 资源通常是**最大的单项内存开销**。如果代码中 RS shared_pt
 ## 结论
 
 ROM: +/-X bytes (+/-N%)
-RAM: 实测 libmmi PSS +/-X kB；理论典型场景 ~X KB
+RAM: 服务端进程 PSS +/-X kB；客户端进程 PSS +/-Y kB（如适用）；理论典型场景 ~Z KB
 ```
 
 ## Common Mistakes
@@ -354,6 +391,7 @@ RAM: 实测 libmmi PSS +/-X kB；理论典型场景 ~X KB
 | 忽略 .bss 段 | .bss 不占 ROM 但影响 anonymous RAM | 单独检查 .bss |
 | 拿 RSS 做进程间对比 | RSS 包含共享页全量，被多次计算 | 用 PSS |
 | 对比不同版本系统的 RAM 数据 | 系统库版本差异导致噪声 | 确保只替换目标 .so，系统基线一致 |
+| `libmmi-client.z.so` 只看服务端进程 | client so 不在服务端进程加载，RAM 结论缺失 | 选择加载 client so 的客户端进程或测试二进制单独采集 |
 | 重启后不执行功能路径就采集 | 懒分配的数据结构未实际分配，RAM 被低估 | 采集前必须执行完整功能路径触发所有状态分配 |
 | 只做段级估算不做理论分析 | 段级估算不反映堆分配（new/malloc），遗漏运行时数据结构 | 结合 diff 中的新增容器做理论内存估算 |
 | 只做理论分析不做实测 | 理论估算可能遗漏/高估，无法确认实际表现 | 三支柱（段级 + 实测 + 理论）交叉验证 |

@@ -1,5 +1,8 @@
 # HID 设备绑定到 Display Group — RAM/ROM 影响度量
 
+This file is one concrete validation case for the generic RAM/ROM measurement skill. Do not treat
+the HID display-group path as the required functional path for unrelated MMI changes.
+
 - **日期**: 2026-06-05 (ROM + 修改版 RAM 采集), 2026-06-08 (报告定稿)
 - **设备**: DAYU200 (RK3568)
 - **分支**: `feat/hid-display-group-binding`
