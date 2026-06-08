@@ -1,6 +1,6 @@
 # HID 设备绑定到 Display Group — RAM/ROM 影响度量
 
-- **日期**: 2026-06-05
+- **日期**: 2026-06-05 (ROM + 修改版 RAM 采集), 2026-06-08 (报告定稿)
 - **设备**: DAYU200 (RK3568)
 - **分支**: `feat/hid-display-group-binding`
 - **基线**: 设备上原始 .so（.bak 备份）
@@ -60,10 +60,10 @@
 | 库 | PSS (kB) |
 |----|---------|
 | libmmi-server.z.so | 3,220 |
-| libmmi-server-common.z.so | 152 |
-| libmmi-util.z.so | 120 |
-| libmmi-rust.z.so | 50 |
-| libmmi-rust_key_config.z.so | 8 |
+| libmmi-server-common.z.so | 272 |
+| libmmi-util.z.so | 34 |
+| libmmi_rust.z.so | 16 |
+| libmmi_rust_key_config.z.so | 8 |
 | **libmmi 合计** | **3,550** |
 
 **hidumper --mem 分类:**
@@ -74,13 +74,62 @@
 | .so mmap PSS | 12,327 |
 | total PSS | 16,916 |
 
-### 基线 RAM 未实测的说明
+### 基线状态（原始 .so）— 真机采集
 
-本次未通过恢复 .bak .so + 重启服务的方式采集基线 RAM，原因：
-1. 测试设备运行关键测试链路，重启有变砖风险
-2. 理论分析（见下文）表明 RAM 增量可量化且极小
+采集于 DAYU200 设备，恢复原始 .bak .so 后重启，idle 状态（未执行功能路径，因为基线 .so 不包含 BindDeviceToDisplayGroupByDisplay API）。
 
-如需精确基线 RAM，应在 CI 环境中：部署基线 .so → 重启 → 运行完整功能路径（双显示组 + 设备绑定 + 事件注入）→ 等系统稳定 → 采集 smaps → 再部署修改版 → 重复。仅加载 .so 不触发代码路径是**不准确的**，因为本特性的关键数据结构采用懒分配。
+**smaps_rollup 进程汇总:**
+
+| 指标 | 值 |
+|------|-----|
+| PSS | 10,080 kB |
+| RSS | 35,532 kB |
+| Pss_Dirty | 5,315 kB |
+| Pss_Anon | 5,312 kB |
+| Pss_File | 4,765 kB |
+
+**per-library PSS (来自 smaps):**
+
+| 库 | PSS (kB) |
+|----|---------|
+| libmmi-server.z.so | 3,200 |
+| libmmi-server-common.z.so | 268 |
+| libmmi-util.z.so | 26 |
+| libmmi_rust.z.so | 16 |
+| libmmi_rust_key_config.z.so | 8 |
+| **libmmi 合计** | **3,518** |
+
+**hidumper --mem 分类:**
+
+| 类别 | 值 (kB) |
+|------|---------|
+| native heap | 1,652 |
+| .so mmap PSS | 7,494 |
+| total PSS | 9,886 |
+
+### 基线 vs 修改版对比
+
+**注意**：基线采集于 idle 状态（仅启动服务），修改版采集于 post-exercise 状态（执行了双显示组 + 设备绑定 + 事件注入）。因此进程级 PSS 差异主要来自运行时状态差异（额外加载的库、创建的对象），而非本特性代码变更。
+
+**libmmi 库 PSS 对比**（最能反映代码变更影响）：
+
+| 库 | 基线 PSS (kB) | 修改版 PSS (kB) | 差值 |
+|----|-------------|---------------|------|
+| libmmi-server.z.so | 3,200 | 3,220 | +20 |
+| libmmi-server-common.z.so | 268 | 272 | +4 |
+| libmmi-util.z.so | 26 | 34 | +8 |
+| libmmi_rust.z.so | 16 | 16 | 0 |
+| libmmi_rust_key_config.z.so | 8 | 8 | 0 |
+| **libmmi 合计** | **3,518** | **3,550** | **+32** |
+
+**进程级对比**（含运行时状态差异，仅供参考）：
+
+| 指标 | 基线 | 修改版 | 差值 | 说明 |
+|------|------|--------|------|------|
+| PSS | 10,080 | 17,094 | +7,014 | 主要来自 post-exercise 运行时状态 |
+| native heap | 1,652 | 3,784 | +2,132 | 运行时对象分配（display group、虚拟设备、窗口等） |
+| .so mmap PSS | 7,494 | 12,327 | +4,833 | 额外加载的 .so（input-test 框架等） |
+| hidumper total | 9,886 | 16,916 | +7,030 | 综合差异 |
 
 ### 理论 RAM 分析（代码级佐证）
 
@@ -108,28 +157,54 @@
 | 数据结构 | 新增内存 | 说明 |
 |---------|---------|------|
 | 所有 map 容器 | 0 bytes | 空 map，仅 map 头部开销（~48 bytes/map × 10 ≈ 480 bytes） |
-| 2 个 mutex | ~80 bytes | `groupStatesMutex_` + `groupKeyEventsMutex_` |
-| **合计** | **~560 bytes** | 不使用本特性时的固定开销 |
+| 3 个 mutex | ~120 bytes | `groupStatesMutex_` + `groupKeyEventsMutex_` + `contextsMutex_` |
+| **合计** | **~600 bytes** | 不使用本特性时的固定开销 |
 
 #### 典型场景（2 个绑定设备 × 2 个 group）内存增量
 
 对应 `dual_group_interleave_test` 场景：2 台鼠标 + 2 台键盘，绑定到 2 个 display group。
 
-| 数据结构 | 条目数 | 每条目大小 | 小计 |
-|---------|--------|-----------|------|
-| `runtimeBindings_` | 4 设备 | ~60 bytes (entry + node) | ~240 B |
-| `contexts_` | 1 非默认 group | ~300 bytes (PointerDrawingContext + shared_ptr + node) | ~300 B |
-| `groupStates_` | 1 非默认 group | ~100 bytes (coords + btn map + node) | ~100 B |
-| `groupKeyEvents_` | 1 非默认 group | ~2.5 kB (KeyEvent object + shared_ptr + node) | ~2.5 kB |
-| `focusWindowIdMap_` | 2 groups | ~80 bytes (2 × node) | ~80 B |
-| `sequenceSnapshots_` | 0~4 活跃 | ~60 bytes/条 | ~240 B |
-| `mouseDownInfoMap_` | 0~2 按住 | ~600 bytes (WindowInfo 含 vectors) | ~1.2 kB |
-| `lastPointerEventMap_` | 2 devices | ~2.5 kB/条 (PointerEvent) | ~5.0 kB |
-| `dragFlagMap_` | 2 devices | ~80 bytes | ~80 B |
-| `axisBeginWindowInfoMap_` | 0~2 | ~600 bytes | ~1.2 kB |
-| `EnsureGroupState` 扩展 | 1 非默认 group | ~200 bytes (7 个 map 条目) | ~200 B |
-| mutex 固定 | 2 | ~40 bytes each | ~80 B |
-| **合计** | | | **~11.2 kB** |
+**Per non-default group (1 个非默认组):**
+
+| 数据结构 | 大小 | 计算依据 |
+|---------|------|---------|
+| `PointerDrawingContext` 结构体 | ~730 B | DisplayInfo(244B) + 3×PointerStyle(360B,含RefCounter) + scalars(64B) + 4×shared_ptr(64B,nullptr) |
+| — `OLD::DisplayInfo` | ~244 B | 18×int32(72) + 2×string SSO(64) + vector\<float\>(60) + 7×enum(28) + misc(20) |
+| — `PointerStyle` ×3 | ~360 B | 每个: 40B inline + 80B RefCounter on heap = 120B × 3 |
+| — RS 资源 (surfaceNode 等) | **0 B (当前)** | **当前实现中 surfaceNode/canvasNode/rsUIDirector/rsUIContext 均为 nullptr** |
+| — RS 资源 (完整实现) | **~50-200 KB** | RSSurfaceNode+BufferQueue(48-192KB) + RSCanvasNode + RSUIDirector + RSUIContext |
+| `GroupMouseState` | ~300 B | coords(8B) + btnState map(48B header + 3 btn × ~64B node = 240B) |
+| `groupKeyEvents_` entry | ~400 B | KeyEvent: InputEvent(120B) + RefCounter(80B) + own fields(100B) + shared_ptr ctl(16B) |
+| `EnsureGroupState` 7 map entries | ~200 B | mouseLocation/cursorPos/captureMode/focusWindowId 等 per-group entries |
+| **Group 小计 (当前)** | **~1,630 B** | RS 未创建 |
+| **Group 小计 (完整实现)** | **~52-202 KB** | 含 RS SurfaceBuffer (64×64 ～ 128×128 triple-buffering) |
+
+**Per device (2 个设备):**
+
+| 数据结构 | 每设备大小 | 计算依据 |
+|---------|----------|---------|
+| `runtimeBindings_` | ~60 B | RuntimeDeviceBinding + unordered_map node |
+| `mouseDownInfoMap_` (WindowInfo) | ~500 B | 20×scalar(90B) + 3×vector\<Rect\>(168B) + vector\<int32\>(64B) + transform(60B) + misc |
+| `lastPointerEventMap_` (PointerEvent) | ~800 B | InputEvent(120B) + RefCounter(80B) + list\<PointerItem\>(316B,含1个300B的PointerItem) + pressedButtons set(48B) + 3×vector(72B) + misc |
+| `dragFlagMap_` | ~60 B | map node + bool |
+| `axisBeginWindowInfoMap_` (optional\<WindowInfo\>) | ~500 B | 与 WindowInfo 同 |
+| **设备小计** | **~1,920 B × 2 = ~3,840 B** | |
+
+**Fixed overhead:**
+
+| 项 | 大小 |
+|----|------|
+| 10 map 头部 | ~480 B |
+| 3 mutex | ~120 B |
+| **固定小计** | **~600 B** |
+
+**典型场景合计:**
+
+| 实现状态 | RAM 增量 |
+|---------|---------|
+| **当前实现** (RS surface 未创建) | ~6.1 KB (1.63 + 3.84 + 0.6) |
+| **完整实现** (RS 64×64 triple-buffering) | **~56 KB** (50 + 3.84 + 0.6 + 1.63) |
+| **完整实现** (RS 128×128 triple-buffering) | **~206 KB** (200 + 3.84 + 0.6 + 1.63) |
 
 #### 懒分配机制
 
@@ -150,7 +225,9 @@ void InputWindowsManager::EnsureGroupState(int32_t groupId) {
 // KeyEventNormalize::GetKeyEventForGroup(groupId) — 同样懒分配
 ```
 
-**这意味着**：如果不调用 BindDeviceToDisplayGroupByDisplay 创建非默认 group，这些 map 始终为空，运行时零增量（除了 map 头部和 mutex 的 ~560 bytes 固定开销）。
+**这意味着**：如果不调用 BindDeviceToDisplayGroupByDisplay 创建非默认 group，这些 map 始终为空，运行时零增量（除了 map 头部和 mutex 的 ~600 bytes 固定开销）。
+
+**RS 资源说明**：当前实现中 `GetOrCreateContext()` 仅 `make_shared<PointerDrawingContext>()`（默认构造），4 个 RS shared_ptr 均为 nullptr。代码中 `ctx->surfaceNode` 仅在 `RemoveContext()` 和 `DrawMovePointer()` 中被检查（`if != nullptr`），但从未被赋值。这意味着当前实现**不为非默认 group 创建独立的 RS cursor surface**，仅记录位置/样式元数据。完整的多光标渲染需要后续为每个非默认 group 创建 RSSurfaceNode + BufferQueue，预计每 group 增加 **50-200 KB**（取决于光标图像尺寸和 BufferQueue 深度）。
 
 #### 清理机制
 
@@ -167,19 +244,39 @@ void InputWindowsManager::EnsureGroupState(int32_t groupId) {
 
 ### 综合 RAM 分析
 
-| 场景 | 新增 RAM | 占进程 PSS 比例 |
-|------|---------|----------------|
-| 不使用本特性（0 绑定） | ~560 bytes | 0.003% |
-| 典型场景（2 设备 × 2 group） | ~11 kB | 0.06% |
-| 极端场景（10 设备 × 5 group） | ~55 kB | 0.32% |
+**实测数据**：libmmi .so PSS 合计增加 +32 kB（3,518 → 3,550 kB），其中：
+- libmmi-server.z.so: +20 kB（主要来自 .text 段变化和运行时状态页面被 touch）
+- libmmi-server-common.z.so: +4 kB
+- libmmi-util.z.so: +8 kB
 
-加上 .text 段缩减带来的 shared clean PSS 减少 ~15 kB：
+**理论分析与实测对照**：
 
-| 场景 | 净 RAM 变化 |
-|------|-----------|
-| 不使用本特性 | **-15 kB**（.text 缩减，固定开销可忽略） |
-| 典型场景 | **-4 kB**（.text 缩减 15 kB，数据结构增 11 kB） |
-| 极端场景 | **+40 kB**（.text 缩减 15 kB，数据结构增 55 kB） |
+| 场景 | 当前实现 (RS未创建) | 完整实现 (含RS 64×64) | 完整实现 (含RS 128×128) |
+|------|-------------------|---------------------|----------------------|
+| 不使用本特性 | ~600 B | ~600 B | ~600 B |
+| 典型 2设备×2group | **~6 KB** | **~56 KB** | **~206 KB** |
+| 极端 10设备×5group | ~30 KB | ~280 KB | ~1 MB |
+
+**当前实现 vs 完整实现的差异说明**：
+
+当前代码中 `PointerDrawingContext` 的 4 个 RS shared_ptr（surfaceNode、canvasNode、rsUIDirector、rsUIContext）均为 nullptr，非默认 group 不创建独立的光标渲染 surface。仅存储位置、样式、方向等元数据。
+
+完整的多光标渲染（每个 display group 一个独立光标）需要为每个非默认 group 创建：
+- `RSSurfaceNode` + `BufferQueue`（triple-buffering）：
+  - 64×64 RGBA: 16 KB/buffer × 3 = **48 KB**
+  - 128×128 RGBA: 64 KB/buffer × 3 = **192 KB**
+- `RSCanvasNode` + `RSUIDirector` + `RSUIContext`: ~1.6 KB
+
+**这是该特性的主要内存开销来源**，且完全取决于 RS 光标尺寸和 BufferQueue 配置。当前实现的 ~6 KB 远低于完整实现的 ~56-206 KB。
+
+**段级 RAM 变化**：
+
+| 段 | 差值 | 映射类型 | RAM 影响 |
+|----|------|---------|---------|
+| `.text` | -15,384 B | shared clean (r-x) | PSS 减少 ≈ -15 kB |
+| `.rodata` | +336 B | shared clean (r--) | PSS 增加 ≈ +0.3 kB |
+| `.data` | +8 B | private dirty (rw-) | 可忽略 |
+| `.bss` | 0 B | anonymous (rw-) | 无变化 |
 
 ## 结论
 
@@ -187,12 +284,29 @@ void InputWindowsManager::EnsureGroupState(int32_t groupId) {
 |------|------|------|
 | **ROM** (文件体积) | -144 KB (-2.9%) 总计 | 净减少（含编译差异） |
 | **ROM** (段级) | .text -15 kB, .rodata +336 B | 代码精简，极少新增常量 |
-| **RAM** (理论分析) | 不使用时 ~560 B；典型场景 ~11 kB | 懒分配 + 主动清理，无泄漏 |
-| **RAM** (综合) | 典型场景净变化 ≈ -4 kB | .text 缩减抵消数据结构增量 |
+| **RAM** (libmmi PSS 实测) | +32 kB (3,518 → 3,550 kB) | 含编译差异 + 运行时状态 |
+| **RAM** (理论-当前实现) | 不使用时 ~600 B；典型 ~6 KB | RS surface 未创建 |
+| **RAM** (理论-完整实现) | 典型 ~56-206 KB/group | 含 RS BufferQueue |
 
-**HID 设备绑定到 Display Group 特性对 RAM/ROM 的影响可控**：
+**HID 设备绑定到 Display Group 特性 RAM/ROM 分析**：
 - 代码体积净减少（.text 段 -0.65%）
 - 不新增全局零初始化变量（.bss 无变化）
-- 运行时内存采用懒分配，不使用特性时仅 560 bytes 固定开销
-- 典型场景（2 设备 2 组）新增 ~11 kB，被 .text 缩减抵消
+- 运行时内存采用懒分配，不使用特性时仅 ~600 bytes 固定开销
+- **当前实现**（RS surface 未创建）：典型场景 ~6 KB，仅存储元数据
+- **完整实现**（独立光标渲染）：主要开销来自 RS SurfaceBuffer（triple-buffering），每 group ~50-200 KB，取决于光标尺寸
 - 所有 per-group/per-device 状态有完整清理路径，无泄漏
+
+## 度量方法论说明
+
+| 维度 | 方法 | 可信度 |
+|------|------|--------|
+| ROM 文件级 | readelf -S 段级分析 + ls 文件大小 | 高（编译器版本差异已标注） |
+| ROM 段级 | 相同 readelf 工具，段大小与编译器无关 | 高 |
+| RAM 修改版 | 真机 smaps + hidumper，功能路径执行后采集 | 高 |
+| RAM 基线 | 真机 smaps + hidumper，恢复 .bak .so 后 idle 采集 | 高 |
+| RAM 理论 | git diff 分析新增容器 + 结构体内存估算 | 中高（人工估算单条目大小） |
+
+**已知局限**：
+1. 文件级 ROM 对比受编译器差异影响（每日构建 vs 本地编译），段级分析更可靠
+2. 基线与修改版采集条件不同（idle vs post-exercise），进程级 PSS 不直接可比；libmmi .so PSS 更可靠
+3. 理论分析中的单条目大小为估算值，实际值取决于编译器对齐和 STL 实现
