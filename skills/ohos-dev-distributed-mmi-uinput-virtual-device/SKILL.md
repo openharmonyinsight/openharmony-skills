@@ -1,5 +1,5 @@
 ---
-name: ohos-dev-mmi-uinput-virtual-device
+name: ohos-dev-distributed-mmi-uinput-virtual-device
 description: Use when testing OpenHarmony input subsystem features (mouse/keyboard/touchpad event flow, device binding, display group isolation) on a real device without physical peripherals. Covers /dev/uinput device creation, event injection, InputManager device discovery, and hot-plug simulation.
 metadata:
   author: openharmony
@@ -16,8 +16,8 @@ metadata:
     - event-injection
     - hot-plug
   related-skills:
-    - ohos-dev-mmi-device-test-harness
-    - ohos-dev-mmi-wms-dms-simulation
+    - ohos-dev-distributed-mmi-device-test-harness
+    - ohos-dev-distributed-mmi-wms-dms-simulation
 ---
 
 # uinput 虚拟设备测试

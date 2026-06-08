@@ -1,5 +1,5 @@
 ---
-name: ohos-dev-mmi-device-test-harness
+name: ohos-dev-distributed-mmi-device-test-harness
 description: Use when building or running multimodal input system tests on a real DAYU200 device. Covers NativeToken permission setup, server-side bypass, test binary compile/deploy/run pipeline, phase-based hidumper capture, device discovery polling, and dump field reference.
 metadata:
   author: openharmony
@@ -15,8 +15,8 @@ metadata:
     - hidumper
     - nativetoken
   related-skills:
-    - ohos-dev-mmi-wms-dms-simulation
-    - ohos-dev-mmi-uinput-virtual-device
+    - ohos-dev-distributed-mmi-wms-dms-simulation
+    - ohos-dev-distributed-mmi-uinput-virtual-device
 ---
 
 # 多模输入真机测试脚手架

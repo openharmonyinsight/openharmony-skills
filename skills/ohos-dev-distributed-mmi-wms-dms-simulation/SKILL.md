@@ -1,5 +1,5 @@
 ---
-name: ohos-dev-mmi-wms-dms-simulation
+name: ohos-dev-distributed-mmi-wms-dms-simulation
 description: Use when testing OpenHarmony input features that depend on window/display state without running real WMS/DMS. Builds requested simulation scenarios from display groups, users, main/extended/mirror displays, per-display focus windows, z-order window stacks, hot areas, dynamic focus switching, pointer style, capture mode, scroll wheel, and device binding.
 metadata:
   author: openharmony
@@ -16,15 +16,15 @@ metadata:
     - window-management
     - z-order
   related-skills:
-    - ohos-dev-mmi-device-test-harness
-    - ohos-dev-mmi-uinput-virtual-device
+    - ohos-dev-distributed-mmi-device-test-harness
+    - ohos-dev-distributed-mmi-uinput-virtual-device
 ---
 
 # WMS/DMS 模拟
 
 测试进程直接通过 InputManager IPC 构造显示组和窗口，替代 WMS（窗口管理服务）和 DMS（显示管理服务），实现输入子系统的独立功能验证。
 
-**前置 skill**: 权限获取、server 绕过、编译部署、hidumper 捕获等基础设施见 `ohos-dev-mmi-device-test-harness`；虚拟设备创建和事件注入见 `ohos-dev-mmi-uinput-virtual-device`。
+**前置 skill**: 权限获取、server 绕过、编译部署、hidumper 捕获等基础设施见 `ohos-dev-distributed-mmi-device-test-harness`；虚拟设备创建和事件注入见 `ohos-dev-distributed-mmi-uinput-virtual-device`。
 
 ## When to Use
 
@@ -376,7 +376,7 @@ InjectSingleWindow(1003, 0, 0, {0,0,0,0}, 0.0f, WINDOW_UPDATE_ACTION::DEL, 1000)
 ## 可用的验证 API
 
 ```cpp
-// 设备绑定（详见 ohos-dev-mmi-device-test-harness）
+// 设备绑定（详见 ohos-dev-distributed-mmi-device-test-harness）
 InputManager::GetInstance()->BindDeviceToDisplayGroupByDisplay(deviceId, displayId, msg);
 InputManager::GetInstance()->UnbindDeviceFromDisplayGroup(deviceId, msg);
 
@@ -400,14 +400,14 @@ InputManager::GetInstance()->LeaveCaptureMode(windowId);
 ## 执行顺序
 
 ```
-1. InitNativeToken()           — 权限 (见 ohos-dev-mmi-device-test-harness)
+1. InitNativeToken()           — 权限 (见 ohos-dev-distributed-mmi-device-test-harness)
 2. 建立 scenario model         — 用户、显示组、主/扩展/镜像屏、窗口栈、焦点
 3. UpdateDisplayInfo()         — 注入 display group/screen 信息（等 1 秒）
 4. UpdateWindowInfo() x N      — 每个 display 注入窗口栈（等 1 秒）
-5. 创建虚拟设备 + FindDevice   — 见 ohos-dev-mmi-uinput-virtual-device
+5. 创建虚拟设备 + FindDevice   — 见 ohos-dev-distributed-mmi-uinput-virtual-device
 6. BindDeviceToDisplayGroupByDisplay()
 7. warm-up 事件注入（2 次，初始化 group state）
-8. 测试逻辑 + DumpPhase()     — dump 捕获见 ohos-dev-mmi-device-test-harness
+8. 测试逻辑 + DumpPhase()     — dump 捕获见 ohos-dev-distributed-mmi-device-test-harness
 9. 清理：解绑 → UI_DEV_DESTROY → close(fd)
 ```
 

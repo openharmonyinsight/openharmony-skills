@@ -1,5 +1,5 @@
 ---
-name: ohos-dev-mmi-ram-rom-measurement
+name: ohos-dev-distributed-mmi-ram-rom-measurement
 description: Use when measuring RAM/ROM impact of OpenHarmony multimodal input (MMI) subsystem changes on DAYU200 (RK3568). Covers ROM measurement via readelf section analysis and file size comparison, RAM measurement via /proc/PID/smaps, smaps_rollup, hidumper --mem, and baseline/current .so swap methodology. Includes code-level theoretical analysis for heap-allocated data structures.
 metadata:
   author: openharmony
@@ -16,14 +16,14 @@ metadata:
     - performance
     - binary-size
   related-skills:
-    - ohos-dev-mmi-device-test-harness
+    - ohos-dev-distributed-mmi-device-test-harness
 ---
 
 # MMI RAM/ROM 影响度量
 
 衡量 multimodalinput 子系统代码变更前后的 ROM（二进制体积）和 RAM（运行时内存）占用变化。
 
-**前置 skill**: 编译部署、设备连接等基础设施见 `ohos-dev-mmi-device-test-harness`。
+**前置 skill**: 编译部署、设备连接等基础设施见 `ohos-dev-distributed-mmi-device-test-harness`。
 
 ## When to Use
 
