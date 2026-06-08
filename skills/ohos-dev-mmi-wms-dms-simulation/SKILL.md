@@ -32,48 +32,12 @@ metadata:
 - 验证多显示组场景（主屏+副屏、独立光标、隔离焦点）
 - 不想或不能启动完整 WMS/DMS 栈时
 
-## 已验证能力清单
+## 已验证能力摘要
 
-以下能力均已在 DAYU200 真机上通过 `dual_group_interleave_test` 验证，dump 数据确认正确：
-
-### 显示组与窗口构造
-
-| 能力 | 验证步骤 | 说明 |
-|------|---------|------|
-| 双显示组构造 | Step 1 | `UpdateDisplayInfo` 返回 -201 但数据正确写入 |
-| 多窗口注入 | Step 1.5 | 每组 3 个窗口，不同 zOrder/area/hotArea |
-| 增量窗口 ADD/CHANGE/DEL | Step 15 | `InjectSingleWindow` 单窗口操作 |
-| 焦点窗口预设 | Step 1 | 在 DisplayGroupInfo 中设置 focusWindowId |
-
-### 状态隔离 (per-group)
-
-| 能力 | 验证步骤 | dump 验证字段 |
-|------|---------|--------------|
-| 光标位置隔离 | Step 5 | `PointerStateByGroup` 中 `cursorPos` 两组独立 |
-| 鼠标按钮隔离 | Step 6 | per-group 按键状态独立按下/释放 |
-| 键盘按键隔离 | Step 9 | `KeyboardStateByGroup` 中修饰键独立 |
-| 焦点窗口隔离 | Step 9.5 | 键盘事件路由到各自组的焦点窗口 |
-| captureMode 隔离 | Step 10 | `EnterCaptureMode`/`LeaveCaptureMode` 仅影响本组 |
-| 滚轮隔离 | Step 17 | 两组各注入不同方向滚轮，互不影响 |
-| 并发压力隔离 | Step 18 | 快速交替 100 次注入，两组光标位置分别仅在 X/Y 变化 |
-
-### 窗口管理
-
-| 能力 | 验证步骤 | dump 验证字段 |
-|------|---------|--------------|
-| z-order 命中测试 | Step 13/16 | `Cursor Info` 中 `windowId` 反映最高 zOrder 命中 |
-| 全屏重叠 z-order | Step 16 | ADD 3 层全屏 → DEL 最高层 → 次高层命中 |
-| 非全屏热区穿透 | Step 12 | area 内但 hotArea 外的点击穿透到下层窗口 |
-| 动态焦点切换 (group0) | Step 14b | 通过 `UpdateDisplayInfo` 改 focusWindowId → 键盘路由到新焦点 |
-| 动态焦点切换 (非主组) | Step 14c | 非主组必须通过 `UpdateDisplayInfo` 切焦点 |
-
-### 设备生命周期
-
-| 能力 | 验证步骤 | 说明 |
-|------|---------|------|
-| 热拔插 | Step 11 | 创建临时设备 C → 绑定 → `UI_DEV_DESTROY` → 绑定自动清理 |
-| 跨绑定按键状态 | Step 7 | 在 group1 按下 → 解绑 → 重绑 group0 → 释放仍发给 group1 |
-| 光标外观 per-window | Step 5.5-5.7 | `SetPointerStyle`/`GetPointerStyle` per-window 隔离 |
+DAYU200 真机 `dual_group_interleave_test` 已覆盖双显示组构造、多窗口注入、per-group
+光标/按钮/键盘/焦点/captureMode/滚轮隔离、热拔插绑定清理、跨绑定按键状态和 per-window
+光标外观。详细步骤、dump 证据和 PARTIAL 项见 `evals/test-results.md`，不要把长篇实测表格复制到
+`SKILL.md` 主流程。
 
 ## 构造显示组（替代 DMS）
 

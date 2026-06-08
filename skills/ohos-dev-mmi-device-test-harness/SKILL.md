@@ -34,16 +34,17 @@ metadata:
 设备通过 Windows 跳板机连接（hdc 运行在 Windows 上）。所有命令使用环境变量避免硬编码凭据：
 
 ```bash
-# 设置一次，全 session 复用（根据实际环境替换占位符）
+# 设置一次，全 session 复用（根据实际环境替换占位符；不要提交真实值）
 export DEVICE="<device_serial>"                    # hdc 设备序列号
-export WIN_SSH="sshpass -p <pwd> ssh -o StrictHostKeyChecking=no -p <port> <user>@<host>"
-export WIN_SCP="sshpass -p <pwd> scp -P <port>"
+export WIN_SSH="ssh <ssh_options> -p <port> <user>@<host>"
+export WIN_SCP="scp <scp_options> -P <port>"
 export WIN_SCP_DST="<user>@<host>:Desktop"         # SCP 目标（跳板机桌面）
 export WIN_HOME='C:\Users\<user>'                  # Windows 用户主目录
 export HDC="hdc -t $DEVICE"
 ```
 
 后续文档中的 `$WIN_SSH`、`$WIN_SCP`、`$WIN_SCP_DST`、`$WIN_HOME`、`$HDC` 均引用这些变量。
+SSH 认证方式由环境决定，可使用 SSH key、CI secret 或其他跳板机机制。Skill 输出和 eval 结果中不得包含真实密码、主机名、用户名或设备 serial。
 
 ## 权限获取
 
@@ -84,6 +85,8 @@ static void InitNativeToken() {
 ## Server 端绕过
 
 测试进程不是 WMS/DMS 进程，server 端会校验调用方 token 类型。需要临时修改 3 个位置：
+
+这些绕过只允许用于本地开发验证。提交产品代码、PR 或测试报告前必须还原，且不得把绕过作为正式测试能力描述。
 
 ### 1. OnDisplayInfo — 允许测试进程调 UpdateDisplayInfo
 
@@ -153,8 +156,8 @@ $WIN_SSH "$HDC shell kill \$(pidof multimodalinput)"
 测试二进制通过 `compile_test.py` 编译（使用 OpenHarmony 工具链交叉编译）：
 
 ```bash
-cd /srv/workspace/<oh_root>
-python3 /tmp/compile_test.py
+cd <openharmony-source-root>
+python3 <compile_test_script>
 ```
 
 `compile_test.py` 的关键配置：

@@ -1,0 +1,30 @@
+{
+  "skill_name": "ohos-dev-mmi-wms-dms-simulation",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "我要不启动真实 WMS/DMS，直接构造两个 display group 和虚拟窗口来验证输入事件路由。请说明必须设置哪些字段和为什么。",
+      "expected_output": "Explains the minimum valid DisplayGroupInfo, DisplayInfo, ScreenInfo, and WindowInfo setup for MMI route testing.",
+      "files": [],
+      "expectations": [
+        "The response requires one GROUP_DEFAULT group with id 0.",
+        "The response requires display, screen, group, and window IDs to match their target group.",
+        "The response sets focusWindowId in DisplayGroupInfo for keyboard routing.",
+        "The response includes pointerHotAreas/defaultHotAreas for hit testing.",
+        "The response treats UpdateDisplayInfo return -201 as expected only when dump/source evidence shows data was written."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "非主显示组的焦点窗口需要动态切换，能否只调用 UpdateWindowInfo 改 focusWindowId？",
+      "expected_output": "Rejects UpdateWindowInfo-only focus switching for non-main groups and uses UpdateDisplayInfo plus window reinjection.",
+      "files": [],
+      "expectations": [
+        "The response states that non-main group focus is read from displayGroupInfoMap_.",
+        "The response updates non-main focus through UpdateDisplayInfo.",
+        "The response reinjects or synchronizes windows after focus changes when needed.",
+        "The response validates actual routing with keyboard state or event target evidence."
+      ]
+    }
+  ]
+}

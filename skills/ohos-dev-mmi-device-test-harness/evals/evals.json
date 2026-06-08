@@ -1,0 +1,30 @@
+{
+  "skill_name": "ohos-dev-mmi-device-test-harness",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "我要在 DAYU200 上跑 multimodalinput 系统测试二进制，需要权限、编译、部署、运行和 hidumper 分阶段抓取。请给出执行顺序和关键注意点。",
+      "expected_output": "Produces a parameterized device-test workflow covering token setup, temporary server bypass, compile/deploy/run, phase-based hidumper capture, and cleanup.",
+      "files": [],
+      "expectations": [
+        "The response requires InitNativeToken before any InputManager call.",
+        "The response marks server-side bypasses as temporary local validation changes and requires restore after testing.",
+        "The response uses placeholders for device serial, host, user, port, and credentials instead of real environment values.",
+        "The response uses phase-based hidumper capture with matching phase file paths and enough sleep or polling time.",
+        "The response warns about hdc shell quoting and splits complex commands when needed."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "测试完成后我要整理报告。哪些环境信息不能写进 skill 或 eval 结果？",
+      "expected_output": "Rejects leaking real device or jump-host identifiers and keeps public artifacts parameterized.",
+      "files": [],
+      "expectations": [
+        "The response forbids real passwords, hostnames, usernames, and device serial numbers in public skill artifacts.",
+        "The response uses placeholders such as <device_serial>, <host>, <user>, and <port>.",
+        "The response keeps Windows jump-host usage as one parameterized option rather than a hard requirement.",
+        "The response distinguishes local run evidence from reusable skill instructions."
+      ]
+    }
+  ]
+}

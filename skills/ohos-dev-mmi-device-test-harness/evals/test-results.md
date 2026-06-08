@@ -1,7 +1,7 @@
 # dual_group_interleave_test 基础设施验证
 
 - **日期**: 2026-06-05
-- **设备**: DAYU200 (RK3568), serial `7001005458323933328a027ce0003800`
+- **设备**: DAYU200 (RK3568), device serial redacted
 - **固件**: OpenHarmony master daily build
 - **测试二进制**: `dual_group_interleave_test`（19 步骤，28 个 dump 阶段）
 
