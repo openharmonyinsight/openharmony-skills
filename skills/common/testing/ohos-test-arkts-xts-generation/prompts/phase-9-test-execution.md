@@ -8,7 +8,44 @@
 
 ```
 {skill_root}/scripts/run_xts_test.py
+hdc（OpenHarmony Device Connector）
 ```
+
+#### hdc 环境自动检测与配置（步骤 0，必须执行）
+
+**在检查任何前置条件之前，必须先检测并配置 hdc**：
+
+```bash
+# 步骤 0a: 检查 hdc 是否已在 PATH 中
+if command -v hdc &> /dev/null; then
+    echo "✅ hdc is in PATH"
+    hdc version
+else
+    echo "⚠️ hdc not in PATH, trying to add from prebuilts"
+    HDC_DIR="{OH_ROOT}/prebuilts/ohos-sdk/linux/26/toolchains"
+    if [ -f "$HDC_DIR/hdc" ]; then
+        export PATH="$HDC_DIR:$PATH"
+        echo "✅ Added $HDC_DIR to PATH"
+        hdc version
+    else
+        echo "❌ hdc not found in prebuilts, searching other paths"
+        HDC_FOUND=$(find {OH_ROOT}/prebuilts -name "hdc" -type f 2>/dev/null | head -1)
+        if [ -n "$HDC_FOUND" ]; then
+            HDC_FOUND_DIR=$(dirname "$HDC_FOUND")
+            export PATH="$HDC_FOUND_DIR:$PATH"
+            echo "✅ Added $HDC_FOUND_DIR to PATH"
+            hdc version
+        else
+            echo "❌ hdc not found in environment, will skip Phase 9"
+        fi
+    fi
+fi
+```
+
+> **关键约束**：
+> - hdc 路径通常为 `{OH_ROOT}/prebuilts/ohos-sdk/linux/26/toolchains/hdc`
+> - `export PATH` 必须在当前 shell 会话中执行（非子 shell），否则 xdevice 无法继承
+> - 如果 hdc 在任何路径都找不到，Phase 9 标记为"跳过 — hdc 不可用"并记录到 session_issues
 
 ---
 

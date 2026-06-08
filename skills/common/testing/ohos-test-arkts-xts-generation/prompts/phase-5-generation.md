@@ -40,7 +40,7 @@
 | ArkUI 动效类API | `{knowledge_root}/domains/ArkUI/xts_experience/category6_动效类API.md` | 触发：animation/过渡/运动 |
 
 > **注意**：
-> 1. 静态项目（ArkTS-Sta）时，使用 `arkts_static_constraints.md` 约束摘要，**不要在生成阶段调用完整的** `arkts-static-spec` 技能（token 开销大）。
+> 1. 静态项目（ArkTS-Sta）时，使用 `arkts_static_constraints.md` 约束摘要，**不要在生成阶段调用完整的** `ohos-dev-arkts-static-specification-reference` 技能（token 开销大）。
 > 2. ArkUI 子系统测试时，**必须先加载** `_common.md`（6类分类模型），然后根据API类型按需加载对应的 category 文件。同时加载 `arkui_test_patterns.md`（Inspector断言模式）。
 
 ---
@@ -63,7 +63,7 @@
 - `{knowledge_root}/common/xts_experience/09_methodology/10_param_test.md`（生成参数/返回值/边界值测试时按需加载）
 - `{knowledge_root}/common/xts_experience/09_methodology/11_error_test.md`（生成错误码测试时按需加载）
 - `{knowledge_root}/common/xts_experience/09_methodology/17_test_design_spec.md`（需要状态机/生命周期/兼容性/安全性等特有场景知识时按需加载）
-- `arkts-static-spec` 技能（仅静态项目 ArkTS-Sta 时加载，使用以下约束摘要替代全量加载）
+- `ohos-dev-arkts-static-specification-reference` 技能（仅静态项目 ArkTS-Sta 时加载，使用以下约束摘要替代全量加载）
 - `{knowledge_root}/common/xts_experience/09_methodology/18_arkts_static_constraints.md`（仅静态项目 ArkTS-Sta 时加载）
 
 **关键变更**：此阶段仅生成测试用例代码，严格依据 Phase 4 生成的测试设计文档执行。设计驱动生成确保测试用例的完整性和一致性。
@@ -102,7 +102,8 @@
    - 从 Phase 2 获取代码风格（导入顺序、describe/it 结构、断言方法、错误处理模式）
    - 加载 `{knowledge_root}/common/xts_experience/02_arkts/03_arkts_standards.md`（语法参考）
    - 加载 `{knowledge_root}/common/xts_experience/03_standards/01_test_naming_convention.md`（命名参考）
-   - **静态项目（ArkTS-Sta）**：加载 `{knowledge_root}/common/xts_experience/09_methodology/18_arkts_static_constraints.md`，严格遵循 ArkTS 静态语法约束（禁止 any/unknown、字段初始化、不生成 ERROR_401 类型测试等）。不要在生成阶段调用完整的 `arkts-static-spec` 技能（token 开销大），仅在 Phase 7 验证阶段调用
+   - **动态项目（ArkTS-Dyn）**：从 Phase 3 每个 API 知识库条目的 `arkts_constraints` 数组读取预检测的语法约束，生成代码时逐条遵守。这些约束来源于 `{skill_root}/references/arkts_api_pattern_rules.md` 的特征模式匹配，覆盖 Promise、泛型、回调、集合、对象等 10 类常见场景
+   - **静态项目（ArkTS-Sta）**：加载 `{knowledge_root}/common/xts_experience/09_methodology/18_arkts_static_constraints.md`，严格遵循 ArkTS 静态语法约束（禁止 any/unknown、字段初始化、不生成 ERROR_401 类型测试等）。不要在生成阶段调用完整的 `ohos-dev-arkts-static-specification-reference` 技能（token 开销大），仅在 Phase 7 验证阶段调用
 
 3. **应用子系统特有规则**（从 Phase 1 配置中获取）：
    - 使用子系统特有模板（如有）
@@ -215,9 +216,18 @@ it('normalValueParamTest001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3
 3. **语法规范**：符合 ArkTS 静态检查要求
 4. **框架规范**：符合 Hypium 测试框架要求
 5. **子系统规则**：遵循 Phase 1 配置中的子系统特有规则
-6. **代码质量约束**：生成的代码必须满足 `quality_constraints.md` 中的全部规则（R002-R029），确保天然通过 check-test-code-quality 扫描
+6. **代码质量约束**：生成的代码必须满足 `quality_constraints.md` 中的全部规则（R002-R029 + R201-R205），确保天然通过 ohos-test-xts-code-quality 扫描
 7. **语法类型统一**：整个文件必须统一使用目标语法类型的规范（动态或静态），禁止混合使用
 8. **已废弃接口处理**：不为 .d.ts 中标记 @deprecated 的接口生成用例（除非用户明确要求）；新生成的测试代码中禁止调用已废弃接口，参考历史代码发现废弃接口时使用已知新接口替代（不修改历史代码）
+9. **测试价值分级**：按 API 特征决定测试深度
+   - **P0 必测**：有可观察行为的 API（返回值、状态变更、事件触发）、生命周期/资源管理 API（create/destroy/open/close）→ 完整覆盖 PARAM + RETURN + ERROR + BOUNDARY + 资源泄漏检查
+   - **P1 重点**：权限/安全相关 API、异步/回调 API → 错误码 + 权限缺失 + 超时 + 取消 + 并发
+   - **P2 基础**：简单属性读写 API → 正常值 + 边界值（不扩展参数组合）
+   - **跳过**：纯类型定义、interface、type alias
+10. **停止扩展信号** — 以下情况停止增加用例：
+    - 参数组合产生的用例不增加**行为覆盖**（只是换了个合法值）
+    - ERROR 用例的错误码在 .d.ts @throws 中未声明
+    - BOUNDARY 用例的边界值无文档依据
 
 ### 代码生成模板（动态项目标准骨架）
 

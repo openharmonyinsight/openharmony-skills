@@ -33,6 +33,20 @@
 ```
 所有 L2_Generation 相关知识（{knowledge_root}/common/xts_experience/09_methodology/ 下的 08~18号文件）
 所有 L3_Validation 相关知识（{knowledge_root}/common/xts_experience/09_methodology/ 下的 19~25号文件）
+```
+
+### 常见扫描失败排查
+
+#### 覆盖率扫描失败：路径过长
+- **症状**：APICoverageDetector 在 Windows 上报路径错误
+- **根因**：Windows 260 字符路径限制 + XTS 深层目录结构
+- **修复**：将工具放在磁盘根目录（如 `D:\APICoverageDetector`）
+
+本 Phase 期间禁止加载以下模块：
+
+```
+所有 L2_Generation 相关知识（{knowledge_root}/common/xts_experience/09_methodology/ 下的 08~18号文件）
+所有 L3_Validation 相关知识（{knowledge_root}/common/xts_experience/09_methodology/ 下的 19~25号文件）
 {knowledge_root}/common/xts_experience/ 下的 01_framework、02_arkts、03_standards、04_project、05_patterns 规范文件
 ```
 

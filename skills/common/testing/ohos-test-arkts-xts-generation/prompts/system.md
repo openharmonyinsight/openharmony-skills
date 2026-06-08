@@ -47,8 +47,11 @@
 
 ## ArkTS 语法规范
 
-- 动态语法: 严格遵循 `references/ArkTS_Dynamic_Syntax_Rules.md`
-- 静态语法: 调用 `arkts-static-spec` 技能进行规范校验
+- 动态语法（ArkTS-Dyn）:
+  - 常见模式约束：`references/arkts_api_pattern_rules.md`（Phase 3 查表，Phase 5 读取约束）
+  - 完整规则参考（降级）：`references/ArkTS_Dynamic_Syntax_Rules.md`
+  - 兜底查询：`arkts-skill` 的 `search_docs.py`（Phase 8 编译错误修复）
+- 静态语法（ArkTS-Sta）: 调用 `ohos-dev-arkts-static-specification-reference` 技能进行规范校验
 
 ## 工作流程
 

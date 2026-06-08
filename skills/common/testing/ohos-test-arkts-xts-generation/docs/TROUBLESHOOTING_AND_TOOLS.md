@@ -99,17 +99,17 @@
 **解决方案**：
 
 1. 确认项目配置了 `arkTSVersion: 1.2`
-2. 调用 `arkts-static-spec` 技能进行语法规范校验（Phase 7 步骤 A 自动触发）
+2. 调用 `ohos-dev-arkts-static-specification-reference` 技能进行语法规范校验（Phase 7 步骤 A 自动触发）
 3. 严格遵循该技能的规范，不添加文档之外的假设
 
 ---
 
-### Q9: 如何调用 arkts-static-spec 技能
+### Q9: 如何调用 ohos-dev-arkts-static-specification-reference 技能
 
 在 Phase 7 步骤 A 中自动触发（仅 ArkTS-Sta 项目）。也可手动调用：
 
 ```
-请使用 arkts-static-spec 进行语法规范校验：
+请使用 ohos-dev-arkts-static-specification-reference 进行语法规范校验：
 - 语法规则检查
 - 类型系统验证
 - 编译问题分析
@@ -131,7 +131,7 @@
 
 - Phase 7 标记为**不可跳过**（`phase_tracker.py` 强制检查）
 - SKILL.md Anti-Patterns 中明确"NEVER 跳过 Phase 7"
-- Phase 7 分两步：步骤 A（`validate_test_context.py` 自动检查 5/9 项）+ 步骤 B（`check-test-code-quality` 11 条规则）
+- Phase 7 分两步：步骤 A（`validate_test_context.py` 自动检查 5/9 项）+ 步骤 B（`ohos-test-xts-code-quality` 17 条规则）
 
 **正确流程**：生成测试用例 → 注册测试套 → **Phase 7 格式验证（不可跳过）** → 编译验证
 

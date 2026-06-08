@@ -29,10 +29,23 @@ metadata:
     - test-generation
     - coverage-analysis
   related-skills:
-    - ohos-test-capi-xts-generation
-    - check-test-code-quality
-    - arkts-static-spec
-    - demo-pipeline
+    - name: ohos-test-xts-code-quality
+      min_version: "2.0.12"
+      required: true
+      probes:
+        - "{dir}/scripts/main.py --help 2>&1 | grep -q -- '--rules'"
+        - "{dir}/scripts/main.py --help 2>&1 | grep -q -- '--sta-mode'"
+    - name: ohos-dev-arkts-static-specification-reference
+      min_version: "0.1.0"
+      required: false
+    - name: arkts-skill
+      min_version: "1.0.0"
+      required: false
+      probes:
+        - "test -f {dir}/scripts/search_docs.py"
+    - name: demo-pipeline
+      min_version: "1.0.0"
+      required: false
   allowed-tools:
     - Read
     - Write
@@ -69,14 +82,16 @@ metadata:
 
 | 依赖技能 | 用途 | 触发时机 |
 |---------|------|---------|
-| `check-test-code-quality` | 代码质量深度扫描（11 条规则） | Phase 7 步骤 B 必选 |
-| `arkts-static-spec` | ArkTS 静态语法规范校验 | Phase 7 步骤 A，仅静态项目（ArkTS-Sta）时 |
+| `ohos-test-xts-code-quality` | 代码质量深度扫描（17 条规则：R002-R023 合规 + R201-R205 技术） | Phase 7 步骤 B 必选 |
+| `ohos-dev-arkts-static-specification-reference` | ArkTS 静态语法规范校验 | Phase 7 步骤 A，仅静态项目（ArkTS-Sta）时 |
+| `arkts-skill` | ArkTS 动态语法/API 按需检索（search_docs.py） | Phase 3 常见模式查表（`arkts_api_pattern_rules.md`），特殊场景 `search_docs.py` 兜底查询；Phase 8 编译错误修复 |
 | `demo-pipeline` | Demo 被测应用生成（UI 类测试点） | Phase 5A Step 1，仅存在 UI 类用例时 |
 
 ## Initialization
 
 1. 读取 `{skill_root}/.oh-xts-config.json` 获取配置（不存在则自动初始化，见上方配置加载）
-2. 判断用户意图：
+2. **会话恢复**：读取 `{skill_root}/.task_summary/` 下最新的 `session_issues_*.md`，向用户汇报上次未解决问题，询问继续还是新任务
+3. 判断用户意图：
    - **编译任务**（用户提到"编译"、"build"、"重新编译"、"编译验证"等）→ 直接进入 Phase 8 独立编译模式，跳过 Phase 1-7
    - **测试生成任务**（默认）→ 从 Phase 1 开始完整流程
 3. 读取 `{skill_root}/prompts/system.md` 获取系统提示词
@@ -141,7 +156,7 @@ metadata:
 2. Phase 5（非 UI 类测试代码）和 Phase 5B（UiTest 测试代码）和 Phase 5A Step 1（Demo 代码生成）— **代码生成阶段可并行**，均从 Phase 4 设计文档的控件 ID 清单读取
 3. 编译阶段：Demo 和 UiTest 测试代码一起进入编译——同 HAP 作为同一编译单元；辅助包通过编译 group 整体编译
 
-### Phase 执行状态追踪
+### Phase Tracker
 
 使用 `scripts/phase_tracker.py` 追踪每个 Phase 的执行状态，确保按序执行、关键 Phase 不可跳过。
 
@@ -161,63 +176,19 @@ python {skill_root}/scripts/phase_tracker.py complete 4 --output-file path/to/de
 
 ### Phase 内联指导
 
-> 以下为关键 Phase 的简短指导，帮助在不加载完整 prompt 文件的情况下做出初步决策。详细步骤仍需加载对应 prompt 文件。
+> 每个Phase仅列核心目标，详细步骤见对应 `prompts/phase-N-xxx.md`。
 
-#### Phase 2: Initial Coverage Scan
-- **核心目标**：识别哪些 API 未被现有测试覆盖
-- **Flow A**：直接运行 `extract_uncovered.py` 从覆盖率报告精准筛选未覆盖项
-- **Flow B**：运行 APICoverageDetector 全量扫描，再用 `extract_uncovered.py` 8维度判断筛选
-- **Flow C**：跳过（新增接口覆盖率为 0）
-- **关键输出**：`.coverage_data/uncovered_apis.json` — 未覆盖 API 列表
-
-#### Phase 3: Targeted API Info Parsing
-- **核心目标**：从 .d.ts 文件中提取目标 API 的完整签名（参数、返回值、@since、@throws、@deprecated）
-- **信息源优先级**：`.d.ts` 声明（最高）→ 子系统配置 → 参考示例 → API 文档
-- **支持并行**：多个 .d.ts 文件可并行解析
-- **关键输出**：每个 API 的结构化信息（参数类型、可选/必选、错误码、版本标签）
-
-#### Phase 4: Generate Test Design Document
-- **核心目标**：生成 `.design.md` 文件，定义每个 API 的测试用例列表、控件 ID（UI 类）、N-API 函数映射
-- **不可跳过**：所有模式（Flow A/B/C、ArkTS-Sta）都必须生成设计文档
-- **测试类型覆盖**：PARAM（参数测试）、ERROR（错误码测试）、RETURN（返回值测试）、BOUNDARY（边界值测试）
-- **UI 类判定**：API 涉及组件创建/属性设置/事件回调/动效 → UI 类，需要 Phase 5A/5B
-- **关键输出**：`{TestFileName}.design.md` — 测试设计文档
-
-#### Phase 5: Generate Test Cases
-- **核心目标**：基于 Phase 4 设计文档，生成非 UI 类测试代码（.test.ets）
-- **仅使用 .d.ts 中声明的接口** — 禁止猜测或使用未声明的 API
-- **每个用例必须包含 @tc 注解块** — 测试报告系统依赖此元数据
-- **cleanup 必须处理异常** — 资源泄漏会影响后续用例执行
-- **支持并行**：多个测试文件可并行生成
-
-#### Phase 5A: Generate Demo (仅 UI 类用例)
-- **触发条件**：Phase 4 设计文档中存在 UI 类用例
-- **核心目标**：生成可交互的 Demo 应用，暴露控件 ID 供 UiTest 驱动
-- **三方契约**：设计文档中预定义的控件 ID ↔ Demo 代码中的控件 ID ↔ UiTest 代码中的控件 ID 必须一致
-- **依赖技能**：`demo-pipeline`
-
-#### Phase 5B: Generate UiTest (仅 UI 类用例)
-- **核心目标**：生成 UiTest 自动化测试代码，通过控件 ID 驱动 Demo 界面
-- **与 Phase 5A 并行**：均从 Phase 4 设计文档读取控件 ID 清单
-- **编译单元**：Demo + UiTest 作为同一 HAP 编译
-
-#### Phase 7: Format & Validate
-- **核心目标**：验证生成代码的格式、命名、断言、资源释放、@tc 注解完整性
-- **不可跳过**：未验证的代码可能包含资源泄漏、无效断言、格式错误
-- **步骤 A**：格式和上下文检查（使用 `validate_test_context.py`，5/9 项自动检查）
-- **步骤 B**：代码质量深度扫描（使用 `check-test-code-quality` 技能，11 条规则）
-- **ArkTS-Sta 额外**：静态语法校验（使用 `arkts-static-spec` 技能）
-
-#### Phase 8: Build Verification
-- **核心目标**：编译测试套，验证代码在目标编译环境中可通过
-- **支持独立模式**：用户仅要求编译时，跳过 Phase 1-7 直接进入
-- **异步编译**：使用 `scripts/async_build.sh` 后台编译
-- **编译失败处理**：自动分析错误日志，修复后重试（最多 3 次）
-
-#### Phase 10: Coverage Verification
-- **核心目标**：对比 before/after 覆盖率，量化测试用例的覆盖率贡献
-- **Flow A/B**：Phase 2 生成 before baseline，Phase 10 生成 after 并用 `compare_uncovered.py` 对比
-- **Flow C**：仅执行 after 扫描（无 before baseline），覆盖率表标注"生成前: 0（新增接口）"
+| Phase | 核心目标 | 关键约束/输出 |
+|-------|---------|-------------|
+| 2 | 识别未覆盖 API | Flow A: `extract_uncovered.py`；Flow B: APICoverageDetector 扫描；Flow C: 跳过。输出: `uncovered_apis.json`。APICoverageDetector 支持 Windows/WSL，Linux 需用户提供扫描结果或跳过。详细用法见 `docs/ASYNC_COVERAGE_SCAN.md` |
+| 3 | 从 .d.ts 提取 API 完整签名 | 信息源优先级: .d.ts > 子系统配置 > 参考示例。支持多文件并行 |
+| 4 | 生成 `.design.md` 测试设计文档 | **不可跳过**。定义用例列表、控件 ID（UI 类）。UI 类判定: 组件创建/属性/事件/动效 → Phase 5A/5B |
+| 5 | 生成非 UI 类 .test.ets | 仅用 .d.ts 声明接口；必须 @tc 注解；cleanup 必须处理异常；遵循 P0/P1/P2 测试价值分级和停止扩展信号 |
+| 5A | 生成 Demo 应用（UI 类） | 触发: Phase 4 存在 UI 类用例。三方控件 ID 契约必须一致。依赖 `demo-pipeline` |
+| 5B | 生成 UiTest（UI 类） | 与 5A 可并行；Demo + UiTest 同 HAP 编译 |
+| 7 | 格式验证 | **不可跳过**。A: `validate_test_context.py`；B: `ohos-test-xts-code-quality`；Sta: `ohos-dev-arkts-static-specification-reference` |
+| 8 | 编译验证 | 支持独立模式；`async_build.sh` 异步编译；失败自动修复（≤3次） |
+| 10 | 覆盖率对比 | Flow A/B: before→after 对比；Flow C: 仅 after 扫描 |
 
 ## Module Loading
 
@@ -241,6 +212,19 @@ Module:    references/subsystems/{Subsystem}/{Module}.md  (module-specific rules
 
 Note: 覆盖率扫描环境通过文件复制方式自动准备
 ```
+
+## 执行原则
+
+1. 每个 Phase 开始前，读取对应的 prompt 文件获取详细指令
+2. 严格按 Phase 顺序执行；强制 Phase（4、7）不可跳过
+3. 每个 Phase 完成后，更新 `phase_tracker` 状态
+4. 懒加载模块：仅读取当前 Phase 所需的参考文档和按需模块
+5. 遇到错误时，读取错误处理指南进行恢复（`references/error_handling.md` 或 `{knowledge_root}/common/xts_experience/03_standards/02_error_handling_guide.md`）
+6. 每完成 2-3 个 Phase，向用户简要汇报进度
+7. **编译模式判定**：Phase 8 编译前，检查 `Test.json` 的 `test-file-name`；包含多个 HAP 时使用 group 编译；同批次多个测试套也使用 group 编译
+8. **hdc 环境**：Phase 9 开始前，自动检测 hdc 可用性；不在 PATH 时从 prebuilts 添加
+9. **必读标记**：当 Phase prompt 中标注 `[必读]` 条件满足时，**必须先读取知识库文档再执行任何修复/操作**；禁止跳过文档进行试错
+10. **Issue 日志**：遇到问题时立即追加记录到 `session_issues_{日期}.md`（见「会话连续性」章节），禁止延迟到任务结束时才记录
 
 ## Anti-Patterns
 
@@ -268,9 +252,9 @@ Note: 覆盖率扫描环境通过文件复制方式自动准备
 - **原因**：资源未释放会影响后续测试执行
 - **正确做法**：cleanup中的异常必须捕获并记录，不能静默忽略
 
-### NEVER 为没有@throws声明的API构造错误码测试
-- **原因**：.d.ts中未声明@throws的API没有定义错误码，构造错误码测试无规范依据
-- **正确做法**：仅对.d.ts中明确声明@throws的API生成错误码测试
+### NEVER 为@throws声明以外的错误码构造测试
+- **原因**：401 是 SDK 公共错误码（不在 @throws 中声明），动态模式下入参类型错误、入参个数异常时自动抛出；17xxxxxx 等业务错误码在 @throws 中声明。两者来源不同，不可混淆
+- **正确做法**：ArkTS-Dyn 模式下，401 测试（传 null/错误类型/参数缺失）和 @throws 声明的业务错误码测试**都应生成**；ArkTS-Sta 模式下，401 不应测试（编译时已拦截类型错误，401 不会到达运行时）。禁止凭空编造 @throws 中未声明的业务错误码
 
 ### NEVER 跳过 Phase 4 测试设计文档
 - **原因**：没有设计文档，Demo/UiTest/测试代码之间的控件 ID 契约无法保证，用例缺乏可追溯性
@@ -298,7 +282,7 @@ Note: 覆盖率扫描环境通过文件复制方式自动准备
 
 ### NEVER 在ArkTS-Sta项目中使用 as any 类型断言
 - **原因**：`as any` 是动态语法特性，ArkTS-Sta 静态编译模式下不通过
-- **正确做法**：使用具体的类型声明或类型守卫（type guard）。参考 `arkts-static-spec` 技能转换语法
+- **正确做法**：使用具体的类型声明或类型守卫（type guard）。参考 `ohos-dev-arkts-static-specification-reference` 技能转换语法
 - **后果**：静态编译失败，错误码 `ESE0143` 或 `ESE0046`
 
 ### NEVER 直接调用APICoverageDetector可执行文件
@@ -306,100 +290,25 @@ Note: 覆盖率扫描环境通过文件复制方式自动准备
 - **正确做法**：使用 `scripts/async_coverage_scan.py` 或 `scripts/manage_scan_env.py` 封装脚本
 - **后果**：扫描结果不准确或扫描失败
 
-## Thinking Framework: Before You Generate
+### NEVER 在多版本模式下并行编译动态和静态测试套
+- **原因**：ets1.1 和 ets1.2 的 hvigor 版本不兼容，并行编译会导致编译失败
+- **正确做法**：串行编译 — 先完成 ets1.1 全流程（生成→注册→验证→编译通过），再切换 prebuilts 环境编译 ets1.2
+- **后果**：编译环境冲突，两个版本都无法通过
 
-在 Phase 5 生成任何测试代码之前，对每个目标 API 问自己以下问题：
+### NEVER 跳过 prebuilts 环境切换直接编译静态版本
+- **原因**：未切换 prebuilts 时使用的是动态 SDK 的 hvigor（5.x），无法编译静态语法（ets1.2）
+- **正确做法**：按「多版本串行生成模式」的 prebuilts 切换流程操作，编译前验证 hvigor 版本
+- **后果**：编译失败，错误信息指向类型不兼容
 
-### API 特性分析
+### NEVER 在静态版本测试中设计传 null/undefined 触发 401 的用例
+- **原因**：ArkTS-Sta（ets1.2）在编译时已检查参数类型，null/undefined 不会到达运行时的 401 错误码
+- **正确做法**：静态版本跳过 ERROR_401 类型测试，仅保留参数功能测试
+- **后果**：测试用例编译失败
 
-| 问题 | 为什么重要 | 影响生成策略 |
-|------|----------|-------------|
-| **是否有副作用？** | 有副作用的 API 调用顺序不可随意更改 | 测试间需要 cleanup/restore，不能并行 |
-| **是否依赖系统状态？** | 依赖蓝牙/WiFi/位置等硬件状态的 API 需要特定环境 | 需要 beforeAll/afterAll 管理状态，断言可能因环境不可用而跳过 |
-| **是否有资源分配？** | 打开文件/创建连接/分配内存的 API 必须释放资源 | cleanup 步骤中必须处理异常和释放 |
-| **是否是异步/回调？** | 异步 API 返回 Promise 或接受回调，断言时机不同 | 使用 done() 或 async/await，不能同步断言 |
-| **是否涉及 UI 组件？** | UI 类 API 需要组件树渲染后才能测试 | 需要 Demo 应用（Phase 5A）+ UiTest（Phase 5B），不能直接单元测试 |
-| **是否有 @throws 声明？** | .d.ts 中声明了 @throws 的 API 有明确错误码可测试 | 生成 ERROR 类型测试；未声明的不要构造错误码测试 |
-| **是否标记 @deprecated？** | 废弃接口测试价值低，可能在后续版本被移除 | 跳过该接口（除非用户要求），参考 @useinstead 使用新接口 |
-| **@since 版本是否匹配目标？** | API 可能在目标 SDK 版本中不存在 | 检查 @since 标签，高于目标版本的 API 不可用 |
-
-### 测试设计决策树
-
-```
-API 是否有 @throws？
-├── 是 → 生成 ERROR 类型测试（错误码断言）
-│        是否有副作用？
-│        ├── 是 → 测试间需要 cleanup
-│        └── 否 → 可并行执行
-└── 否 → 不生成错误码测试
-         是否涉及 UI 组件？
-         ├── 是 → Phase 5A 生成 Demo + Phase 5B 生成 UiTest
-         │        控件 ID 从 Phase 4 设计文档读取
-         └── 否 → Phase 5 生成标准 .test.ets
-                  是否有资源分配？
-                  ├── 是 → cleanup 中必须 try-catch 释放
-                  └── 否 → 标准参数/返回值/边界值测试
-```
-
-### 用例数量估算
-
-| API 类型 | 建议用例数 | 覆盖维度 |
-|----------|-----------|---------|
-| 简单 get/set 属性 | 3-5 | 正常值 + 边界值 + 特殊值 |
-| 带回调的事件 API | 5-8 | 正常触发 + 参数校验 + 回调异常 + 多次触发 |
-| 系统能力 API | 8-12 | 各参数组合 + 错误码 + 边界值 + 并发/状态 |
-| UI 组件创建型 | 5-8 | 创建 + 销毁 + 属性设置 + 事件触发 |
-| 异步操作 API | 5-8 | 正常完成 + 超时 + 取消 + 并发调用 |
-
-### 测试价值优先级
-
-在 Phase 4 设计阶段，按以下优先级决定 API 的测试深度：
-
-| 优先级 | API 特征 | 测试策略 |
-|--------|---------|---------|
-| **P0 必测** | 有可观察行为的 API（返回值、状态变更、事件触发） | 完整覆盖 PARAM + RETURN + ERROR + BOUNDARY |
-| **P0 必测** | 生命周期/资源管理 API（create/destroy/open/close） | 完整覆盖 + 资源泄漏检查 + 异常 cleanup |
-| **P1 重点** | 权限/安全相关 API | 错误码 + 权限缺失场景 |
-| **P1 重点** | 异步/回调 API | 超时 + 取消 + 并发调用 + 回调异常 |
-| **P2 基础** | 简单属性读写 API | 正常值 + 边界值（不扩展参数组合） |
-| **跳过** | 无行为声明（纯类型定义、interface、type alias） | 不生成测试 |
-
-**停止扩展信号** — 以下情况停止增加用例：
-- 参数组合产生的用例不增加**行为覆盖**（只是换了个合法值）
-- ERROR 用例的错误码在 .d.ts @throws 中未声明
-- BOUNDARY 用例的边界值无文档依据
-
-## Common Failure Patterns
-
-### 编译失败：API不存在
-- **症状**：`Error: Cannot find name 'xxx'`
-- **根因**：使用了目标SDK版本中不存在的API
-- **修复**：检查API的@since标签，确认目标版本支持
-
-### 编译失败：静态语法不兼容
-- **症状**：`ESE0143 Unresolved reference` 或 `ESE0046 Type not compatible`
-- **根因**：ArkTS-Sta项目中使用了动态语法特性
-- **修复**：参考 `arkts-static-spec` skill 转换语法
-
-### 覆盖率扫描失败：路径过长
-- **症状**：APICoverageDetector在Windows上报路径错误
-- **根因**：Windows 260字符路径限制 + XTS深层目录结构
-- **修复**：将工具放在磁盘根目录（如 `D:\APICoverageDetector`）
-
-### 覆盖率无变化
-- **症状**：Phase 9对比显示0%改进
-- **根因**：生成的测试未实际调用未覆盖的API
-- **修复**：检查测试代码是否正确导入和调用了目标API
-
-### 测试注册失败
-- **症状**：测试文件存在但不被执行
-- **根因**：未在List.test.ets中注册新测试文件
-- **修复**：使用 `scripts/register_test.py` 注册
-
-### Demo-UiTest控件ID不一致
-- **症状**：UiTest运行时找不到控件
-- **根因**：Demo中的控件ID与UiTest代码中引用的ID不匹配
-- **修复**：三方（设计文档 ↔ Demo ↔ UiTest）必须从Phase 4设计文档读取同一份控件ID
+### NEVER 延迟创建 session_issues 日志
+- **原因**：延迟记录会导致 issue 上下文丢失（错误信息、Phase 状态、当时的环境），无法追溯
+- **正确做法**：Phase 1 步骤 0 立即创建 `session_issues_{日期}.md`，遇到问题时立即追加记录
+- **后果**：任务结束时无法准确复盘问题和优化
 
 ## Quick Reference
 
@@ -413,34 +322,20 @@ API 是否有 @throws？
 
 ## 分批执行模式（Batch Mode）
 
-当未覆盖 API 数量较多时，支持分批生成测试用例。详见 `prompts/batch-mode.md`。
+当未覆盖 API 数量较多时，支持分批生成测试用例。分批决策依据（API数量>20、复杂度高、跨模块、Context紧张→倾向分批）和分批经验（同模块同批、UI/非UI分开）详见 `prompts/batch-mode.md`。
 
-**分批决策依据**（并非简单按API数量>20分批）：
-
-| 因素 | 倾向完整流程 | 倾向分批执行 |
-|------|------------|------------|
-| API数量 | ≤20 | >20 |
-| API复杂度 | 简单（单参数） | 复杂（回调/异步/多态） |
-| 模块分散度 | 同一模块 | 跨多个模块 |
-| Context窗口余量 | 充裕 | 紧张 |
-| 用户时间要求 | 不急 | 需要快速看到部分结果 |
-
-**分批经验**：同模块API尽量同批（共享import和helper函数）；UI类API和非UI类API分开（不同的生成流程）。
-
-## APICoverageDetector 工具
-
-集成于 Phase 2/9，**支持 Windows 原生和 WSL 环境**（WSL 通过 `/mnt/d/...` 路径调用 `.exe`）。Linux 计算云/远程服务器不可用，需用户提供扫描结果或跳过扫描。路径无效时向用户确认：1）更新路径；2）提供扫描结果（CSV/XLSX）；3）跳过扫描。详细用法见 `docs/ASYNC_COVERAGE_SCAN.md`，扫描流程见 `prompts/phase-2-coverage.md`。
-
-**覆盖率结果标签**（Phase 11 输出时必须标注）：
+**覆盖率结果标签**（Phase 11 输出必须标注）：
 
 | 标签 | 含义 | 触发条件 |
 |------|------|---------|
 | `coverage verified` | before/after 对比完成，覆盖率提升已量化 | Flow A/B Phase 10 正常完成 |
-| `coverage report provided` | 用户提供了覆盖率报告，基于报告生成测试 | Flow A 用户提供报告 |
-| `coverage scan skipped` | 扫描不可用（Linux/路径无效），用户确认跳过 | Phase 2 路径确认时用户选择跳过 |
+| `coverage report provided` | 用户提供了覆盖率报告 | Flow A 用户提供报告 |
+| `coverage scan skipped` | 扫描不可用，用户确认跳过 | Phase 2 用户选择跳过 |
 | `coverage: new API (baseline=0)` | 新增接口，生成前覆盖率为 0 | Flow C |
 
-**NEVER 将 `coverage scan skipped` 标注为 `coverage verified`** — 跳过扫描意味着覆盖率未经验证。
+**NEVER 将 `coverage scan skipped` 标注为 `coverage verified`**。
+
+> **会话连续性**：Issue 日志初始化和会话恢复已内嵌于 `prompts/phase-1-config-loading.md`（步骤 0）和 `prompts/phase-11-output.md`（会话收尾）。
 
 ## Documentation
 

@@ -20,7 +20,7 @@ KNOWLEDGE_SRC="$HOME/oh-test-knowledge"
 SKILLS_SRC="$HOME/.opencode/skills"
 REPO_DIR="/tmp/ohos-test-xts-generation-agent"
 
-SKILLS_LIST=("arkts-static-spec" "check-test-code-quality" "demo-pipeline")
+SKILLS_LIST=("ohos-dev-arkts-static-specification-reference" "ohos-test-xts-code-quality" "demo-pipeline")
 
 # ==================== 参数解析 ====================
 ACTION="sync"

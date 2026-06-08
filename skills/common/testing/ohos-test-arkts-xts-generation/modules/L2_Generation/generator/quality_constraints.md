@@ -4,11 +4,11 @@
 > - 层级：L2_Generation
 > - 子模块：generator/
 > - 用途：定义测试代码生成时必须遵循的质量约束
-> - 来源：整合自 check-test-code-quality 技能的适用规则 (R002/R003/R004/R008/R009/R013/R015/R016/R018/R022/R023)
+> - 来源：整合自 ohos-test-xts-code-quality 技能的适用规则 (R002-R023 合规 + R201-R205 技术)
 
 ---
 
-这些约束是**生成时的硬性要求**，不是可选建议。遵循它们可以确保生成的代码天然通过 check-test-code-quality 的 23 条规则扫描，无需返工修复。每条规则后括号内说明了违反后的具体后果，帮助理解约束的必要性。
+这些约束是**生成时的硬性要求**，不是可选建议。遵循它们可以确保生成的代码天然通过 ohos-test-xts-code-quality 的 29 条规则扫描，无需返工修复。每条规则后括号内说明了违反后的具体后果，帮助理解约束的必要性。
 
 ---
 
@@ -322,4 +322,108 @@ it('test001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, () => { ... })
  * @tc.level LEVEL3
  */
 it('test001', Level.LEVEL2, () => { ... });
+```
+
+---
+
+## 18. 异步用例必须正确处理 done/await (R201)
+
+异步 `it()` 回调如果接收 `done` 参数，必须在所有异步操作完成后调用 `done()`；如果使用 `async/await`，则不能声明 `done` 参数。禁止既声明 `done` 又使用 `async` 却不调用 `done()`。（未调用 `done()` 会导致测试超时失败；ArkTS-Sta 工程额外检测 Promise executor 是否声明为 async）
+
+```typescript
+it('test001', ..., async (done: () => void): Promise<void> => {
+  let result = await someFunction();
+  expect(result).assertEqual(expected);
+  done();
+});
+```
+
+```typescript
+it('test001', ..., async (done: () => void): Promise<void> => {
+  let result = await someFunction();
+  expect(result).assertEqual(expected);
+  // 缺少 done() 调用，测试会超时
+});
+```
+
+---
+
+## 19. 异步回调/Promise 必须处理错误 (R202)
+
+异步操作中的错误必须通过 try-catch 捕获并在 catch 中断言错误码，或通过 `.catch()` 处理。禁止在异步回调中忽略错误。（未处理的 Promise rejection 会导致测试进程崩溃；ArkTS-Sta 工程额外检测 reject 是否传入非 Error 类型）
+
+```typescript
+try {
+  let result = await api.asyncMethod();
+  expect(result).assertEqual(expected);
+} catch (error) {
+  expect(error.code).assertEqual(401);
+}
+```
+
+```typescript
+api.asyncMethod().then((result) => {
+  expect(result).assertEqual(expected);
+});
+// 缺少 .catch() 处理
+```
+
+---
+
+## 20. 多异步接口并发调用必须隔离 (R203)
+
+同一个 `it()` 内并发调用多个异步接口时，每个接口的返回/错误必须独立断言，不能让一个接口的错误影响另一个接口的结果判断。（时序交叉会导致断言对象混淆，一个接口的超时被误判为另一个接口的错误）
+
+```typescript
+let result1 = await api.method1();
+expect(result1).assertEqual(expected1);
+let result2 = await api.method2();
+expect(result2).assertEqual(expected2);
+```
+
+```typescript
+// 并发调用但共享同一个 error 变量
+let [r1, r2] = await Promise.all([api.method1(), api.method2()]);
+// 如果 method1 抛出，method2 的结果无法断言
+```
+
+---
+
+## 21. 资源创建后必须释放 (R204)
+
+通过 `on()`/`subscribe()` 注册的监听器、打开的连接、创建的对象，必须在 `afterEach` 或 `finally` 中对应 `off()`/`unsubscribe()`/`close()`/`release()`。（未释放的资源会累积导致内存泄漏，影响后续测试执行和设备稳定性）
+
+```typescript
+afterEach(() => {
+  if (observer) {
+    observer.off('event', callback);
+  }
+});
+```
+
+```typescript
+// 在 it() 中注册监听但未在 afterEach 中注销
+it('test001', ..., () => {
+  emitter.on('event', callback);
+  // afterEach 中没有对应的 emitter.off()
+});
+```
+
+---
+
+## 22. beforeAll/beforeEach 必须有配对的 afterAll/afterEach (R205)
+
+如果存在 `beforeAll` 或 `beforeEach`，必须存在对应的 `afterAll` 或 `afterEach`，即使 after 钩子为空也必须声明。（缺少配对的 after 钩子意味着资源分配后没有回收路径，环境状态会泄漏到后续测试）
+
+```typescript
+beforeAll(() => { /* setup */ });
+afterAll(() => { /* teardown */ });
+beforeEach(() => { /* setup */ });
+afterEach(() => { /* teardown */ });
+```
+
+```typescript
+beforeAll(() => { /* setup */ });
+beforeEach(() => { /* setup */ });
+// 缺少 afterAll 和 afterEach
 ```
