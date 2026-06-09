@@ -191,7 +191,52 @@ $HDC shell "hidumper --mem \$(pidof multimodalinput) > /data/local/tmp/hidumper_
 $HDC file recv /data/local/tmp/hidumper_mem.txt ./hidumper_mem.txt
 ```
 
-### 5. 基线 RAM 获取
+### 5. RAM 增量归因（必须）
+
+每一个 RAM 增长结论都必须回答“增长来自哪里”。不能只报告 total PSS 或
+`multimodalinput` 进程 PSS 差值。至少把增长拆成以下来源并给出证据：
+
+| 来源 | 证据 | 处理要求 |
+|------|------|----------|
+| 新增/变化的 `.so` 映射 | baseline/current smaps 中的 mapped `.so` 列表和 PSS | 列出每个 `.so` 的基线 PSS、当前 PSS、差值、是否新增加载 |
+| libmmi 代码段变化 | `readelf -S` + smaps per-library PSS | 单独列出 libmmi 各库 PSS 增量和对应 section 差异 |
+| native heap 增长 | `hidumper --mem` native heap + 代码 diff | 对应到新增容器、对象、缓存、RS 资源或生命周期状态 |
+| anonymous/file PSS 增长 | smaps_rollup `Pss_Anon`/`Pss_File` 或 smaps 分类 | 说明是否来自堆、匿名映射、文件映射、测试框架或系统状态 |
+| 测试环境/框架噪声 | 新增加载的测试二进制依赖、input-test 框架等 `.so` | 与目标特性分开，不得直接归因给代码变更 |
+| 未归因残差 | total delta - 已解释 delta | 单独列出；残差过大时结论只能标记为“不完整归因” |
+
+推荐从 smaps 中按完整路径聚合所有 `.so` PSS，而不是只匹配 `libmmi`：
+
+```python
+import re
+from collections import defaultdict
+
+pss_by_so = defaultdict(int)
+current_so = None
+for line in open("smaps.txt"):
+    if re.match(r"[0-9a-f]+-[0-9a-f]+\\s", line):
+        m = re.search(r"(/\\S+\\.so(?:\\.\\S+)*)$", line)
+        current_so = m.group(1) if m else None
+    m = re.match(r"Pss:\\s+(\\d+)\\s+kB", line)
+    if m and current_so:
+        pss_by_so[current_so] += int(m.group(1))
+
+for so, pss in sorted(pss_by_so.items(), key=lambda item: (-item[1], item[0])):
+    print(f"{so}\\t{pss}")
+```
+
+对 baseline/current 两份结果做 outer join，生成“新增/变化的已加载 `.so`”表：
+
+| 进程 | `.so` 路径 | 基线 PSS(kB) | 当前 PSS(kB) | 差值(kB) | 是否新增加载 | 归因 |
+|------|-----------|--------------|--------------|----------|--------------|------|
+| multimodalinput | /system/lib/libmmi-server.z.so | X | Y | +/-Z | no | libmmi server 代码段变化 |
+| multimodalinput | /system/lib/libxxx.z.so | 0 | Y | +Y | yes | 功能路径触发 / 测试框架 / 环境噪声 |
+
+如果内存增长主要来自加载了新的 `.so`，报告必须列出这些 `.so` 的名称、路径、
+PSS 增量和触发原因；不能只写“.so mmap PSS 增长”。如果无法证明某个新加载库由目标
+特性触发，应归入“环境/测试框架差异”或“未归因”，不要归入目标特性成本。
+
+### 6. 基线 RAM 获取
 
 **精确方法**：临时恢复 .bak .so → 重启 → 采集 → 恢复修改版 .so
 
@@ -230,7 +275,7 @@ $HDC shell "reboot"
 
 当段差值很小（< 1%）且 `.bss` 无变化时，可以直接用估算方法而无需重启。
 
-### 6. 采集前必须执行功能路径
+### 7. 采集前必须执行功能路径
 
 **关键约束**：仅部署 .so 并重启是不够的。如果变更引入了懒分配（lazy allocation）的数据结构，必须在采集前执行完整的功能路径，确保所有运行时状态被实际分配：
 
@@ -358,11 +403,50 @@ RS 资源通常是**最大的单项内存开销**。如果代码中 RS shared_pt
 
 ## RAM 影响
 
+### RAM 增长原因归因
+
+#### 进程级增量拆解
+
+| 指标/类别 | 基线(kB) | 当前(kB) | 差值(kB) | 证据来源 | 归因 |
+|-----------|----------|----------|----------|----------|------|
+| total PSS | X | Y | +/-Z | smaps_rollup / hidumper | 汇总，仅作入口 |
+| .so mmap PSS | X | Y | +/-Z | hidumper + smaps `.so` 聚合 | 见“已加载 .so 增量”表 |
+| native heap | X | Y | +/-Z | hidumper | 见“heap/anonymous 增量”表 |
+| Pss_Anon | X | Y | +/-Z | smaps_rollup | heap/anonymous/运行时状态 |
+| Pss_File | X | Y | +/-Z | smaps_rollup | 文件映射或加载库变化 |
+
+#### 已加载 .so 增量
+
+| 进程 | `.so` 路径 | 基线 PSS(kB) | 当前 PSS(kB) | 差值(kB) | 是否新增加载 | 触发路径/归因 |
+|------|-----------|--------------|--------------|----------|--------------|---------------|
+| multimodalinput | /system/lib/libmmi-server.z.so | X | Y | +/-Z | no | 目标 libmmi 代码变化 |
+| <process> | /system/lib/libxxx.z.so | 0 | Y | +Y | yes | 功能路径触发 / 测试框架 / 环境噪声 |
+
+#### libmmi PSS 增量
+
+| 库 | 基线 PSS (kB) | 当前 PSS (kB) | 差值 | section 证据 | 归因 |
+|----|-------------|---------------|------|--------------|------|
+| libmmi-server.z.so | X | Y | +/-Z | .text/.rodata/.data/.bss 差异 | server 代码路径 |
+| libmmi-client.z.so | X | Y | +/-Z | .text/.rodata/.data/.bss 差异 | client API/proxy 路径 |
+
+#### heap/anonymous 增量
+
+| 增长项 | 估算增量 | 实测对应指标 | 代码证据 | 分配/释放路径 | 结论 |
+|--------|----------|--------------|----------|---------------|------|
+| 新增 map/vector/cache | X KB | native heap / Pss_Anon | 文件:行号或 diff 摘要 | 创建/清理函数 | 目标特性成本 |
+| 测试框架对象 | X KB | native heap / Pss_Anon | 测试入口或依赖 | 测试进程生命周期 | 环境差异 |
+
+#### 未归因残差
+
+| total PSS 差值 | 已解释 .so 差值 | 已解释 heap/anon 差值 | 未归因残差 | 处理 |
+|----------------|----------------|----------------------|------------|------|
+| +X kB | +Y kB | +Z kB | +N kB | N 过大时标记结论不完整，并继续补采 smaps/hidumper/功能路径证据 |
+
 ### 实测对比（libmmi 库 PSS）
 
-| 库 | 基线 PSS (kB) | 修改版 PSS (kB) | 差值 |
-|----|-------------|---------------|------|
-| libmmi-server.z.so | X | Y | +/-Z |
+| 库 | 基线 PSS (kB) | 修改版 PSS (kB) | 差值 | 归因 |
+|----|-------------|---------------|------|------|
+| libmmi-server.z.so | X | Y | +/-Z | section/code path evidence |
 | ... | | | |
 
 ### 理论分析
@@ -395,6 +479,9 @@ RAM: 服务端进程 PSS +/-X kB；客户端进程 PSS +/-Y kB（如适用）；
 | 重启后不执行功能路径就采集 | 懒分配的数据结构未实际分配，RAM 被低估 | 采集前必须执行完整功能路径触发所有状态分配 |
 | 只做段级估算不做理论分析 | 段级估算不反映堆分配（new/malloc），遗漏运行时数据结构 | 结合 diff 中的新增容器做理论内存估算 |
 | 只做理论分析不做实测 | 理论估算可能遗漏/高估，无法确认实际表现 | 三支柱（段级 + 实测 + 理论）交叉验证 |
+| 只报 total PSS 或 .so mmap PSS 增长 | 无法判断增长来自哪个库、堆对象还是测试环境 | 必须列出进程级分类、每个已加载 `.so` 的 PSS 增量、heap/anonymous 增量和未归因残差 |
+| `.so mmap PSS` 增长但不列新增 `.so` | 无法判断是否由目标特性加载库导致 | 对 baseline/current 的完整 `.so` 列表做 outer join，列出新增加载和 PSS 变化 |
+| 把测试框架额外加载的 `.so` 归因给目标特性 | 夸大特性 RAM 成本 | 未证明由目标功能触发的 `.so` 归入环境/测试框架差异或未归因 |
 | smaps 解析器不重置 current_lib | anonymous mapping 的 PSS 被错误归入上一个 libmmi 库，严重高估 | 每个 mapping header 行必须重置 current_lib |
 | PID 在多条 hdc 命令间变化 | 读取了不同进程的 smaps | 使用 `$(pidof multimodalinput)` 在单次 shell 调用内完成 |
 | `mount -o rw,remount /system` | RK3568 根文件系统在 /，报 "not in /proc/mounts" | 使用 `mount -o rw,remount /` |

@@ -134,6 +134,28 @@ the HID display-group path as the required functional path for unrelated MMI cha
 | .so mmap PSS | 7,494 | 12,327 | +4,833 | 额外加载的 .so（input-test 框架等） |
 | hidumper total | 9,886 | 16,916 | +7,030 | 综合差异 |
 
+**RAM 增长原因归因**：
+
+| 增长来源 | 差值(kB) | 证据 | 归因 | 处理 |
+|----------|----------|------|------|------|
+| libmmi `.so` PSS | +32 | smaps per-library PSS | 目标代码和功能路径触达 libmmi 页面 | 纳入特性 RAM 佐证 |
+| native heap | +2,132 | hidumper `native heap` | post-exercise 创建 display group、虚拟设备、窗口、事件序列等运行时对象 | 结合下方理论分析估算目标结构成本 |
+| `.so mmap PSS` | +4,833 | hidumper `.so mmap PSS` | 修改版执行测试路径后额外加载库；未保留完整 raw smaps outer-join 明细 | 不直接归因给目标特性，复测时必须列出每个新增/变化 `.so` |
+| total PSS | +7,014 | smaps_rollup | idle 基线 vs post-exercise 修改版的综合差异 | 仅作上下文，不作为特性净 RAM 成本 |
+
+**新增/变化 `.so` 明细要求**：
+
+本次样例保留了 libmmi per-library PSS 和 hidumper `.so mmap PSS` 分类，但没有保留
+baseline/current 完整 raw smaps 的所有 `.so` outer-join 明细。后续按本 skill 输出正式报告时，
+必须补充如下表格；否则只能说明“.so mmap 增长未完全归因”，不能把 +4,833 kB 归为目标特性成本。
+
+| 进程 | `.so` 路径 | 基线 PSS(kB) | 当前 PSS(kB) | 差值(kB) | 是否新增加载 | 归因 |
+|------|-----------|--------------|--------------|----------|--------------|------|
+| multimodalinput | /system/lib/libmmi-server.z.so | 3,200 | 3,220 | +20 | no | 目标 libmmi server 路径 |
+| multimodalinput | /system/lib/libmmi-server-common.z.so | 268 | 272 | +4 | no | libmmi common 页面触达 |
+| multimodalinput | /system/lib/libmmi-util.z.so | 26 | 34 | +8 | no | libmmi util 页面触达 |
+| multimodalinput | <新增或变化的非 libmmi .so> | X | Y | +/-Z | yes/no | 功能路径触发 / 测试框架 / 环境噪声 / 未归因 |
+
 ### 理论 RAM 分析（代码级佐证）
 
 基于 `eecbf3aee~1..HEAD` 的 diff，分析新增数据结构的运行时内存占用：
