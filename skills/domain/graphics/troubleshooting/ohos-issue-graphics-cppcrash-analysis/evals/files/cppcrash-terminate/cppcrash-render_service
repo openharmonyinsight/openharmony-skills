@@ -1,0 +1,32 @@
+Device info:OpenHarmony 5.0.1 (SDK API 12) huawei p50
+BuildId: b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8
+Module name: com.ohos.render_service
+Pid: 6789
+Uid: 1000
+Reason: Signal:SIGABRT(SI_TKILL) fault_addr:0x0000000000000000
+LastFatalMessage: terminate called after throwing an instance of 'std::bad_cast'
+Stack trace:
+  #00 pc 0000000000004b000 /system/lib/libc.z.so(abort+48)
+  #01 pc 0000000000007c300 /system/lib/libc++.z.so(__cxa_throw+64)
+  #02 pc 0000000000003b24c0 /system/lib/librender_service_base.z.so
+  #03 pc 0000000000001f5c00 /system/lib/librender_service.z.so
+Registers:
+  x0: 00000059810e9658
+  x1: 0000000000000010
+  x8: 00000059810e9610
+  x19: 00000059810e9658
+  x20: 0000000000000000
+  x21: 0000000000000000
+  x22: 0000000000000000
+  x29(fp): 0000007f80001000
+  x30(lr): 00000059810e9610
+  sp: 0000007f80000f00
+Other thread info:
+  Tid: 6790, Name: RSMainThread
+  #00 pc 0000000000003a5c00 /system/lib/librender_service_base.z.so(RSMainThread::OnVsync())
+Memory near registers:
+  x19(+0): 5981 0e96 5800 0000 5981 0e96 5800 0000
+  x19(+16): 5981 0e96 5800 0000 0000 0000 0000 0000
+Maps:
+  00000050-00000060 /system/lib/librender_service_base.z.so (r-xp)
+  00000058-0000005900000000 /dev/ashmem/dalvik-heap (rw-p)
