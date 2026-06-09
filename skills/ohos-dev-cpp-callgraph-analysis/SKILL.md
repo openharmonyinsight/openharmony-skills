@@ -30,6 +30,11 @@ If LSP is missing or resolves the repository incorrectly, read
 bootstrap is optional support, not a prerequisite: if setup or smoke testing fails, record LSP as
 unavailable/incomplete and continue with source, build, symbol, helper, and runtime evidence.
 
+If clangd is extremely slow on a specific file (minutes of 100% CPU), the file is likely missing from
+the filtered `compile_commands.json`. Pass `--install-hook` during setup to auto-fix this, or see
+the "File Not in compile_commands.json" section in
+[`references/lsp-bootstrap.md`](references/lsp-bootstrap.md).
+
 ## Required Workflow
 
 ### 1. Define the Analysis Target

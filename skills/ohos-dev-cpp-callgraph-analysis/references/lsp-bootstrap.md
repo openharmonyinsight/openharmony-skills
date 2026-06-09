@@ -43,6 +43,7 @@ python3 "$SETUP" \
   --product <product-name> \
   --build-target <build-target> \
   --generate-compile-db \
+  --install-hook \
   --client auto
 ```
 
@@ -56,6 +57,7 @@ The script:
 4. Runs MCP tool-discovery and clangd semantic smoke tests.
 5. Registers detected Codex or Claude clients when requested.
 6. Prints the tool-neutral MCP bridge command for other clients.
+7. With `--install-hook`: installs a PreToolUse hook that auto-adds missing compdb entries.
 
 Use repeated `--client codex` or `--client claude` to select supported automatic registrations. Use
 `--client none` to prepare the service without registration, then register the printed bridge command
@@ -75,3 +77,63 @@ If setup fails:
 3. Continue with source, build, symbol, helper, and runtime evidence.
 
 Do not block the call-chain analysis solely because LSP setup failed.
+
+## File Not in compile_commands.json
+
+When the filtered compdb does not contain an entry for the target file, clangd falls back to
+heuristic header resolution. This fallback is extremely slow (minutes instead of seconds) because
+clangd must guess include paths without compile flags.
+
+**Symptom**: clangd CPU stays at 100% for minutes on a single file; other files respond in seconds.
+
+**Root cause**: The filtered compdb only contains files whose GN targets were built. New test files,
+files from unbuilt targets, or files added after the last `--export-compile-commands` run are missing.
+
+### Automated fix (PreToolUse hook)
+
+Pass `--install-hook` to `setup_lsp.py` to install a PreToolUse hook that runs before every ohos-lsp
+tool call:
+
+1. Extracts `filePath` from the tool input.
+2. Checks if the file has a compdb entry.
+3. If missing, finds the most similar existing entry and clones it with adjusted paths.
+4. Appends the cloned entry to the filtered compdb.
+5. Only processes C/C++ files (`.cpp`, `.cc`, `.c`, `.h`, `.hpp`).
+
+The hook has a 5-second timeout and produces a `systemMessage` when it adds an entry.
+
+Configuration in `.claude/settings.local.json`:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__ohos-lsp",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/scripts/ensure_compdb.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Manual fix
+
+```bash
+# 1. Find a similar existing entry
+grep "similar_test.cpp" compile_commands.json
+
+# 2. Clone it, replacing file/object paths
+sed 's/similar_test/new_test/g; s|old/path/|new/path/|g'
+
+# 3. Append to compdb (before closing ])
+
+# 4. Verify (should complete in under 10 seconds)
+clangd --check=<file> --compile-commands-dir=<compdb_dir>
+```

@@ -8,7 +8,6 @@ import os
 import platform
 import re
 import selectors
-import shlex
 import shutil
 import subprocess
 import sys
@@ -132,8 +131,6 @@ def generate_full_compile_database(oh_root, product, build_target):
     try:
         run(command, cwd=oh_root)
     except subprocess.CalledProcessError:
-        # GN writes compile_commands.json before Ninja. A later compile failure does not
-        # invalidate the exported database.
         pass
     target = oh_root / "out" / product / "compile_commands.json"
     if not target.is_file():
@@ -351,6 +348,172 @@ def default_cache_dir(repo_root):
     return base / "ohos-callgraph-lsp" / f"{repo_root.name}-{digest}"
 
 
+ENSURE_COMPDB_SCRIPT = '''\
+#!/usr/bin/env python3
+"""PreToolUse hook: ensure target file has a compile_commands.json entry."""
+
+import json
+import os
+import sys
+from pathlib import Path
+
+COMPDB = Path(os.environ.get("OHOS_LSP_COMPDB", ""))
+REPO_ROOT = Path(os.environ.get("OHOS_LSP_REPO_ROOT", ""))
+CPP_EXTS = {".cpp", ".cc", ".cxx", ".c", ".h", ".hpp", ".hxx"}
+
+
+def find_file_path(tool_input):
+    fp = tool_input.get("filePath") or tool_input.get("file_path", "")
+    if not fp:
+        return None
+    p = Path(fp)
+    if not p.is_absolute():
+        p = REPO_ROOT / p
+    return p.resolve()
+
+
+def file_in_compdb(entries, resolved_path):
+    for e in entries:
+        ep = Path(e.get("file", ""))
+        if not ep.is_absolute():
+            ep = Path(e.get("directory", "")) / ep
+        if ep.resolve() == resolved_path:
+            return True
+    return False
+
+
+def similarity(candidate_file, target_file):
+    c_parts = Path(candidate_file).parts
+    t_parts = target_file.parts
+    score = 0
+    for cp, tp in zip(reversed(c_parts), reversed(t_parts)):
+        if cp == tp:
+            score += 1
+        else:
+            break
+    if Path(candidate_file).suffix == target_file.suffix:
+        score += 2
+    return score
+
+
+def clone_entry(entries, target_path):
+    best, best_score = None, -1
+    for e in entries:
+        s = similarity(e["file"], target_path)
+        if s > best_score:
+            best_score = s
+            best = e
+    if best is None:
+        return None
+    rel = os.path.relpath(target_path, Path(best["directory"]).resolve())
+    new_entry = dict(best)
+    new_entry["file"] = rel
+    old_stem = Path(best["file"]).stem
+    new_stem = target_path.stem
+    if "command" in new_entry:
+        new_entry["command"] = new_entry["command"].replace(old_stem, new_stem)
+    if "arguments" in new_entry:
+        new_entry["arguments"] = [a.replace(old_stem, new_stem) for a in new_entry["arguments"]]
+    return new_entry
+
+
+def append_entry(compdb_path, new_entry):
+    with open(compdb_path, "rb+") as f:
+        f.seek(-3, 2)
+        pos = f.tell()
+        while pos > 0:
+            f.seek(pos)
+            ch = f.read(1)
+            if ch == b'}':
+                f.seek(pos + 1)
+                f.write(b',\\n')
+                f.write(json.dumps(new_entry, ensure_ascii=True).encode())
+                f.write(b'\\n]\\n')
+                f.truncate()
+                return True
+            pos -= 1
+    return False
+
+
+def main():
+    try:
+        data = json.load(sys.stdin)
+    except (json.JSONDecodeError, EOFError):
+        return
+    tool_input = data.get("tool_input", {})
+    target = find_file_path(tool_input)
+    if target is None or not target.is_file():
+        return
+    if target.suffix.lower() not in CPP_EXTS:
+        return
+    if not COMPDB.is_file():
+        return
+    with open(COMPDB) as f:
+        entries = json.load(f)
+    if file_in_compdb(entries, target):
+        return
+    new_entry = clone_entry(entries, target)
+    if new_entry is None:
+        json.dump({"systemMessage": f"[ensure_compdb] No similar entry to clone for {target.name}"}, sys.stdout)
+        return
+    if append_entry(COMPDB, new_entry):
+        json.dump({"systemMessage": f"[ensure_compdb] Added compdb entry for {target.name}"}, sys.stdout)
+    else:
+        json.dump({"systemMessage": f"[ensure_compdb] Failed to append entry for {target.name}"}, sys.stdout)
+
+
+if __name__ == "__main__":
+    main()
+'''
+
+
+def install_hook(repo_root, compdb_path):
+    """Install ensure_compdb.py script and PreToolUse hook into the project."""
+    scripts_dir = repo_root / ".claude" / "scripts"
+    scripts_dir.mkdir(parents=True, exist_ok=True)
+
+    script_path = scripts_dir / "ensure_compdb.py"
+    script_content = ENSURE_COMPDB_SCRIPT.replace(
+        'COMPDB = Path(os.environ.get("OHOS_LSP_COMPDB", ""))',
+        f'COMPDB = Path(os.environ.get("OHOS_LSP_COMPDB", "{compdb_path}"))',
+    ).replace(
+        'REPO_ROOT = Path(os.environ.get("OHOS_LSP_REPO_ROOT", ""))',
+        f'REPO_ROOT = Path(os.environ.get("OHOS_LSP_REPO_ROOT", "{repo_root}"))',
+    )
+    script_path.write_text(script_content, encoding="utf-8")
+    script_path.chmod(0o755)
+    print(f"installed {script_path}")
+
+    settings_path = repo_root / ".claude" / "settings.local.json"
+    settings = {}
+    if settings_path.is_file():
+        with settings_path.open() as f:
+            settings = json.load(f)
+
+    hooks = settings.setdefault("hooks", {})
+    pre_hooks = hooks.setdefault("PreToolUse", [])
+    hook_entry = {
+        "matcher": "mcp__ohos-lsp",
+        "hooks": [
+            {
+                "type": "command",
+                "command": f"python3 {script_path}",
+                "timeout": 5,
+            }
+        ],
+    }
+    existing = [h for h in pre_hooks if h.get("matcher") == "mcp__ohos-lsp"]
+    if existing:
+        existing[0].update(hook_entry)
+    else:
+        pre_hooks.append(hook_entry)
+
+    with settings_path.open("w") as f:
+        json.dump(settings, f, indent=2, ensure_ascii=True)
+        f.write("\n")
+    print(f"configured PreToolUse hook in {settings_path}")
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--oh-root", required=True, type=Path)
@@ -366,6 +529,8 @@ def parse_args():
     parser.add_argument("--smoke-timeout", type=int, default=120)
     parser.add_argument("--skip-register", action="store_true")
     parser.add_argument("--skip-smoke-test", action="store_true")
+    parser.add_argument("--install-hook", action="store_true",
+                        help="Install PreToolUse hook and ensure_compdb.py script")
     return parser.parse_args()
 
 
@@ -399,9 +564,11 @@ def main():
         raise SystemExit(f"no compile commands found for {repo_root}")
     print(f"repository compile database: {filtered} ({count} entries)")
 
+    if args.install_hook:
+        install_hook(repo_root, filtered)
+
     binary = install_mcp_language_server(cache_dir)
     command = bridge_command(binary, repo_root, clangd, filtered.parent)
-    print(f"MCP bridge command: {shlex.join(command)}")
     if not args.skip_smoke_test:
         sample_file = first_compile_file(filtered)
         if not sample_file:
