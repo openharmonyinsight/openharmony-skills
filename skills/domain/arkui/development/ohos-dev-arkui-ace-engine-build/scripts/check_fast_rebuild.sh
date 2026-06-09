@@ -77,6 +77,8 @@ echo ""
 # Check if build output exists
 if [[ "$PRODUCT_NAME" == "ohos-sdk" ]]; then
     BUILD_OUT="$OH_ROOT/out/sdk"
+elif [[ "$PRODUCT_NAME" == "host_product" ]]; then
+    BUILD_OUT="$OH_ROOT/out/host/host_product"
 else
     BUILD_OUT="$OH_ROOT/out/$PRODUCT_NAME"
 fi

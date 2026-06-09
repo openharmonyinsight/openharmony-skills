@@ -49,6 +49,8 @@ fi
 
 if [[ "$PRODUCT_NAME" == "ohos-sdk" ]]; then
     BUILD_LOG="$OH_ROOT/out/sdk/build_console.log"
+elif [[ "$PRODUCT_NAME" == "host_product" ]]; then
+    BUILD_LOG="$OH_ROOT/out/host/host_product/build_console.log"
 else
     BUILD_LOG="$OH_ROOT/out/$PRODUCT_NAME/build_console.log"
 fi

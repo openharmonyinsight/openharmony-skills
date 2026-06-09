@@ -2,9 +2,9 @@
 name: ohos-dev-arkui-ace-engine-build
 description: >
   Build ACE Engine with arkui-specific knowledge: when --fast-rebuild is safe (GN change detection),
-  zero-cost coverage for ace_engine_test, SDK build constraints, and test list builds from
-  unittest_targets.txt. Use when user says 编译/build ace_engine, 编译测试, 编译SDK, 快速编译,
-  or mentions ace_engine_test, rk3568.
+  coverage for ace_engine_test, SDK build constraints, host UT (TDD) builds for x86 local execution,
+  and test list builds from unittest_targets.txt. Use when user says 编译/build ace_engine, 编译测试,
+  编译SDK, 快速编译, host测试, TDD, or mentions ace_engine_test, rk3568, host_product.
 metadata:
   author: openharmony
   scope: domain
@@ -23,7 +23,7 @@ Build OpenHarmony ACE Engine and related components using the `build.sh` build s
 
 - Build script: `./build.sh` in OpenHarmony root (nearest ancestor with `.gn` file; scripts auto-detect this)
 - Build system: hb (Harmony Build)
-- Output: `out/<product>/` (SDK special case: `out/sdk/`, NOT `out/ohos-sdk/`)
+- Output: `out/<product>/` (SDK special case: `out/sdk/`, NOT `out/ohos-sdk/` / Host UT special case: `out/host/host_product`, NOT `out/host_product/`)
 
 ## Build Decision Tree
 
@@ -40,9 +40,16 @@ If any condition is unmet → full build.
 **Q2: What to verify?**
 - "Does it compile?" → `--build-target ace_engine`
 - "Do tests pass?" → `--build-target ace_engine_test` with coverage (see Q3)
+- "Run tests on build server without device?" → Host UT build (see Q2a)
 - "Is the full system ok?" → full build (no `--build-target`)
 - "Is SDK affected?" → `--product-name ohos-sdk` (**NEVER** specify `--build-target` — causes cryptic failures)
 - "Multiple specific tests?" → Test list build from `unittest_targets.txt`
+
+**Q2a: Host UT (TDD) build?**
+For running ace_engine unit tests directly on the x86 build server without rk3568 device or emulator:
+- Use `--product-name host_product --no-prebuilt-sdk --build-target ace_engine_test`
+- `--no-prebuilt-sdk` is **required** — host_product must compile against current source
+- Binaries are x86 ELF gtest executables — can run directly: `./out/host/host_product/tests/unittest/ace_engine/<test_name>`
 
 **Q3: Coverage?**
 - Default: add `--gn-args ace_engine_feature_enable_coverage=true` for ace_engine test builds — coverage overhead is negligible and enables report generation. Skip only when: user explicitly wants fastest feedback, or environment does not support this GN arg (build error on the flag itself)
@@ -65,8 +72,9 @@ If any condition is unmet → full build.
 | ACE Engine tests | `--build-target ace_engine_test --gn-args ace_engine_feature_enable_coverage=true` |
 | Fast test iteration | `--build-target ace_engine_test --gn-args ace_engine_feature_enable_coverage=true --fast-rebuild` |
 | SDK | `--product-name ohos-sdk` (no `--build-target`) |
+| Host UT (TDD) | `--product-name host_product --no-prebuilt-sdk --build-target ace_engine_test --ccache` |
 
-Products: `rk3568`, `rk3588`, `ohos-sdk` | Targets: `ace_engine`, `ace_engine_test`, `unittest`, `benchmark_linux`
+Products: `rk3568`, `rk3588`, `ohos-sdk`, `host_product` | Targets: `ace_engine`, `ace_engine_test`, `unittest`, `benchmark_linux`
 
 ## Test Target List Build
 
@@ -93,13 +101,15 @@ Success: exit code 0, output shows `=====build successful=====`
 
 ```
 out/
-├── <product>/
-│   ├── packages/          # Built packages
-│   ├── libs/              # Compiled libraries
+├── <product>/                 # rk3568, rk3588
+│   ├── packages/
+│   ├── libs/
 │   ├── tests/ace_engine/unittest/<path>/<test_target_name>
 │   ├── exe.unstripped/tests/unittest/ace_engine/  # Safe to delete for disk space
-│   └── build.log          # Primary build log
-└── sdk/                   # SDK output (ohos-sdk only, NOT out/ohos-sdk/)
+│   └── build.log
+├── sdk/                       # ohos-sdk only (NOT out/ohos-sdk/)
+└── host/host_product/         # host_product only (NOT out/host_product/)
+    └── tests/unittest/ace_engine/  # x86 gtest binaries, run directly on build server
 ```
 
 ## Build Execution
@@ -112,7 +122,7 @@ bash ${SKILL_BASE_DIR}/scripts/monitor_progress.sh --root <OH_ROOT> --product <P
 
 If exit code is 0 (prints `active`), a build is in progress — wait for it or ask the user. If exit code is 1, safe to launch.
 
-Use `setsid` with console output redirected to `build_console.log`:
+Use `setsid` with console output redirected to `out/<product>/build_console.log`, `<product>` **MUST BE** the real output path following the #Environment special cases:
 
 ```bash
 setsid ./build.sh <args> > out/<product>/build_console.log 2>&1 &
