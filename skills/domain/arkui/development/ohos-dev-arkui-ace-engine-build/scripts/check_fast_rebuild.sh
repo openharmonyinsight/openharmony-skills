@@ -75,7 +75,11 @@ echo "Product: $PRODUCT_NAME"
 echo ""
 
 # Check if build output exists
-BUILD_OUT="$OH_ROOT/out/$PRODUCT_NAME"
+if [[ "$PRODUCT_NAME" == "ohos-sdk" ]]; then
+    BUILD_OUT="$OH_ROOT/out/sdk"
+else
+    BUILD_OUT="$OH_ROOT/out/$PRODUCT_NAME"
+fi
 if [ ! -d "$BUILD_OUT" ]; then
     echo -e "${RED}No build output found at $BUILD_OUT${NC}"
     echo "This appears to be a first-time build."
@@ -107,6 +111,9 @@ echo -e "${GREEN}  No uncommitted GN changes${NC}"
 # --- Check 2: GN files newer than ninja build output ---
 echo -e "${YELLOW}[2/3] Comparing GN vs ninja timestamps...${NC}"
 
+# Exclude generated/output dirs — these GN files are build artifacts, not source inputs
+FIND_EXCLUDE=(-path "$OH_ROOT/out" -prune -o -path "$OH_ROOT/out/*" -prune -o -path "*/node_modules/*" -prune -o -path "*/.git/*" -prune -o)
+
 # Find the most recently modified ninja file in build output
 NINJA_STAMP=""
 NINJA_FILE=$(find "$BUILD_OUT" -maxdepth 2 -name "build.ninja" -type f 2>/dev/null | head -1 || true)
@@ -115,19 +122,19 @@ if [ -n "$NINJA_FILE" ] && [ -f "$NINJA_FILE" ]; then
 fi
 
 if [ -n "$NINJA_STAMP" ]; then
-    # Find any GN file modified AFTER the ninja file was generated
-    NEWER_GN_FILES=$(find "$OH_ROOT" -type f \( -name "BUILD.gn" -o -name "*.gni" \) -newer "$NINJA_FILE" 2>/dev/null | head -20 || true)
+    # Find source GN files modified AFTER the ninja file was generated (exclude out/, node_modules/)
+    NEWER_GN_FILES=$(find "$OH_ROOT" "${FIND_EXCLUDE[@]}" -type f \( -name "BUILD.gn" -o -name "*.gni" \) -newer "$NINJA_FILE" -print 2>/dev/null | head -20 || true)
     if [ -n "$NEWER_GN_FILES" ]; then
-        echo -e "${RED}Found GN files newer than build.ninja (${NINJA_FILE#$OH_ROOT/}):${NC}"
+        echo -e "${RED}Found source GN files newer than build.ninja (${NINJA_FILE#$OH_ROOT/}):${NC}"
         echo ""
         echo "$NEWER_GN_FILES" | while IFS= read -r file; do
             echo "  - ${file#$OH_ROOT/}"
         done
         echo ""
-        recommend_standard_build "GN files modified after last ninja generation — need gn gen before fast rebuild"
+        recommend_standard_build "Source GN files modified after last ninja generation — need gn gen before fast rebuild"
         exit 0
     fi
-    echo -e "${GREEN}  All GN files older than build.ninja${NC}"
+    echo -e "${GREEN}  All source GN files older than build.ninja${NC}"
 else
     echo -e "${YELLOW}  Could not determine ninja timestamp, skipping this check${NC}"
 fi
@@ -136,7 +143,7 @@ fi
 TIME_WINDOW=${1:-30}
 echo -e "${YELLOW}[3/3] Checking for GN files modified in last $TIME_WINDOW minutes...${NC}"
 
-RECENT_GN_FILES=$(find "$OH_ROOT" -type f \( -name "BUILD.gn" -o -name "*.gni" \) -mmin -$TIME_WINDOW 2>/dev/null || true)
+RECENT_GN_FILES=$(find "$OH_ROOT" "${FIND_EXCLUDE[@]}" -type f \( -name "BUILD.gn" -o -name "*.gni" \) -mmin -$TIME_WINDOW -print 2>/dev/null || true)
 
 if [ -n "$RECENT_GN_FILES" ]; then
     echo -e "${RED}Found recently modified GN files:${NC}"
