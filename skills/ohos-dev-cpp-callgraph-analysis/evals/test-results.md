@@ -6,7 +6,7 @@ Scope:
 
 - Verify that `ohos-dev-cpp-callgraph-analysis` treats LSP/source evidence as the primary path.
 - Verify that `ohos_callgraph.py` is documented as an optional artifact fallback rather than a parallel completeness layer.
-- Verify helper and LSP setup regression tests after the documentation and eval update.
+- Verify helper and LSP setup regression tests after the documentation, hook-boundary, and eval update.
 
 Commands:
 
@@ -21,7 +21,7 @@ Results:
 
 | Check | Result |
 | --- | --- |
-| Unit tests | Passed: 21/21 |
+| Unit tests | Passed: 22/22 |
 | Python compile | Passed |
 | Eval JSON syntax | Passed |
 | Whitespace diff check | Passed |
@@ -31,3 +31,4 @@ Functional result:
 - LSP/clangd is now the documented primary path when it has the correct OpenHarmony compile context.
 - `ohos_callgraph.py` is only required when LSP/source/build evidence leaves an unexplained edge, artifact-level candidate confirmation is useful, or LSP is unavailable/incomplete.
 - Helper output remains candidate evidence only and cannot prove parameter propagation, callback flow, IPC dispatch, virtual runtime targets, or dlopen/dlsym completeness.
+- `--install-hook` is documented and tested as Claude PreToolUse support only; Codex and other MCP clients use the tool-neutral bridge plus manual compile database fix.

@@ -72,6 +72,7 @@
         "The response uses scripts/setup_lsp.py and avoids configuring clangd directly against a product-wide compile database.",
         "The response warns about build-target validity and indexing resource cost when they are relevant to the environment.",
         "For unsupported MCP clients, the response uses --client none and registers the printed tool-neutral bridge command manually.",
+        "The response treats --install-hook as Claude PreToolUse support only and uses the manual compile_commands.json fix for Codex or other clients.",
         "The response verifies MCP tool discovery, warms clangd with hover before global definition or references, and falls back without blocking analysis if setup fails."
       ]
     },

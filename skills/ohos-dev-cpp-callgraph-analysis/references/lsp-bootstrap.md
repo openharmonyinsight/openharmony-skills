@@ -57,7 +57,8 @@ The script:
 4. Runs MCP tool-discovery and clangd semantic smoke tests.
 5. Registers detected Codex or Claude clients when requested.
 6. Prints the tool-neutral MCP bridge command for other clients.
-7. With `--install-hook`: installs a PreToolUse hook that auto-adds missing compdb entries.
+7. With `--install-hook` and a selected Claude client: installs a Claude PreToolUse hook that
+   auto-adds missing compdb entries.
 
 Use repeated `--client codex` or `--client claude` to select supported automatic registrations. Use
 `--client none` to prepare the service without registration, then register the printed bridge command
@@ -89,10 +90,10 @@ clangd must guess include paths without compile flags.
 **Root cause**: The filtered compdb only contains files whose GN targets were built. New test files,
 files from unbuilt targets, or files added after the last `--export-compile-commands` run are missing.
 
-### Automated fix (PreToolUse hook)
+### Automated fix (Claude PreToolUse hook)
 
-Pass `--install-hook` to `setup_lsp.py` to install a PreToolUse hook that runs before every ohos-lsp
-tool call:
+Pass `--install-hook` to `setup_lsp.py` when Claude is the selected MCP client to install a
+PreToolUse hook that runs before every Claude `ohos-lsp` tool call:
 
 1. Extracts `filePath` from the tool input.
 2. Checks if the file has a compdb entry.
@@ -100,9 +101,11 @@ tool call:
 4. Appends the cloned entry to the filtered compdb.
 5. Only processes C/C++ files (`.cpp`, `.cc`, `.c`, `.h`, `.hpp`).
 
-The hook has a 5-second timeout and produces a `systemMessage` when it adds an entry.
+The hook has a 5-second timeout and produces a `systemMessage` when it adds an entry. The setup
+script does not install this hook for Codex or other MCP clients; use the manual fix below unless
+that client documents an equivalent pre-tool hook mechanism.
 
-Configuration in `.claude/settings.local.json`:
+Claude configuration in `.claude/settings.local.json`:
 
 ```json
 {

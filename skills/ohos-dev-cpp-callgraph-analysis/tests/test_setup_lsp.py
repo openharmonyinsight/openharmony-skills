@@ -120,6 +120,25 @@ class SetupLspTest(unittest.TestCase):
             ["claude", "mcp", "add", "--scope", "project", "ohos-lsp"],
         )
 
+    def test_claude_hook_writes_only_claude_project_config(self):
+        with tempfile.TemporaryDirectory() as td:
+            repo_root = Path(td) / "input"
+            repo_root.mkdir()
+            compdb = Path(td) / "cache" / "compile_commands.json"
+            compdb.parent.mkdir()
+            compdb.write_text("[]")
+
+            setup_lsp.install_claude_hook(repo_root, compdb)
+
+            settings = json.loads((repo_root / ".claude/settings.local.json").read_text())
+            self.assertEqual(
+                settings["hooks"]["PreToolUse"][0]["matcher"],
+                "mcp__ohos-lsp",
+            )
+            script = repo_root / ".claude/scripts/ensure_compdb.py"
+            self.assertTrue(script.is_file())
+            self.assertIn(str(compdb), script.read_text())
+
     def test_bridge_command_can_be_registered_by_other_mcp_clients(self):
         command = setup_lsp.bridge_command(
             Path("/cache/mcp language server"),

@@ -467,8 +467,8 @@ if __name__ == "__main__":
 '''
 
 
-def install_hook(repo_root, compdb_path):
-    """Install ensure_compdb.py script and PreToolUse hook into the project."""
+def install_claude_hook(repo_root, compdb_path):
+    """Install ensure_compdb.py script and Claude PreToolUse hook into the project."""
     scripts_dir = repo_root / ".claude" / "scripts"
     scripts_dir.mkdir(parents=True, exist_ok=True)
 
@@ -511,7 +511,7 @@ def install_hook(repo_root, compdb_path):
     with settings_path.open("w") as f:
         json.dump(settings, f, indent=2, ensure_ascii=True)
         f.write("\n")
-    print(f"configured PreToolUse hook in {settings_path}")
+    print(f"configured Claude PreToolUse hook in {settings_path}")
 
 
 def parse_args():
@@ -530,7 +530,7 @@ def parse_args():
     parser.add_argument("--skip-register", action="store_true")
     parser.add_argument("--skip-smoke-test", action="store_true")
     parser.add_argument("--install-hook", action="store_true",
-                        help="Install PreToolUse hook and ensure_compdb.py script")
+                        help="Install Claude PreToolUse hook when Claude is a selected client")
     return parser.parse_args()
 
 
@@ -564,9 +564,6 @@ def main():
         raise SystemExit(f"no compile commands found for {repo_root}")
     print(f"repository compile database: {filtered} ({count} entries)")
 
-    if args.install_hook:
-        install_hook(repo_root, filtered)
-
     binary = install_mcp_language_server(cache_dir)
     command = bridge_command(binary, repo_root, clangd, filtered.parent)
     if not args.skip_smoke_test:
@@ -583,6 +580,17 @@ def main():
     for client in clients:
         register_client(client, args.name, binary, repo_root, clangd, filtered.parent)
         print(f"registered {args.name} for {client}")
+
+    if args.install_hook:
+        if "claude" in clients:
+            install_claude_hook(repo_root, filtered)
+        else:
+            print(
+                "--install-hook currently supports Claude PreToolUse hooks only; "
+                "for Codex or other MCP clients, use the manual compile_commands.json "
+                "fix in references/lsp-bootstrap.md.",
+                file=sys.stderr,
+            )
 
     print("LSP bootstrap complete.")
     print("Warm up clangd with hover on a relevant file before the first global definition/reference query.")
