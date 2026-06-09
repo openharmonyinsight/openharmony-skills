@@ -1,0 +1,1158 @@
+{
+  "skill_name": "ohos-issue-graphics-cppcrash-analysis",
+  "description": "Test suite for ohos-issue-graphics-cppcrash-analysis skill - analyzing OpenHarmony cppcrash faultlogs to locate native process crash root causes",
+  "version": "1.0",
+  "created_date": "2026-06-03",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "trigger_cppcrash_analysis",
+      "category": "trigger",
+      "prompt": "分析这个cppcrash日志文件，定位崩溃根因",
+      "expected_output": "Skill should trigger and begin cppcrash analysis workflow",
+      "files": ["files/cppcrash-nullptr/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for cppcrash analysis request"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "trigger_native_crash",
+      "category": "trigger",
+      "prompt": "定位native崩溃原因，进程render_service发生了SIGSEGV",
+      "expected_output": "Skill should trigger and analyze native crash",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for native crash analysis"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "trigger_sigsegv_analysis",
+      "category": "trigger",
+      "prompt": "这个图形模块崩溃日志显示SIGSEGV，帮我分析",
+      "expected_output": "Skill should trigger and prioritize SIGSEGV analysis path",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for SIGSEGV crash analysis"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "trigger_uaf_keyword",
+      "category": "trigger",
+      "prompt": "render_service发生了Use-After-Free崩溃，帮我分析cppcrash日志",
+      "expected_output": "Skill should trigger and prioritize UAF analysis path",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for Use-After-Free analysis"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "eval_name": "trigger_wild_pointer",
+      "category": "trigger",
+      "prompt": "进程崩溃日志中有野指针特征，需要解析cppcrash日志",
+      "expected_output": "Skill should trigger and analyze wild pointer crash",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for wild pointer crash analysis"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "eval_name": "trigger_memory_stomp",
+      "category": "trigger",
+      "prompt": "内存踩踏导致render_service崩溃，分析cppcrash定位踩踏源",
+      "expected_output": "Skill should trigger and prioritize memory stomp analysis",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for memory stomp analysis"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "eval_name": "trigger_0x6b6b_address",
+      "category": "trigger",
+      "prompt": "cppcrash日志中fault_addr是0x6b6b开头的地址，帮我分析",
+      "expected_output": "Skill should trigger and recognize UAF pattern",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for 0x6b6b address analysis"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "eval_name": "trigger_render_service_crash",
+      "category": "trigger",
+      "prompt": "render_service崩溃了，帮我分析cppcrash日志定位问题",
+      "expected_output": "Skill should trigger for render_service crash analysis",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for render_service crash"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "eval_name": "negative_trigger_arkts_crash",
+      "category": "trigger",
+      "prompt": "我的ArkTS应用发生了JS层崩溃，帮我分析错误日志",
+      "expected_output": "Skill should NOT trigger - ArkTS/JS crash has no native call stack",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for pure ArkTS/JS layer crash"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "eval_name": "negative_trigger_ui_development",
+      "category": "trigger",
+      "prompt": "帮我写一个HarmonyOS的UI界面组件",
+      "expected_output": "Skill should NOT trigger",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for UI development tasks"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "eval_name": "negative_trigger_perf_optimization",
+      "category": "trigger",
+      "prompt": "优化render_service的渲染性能，减少帧延迟",
+      "expected_output": "Skill should NOT trigger - performance optimization, not crash analysis",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for performance optimization"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "eval_name": "negative_trigger_code_review",
+      "category": "trigger",
+      "prompt": "帮我review这段render_service的代码，看看有没有问题",
+      "expected_output": "Skill should NOT trigger - code review, not crash analysis",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for general code review"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "eval_name": "negative_trigger_build_error",
+      "category": "trigger",
+      "prompt": "编译OpenHarmony图形模块时遇到编译错误，帮我解决",
+      "expected_output": "Skill should NOT trigger - build error, not crash analysis",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for build errors"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "eval_name": "negative_trigger_git_merge",
+      "category": "trigger",
+      "prompt": "帮我解决git merge冲突",
+      "expected_output": "Skill should NOT trigger",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for git operations"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "eval_name": "negative_trigger_no_cppcrash_file",
+      "category": "trigger",
+      "prompt": "我的应用崩溃了但没有cppcrash日志文件，只有hilog",
+      "expected_output": "Skill should NOT trigger - no cppcrash log file available",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger when no cppcrash file exists"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "eval_name": "negative_trigger_unit_test",
+      "category": "trigger",
+      "prompt": "帮我写render_service模块的单元测试",
+      "expected_output": "Skill should NOT trigger",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill should not trigger for unit test generation"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "eval_name": "nullptr_analysis_full",
+      "category": "core_scenario",
+      "prompt": "分析这个cppcrash日志文件，定位render_service崩溃的根因",
+      "expected_output": "Should identify SIGSEGV with fault_addr near 0 (nullptr dereference), trace data flow showing x0=0 (null pointer) being used with offset 0x10, locate the source code line causing the null pointer access, and provide fix suggestions",
+      "files": ["files/cppcrash-nullptr/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "crash_type_identified",
+          "passed": true,
+          "evidence": "Correctly identifies SIGSEGV as crash type"
+        },
+        {
+          "text": "address_pattern_matched",
+          "passed": true,
+          "evidence": "Recognizes fault_addr 0x10 as null pointer + offset pattern"
+        },
+        {
+          "text": "data_flow_traced",
+          "passed": true,
+          "evidence": "Traces x0=0x0 as null pointer source"
+        },
+        {
+          "text": "nullptr_pattern_confirmed",
+          "passed": true,
+          "evidence": "Confirms null pointer dereference as root cause pattern"
+        },
+        {
+          "text": "fix_suggestion_provided",
+          "passed": true,
+          "evidence": "Provides null pointer check or initialization fix suggestion"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "eval_name": "uaf_analysis_full",
+      "category": "core_scenario",
+      "prompt": "分析这个cppcrash日志文件，定位崩溃根因。cppcrash文件在files/cppcrash-uaf/cppcrash-render_service，code目录在files/cppcrash-uaf/code/，lib.unstripped目录在files/cppcrash-uaf/lib.unstripped/",
+      "expected_output": "Should identify SIGSEGV with 0x6b6b address pattern as Use-After-Free, trace data flow showing x20=0x6b6b92503c687c50 as freed memory pointer, recognize jemalloc 0x6b6b magic number pattern in memory dump, analyze other threads for race condition that freed the object, and provide fix suggestions for lifetime management",
+      "files": ["files/cppcrash-uaf/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "crash_type_identified",
+          "passed": true,
+          "evidence": "Correctly identifies SIGSEGV as crash type"
+        },
+        {
+          "text": "uaf_pattern_detected",
+          "passed": true,
+          "evidence": "Recognizes 0x6b6b address prefix as Use-After-Free marker"
+        },
+        {
+          "text": "memory_pattern_analyzed",
+          "passed": true,
+          "evidence": "Analyzes memory dump showing 6b6b fill pattern indicating freed memory"
+        },
+        {
+          "text": "data_flow_traced",
+          "passed": true,
+          "evidence": "Traces x20=0x6b6b92503c687c50 as freed object pointer"
+        },
+        {
+          "text": "other_thread_analyzed",
+          "passed": true,
+          "evidence": "Analyzes other threads (RSUniRenderThread) for object lifecycle issues"
+        },
+        {
+          "text": "fix_suggestion_provided",
+          "passed": true,
+          "evidence": "Suggests proper lifetime management (smart pointer, lock) fix"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "eval_name": "sigabort_analysis",
+      "category": "core_scenario",
+      "prompt": "分析这个cppcrash日志，render_service进程发生了SIGABRT崩溃",
+      "expected_output": "Should identify SIGABRT signal, recognize abort() at stack top, analyze upper stack frames for business logic reason of abort, trace why the process called abort() and provide analysis of the abort cause",
+      "files": ["files/cppcrash-sigabort/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "crash_type_identified",
+          "passed": true,
+          "evidence": "Correctly identifies SIGABRT as crash type"
+        },
+        {
+          "text": "abort_path_recognized",
+          "passed": true,
+          "evidence": "Recognizes abort/raise at stack top as special case"
+        },
+        {
+          "text": "business_logic_analyzed",
+          "passed": true,
+          "evidence": "Analyzes business code (#01, #02) for abort cause"
+        },
+        {
+          "text": "special_case_handled",
+          "passed": true,
+          "evidence": "Follows special-cases.md for abort/raise scenario"
+        },
+        {
+          "text": "fix_suggestion_provided",
+          "passed": true,
+          "evidence": "Provides fix suggestion based on abort reason"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "eval_name": "highbyte_corruption_analysis",
+      "category": "core_scenario",
+      "prompt": "分析这个cppcrash日志，fault_addr看起来很奇怪，高位字节与合法地址不同",
+      "expected_output": "Should identify SIGSEGV with high-byte corruption pattern, compare fault_addr 0x00000009810e9658 with legal address 0x00000059810e9658, detect the 0x59->0x09 high-byte modification, classify as memory stomping/corruption, trace stomping source, and provide fix suggestions",
+      "files": ["files/cppcrash-highbyte-corruption/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "crash_type_identified",
+          "passed": true,
+          "evidence": "Correctly identifies SIGSEGV as crash type"
+        },
+        {
+          "text": "address_pattern_matched",
+          "passed": true,
+          "evidence": "Matches fault_addr vs legal address high-byte difference: 0x59->0x09"
+        },
+        {
+          "text": "corruption_pattern_classified",
+          "passed": true,
+          "evidence": "Classifies as high-byte memory corruption/stomping pattern"
+        },
+        {
+          "text": "stomp_source_traced",
+          "passed": true,
+          "evidence": "Traces potential stomping source through address analysis"
+        },
+        {
+          "text": "maps_verified",
+          "passed": true,
+          "evidence": "Verifies legal address in Maps memory regions"
+        },
+        {
+          "text": "fix_suggestion_provided",
+          "passed": true,
+          "evidence": "Suggests memory stomping prevention fix"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "eval_name": "cfi_failure_analysis",
+      "category": "core_scenario",
+      "prompt": "分析这个cppcrash日志，调用栈中有cfi_slowpath_comm",
+      "expected_output": "Should recognize cfi_slowpath_comm in stack trace as CFI failure indicator, prioritize memory stomping analysis path per SKILL.md and special-cases.md, analyze memory dump for corruption patterns (0xdeadbeef), classify as memory corruption, and provide fix suggestions",
+      "files": ["files/cppcrash-cfi-failure/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "cfi_pattern_detected",
+          "passed": true,
+          "evidence": "Recognizes cfi_slowpath_comm in call stack"
+        },
+        {
+          "text": "stomp_path_prioritized",
+          "passed": true,
+          "evidence": "Prioritizes memory stomping analysis path per special-cases.md"
+        },
+        {
+          "text": "memory_corruption_detected",
+          "passed": true,
+          "evidence": "Detects memory corruption patterns (0xdeadbeef in memory dump)"
+        },
+        {
+          "text": "special_case_handled",
+          "passed": true,
+          "evidence": "Follows special-cases.md CFI failure handling"
+        },
+        {
+          "text": "fix_suggestion_provided",
+          "passed": true,
+          "evidence": "Suggests memory corruption prevention fix"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "eval_name": "terminate_exception_analysis",
+      "category": "core_scenario",
+      "prompt": "分析这个cppcrash日志，进程抛出了std::bad_cast异常后terminate",
+      "expected_output": "Should identify SIGABRT with terminate pattern, recognize std::bad_cast exception in LastFatalMessage, analyze whether bad_cast is genuine type mismatch or potential memory corruption causing vtable corruption, follow special-cases.md terminate handling, and provide analysis",
+      "files": ["files/cppcrash-terminate/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "crash_type_identified",
+          "passed": true,
+          "evidence": "Correctly identifies SIGABRT as crash type"
+        },
+        {
+          "text": "terminate_pattern_recognized",
+          "passed": true,
+          "evidence": "Recognizes terminate after throwing exception pattern"
+        },
+        {
+          "text": "exception_cause_analyzed",
+          "passed": true,
+          "evidence": "Analyzes std::bad_cast exception cause"
+        },
+        {
+          "text": "corruption_alternative_considered",
+          "passed": true,
+          "evidence": "Consider whether memory corruption could cause vtable/type mismatch per special-cases.md"
+        },
+        {
+          "text": "fix_suggestion_provided",
+          "passed": true,
+          "evidence": "Provides fix suggestion (type safety or memory corruption prevention)"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "eval_name": "race_condition_analysis",
+      "category": "core_scenario",
+      "prompt": "分析这个cppcrash日志，崩溃线程和其它线程都在访问相同的缓存",
+      "expected_output": "Should identify SIGSEGV null pointer in crash thread, analyze Other thread info showing RSUniRenderThread accessing same RSRenderNodeDrawableCache, detect race condition between threads accessing same data structure without proper synchronization, identify iterator invalidation or concurrent access issue, and provide thread safety fix suggestions",
+      "files": ["files/cppcrash-race-condition/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "crash_type_identified",
+          "passed": true,
+          "evidence": "Correctly identifies SIGSEGV as crash type"
+        },
+        {
+          "text": "other_thread_analyzed",
+          "passed": true,
+          "evidence": "Analyzes Other thread info for concurrent access"
+        },
+        {
+          "text": "race_condition_detected",
+          "passed": true,
+          "evidence": "Detects race condition between crash thread and RSUniRenderThread accessing same DrawableCache"
+        },
+        {
+          "text": "thread_safety_issue_identified",
+          "passed": true,
+          "evidence": "Identifies lack of proper synchronization between threads"
+        },
+        {
+          "text": "fix_suggestion_provided",
+          "passed": true,
+          "evidence": "Suggests proper mutex/lock usage for thread safety"
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "eval_name": "segv_accerr_analysis",
+      "category": "core_scenario",
+      "prompt": "分析这个cppcrash日志，崩溃原因是SEGV_ACCERR而不是SEGV_MAPERR",
+      "expected_output": "Should identify SEGV_ACCERR (access permission error) instead of SEGV_MAPERR, recognize that address exists in Maps but has wrong permissions, check Maps for the address region permissions, identify the permission mismatch, and provide analysis",
+      "files": ["files/cppcrash-segv-accerr/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "crash_type_identified",
+          "passed": true,
+          "evidence": "Correctly identifies SIGSEGV with SEGV_ACCERR"
+        },
+        {
+          "text": "accerr_vs_maperr_distinguished",
+          "passed": true,
+          "evidence": "Distinguishes SEGV_ACCERR (access permission) from SEGV_MAPERR (no mapping)"
+        },
+        {
+          "text": "maps_permission_checked",
+          "passed": true,
+          "evidence": "Checks Maps for address region and its permissions (r-xp, rw-p)"
+        },
+        {
+          "text": "permission_mismatch_identified",
+          "passed": true,
+          "evidence": "Identifies write attempt on read-only region or similar permission issue"
+        },
+        {
+          "text": "fix_suggestion_provided",
+          "passed": true,
+          "evidence": "Suggests fix based on permission violation cause"
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "eval_name": "jemalloc_top_analysis",
+      "category": "core_scenario",
+      "prompt": "分析这个cppcrash日志，栈顶有jemalloc相关调用",
+      "expected_output": "Should identify SIGABRT with jemalloc_mallctl at stack top, recognize per special-cases.md that this is likely memory corruption detected by jemalloc, analyze upper stack frames (#02, #03) for business code that triggered memory corruption, check memory dump for corruption patterns (0xdeadbeef), classify as stomping issue, and provide fix suggestions",
+      "files": ["files/cppcrash-jemalloc-top/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "jemalloc_pattern_detected",
+          "passed": true,
+          "evidence": "Recognizes jemalloc_mallctl at stack top"
+        },
+        {
+          "text": "stomp_path_prioritized",
+          "passed": true,
+          "evidence": "Follows special-cases.md: analyzes upper stack business code for stomp cause"
+        },
+        {
+          "text": "memory_corruption_detected",
+          "passed": true,
+          "evidence": "Detects 0xdeadbeef corruption pattern in memory dump"
+        },
+        {
+          "text": "business_code_analyzed",
+          "passed": true,
+          "evidence": "Analyzes frames #02, #03 for the code causing stomping"
+        },
+        {
+          "text": "fix_suggestion_provided",
+          "passed": true,
+          "evidence": "Suggests memory corruption prevention fix"
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "eval_name": "buildid_mismatch_rejection",
+      "category": "edge_case",
+      "prompt": "分析这个cppcrash日志。cppcrash文件中的BuildId是b4c5d6e7f8a9c0d1e2f3a4b5c6d7e8f9，但lib.unstripped/目录下的so文件BuildId是a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6，版本不一致",
+      "expected_output": "Should detect buildId mismatch between cppcrash and so file, terminate analysis per SKILL.md rules, report to user that version mismatch prevents correct symbol resolution",
+      "files": ["files/cppcrash-nullptr/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "buildid_verified",
+          "passed": true,
+          "evidence": "Checks buildId before attempting stack unwinding"
+        },
+        {
+          "text": "mismatch_detected",
+          "passed": true,
+          "evidence": "Detects buildId mismatch between cppcrash and so file"
+        },
+        {
+          "text": "analysis_terminated",
+          "passed": true,
+          "evidence": "Terminates analysis and reports mismatch to user per SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "eval_name": "missing_so_file",
+      "category": "edge_case",
+      "prompt": "分析这个cppcrash日志，但lib.unstripped/目录下没有对应的so文件",
+      "expected_output": "Should detect missing so file in lib.unstripped/ directory, report to user that symbol table file is needed for stack unwinding, cannot proceed with analysis without symbols",
+      "files": ["files/cppcrash-nullptr/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "input_checked",
+          "passed": true,
+          "evidence": "Checks lib.unstripped/ directory existence"
+        },
+        {
+          "text": "missing_so_reported",
+          "passed": true,
+          "evidence": "Reports missing symbol table file to user"
+        },
+        {
+          "text": "cannot_resolve",
+          "passed": true,
+          "evidence": "States cannot resolve code lines without symbol file"
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "eval_name": "missing_code_directory",
+      "category": "edge_case",
+      "prompt": "分析这个cppcrash日志，但code/目录不存在，无法查看源码",
+      "expected_output": "Should detect missing code/ directory, report to user that source code directory is needed for root cause analysis, explain that without code analysis can only provide limited address-level information",
+      "files": ["files/cppcrash-nullptr/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "input_checked",
+          "passed": true,
+          "evidence": "Checks code/ directory existence"
+        },
+        {
+          "text": "missing_code_reported",
+          "passed": true,
+          "evidence": "Reports missing source code directory to user"
+        },
+        {
+          "text": "limited_analysis_possible",
+          "passed": true,
+          "evidence": "Explains limited analysis without source code"
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "eval_name": "insufficient_evidence_handling",
+      "category": "edge_case",
+      "prompt": "分析这个cppcrash日志，崩溃现场信息比较有限，无法确定单一根因",
+      "expected_output": "Should list all possible root causes with supporting evidence, clearly mark which conclusions are certain and which are inferred, describe directions for further analysis",
+      "files": ["files/cppcrash-race-condition/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "multiple_causes_listed",
+          "passed": true,
+          "evidence": "Lists multiple possible root causes when single cause cannot be determined"
+        },
+        {
+          "text": "evidence_vs_inference_marked",
+          "passed": true,
+          "evidence": "Clearly distinguishes evidence-based conclusions from inferences"
+        },
+        {
+          "text": "further_analysis_directions",
+          "passed": true,
+          "evidence": "Provides directions for further analysis"
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "eval_name": "no_guessing_root_cause",
+      "category": "edge_case",
+      "prompt": "分析这个cppcrash日志，快速给我根因",
+      "expected_output": "Should NOT guess root cause without evidence, should NOT use vague expressions like 'maybe' or 'perhaps', should trace data flow before concluding, should follow the evidence-based analysis workflow",
+      "files": ["files/cppcrash-nullptr/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "no_vague_expression",
+          "passed": true,
+          "evidence": "Avoids vague expressions like '可能是' or '也许是'"
+        },
+        {
+          "text": "evidence_based_conclusion",
+          "passed": true,
+          "evidence": "Conclusions based on traced data flow evidence"
+        },
+        {
+          "text": "workflow_followed",
+          "passed": true,
+          "evidence": "Follows complete analysis workflow before concluding"
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "eval_name": "report_template_usage",
+      "category": "documentation",
+      "prompt": "分析完cppcrash后，请按规范格式生成分析报告",
+      "expected_output": "Should follow references/report-template.md structure, include all required sections: metadata summary, call stack analysis, code positioning, disassembly analysis, data flow analysis, call chain backtrace, thread competition analysis, memory data analysis, address pattern matching, root cause inference, fix suggestions",
+      "files": ["files/cppcrash-uaf/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "uses_report_template",
+          "passed": true,
+          "evidence": "References report-template.md for report generation"
+        },
+        {
+          "text": "metadata_summary_present",
+          "passed": true,
+          "evidence": "Includes Device info, Module name, Reason summary"
+        },
+        {
+          "text": "call_stack_analysis_present",
+          "passed": true,
+          "evidence": "Includes complete call chain and key functions"
+        },
+        {
+          "text": "root_cause_present",
+          "passed": true,
+          "evidence": "Includes evidence-based root cause inference"
+        },
+        {
+          "text": "fix_suggestion_present",
+          "passed": true,
+          "evidence": "Includes specific fix suggestions"
+        },
+        {
+          "text": "checklist_completed",
+          "passed": true,
+          "evidence": "Completes analysis checklist from report-template.md"
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "eval_name": "stack_unwinding_reference",
+      "category": "documentation",
+      "prompt": "分析这个cppcrash日志，需要解栈定位代码行号",
+      "expected_output": "Should reference references/stack-unwinding.md for stack unwinding steps, find so in lib.unstripped/, verify buildId with llvm-readelf, use llvm-addr2line for symbol resolution, record code key positions",
+      "files": ["files/cppcrash-nullptr/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "uses_stack_unwinding_ref",
+          "passed": true,
+          "evidence": "References stack-unwinding.md for unwinding procedure"
+        },
+        {
+          "text": "buildid_verified_first",
+          "passed": true,
+          "evidence": "Verifies buildId before unwinding per stack-unwinding.md"
+        },
+        {
+          "text": "addr2line_used",
+          "passed": true,
+          "evidence": "Uses llvm-addr2line for code line resolution"
+        },
+        {
+          "text": "key_positions_recorded",
+          "passed": true,
+          "evidence": "Records resolved positions in standard format"
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "eval_name": "disassembly_reference",
+      "category": "documentation",
+      "prompt": "分析这个cppcrash日志，需要通过反汇编确认崩溃指令",
+      "expected_output": "Should reference references/disassembly-analysis.md, use llvm-objdump for disassembly, identify crash instruction, combine register values with instruction to calculate access address, verify calculated address matches fault_addr",
+      "files": ["files/cppcrash-uaf/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "uses_disassembly_ref",
+          "passed": true,
+          "evidence": "References disassembly-analysis.md for disassembly procedure"
+        },
+        {
+          "text": "crash_instruction_identified",
+          "passed": true,
+          "evidence": "Identifies specific crash instruction from disassembly"
+        },
+        {
+          "text": "register_combined",
+          "passed": true,
+          "evidence": "Combines register values with instruction to calculate access address"
+        },
+        {
+          "text": "address_verified",
+          "passed": true,
+          "evidence": "Verifies calculated address matches Reason fault_addr"
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "eval_name": "memory_pattern_reference",
+      "category": "documentation",
+      "prompt": "分析这个cppcrash日志，崩溃地址有0x6b6b特征",
+      "expected_output": "Should reference references/memory-pattern-analysis.md, trace register value source through data flow, identify 0x6b6b as UAF marker, perform address pattern matching by comparing with legal addresses, identify stomping source",
+      "files": ["files/cppcrash-uaf/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "uses_memory_pattern_ref",
+          "passed": true,
+          "evidence": "References memory-pattern-analysis.md for data flow tracing"
+        },
+        {
+          "text": "data_flow_traced",
+          "passed": true,
+          "evidence": "Traces register value chain to find source of anomalous value"
+        },
+        {
+          "text": "uaf_magic_number_identified",
+          "passed": true,
+          "evidence": "Identifies 0x6b6b as jemalloc freed-memory magic number"
+        },
+        {
+          "text": "address_pattern_matched",
+          "passed": true,
+          "evidence": "Matches crash address pattern against legal addresses"
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "eval_name": "thread_competition_reference",
+      "category": "documentation",
+      "prompt": "分析这个cppcrash日志，有多线程上下文信息",
+      "expected_output": "Should reference references/thread-competition-analysis.md, analyze Other thread info call stacks, identify lock competition, detect race conditions, check for iterator invalidation",
+      "files": ["files/cppcrash-race-condition/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "uses_thread_competition_ref",
+          "passed": true,
+          "evidence": "References thread-competition-analysis.md for thread analysis"
+        },
+        {
+          "text": "other_threads_analyzed",
+          "passed": true,
+          "evidence": "Analyzes all Other thread info call stacks"
+        },
+        {
+          "text": "lock_competition_checked",
+          "passed": true,
+          "evidence": "Checks for lock competition between threads"
+        },
+        {
+          "text": "race_condition_identified",
+          "passed": true,
+          "evidence": "Identifies race condition or iterator invalidation"
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "eval_name": "memory_data_reference",
+      "category": "documentation",
+      "prompt": "分析这个cppcrash日志，需要分析Memory near registers部分的内存dump",
+      "expected_output": "Should reference references/memory-data-analysis.md, analyze memory layout near registers, identify abnormal patterns in memory dump, compare with Maps for valid memory regions",
+      "files": ["files/cppcrash-uaf/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "uses_memory_data_ref",
+          "passed": true,
+          "evidence": "References memory-data-analysis.md for memory analysis"
+        },
+        {
+          "text": "memory_layout_analyzed",
+          "passed": true,
+          "evidence": "Analyzes memory layout near this pointer / registers"
+        },
+        {
+          "text": "abnormal_pattern_identified",
+          "passed": true,
+          "evidence": "Identifies abnormal patterns (6b6b fill, deadbeef, etc.)"
+        },
+        {
+          "text": "maps_comparison_done",
+          "passed": true,
+          "evidence": "Compares crash address with Maps memory regions"
+        }
+      ]
+    },
+    {
+      "id": 37,
+      "eval_name": "call_chain_backtrace_reference",
+      "category": "documentation",
+      "prompt": "分析这个cppcrash日志，需要回溯调用链找到参数来源",
+      "expected_output": "Should reference references/call-chain-backtrace.md, trace call chain from crash point upward, analyze parameter passing at each call level, identify parameter source issues, analyze object lifecycle",
+      "files": ["files/cppcrash-uaf/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "uses_call_chain_ref",
+          "passed": true,
+          "evidence": "References call-chain-backtrace.md for call chain analysis"
+        },
+        {
+          "text": "call_chain_traced",
+          "passed": true,
+          "evidence": "Traces call chain from crash point upward through stack frames"
+        },
+        {
+          "text": "parameter_source_analyzed",
+          "passed": true,
+          "evidence": "Analyzes parameter source and lifecycle at each level"
+        },
+        {
+          "text": "lifecycle_issue_identified",
+          "passed": true,
+          "evidence": "Identifies lifecycle issue causing crash (object freed prematurely)"
+        }
+      ]
+    },
+    {
+      "id": 38,
+      "eval_name": "code_review_checklist_reference",
+      "category": "documentation",
+      "prompt": "分析这个cppcrash日志，定位到代码后需要排查具体问题",
+      "expected_output": "Should reference references/code-review-checklist.md, check for thread safety issues (lock usage), type casting safety, lambda capture lifecycle, smart pointer lifecycle, arithmetic issues",
+      "files": ["files/cppcrash-race-condition/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "uses_code_review_ref",
+          "passed": true,
+          "evidence": "References code-review-checklist.md for code inspection"
+        },
+        {
+          "text": "thread_safety_checked",
+          "passed": true,
+          "evidence": "Checks for proper lock usage and thread safety"
+        },
+        {
+          "text": "type_cast_checked",
+          "passed": true,
+          "evidence": "Checks for unsafe type casting"
+        },
+        {
+          "text": "lifecycle_checked",
+          "passed": true,
+          "evidence": "Checks smart pointer and object lifecycle"
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "eval_name": "reference_on_demand_loading",
+      "category": "documentation",
+      "prompt": "分析这个cppcrash日志，从开始到生成完整报告",
+      "expected_output": "Should NOT load all references at start, should load references on demand per SKILL.md instructions, load stack-unwinding.md only when unwinding, disassembly-analysis.md only when disassembling, etc.",
+      "files": ["files/cppcrash-uaf/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "no_bulk_loading",
+          "passed": true,
+          "evidence": "Does not load all references at analysis start"
+        },
+        {
+          "text": "on_demand_loading",
+          "passed": true,
+          "evidence": "Loads each reference only when corresponding analysis step is needed"
+        },
+        {
+          "text": "context_efficient",
+          "passed": true,
+          "evidence": "Maintains efficient context usage by selective reference loading"
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "eval_name": "workflow_path_selection",
+      "category": "workflow",
+      "prompt": "分析这个cppcrash日志，崩溃地址是0x6b6b开头",
+      "expected_output": "Should select correct analysis path from SKILL.md workflow table: SIGSEGV + 0x6b6b → unwinding → data flow tracing → address matching (UAF path)",
+      "files": ["files/cppcrash-uaf/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "correct_path_selected",
+          "passed": true,
+          "evidence": "Selects UAF analysis path: unwinding → data flow → address matching"
+        },
+        {
+          "text": "crash_type_categorized",
+          "passed": true,
+          "evidence": "Categorizes crash as SIGSEGV + 0x6b6b (UAF type)"
+        },
+        {
+          "text": "priority_path_followed",
+          "passed": true,
+          "evidence": "Follows priority analysis path for UAF from workflow table"
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "eval_name": "workflow_sigabort_path",
+      "category": "workflow",
+      "prompt": "分析这个cppcrash日志，进程调用了abort()",
+      "expected_output": "Should select correct analysis path: SIGABRT + abort/raise → unwinding → business code analysis (not memory tracing)",
+      "files": ["files/cppcrash-sigabort/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "correct_path_selected",
+          "passed": true,
+          "evidence": "Selects SIGABRT analysis path: unwinding → business code analysis"
+        },
+        {
+          "text": "abort_path_recognized",
+          "passed": true,
+          "evidence": "Recognizes abort/raise at stack top"
+        },
+        {
+          "text": "business_focus",
+          "passed": true,
+          "evidence": "Focuses on business logic rather than memory tracing"
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "eval_name": "workflow_cfi_path",
+      "category": "workflow",
+      "prompt": "分析这个cppcrash日志",
+      "expected_output": "Should detect cfi_slowpath_comm in stack, select memory stomping analysis path per SKILL.md workflow table: CFI → prioritize stomping analysis",
+      "files": ["files/cppcrash-cfi-failure/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "cfi_detected_early",
+          "passed": true,
+          "evidence": "Detects cfi_slowpath_comm in early stack analysis"
+        },
+        {
+          "text": "stomp_path_selected",
+          "passed": true,
+          "evidence": "Selects memory stomping analysis path per workflow table"
+        },
+        {
+          "text": "priority_correct",
+          "passed": true,
+          "evidence": "Prioritizes stomping analysis over other paths for CFI"
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "eval_name": "precheck_crash_type",
+      "category": "workflow",
+      "prompt": "分析这个cppcrash日志文件",
+      "expected_output": "Should perform precheck: read crash type from Reason field, identify SIGSEGV/SIGABRT, check address pattern, check for multi-thread context before choosing analysis path",
+      "files": ["files/cppcrash-nullptr/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "crash_type_read",
+          "passed": true,
+          "evidence": "Reads crash type from Reason field"
+        },
+        {
+          "text": "address_pattern_checked",
+          "passed": true,
+          "evidence": "Checks fault_addr address pattern"
+        },
+        {
+          "text": "multi_thread_checked",
+          "passed": true,
+          "evidence": "Checks for Other thread info presence"
+        },
+        {
+          "text": "analysis_path_decided",
+          "passed": true,
+          "evidence": "Decides analysis path based on precheck results"
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "eval_name": "precheck_input_integrity",
+      "category": "workflow",
+      "prompt": "帮我分析这个cppcrash日志，定位崩溃根因",
+      "expected_output": "Should check input completeness in order: 1) cppcrash file exists, 2) lib.unstripped/ directory exists, 3) code/ directory exists. If any missing, terminate and report.",
+      "files": ["files/cppcrash-nullptr/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "cppcrash_checked",
+          "passed": true,
+          "evidence": "Checks cppcrash file existence"
+        },
+        {
+          "text": "lib_unstripped_checked",
+          "passed": true,
+          "evidence": "Checks lib.unstripped/ directory existence"
+        },
+        {
+          "text": "code_directory_checked",
+          "passed": true,
+          "evidence": "Checks code/ directory existence"
+        },
+        {
+          "text": "order_correct",
+          "passed": true,
+          "evidence": "Follows SKILL.md specified check order"
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "eval_name": "forbidden_skip_multithread",
+      "category": "forbidden",
+      "prompt": "分析这个cppcrash日志中的崩溃线程调用栈",
+      "expected_output": "Should NOT only analyze crash thread and ignore other threads. Must analyze Other thread info for race conditions and lock competition per SKILL.md forbidden rules.",
+      "files": ["files/cppcrash-race-condition/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "other_thread_analyzed",
+          "passed": true,
+          "evidence": "Analyzes Other thread info, not just crash thread"
+        },
+        {
+          "text": "race_condition_checked",
+          "passed": true,
+          "evidence": "Checks for race conditions between threads"
+        },
+        {
+          "text": "lock_competition_checked",
+          "passed": true,
+          "evidence": "Checks for lock competition between threads"
+        }
+      ]
+    },
+    {
+      "id": 46,
+      "eval_name": "forbidden_skip_address_pattern",
+      "category": "forbidden",
+      "prompt": "分析这个cppcrash日志",
+      "expected_output": "Should NOT skip address pattern matching. Must compare crash address with legal addresses per SKILL.md forbidden rules.",
+      "files": ["files/cppcrash-highbyte-corruption/cppcrash-render_service"],
+      "assertions": [
+        {
+          "text": "address_pattern_matched",
+          "passed": true,
+          "evidence": "Performs address pattern matching between crash and legal addresses"
+        },
+        {
+          "text": "byte_level_comparison",
+          "passed": true,
+          "evidence": "Compares addresses at byte level to identify corruption"
+        },
+        {
+          "text": "stomp_pattern_identified",
+          "passed": true,
+          "evidence": "Identifies stomping pattern from address comparison"
+        }
+      ]
+    }
+  ]
+}

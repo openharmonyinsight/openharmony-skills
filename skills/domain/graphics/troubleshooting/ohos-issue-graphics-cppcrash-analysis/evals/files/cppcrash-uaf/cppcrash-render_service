@@ -1,0 +1,42 @@
+Device info:OpenHarmony 5.0.1 (SDK API 12) huawei p50
+BuildId: a3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8
+Module name: com.ohos.render_service
+Pid: 1234
+Uid: 1000
+Reason: Signal:SIGSEGV(SEGV_MAPERR) fault_addr:0x6b6b92503c687c50
+LastFatalMessage: fatal signal 11
+Stack trace:
+  #00 pc 0000000000003fe0ec /system/lib/librender_service_base.z.so
+  #01 pc 0000000000004a2b30 /system/lib/librender_service_base.z.so
+  #02 pc 0000000000001f5c00 /system/lib/librender_service.z.so
+  #03 pc 000000000000000fc8 /system/lib/librender_service.z.so
+Registers:
+  x0: 00000059810e9658
+  x1: 0000000000000010
+  x8: 0000006b6b92503c687c50
+  x19: 00000059810e9658
+  x20: 6b6b92503c687c50
+  x21: 00000059810e9610
+  x22: 0000000000000000
+  x23: 0000000000000001
+  x24: 0000000000000000
+  x25: 00000059810e9630
+  x26: 00000059810e9680
+  x29(fp): 0000007f80001000
+  x30(lr): 00000059810e9610
+  sp: 0000007f80000f00
+Other thread info:
+  Tid: 1235, Name: RSUniRenderThread
+  #00 pc 0000000000002f8a00 /system/lib/librender_service_base.z.so(RSUniRenderThread::Process())
+  #01 pc 0000000000001f5b00 /system/lib/librender_service.z.so
+  Tid: 1236, Name: RSMainThread
+  #00 pc 0000000000003a5c00 /system/lib/librender_service_base.z.so(RSMainThread::OnVsync())
+Memory near registers:
+  x20(+0): 6b6b 6b6b 6b6b 6b6b 6b6b 6b6b 6b6b 6b6b
+  x20(+16): 6b6b 6b6b 0000 0000 0000 0000 0000 0000
+  x20(+32): 0000 0000 0000 0000 0000 0000 0000 0000
+  x19(+0): 5981 0e96 5800 0000 5981 0e96 5800 0000
+  x19(+16): 5981 0e96 5800 0000 5981 0e96 1000 0000
+Maps:
+  00000050-00000060 /system/lib/librender_service_base.z.so (r-xp)
+  00000058-0000005900000000 /dev/ashmem/dalvik-heap (rw-p)

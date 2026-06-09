@@ -1,0 +1,41 @@
+DOMAIN:DEVICE_INFO
+PRODUCTMODEL:XXXX
+DOMAIN:FREEZE_INFO
+TIMESTAMP:2026-06-01 03:15:00.000
+PID:2000
+UID:1000
+PACKAGE:render_service
+PROCESSNAME:render_service
+Reason:SERVICE_BLOCK
+Action:3
+DOMAIN:FRAMEWORK
+FIRST_STACK (SERVICE_WARNING):
+Tid:2000, Name:render_service
+#00 pc 001d4338 /system/lib64/ld-musl-aarch64.so.1(__timedwait_cp)
+#01 pc 001da3f0 /system/lib64/ld-musl-aarch64.so.1(__pthread_cond_timedwait)
+#02 pc 001a5c4c /system/lib64/librender_service.z.so(OHOS::Rosen::RSDrawFrame::PostAndWait)
+#03 pc 001b6f18 /system/lib64/librender_service.z.so(OHOS::Rosen::RSMainLoop::RunLoop)
+state:S
+utime:500
+stime:200
+
+SECOND_STACK (SERVICE_BLOCK):
+Tid:2000, Name:render_service
+#00 pc 001d4338 /system/lib64/ld-musl-aarch64.so.1(__timedwait_cp)
+#01 pc 001da3f0 /system/lib64/ld-musl-aarch64.so.1(__pthread_cond_timedwait)
+#02 pc 001a5c4c /system/lib64/librender_service.z.so(OHOS::Rosen::RSDrawFrame::PostAndWait)
+#03 pc 001b6f18 /system/lib64/librender_service.z.so(OHOS::Rosen::RSMainLoop::RunLoop)
+state:S
+utime:500
+stime:200
+
+DOMAIN:SYSTEM_RESOURCE
+ReclaimAvailBuffer:5000
+ThermalLevel info:3
+
+DOMAIN:HILOG
+2026-06-01 03:14:55.000 05100/02000 E [RS] GetSaWrap SA:10 timeout
+2026-06-01 03:14:58.000 05100/02000 E [RS] MemoryOverflow pid=3000
+2026-06-01 03:14:58.500 05100/02000 I [LMK] ReclaimAvailBuffer:5000
+2026-06-01 03:14:59.000 05100/02000 I [LMK] Total ION:800000
+2026-06-01 03:14:59.000 05100/02000 I [LMK] Total GPU:300000
