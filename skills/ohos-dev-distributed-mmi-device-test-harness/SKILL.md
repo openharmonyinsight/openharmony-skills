@@ -46,6 +46,27 @@ export HDC="hdc -t $DEVICE"
 后续文档中的 `$WIN_SSH`、`$WIN_SCP`、`$WIN_SCP_DST`、`$WIN_HOME`、`$HDC` 均引用这些变量。
 SSH 认证方式由环境决定，可使用 SSH key、CI secret 或其他跳板机机制。Skill 输出和 eval 结果中不得包含真实密码、主机名、用户名或设备 serial。
 
+## 设备状态修改安全门槛
+
+以下操作会改变真机系统状态，执行前必须先取得用户明确授权：
+
+- server bypass 代码改动对应的 `.so` 部署
+- `mount -o rw,remount /`
+- 替换 `/system/lib/*.so`
+- `kill $(pidof multimodalinput)` 或其他服务重启命令
+- `setenforce 0` / `setenforce 1`
+- 设备重启、系统分区写入或清理备份文件
+
+授权前先向用户列出：
+
+- 要修改的设备和目标进程
+- 要备份、替换、还原的文件路径
+- 备份保存位置和校验方式
+- 预期还原状态
+- 最终验证命令
+
+报告中必须记录备份结果、替换结果、还原结果和最终验证结果。没有授权时，只能生成命令计划和检查清单，不得直接执行会改设备状态的命令。
+
 ## 权限获取
 
 测试进程调用 InputManager IPC 需要系统权限：
@@ -342,19 +363,21 @@ ohos_executable("dual_group_interleave_test") {
 
 ```
 准备阶段：
-  1. 修改 server 端绕过 → 编译 .so → 部署到设备 → 重启服务
-  2. SELinux permissive
+  1. 获取用户明确授权，并记录备份/还原/验证计划
+  2. 修改 server 端绕过 → 编译 .so
+  3. 备份原 .so → 部署新 .so → 重启服务 → 记录替换验证
+  4. SELinux permissive（如测试确需）
 
 测试阶段：
-  3. 编译测试二进制 (compile_test.py)
-  4. 部署后台 dump 脚本 + 测试二进制到设备
-  5. 运行后台 dump 脚本（启动测试 + hidumper 捕获）
-  6. 拉取 dump 文件到本地分析
+  5. 编译测试二进制 (compile_test.py)
+  6. 部署后台 dump 脚本 + 测试二进制到设备
+  7. 运行后台 dump 脚本（启动测试 + hidumper 捕获）
+  8. 拉取 dump 文件到本地分析
 
 还原阶段：
-  7. 还原 server 端 .so（从 .bak）
-  8. SELinux enforcing
-  9. 验证还原：重启服务 + 确认正常功能
+  9. 还原 server 端 .so（从 .bak）
+  10. SELinux enforcing（如果前面改成 permissive）
+  11. 验证还原：重启服务 + 确认正常功能，并把结果写入报告
 ```
 
 ## Common Mistakes
@@ -368,5 +391,6 @@ ohos_executable("dual_group_interleave_test") {
 | DumpG sleep 太短 | 外部脚本来不及捕获 | 至少 3 秒（脚本 1 秒轮询一次） |
 | 忘记 testonly=true | 正式构建报错或拉入测试代码 | BUILD.gn 中加 testonly=true |
 | 忘记还原 server 绕过 | 安全风险 | 测试完必须从 .bak 还原 |
+| 未经授权直接 remount/替换 .so/关闭 SELinux | 改变真机系统状态且难以追责 | 先取得明确授权并记录备份、还原和最终验证 |
 | SELinux 未关闭 | uinput/IPC 被拒绝，报权限错误 | `setenforce 0` |
 | InitNativeToken 放在 InputManager 调用之后 | 权限检查失败 | 必须在 main() 最开始调用 |

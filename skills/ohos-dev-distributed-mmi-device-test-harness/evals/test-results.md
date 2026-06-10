@@ -13,6 +13,7 @@
 | Server 绕过 (OnDisplayInfo) | PASS | `UpdateDisplayInfo` 调用成功（返回 -201 是预期行为） |
 | Server 绕过 (OnWindowGroupInfo) | PASS | `UpdateWindowInfo` 调用成功 |
 | Server 绕过 (CheckBindDevicePermission) | PASS | `BindDeviceToDisplayGroupByDisplay` 调用成功 |
+| 设备状态修改安全门槛 | PASS | remount、替换 .so、重启服务、SELinux 切换前要求明确授权，并记录备份/还原/最终验证 |
 | .so 部署路径 `/system/lib/` | PASS | libmmi-server.z.so + libmmi-service.z.so 替换后服务正常 |
 | SELinux permissive | PASS | `/dev/uinput` 访问和 IPC 均无拒绝 |
 | compile_test.py 交叉编译 | PASS | 产物在 `code/out/rk3568/multimodalinput/input/` |
@@ -28,6 +29,7 @@
 | dump 全程为空 | Phase 文件路径 `phase.txt` vs `dual_group_phase.txt` 不匹配 | 统一路径 |
 | hdc shell `no closing quote` | `hdc shell 'cmd1 && cmd2'` 语法 | 拆成多条 hdc 命令 |
 | 二进制路径找不到 | 以为在 `out/rk3568/` 实际在 `code/out/rk3568/` | 跟踪 compile_test.py 的 BUILD_DIR |
+| 主流程直接改动设备状态 | remount、替换系统库、重启服务、SELinux 切换会改变真机状态 | 前置明确授权，记录备份、还原目标和最终验证 |
 
 ## dump 数据完整性
 

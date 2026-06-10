@@ -327,11 +327,11 @@ void InputWindowsManager::EnsureGroupState(int32_t groupId) {
 |------|------|--------|
 | ROM 文件级 | readelf -S 段级分析 + ls 文件大小 | 高（编译器版本差异已标注） |
 | ROM 段级 | 相同 readelf 工具，段大小与编译器无关 | 高 |
-| RAM 修改版 | 真机 smaps + hidumper，功能路径执行后采集 | 高 |
+| RAM 修改版 | 真机 smaps + hidumper，功能路径执行后采集 | 方法样例/部分归因（缺少完整 raw smaps `.so` outer-join 明细） |
 | RAM 基线 | 真机 smaps + hidumper，恢复 .bak .so 后 idle 采集 | 高 |
 | RAM 理论 | git diff 分析新增容器 + 结构体内存估算 | 中高（人工估算单条目大小） |
 
 **已知局限**：
 1. 文件级 ROM 对比受编译器差异影响（每日构建 vs 本地编译），段级分析更可靠
-2. 基线与修改版采集条件不同（idle vs post-exercise），进程级 PSS 不直接可比；libmmi .so PSS 更可靠
+2. 基线与修改版采集条件不同（idle vs post-exercise），进程级 PSS 不直接可比；当前 RAM 修改版结论只能作为方法样例和部分归因，不能作为高可信特性净 RAM 成本
 3. 理论分析中的单条目大小为估算值，实际值取决于编译器对齐和 STL 实现
