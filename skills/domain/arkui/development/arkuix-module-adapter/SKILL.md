@@ -5,6 +5,14 @@ description: >
   Do NOT use for: adapting existing C++ native modules to Android/iOS (use arkuix-cpp-adapter instead) or creating new Native plugins from scratch (use arkuix-native-dev instead).
   触发关键词："模块适配"、"跨平台适配"、"架构模式分析"、"DTS分析"、
   "module adaptation"、"architecture analysis"、"OHOS cross-platform".
+metadata:
+  author: openharmony
+  scope: domain
+  stage: development
+  domain: arkui
+  capability: module-adapter
+  version: 0.1.0
+  status: trial
 ---
 
 # ArkUIX Module Adapter Skill
