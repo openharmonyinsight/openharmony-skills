@@ -1,0 +1,10 @@
+diff --git a/src/metrics_logger.cpp b/src/metrics_logger.cpp
+index 3a3a333..4b4b444 100644
+--- a/src/metrics_logger.cpp
++++ b/src/metrics_logger.cpp
+@@ -5,5 +5,5 @@ void MetricsLogger::LogCacheHit(const std::string &key) const
+ {
+-    HILOG_DEBUG(LOG_CORE, "cache hit: %{public}s", key.c_str());
++    HILOG_DEBUG(LOG_CORE, "cache-hit key=%{public}s", key.c_str());
+     RecordCounter("cache.hit");
+ }

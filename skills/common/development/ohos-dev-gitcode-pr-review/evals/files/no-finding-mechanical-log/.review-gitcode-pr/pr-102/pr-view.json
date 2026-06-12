@@ -1,0 +1,7 @@
+{
+  "number": 102,
+  "repo": "openharmony/demo_service",
+  "title": "Clarify cache hit log",
+  "author": "contributor",
+  "description": "Make a debug log easier to search."
+}

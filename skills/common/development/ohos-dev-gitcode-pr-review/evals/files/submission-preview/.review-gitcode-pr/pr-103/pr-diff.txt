@@ -1,0 +1,12 @@
+diff --git a/src/session_manager.cpp b/src/session_manager.cpp
+index 1f1f111..2f2f222 100644
+--- a/src/session_manager.cpp
++++ b/src/session_manager.cpp
+@@ -13,7 +13,10 @@ bool SessionManager::IsSessionExpired(int64_t expireAtMs) const
+ {
+-    return expireAtMs <= 0 || clock_->NowMs() >= expireAtMs;
++    if (expireAtMs <= 0) {
++        return false;
++    }
++    return clock_->NowMs() >= expireAtMs;
+ }
