@@ -1,0 +1,96 @@
+{
+  "skill_name": "ohos-dev-arkts-sta-playground",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "帮我验证以下 ArkTS-Sta 代码能否编译通过：\n\n```typescript\nlet x: number = 42;\nconsole.log(x);\n```",
+      "expected_output": "使用 playground 脚本或 API 发送代码到远端编译，返回编译成功的结果，确认代码无语法和类型错误。",
+      "files": [],
+      "expectations": [
+        "调用远端编译 API（POST https://arkts-play.cn.bz-openlab.ru:10443/compile）发送代码片段",
+        "返回结果中 success 为 true，has_error 为 false",
+        "不会将 playground 编译通过解读为 HAP 或 OpenHarmony 工程构建成功的证明"
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "我有一段 ArkTS 代码，预期会因为类型不匹配而编译失败，请帮我确认编译报错是否命中了类型检查规则：\n\n```typescript\nlet x: number = \"hello\";\nconsole.log(x);\n```",
+      "expected_output": "使用 playground 发送代码，确认编译失败，并验证 output 中包含与类型不匹配相关的诊断信息，而非任意编译错误。",
+      "files": [],
+      "expectations": [
+        "返回结果中 has_error 为 true 或 success 为 false",
+        "解析 output 字段，确认诊断信息涉及类型不匹配（type mismatch / cannot assign / incompatible type 等关键词），而不是仅报告'有编译错误'",
+        "不会将'任意编译错误'视为有效的负向测试通过"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "帮我用 ArkTS-Sta Playground 批量检查以下两个代码片段的编译结果：\n\n片段1：\n```typescript\nclass Animal {\n  name: string = \"\";\n  speak(): void {\n    console.log(this.name);\n  }\n}\nlet a = new Animal();\na.speak();\n```\n\n片段2：\n```typescript\nfunction add(a: number, b: number): number {\n  return a + b;\n}\nconsole.log(add(1, 2));\n```",
+      "expected_output": "依次对两个片段调用 playground API，分别报告各自的编译结果，不混为一谈。",
+      "files": [],
+      "expectations": [
+        "对两个代码片段分别独立调用远端编译 API",
+        "分别报告每个片段的编译成功/失败状态和输出",
+        "不会将两个片段合并为一次请求发送"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "我有一个完整的 OpenHarmony HAP 项目，想用 ArkTS-Sta Playground 验证它能否编译通过，请帮我操作。",
+      "expected_output": "拒绝使用 playground 验证完整 HAP 项目，解释 playground 仅适用于自包含的 ArkTS-Sta 代码片段，无法处理项目声明、装饰器、构建标志、生成文件等依赖。",
+      "files": [],
+      "expectations": [
+        "明确拒绝使用 playground 来验证 HAP 项目",
+        "解释 playground 仅适用于自包含的 ArkTS-Sta 代码片段，不能证明 HAP 或 OpenHarmony 模块能编译",
+        "建议使用项目构建工作流来验证完整项目",
+        "不会尝试将整个 HAP 项目代码发送到 playground"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "请帮我验证 ArkTS-Sta 中 enum 的编译行为：\n\n```typescript\nenum Color {\n  Red,\n  Green,\n  Blue\n}\nlet c: Color = Color.Green;\nconsole.log(c);\n```",
+      "expected_output": "使用 playground 发送代码，确认 enum 语法在 ArkTS-Sta 中编译通过，并如实报告编译输出。",
+      "files": [],
+      "expectations": [
+        "调用远端编译 API 发送代码片段",
+        "正确报告编译结果（成功或失败及对应输出）",
+        "如果编译成功，不会额外声称 enum 在 ArkTS-Sta 中的语义与 TypeScript 完全一致，除非输出中有明确证据"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "我想用浏览器打开 https://arkts-play.cn.bz-openlab.ru:10443/compile 看看 API 是否可用，但页面显示 405 Method Not Allowed，是不是接口挂了？",
+      "expected_output": "解释 405 Method Not Allowed 是正常行为，因为 API 仅支持 POST 请求，浏览器发送的是 GET 请求。建议使用 POST 请求或 bundled 脚本验证接口可用性。",
+      "files": [],
+      "expectations": [
+        "明确指出 405 是因为浏览器发送了 GET 请求，而 API 仅接受 POST 请求",
+        "不会将 405 误解为 API 不可用",
+        "建议使用脚本（run_playground.py）或 POST 请求来验证接口可用性"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "我有一段涉及公司内部核心算法的 ArkTS 代码，想用 playground 快速验证语法，可以吗？",
+      "expected_output": "拒绝发送敏感代码到远端 playground，提醒用户代码会发送到远程服务器，存在安全风险，建议用本地编译环境或脱敏后仅保留语法相关部分。",
+      "files": [],
+      "expectations": [
+        "明确拒绝将敏感/专有代码发送到远端 playground",
+        "提醒代码会发送到远程服务器，存在安全风险",
+        "建议使用本地编译环境或将代码脱敏至仅保留语法相关部分后再验证",
+        "不会直接尝试发送代码"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "帮我验证 ArkTS-Sta 中 as 类型断言的编译行为：\n\n```typescript\nlet val: unknown = \"hello\";\nlet len: number = (val as string).length;\nconsole.log(len);\n```\n\n以及这段预期失败的代码：\n\n```typescript\nlet val: number = 42;\nlet str: string = val as string;\nconsole.log(str);\n```",
+      "expected_output": "分别发送两个片段到 playground，第一个预期编译通过，第二个预期因不安全的类型断言而编译失败，并对比两次结果。",
+      "files": [],
+      "expectations": [
+        "对两个代码片段分别独立调用远端编译 API",
+        "第一个片段（unknown as string）预期编译成功或报告具体诊断",
+        "第二个片段（number as string）预期编译失败，且诊断与类型断言不安全相关",
+        "不会将两个片段合并为一次请求"
+      ]
+    }
+  ]
+}
