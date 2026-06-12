@@ -9,6 +9,7 @@ description: >
   "Combined post-process", "post-processing effect", "fullscreen shader effect",
   "LumeRender post-process", "Combined 后处理", "后处理效果".
 metadata:
+  author: openharmony
   display_name: OpenHarmony Graphics3D Combined Post-Process Implementation
   scope: domain
   stage: development

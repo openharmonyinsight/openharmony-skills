@@ -1,6 +1,6 @@
 ---
 name: ohos-test-graphics-3d-static-api-unit-test
-description: Generate unit tests for ETS/ArkTS static API wrapper classes (MaterialETS, CameraETS, SceneETS) in OpenHarmony graphic_3d module using HWTEST_F + EtsTest fixture. Do NOT use for Lume engine core testing or integration/performance tests (different frameworks). Trigger keywords: ETS unit test, HWTEST_F, EtsTest fixture, graphic_3d test, SceneETS test, MaterialETS test, CameraETS test, @tc.name annotation, Destroy() cleanup.
+description: "Generate unit tests for ETS/ArkTS static API wrapper classes (MaterialETS, CameraETS, SceneETS) in OpenHarmony graphic_3d module using HWTEST_F + EtsTest fixture. Do NOT use for Lume engine core testing or integration/performance tests (different frameworks). Trigger keywords: ETS unit test, HWTEST_F, EtsTest fixture, graphic_3d test, SceneETS test, MaterialETS test, CameraETS test, @tc.name annotation, Destroy() cleanup."
 metadata:
   author: openharmony
   scope: domain
