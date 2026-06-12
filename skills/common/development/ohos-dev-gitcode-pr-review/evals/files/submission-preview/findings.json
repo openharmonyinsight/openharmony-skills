@@ -1,0 +1,15 @@
+{
+  "approve": false,
+  "summary": "本次检视发现 1 个需要处理的问题，暂不建议批准。",
+  "findings": [
+    {
+      "id": "F001",
+      "severity": "medium",
+      "status": "ready",
+      "comment_target": "line",
+      "path": "src/session_manager.cpp",
+      "line": 18,
+      "body": "**中** `src/session_manager.cpp:18`\n\n`expireAtMs <= 0` 过去表示缺失或无效的过期时间，需要按已过期处理以触发重新认证。这里改成 `return false` 后，缺失过期时间的会话会被当成仍然有效。\n\n建议：\n- 保留 `expireAtMs <= 0` 时返回已过期的语义\n- 如果产品语义确实变化，同步更新调用方和覆盖缺失过期时间的测试"
+    }
+  ]
+}
