@@ -1,0 +1,175 @@
+{
+  "skill_name": "ohos-dev-chinese-docs-review",
+  "description": "Test cases for OpenHarmony API documentation quality checking skill",
+  "evals": [
+    {
+      "id": 1,
+      "name": "basic-doc-consistency-check",
+      "prompt": "Check the API documentation consistency for @systemapi tags. I have the interface definition at interface/example.d.ts and the documentation at docs/example.md. Use the script to verify all automatable rules.",
+      "expected_output": "A Markdown report listing issues found by the script and manual review. The script should check @systemapi placement, @syscap/@permission fields, error code coverage, and naming conventions. Manual review should cover semantic quality and implementation alignment.",
+      "files": [
+        "evals/files/interface/example.d.ts",
+        "evals/files/docs/example.md"
+      ],
+      "assertions": [
+        "The script check_api_doc_consistency.py is executed with correct parameters",
+        "Report contains structured findings with Location, Issue, Suggestion fields",
+        "Report does NOT list content that already complies (only issues)",
+        "If @systemapi is present, its placement in system docs is verified",
+        "Error code coverage is checked at both section and document level"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "path-auto-discovery",
+      "prompt": "I'm in a submodule directory. Review the API docs quality - the docs should be under /docs and interfaces under /interface at the workspace root. Don't ask me for paths, figure it out yourself.",
+      "expected_output": "Agent walks upward from current directory to find workspace root containing docs/ and interface/ directories, then runs doc check without asking for path clarification.",
+      "files": [
+        "evals/files/workspace_root/docs/zh-cn/api/example.md",
+        "evals/files/workspace_root/interface/example.d.ts"
+      ],
+      "assertions": [
+        "Agent locates workspace root without asking user for paths",
+        "Agent resolves /docs from workspace root, not from current submodule directory",
+        "Script is executed with auto-discovered paths",
+        "Report states the actual paths used for checking"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "error-code-document-check",
+      "prompt": "Review the error code documentation at docs/error-codes.md. Verify that all error codes have proper causes, required blocks, and coverage against the d.ts file.",
+      "expected_output": "Error code document checked against template for required blocks, section-level coverage verified, and any missing causes or improperly documented error codes identified.",
+      "files": [
+        "evals/files/docs/error-codes.md",
+        "evals/files/interface/example.d.ts"
+      ],
+      "assertions": [
+        "Error code template (references/errorcodes-template.md or in-repo version) is loaded",
+        "Required blocks presence is verified for each error code",
+        "Section-level error code coverage is checked",
+        "Document-level error code coverage is verified",
+        "Missing or improperly documented error codes are identified with line numbers"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "template-compliance-check",
+      "prompt": "Verify that this ArkTS component documentation follows the ts-template structure. The doc is at docs/component.md. Check if it genuinely follows the template in spirit, not just surface markers.",
+      "expected_output": "Document compared against ts-template with focus on structural compliance (required sections, field presence) and semantic compliance (whether explanations are adequate, not just whether section headers exist).",
+      "files": [
+        "evals/files/docs/component.md"
+      ],
+      "assertions": [
+        "Template selection uses priority: in-repo > external link > bundled fallback",
+        "ArkTS component template is chosen (ts-template, not js-template)",
+        "Report distinguishes between structural compliance and semantic quality",
+        "Missing required sections or fields are identified",
+        "Superficial compliance (markers without substance) is flagged"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "manual-review-focus",
+      "prompt": "Run the doc check script first, then focus your manual review on parts that cannot be reliably automated. Don't waste time re-doing what the script already covered.",
+      "expected_output": "Script executed first, its results used as baseline. Manual review focuses on: prose clarity, example quality, whether scenarios/constraints are well explained, whether documented causes match real triggering scenarios, and whether docs match implementation behavior.",
+      "files": [
+        "evals/files/interface/example.d.ts",
+        "evals/files/docs/example.md"
+      ],
+      "assertions": [
+        "Script is executed before manual review begins",
+        "Manual review does NOT duplicate script-covered checks (field presence, naming, etc.)",
+        "Manual review focuses on prose clarity and ambiguity",
+        "Manual review checks if examples are genuinely useful and runnable",
+        "Manual review verifies scenarios, constraints, and failure modes are explained",
+        "Manual review checks documented causes against real triggering scenarios"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "repository-root-path-interpretation",
+      "prompt": "The documentation is at /docs/zh-cn/api/example.md. Check it against the interface at /interface/example.d.ts. These are repository-root paths, not relative to my current directory.",
+      "expected_output": "Agent interprets paths starting with /docs/ or /interface/ as repository-root paths first, not as relative paths from current module directory.",
+      "files": [
+        "evals/files/workspace_root/docs/zh-cn/api/example.md",
+        "evals/files/workspace_root/interface/example.d.ts"
+      ],
+      "assertions": [
+        "Paths starting with /docs/ are interpreted as repository-root paths",
+        "Paths starting with /interface/ are interpreted as repository-root paths",
+        "Agent does NOT incorrectly look for docs under current module directory",
+        "Report confirms the actual resolved paths used"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "missing-files-handling",
+      "prompt": "Review the docs at /docs/some-api.md. I don't think there's a d.ts file for this one, but check what you can find.",
+      "expected_output": "Agent attempts to locate interface definition from workspace /interface. If not found, proceeds with documentation-only check (template compliance, prose quality) and explicitly notes that implementation alignment could not be verified.",
+      "files": [
+        "evals/files/docs/some-api.md"
+      ],
+      "assertions": [
+        "Agent searches for interface definition at workspace /interface",
+        "If implementation not found, Agent does NOT halt but continues with doc-only checks",
+        "Report explicitly states unchecked scope (implementation alignment not verified)",
+        "Manual review still performed on documentation quality"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "output-format-compliance",
+      "prompt": "Generate a doc quality report for the API at interface/utils.d.ts and docs/utils.md. Make sure the report follows the output requirements.",
+      "expected_output": "Markdown report with Location, Issue, Suggestion, Proposed Fix fields. Only issues are listed, not compliant content. Each issue has line numbers, reasoning, and concrete wording when possible.",
+      "files": [
+        "evals/files/interface/utils.d.ts",
+        "evals/files/docs/utils.md"
+      ],
+      "assertions": [
+        "Report is in Markdown format",
+        "Only issues are listed, no compliant content",
+        "Each issue includes: Location, Issue, Suggestion, Proposed Fix",
+        "Line numbers or location references are provided",
+        "Concrete wording suggestions are included when possible",
+        "Unchecked scope or missing inputs are separately noted"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "edge-case-partial-inputs",
+      "prompt": "I only have the public API doc ready at /docs/zh-cn/api/partial.md. The system doc and error doc aren't written yet. Check what you can with what's available.",
+      "expected_output": "Agent uses the available public doc to perform checks it can (template compliance, prose quality, error code coverage against available d.ts). Explicitly states what scope was not checked due to missing inputs.",
+      "files": [
+        "evals/files/docs/zh-cn/api/partial.md",
+        "evals/files/interface/partial.d.ts"
+      ],
+      "assertions": [
+        "Agent proceeds with available inputs without asking for additional files",
+        "Checks that can be performed with available inputs are completed",
+        "Report explicitly lists unchecked scope (system doc, error doc not available)",
+        "Template compliance is still verified",
+        "Error code coverage is checked against available d.ts"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "implementation-alignment-check",
+      "prompt": "Check if the documentation at /docs/feature.md matches the actual implementation. I've noticed some product changes that might not have synced to the docs.",
+      "expected_output": "Documentation is cross-checked against implementation code to identify: missing feature scenarios, incomplete sub-scenarios, product/interface changes not synchronized, missing environment requirements, and preconditions or failure scenarios not documented.",
+      "files": [
+        "evals/files/docs/feature.md",
+        "evals/files/interface/feature.d.ts",
+        "evals/files/src/feature_impl.cpp"
+      ],
+      "assertions": [
+        "Agent reads implementation code to verify documentation claims",
+        "Missing feature scenarios or sub-scenarios are identified",
+        "Product/interface changes not synchronized into docs are flagged",
+        "Missing environment requirements, specification limits, or preconditions are noted",
+        "Failure scenarios or error modes not documented are identified",
+        "If implementation cannot be located, Agent pauses and asks for repository path"
+      ]
+    }
+  ]
+}
