@@ -49,7 +49,7 @@ whenNotToUse:
 inputs:
   required:
     - GitCode 仓库标识或当前 GitCode 仓库工作区
-    - oh-gc CLI 0.7.5
+    - oh-gc CLI 版本大于 0.7.4
     - 已登录的 GitCode 账号或可用认证信息
   optional:
     - Issue 或 PR 编号
@@ -63,7 +63,7 @@ outputs:
 
 quickStart:
   steps:
-    - 确认本地已安装 oh-gc CLI 0.7.5 并完成 GitCode 登录。
+    - 确认本地已安装版本大于 0.7.4 的 oh-gc CLI 并完成 GitCode 登录。
     - 在目标仓库目录中运行，或提供明确的 owner/repo 仓库标识。
     - 说明要处理的 Issue、PR、标签、评审人、测试人或仓库操作。
   examplePrompt: |
