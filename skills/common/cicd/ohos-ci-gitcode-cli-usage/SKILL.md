@@ -21,9 +21,9 @@ metadata:
 
 Use this skill to operate GitCode from the terminal with `oh-gc`.
 
-`oh-gc` version covered by these references: `0.7.5`.
+`oh-gc` version covered by these references: greater than `0.7.4`.
 
-Package: `npm install -g @oh-gc/cli@0.7.5` with Node.js 18+.
+Package: `npm install -g @oh-gc/cli@latest` with Node.js 18+.
 
 ## Mandatory First Step
 
@@ -33,10 +33,10 @@ Run this before any other `oh-gc` command:
 oh-gc --version
 ```
 
-If `oh-gc` is missing or the version is not `0.7.5`, install the exact version first:
+If `oh-gc` is missing or the version is not greater than `0.7.4`, install or update it first:
 
 ```bash
-npm install -g @oh-gc/cli@0.7.5
+npm install -g @oh-gc/cli@latest
 ```
 
 Do not run `oh-gc auth`, `oh-gc issue`, `oh-gc pr`, or any mutating command until the version is confirmed.
@@ -69,7 +69,7 @@ Load references only when needed:
 
 For most requests:
 
-1. Run `oh-gc --version` and enforce `0.7.5`.
+1. Run `oh-gc --version` and confirm it is greater than `0.7.4`.
 2. Run `oh-gc auth status`.
 3. Determine repository context, using `--repo owner/repo` when not inside the target clone.
 4. Read the minimum reference file from the table above.
@@ -106,7 +106,7 @@ Do not expose tokens. Prefer `oh-gc auth login` or environment variables over em
 
 NEVER skip `oh-gc --version`; command syntax and behavior depend on the CLI version.
 
-NEVER run `oh-gc auth`, `oh-gc issue`, `oh-gc pr`, or any mutating command before confirming version `0.7.5`.
+NEVER run `oh-gc auth`, `oh-gc issue`, `oh-gc pr`, or any mutating command before confirming the version is greater than `0.7.4`.
 
 NEVER print, persist, commit, or echo a remote URL containing a token such as `https://user:token@gitcode.com/...`. Use token-free remote URLs and `oh-gc auth login` or config-based authentication instead.
 
