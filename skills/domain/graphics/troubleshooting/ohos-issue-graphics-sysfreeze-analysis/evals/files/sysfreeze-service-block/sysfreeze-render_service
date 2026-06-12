@@ -64,3 +64,35 @@ Tid:5678, Name:RSUniRenderThre
 #01 pc 001a5f37 /system/lib64/librender_service.z.so(OHOS::Rosen::RSDrawFrame::PostAndWait)
 #02 pc 000c7830 /system/lib64/chipset-sdk-sp/libc++.so(std::__h::recursive_mutex::lock)
 state:S
+
+Tid:8900, Name:OS_IPC_7_8900
+#00 pc 00191e0c /system/lib64/ld-musl-aarch64.so.1(ioctl)
+#01 pc 0000f030 /system/lib64/platformsdk/libipc_common.z.so(OHOS::BinderConnector::WriteBinder)
+#02 pc 00071c54 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::TransactWithDriver)
+#03 pc 00070654 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::WaitForCompletion)
+#04 pc 001c2b10 /system/lib64/librender_service.z.so(OHOS::Rosen::RSRenderService::NotifySurfaceNodeStatus)
+state:S
+utime:45
+stime:15
+
+Tid:3450, Name:RSGpuThread
+#00 pc 001d55a0 /system/lib64/ld-musl-aarch64.so.1(epoll_wait)
+#01 pc 001b2340 /system/lib64/librender_service.z.so(OHOS::Rosen::RSGpuThread::RunLoop)
+state:S
+utime:80
+stime:320
+
+Tid:7200, Name:AppSpawn
+#00 pc 001d4338 /system/lib64/ld-musl-aarch64.so.1(__timedwait_cp)
+#01 pc 001da37c /system/lib64/ld-musl-aarch64.so.1(futex_wait)
+state:S
+utime:5
+stime:2
+
+Tid:1100, Name:HandlerThread
+#00 pc 001a7830 /system/lib64/librender_service.z.so(OHOS::Rosen::RSRenderNode::ProcessPendingCallbacks)
+#01 pc 001b56f8 /system/lib64/librender_service.z.so(OHOS::Rosen::RSRenderNode::OnTreeUpdate)
+#02 pc 000c76ac /system/lib64/chipset-sdk-sp/libc++.so(std::__h::mutex::lock)
+state:S
+utime:200
+stime:50

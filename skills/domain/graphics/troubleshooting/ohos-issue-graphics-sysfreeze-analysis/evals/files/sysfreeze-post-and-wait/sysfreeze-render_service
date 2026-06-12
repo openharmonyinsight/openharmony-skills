@@ -42,6 +42,31 @@ Tid:6000, Name:RSUniRenderThre
 #03 pc 001b345c /system/lib64/librender_service.z.so(OHOS::Rosen::RSUniRenderThre::Render)
 state:S
 
+Tid:3200, Name:OS_IPC_1_3200
+#00 pc 00191e0c /system/lib64/ld-musl-aarch64.so.1(ioctl)
+#01 pc 0000f030 /system/lib64/platformsdk/libipc_common.z.so(OHOS::BinderConnector::WriteBinder)
+#02 pc 00071c54 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::TransactWithDriver)
+#03 pc 00070654 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::WaitForCompletion)
+#04 pc 001c2b10 /system/lib64/librender_service.z.so(OHOS::Rosen::RSRenderService::NotifySurfaceNodeStatus)
+state:S
+utime:40
+stime:15
+
+Tid:7500, Name:RSGpuThread
+#00 pc 001d55a0 /system/lib64/ld-musl-aarch64.so.1(epoll_wait)
+#01 pc 001b2340 /system/lib64/librender_service.z.so(OHOS::Rosen::RSGpuThread::RunLoop)
+state:S
+utime:120
+stime:450
+
+Tid:5800, Name:RSMainLoopTimer
+#00 pc 001d4338 /system/lib64/ld-musl-aarch64.so.1(__timedwait_cp)
+#01 pc 001da3f0 /system/lib64/ld-musl-aarch64.so.1(__pthread_cond_timedwait)
+#02 pc 001b56f8 /system/lib64/librender_service.z.so(OHOS::Rosen::RSMainLoop::HandleTimerEvent)
+state:S
+utime:10
+stime:3
+
 DOMAIN:SYSTEM_RESOURCE
 ReclaimAvailBuffer:800000
 ThermalLevel info:0
