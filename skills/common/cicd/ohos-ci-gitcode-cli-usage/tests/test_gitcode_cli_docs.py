@@ -4,16 +4,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EXTENDED_COMMANDS = (
-    ROOT
-    / "skills"
-    / "common"
-    / "cicd"
-    / "ohos-ci-gitcode-cli-usage"
-    / "references"
-    / "extended-commands.md"
-)
-SKILL = ROOT / "skills" / "common" / "cicd" / "ohos-ci-gitcode-cli-usage" / "SKILL.md"
+EXTENDED_COMMANDS = ROOT / "references" / "extended-commands.md"
+SKILL = ROOT / "SKILL.md"
 
 
 def user_section() -> str:
