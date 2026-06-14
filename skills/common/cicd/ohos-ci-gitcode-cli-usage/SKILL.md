@@ -74,7 +74,8 @@ For most requests:
 3. Determine repository context, using `--repo owner/repo` when not inside the target clone.
 4. Read the minimum reference file from the table above.
 5. Do not load low-frequency references for routine Issue/PR tasks.
-6. Prefer `--json` when output will be parsed or summarized.
+6. When a needed command or flag is unfamiliar, run the command with `--help` first and prefer the live CLI help over memory.
+7. Prefer `--json` when output will be parsed or summarized.
 
 ## Common Decisions
 

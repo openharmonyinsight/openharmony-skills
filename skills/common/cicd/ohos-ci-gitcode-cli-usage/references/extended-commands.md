@@ -81,9 +81,28 @@ oh-gc user starred
 oh-gc user starred alice
 oh-gc user subscriptions
 oh-gc user subscriptions alice
+# Basic issue queries
 oh-gc user issues
 oh-gc user issues --state closed --filter created
+oh-gc user issues --state open --filter assigned
+
+# Pagination: default per-page=20, max 100
+oh-gc user issues --per-page 100
+oh-gc user issues --per-page 50 --page 2
+
+# Time filters
+# --since: 按更新时间过滤（ISO 8601）
 oh-gc user issues --since "2024-01-01T00:00:00Z"
+
+# --created-at: 按创建时间范围过滤，格式为 START..END（两端必填）
+oh-gc user issues --created-at "2024-01-01..2025-12-31"
+
+# --finished-at: 按完成时间范围过滤
+oh-gc user issues --state closed --finished-at "2025-01-01..2025-12-31"
+
+# Other filters
+oh-gc user issues --labels "bug,P0"
+oh-gc user issues --sort updated_at --direction asc
 oh-gc user prs
 oh-gc user prs --state merged --scope assigned_to_me
 oh-gc user prs --source-branch feature --target-branch main
