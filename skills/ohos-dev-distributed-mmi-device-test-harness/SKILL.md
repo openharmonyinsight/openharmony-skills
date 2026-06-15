@@ -294,6 +294,10 @@ echo "TEST_DONE" >> "$DUMP"
 ### 拉取 dump 到本地
 
 ```bash
+# 直连设备
+$HDC file recv /data/local/tmp/dump.txt ./dump.txt
+
+# Windows 跳板机
 $WIN_SSH "$HDC file recv /data/local/tmp/dump.txt $WIN_HOME\\Desktop\\dump.txt"
 $WIN_SCP "$WIN_SCP_DST/../Desktop/dump.txt" /tmp/dump.txt
 ```
@@ -304,30 +308,51 @@ uinput `UI_DEV_CREATE` 后设备需要被 libinput 扫描到才能通过 InputMa
 
 ```cpp
 static int FindDevice(const std::string &targetName) {
-    std::mutex mtx;
-    std::condition_variable cv;
-    int foundId = -1;
-    for (int attempt = 0; attempt < 30 && foundId < 0; ++attempt) {
+    struct FindState {
+        std::mutex mtx;
+        std::condition_variable cv;
+        int foundId = -1;
+        int pending = 0;
         bool done = false;
-        InputManager::GetInstance()->GetDeviceIds([&](std::vector<int32_t> &ids) {
+    };
+    for (int attempt = 0; attempt < 30; ++attempt) {
+        auto state = std::make_shared<FindState>();
+        InputManager::GetInstance()->GetDeviceIds([state, targetName](std::vector<int32_t> &ids) {
+            {
+                std::lock_guard<std::mutex> lock(state->mtx);
+                state->pending = static_cast<int>(ids.size());
+                if (state->pending == 0) {
+                    state->done = true;
+                    state->cv.notify_one();
+                    return;
+                }
+            }
             for (auto id : ids) {
                 InputManager::GetInstance()->GetDevice(id,
-                    [&](std::shared_ptr<InputDevice> dev) {
-                        if (dev && dev->GetName() == targetName) {
-                            foundId = id;
+                    [state, id, targetName](std::shared_ptr<InputDevice> dev) {
+                        bool notify = false;
+                        {
+                            std::lock_guard<std::mutex> lock(state->mtx);
+                            if (dev && dev->GetName() == targetName && state->foundId < 0) {
+                                state->foundId = id;
+                            }
+                            if (--state->pending == 0) {
+                                state->done = true;
+                                notify = true;
+                            }
+                        }
+                        if (notify) {
+                            state->cv.notify_one();
                         }
                     });
             }
-            std::lock_guard<std::mutex> lock(mtx);
-            done = true;
-            cv.notify_one();
         });
-        std::unique_lock<std::mutex> lock(mtx);
-        cv.wait_for(lock, std::chrono::milliseconds(500), [&] { return done; });
-        if (foundId >= 0) break;
+        std::unique_lock<std::mutex> lock(state->mtx);
+        state->cv.wait_for(lock, std::chrono::milliseconds(500), [&] { return state->done; });
+        if (state->foundId >= 0) return state->foundId;
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
-    return foundId;
+    return -1;
 }
 ```
 
