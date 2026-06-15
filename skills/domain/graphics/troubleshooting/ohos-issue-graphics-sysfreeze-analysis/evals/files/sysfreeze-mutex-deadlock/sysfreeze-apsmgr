@@ -60,6 +60,40 @@ Tid:61947, Name:OS_IPC_33_61947
 #08 pc 000639c0 /system/lib64/libapsmgr.z.so(OHOS::Rosen::SwingFrameRate::RegisterSystemCallback)
 #09 pc 0005fbc4 /system/lib64/libapsmgr.z.so(OHOS::Rosen::ApsManagerStub::OnRemoteRequest)
 
+Tid:7800, Name:OS_IPC_1_7800
+#00 pc 00191e0c /system/lib64/ld-musl-aarch64.so.1(ioctl)
+#01 pc 0000f030 /system/lib64/platformsdk/libipc_common.z.so(OHOS::BinderConnector::WriteBinder)
+#02 pc 00071c54 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::TransactWithDriver)
+#03 pc 00070654 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::WaitForCompletion)
+#04 pc 0004b210 /system/lib64/libapsmgr.z.so(OHOS::Rosen::ApsManagerStub::OnRemoteRequest)
+state:S
+utime:20
+stime:8
+
+Tid:3400, Name:ApsTimer
+#00 pc 001d4338 /system/lib64/ld-musl-aarch64.so.1(__timedwait_cp)
+#01 pc 001da3f0 /system/lib64/ld-musl-aarch64.so.1(__pthread_cond_timedwait)
+#02 pc 0005f370 /system/lib64/libapsmgr.z.so(OHOS::Rosen::FrameRateControl::ProcessTimerEvent)
+state:S
+utime:5
+stime:2
+
+Tid:9200, Name:ApsProperty
+#00 pc 001d4338 /system/lib64/ld-musl-aarch64.so.1(__timedwait_cp)
+#01 pc 001da37c /system/lib64/ld-musl-aarch64.so.1(futex_wait)
+state:S
+utime:3
+stime:1
+
+Tid:4400, Name:OS_IPC_5_4400
+#00 pc 001d4338 /system/lib64/ld-musl-aarch64.so.1(__timedwait_cp)
+#01 pc 001da37c /system/lib64/ld-musl-aarch64.so.1(__pthread_mutex_timedlock_inner)
+#02 pc 000c76ac /system/lib64/chipset-sdk-sp/libc++.so(std::__h::mutex::lock)
+#03 pc 00068a10 /system/lib64/libapsmgr.z.so(OHOS::Rosen::ApsManagerService::GetFrameRateInfo)
+state:S
+utime:15
+stime:5
+
 DOMAIN:SYSTEM_RESOURCE
 ReclaimAvailBuffer:512000
 ThermalLevel info:1

@@ -37,6 +37,39 @@ state:S
 utime:1200
 stime:800
 
+OTHER_THREADS:
+Tid:4200, Name:RSUniRenderThre
+#00 pc 001a3c5b /system/lib64/librender_service.z.so(OHOS::Rosen::RSDrawFrame::RenderFrame)
+#01 pc 001a5f37 /system/lib64/librender_service.z.so(OHOS::Rosen::RSDrawFrame::PostAndWait)
+#02 pc 000c7830 /system/lib64/chipset-sdk-sp/libc++.so(std::__h::recursive_mutex::lock)
+state:S
+utime:2800
+stime:1200
+
+Tid:6800, Name:OS_IPC_4_6800
+#00 pc 00191e0c /system/lib64/ld-musl-aarch64.so.1(ioctl)
+#01 pc 0000f030 /system/lib64/platformsdk/libipc_common.z.so(OHOS::BinderConnector::WriteBinder)
+#02 pc 00071c54 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::TransactWithDriver)
+#03 pc 00070654 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::WaitForCompletion)
+#04 pc 001c2b10 /system/lib64/librender_service.z.so(OHOS::Rosen::RSRenderService::CreateConnection)
+state:S
+utime:35
+stime:12
+
+Tid:3500, Name:RSGpuThread
+#00 pc 001d55a0 /system/lib64/ld-musl-aarch64.so.1(epoll_wait)
+#01 pc 001b2340 /system/lib64/librender_service.z.so(OHOS::Rosen::RSGpuThread::RunLoop)
+state:S
+utime:150
+stime:500
+
+Tid:7900, Name:RSProperty
+#00 pc 001a7830 /system/lib64/librender_service.z.so(OHOS::Rosen::RSRenderService::ProcessPropertyCommand)
+#01 pc 001b56f8 /system/lib64/librender_service.z.so(OHOS::Rosen::RSPropertyThread::HandleMessage)
+state:S
+utime:25
+stime:8
+
 DOMAIN:BINDER_CATCHER
 Caller:3000:3000 -> Peer:5000:5100
 WaitTime:15s

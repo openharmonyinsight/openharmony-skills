@@ -37,6 +37,46 @@ state:S
 utime:1000
 stime:500
 
+OTHER_THREADS:
+Tid:8200, Name:OS_IPC_3_8200
+#00 pc 00191e0c /system/lib64/ld-musl-aarch64.so.1(ioctl)
+#01 pc 0000f030 /system/lib64/platformsdk/libipc_common.z.so(OHOS::BinderConnector::WriteBinder)
+#02 pc 00071c54 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::TransactWithDriver)
+#03 pc 00070654 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::WaitForCompletion)
+#04 pc 001c45a0 /system/lib64/librender_service.z.so(OHOS::Rosen::RSRenderService::GetDisplaySnapshot)
+state:S
+utime:25
+stime:10
+
+Tid:6500, Name:RSUniRenderThre
+#00 pc 001d55a0 /system/lib64/ld-musl-aarch64.so.1(epoll_wait)
+#01 pc 001a3c5b /system/lib64/librender_service.z.so(OHOS::Rosen::RSUniRenderThread::RunLoop)
+state:S
+utime:3500
+stime:1800
+
+Tid:9800, Name:RSWatchdog
+#00 pc 001d4338 /system/lib64/ld-musl-aarch64.so.1(__timedwait_cp)
+#01 pc 001da3f0 /system/lib64/ld-musl-aarch64.so.1(__pthread_cond_timedwait)
+#02 pc 001c34f0 /system/lib64/librender_service.z.so(OHOS::Rosen::RSWatchdog::CheckThreadBlock)
+state:S
+utime:5
+stime:2
+
+Tid:4300, Name:HandlerThread
+#00 pc 001d4338 /system/lib64/ld-musl-aarch64.so.1(__timedwait_cp)
+#01 pc 001da37c /system/lib64/ld-musl-aarch64.so.1(futex_wait)
+state:S
+utime:10
+stime:3
+
+Tid:5100, Name:RSGpuThread
+#00 pc 001d55a0 /system/lib64/ld-musl-aarch64.so.1(epoll_wait)
+#01 pc 001b2340 /system/lib64/librender_service.z.so(OHOS::Rosen::RSGpuThread::RunLoop)
+state:S
+utime:200
+stime:500
+
 TASK_QUEUE_INFO:
 VIP Queue:
   taskName:CommitTransaction, triggerTime:2026-05-28 11:29:55.000, priority:VIP, submitTid:7500

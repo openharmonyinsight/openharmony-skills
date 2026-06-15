@@ -32,7 +32,7 @@ utime:50
 stime:20
 
 OTHER_THREADS:
-Tid:9200, Name:main
+Tid:9200, Name:render_service
 #00 pc 001d4338 /system/lib64/ld-musl-aarch64.so.1(__timedwait_cp)
 #01 pc 001da3f0 /system/lib64/ld-musl-aarch64.so.1(__pthread_cond_timedwait)
 #02 pc 001a5c4c /system/lib64/librender_service.z.so(OHOS::Rosen::RSDrawFrame::PostAndWait)
@@ -40,6 +40,38 @@ Tid:9200, Name:main
 state:S
 utime:500
 stime:200
+
+Tid:8100, Name:OS_IPC_2_8100
+#00 pc 00191e0c /system/lib64/ld-musl-aarch64.so.1(ioctl)
+#01 pc 0000f030 /system/lib64/platformsdk/libipc_common.z.so(OHOS::BinderConnector::WriteBinder)
+#02 pc 00071c54 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::TransactWithDriver)
+#03 pc 00070654 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::WaitForCompletion)
+#04 pc 001c45a0 /system/lib64/librender_service.z.so(OHOS::Rosen::RSRenderService::RegisterCallback)
+state:S
+utime:30
+stime:10
+
+Tid:5500, Name:RSUniRenderThre
+#00 pc 001a3c5b /system/lib64/librender_service.z.so(OHOS::Rosen::RSDrawFrame::RenderFrame)
+#01 pc 001a5f37 /system/lib64/librender_service.z.so(OHOS::Rosen::RSDrawFrame::PostAndWait)
+#02 pc 000c7830 /system/lib64/chipset-sdk-sp/libc++.so(std::__h::recursive_mutex::lock)
+state:S
+utime:3200
+stime:1500
+
+Tid:4200, Name:HandlerThread
+#00 pc 001d55a0 /system/lib64/ld-musl-aarch64.so.1(epoll_wait)
+#01 pc 001b56f8 /system/lib64/librender_service.z.so(OHOS::Rosen::RSMainThread::HandlePendingMessages)
+state:S
+utime:15
+stime:5
+
+Tid:6700, Name:RSProperty
+#00 pc 001d4338 /system/lib64/ld-musl-aarch64.so.1(__timedwait_cp)
+#01 pc 001da37c /system/lib64/ld-musl-aarch64.so.1(futex_wait)
+state:S
+utime:8
+stime:3
 
 DOMAIN:SYSTEM_RESOURCE
 ReclaimAvailBuffer:768000
