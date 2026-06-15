@@ -64,6 +64,18 @@ def confirm_flash(args):
     if answer != "FLASH":
         raise RuntimeError("flash cancelled by user")
 
+def flash_userdata(hdc, img_dir, userdata_part):
+    img, blk = userdata_part
+    local = os.path.join(img_dir, img)
+    if not os.path.exists(local):
+        return
+    temp_path = f"/tmp/{img}"
+    hdc_cmd(hdc,"shell","umount /data")
+    hdc_cmd(hdc,"file","send",local,temp_path)
+    hdc_cmd(hdc,"shell",f"dd if={temp_path} of=/dev/block/by-name/{blk} bs=4M")
+    hdc_cmd(hdc,"shell",f"sync /dev/block/by-name/{blk}")
+    hdc_cmd(hdc,"shell",f"rm -f {temp_path}")
+
 def main():
     ap = build_arg_parser()
     args = ap.parse_args()
@@ -95,9 +107,7 @@ def main():
         print(f"    {blk} ({os.path.getsize(local):,} bytes)...")
         hdc_cmd(hdc,"file","send",local,f"/data/flash_tmp/{img}"); hdc_cmd(hdc,"shell",f"dd if=/data/flash_tmp/{img} of=/dev/block/by-name/{blk} bs=4M"); hdc_cmd(hdc,"shell",f"rm -f /data/flash_tmp/{img}")
     if ud:
-        print("[5] Flashing userdata..."); hdc_cmd(hdc,"shell","umount /data")
-        local = os.path.join(img_dir, ud[0][0])
-        if os.path.exists(local): hdc_cmd(hdc,"file","send",local,"/dev/block/by-name/userdata")
+        print("[5] Flashing userdata..."); flash_userdata(hdc,img_dir,ud[0])
     print("[6] Reboot..."); hdc_cmd(hdc,"shell","sync"); hdc_cmd(hdc,"shell","reboot"); print("DONE.")
 
 if __name__ == "__main__": main()

@@ -97,6 +97,11 @@ ssh -p $SSH_PORT $SSH_USER@$SSH_HOST "hdc shell reboot"
 
 **Command failure handling:** `flash_device.py` stops immediately when an `hdc` command exits non-zero.
 
+**Userdata write path:** `userdata.img` is flashed last. The helper unmounts `/data`, uploads the
+image to updater ramdisk temporary storage, writes it with `dd`, runs `sync` on the userdata block
+device, and removes the temporary file. Do not write `userdata.img` with a direct `hdc file send`
+to `/dev/block/by-name/userdata`.
+
 ## Why Updater Mode
 
 Normal mode mounts system/vendor read-only — dd silently fails. Updater mode keeps partitions unmounted. Userdata is flashed last because it's used as temp storage during the process.

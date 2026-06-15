@@ -93,6 +93,28 @@ class DeviceImageFlashingTest(unittest.TestCase):
 
         self.assertIn("device offline", str(cm.exception))
 
+    def test_flash_userdata_writes_from_temp_file_and_verifies_sync(self):
+        calls = []
+
+        def fake_hdc_cmd(hdc, *args):
+            calls.append((hdc, *args))
+
+        with tempfile.TemporaryDirectory() as td:
+            img_dir = Path(td)
+            userdata = img_dir / "userdata.img"
+            userdata.write_bytes(b"userdata")
+
+            with patch.object(flash_device, "hdc_cmd", side_effect=fake_hdc_cmd):
+                flash_device.flash_userdata("hdc", str(img_dir), ("userdata.img", "userdata"))
+
+        self.assertEqual(calls, [
+            ("hdc", "shell", "umount /data"),
+            ("hdc", "file", "send", str(userdata), "/tmp/userdata.img"),
+            ("hdc", "shell", "dd if=/tmp/userdata.img of=/dev/block/by-name/userdata bs=4M"),
+            ("hdc", "shell", "sync /dev/block/by-name/userdata"),
+            ("hdc", "shell", "rm -f /tmp/userdata.img"),
+        ])
+
 
 if __name__ == "__main__":
     unittest.main()
