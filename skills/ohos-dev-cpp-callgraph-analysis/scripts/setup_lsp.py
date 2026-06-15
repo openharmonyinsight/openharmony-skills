@@ -121,6 +121,8 @@ def run(command, **kwargs):
 
 def generate_full_compile_database(oh_root, product, build_target):
     """Ask the OpenHarmony build frontend to export compile_commands.json."""
+    target = oh_root / "out" / product / "compile_commands.json"
+    before_mtime = target.stat().st_mtime_ns if target.is_file() else None
     command = [
         oh_root / "build.sh",
         "--product-name", product,
@@ -128,13 +130,12 @@ def generate_full_compile_database(oh_root, product, build_target):
         "--build-target", build_target,
         "--ccache",
     ]
-    try:
-        run(command, cwd=oh_root)
-    except subprocess.CalledProcessError:
-        pass
-    target = oh_root / "out" / product / "compile_commands.json"
+    run(command, cwd=oh_root)
     if not target.is_file():
         raise RuntimeError(f"OpenHarmony did not generate {target}")
+    after_mtime = target.stat().st_mtime_ns
+    if before_mtime is not None and after_mtime == before_mtime:
+        raise RuntimeError(f"OpenHarmony did not refresh {target}")
     return target
 
 
@@ -148,6 +149,10 @@ def _download(url, target):
 def _safe_extract(archive, destination):
     destination = destination.resolve()
     for member in archive.getmembers():
+        if member.issym() or member.islnk():
+            raise RuntimeError(f"unsafe archive link member: {member.name}")
+        if not (member.isfile() or member.isdir()):
+            raise RuntimeError(f"unsupported archive member type: {member.name}")
         member_path = (destination / member.name).resolve()
         if not member_path.is_relative_to(destination):
             raise RuntimeError(f"unsafe archive member: {member.name}")

@@ -2,6 +2,8 @@ import importlib.util
 import io
 import json
 import shlex
+import subprocess
+import tarfile
 import tempfile
 import unittest
 from pathlib import Path
@@ -67,6 +69,32 @@ class SetupLspTest(unittest.TestCase):
             clangd.touch()
 
             self.assertEqual(setup_lsp.find_clangd(oh_root), clangd)
+
+    def test_safe_extract_rejects_archive_links(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            archive_path = root / "go.tar.gz"
+            with tarfile.open(archive_path, "w:gz") as archive:
+                info = tarfile.TarInfo("go/bin/link")
+                info.type = tarfile.SYMTYPE
+                info.linkname = "/tmp"
+                archive.addfile(info)
+
+            with tarfile.open(archive_path, "r:gz") as archive:
+                with self.assertRaises(RuntimeError):
+                    setup_lsp._safe_extract(archive, root / "out")
+
+    def test_generate_compile_database_does_not_reuse_stale_output_after_failure(self):
+        with tempfile.TemporaryDirectory() as td:
+            oh_root = Path(td)
+            stale = oh_root / "out" / "rk3568" / "compile_commands.json"
+            stale.parent.mkdir(parents=True)
+            stale.write_text("[]")
+
+            with patch.object(setup_lsp, "run",
+                              side_effect=subprocess.CalledProcessError(1, ["build.sh"])):
+                with self.assertRaises(subprocess.CalledProcessError):
+                    setup_lsp.generate_full_compile_database(oh_root, "rk3568", "input")
 
     def test_first_compile_file_resolves_relative_source(self):
         with tempfile.TemporaryDirectory() as td:
