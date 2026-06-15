@@ -39,7 +39,7 @@ Based on the analysis from Phases 3 and 4, this phase recommends the most suitab
 - System service interactions
 - Platform-specific protocols
 
-**Code Reuse**: 20%
+**Code Reuse**: 10-30%
 **New Code**: ~4,000-6,000 lines
 **Time Estimate**: 10-16 weeks
 
@@ -108,13 +108,13 @@ Based on the analysis from Phases 3 and 4, this phase recommends the most suitab
                  No                  Yes
                  |                    |
     ┌─────────────────────────────┐   ┌──────────────────┐
-    │ Platform-specific logic > 70%? │   │ Data-focused?   │
-    └─────────────────────────────┘   └──────────────────┘
-          /              \           /           \
-        Yes              No         Yes           No
-         |               |          |            |
-    Independent      Hybrid      OHOS Reuse   Hybrid
-  (Platform-Heavy)  (Hybrid)    (Reuse)     (Abstraction)
+    │ Platform-specific logic > 70%? │   │ OHOS Reuse Mode  │
+    └─────────────────────────────┘   │ (C/C++ native or  │
+          /              \             │  thin adapter)    │
+        Yes              No           └──────────────────┘
+         |               |
+    Independent      Hybrid
+  (Platform-Heavy)  (Service Abstraction)
 ```
 
 ## Recommendation Format

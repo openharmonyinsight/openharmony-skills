@@ -255,22 +255,40 @@ private:
         return env;
     }
 
-    void CachePreferences(JNIEnv* env)
+    void CachePreferences(JNIEnv* env, jobject context)
     {
         std::lock_guard<std::mutex> lock(mutex_);
         if (prefs_ != nullptr) return;
 
-        jclass prefsClass = env->FindClass("android/content/SharedPreferences");
-        jclass contextClass = env->FindClass("android/content/Context");
+        // SharedPreferences must be obtained from Context, not instantiated
+        jclass contextClass = env->GetObjectClass(context);
+        jmethodID midGetSharedPreferences = env->GetMethodID(contextClass,
+            "getSharedPreferences",
+            "(Ljava/lang/String;I)Landroid/content/SharedPreferences;");
 
-        prefs_ = env->NewGlobalRef(env->NewObject(
-            prefsClass, env->GetMethodID(prefsClass, "<init>", "()V")));
+        jstring prefsName = env->NewStringUTF("ohos_preferences");
+        const jint MODE_PRIVATE = 0;
+        jobject localPrefs = env->CallObjectMethod(context, midGetSharedPreferences,
+            prefsName, MODE_PRIVATE);
+        env->DeleteLocalRef(prefsName);
 
-        jclass editorClass = env->FindClass("android/content/SharedPreferences$Editor");
+        if (!localPrefs) {
+            LOGE("Failed to get SharedPreferences");
+            return;
+        }
+        prefs_ = env->NewGlobalRef(localPrefs);
+        env->DeleteLocalRef(localPrefs);
+
+        // Get Editor
+        jclass prefsClass = env->GetObjectClass(prefs_);
         jmethodID midEdit = env->GetMethodID(prefsClass, "edit",
             "()Landroid/content/SharedPreferences$Editor;");
-        editor_ = env->NewGlobalRef(env->CallObjectMethod(prefs_, midEdit));
+        jobject localEditor = env->CallObjectMethod(prefs_, midEdit);
+        editor_ = env->NewGlobalRef(localEditor);
+        env->DeleteLocalRef(localEditor);
 
+        // Cache method IDs
+        jclass editorClass = env->GetObjectClass(editor_);
         midPut_ = env->GetMethodID(editorClass, "putString",
             "(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;");
         midGetString_ = env->GetMethodID(prefsClass, "getString",
@@ -298,139 +316,115 @@ public:
     void Initialize(JavaVM* vm, jobject context = nullptr)
     {
         vm_ = vm;
+        if (context) {
+            JNIEnv* env = GetEnv();
+            if (env) {
+                CachePreferences(env, context);
+            }
+        }
     }
 
     int Put(const std::string& key, const std::string& value) override
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        try {
-            JNIEnv* env = GetEnv();
-            if (!env) return -1;
-            CachePreferences(env);
+        JNIEnv* env = GetEnv();
+        if (!env || !prefs_ || !editor_) return -1;
 
-            jstring jKey = env->NewStringUTF(key.c_str());
-            jstring jValue = env->NewStringUTF(value.c_str());
-            if (!jKey || !jValue) {
-                if (jKey) env->DeleteLocalRef(jKey);
-                if (jValue) env->DeleteLocalRef(jValue);
-                return -1;
-            }
-
-            env->CallObjectMethod(editor_, midPut_, jKey, jValue);
-            env->CallVoidMethod(editor_, midApply_);
-
-            env->DeleteLocalRef(jKey);
-            env->DeleteLocalRef(jValue);
-
-            if (env->ExceptionCheck()) {
-                env->ExceptionDescribe();
-                env->ExceptionClear();
-                return -1;
-            }
-            return 0;
-        } catch (const std::exception& e) {
-            LOGE("Exception in Put: %s", e.what());
+        jstring jKey = env->NewStringUTF(key.c_str());
+        jstring jValue = env->NewStringUTF(value.c_str());
+        if (!jKey || !jValue) {
+            if (jKey) env->DeleteLocalRef(jKey);
+            if (jValue) env->DeleteLocalRef(jValue);
             return -1;
         }
+
+        env->CallObjectMethod(editor_, midPut_, jKey, jValue);
+        env->CallVoidMethod(editor_, midApply_);
+
+        env->DeleteLocalRef(jKey);
+        env->DeleteLocalRef(jValue);
+
+        if (env->ExceptionCheck()) {
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+            return -1;
+        }
+        return 0;
     }
 
     int Get(const std::string& key, std::string& value) override
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        try {
-            JNIEnv* env = GetEnv();
-            if (!env) return -1;
-            CachePreferences(env);
+        JNIEnv* env = GetEnv();
+        if (!env || !prefs_) return -1;
 
-            jstring jKey = env->NewStringUTF(key.c_str());
-            jstring jDefault = env->NewStringUTF("");
-            jstring jValue = (jstring)env->CallObjectMethod(prefs_, midGetString_, jKey, jDefault);
+        jstring jKey = env->NewStringUTF(key.c_str());
+        jstring jDefault = env->NewStringUTF("");
+        jstring jValue = (jstring)env->CallObjectMethod(prefs_, midGetString_, jKey, jDefault);
 
-            if (jValue) {
-                const char* cValue = env->GetStringUTFChars(jValue, nullptr);
-                if (cValue) {
-                    value = cValue;
-                    env->ReleaseStringUTFChars(jValue, cValue);
-                    env->DeleteLocalRef(jKey);
-                    env->DeleteLocalRef(jDefault);
-                    env->DeleteLocalRef(jValue);
-                    return 0;
-                }
+        if (jValue) {
+            const char* cValue = env->GetStringUTFChars(jValue, nullptr);
+            if (cValue) {
+                value = cValue;
+                env->ReleaseStringUTFChars(jValue, cValue);
+                env->DeleteLocalRef(jKey);
+                env->DeleteLocalRef(jDefault);
+                env->DeleteLocalRef(jValue);
+                return 0;
             }
-            env->DeleteLocalRef(jKey);
-            env->DeleteLocalRef(jDefault);
-            if (jValue) env->DeleteLocalRef(jValue);
-            return -1;
-        } catch (const std::exception& e) {
-            LOGE("Exception in Get: %s", e.what());
-            return -1;
         }
+        env->DeleteLocalRef(jKey);
+        env->DeleteLocalRef(jDefault);
+        if (jValue) env->DeleteLocalRef(jValue);
+        return -1;
     }
 
     int Delete(const std::string& key) override
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        try {
-            JNIEnv* env = GetEnv();
-            if (!env) return -1;
-            CachePreferences(env);
+        JNIEnv* env = GetEnv();
+        if (!env || !prefs_ || !editor_) return -1;
 
-            jstring jKey = env->NewStringUTF(key.c_str());
-            env->CallObjectMethod(editor_, midRemove_, jKey);
-            env->CallVoidMethod(editor_, midApply_);
-            env->DeleteLocalRef(jKey);
+        jstring jKey = env->NewStringUTF(key.c_str());
+        env->CallObjectMethod(editor_, midRemove_, jKey);
+        env->CallVoidMethod(editor_, midApply_);
+        env->DeleteLocalRef(jKey);
 
-            if (env->ExceptionCheck()) {
-                env->ExceptionDescribe();
-                env->ExceptionClear();
-                return -1;
-            }
-            return 0;
-        } catch (const std::exception& e) {
-            LOGE("Exception in Delete: %s", e.what());
+        if (env->ExceptionCheck()) {
+            env->ExceptionDescribe();
+            env->ExceptionClear();
             return -1;
         }
+        return 0;
     }
 
     int Clear() override
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        try {
-            JNIEnv* env = GetEnv();
-            if (!env) return -1;
-            CachePreferences(env);
+        JNIEnv* env = GetEnv();
+        if (!env || !prefs_ || !editor_) return -1;
 
-            env->CallObjectMethod(editor_, midClear_);
-            env->CallVoidMethod(editor_, midApply_);
+        env->CallObjectMethod(editor_, midClear_);
+        env->CallVoidMethod(editor_, midApply_);
 
-            if (env->ExceptionCheck()) {
-                env->ExceptionDescribe();
-                env->ExceptionClear();
-                return -1;
-            }
-            return 0;
-        } catch (const std::exception& e) {
-            LOGE("Exception in Clear: %s", e.what());
+        if (env->ExceptionCheck()) {
+            env->ExceptionDescribe();
+            env->ExceptionClear();
             return -1;
         }
+        return 0;
     }
 
     bool Has(const std::string& key) override
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        try {
-            JNIEnv* env = GetEnv();
-            if (!env) return false;
-            CachePreferences(env);
+        JNIEnv* env = GetEnv();
+        if (!env || !prefs_) return false;
 
-            jstring jKey = env->NewStringUTF(key.c_str());
-            jboolean result = env->CallBooleanMethod(prefs_, midContains_, jKey);
-            env->DeleteLocalRef(jKey);
-            return result == JNI_TRUE;
-        } catch (const std::exception& e) {
-            LOGE("Exception in Has: %s", e.what());
-            return false;
-        }
+        jstring jKey = env->NewStringUTF(key.c_str());
+        jboolean result = env->CallBooleanMethod(prefs_, midContains_, jKey);
+        env->DeleteLocalRef(jKey);
+        return result == JNI_TRUE;
     }
 };
 

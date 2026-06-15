@@ -8,11 +8,18 @@ This phase analyzes the .d.ts TypeScript definition file to identify all interfa
 
 ### Step 1: Locate .d.ts File
 
+**Prerequisite**: You must be in the ArkUI-X SDK source tree (contains `interface/`, `plugins/`, `.repo/`).
+
 **Path Pattern**: `interface/sdk-js/api/@ohos.{module_name}.d.ts`
+
+**Naming convention**: Module names in d.ts filenames may use **camelCase** (e.g., `@ohos.deviceInfo.d.ts`, NOT `@ohos.device_info.d.ts`). Check the actual filename:
+```bash
+ls interface/sdk-js/api/@ohos.* | grep -i {module_keyword}
+```
 
 **Examples**:
 - `interface/sdk-js/api/@ohos.data.preferences.d.ts`
-- `interface/sdk-js/api/@ohos.intl.d.ts`
+- `interface/sdk-js/api/@ohos.deviceInfo.d.ts` (camelCase, not snake_case)
 - `interface/sdk-js/api/@ohos.multimedia.image.d.ts`
 
 ### Step 2: Scan All Interfaces

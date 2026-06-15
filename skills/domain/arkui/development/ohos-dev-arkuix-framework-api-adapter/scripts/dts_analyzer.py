@@ -44,45 +44,73 @@ class DTSAnalyzer:
         """Find all interfaces with their crossplatform status"""
         interfaces = []
         current_interface = None
-        in_interface_block = False
         brace_depth = 0
+        block_stack = []
 
         for i, line in enumerate(self.lines, 1):
             stripped = line.strip()
 
-            # Detect interface/class/function declaration
-            if re.match(r'(export\s+)?(class|interface|function)\s+\w+', line):
-                match = re.search(r'(class|interface|function)\s+(\w+)', line)
-                if match:
-                    current_interface = {
-                        'type': match.group(1),
-                        'name': match.group(2),
-                        'line': i,
-                        'has_crossplatform': False,
-                        'signature': stripped
-                    }
+            match = None
 
-            # Check for @crossplatform annotation in nearby lines (within 5 lines above)
+            if re.match(r'\s*(export\s+)?(class|interface|function)\s+\w+', line):
+                match = re.search(r'(class|interface|function)\s+(\w+)', line)
+            elif re.match(r'\s*declare\s+namespace\s+\w+', line):
+                match = re.search(r'declare\s+namespace\s+(\w+)', line)
+                if match:
+                    match = ('namespace', match.group(1))
+            elif re.match(r'\s*(export\s+)?const\s+\w+\s*:', line):
+                m = re.search(r'const\s+(\w+)\s*:', line)
+                if m:
+                    match = ('const', m.group(1))
+            elif re.match(r'\s*(export\s+)?type\s+\w+\s*=', line):
+                m = re.search(r'type\s+(\w+)\s*=', line)
+                if m:
+                    match = ('type', m.group(1))
+            elif re.match(r'\s*(export\s+)?enum\s+\w+', line):
+                m = re.search(r'enum\s+(\w+)', line)
+                if m:
+                    match = ('enum', m.group(1))
+
+            if match and not isinstance(match, tuple):
+                match = (match.group(1), match.group(2))
+
+            if match:
+                current_interface = {
+                    'type': match[0],
+                    'name': match[1],
+                    'line': i,
+                    'has_crossplatform': False,
+                    'signature': stripped
+                }
+
             if current_interface and not current_interface['has_crossplatform']:
-                # Check from declaration up to 5 lines back
-                start_line = max(0, current_interface['line'] - 6)
+                start_line = max(0, current_interface['line'] - 11)
                 context_lines = self.lines[start_line:current_interface['line']]
                 for ctx_line in context_lines:
-                    if '@crossplatform' in ctx_line or '@cp' in ctx_line:
+                    if '@crossplatform' in ctx_line:
                         current_interface['has_crossplatform'] = True
                         break
 
-            # Save interface when we exit its block
-            if current_interface and '{' in line:
-                brace_depth += 1
-                in_interface_block = True
+            if current_interface and current_interface['type'] in ('const', 'type', 'function'):
+                interfaces.append(current_interface)
+                current_interface = None
+                continue
 
-            if in_interface_block and '}' in line:
-                brace_depth -= 1
-                if brace_depth == 0 and current_interface:
-                    interfaces.append(current_interface)
-                    current_interface = None
-                    in_interface_block = False
+            if current_interface:
+                brace_depth += line.count('{') - line.count('}')
+                if '{' in line and brace_depth > 0:
+                    block_stack.append(current_interface)
+                elif '}' in line and brace_depth > 0:
+                    if block_stack:
+                        block_iface = block_stack.pop()
+                        if block_iface not in interfaces:
+                            interfaces.append(block_iface)
+                    if not block_stack:
+                        current_interface = None
+                brace_depth = max(0, brace_depth)
+
+        if current_interface and current_interface not in interfaces:
+            interfaces.append(current_interface)
 
         return interfaces
 
