@@ -249,14 +249,16 @@ def short_name(demangled):
     return m.group(1) if m else demangled
 
 
-SKIP_PREFIXES = ["HiLog", "std::__h::", "OHOS::MMI::FormatLog", "OHOS::MMI::GetSysClockTime",
-                 "OHOS::MMI::InnerFunction", "__cfi_slowpath", "__ubsan", "abort", "operator new",
+DEFAULT_SKIP_PREFIXES = ["HiLog", "std::__h::", "__cfi_slowpath", "__ubsan", "abort", "operator new",
                  "operator delete"]
 
 
 def build_call_tree(target_func, all_graphs, vtable_info, dlopen_map,
-                    llvm_bin, max_depth=5, reverse=False, check_keyword=None):
+                    llvm_bin, max_depth=5, reverse=False, check_keyword=None,
+                    skip_prefixes=None):
     """构建候选调用树并可选检查函数名关键字"""
+    if skip_prefixes is None:
+        skip_prefixes = DEFAULT_SKIP_PREFIXES
     merged = defaultdict(set)
     for graph in all_graphs:
         for caller, callees in graph.items():
@@ -310,16 +312,21 @@ def build_call_tree(target_func, all_graphs, vtable_info, dlopen_map,
                     reverse_graph[callee].add(caller)
         visited = set()
         _print_tree(root_mangled, reverse_graph, {}, demangled, dlopen_map,
-                    llvm_bin, max_depth, 0, visited, check_keyword, is_reverse=True)
+                    llvm_bin, max_depth, 0, visited, check_keyword, is_reverse=True,
+                    skip_prefixes=skip_prefixes)
     else:
         visited = set()
         _print_tree(root_mangled, merged, merged_vtable, demangled, dlopen_map,
-                    llvm_bin, max_depth, 0, visited, check_keyword)
+                    llvm_bin, max_depth, 0, visited, check_keyword,
+                    skip_prefixes=skip_prefixes)
 
 
 def _print_tree(func, graph, vtable_info, demangled, dlopen_map,
-                llvm_bin, max_depth, depth, visited, check_keyword=None, is_reverse=False):
+                llvm_bin, max_depth, depth, visited, check_keyword=None, is_reverse=False,
+                skip_prefixes=None):
     """递归打印候选调用树"""
+    if skip_prefixes is None:
+        skip_prefixes = DEFAULT_SKIP_PREFIXES
     if depth > max_depth or func in visited:
         return
     visited.add(func)
@@ -334,7 +341,7 @@ def _print_tree(func, graph, vtable_info, demangled, dlopen_map,
         if callee is None:
             continue
         callee_dm = demangled.get(callee, callee)
-        if any(callee_dm.startswith(p) for p in SKIP_PREFIXES):
+        if any(callee_dm.startswith(p) for p in skip_prefixes):
             continue
 
         tag = ""
@@ -348,7 +355,7 @@ def _print_tree(func, graph, vtable_info, demangled, dlopen_map,
         print(f"{indent}├── {short_name(callee_dm)}{tag}")
         _print_tree(callee, graph, vtable_info, demangled, dlopen_map,
                     llvm_bin, max_depth, depth + 1, visited, check_keyword,
-                    is_reverse=is_reverse)
+                    is_reverse=is_reverse, skip_prefixes=skip_prefixes)
 
     if not is_reverse:
         for vtype in sorted(vtable_info.get(func, set())):
@@ -379,6 +386,10 @@ def main():
                         help="仅检查 demangled 函数名和直接子函数名；不验证参数、实参或成员访问")
     parser.add_argument("--check-isolation", metavar="KEYWORD",
                         help=argparse.SUPPRESS)
+    parser.add_argument("--skip-prefix", action="append", default=None,
+                        help="Function name prefixes to skip in output (repeatable). "
+                             "Defaults: HiLog, std::__h::, __cfi_slowpath, __ubsan, abort, "
+                             "operator new, operator delete")
     args = parser.parse_args()
 
     oh_root = args.oh_root
@@ -456,10 +467,12 @@ def main():
             file=sys.stderr
         )
 
+    skip_prefixes = args.skip_prefix if args.skip_prefix else DEFAULT_SKIP_PREFIXES
+
     build_call_tree(
         args.function, all_graphs, all_vtable, dlopen_map,
         llvm_bin, max_depth=args.depth, reverse=args.reverse,
-        check_keyword=keyword
+        check_keyword=keyword, skip_prefixes=skip_prefixes
     )
 
 

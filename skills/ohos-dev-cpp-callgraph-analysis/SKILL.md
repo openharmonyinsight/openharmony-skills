@@ -1,13 +1,13 @@
 ---
 name: ohos-dev-cpp-callgraph-analysis
-description: Use when an OpenHarmony C++ change must be checked for call-chain completeness, especially for groupId/displayId propagation, event flow, IPC/proxy/stub paths, virtual overrides, callbacks, or dlopen/dlsym boundaries. Produces evidence tables and modification coverage matrices; the helper script only discovers candidate edges.
+description: Use when an OpenHarmony C++ change must be checked for call-chain completeness, especially for data propagation, IPC/proxy/stub paths, virtual overrides, callbacks, or dlopen/dlsym boundaries. Produces evidence tables and modification coverage matrices; the helper script only discovers candidate edges.
 metadata:
   author: openharmony
   scope: common
   stage: development
   domain: cpp
   capability: callgraph-analysis
-  version: 0.1.0
+  version: 0.2.0
   status: draft
 ---
 
@@ -42,8 +42,8 @@ install a Claude PreToolUse auto-fix hook. For Codex or other clients, use the m
 
 Before using tools, state:
 
-- Entry point or event path, such as `HandleMouseEvent`, `UpdateMouseTarget`, `OnRemoteRequest`.
-- Target data or behavior, such as `groupId`, `displayId`, pointer target routing, or device binding.
+- Entry point or event path, such as `OnRemoteRequest`, `HandleEvent`, or a subsystem-specific entry function.
+- Target data or behavior, such as a propagated field, routing decision, or state transition.
 - Scope boundaries to include: client/server, IPC, callbacks, virtual interfaces, dlopen/dlsym implementations, generated code, and tests.
 - Scope boundaries intentionally excluded, with reasons.
 
@@ -75,6 +75,8 @@ When LSP is unavailable or incomplete, say so in the evidence table and fall bac
 
 #### Helper Script
 
+**Resource check**: before running the helper, estimate the bitcode file count with `find <obj_dir> -name '*.o' | grep <repo-filter> | wc -l`. If the count exceeds ~200 files, narrow the `--repo` filter or use LSP/source evidence instead. Each file requires two LLVM tool invocations (~1-2s each), so 200 files can take 5-10 minutes.
+
 Required helper invocation shape. The agent must resolve the source tree and repository filter before calling the script, then pass them explicitly:
 
 ```bash
@@ -83,8 +85,11 @@ python3 "$SCRIPT" <entry-function> \
   --oh-root <openharmony-source-root> \
   --product <product-name> \
   --repo <repo-filter> \
-  --depth 4
+  --depth 4 \
+  --skip-prefix "Subsystem::LogHelper" --skip-prefix "Subsystem::TimeUtil"
 ```
+
+Omit `--skip-prefix` to use the built-in defaults (HiLog, std::__h::, etc.). Pass one or more `--skip-prefix` to override them entirely with subsystem-specific prefixes.
 
 Reverse direct callers:
 
@@ -136,7 +141,7 @@ Do not collapse multiple edge types into one row.
 
 ### 5. Build the Modification Coverage Matrix
 
-For propagation changes such as `groupId` or `displayId`, check each applicable surface:
+For data propagation changes (e.g. a field that must be carried through multiple layers), check each applicable surface:
 
 | Surface | What to Check | Static Evidence | Runtime Evidence | Status |
 |---------|---------------|-----------------|------------------|--------|
@@ -176,7 +181,7 @@ Limitations:
 - It does not resolve runtime virtual dispatch to a unique override.
 - It does not prove callback, function pointer, or `std::function` targets.
 - It does not prove IPC parameter propagation.
-- It does not prove `groupId`/`displayId` propagation. `--name-keyword` only checks demangled function names and direct child function names as a rough hint; it does not inspect C++ parameter names, call arguments, member access, local variables, or IPC serialization.
+- It does not prove field propagation. `--name-keyword` only checks demangled function names and direct child function names as a rough hint; it does not inspect C++ parameter names, call arguments, member access, local variables, or IPC serialization.
 - It may miss edges when build artifacts are stale, missing bitcode, optimized differently, or external tools fail.
 
 Use the helper script only as a candidate discovery aid for the evidence workflow. Skip it when LSP/source evidence already covers the relevant direct calls and no artifact-level confirmation is needed.
@@ -209,3 +214,12 @@ When using this skill, end with:
 4. **Conclusion**: `Complete`, `Incomplete`, or `Not provable`, with the exact missing or unknown items.
 
 If you cannot inspect a required boundary, say so and mark it `unknown`.
+
+## Example: MMI Subsystem
+
+When analyzing the multimodal input (MMI) subsystem, common analysis targets include:
+
+- **Entry points**: `HandleMouseEvent`, `UpdateMouseTarget`, `OnRemoteRequest`
+- **Propagated fields**: `groupId`, `displayId`, pointer target routing, device binding
+- **Skip prefixes**: `OHOS::MMI::FormatLog`, `OHOS::MMI::GetSysClockTime`, `OHOS::MMI::InnerFunction` (pass via `--skip-prefix`)
+- **Key boundaries**: client/server IPC via `MultimodalInputConnectStub`, `EventDispatchHandler` callback chains, `InputDeviceManager` dlopen loading
