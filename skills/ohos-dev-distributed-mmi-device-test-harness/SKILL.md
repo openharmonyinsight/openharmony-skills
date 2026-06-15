@@ -29,9 +29,22 @@ metadata:
 - 已有测试需要在真机上运行和验证
 - 需要理解 hidumper dump 输出的含义
 
-## 跳板机环境变量
+## 设备连接拓扑
 
-设备通过 Windows 跳板机连接（hdc 运行在 Windows 上）。所有命令使用环境变量避免硬编码凭据：
+优先按实际连接方式选择命令形态，不要默认所有环境都有 Windows 跳板机。
+
+### 直连设备
+
+本机能直接访问 USB 设备时，只需要参数化设备序列号：
+
+```bash
+export DEVICE="<device_serial>"
+export HDC="hdc -t $DEVICE"
+```
+
+### Windows 跳板机
+
+设备接在 Windows 测试机、当前环境只能通过 SSH 访问时，再使用跳板机变量。所有命令必须参数化，避免硬编码凭据：
 
 ```bash
 # 设置一次，全 session 复用（根据实际环境替换占位符；不要提交真实值）
@@ -43,7 +56,7 @@ export WIN_HOME='C:\Users\<user>'                  # Windows 用户主目录
 export HDC="hdc -t $DEVICE"
 ```
 
-后续文档中的 `$WIN_SSH`、`$WIN_SCP`、`$WIN_SCP_DST`、`$WIN_HOME`、`$HDC` 均引用这些变量。
+后续文档中的 `$WIN_SSH`、`$WIN_SCP`、`$WIN_SCP_DST`、`$WIN_HOME`、`$HDC` 均引用这些变量。直连场景下去掉 `$WIN_SSH` 包装，直接运行 `$HDC ...`。
 SSH 认证方式由环境决定，可使用 SSH key、CI secret 或其他跳板机机制。Skill 输出和 eval 结果中不得包含真实密码、主机名、用户名或设备 serial。
 
 ## 设备状态修改安全门槛
@@ -105,9 +118,16 @@ static void InitNativeToken() {
 
 ## Server 端绕过
 
-测试进程不是 WMS/DMS 进程，server 端会校验调用方 token 类型。需要临时修改 3 个位置：
+测试进程不是 WMS/DMS 进程，server 端会校验调用方 token 类型。只有本地验证确实无法通过 NativeToken/权限配置完成时，才允许临时 server-side bypass。
 
 这些绕过只允许用于本地开发验证。提交产品代码、PR 或测试报告前必须还原，且不得把绕过作为正式测试能力描述。
+
+**收窄原则**：
+
+- 首选 test-only 编译宏、测试进程名白名单或本地 patch 名称限制，不要提交“允许所有 token 类型”的通用绕过。
+- patch 中必须标记 `[TEST BYPASS]`、目标测试名和还原方式。
+- 测试报告只能说明“本地验证使用临时 bypass”，不能把绕过当作产品行为或长期测试能力。
+- 如果必须短暂放开 token 检查，报告中要明确这是最宽松 fallback，并记录还原验证。
 
 ### 1. OnDisplayInfo — 允许测试进程调 UpdateDisplayInfo
 
@@ -115,8 +135,8 @@ static void InitNativeToken() {
 
 ```cpp
 int32_t ServerMsgHandler::OnDisplayInfo(SessionPtr sess, NetPacket &pkt) {
-    // [TEST BYPASS] 原代码校验 tokenType == TOKEN_NATIVE
-    // 测试时注释掉该检查，允许所有 token 类型
+    // [TEST BYPASS] prefer a test-only macro or process whitelist.
+    // Avoid broad "allow all token types" changes except as a last-resort local fallback.
 }
 ```
 
@@ -126,7 +146,7 @@ int32_t ServerMsgHandler::OnDisplayInfo(SessionPtr sess, NetPacket &pkt) {
 
 ```cpp
 int32_t ServerMsgHandler::OnWindowGroupInfo(SessionPtr sess, NetPacket &pkt) {
-    // [TEST BYPASS] 同上
+    // [TEST BYPASS] same narrow local-only rule as OnDisplayInfo.
 }
 ```
 
@@ -135,8 +155,8 @@ int32_t ServerMsgHandler::OnWindowGroupInfo(SessionPtr sess, NetPacket &pkt) {
 **文件**: `service/module_loader/src/mmi_service.cpp`
 
 ```cpp
-// [TEST BYPASS] 直接 return RET_OK
-// 原代码: 校验 INPUT_DEVICE_CONFIGURATOR 权限
+// [TEST BYPASS] prefer allowing only the named local test process.
+// Avoid unconditional return RET_OK except as a last-resort local fallback.
 ```
 
 ### 部署绕过后的 .so
@@ -191,21 +211,32 @@ python3 <compile_test_script>
 
 ```bash
 BINARY="<oh_root>/code/out/rk3568/<output_dir>/<target>"
+```
 
-# 1. SCP 到 Windows 跳板机桌面
+直连设备：
+
+```bash
+$HDC file send "$BINARY" /data/local/tmp/<target>
+```
+
+Windows 跳板机：
+
+```bash
 $WIN_SCP "$BINARY" "$WIN_SCP_DST/<target>"
-
-# 2. hdc 推送到设备
 $WIN_SSH "$HDC file send $WIN_HOME\\Desktop\\<target> /data/local/tmp/<target>"
 ```
 
-**路径注意**：hdc 在 Windows 上运行，`file send` 的源路径是 Windows 路径（`C:\\...`）。
+**路径注意**：只有 hdc 在 Windows 跳板机上运行时，`file send` 的源路径才是 Windows 路径（`C:\\...`）。
 
 ### 运行
 
 ```bash
-$WIN_SSH "$HDC shell chmod 755 /data/local/tmp/<target>"
-$WIN_SSH "$HDC shell /data/local/tmp/<target>"
+$HDC shell chmod 755 /data/local/tmp/<target>
+$HDC shell /data/local/tmp/<target>
+
+# Windows 跳板机时：
+# $WIN_SSH "$HDC shell chmod 755 /data/local/tmp/<target>"
+# $WIN_SSH "$HDC shell /data/local/tmp/<target>"
 ```
 
 **hdc shell 引号陷阱**：不要在 hdc shell 后用单引号包裹命令（`hdc shell 'cmd1 && cmd2'`），会报 `no closing quote`。拆成多条 hdc 命令。
@@ -304,26 +335,7 @@ static int FindDevice(const std::string &targetName) {
 
 ## hidumper Dump 字段参考
 
-`hidumper -s MultimodalInput -a '-G'` 输出的关键段落：
-
-| 段落 | 字段 | 含义 |
-|------|------|------|
-| **RuntimeBindings** | `deviceId=N displayId=N groupId=N` | HID 设备绑定关系 |
-| **DisplayGroups** | `groupId displays mainDisplayId focusWindowId` | 显示组配置（focusWindowId 对 MAIN_GROUPID 显示为 -1 是正常的） |
-| **PointerStateByGroup** | `cursorPos mouseLocation captureMode` | 每组光标位置和捕获模式 |
-| **KeyboardStateByGroup** | `focusWindowId` + 按键状态 | 每组键盘状态 |
-| **SequenceSnapshots** | 类型(POINTER/KEY) group targetWindow | 最近事件序列记录（可能为空，有 TTL） |
-| **SoftCursorRS** | `displayId cursorPos direction drawFlag` | 软光标渲染状态 |
-| **PointerStyleByWindow** | `pid windowId groupId style(id/size/color)` | 每窗口光标样式 |
-| **PointerDrawingRS → Display Info** | 显示器属性表 | 已注册的显示器列表 |
-| **PointerDrawingRS → Cursor Info** | `windowId lastPhysicalX/Y` | 当前光标命中的窗口 ID（hit-test 结果） |
-
-### 解读要点
-
-- `DisplayGroups.focusWindowId=-1` 对 MAIN_GROUPID 是正常的 — dump 读的是 `displayGroupInfoMap_`，MAIN_GROUPID 的焦点从 `UpdateWindowInfo` 传入，存在别处
-- `Cursor Info.windowId` 反映光标物理位置命中的最高 zOrder 窗口，不是焦点窗口
-- `SequenceSnapshots` 可能为空 — 条目有 TTL 或被清理，dump 时机要紧跟事件注入
-- `RuntimeBindings` 为 `(empty)` 表示无设备绑定
+常用字段和解读细节见 `references/hidumper-dump-fields.md`。主流程只要求在报告中引用实际 dump 阶段、关键字段和结论，不要复制完整 dump 表。
 
 ## SELinux 注意
 

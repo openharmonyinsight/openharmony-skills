@@ -154,27 +154,7 @@ $HDC shell "cat /proc/\$(pidof multimodalinput)/smaps_rollup"
 $HDC shell "cat /proc/\$(pidof multimodalinput)/smaps" > smaps.txt
 ```
 
-**解析脚本（修正版）**：
-
-```python
-import re
-current_lib = None
-pss_by_lib = {}
-for line in open("smaps.txt"):
-    # 每个 mapping header 行以 hex 地址范围开头
-    # 必须在每个 header 行重置 current_lib，否则会将
-    # anonymous 页（位于两个 libmmi mapping 之间）错误归入上一个 libmmi 库
-    if re.match(r'[0-9a-f]+-[0-9a-f]+\s', line):
-        m = re.search(r'(/system/lib\S*libmmi\S+\.so)', line)
-        current_lib = m.group(1).split('/')[-1] if m else None
-    m = re.match(r'Pss:\s+(\d+)\s+kB', line)
-    if m and current_lib:
-        pss_by_lib[current_lib] = pss_by_lib.get(current_lib, 0) + int(m.group(1))
-for lib, pss in sorted(pss_by_lib.items()):
-    print(f"  {lib}: {pss} kB")
-```
-
-> **关键修复**：早期版本的解析脚本在匹配到 libmmi mapping 后不重置 `current_lib`，导致后续的 anonymous mapping（无 .so 路径的 header 行）的 PSS 被错误累加到上一个 libmmi 库。实测中这会导致 3,220 kB 被错误报告为 7,701 kB（+140% 偏差）。
+解析脚本和注意事项见 `references/smaps-pss-attribution.md`。关键要求是每个 mapping header 都要重置当前库名，避免把 anonymous PSS 错归到上一个 `.so`。
 
 ### 4. hidumper --mem（系统级）
 
@@ -205,25 +185,7 @@ $HDC file recv /data/local/tmp/hidumper_mem.txt ./hidumper_mem.txt
 | 测试环境/框架噪声 | 新增加载的测试二进制依赖、input-test 框架等 `.so` | 与目标特性分开，不得直接归因给代码变更 |
 | 未归因残差 | total delta - 已解释 delta | 单独列出；残差过大时结论只能标记为“不完整归因” |
 
-推荐从 smaps 中按完整路径聚合所有 `.so` PSS，而不是只匹配 `libmmi`：
-
-```python
-import re
-from collections import defaultdict
-
-pss_by_so = defaultdict(int)
-current_so = None
-for line in open("smaps.txt"):
-    if re.match(r"[0-9a-f]+-[0-9a-f]+\\s", line):
-        m = re.search(r"(/\\S+\\.so(?:\\.\\S+)*)$", line)
-        current_so = m.group(1) if m else None
-    m = re.match(r"Pss:\\s+(\\d+)\\s+kB", line)
-    if m and current_so:
-        pss_by_so[current_so] += int(m.group(1))
-
-for so, pss in sorted(pss_by_so.items(), key=lambda item: (-item[1], item[0])):
-    print(f"{so}\\t{pss}")
-```
+推荐从 smaps 中按完整路径聚合所有 `.so` PSS，而不是只匹配 `libmmi`；参考脚本见 `references/smaps-pss-attribution.md`。
 
 对 baseline/current 两份结果做 outer join，生成“新增/变化的已加载 `.so`”表：
 
@@ -300,77 +262,12 @@ $HDC shell "reboot"
 
 段级估算只能反映静态映射内存，无法反映堆分配（new/malloc）。对于引入新数据结构的特性变更，**必须**分析代码 diff 中的新增容器和对象。
 
-### 1. 发现新增数据结构
+详细估算规则见 `references/theoretical-ram-estimation.md`。主流程只要求输出：
 
-```bash
-# 查找新增的 map/vector/set 成员变量
-git diff <baseline>..HEAD -- '*.h' | grep -E '^\+\s+(std::(map|unordered_map|vector|set))'
-
-# 查找新增的 struct/class 定义
-git diff <baseline>..HEAD -- '*.h' | grep -E '^\+.*struct |^\+.*class '
-```
-
-### 2. 估算单条目大小
-
-| 维度 | 检查方法 |
-|------|---------|
-| 新增容器成员 | grep diff 中的 `std::map`, `std::vector` 等 |
-| 每条目大小 | 分析 value type 的字段（见下方估算技巧） |
-| 分配时机 | 是否懒分配（仅在使用时创建） |
-| 条目数量上界 | 与变更相关的设备数、窗口数、显示组数、会话数、监听器数或事件序列数 |
-| 清理机制 | 是否有 erase/clear/remove 路径 |
-| 泄漏风险 | 是否所有分配路径都有对应释放 |
-
-#### 结构体大小估算技巧
-
-**基类继承链开销**：
-
-| 类型 | 额外开销 | 说明 |
-|------|---------|------|
-| `Parcelable` → `RefBase` | ~80 B | vtable(8B) + RefCounter 堆分配(~72B) |
-| `InputEvent` (所有事件基类) | ~120 B | Parcelable + 时间戳、设备ID、source 等 |
-| `shared_ptr` control block | ~16 B | 引用计数 + deleter |
-
-**std::string SSO（Small String Optimization）**：
-- 短字符串（通常 ≤15 字节）：inline 在 string 对象中，sizeof(std::string) ≈ 32B
-- 长字符串：32B 对象 + 堆分配
-
-**STL 容器 overhead**：
-
-| 容器 | 空容器大小 | 每条目额外开销 |
-|------|----------|--------------|
-| `std::map<K,V>` | ~48 B | 节点 ~48B + sizeof(K) + sizeof(V) |
-| `std::unordered_map<K,V>` | ~56 B | 节点 ~56B + sizeof(K) + sizeof(V) |
-| `std::vector<T>` | ~24 B | sizeof(T) per element (amortized) |
-| `std::set<T>` | ~48 B | 节点 ~48B + sizeof(T) |
-| `std::list<T>` | ~24 B | 节点 ~24B + sizeof(T) |
-
-**Render Service (RS) 资源**：
-
-如果变更涉及 RS SurfaceNode / CanvasNode / RSUIDirector 等图形资源，需要特别分析：
-
-| RS 资源 | 内存开销 | 说明 |
-|---------|---------|------|
-| RSSurfaceNode + BufferQueue (64×64 RGBA, triple-buffer) | ~48 KB | 16 KB/buffer × 3 |
-| RSSurfaceNode + BufferQueue (128×128 RGBA, triple-buffer) | ~192 KB | 64 KB/buffer × 3 |
-| RSCanvasNode + RSUIDirector + RSUIContext | ~1.6 KB | 控制结构 |
-
-RS 资源通常是**最大的单项内存开销**。如果代码中 RS shared_ptr 为 nullptr（未实际创建），需要在报告中明确标注"当前实现"与"完整实现"两个场景的区别。
-
-### 3. 按场景汇总
-
-| 场景 | 估算方法 |
-|------|---------|
-| 不使用特性（0 条目） | 仅容器头部 + 固定对象开销 |
-| 典型场景 | 按实际业务基数 × 条目大小估算 |
-| 极端场景（上界） | 按设备、窗口、显示组、会话、监听器或事件序列等上界估算 |
-
-### 4. 与实测数据交叉验证
-
-理论估算结果应与实测 libmmi PSS 差值对比：
-- 理论值远小于实测差值 → 遗漏了某类数据结构（如 RS 资源、第三方库对象）
-- 理论值远大于实测差值 → 估算偏高，检查懒分配是否实际触发
-- 两者数量级一致 → 分析可信
+- 新增容器、对象、缓存和 RS 资源清单。
+- 每类对象的典型场景和上界场景估算。
+- 分配时机、清理路径和泄漏风险。
+- 理论估算与实测 libmmi PSS/native heap/Pss_Anon 的交叉验证结论。
 
 ## 输出报告模板
 
