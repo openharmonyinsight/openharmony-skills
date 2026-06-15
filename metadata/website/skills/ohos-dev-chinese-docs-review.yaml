@@ -1,0 +1,93 @@
+schemaVersion: 1
+
+id: ohos-dev-chinese-docs-review
+title: OpenHarmony 中文 API 文档评审
+summary: 检查 OpenHarmony API 中文文档模板合规性，以及公开接口、系统接口、错误码文档和实现行为的一致性。
+
+category:
+  scope: common
+  namespace: development
+  stage: development
+  domain: chinese-docs
+  capability: review
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - chinese-docs
+  - api-docs
+  - documentation-review
+  - error-code
+  - consistency-check
+
+audience:
+  - OpenHarmony API 文档维护者
+  - 接口声明和实现开发者
+  - API 文档质量评审人员
+
+useCases:
+  - title: 检查 API 文档模板合规性
+    description: 根据 JS API、ArkTS 组件和错误码模板检查字段、章节、链接、版本标记和系统接口说明。
+  - title: 对齐文档与接口声明
+    description: 比对 Markdown 文档、d.ts 声明、@throws、@since、@permission 和 @systemapi 等标记是否一致。
+  - title: 发现实现与文档偏差
+    description: 结合实现代码识别行为描述、错误码触发场景、权限约束和使用限制是否遗漏或过时。
+
+whenToUse:
+  - 需要评审 OpenHarmony API 中文文档质量、模板结构或语义完整性
+  - 需要比较公开 API 文档、系统 API 文档、错误码文档和接口声明是否一致
+  - 需要补齐接口文档、生成文档问题报告，或核对文档与实现行为差异
+
+whenNotToUse:
+  - 只需要翻译普通说明文档，且不涉及 OpenHarmony API 模板或接口声明
+  - 只检查代码实现质量，不涉及 API 文档、错误码文档或接口注释
+  - 缺少待评审文档和接口声明，且无法从仓库上下文推断路径
+
+inputs:
+  required:
+    - 待评审的 API 文档、接口声明或文档问题背景
+  optional:
+    - public API 文档路径，通常位于 /docs
+    - system API 文档路径，通常位于 /docs
+    - 错误码文档路径，通常位于 /docs
+    - API 定义路径，通常位于 /interface
+    - 相关实现代码路径或仓库根目录
+
+outputs:
+  - 文档模板和结构问题清单
+  - 文档、接口声明、错误码和实现行为的一致性问题
+  - 每个问题的影响说明、建议修复和可直接采用的改写内容
+  - 未检查范围、缺失输入和不确定性说明
+
+quickStart:
+  steps:
+    - 准备 API Markdown 文档、d.ts 接口声明、错误码文档或相关仓库路径。
+    - 说明需要检查模板合规、文档一致性、错误码覆盖，还是实现行为对齐。
+    - 请求 Agent 使用该 Skill 输出只包含问题、影响和修复建议的评审报告。
+  examplePrompt: |
+    请使用 ohos-dev-chinese-docs-review 检查这个 OpenHarmony API 中文文档。
+    public 文档在 docs/zh-cn/api/example.md，接口声明在 interface/example.d.ts，
+    请重点检查模板合规、错误码覆盖和接口声明一致性。
+
+related:
+  skills:
+    - ohos-dev-arkts-static-specification-reference
+  docs:
+    - title: JS API 文档模板
+      path: references/js-template.md
+    - title: ArkTS 组件文档模板
+      path: references/ts-template.md
+    - title: 错误码文档模板
+      path: references/errorcodes-template.md
+    - title: 文档一致性检查脚本
+      path: scripts/check_api_doc_consistency.py
+
+extractionNotes:
+  confidence: high
+  missing:
+    - SKILL.md 未声明 OpenHarmony 扩展 metadata.version，按仓库现有首版 metadata 惯例使用 0.1.0。
+  comments:
+    - 根据 SKILL.md 的触发描述、输入收集、工作流、模板选择和输出要求生成网站展示信息。
