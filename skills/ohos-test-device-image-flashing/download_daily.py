@@ -92,13 +92,31 @@ def main():
         sys.exit(1)
 
     tar_path = os.path.join(args.output_dir, f"{args.component}_img.tar.gz")
-    if os.path.exists(tar_path) and os.path.getsize(tar_path) > 100_000_000:
-        print(f"Image exists ({os.path.getsize(tar_path)} bytes), skip download")
-        print(f"  Delete {tar_path} to force re-download")
-    else:
+    need_download = True
+    if os.path.exists(tar_path):
+        try:
+            with tarfile.open(tar_path) as tf:
+                tf.getmembers()
+            print(f"Image exists and is valid ({os.path.getsize(tar_path)} bytes), skip download")
+            print(f"  Delete {tar_path} to force re-download")
+            need_download = False
+        except (tarfile.TarError, EOFError, OSError):
+            print(f"Existing archive is corrupt, re-downloading")
+            os.unlink(tar_path)
+
+    if need_download:
         print(f"Downloading: {img_url}")
         urllib.request.urlretrieve(img_url, tar_path)
-        print(f"  Done: {os.path.getsize(tar_path)} bytes")
+        size = os.path.getsize(tar_path)
+        print(f"  Done: {size} bytes")
+        # Verify downloaded archive integrity
+        try:
+            with tarfile.open(tar_path) as tf:
+                tf.getmembers()
+        except (tarfile.TarError, EOFError, OSError) as e:
+            print(f"FAIL: Downloaded archive is corrupt: {e}")
+            print(f"  Delete {tar_path} and retry")
+            sys.exit(1)
 
     print("Extracting...")
     with tarfile.open(tar_path) as tf:

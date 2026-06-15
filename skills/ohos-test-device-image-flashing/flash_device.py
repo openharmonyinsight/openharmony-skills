@@ -36,10 +36,10 @@ def parse_partitions(img_dir):
     pf = os.path.join(img_dir, "parameter.txt")
     if not os.path.exists(pf): return None
     content = open(pf).read()
-    m = re.search(r"CMDLINE:.*mtdparts=\S+:(.*)", content)
+    m = re.search(r"CMDLINE:.*mtdparts=([^:\s]+):(.*)", content)
     if not m: return None
     parts = []
-    for p in m.group(1).split(","):
+    for p in m.group(2).split(","):
         m2 = re.search(r"\(([^:)]+)", p)
         if m2:
             name = m2.group(1)
@@ -80,7 +80,9 @@ def main():
     ap = build_arg_parser()
     args = ap.parse_args()
     img_dir = find_img_dir(args.img_dir)
-    if not img_dir: print(f"FAIL: system.img not found in {args.img_dir}"); sys.exit(1)
+    if not img_dir:
+        print(f"FAIL: system.img not found in {args.img_dir}")
+        sys.exit(1)
     confirm_flash(args)
     hdc = find_hdc()
     print(f"[1] hdc: {hdc}\n    images: {img_dir}")
@@ -96,18 +98,36 @@ def main():
             ("ramdisk.img","ramdisk"),("updater.img","updater"),("sys_prod.img","sys-prod"),
             ("chip_prod.img","chip-prod"),("chip_ckm.img","chip_ckm"),
             ("system.img","system"),("vendor.img","vendor"),("userdata.img","userdata")]
-    ud = [(i,p) for i,p in parts if p=="userdata"]
-    others = [(i,p) for i,p in parts if p!="userdata"]
-    print("[2] Reboot to updater..."); hdc_cmd(hdc,"shell","reboot","updater"); print("    Waiting 35s..."); time.sleep(35); hdc_cmd(hdc,"list","targets")
-    print("[3] Mount userdata..."); hdc_cmd(hdc,"shell","mkdir -p /data && mount /dev/block/by-name/userdata /data"); hdc_cmd(hdc,"shell","mkdir -p /data/flash_tmp")
+    ud = [(i, p) for i, p in parts if p == "userdata"]
+    others = [(i, p) for i, p in parts if p != "userdata"]
+
+    print("[2] Reboot to updater...")
+    hdc_cmd(hdc, "shell", "reboot", "updater")
+    print("    Waiting 35s...")
+    time.sleep(35)
+    hdc_cmd(hdc, "list", "targets")
+
+    print("[3] Mount userdata...")
+    hdc_cmd(hdc, "shell", "mkdir -p /data && mount /dev/block/by-name/userdata /data")
+    hdc_cmd(hdc, "shell", "mkdir -p /data/flash_tmp")
+
     print("[4] Flashing...")
-    for img,blk in others:
+    for img, blk in others:
         local = os.path.join(img_dir, img)
-        if not os.path.exists(local): continue
+        if not os.path.exists(local):
+            continue
         print(f"    {blk} ({os.path.getsize(local):,} bytes)...")
-        hdc_cmd(hdc,"file","send",local,f"/data/flash_tmp/{img}"); hdc_cmd(hdc,"shell",f"dd if=/data/flash_tmp/{img} of=/dev/block/by-name/{blk} bs=4M"); hdc_cmd(hdc,"shell",f"rm -f /data/flash_tmp/{img}")
+        hdc_cmd(hdc, "file", "send", local, f"/data/flash_tmp/{img}")
+        hdc_cmd(hdc, "shell", f"dd if=/data/flash_tmp/{img} of=/dev/block/by-name/{blk} bs=4M")
+        hdc_cmd(hdc, "shell", f"rm -f /data/flash_tmp/{img}")
+
     if ud:
-        print("[5] Flashing userdata..."); flash_userdata(hdc,img_dir,ud[0])
-    print("[6] Reboot..."); hdc_cmd(hdc,"shell","sync"); hdc_cmd(hdc,"shell","reboot"); print("DONE.")
+        print("[5] Flashing userdata...")
+        flash_userdata(hdc, img_dir, ud[0])
+
+    print("[6] Reboot...")
+    hdc_cmd(hdc, "shell", "sync")
+    hdc_cmd(hdc, "shell", "reboot")
+    print("DONE.")
 
 if __name__ == "__main__": main()
