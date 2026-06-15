@@ -12,7 +12,7 @@ This skill executes within an **ArkUI-X SDK source tree** (the directory contain
 interface/sdk-js/api/@ohos.{module_name}.d.ts
 ```
 
-If you are in an **application project** (contains `entry/`, `.arkui-x/`), use `arkuix-ohosapi-platform-extension` instead.
+If you are in an **application project** (contains `entry/`, `.arkui-x/`), this skill does not apply — app-level extension uses CMake + Gradle/Xcode, not the BUILD.gn-based 7-phase workflow.
 
 ## Information Collected
 

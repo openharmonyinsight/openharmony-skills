@@ -1,5 +1,5 @@
 #!/bin/bash
-# Evaluation test runner for arkuix-framework-api-adapter
+# Evaluation test runner for ohos-dev-arkuix-framework-api-adapter
 #
 # Usage: bash tests/run_tests.sh
 
@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILL_ROOT="$(dirname "$SCRIPT_DIR")"
 
 echo "============================================================"
-echo "  arkuix-framework-api-adapter Evaluation Test Suite"
+echo "  ohos-dev-arkuix-framework-api-adapter Evaluation Test Suite"
 echo "============================================================"
 echo ""
 

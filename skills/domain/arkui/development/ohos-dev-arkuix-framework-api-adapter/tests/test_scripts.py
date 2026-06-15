@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Evaluation test suite for arkuix-framework-api-adapter scripts.
+Evaluation test suite for ohos-dev-arkuix-framework-api-adapter scripts.
 
 Tests 3 scripts against fixture data:
   - dts_analyzer.py: @crossplatform coverage analysis

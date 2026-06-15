@@ -2,7 +2,7 @@
 
 ## Overview
 
-25 evaluation cases across 5 categories that validate the `arkuix-framework-api-adapter` skill works correctly.
+25 evaluation cases across 5 categories that validate the `ohos-dev-arkuix-framework-api-adapter` skill works correctly.
 
 | Category | Cases | Type | File |
 |----------|-------|------|------|
@@ -15,7 +15,7 @@
 ## Running Automated Tests
 
 ```bash
-cd arkuix-framework-api-adapter
+cd ohos-dev-arkuix-framework-api-adapter
 python3 tests/test_scripts.py
 ```
 

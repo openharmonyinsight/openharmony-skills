@@ -76,9 +76,9 @@ Agent is asked: "Should we use Independent mode for full control?"
 
 | User Message | Correct Skill Instead | Why Not This Skill |
 |---|---|---|
-| "适配 C++ native 模块到 Android" | `arkuix-cpp-adapter` | This skill is for OHOS module adaptation, not standalone C++ modules |
-| "创建新的 Native 插件" | `arkuix-native-dev` | This skill adapts existing modules, doesn't create new plugins |
+| "适配 C++ native 模块到 Android" | C++ native adapter | This skill is for OHOS module adaptation, not standalone C++ modules |
+| "创建新的 Native 插件" | Native plugin creator | This skill adapts existing modules, doesn't create new plugins |
 | "写一个 ArkTS 页面" | (no skill) | This is UI development, not module adaptation |
-| "运行 ace build apk" | `arkuix-crossplatform-cli` | This is CLI usage, not module adaptation |
+| "运行 ace build apk" | CLI usage guide | This is CLI usage, not module adaptation |
 
 **PASS criteria**: Agent does NOT activate this skill for the above messages. Correctly routes to the right skill or no skill.

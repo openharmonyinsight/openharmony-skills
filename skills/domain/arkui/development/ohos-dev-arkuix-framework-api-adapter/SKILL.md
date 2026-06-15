@@ -2,7 +2,7 @@
 name: ohos-dev-arkuix-framework-api-adapter
 description: >
   Guide OHOS modules cross-platform adaptation with automated architecture analysis, code sync, configuration generation, and E2E verification. Use for adapting OHOS subsystem modules (@ohos.data.preferences, @ohos.intl, @ohos.multimedia.image, etc.) to Android/iOS. Provides 7-phase workflow: info collection → code sync → API analysis → architecture analysis → recommendation → implementation → E2E verification. Also covers app-level NAPI platform extension (平台扩展) for developers without OHOS source code — uses CMake + Gradle/Xcode instead of BUILD.gn. Includes automated scripts for DTS analysis, architecture analysis, and configuration generation.
-  Do NOT use for: adapting existing C++ native modules to Android/iOS (use arkuix-cpp-adapter instead).
+  Do NOT use for: adapting existing C++ native modules to Android/iOS (that requires a different C++ adapter workflow).
   触发关键词："模块适配"、"跨平台适配"、"架构模式分析"、"DTS分析"、"E2E验证"、
   "平台扩展"、"扩展@ohos"、"NAPI平台扩展"、"app-level adaptation"、
   "module adaptation"、"architecture analysis"、"OHOS cross-platform"、"cross-platform test"、
@@ -36,7 +36,7 @@ Return values and error codes **MUST** follow the OHOS original module's convent
 
 ### 3. Execution Environment
 
-This skill executes within an **ArkUI-X SDK source tree** (contains `.repo/`, `plugins/`, `interface/`). If you are in an application project (contains `entry/`, `.arkui-x/`), use `arkuix-ohosapi-platform-extension` instead.
+This skill executes within an **ArkUI-X SDK source tree** (contains `.repo/`, `plugins/`, `interface/`). If you are in an application project (contains `entry/`, `.arkui-x/`), this skill does not apply — app-level NAPI platform extension uses CMake + Gradle/Xcode, not BUILD.gn.
 
 ## 7-Phase Workflow
 
@@ -81,22 +81,22 @@ Before starting ANY phase, check for existing artifacts:
 - **DTS coverage**: Does the .d.ts already have `@crossplatform` annotations? If yes → some work already done.
 - **Reference implementation**: Is there an existing adapted module in `plugins/` you can reference?
 
-### Phase → Superpowers Mapping
+### Engineering Workflow
 
-Each phase integrates with superpowers process skills for discipline and parallelism:
+Each phase follows specific engineering practices for discipline and parallelism. **Full process details**: [references/engineering-workflow.md](references/engineering-workflow.md)
 
-| Phase | Superpowers / Skills | Purpose |
-|-------|-----------|---------|
-| Phase 1–3 | `dispatching-parallel-agents` | Parallel exploration (d.ts, manifest, plugins/) |
-| Phase 4 | `brainstorming` (if ambiguous) | Resolve boundary cases before mode selection |
-| Phase 5 | `writing-plans` | Formalize recommendation into execution plan |
-| Phase 6 | `subagent-driven-development` | Android/iOS/OHOS implementations in parallel |
-| Phase 6 | `test-driven-development` | Write tests before implementation |
-| Phase 6 (errors) | `systematic-debugging` | Structured debugging on build failures |
-| **Phase 7** | **`arkuix-e2e-test`** | **End-to-end verification: build → overlay SDK → test project → deploy → validate** |
-| Post Phase 7 | `verification-before-completion` | Evidence-based completion check |
+| Phase | Practice | Purpose |
+|-------|----------|---------|
+| Phase 1–3 | Parallel exploration | Dispatch independent analysis tasks simultaneously |
+| Phase 4 | Deep analysis for ambiguous cases | Resolve boundary cases before mode selection |
+| Phase 5 | Structured execution planning | Formalize recommendation into task breakdown |
+| Phase 6 | Parallel implementation | Android/iOS/OHOS implementations in parallel |
+| Phase 6 | Test-driven for core data APIs | Write tests before implementation |
+| Phase 6 (errors) | Systematic debugging | Root-cause analysis on build failures |
+| **Phase 7** | **E2E verification** | **Build → overlay SDK → test project → deploy → validate** |
+| Post Phase 7 | Evidence-based completion | Verification checklist before declaring done |
 
-**MANDATORY — READ for full details**: [references/superpowers-workflow.md](references/superpowers-workflow.md)
+**MANDATORY — READ for full details**: [references/engineering-workflow.md](references/engineering-workflow.md)
 
 ### Phase 1–2: Information Collection & Code Sync
 
@@ -206,7 +206,7 @@ ls plugins/{module_dir}/android/ plugins/{module_dir}/ios/ 2>/dev/null
 **MANDATORY — READ**: [references/phase4-architecture-analysis.md](references/phase4-architecture-analysis.md) — complete analysis dimensions and C/C++ native assessment.
 **MANDATORY — READ**: [references/architecture-modes.md](references/architecture-modes.md) — three architecture modes with detailed comparison.
 
-**⚡ Brainstorming (if ambiguous)**: For modules on the boundary between modes (e.g., settings = data access + platform control), invoke brainstorming to clarify classification before proceeding.
+**⚡ Brainstorming (if ambiguous)**: For modules on the boundary between modes (e.g., settings = data access + platform control), pause and analyze classification before proceeding.
 
 ### Phase 5: Architecture Recommendation
 
@@ -297,9 +297,9 @@ Generate production-ready code based on the chosen architecture mode.
 ```
 Phase 5 Plan → Decompose into independent tasks:
   Task A (deep): NAPI bindings + constants + pure virtual interface [shared]
-  Task B (deep): Android SettingsProvider (JNI + Java)           [load_skills: ohos-dev-cpp-coding-style]
-  Task C (deep): iOS SettingsProvider (ObjC++)                   [load_skills: ohos-dev-cpp-coding-style]
-  Task D (quick): 4 mandatory configuration files                [load_skills: arkuix-framework-api-adapter]
+  Task B (deep): Android SettingsProvider (JNI + Java)           [shared interface from Task A]
+  Task C (deep): iOS SettingsProvider (ObjC++)                   [shared interface from Task A]
+  Task D (quick): 4 mandatory configuration files                [module name from Task A]
 → All 4 tasks run in parallel (run_in_background=true)
 → After completion: verify each task's output
 ```
@@ -311,7 +311,7 @@ Phase 5 Plan → Decompose into independent tasks:
 
 **⚡ Systematic Debugging** (on build failures):
 1. Check include paths → GN dependency declarations → platform macros
-2. After 3 consecutive failures: STOP, revert, consult Oracle
+2. After 3 consecutive failures: STOP, revert, document what was attempted
 3. Never shotgun-debug random changes
 
 **⚡ Verification Before Completion**: Before marking any phase done:
@@ -323,11 +323,11 @@ Phase 5 Plan → Decompose into independent tasks:
 
 ### Phase 7: End-to-End Verification
 
-**Uses `arkuix-e2e-test` skill for full pipeline verification.**
+**Uses the self-contained E2E verification process**: [references/e2e-verification-guide.md](references/e2e-verification-guide.md)
 
 After Phase 6 generates code, verify it actually works on real devices/emulators.
 
-**MANDATORY — load skill**: `skill(name="arkuix-e2e-test")` before starting this phase.
+**MANDATORY — READ**: [references/e2e-verification-guide.md](references/e2e-verification-guide.md) before starting this phase.
 
 **Sub-phases**:
 
@@ -384,7 +384,7 @@ ace build app && ace run app   # iOS
 
 **Output**: Write to `.arkuix-adaptation/{module}-e2e-report.md` (template: [references/output-templates.md](references/output-templates.md) § Phase 7)
 
-**⚡ If validation fails**: Use `systematic-debugging` — do NOT shotgun-fix. After 3 failures, revert and consult Oracle.
+**⚡ If validation fails**: Use systematic root-cause debugging — do NOT shotgun-fix. After 3 failures, revert and document what was attempted.
 
 ## NEVER Do
 
@@ -479,25 +479,38 @@ Real-world directory patterns from `plugins/` for each architecture mode: [refer
 
 ## App-Level Platform Extension (Alternative Path)
 
-The 7-phase workflow above requires OHOS framework source code access (`repo sync`, `BUILD.gn`, `plugins/`). If you are working **within an application project** (no OHOS source), use `arkuix-ohosapi-platform-extension` skill instead.
+The 7-phase workflow above requires OHOS framework source code access (`repo sync`, `BUILD.gn`, `plugins/`). If you are working **within an application project** (no OHOS source), use app-level NAPI platform extension instead — it uses CMake + Gradle/Xcode rather than BUILD.gn.
 
 ### Decision: Framework-Level vs App-Level
 
 | Aspect | 7-Phase Workflow (this skill) | App-Level Extension |
 |--------|-------------------------------|---------------------|
 | Working directory | ArkUI-X SDK source tree (`.repo/`, `plugins/`) | Application project (`entry/`, `.arkui-x/`) |
-| Requires OHOS source | ✅ Yes (repo sync) | ❌ No |
+| Requires OHOS source | Yes (repo sync) | No |
 | Build system | BUILD.gn + GN | CMake + Gradle/Xcode |
 | Code location | `plugins/{module}/` | `entry/src/main/cpp/{module}/` |
 | SDK config files | 4 mandatory files | CMakeLists.txt only |
 | Best for | Framework contributors | Application developers |
 
-**→ If your working directory contains `entry/src/main/`, switch to `arkuix-ohosapi-platform-extension` skill.**
+**→ If your working directory contains `entry/src/main/`, app-level extension is the correct approach, not this skill.**
 
-## Related Skills
+## References
 
-- **arkuix-ohosapi-platform-extension** - App-level NAPI platform extension for developers without OHOS source code (CMake + Gradle/Xcode)
-- **arkuix-e2e-test** - Phase 7 end-to-end verification: build → overlay SDK → test project → deploy → validate
-- **superpowers/writing-plans** - For formalizing Phase 5 recommendation into execution plan
-- **superpowers/subagent-driven-development** - For parallel Phase 6 implementation
-- **superpowers/verification-before-completion** - For evidence-based completion check
+All supporting documentation is self-contained within this skill:
+
+| Reference | Purpose |
+|-----------|---------|
+| [engineering-workflow.md](references/engineering-workflow.md) | Phase execution methodology: parallel exploration, planning, TDD, debugging, verification |
+| [e2e-verification-guide.md](references/e2e-verification-guide.md) | Phase 7 E2E verification: build → overlay SDK → test project → deploy → validate |
+| [phase1-information-collection.md](references/phase1-information-collection.md) | Phase 1–2: Module identity collection and OHOS source code sync |
+| [phase2-code-sync.md](references/phase2-code-sync.md) | Phase 2: Detailed code sync procedures |
+| [phase3-api-analysis.md](references/phase3-api-analysis.md) | Phase 3: DTS analysis workflow and coverage interpretation |
+| [phase4-architecture-analysis.md](references/phase4-architecture-analysis.md) | Phase 4: Architecture analysis dimensions and C/C++ native assessment |
+| [architecture-modes.md](references/architecture-modes.md) | Three architecture modes (OHOS Reuse / Hybrid / Independent) with detailed comparison |
+| [phase5-architecture-recommendation.md](references/phase5-architecture-recommendation.md) | Phase 5: Mode recommendation decision matrix |
+| [phase6-implementation-guide.md](references/phase6-implementation-guide.md) | Phase 6: Complete implementation workflow |
+| [code-examples.md](references/code-examples.md) | Production-ready code templates for ALL layers (JNI, ObjC++, NAPI, unit tests) |
+| [config-files-format.md](references/config-files-format.md) | 4 mandatory configuration files: exact format and naming rules |
+| [output-templates.md](references/output-templates.md) | Output file templates for each phase |
+| [implementation-checklist.md](references/implementation-checklist.md) | Per-phase implementation checklist |
+| [plugin-directory-reference.md](references/plugin-directory-reference.md) | Real-world directory patterns from `plugins/` |

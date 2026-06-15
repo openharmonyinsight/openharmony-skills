@@ -128,9 +128,8 @@ Contains TWO sections: execution plan + E2E test case specification.
 - **skills**: [{skills}]
 
 ### Task E: E2E 验证 [依赖 B + C + D]
-- **范围**: 调用 arkuix-e2e-test 全管线
+- **范围**: 执行完整 E2E 验证管线 (build → overlay SDK → test project → deploy → validate)
 - **交付标准**: {platform_count} 端均通过 {api_count} 个 API 的 E2E 测试
-- **skills**: [arkuix-e2e-test]
 
 ## 并行执行图
 {execution_graph}
