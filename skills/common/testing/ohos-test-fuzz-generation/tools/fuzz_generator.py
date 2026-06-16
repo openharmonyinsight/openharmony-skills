@@ -14,6 +14,72 @@ import json
 from datetime import datetime
 from pathlib import Path
 
+
+def _split_namespace(namespace):
+    parts = namespace.replace(" ", "").split("::")
+    return [p for p in parts if p]
+
+
+def _build_namespace_open(parts):
+    if parts[0] == "OHOS":
+        inner_parts = parts[1:]
+        result = "namespace OHOS {\n"
+    else:
+        inner_parts = parts
+        result = ""
+    for p in inner_parts:
+        result += "namespace " + p + " {\n"
+    return result
+
+
+def _build_namespace_close(parts):
+    if parts[0] == "OHOS":
+        inner_parts = parts[1:]
+    else:
+        inner_parts = parts
+    result = ""
+    for p in reversed(inner_parts):
+        result += "} // namespace " + p + "\n"
+    if parts[0] == "OHOS":
+        result += "} // namespace OHOS\n"
+    return result
+
+
+def _namespace_qualifier(parts):
+    if parts[0] == "OHOS":
+        return "::".join(parts) + "::"
+    return "::".join(parts) + "::"
+
+
+def _extract_ipc_code_count(header_path_str, target_class):
+    """
+    从 IPC 头文件的 protected enum 中提取 code 值数量。
+    如 IVSyncConnection 的 enum { REQUEST_NEXT_VSYNC, ..., SET_NATIVE_DVSYNC_SWITCH } → 7
+    """
+    search_dirs = [
+        Path.cwd(),
+        Path.cwd().parent,
+        Path.cwd().parent.parent,
+    ]
+    resolved = _resolve_header_path(header_path_str, search_dirs)
+    if not resolved or not os.path.isfile(resolved):
+        return 0
+    content = Path(resolved).read_text(encoding="utf-8", errors="ignore")
+    content = re.sub(r"//[^\n]*", "", content)
+    content = re.sub(r"/\*.*?\*/", "", content, flags=re.DOTALL)
+    pattern = r"enum\s*\{([^}]+)\}\s*;"
+    m = re.search(pattern, content, re.DOTALL)
+    if not m:
+        return 0
+    body = m.group(1)
+    items = [
+        item.strip()
+        for item in body.split(",")
+        if item.strip() and not item.strip().startswith("//")
+    ]
+    return len(items)
+
+
 # Fix Windows console encoding
 if sys.platform == "win32":
     import locale
@@ -86,6 +152,20 @@ ENUM_SIZE_MAP = {
     "GraphicCM_ColorSpaceType": ("GRAPHIC_CM_COLOR_SPACE_TYPE_SIZE", 32),
     "ScreenScaleMode": ("SCREEN_SCALE_MODE_SIZE", 3),
     "GraphicPixelFormat": ("GRAPHIC_PIXEL_FORMAT_SIZE", 43),
+    "ShaderEffectType": ("SHADER_EFFECT_TYPE_SIZE", 13),
+    "TileMode": ("TILE_MODE_SIZE", 3),
+    "DisplayManagerAgentType": ("DISPLAY_MANAGER_AGENT_TYPE_SIZE", 18),
+    "StartingAppType": ("STARTING_APP_TYPE_SIZE", 4),
+    "BackgroundType": ("BACKGROUND_TYPE_SIZE", 5),
+    "LayerStateChange": ("LAYER_STATE_CHANGE_SIZE", 4),
+    "GraphicDispPowerStatus": ("GRAPHIC_DISP_POWER_STATUS_SIZE", 6),
+    "GraphicColorGamut": ("GRAPHIC_COLOR_GAMUT_SIZE", 8),
+    "GraphicGamutMap": ("GRAPHIC_GAMUT_MAP_SIZE", 4),
+    "GraphicTransformType": ("GRAPHIC_TRANSFORM_TYPE_SIZE", 6),
+    "BufferQueueUsage": ("BUFFER_QUEUE_USAGE_SIZE", 4),
+    "OHSurfaceSource": ("OH_SURFACE_SOURCE_SIZE", 4),
+    "OHScalingMode": ("OH_SCALING_MODE_SIZE", 4),
+    "OH_NativeBuffer_TransformType": ("OH_NATIVE_BUFFER_TRANSFORM_TYPE_SIZE", 17),
 }
 
 # 复杂类型的初始化代码生成（返回多行初始化字符串，直接插入函数体）
@@ -147,6 +227,35 @@ COMPLEX_TYPE_MAP = {
     "sptr<RSIScreenSupportedHdrFormatsCallback>": lambda var_name: (
         f"sptr<RSIScreenSupportedHdrFormatsCallback> {var_name};"
     ),
+    "std::vector<std::pair<float, float>>": lambda var_name: (
+        f"std::vector<std::pair<float, float>> {var_name};\n"
+        f"size_t {var_name}Len = fdp.ConsumeIntegral<uint8_t>() % 8;\n"
+        f"for (size_t i = 0; i < {var_name}Len; i++) {{\n"
+        f"    {var_name}.push_back({{fdp.ConsumeFloatingPoint<float>(), fdp.ConsumeFloatingPoint<float>()}});\n"
+        f"}}"
+    ),
+    "std::vector<std::shared_ptr<Geometry>>": lambda var_name: (
+        f"std::vector<std::shared_ptr<Geometry>> {var_name};\n"
+        f"size_t {var_name}Len = fdp.ConsumeIntegral<uint8_t>() % 4;\n"
+        f"for (size_t i = 0; i < {var_name}Len; i++) {{\n"
+        f"    {var_name}.push_back(nullptr);\n"
+        f"}}"
+    ),
+    "std::function<void()>": lambda var_name: (
+        f"std::function<void()> {var_name} = nullptr;"
+    ),
+    "std::function<void(NodeId, uint64_t)>": lambda var_name: (
+        f"std::function<void(NodeId, uint64_t)> {var_name} = nullptr;"
+    ),
+    "std::function<void(uint64_t, LayerStateChange, uint64_t)>": lambda var_name: (
+        f"std::function<void(uint64_t, LayerStateChange, uint64_t)> {var_name} = nullptr;"
+    ),
+    "std::shared_ptr<ImageFilter>": lambda var_name: (
+        f"std::shared_ptr<ImageFilter> {var_name} = nullptr;"
+    ),
+    "std::shared_ptr<Geometry>": lambda var_name: (
+        f"std::shared_ptr<Geometry> {var_name} = nullptr;"
+    ),
 }
 
 
@@ -191,7 +300,7 @@ def _resolve_header_path(header_str, search_dirs):
     return path
 
 
-def parse_header_methods(header_path_str, target_class):
+def parse_header_methods(header_path_str, target_class, include_no_params=False):
     """
     从头文件中解析 target_class 的 public 有参方法。
     返回 [(method_name, params_str, return_type)] 列表。
@@ -212,7 +321,9 @@ def parse_header_methods(header_path_str, target_class):
     # 优先使用增强版解析器
     if USE_ENHANCED_PARSER and parse_header_methods_enhanced is not None:
         try:
-            methods = parse_header_methods_enhanced(resolved, target_class)
+            methods = parse_header_methods_enhanced(
+                resolved, target_class, include_no_params=include_no_params
+            )
             if methods:
                 return methods
             print("[INFO] 增强版解析器未找到方法，尝试旧版解析器...")
@@ -286,13 +397,13 @@ def parse_header_methods(header_path_str, target_class):
         # 排除纯属性宏（返回类型包含宏且方法名像宏）
         if not re.match(r"^[A-Za-z_]\w*$", name):
             continue
-        # 排除无参方法
-        if params == "" or params.lower() == "void":
+        # 排除无参方法（除非 include_no_params=True）
+        if not include_no_params and (params == "" or params.lower() == "void"):
             continue
 
         # 检查是否所有参数都是输出参数（引用/指针且是const）
-        # 如果是，则该方法不需要fuzz输入，跳过
-        if _is_all_output_params(params):
+        # IPC stub 模式下不跳过（OnRemoteRequest 需要覆盖所有接口）
+        if not include_no_params and _is_all_output_params(params):
             continue
 
         methods.append((name, params, ret))
@@ -314,6 +425,31 @@ def _clean_type(raw_type):
     t = raw_type.strip()
     # 移除 const/volatile
     t = re.sub(r"\b(const|volatile)\b", "", t).strip()
+    # 移除变量名（最后一个token）——但保护C++关键字不被误移除
+    tokens = t.split()
+    cpp_keywords = {
+        "int",
+        "long",
+        "char",
+        "double",
+        "float",
+        "short",
+        "signed",
+        "unsigned",
+        "void",
+        "bool",
+        "auto",
+    }
+    if (
+        len(tokens) >= 2
+        and tokens[-1] not in cpp_keywords
+        and tokens[-1] not in ("*", "&")
+    ):
+        # 最后一个token是变量名，移除它
+        t = " ".join(tokens[:-1])
+    elif len(tokens) >= 2 and tokens[-1] in ("*", "&"):
+        # 类型以 * 或 & 结尾，如 "int *"
+        t = " ".join(tokens[:-1])
     # 移除引用和指针
     t = t.rstrip("&").rstrip("*").strip()
     # 移除默认赋值
@@ -430,7 +566,7 @@ def _is_output_param(param_str):
     return False
 
 
-def generate_param_consumer(param_str):
+def generate_param_consumer(param_str, include_output_params=False):
     """
     根据参数字符串生成 FuzzedDataProvider 消费代码列表。
     返回 (consumers, mock_classes, manual_verify_types)
@@ -475,8 +611,12 @@ def generate_param_consumer(param_str):
         if not part:
             continue
 
-        # 跳过输出参数
+        # 跳过输出参数（IPC stub 模式不跳过，声明局部变量传入）
         if _is_output_param(part):
+            if include_output_params:
+                var_name = part.split()[-1].lstrip("*").lstrip("&")
+                base_type = _clean_type(part).rstrip("&").rstrip("*").strip()
+                result.append((var_name, base_type, "0 /* output param */"))
             continue
 
         # 提取变量名（最后一个 token）
@@ -747,11 +887,103 @@ def _detect_refbase_subclass(header_path_str, target_class):
     return False
 
 
+def _find_stub_class_name(header_path_str, target_class):
+    """
+    从 IPC 头文件中查找 Stub 类名。
+    如 target_class 为 "IVSyncConnection"，查找 RSIVSyncConnectionStub 或类似命名。
+    """
+    search_dirs = [
+        Path.cwd(),
+        Path.cwd().parent,
+        Path.cwd().parent.parent,
+        Path(__file__).parent.parent.parent,
+        Path(__file__).parent.parent.parent.parent,
+    ]
+    resolved = _resolve_header_path(header_path_str, search_dirs)
+    if not resolved or not os.path.isfile(resolved):
+        return None
+
+    content = Path(resolved).read_text(encoding="utf-8", errors="ignore")
+    content = re.sub(r"//[^\n]*", "", content)
+    content = re.sub(r"/\*.*?\*/", "", content, flags=re.DOTALL)
+
+    patterns = [
+        rf"\bclass\s+(\w*{re.escape(target_class)}\w*Stub)\b",
+        rf"\bclass\s+(RSI{re.escape(target_class)}\w*Stub)\b",
+        rf"\bclass\s+(\w*Stub)\b[^;]*?\b{re.escape(target_class)}\b",
+    ]
+    for pat in patterns:
+        m = re.search(pat, content)
+        if m:
+            return m.group(1)
+
+    common_prefixes = ["RSI", "RS"]
+    for prefix in common_prefixes:
+        candidate = f"{prefix}{target_class}Stub"
+        if re.search(rf"\bclass\s+{re.escape(candidate)}\b", content):
+            return candidate
+
+    return f"{target_class}Stub"
+
+
+def _detect_ipc_stub(header_path_str, target_class):
+    """
+    检测目标类是否为 IPC Stub 类。
+    返回 (is_ipc_stub: bool, stub_class_name: str)
+    """
+    search_dirs = [
+        Path.cwd(),
+        Path.cwd().parent,
+        Path.cwd().parent.parent,
+        Path(__file__).parent.parent.parent,
+        Path(__file__).parent.parent.parent.parent,
+    ]
+    resolved = _resolve_header_path(header_path_str, search_dirs)
+    if not resolved or not os.path.isfile(resolved):
+        return (False, None)
+
+    content = Path(resolved).read_text(encoding="utf-8", errors="ignore")
+    content = re.sub(r"//[^\n]*", "", content)
+    content = re.sub(r"/\*.*?\*/", "", content, flags=re.DOTALL)
+
+    ipc_indicators = [
+        r"OnRemoteRequest",
+        r"MessageParcel",
+        r"IRemoteStub",
+        r"IRemoteBroker",
+        r"IRemoteProxy",
+        r"DECLARE_INTERFACE_DESCRIPTOR",
+    ]
+    indicator_count = 0
+    for indicator in ipc_indicators:
+        if re.search(indicator, content):
+            indicator_count += 1
+
+    inherits_remote_broker = bool(
+        re.search(r"class\s+\w+\s*:\s*public\s+IRemoteBroker", content)
+    )
+
+    stub_class_name = _find_stub_class_name(header_path_str, target_class)
+
+    is_ipc_stub = (
+        inherits_remote_broker
+        or indicator_count >= 2
+        or (stub_class_name and stub_class_name != f"{target_class}Stub")
+    )
+
+    if "Stub" in target_class or "Proxy" in target_class:
+        is_ipc_stub = True
+
+    return (is_ipc_stub, stub_class_name)
+
+
 def build_init_blocks(init_mode, namespace, target_class, header_path=None):
     target_lower = target_class.lower()
-    ns = namespace
 
-    # 检测是否继承自 RefBase
+    ns_parts = _split_namespace(namespace)
+    ns_qual = _namespace_qualifier(ns_parts)
+    full_qual = ns_qual
+
     is_refbase = False
     if header_path:
         is_refbase = _detect_refbase_subclass(header_path, target_class)
@@ -763,11 +995,11 @@ def build_init_blocks(init_mode, namespace, target_class, header_path=None):
             global_decl = f"{target_class}* g_{target_lower} = nullptr;"
         init_body = (
             f"    // 预初始化单例避免运行时初始化开销\n"
-            f"    OHOS::{ns}::g_{target_lower} = &OHOS::{ns}::{target_class}::GetInstance();\n"
+            f"    {full_qual}g_{target_lower} = &{full_qual}{target_class}::GetInstance();\n"
             f"    return 0;"
         )
         null_check = (
-            f"    if (OHOS::{ns}::g_{target_lower} == nullptr || data == nullptr) {{\n"
+            f"    if ({full_qual}g_{target_lower} == nullptr || data == nullptr) {{\n"
             f"        return -1;\n"
             f"    }}"
         )
@@ -777,18 +1009,18 @@ def build_init_blocks(init_mode, namespace, target_class, header_path=None):
             global_decl = f"sptr<{target_class}> g_{target_lower} = nullptr;"
             init_body = (
                 f"    // 预初始化单例避免运行时初始化开销\n"
-                f"    OHOS::{ns}::g_{target_lower} = OHOS::{ns}::{target_class}::Create();\n"
+                f"    {full_qual}g_{target_lower} = {full_qual}{target_class}::Create();\n"
                 f"    return 0;"
             )
         else:
             global_decl = f"std::shared_ptr<{target_class}> g_{target_lower} = nullptr;"
             init_body = (
                 f"    // 预初始化单例避免运行时初始化开销\n"
-                f"    OHOS::{ns}::g_{target_lower} = OHOS::{ns}::{target_class}::Create();\n"
+                f"    {full_qual}g_{target_lower} = {full_qual}{target_class}::Create();\n"
                 f"    return 0;"
             )
         null_check = (
-            f"    if (OHOS::{ns}::g_{target_lower} == nullptr || data == nullptr) {{\n"
+            f"    if ({full_qual}g_{target_lower} == nullptr || data == nullptr) {{\n"
             f"        return -1;\n"
             f"    }}"
         )
@@ -797,17 +1029,17 @@ def build_init_blocks(init_mode, namespace, target_class, header_path=None):
         if is_refbase:
             global_decl = f"sptr<{target_class}> g_{target_lower} = nullptr;"
             init_body = (
-                f"    OHOS::{ns}::g_{target_lower} = new OHOS::{ns}::{target_class}();\n"
+                f"    {full_qual}g_{target_lower} = new {full_qual}{target_class}();\n"
                 f"    return 0;"
             )
         else:
             global_decl = f"std::shared_ptr<{target_class}> g_{target_lower} = nullptr;"
             init_body = (
-                f"    OHOS::{ns}::g_{target_lower} = std::make_shared<OHOS::{ns}::{target_class}>();\n"
+                f"    {full_qual}g_{target_lower} = std::make_shared<{full_qual}{target_class}>();\n"
                 f"    return 0;"
             )
         null_check = (
-            f"    if (OHOS::{ns}::g_{target_lower} == nullptr || data == nullptr) {{\n"
+            f"    if ({full_qual}g_{target_lower} == nullptr || data == nullptr) {{\n"
             f"        return -1;\n"
             f"    }}"
         )
@@ -830,6 +1062,16 @@ def generate_fuzzer_cpp(
     """
     template = read_template("fuzzer.cpp")
     target_lower = target_class.lower()
+
+    ns_parts = _split_namespace(namespace)
+    ns_open = _build_namespace_open(ns_parts)
+    ns_close = _build_namespace_close(ns_parts)
+    ns_qual = _namespace_qualifier(ns_parts)
+    header_basename = (
+        os.path.basename(target_header.strip().strip('"').strip("'"))
+        if target_header
+        else ""
+    )
 
     global_decl, init_body, null_check, call_prefix = build_init_blocks(
         init_mode, namespace, target_class, header_path
@@ -877,21 +1119,36 @@ def generate_fuzzer_cpp(
                     used_enum_constants[const_name] = val
 
     # 生成常量
+    name_counts_reg = {}
+    for m_name, _, _ in methods:
+        name_counts_reg[m_name] = name_counts_reg.get(m_name, 0) + 1
     constants_lines = []
     for const_name, val in sorted(used_enum_constants.items()):
         constants_lines.append(f"constexpr uint8_t {const_name} = {val};")
+    name_seen_reg = {}
     for idx, (name, _, _) in enumerate(methods):
-        constants_lines.append(f"const uint8_t {_snake_case_const(name)} = {idx};")
+        count = name_seen_reg.get(name, 0)
+        name_seen_reg[name] = count + 1
+        const_suffix = f"_V{count}" if name_counts_reg[name] > 1 else ""
+        constants_lines.append(
+            f"const uint8_t {_snake_case_const(name)}{const_suffix} = {idx};"
+        )
     constants_lines.append(f"const uint8_t TARGET_SIZE = {len(methods)};")
     method_constants = "\n".join(constants_lines)
 
     # 生成 DoXXX 函数
+    name_seen_func = {}
     func_lines = []
-    all_mock_classes = []  # 收集所有需要生成的 Mock 类
-    all_manual_verify_types = []  # 收集所有需要人工确认的类型
+    all_mock_classes = []
+    all_manual_verify_types = []
     for name, params, _ in methods:
-        do_name = _do_func_name(name)
-        consumers, mock_classes, manual_verify_types = generate_param_consumer(params)
+        count = name_seen_func.get(name, 0)
+        name_seen_func[name] = count + 1
+        suffix = str(count) if name_counts_reg[name] > 1 else ""
+        do_name = _do_func_name(name) + suffix
+        consumers, mock_classes, manual_verify_types = generate_param_consumer(
+            params, include_output_params=True
+        )
         all_mock_classes.extend(mock_classes)
         all_manual_verify_types.extend(manual_verify_types)
         body_lines = []
@@ -947,9 +1204,14 @@ def generate_fuzzer_cpp(
 
     # 生成 switch case
     case_lines = []
+    name_seen_case = {}
     for name, _, _ in methods:
-        const_name = _snake_case_const(name)
-        do_name = _do_func_name(name)
+        count = name_seen_case.get(name, 0)
+        name_seen_case[name] = count + 1
+        suffix = str(count) if name_counts_reg[name] > 1 else ""
+        const_suffix = f"_V{count}" if name_counts_reg[name] > 1 else ""
+        const_name = _snake_case_const(name) + const_suffix
+        do_name = _do_func_name(name) + suffix
         case_lines.append(
             f"        case {const_name}:\n"
             f"            {do_name}(fdp);\n"
@@ -962,7 +1224,8 @@ def generate_fuzzer_cpp(
         "{FUZZER_NAME}": fuzzer_name,
         "{NAMESPACE}": namespace,
         "{TARGET_CLASS}": target_class,
-        "{TARGET_HEADER}": target_header,
+        "{TARGET_HEADER}": f'"{header_basename}"',
+        "{NS_QUALIFIER}": ns_qual,
         "{GLOBAL_INSTANCE_DECL}": global_decl,
         "{LLVM_FUZZER_INIT_BODY}": init_body,
         "{NULL_CHECK_GLOBAL}": null_check,
@@ -975,17 +1238,278 @@ def generate_fuzzer_cpp(
     for placeholder, value in replacements.items():
         content = content.replace(placeholder, value)
 
-    # 在 namespace {NAMESPACE} 之后插入 Mock 类定义
+    content = content.replace(
+        f"namespace OHOS {{\nnamespace {namespace} {{\n",
+        ns_open + "\n",
+    )
+    content = content.replace(
+        f"}} // namespace {namespace}\n}} // namespace OHOS\n",
+        ns_close,
+    )
+
+    # 在 namespace 开启之后插入 Mock 类定义
     if mock_classes_def:
-        # 找到 "namespace {NAMESPACE} {" 之后的位置
-        ns_pattern = f"namespace {namespace} {{"
-        if ns_pattern in content:
-            insert_pos = content.find(ns_pattern) + len(ns_pattern)
+        ns_anchor = ns_open.rstrip()
+        if ns_anchor in content:
+            insert_pos = content.find(ns_anchor) + len(ns_anchor)
             content = (
                 content[:insert_pos] + "\n" + mock_classes_def + content[insert_pos:]
             )
 
     return content, all_manual_verify_types
+
+
+def generate_ipc_stub_fuzzer_cpp(
+    fuzzer_name,
+    namespace,
+    target_class,
+    target_header,
+    methods,
+    init_mode="none",
+    header_path=None,
+    stub_class_name=None,
+    total_method_count=None,
+):
+    stub_name = stub_class_name if stub_class_name else f"{target_class}Stub"
+    target_lower = target_class.lower()
+    year = datetime.now().year
+
+    code_max = len(methods)
+    if total_method_count and total_method_count > len(methods):
+        code_max = total_method_count
+    if header_path:
+        enum_count = _extract_ipc_code_count(header_path, target_class)
+        if enum_count > 0:
+            code_max = enum_count
+
+    ns_parts = _split_namespace(namespace)
+    ns_open = _build_namespace_open(ns_parts)
+    ns_close = _build_namespace_close(ns_parts)
+    ns_qual = _namespace_qualifier(ns_parts)
+
+    header_basename = (
+        os.path.basename(target_header.strip().strip('"').strip("'"))
+        if target_header
+        else ""
+    )
+
+    stub_full_qual = f"{ns_qual}{stub_name}"
+
+    name_counts = {}
+    for m_name, _, _ in methods:
+        name_counts[m_name] = name_counts.get(m_name, 0) + 1
+    name_seen = {}
+
+    func_lines = []
+    all_mock_classes = []
+    all_manual_verify_types = []
+    for name, params, _ in methods:
+        count = name_seen.get(name, 0)
+        name_seen[name] = count + 1
+        if name_counts[name] > 1:
+            suffix = str(count)
+        else:
+            suffix = ""
+        do_name = _do_func_name(name) + suffix
+        const_name = _snake_case_const(name) + (
+            f"_V{count}" if name_counts[name] > 1 else ""
+        )
+        consumers, mock_classes, manual_verify_types = generate_param_consumer(
+            params, include_output_params=True
+        )
+        all_mock_classes.extend(mock_classes)
+        all_manual_verify_types.extend(manual_verify_types)
+        body_lines = []
+        for var_name, cpp_type, consumer in consumers:
+            if cpp_type is None:
+                body_lines.append("    " + consumer)
+            elif (
+                consumer.strip().endswith(";")
+                and var_name in consumer
+                and "=" not in consumer
+            ):
+                body_lines.append("    " + consumer.strip())
+            else:
+                body_lines.append(f"    {cpp_type} {var_name} = {consumer};")
+
+        call_line = f"    g_stub->{name}("
+        if consumers:
+            call_line += ", ".join(v for v, _, _ in consumers) + ");"
+        else:
+            call_line += ");"
+
+        if body_lines:
+            func_body = "\n".join(body_lines) + "\n" + call_line
+        else:
+            func_body = call_line
+
+        func_lines.append(
+            f"void {do_name}(FuzzedDataProvider& fdp)\n{{\n{func_body}\n}}"
+        )
+
+    method_functions = "\n\n".join(func_lines)
+
+    constants_lines = []
+    name_counts2 = {}
+    name_seen2 = {}
+    for idx, (name, _, _) in enumerate(methods):
+        name_counts2[name] = name_counts2.get(name, 0) + 1
+    for idx, (name, _, _) in enumerate(methods):
+        count2 = name_seen2.get(name, 0)
+        name_seen2[name] = count2 + 1
+        if name_counts2[name] > 1:
+            const_suffix = f"_V{count2}"
+        else:
+            const_suffix = ""
+        constants_lines.append(
+            f"const uint8_t {_snake_case_const(name)}{const_suffix} = {idx};"
+        )
+    constants_lines.append(f"constexpr uint8_t CODE_MAX = {code_max};")
+    method_constants = "\n".join(constants_lines)
+
+    case_lines = []
+    name_counts3 = {}
+    name_seen3 = {}
+    for m_name, _, _ in methods:
+        name_counts3[m_name] = name_counts3.get(m_name, 0) + 1
+    for name, params, _ in methods:
+        count3 = name_seen3.get(name, 0)
+        name_seen3[name] = count3 + 1
+        if name_counts3[name] > 1:
+            suffix3 = str(count3)
+            const_suffix3 = f"_V{count3}"
+        else:
+            suffix3 = ""
+            const_suffix3 = ""
+        do_name = _do_func_name(name) + suffix3
+        const_name = _snake_case_const(name) + const_suffix3
+        case_lines.append(
+            f"        case {const_name}:\n"
+            f"            {do_name}(fdp);\n"
+            f"            break;"
+        )
+    switch_cases = "\n".join(case_lines)
+
+    used_enum_constants = {}
+    for _, params, _ in methods:
+        parts = []
+        depth = 0
+        current = ""
+        for ch in params:
+            if ch in "(<{":
+                depth += 1
+                current += ch
+            elif ch in ")>}":
+                depth -= 1
+                current += ch
+            elif ch == "," and depth == 0:
+                parts.append(current.strip())
+                current = ""
+            else:
+                current += ch
+        if current.strip():
+            parts.append(current.strip())
+        for part in parts:
+            t = part.strip()
+            t = re.sub(r"=.*", "", t).strip()
+            tokens = t.split()
+            if len(tokens) >= 2 and tokens[-1] in ("*", "&"):
+                base_type = _clean_type(" ".join(tokens[:-1]))
+            elif len(tokens) >= 1:
+                base_type = _clean_type(
+                    " ".join(tokens[:-1]) if len(tokens) > 1 else tokens[0]
+                )
+            else:
+                base_type = _clean_type(t)
+            if base_type in ENUM_SIZE_MAP:
+                const_name, val = ENUM_SIZE_MAP[base_type]
+                used_enum_constants[const_name] = val
+
+    enum_const_lines = ""
+    if used_enum_constants:
+        ecl_lines = []
+        for const_name, val in sorted(used_enum_constants.items()):
+            ecl_lines.append(f"constexpr uint8_t {const_name} = {val};")
+        enum_const_lines = "\n".join(ecl_lines) + "\n"
+
+    mock_classes_def = ""
+    if all_mock_classes:
+        unique_mock_classes = list(dict.fromkeys(all_mock_classes))
+        mock_defs = []
+        for class_name in unique_mock_classes:
+            mock_def = _generate_mock_class(class_name, header_path)
+            if mock_def:
+                mock_defs.append(mock_def)
+        mock_classes_def = "\n\n".join(mock_defs)
+
+    cpp_code = (
+        f"/*\n"
+        f" * Copyright (c) {year} Huawei Device Co., Ltd.\n"
+        f' * Licensed under the Apache License, Version 2.0 (the "License");\n'
+        f" * you may not use this file except in compliance with the License.\n"
+        f" * You may obtain a copy of the License at\n"
+        f" *\n"
+        f" *     http://www.apache.org/licenses/LICENSE-2.0\n"
+        f" *\n"
+        f" * Unless required by applicable law or agreed to in writing, software\n"
+        f' * distributed under the License is distributed on an "AS IS" BASIS,\n'
+        f" * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n"
+        f" * See the License for the specific language governing permissions and\n"
+        f" * limitations under the License.\n"
+        f" */\n"
+        f"\n"
+        f'#include "{fuzzer_name}.h"\n'
+        f"\n"
+        f"#include <fuzzer/FuzzedDataProvider.h>\n"
+        f"\n"
+        f'#include "{header_basename}"\n'
+        f"\n"
+        + ns_open
+        + "\n"
+        + f"std::shared_ptr<{stub_name}> g_stub = nullptr;\n"
+        + "\n"
+        + (mock_classes_def + "\n" if mock_classes_def else "")
+        + enum_const_lines
+        + "\n"
+        + "namespace {\n"
+        + "\n"
+        + method_constants
+        + "\n"
+        + "\n"
+        + method_functions
+        + "\n"
+        + "\n"
+        + "} // namespace\n"
+        + "\n"
+        + ns_close
+        + "\n"
+        + "\n"
+        + 'extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv)\n'
+        + "{\n"
+        + f"    {ns_qual}g_stub = std::make_shared<{stub_full_qual}>();\n"
+        + "    return 0;\n"
+        + "}\n"
+        + "\n"
+        + 'extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)\n'
+        + "{\n"
+        + f"    if ({ns_qual}g_stub == nullptr || data == nullptr) {{\n"
+        + "        return -1;\n"
+        + "    }\n"
+        + "\n"
+        + "    FuzzedDataProvider fdp(data, size);\n"
+        + "\n"
+        + "    uint8_t tarPos = fdp.ConsumeIntegral<uint8_t>() % CODE_MAX;\n"
+        + "    switch (tarPos) {\n"
+        + switch_cases
+        + "\n"
+        + "        default:\n"
+        + "            return -1;\n"
+        + "    }\n"
+        + "    return 0;\n"
+        + "}\n"
+    )
+
+    return cpp_code, all_manual_verify_types
 
 
 def generate_fuzzer_h(fuzzer_name):
@@ -2266,20 +2790,26 @@ def main():
 
     header_include = f'"{args.header.strip().strip(chr(34)).strip(chr(39))}"'
 
-    # 自动解析头文件中的 public 有参方法
-    methods = parse_header_methods(args.header, args.target_class)
+    # 自动解析头文件中的 public 方法
+    # IPC stub 模式需要包含无参方法（OnRemoteRequest 需要覆盖所有接口）
+    is_ipc_stub, stub_class_name = _detect_ipc_stub(args.header, args.target_class)
+    include_no_params = bool(is_ipc_stub)
+    methods = parse_header_methods(
+        args.header, args.target_class, include_no_params=include_no_params
+    )
     if not methods:
-        print(
-            "警告: 未能从头文件中解析出 public 有参方法，将生成仅含 2 个占位方法的骨架"
-        )
+        print("警告: 未能从头文件中解析出 public 方法，将生成仅含 2 个占位方法的骨架")
         methods = [
             ("Method1", "uint32_t param1, uint32_t param2", "void"),
             ("Method2", "uint64_t param", "void"),
         ]
     else:
-        print(f"从头文件解析到 {len(methods)} 个 public 有参方法：")
+        print(f"从头文件解析到 {len(methods)} 个 public 方法：")
         for name, params, ret in methods:
             print(f"  - {ret} {name}({params})")
+
+    if is_ipc_stub:
+        print(f"  检测到 IPC Stub 类，stub_class_name = {stub_class_name}")
 
     # 规则3: 如果方法数超过10个，自动拆分为多个fuzzer文件
     MAX_METHODS_PER_FUZZER = 10
@@ -2316,15 +2846,28 @@ def main():
                 args.path, batch_fuzzer_name
             )
 
-            cpp_content, batch_manual_verify_types = generate_fuzzer_cpp(
-                batch_fuzzer_name,
-                args.namespace,
-                args.target_class,
-                header_include,
-                batch_methods,
-                args.init_mode,
-                header_path=args.header,
-            )
+            if is_ipc_stub:
+                cpp_content, batch_manual_verify_types = generate_ipc_stub_fuzzer_cpp(
+                    batch_fuzzer_name,
+                    args.namespace,
+                    args.target_class,
+                    header_include,
+                    batch_methods,
+                    args.init_mode,
+                    header_path=args.header,
+                    stub_class_name=stub_class_name,
+                    total_method_count=len(methods),
+                )
+            else:
+                cpp_content, batch_manual_verify_types = generate_fuzzer_cpp(
+                    batch_fuzzer_name,
+                    args.namespace,
+                    args.target_class,
+                    header_include,
+                    batch_methods,
+                    args.init_mode,
+                    header_path=args.header,
+                )
             files_to_create = [
                 (f"{batch_fuzzer_name}.cpp", cpp_content),
                 (f"{batch_fuzzer_name}.h", generate_fuzzer_h(batch_fuzzer_name)),
@@ -2400,15 +2943,29 @@ def main():
         fuzzer_dir, corpus_dir = create_fuzzer_directory(args.path, args.name)
         print(f"创建目录: {fuzzer_dir}")
 
-        single_cpp_content, single_manual_verify_types = generate_fuzzer_cpp(
-            args.name,
-            args.namespace,
-            args.target_class,
-            header_include,
-            methods,
-            args.init_mode,
-            header_path=args.header,
-        )
+        if is_ipc_stub:
+            single_cpp_content, single_manual_verify_types = (
+                generate_ipc_stub_fuzzer_cpp(
+                    args.name,
+                    args.namespace,
+                    args.target_class,
+                    header_include,
+                    methods,
+                    args.init_mode,
+                    header_path=args.header,
+                    stub_class_name=stub_class_name,
+                )
+            )
+        else:
+            single_cpp_content, single_manual_verify_types = generate_fuzzer_cpp(
+                args.name,
+                args.namespace,
+                args.target_class,
+                header_include,
+                methods,
+                args.init_mode,
+                header_path=args.header,
+            )
         files_to_create = [
             (f"{args.name}.cpp", single_cpp_content),
             (f"{args.name}.h", generate_fuzzer_h(args.name)),
