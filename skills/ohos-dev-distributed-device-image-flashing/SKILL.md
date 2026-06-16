@@ -3,7 +3,7 @@ name: ohos-dev-distributed-device-image-flashing
 description: Use when the user wants to download OpenHarmony daily build images or flash them to a real device (DAYU200/RK3568 or others). Triggers on daily build, DAYU200, RK3568, flashing, burning, hdc reboot, upgrading firmware.
 metadata:
   author: openharmony
-  scope: common
+  scope: distributed
   stage: development
   domain: device
   capability: image-flashing

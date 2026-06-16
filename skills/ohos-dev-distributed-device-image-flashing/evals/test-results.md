@@ -1,6 +1,6 @@
 # Test Results
 
-Date: 2026-06-07
+Date: 2026-06-16
 
 Scope:
 
@@ -15,14 +15,14 @@ python3 -m unittest skills/ohos-dev-distributed-device-image-flashing/tests/test
 python3 -m py_compile skills/ohos-dev-distributed-device-image-flashing/download_daily.py skills/ohos-dev-distributed-device-image-flashing/flash_device.py
 python3 -m json.tool skills/ohos-dev-distributed-device-image-flashing/evals/evals.json
 git diff --check
-rg -n -i 'claude|codex|libing|ohos[_-]?master|/home/[^[:space:]]+|frank_libing|localhost|workspace_default|f08721013|skills/common/testing|flash_daily_dayu200' skills/ohos-dev-distributed-device-image-flashing
+rg -n -i 'claude|codex|libing|ohos[_-]?master|/home/[^[:space:]]+|frank_libing|localhost|workspace_default|f08721013|flash_daily_dayu200' skills/ohos-dev-distributed-device-image-flashing
 ```
 
 Results:
 
 | Check | Result |
 | --- | --- |
-| Unit tests | Passed: 7/7 |
+| Unit tests | Passed: 8/8 |
 | Python compile | Passed |
 | Eval JSON syntax | Passed |
 | Whitespace diff check | Passed |
