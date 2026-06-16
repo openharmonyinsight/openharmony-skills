@@ -47,7 +47,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 
     FuzzedDataProvider fdp(data, size);
 
-    uint8_t tarPos = fdp.ConsumeIntegral<uint8_t>() % OHOS::{NAMESPACE}::TARGET_SIZE;
+    uint8_t tarPos = fdp.ConsumeIntegral<uint8_t>() % {NS_QUALIFIER}TARGET_SIZE;
     switch (tarPos) {
 {SWITCH_CASES}
         default:

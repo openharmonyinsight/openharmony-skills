@@ -77,11 +77,10 @@ def check_build_gn_target_name(filepath, content=None):
 if __name__ == "__main__":
     import os
     import sys
-
     if len(sys.argv) < 2:
-        print(f"Usage: python {sys.argv[0]} <BUILD.gn>")
+        print(f"Usage: python {sys.argv[0]} <cpp_file>")
         sys.exit(1)
-
+    
     filepath = sys.argv[1]
     if not os.path.exists(filepath):
         print(f"Error: File not found: {filepath}")
