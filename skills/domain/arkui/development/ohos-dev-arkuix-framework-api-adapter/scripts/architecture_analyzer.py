@@ -72,35 +72,34 @@ class ArchitectureAnalyzer:
         }
 
     def _is_napi_file(self, file_path: Path) -> bool:
-        """Check if file is NAPI binding code"""
         name_lower = file_path.name.lower()
         path_lower = str(file_path).lower()
-        return 'napi' in name_lower or 'js_' in path_lower
+        return 'napi' in name_lower or 'js_' in path_lower or '_module' in name_lower
 
     def _is_platform_file(self, file_path: Path) -> bool:
-        """Check if file is platform-specific"""
         path_lower = str(file_path).lower()
         return any(keyword in path_lower for keyword in [
-            'adapter/', 'platform/', 'osal/', 'ohos/', 'android/', 'ios/'
-        ])
+            '/android/', '/ios/', 'adapter/android', 'adapter/ios',
+        ]) and '/mock/' not in path_lower
 
     def _find_dependencies(self, files: List[Path]) -> Dict:
-        """Find dependencies from #include statements"""
         internal_deps = Counter()
         external_deps = Counter()
+
+        ohos_prefixes = ('foundation/', 'base/', 'commonlibrary/', 'third_party/',
+                         'distributeddatamgr/', 'communication/', 'arkui/')
 
         for file in files:
             try:
                 content = file.read_text(encoding='utf-8')
-                # Find #include statements
                 includes = re.findall(r'#include\s*[<"]([^>"<]+)[>"]', content)
 
                 for inc in includes:
-                    if inc.startswith('module_|@ohos/'):
-                        # Internal dependency
+                    if inc.startswith(ohos_prefixes):
                         internal_deps[inc] += 1
-                    elif not inc.startswith('base/|foundation/|core/'):
-                        # External dependency
+                    elif '/' not in inc and not inc.startswith('ndk/'):
+                        pass
+                    else:
                         external_deps[inc] += 1
             except Exception:
                 pass
@@ -111,13 +110,12 @@ class ArchitectureAnalyzer:
         }
 
     def _recommend_mode(self, platform_ratio: float, platform_lines: int, total_lines: int) -> str:
-        """Recommend architecture mode based on analysis"""
         if platform_ratio >= 90:
-            return "OHOS Reuse Mode"
+            return "OHOS Reuse Mode (or C/C++ Native — zero platform code needed)"
         elif platform_ratio <= 30 or (platform_lines / total_lines > 0.7 if total_lines > 0 else False):
             return "Independent Implementation Mode"
         else:
-            return "Hybrid Mode"
+            return "Hybrid Mode (or OHOS Reuse with adapters — verify if platform code is existing adaptation)"
 
     def _estimate_reuse(self, platform_ratio: float) -> str:
         """Estimate code reuse percentage"""

@@ -1,18 +1,19 @@
 {
   "skill_version": "1.0.0",
-  "name": "platform-adapter",
+  "name": "arkuix-framework-api-adapter",
   "description": "ArkUI-X Platform API Adapter Automation Skill",
 
   "repo_config": {
-    "manifest_path": ".repo/manifests/openharmony-master.xml",
+    "manifest_path": ".repo/manifests/openharmony.xml",
     "remote_base": "https://gitcode.com/openharmony/",
     "default_revision": "master"
   },
 
   "architecture_analysis": {
     "platform_independent_threshold": 0.9,
-    "platform_heavy_threshold": 0.4,
-    "hybrid_threshold": 0.7,
+    "platform_heavy_threshold": 0.5,
+    "hybrid_low_threshold": 0.5,
+    "hybrid_high_threshold": 0.9,
 
     "indicators": {
       "platform_independent": [
@@ -57,7 +58,7 @@
       },
       "hybrid": {
         "examples": ["camera", "image", "audio", "player", "notification"],
-        "recommended_mode": "ohos_reuse_abstraction",
+        "recommended_mode": "hybrid",
         "code_reuse": 0.7,
         "estimated_lines": 1000
       }
@@ -150,7 +151,7 @@
       }
     },
 
-    "ohos_reuse_abstraction": {
+    "hybrid": {
       "name": "OHOS Reuse with Service Abstraction",
       "description": "Reuse OHOS code with abstracted platform services",
       "layers": [
@@ -209,9 +210,9 @@
 
   "reference_implementations": {
     "http": {
-      "mode": "independent",
+      "mode": "ohos_reuse",
       "path": "plugins/net/http/",
-      "description": "HTTP client - independent implementation"
+      "description": "HTTP client - OHOS reuse mode"
     },
     "pasteboard": {
       "mode": "ohos_reuse",
@@ -238,8 +239,8 @@
       "dependency_count": "external_dependencies.length"
     },
     "classification": {
-      "if platform_ratio < 0.4": "platform_independent",
-      "elif platform_ratio > 0.7": "platform_heavy",
+      "if platform_ratio > 0.9": "platform_independent",
+      "elif platform_ratio < 0.5": "platform_heavy",
       "else": "hybrid"
     }
   }

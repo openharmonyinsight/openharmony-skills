@@ -30,7 +30,6 @@ class CodeGenerator:
             ('plugin_lib.gni', self._generate_plugin_lib_entry),
             ('interface/sdk/plugins/api/apiConfig.json', self._generate_api_config),
             ('build_plugins/sdk/arkui_cross_sdk_description_std.json', self._generate_sdk_description),
-            (f'interface/sdk-js/api/@ohos.{module}.d.ts', self._generate_dts_annotations),
         ]
 
         for file_path, generator in files_to_update:
@@ -54,7 +53,45 @@ class CodeGenerator:
                 print(f"❌ Error updating {file_path}: {e}")
                 return False
 
+        dts_file = self._find_dts_file(module)
+        if dts_file:
+            full_path = self.project_root / dts_file
+            if dry_run:
+                content = self._generate_dts_annotations(module, repo_name, api_version, full_path)
+                print(f"\n📄 File: {dts_file}")
+                print(f"--- Preview ---")
+                print(content[:500] + "..." if len(content) > 500 else content)
+                print(f"--- End Preview ---\n")
+            else:
+                self._update_file(full_path, self._generate_dts_annotations, module, repo_name, api_version)
+                print(f"✅ Updated: {dts_file}")
+        else:
+            print(f"⚠️  Could not find d.ts file for module '{module}'")
+            print(f"   Searched: interface/sdk-js/api/@ohos.*{module_name}*")
+            return False
+
         return True
+
+    def _find_dts_file(self, module: str) -> str:
+        dts_dir = self.project_root / 'interface' / 'sdk-js' / 'api'
+        if not dts_dir.exists():
+            return None
+
+        exact_match = dts_dir / f'@ohos.{module}.d.ts'
+        if exact_match.exists():
+            return f'interface/sdk-js/api/@ohos.{module}.d.ts'
+
+        module_no_sep = module.replace('/', '.').replace('_', '').replace('.', '').lower()
+
+        import glob as glob_mod
+        for candidate in sorted(dts_dir.glob('@ohos.*.d.ts')):
+            name = candidate.name
+            base = name.replace('@ohos.', '').replace('.d.ts', '')
+            base_no_sep = base.replace('.', '').replace('_', '').lower()
+            if base_no_sep == module_no_sep:
+                return f'interface/sdk-js/api/{name}'
+
+        return None
 
     def _generate_plugin_lib_entry(self, module: str, repo_name: str, api_version: int, file_path: Path) -> str:
         """Generate plugin_lib.gni entry"""
@@ -165,12 +202,10 @@ common_plugin_libs += [
             file_path.write_text(current + new_content, encoding='utf-8')
 
     def validate(self, module: str) -> bool:
-        """Validate that all 4 mandatory files exist and are properly configured"""
         required_files = [
             self.project_root / 'plugins/plugin_lib.gni',
             self.project_root / 'interface/sdk/plugins/api/apiConfig.json',
             self.project_root / 'build_plugins/sdk/arkui_cross_sdk_description_std.json',
-            self.project_root / f'interface/sdk-js/api/@ohos.{module}.d.ts',
         ]
 
         all_valid = True
@@ -180,6 +215,18 @@ common_plugin_libs += [
                 all_valid = False
             else:
                 print(f"✅ Found: {file_path.relative_to(self.project_root)}")
+
+        dts_file = self._find_dts_file(module)
+        if dts_file:
+            full_path = self.project_root / dts_file
+            if full_path.exists():
+                print(f"✅ Found: {dts_file}")
+            else:
+                print(f"❌ Missing: {dts_file}")
+                all_valid = False
+        else:
+            print(f"❌ Could not find d.ts file for module '{module}'")
+            all_valid = False
 
         return all_valid
 
