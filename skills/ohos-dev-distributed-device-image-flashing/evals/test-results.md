@@ -4,18 +4,18 @@ Date: 2026-06-07
 
 Scope:
 
-- Review PR 211 after flattening `ohos-test-device-image-flashing` into `skills/ohos-test-device-image-flashing`.
+- Review PR 211 after flattening `ohos-dev-distributed-device-image-flashing` into `skills/ohos-dev-distributed-device-image-flashing`.
 - Verify that the skill remains tool-neutral and does not contain user-specific environment paths.
 - Verify safety behavior for archive extraction, destructive flashing confirmation, missing `parameter.txt`, and `hdc` command failures.
 
 Commands:
 
 ```bash
-python3 -m unittest skills/ohos-test-device-image-flashing/tests/test_device_image_flashing.py -v
-python3 -m py_compile skills/ohos-test-device-image-flashing/download_daily.py skills/ohos-test-device-image-flashing/flash_device.py
-python3 -m json.tool skills/ohos-test-device-image-flashing/evals/evals.json
+python3 -m unittest skills/ohos-dev-distributed-device-image-flashing/tests/test_device_image_flashing.py -v
+python3 -m py_compile skills/ohos-dev-distributed-device-image-flashing/download_daily.py skills/ohos-dev-distributed-device-image-flashing/flash_device.py
+python3 -m json.tool skills/ohos-dev-distributed-device-image-flashing/evals/evals.json
 git diff --check
-rg -n -i 'claude|codex|libing|ohos[_-]?master|/home/[^[:space:]]+|frank_libing|localhost|workspace_default|f08721013|skills/common/testing|flash_daily_dayu200' skills/ohos-test-device-image-flashing
+rg -n -i 'claude|codex|libing|ohos[_-]?master|/home/[^[:space:]]+|frank_libing|localhost|workspace_default|f08721013|skills/common/testing|flash_daily_dayu200' skills/ohos-dev-distributed-device-image-flashing
 ```
 
 Results:
