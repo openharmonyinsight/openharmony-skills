@@ -3,7 +3,7 @@ name: ohos-dev-distributed-cpp-callgraph-analysis
 description: Use when an OpenHarmony C++ change must be checked for call-chain completeness, especially for data propagation, IPC/proxy/stub paths, virtual overrides, callbacks, or dlopen/dlsym boundaries. Produces evidence tables and modification coverage matrices; the helper script only discovers candidate edges.
 metadata:
   author: openharmony
-  scope: common
+  scope: distributed
   stage: development
   domain: cpp
   capability: callgraph-analysis
