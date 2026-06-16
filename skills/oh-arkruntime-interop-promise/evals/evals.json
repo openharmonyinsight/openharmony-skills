@@ -1,0 +1,35 @@
+{
+  "skill_name": "oh-arkruntime-interop-promise",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "My ETS async function returns a number, but when a TypeScript caller awaits it, the value comes back as undefined. Here's my code:\n\nETS side:\nexport async function getPromiseNumber(): Promise<number> {\n    return 42;\n}\n\nTS caller:\nconst getPromiseNumber = etsVm.getFunction(M, 'getPromiseNumber');\nlet res: number = await getPromiseNumber();\n// res is undefined, expected 42\n\nWhy might the value be lost during the ETS-to-JS conversion?",
+      "expected_output": "Should explain the JSCONVERT_WRAP path: CallETSHandler returns the EtsPromise, then ConvertArgToJS -> JSConvertPromise::WrapImpl converts it to a JS Promise. Since the async function returns 42 synchronously, the EtsPromise is already RESOLVED when WrapImpl runs, so the fast path applies — napi_resolve_deferred is called immediately. The issue could be in the value conversion step (JSRefConvertResolve) or in the napi_deferred lifecycle. Should suggest checking whether the EtsPromise state is correctly RESOLVED before WrapImpl and whether JSRefConvertResolve handles the number type correctly.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I have an ETS async function that rejects with an Error, but on the TypeScript side the rejection never arrives — the await just hangs forever. Here's my code:\n\nETS side:\nexport async function getRejectPromise(): Promise<void> {\n    return Promise.reject(new Error('error'));\n}\n\nTS caller:\nlet res = await getRejectPromise()\n    .then((v) => 'ok', (e) => e.message);\n// hangs forever, expected 'error'\n\nThe same pattern works fine when the ETS function resolves successfully. What's different about rejection?",
+      "expected_output": "Should trace the rejection path: ETS Promise.reject -> EtsPromise transitions to STATE_REJECTED -> JSCONVERT_WRAP -> WrapImpl. In the fast path, WrapImpl should detect !IsPending() && !IsLinked() and call napi_reject_deferred instead of napi_resolve_deferred. Should identify that the issue is likely in WrapImpl not correctly checking STATE_REJECTED, or the Error object failing to convert via JSRefConvertResolve, causing the rejection to never be delivered to the JS Promise.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "My ETS async function uses setTimeout and returns a delayed Promise. The TypeScript caller awaits it but the Promise never resolves on the JS side. Here's my code:\n\nETS side:\nexport async function getFulfilled1(): Promise<number> {\n    return new Promise<number>((resolve: (value: number) => void): void => {\n        setTimeout((): void => { resolve(1); }, 10);\n    });\n}\n\nTS caller:\nlet res = await getFulfilled1();\n// hangs forever, expected 1\n\nWhat's the expected flow for a delayed resolution to reach the JS caller?",
+      "expected_output": "Should trace the slow path: CallETSHandler runs the ETS function which returns a PENDING EtsPromise -> JSCONVERT_WRAP -> WrapImpl -> IsPending() is true -> slow path -> PromiseInterop.connectPromise registers .then() callbacks on the EtsPromise -> setTimeout fires -> resolves inner Promise -> outer EtsPromise resolves -> PromiseInteropResolve -> SettleJsPromise (must run on main worker thread) -> napi_resolve_deferred -> JS Promise resolves. Should suggest checking whether connectPromise was called, whether SettleJsPromise ran on the main worker thread, and whether napi_resolve_deferred was invoked.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "A TypeScript function returns a Promise, and my ETS caller awaits it. The await hangs and never completes. Here's the setup:\n\nTS side:\nexport async function getPromiseNumber(): Promise<number> {\n    return 42;\n}\n\n.ets declaration:\nexport declare function getPromiseNumber(): Promise<number>;\n\nETS caller:\nlet res: number = await getPromiseNumber();\n// hangs forever, expected 42\n\nThe TS function works fine when called from TS. What's needed for ETS to properly receive the JS Promise result?",
+      "expected_output": "Should explain the JSCONVERT_UNWRAP path: CallJSHandler::ConvertRetval -> ConvertArgToEts -> ConvertRefArgToEts sees EtsPromise in type info -> JSConvertPromise::UnwrapImpl creates a proxy EtsPromise, creates EtsPromiseRef bridge (to avoid MarkWord conflict), registers in SharedReferenceStorage, marks as proxy via SetLinkedPromise, then CreatePromiseLink registers OnJsPromiseResolved/OnJsPromiseRejected callbacks on the JS Promise. EtsAwaitPromise detects IsProxy(), yields CPU via Schedule(), then Wait() suspends the coroutine. When JS resolves -> OnJsPromiseCompleted -> Fire() -> Wait() returns. Should suggest checking that CreatePromiseLink registered the callbacks and that the coroutine is properly resuming.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "I'm using Promise.all with multiple ETS async functions that each have a setTimeout delay. The Promise.all never resolves even though the individual promises should complete. Here's my code:\n\nETS side:\nexport async function getFulfilled1(): Promise<number> {\n    return new Promise<number>((resolve) => { setTimeout(() => resolve(1), 10); });\n}\nexport async function getFulfilled2(): Promise<number> {\n    return new Promise<number>((resolve) => { setTimeout(() => resolve(2), 20); });\n}\n\nTS caller:\nlet res = await Promise.all([getFulfilled1(), getFulfilled2(), 3]);\n// hangs forever, expected [1, 2, 3]\n\nEach function works individually when awaited alone. What goes wrong when combined with Promise.all?",
+      "expected_output": "Should explain that each ETS async function goes through JSCONVERT_WRAP independently. Since each returns a PENDING EtsPromise, each takes the slow path: WrapImpl -> PromiseInterop.connectPromise -> waits for SettleJsPromise -> napi_resolve_deferred. Promise.all on the JS side waits for all three JS Promises. If any individual interop Promise fails to resolve on the JS side (e.g., SettleJsPromise not running on main worker thread, or connectPromise not being called), Promise.all will hang. Should suggest checking each interop Promise's JSCONVERT_WRAP slow path individually and verifying the main worker thread constraint for SettleJsPromise.",
+      "files": []
+    }
+  ]
+}
