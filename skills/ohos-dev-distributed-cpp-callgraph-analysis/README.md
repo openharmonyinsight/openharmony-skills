@@ -1,9 +1,9 @@
 # OpenHarmony C++ Callgraph Analysis Skill
 
-This skill is registered as `ohos-dev-cpp-callgraph-analysis`:
+This skill is registered as `ohos-dev-distributed-cpp-callgraph-analysis`:
 
 ```text
-skills/ohos-dev-cpp-callgraph-analysis/
+skills/ohos-dev-distributed-cpp-callgraph-analysis/
 ```
 
 ## Scope
@@ -13,7 +13,7 @@ Use this skill for cross-subsystem OpenHarmony C++ call-chain completeness analy
 ## Architecture
 
 ```text
-ohos-dev-cpp-callgraph-analysis Skill
+ohos-dev-distributed-cpp-callgraph-analysis Skill
 
 Agent / Reviewer
   ↓
@@ -91,6 +91,6 @@ Run:
 
 ```bash
 python3 -m unittest discover \
-  -s skills/ohos-dev-cpp-callgraph-analysis/tests \
+  -s skills/ohos-dev-distributed-cpp-callgraph-analysis/tests \
   -p 'test_*.py'
 ```

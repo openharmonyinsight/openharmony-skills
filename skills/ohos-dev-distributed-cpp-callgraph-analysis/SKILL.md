@@ -1,5 +1,5 @@
 ---
-name: ohos-dev-cpp-callgraph-analysis
+name: ohos-dev-distributed-cpp-callgraph-analysis
 description: Use when an OpenHarmony C++ change must be checked for call-chain completeness, especially for data propagation, IPC/proxy/stub paths, virtual overrides, callbacks, or dlopen/dlsym boundaries. Produces evidence tables and modification coverage matrices; the helper script only discovers candidate edges.
 metadata:
   author: openharmony
@@ -80,7 +80,7 @@ When LSP is unavailable or incomplete, say so in the evidence table and fall bac
 Required helper invocation shape. The agent must resolve the source tree and repository filter before calling the script, then pass them explicitly:
 
 ```bash
-SCRIPT=/path/to/skills/ohos-dev-cpp-callgraph-analysis/ohos_callgraph.py
+SCRIPT=/path/to/skills/ohos-dev-distributed-cpp-callgraph-analysis/ohos_callgraph.py
 python3 "$SCRIPT" <entry-function> \
   --oh-root <openharmony-source-root> \
   --product <product-name> \

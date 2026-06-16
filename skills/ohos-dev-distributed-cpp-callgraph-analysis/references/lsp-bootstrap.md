@@ -36,7 +36,7 @@ OpenHarmony build target.
 ## Setup
 
 ```bash
-SETUP=/path/to/skills/ohos-dev-cpp-callgraph-analysis/scripts/setup_lsp.py
+SETUP=/path/to/skills/ohos-dev-distributed-cpp-callgraph-analysis/scripts/setup_lsp.py
 python3 "$SETUP" \
   --oh-root <openharmony-source-root> \
   --repo-root <current-repository-root> \

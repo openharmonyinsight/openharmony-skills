@@ -4,16 +4,16 @@ Date: 2026-06-07
 
 Scope:
 
-- Verify that `ohos-dev-cpp-callgraph-analysis` treats LSP/source evidence as the primary path.
+- Verify that `ohos-dev-distributed-cpp-callgraph-analysis` treats LSP/source evidence as the primary path.
 - Verify that `ohos_callgraph.py` is documented as an optional artifact fallback rather than a parallel completeness layer.
 - Verify helper and LSP setup regression tests after the documentation, hook-boundary, and eval update.
 
 Commands:
 
 ```bash
-python3 -m unittest discover -s skills/ohos-dev-cpp-callgraph-analysis/tests -v
-python3 -m py_compile skills/ohos-dev-cpp-callgraph-analysis/ohos_callgraph.py skills/ohos-dev-cpp-callgraph-analysis/scripts/setup_lsp.py
-python3 -m json.tool skills/ohos-dev-cpp-callgraph-analysis/evals/evals.json
+python3 -m unittest discover -s skills/ohos-dev-distributed-cpp-callgraph-analysis/tests -v
+python3 -m py_compile skills/ohos-dev-distributed-cpp-callgraph-analysis/ohos_callgraph.py skills/ohos-dev-distributed-cpp-callgraph-analysis/scripts/setup_lsp.py
+python3 -m json.tool skills/ohos-dev-distributed-cpp-callgraph-analysis/evals/evals.json
 git diff --check
 ```
 

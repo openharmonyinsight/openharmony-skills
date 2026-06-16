@@ -2,7 +2,7 @@
 """
 ohos_callgraph.py — OpenHarmony candidate call-edge finder.
 
-This script is an auxiliary tool for the ohos-dev-cpp-callgraph-analysis skill. It discovers
+This script is an auxiliary tool for the ohos-dev-distributed-cpp-callgraph-analysis skill. It discovers
 candidate direct edges from LLVM bitcode and best-effort vtable/dlopen hints.
 It does not prove call-chain completeness. The skill must still build an
 evidence table and a modification coverage matrix from source evidence.
