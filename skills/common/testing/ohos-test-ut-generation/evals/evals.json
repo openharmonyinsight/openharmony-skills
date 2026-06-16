@@ -1,0 +1,180 @@
+{
+  "skill_name": "ohos-test-ut-generation",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "请为 //base/commonlibrary/calculator/src/calculator.cpp 的 Calculator 类生成单元测试用例。源码文件在 evals/files/calculator.h 和 evals/files/calculator.cpp，模块路径为 //base/commonlibrary/calculator，子系统为 commonlibrary。",
+      "expected_output": "生成完整的测试文件(.cpp)和BUILD.gn，包含Calculator类所有公开方法的HWTEST_F测试用例，遵循命名规范、@tc注释、TestSize等级、using namespace testing::ext等规范要求。",
+      "files": [
+        "evals/files/calculator.h",
+        "evals/files/calculator.cpp"
+      ],
+      "expectations": [
+        "测试文件包含 using namespace testing::ext; 声明",
+        "使用 HWTEST_F 而非 TEST_F 或 TEST 宏",
+        "每个 HWTEST_F 包含 TestSize.Level1 或 TestSize.Level2 等级参数",
+        "测试类命名为 CalculatorTest（CamelCase + Test后缀）",
+        "用例命名遵循 [FunctionName]_[001-999] 格式（如 Add_001, Divide_001）",
+        "@tc.name 与 HWTEST_F 第2参数完全一致",
+        "@tc.desc 描述测试目的",
+        "@tc.type 包含 FUNC 类型",
+        "SetUp() 中初始化 Calculator 对象（new Calculator()）",
+        "TearDown() 中释放 Calculator 对象（delete calculator_）",
+        "测试用例覆盖 Add/Subtract/Multiply/Divide 的正常路径（Level1）",
+        "Divide 的除零异常场景使用 Level2",
+        "IsValidInput 的负值/大值边界场景使用 Level2",
+        "GetResultAsString 的空值/零值场景使用 Level2",
+        "每个测试用例至少包含一个 EXPECT_* 或 ASSERT_* 断言",
+        "BUILD.gn 第一行包含 import(\"//build/test.gni\")",
+        "BUILD.gn 中 module_out_path 格式为 commonlibrary/calculator_test",
+        "BUILD.gn deps 包含 //third_party/googletest:gtest_main",
+        "BUILD.gn 包含 group(\"unittest\") { testonly = true }",
+        "测试文件包含 Apache 2.0 版权声明"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "为 //base/hiviewdfx/hiview/core/config_parser.h 的 ConfigParser 类生成单元测试。源码在 evals/files/config_parser.h 和 evals/files/config_parser.cpp。需要测试私有方法 ParseLine 和 TrimString，模块路径为 //base/hiviewdfx/hiview，子系统为 hiviewdfx。",
+      "expected_output": "生成测试文件和BUILD.gn，关键点：因为需要测试私有成员，BUILD.gn必须包含cflags_cc = [\"-Dprivate=public\", \"-Dprotected=public\"]，测试私有方法的场景应使用Level2。",
+      "files": [
+        "evals/files/config_parser.h",
+        "evals/files/config_parser.cpp"
+      ],
+      "expectations": [
+        "BUILD.gn 包含 cflags_cc = [\"-Dprivate=public\", \"-Dprotected=public\"]",
+        "测试私有方法 ParseLine 的用例存在且使用 Level2",
+        "测试私有方法 TrimString 的用例存在且使用 Level2",
+        "GetSectionInfo 的空字符串异常场景使用 Level2",
+        "GetSectionInfo 的未加载状态场景使用 Level2",
+        "ResetSection 的空字符串异常场景使用 Level2",
+        "GetValue 的空key异常场景使用 Level2",
+        "测试类命名为 ConfigParserTest",
+        "用例命名遵循 [FunctionName]_[001-999] 格式",
+        "使用 HWTEST_F（需SetUp初始化）而非 HWTEST",
+        "@tc.name 与 HWTEST_F 第2参数一致",
+        "BUILD.gn 包含 import(\"//build/test.gni\") 在第一行",
+        "BUILD.gn module_out_path 格式为 hiviewdfx/config_parser_test",
+        "BUILD.gn deps 包含 gtest_main",
+        "测试文件包含 using namespace testing::ext;",
+        " SetUp() 中初始化 ConfigParser 对象"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "请为 //base/hiviewdfx/hiview/plugins/event_manager 生成单元测试用例。源码在 evals/files/event_manager.h 和 evals/files/event_manager.cpp。EventManager 有状态机逻辑（IDLE/RUNNING/PAUSED/STOPPED），需要覆盖状态迁移路径和异常场景。",
+      "expected_output": "生成测试文件和BUILD.gn，覆盖状态机的正常迁移路径（Start/Stop/Pause/Resume）、非法状态迁移（如PAUSED时调用Stop）、ProcessEvent的各种条件分支（未运行/空域名/空事件名），以及Listener的增删操作。",
+      "files": [
+        "evals/files/event_manager.h",
+        "evals/files/event_manager.cpp"
+      ],
+      "expectations": [
+        "测试用例覆盖 Start 方法的正常路径（IDLE→RUNNING）使用 Level1",
+        "测试用例覆盖 Start 方法的重复调用场景（已RUNNING时Start返回false）使用 Level2",
+        "测试用例覆盖 Pause 只在 RUNNING 时成功的场景使用 Level2",
+        "测试用例覆盖 Resume 只在 PAUSED 时成功的场景使用 Level2",
+        "测试用例覆盖 Stop 非 IDLE 时成功的场景使用 Level2",
+        "测试用例覆盖 ProcessEvent 在非RUNNING状态返回false使用 Level2",
+        "测试用例覆盖 ProcessEvent 空domain返回false使用 Level2",
+        "测试用例覆盖 ProcessEvent 空eventName返回false使用 Level2",
+        "测试用例覆盖 AddEventListener nullptr返回false使用 Level2",
+        "测试用例覆盖 RemoveEventListener nullptr返回false使用 Level2",
+        "GetHistoryEvents 的 count<=0 返回空使用 Level2",
+        "状态迁移正常路径使用 @tc.type: FUNC",
+        "测试类命名为 EventManagerTest",
+        "用例命名遵循 [FunctionName]_[001] 格式",
+        "使用 HWTEST_F",
+        "包含 using namespace testing::ext;",
+        "SetUp() 初始化 EventManager 对象",
+        "BUILD.gn 包含 import(\"//build/test.gni\")",
+        "BUILD.gn module_out_path 格式为 hiviewdfx/event_manager_test",
+        "BUILD.gn deps 包含 gtest_main"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "为 //base/telephony/core_service/service_client.cpp 生成单元测试。源码在 evals/files/service_client.h 和 evals/files/service_client.cpp。ServiceClient 依赖 INetworkService 接口，需要使用 Mock 来测试。子系统为 telephony。",
+      "expected_output": "生成测试文件、Mock文件和BUILD.gn。Mock INetworkService接口，BUILD.gn必须包含 googletest:gmock 在 external_deps 中，Mock cpp文件必须加入sources。",
+      "files": [
+        "evals/files/service_client.h",
+        "evals/files/service_client.cpp"
+      ],
+      "expectations": [
+        "创建了 Mock 文件（MockINetworkService 或类似命名）",
+        "Mock 文件使用 MOCK_METHOD 宏定义 INetworkService 的虚方法",
+        "Mock 文件包含 #include <gmock/gmock.h>",
+        "BUILD.gn external_deps 包含 \"googletest:gmock\"",
+        "BUILD.gn sources 包含 Mock cpp 文件",
+        "测试用例使用 EXPECT_CALL 或 ON_CALL 设置 Mock 行为",
+        "测试用例覆盖 EstablishConnection 正常连接成功（Mock返回true）使用 Level1",
+        "测试用例覆盖 EstablishConnection 空host返回false使用 Level2",
+        "测试用例覆盖 EstablishConnection 无效port返回false使用 Level2",
+        "测试用例覆盖 TransmitData 未连接时返回-1使用 Level2",
+        "测试用例覆盖 FetchData 未连接时返回空使用 Level2",
+        "ServiceClient nullptr service的场景使用 Level2",
+        "BUILD.gn import(\"//build/test.gni\") 在第一行",
+        "BUILD.gn deps 包含 gtest_main",
+        "BUILD.gn module_out_path 格式为 telephony/service_client_test",
+        "使用 HWTEST_F",
+        "包含 using namespace testing::ext;",
+        "测试类命名为 ServiceClientTest",
+        "用例命名遵循 [FunctionName]_[001] 格式"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "我已经有测试文件 test/unittest/bbox_detector_test.cpp，请帮我生成对应的 BUILD.gn 配置。模块路径为 //base/hiviewdfx/hiview，子系统为 hiviewdfx，测试需要访问私有成员。",
+      "expected_output": "仅生成BUILD.gn文件，包含正确的import、module_out_path、ohos_unittest定义、cflags_cc（因需访问私有成员）、gtest_main依赖、group定义。",
+      "files": [],
+      "expectations": [
+        "BUILD.gn 第一行是 import(\"//build/test.gni\")",
+        "module_out_path 格式为 hiviewdfx/hiview_test（子系统名/模块名）",
+        "ohos_unittest 目标名称遵循命名规范",
+        "deps 包含 //third_party/googletest:gtest_main",
+        "包含 cflags_cc = [\"-Dprivate=public\", \"-Dprotected=public\"]（因需访问私有成员）",
+        "sources 包含测试文件路径",
+        "group(\"unittest\") { testonly = true } 存在",
+        "deps 中包含被测模块 //base/hiviewdfx/hiview:hiview_core",
+        "config 块包含 visibility 和 include_dirs",
+        "module_out_path 使用 module_output_path 变量",
+        "没有在 module_out_path 中使用绝对路径",
+        "未使用 TEST() 或 TEST_F()（本eval只测BUILD.gn）"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "请帮我为 //base/utils/data_processor 下的 DataProcessor 类完整生成单元测试（从分析到BUILD.gn）。源码在 evals/files/data_processor.h 和 evals/files/data_processor.cpp。需求编号为 issueI8XK3P。子系统为 utils。",
+      "expected_output": "完整执行8步工作流：环境确认→源码分析→测试策略→测试设计→用例规划→测试文件→BUILD.gn→验证说明。最终输出DataProcessor的完整测试代码和BUILD.gn配置。",
+      "files": [
+        "evals/files/data_processor.h",
+        "evals/files/data_processor.cpp"
+      ],
+      "expectations": [
+        "输出包含环境确认步骤（模块根目录、测试目录、源码GN路径）",
+        "输出包含源码分析报告（公开方法列表、分支逻辑、边界条件）",
+        "输出包含测试策略表格（方法→测试判定→类型→优先级）",
+        "输出包含测试场景设计表格（编号→场景类型→描述→输入→预期→等级）",
+        "输出包含用例规划表格（编号→名称→场景→等级→测试宏）",
+        "测试文件包含 using namespace testing::ext;",
+        "使用 HWTEST_F",
+        "每个 HWTEST_F 包含 TestSize.Level 参数",
+        "测试类命名为 DataProcessorTest",
+        "用例命名遵循 [FunctionName]_[001] 格式",
+        "@tc.require 包含 issueI8XK3P",
+        "ProcessString 空输入使用 Level2 和 @tc.type FUNC",
+        "ProcessBuffer maxSize<=0 使用 Level2",
+        "ProcessBuffer buffer超maxSize使用 Level2",
+        "SetConfig 空key使用 Level2",
+        "GetConfig 空key使用 Level2",
+        "ResetState 正常路径使用 Level1",
+        "GetStatusReport idle状态使用 Level2",
+        "GetStatusReport processing状态使用 Level2",
+        "SetUp() 初始化 DataProcessor 对象",
+        "TearDown() 释放 DataProcessor 对象",
+        "BUILD.gn 包含 import(\"//build/test.gni\")",
+        "BUILD.gn module_out_path 格式为 utils/data_processor_test",
+        "BUILD.gn deps 包含 gtest_main",
+        "BUILD.gn 包含 group(\"unittest\") { testonly = true }"
+      ]
+    }
+  ]
+}
