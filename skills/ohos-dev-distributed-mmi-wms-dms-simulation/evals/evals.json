@@ -1,0 +1,56 @@
+{
+  "skill_name": "ohos-dev-distributed-mmi-wms-dms-simulation",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "我要不启动真实 WMS/DMS，直接构造两个 display group 和虚拟窗口来验证输入事件路由。请说明必须设置哪些字段和为什么。",
+      "expected_output": "Explains the minimum valid DisplayGroupInfo, DisplayInfo, ScreenInfo, and WindowInfo setup for MMI route testing.",
+      "files": [],
+      "expectations": [
+        "The response requires one GROUP_DEFAULT group with id 0.",
+        "The response requires display, screen, group, and window IDs to match their target group.",
+        "The response sets focusWindowId in DisplayGroupInfo for keyboard routing.",
+        "The response includes pointerHotAreas/defaultHotAreas for hit testing.",
+        "The response treats UpdateDisplayInfo return -201 as expected only when dump/source evidence shows data was written."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "非主显示组的焦点窗口需要动态切换，能否只调用 UpdateWindowInfo 改 focusWindowId？",
+      "expected_output": "Rejects UpdateWindowInfo-only focus switching for non-main groups and uses UpdateDisplayInfo plus window reinjection.",
+      "files": [],
+      "expectations": [
+        "The response states that non-main group focus is read from displayGroupInfoMap_.",
+        "The response updates non-main focus through UpdateDisplayInfo.",
+        "The response reinjects or synchronizes windows after focus changes when needed.",
+        "The response validates actual routing with keyboard state or event target evidence."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "请模拟一个显示组内的三屏场景：一个主屏、一个扩展屏、一个主屏镜像屏。三个屏幕都有自己的焦点窗口，且每个屏幕都有多窗口层叠。镜像屏比例和主屏不一致。",
+      "expected_output": "Builds a scenario model for one display group with main, extended, and mirror displays, per-display window stacks, explicit focus targets, and mirror coordinate mapping.",
+      "files": [],
+      "expectations": [
+        "The response starts from a scenario model rather than a fixed dual-group template.",
+        "The response keeps all display IDs and window IDs globally unique.",
+        "The response places main, extended, and mirror displays in the same display group.",
+        "The response defines per-display background/focus/overlay windows with distinct zOrder and hot areas.",
+        "The response explicitly states how mismatched mirror-screen coordinates are mapped, such as fit, stretch, or crop."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "请模拟多个显示组在不同用户场景下但都处于前台的情况。每个显示组都包含一个主屏、一个扩展屏、一个镜像屏，且镜像屏比例和主屏不一致。",
+      "expected_output": "Models multi-user foreground display groups separately, each with main/extended/mirror displays, unique IDs, focus windows, and explicit mirror scaling policy.",
+      "files": [],
+      "expectations": [
+        "The response treats each user/display-group scenario separately and records the foreground or active-user assumption.",
+        "The response does not mix multiple users into one group while claiming multi-user isolation.",
+        "The response assigns globally unique display IDs and window IDs across groups.",
+        "The response includes a main, extended, and mismatched-ratio mirror display in every group.",
+        "The response explains whether group-level keyboard focus or per-display hit-test focus is being validated."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "skill_name": "ohos-dev-distributed-mmi-ram-rom-measurement",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "我要评估 multimodalinput 变更的 RAM/ROM 影响。已有基线和当前 libmmi .so，请给出必须采集的数据、报告结构和可比性注意点。",
+      "expected_output": "Produces a three-pillar RAM/ROM measurement workflow with ROM section analysis, real-device memory capture, theoretical heap analysis, and comparability gates.",
+      "files": [],
+      "expectations": [
+        "The response requires ROM file-level and readelf section-level comparison.",
+        "The response requires smaps_rollup, per-library smaps PSS, and hidumper --mem capture when RAM measurement is needed.",
+        "The response requires code-level theoretical analysis for new containers, heap objects, lazy allocation, and cleanup paths.",
+        "The response includes libmmi-client.z.so in ROM/code impact analysis and only excludes it from server RAM after proving it is not loaded by the server process.",
+        "If client API or proxy code is affected, the response selects a client process or test binary for client-side RAM capture.",
+        "The response records baseline/current provenance and warns when idle baseline is compared with post-exercise current data.",
+        "The response distinguishes process-level PSS context from feature RAM cost when capture conditions differ.",
+        "The response requires memory growth attribution tables that break down process-level PSS, loaded .so deltas, libmmi PSS, heap/anonymous growth, and unattributed residual."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "我要临时替换 DAYU200 上的 libmmi-server.z.so 采集基线和修改版内存。请说明安全步骤和最终还原要求。",
+      "expected_output": "Treats system library replacement, rw remount, and reboot as explicit-approval device operations and requires backup/restore.",
+      "files": [],
+      "expectations": [
+        "The response obtains explicit approval before remounting, replacing system libraries, or rebooting the device.",
+        "The response backs up every replaced .so before deployment.",
+        "The response restores the original or requested final .so state before ending the workflow.",
+        "The response uses `mount -o rw,remount /` for RK3568 instead of `/system`.",
+        "The response uses single-shell pidof substitution or equivalent to avoid PID changes between commands."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "smaps 解析 libmmi PSS 时，我看到 anonymous mapping 的 PSS 被算进上一个 libmmi 库，导致结果暴涨。应该怎么修？",
+      "expected_output": "Explains that the parser must reset current library state on every mapping header and only count PSS for headers that actually map libmmi .so files.",
+      "files": [],
+      "expectations": [
+        "The response identifies stale current_lib state as the root cause.",
+        "The response resets the current library on every smaps mapping header.",
+        "The response counts PSS only while current_lib refers to a libmmi .so mapping.",
+        "The response warns that this bug can severely overestimate per-library PSS."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "这次 MMI 改动同时修改了 libmmi-client.z.so 的 proxy API 和服务端 handler。只看 multimodalinput 进程的 smaps 是否足够？",
+      "expected_output": "Rejects server-only RAM analysis for client-side changes and requires separate client library/code impact handling.",
+      "files": [],
+      "expectations": [
+        "The response says server smaps is insufficient for libmmi-client.z.so RAM impact.",
+        "The response still includes libmmi-client.z.so in ROM and section-size analysis.",
+        "The response requires choosing a client process or test binary that loads libmmi-client.z.so and executes the affected API path.",
+        "The response reports server and client RAM conclusions separately instead of merging them into one server PSS number."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "修改版执行功能路径后 total PSS 增长 8MB，其中 hidumper 显示 .so mmap PSS 增长 5MB。报告里应该怎样说明内存增长原因？",
+      "expected_output": "Requires detailed attribution of RAM growth, including full loaded .so delta tables and separation of target feature cost from environment or test harness deltas.",
+      "files": [],
+      "expectations": [
+        "The response does not stop at total PSS or .so mmap PSS growth.",
+        "The response compares baseline/current loaded .so sets and lists every newly loaded or changed .so with path, process, baseline PSS, current PSS, delta, and whether it is newly loaded.",
+        "The response separates libmmi library PSS deltas from non-libmmi or environment/test-framework libraries.",
+        "The response attributes native heap and anonymous growth to code-level containers, objects, caches, or runtime state with evidence.",
+        "The response records any remaining unexplained delta as unattributed residual and avoids claiming complete feature RAM cost when residual is large.",
+        "The response does not attribute a newly loaded .so to the target feature unless the functional path or code evidence proves the dependency."
+      ]
+    }
+  ]
+}

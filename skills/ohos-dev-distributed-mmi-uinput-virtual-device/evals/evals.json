@@ -1,0 +1,30 @@
+{
+  "skill_name": "ohos-dev-distributed-mmi-uinput-virtual-device",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "我要在 OpenHarmony 真机上用 /dev/uinput 模拟鼠标和键盘，验证设备绑定和 display group 隔离。请说明设备创建、事件注入和发现轮询的关键规则。",
+      "expected_output": "Provides uinput-specific rules for creating discoverable virtual devices, injecting complete event sequences, and waiting for InputManager discovery.",
+      "files": [],
+      "expectations": [
+        "The response requires BUS_USB instead of BUS_VIRTUAL for MMI discovery.",
+        "The response requires unique vendor/product IDs for multiple virtual devices.",
+        "The response requires SYN_REPORT at the end of each injected event sequence.",
+        "The response waits before or polls for InputManager device discovery after UI_DEV_CREATE.",
+        "The response explains warm-up events before judging per-group state."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "虚拟设备测试结束后如何避免残留状态影响下一轮测试？",
+      "expected_output": "Emphasizes explicit UI_DEV_DESTROY/close cleanup and dump verification of runtime binding cleanup.",
+      "files": [],
+      "expectations": [
+        "The response explicitly destroys all uinput devices and closes fds.",
+        "The response expects MMI removal handling to clean runtime bindings but still validates with dump evidence.",
+        "The response warns that process exit cleanup can be delayed.",
+        "The response avoids relying on physical peripherals."
+      ]
+    }
+  ]
+}
