@@ -65,10 +65,10 @@ class HeaderParser:
         lines = content.split("\n")
         result_lines = []
         i = 0
-        
+
         while i < len(lines):
             line = lines[i].strip()
-            
+
             if line.startswith("#ifndef"):
                 match = re.match(r"#ifndef\s+(\w+)", line)
                 if match:
@@ -83,7 +83,7 @@ class HeaderParser:
                                     result_lines.append(lines[j])
                                 i = end_idx + 1
                                 continue
-            
+
             if line.startswith("#ifdef"):
                 match = re.match(r"#ifdef\s+(\w+)", line)
                 if match:
@@ -98,7 +98,7 @@ class HeaderParser:
                             result_lines.extend(block_content)
                         i = end_idx + 1
                         continue
-            
+
             if line.startswith("#if"):
                 match = re.match(r"#if\s+(\d+)", line)
                 if match:
@@ -115,14 +115,17 @@ class HeaderParser:
                             result_lines.extend(block_content)
                         i = end_idx + 1
                         continue
-            
-            if not re.match(r"#\s*(ifdef|ifndef|if|elif|else|endif|pragma|error|warning|line|include)\b", line):
+
+            if not re.match(
+                r"#\s*(ifdef|ifndef|if|elif|else|endif|pragma|error|warning|line|include)\b",
+                line,
+            ):
                 result_lines.append(lines[i])
-            
+
             i += 1
-        
+
         return "\n".join(result_lines)
-    
+
     def _find_matching_endif(self, lines: List[str], start_idx: int) -> int:
         """找到匹配的#endif"""
         depth = 0
@@ -135,17 +138,19 @@ class HeaderParser:
                 if depth == 0:
                     return i
         return -1
-    
-    def _extract_main_branch(self, lines: List[str], start_idx: int, end_idx: int) -> List[str]:
+
+    def _extract_main_branch(
+        self, lines: List[str], start_idx: int, end_idx: int
+    ) -> List[str]:
         """提取条件编译的主分支内容（优先#else分支）"""
         result = []
         depth = 0
         in_else = False
         capture = True
-        
+
         for i in range(start_idx + 1, end_idx):
             line = lines[i].strip()
-            
+
             if re.match(r"#\s*(if|ifdef|ifndef)\b", line):
                 if capture and not in_else:
                     result.append(lines[i])
@@ -165,10 +170,12 @@ class HeaderParser:
             else:
                 if capture and depth == 0:
                     result.append(lines[i])
-        
+
         return result
 
-    def parse_class(self, class_name: str) -> List[Tuple[str, str, str]]:
+    def parse_class(
+        self, class_name: str, include_no_params: bool = False
+    ) -> List[Tuple[str, str, str]]:
         """
         解析指定类的public方法
 
@@ -199,7 +206,9 @@ class HeaderParser:
         public_sections = self._extract_public_sections(class_body)
 
         for section in public_sections:
-            section_methods = self._parse_methods_in_section(section, class_name)
+            section_methods = self._parse_methods_in_section(
+                section, class_name, include_no_params=include_no_params
+            )
             methods.extend(section_methods)
 
         # 去重
@@ -270,7 +279,7 @@ class HeaderParser:
         return sections
 
     def _parse_methods_in_section(
-        self, section: str, class_name: str
+        self, section: str, class_name: str, include_no_params: bool = False
     ) -> List[Tuple[str, str, str]]:
         """解析区域中的方法"""
         methods = []
@@ -324,12 +333,12 @@ class HeaderParser:
             ):
                 continue
 
-            # 排除无参方法
-            if not params or params.lower() == "void":
+            # 排除无参方法（除非 include_no_params=True）
+            if not include_no_params and (not params or params.lower() == "void"):
                 continue
 
-            # 检查是否所有参数都是输出参数
-            if self._is_all_output_params(params):
+            # 检查是否所有参数都是输出参数（IPC stub 模式不跳过）
+            if not include_no_params and self._is_all_output_params(params):
                 continue
 
             # 清理返回类型
@@ -462,7 +471,7 @@ class HeaderParser:
 
 
 def parse_header_methods_enhanced(
-    header_path: str, target_class: str
+    header_path: str, target_class: str, include_no_params: bool = False
 ) -> List[Tuple[str, str, str]]:
     """
     增强版头文件方法解析入口
@@ -479,7 +488,7 @@ def parse_header_methods_enhanced(
         return []
 
     parser = HeaderParser(header_path)
-    methods = parser.parse_class(target_class)
+    methods = parser.parse_class(target_class, include_no_params=include_no_params)
 
     if methods:
         print(f"[OK] 从头文件解析到 {len(methods)} 个 public 有参方法")
