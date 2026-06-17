@@ -1,0 +1,4 @@
+interface:
+  display_name: "taskpool Worker Scaling Diagnostics"
+  short_description: "Diagnose taskpool worker backlog issues"
+  default_prompt: "Use $ohos-issue-taskpool-worker-scaling-analysis to diagnose a std.concurrency.taskpool backlog, slow execution, worker expansion issue, blocked worker, priority delay, or shutdown hang."

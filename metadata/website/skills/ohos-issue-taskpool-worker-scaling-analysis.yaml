@@ -1,0 +1,86 @@
+schemaVersion: 1
+
+id: ohos-issue-taskpool-worker-scaling-analysis
+title: taskpool Worker 扩缩容诊断
+summary: 诊断 ETS std.concurrency.taskpool 的 worker 扩缩容失败、任务积压、阻塞补偿、优先级饥饿和 shutdown hang 等问题，提供代码锚点和日志探针。
+
+category:
+  scope: common
+  namespace: troubleshooting
+  stage: troubleshooting
+  domain: taskpool
+  capability: worker-scaling-analysis
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - taskpool
+  - worker
+  - scaling
+  - concurrency
+  - troubleshooting
+  - arkts
+
+audience:
+  - 使用 ArkTS taskpool 的应用开发者
+  - 并发性能问题排查人员
+  - taskpool 生命周期问题定位人员
+
+useCases:
+  - title: 定位 worker 不扩张问题
+    description: 分析 waitingTasksNum、workersLimit、targetNum 和 expansion 触发条件，判断为何 worker 数量不增加。
+  - title: 分析阻塞 worker 补偿
+    description: 追踪 blockedWorkerThresholdMs、blockedExpandedWorkerIds 和 compensation worker 创建路径，判断补偿机制是否生效。
+  - title: 探查 shutdown/join hang
+    description: 检查 closeWorker、active flag、join 状态和 worker body 执行情况，定位 hang 根因。
+  - title: 诊断优先级饥饿
+    description: 分析 priority queue selection、continuousExecutionCount 和 pendingDependencyTasks，判断为何低优先级任务不执行。
+
+whenToUse:
+  - taskpool 代码涉及 worker expansion、shrink、blocked worker compensation 或 shutdown/join。
+  - 出现任务积压但 worker 数量不增加、长任务阻塞短任务、worker shrink 异常或 shutdown hang。
+  - 日志提到 GlobalQueueWorker、managerWorker、waitingTasksNum、workersLimit、blockedWorkerThresholdMs 或 taskpool shutdown。
+  - 需要从 taskpool.ets 源码和实际调度模型定位 worker lifecycle 问题。
+
+whenNotToUse:
+  - 问题与 taskpool worker 扩缩容无关，只是依赖关系、错误码或业务逻辑错误。
+  - 需要通用线程安全审计、Promise 互操作分析或 native 崩溃分析。
+  - 没有可分析的 taskpool 日志、worker 计数、队列状态或复现现象。
+
+inputs:
+  required:
+    - 涉及 taskpool worker 数量、扩张、shrink、阻塞或 shutdown 的现象描述。
+    - 相关日志、worker count、waiting tasks、priority distribution 或错误信息。
+  optional:
+    - taskpool.ets 源码路径（用于锚点定位）。
+    - 是否启用 launch mode、任务类型 mix 和阻塞时长。
+    - 复现代码、测试环境或 issue 背景。
+
+outputs:
+  - worker expansion/shrink 失败根因分析（workersLimit、targetNum、blocked compensation）。
+  - priority starvation 或 queue selection 问题诊断。
+  - shutdown/join hang 定位（closeWorker、join 状态、task body 执行）。
+  - 代码锚点、日志探针建议和修复方向。
+
+quickStart:
+  steps:
+    - 收集 taskpool worker 数量、waiting tasks、阻塞时长和 shutdown 状态的日志或计数。
+    - 标出实际卡住位置、worker 不扩张现象或 hang 时间点。
+    - 请求 Agent 使用该 Skill 分析 worker lifecycle 并定位根因。
+  examplePrompt: |
+    请使用 ohos-issue-taskpool-worker-scaling-analysis 分析这个 taskpool worker 不扩张问题，
+    日志显示 waitingTasksNum=100 但 workers.size 始终=8，请从 enqueue 和 triggerExpand 路径诊断根因。
+
+related:
+  skills:
+    - ohos-issue-arkruntime-taskpool-dependency-analysis
+  docs:
+    - title: Worker 扩缩容模型
+      path: references/scaling-model.md
+    - title: 诊断手册
+      path: references/diagnostic-playbooks.md
+    - title: 日志提取工具
+      path: scripts/extract_taskpool_signals.py
