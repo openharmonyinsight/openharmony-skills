@@ -1,0 +1,16 @@
+OH_ROOT=/work/openharmony
+product=rk3568
+preferred target list path:
+foundation/arkui/ace_engine/unittest_targets.txt
+
+foundation/arkui/ace_engine/unittest_targets.txt:
+ace_unittest
+ace_components_unittest
+ace_pattern_unittest
+
+last helper output:
+[1/3] ./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target ace_unittest --ccache
+build successful
+[2/3] ./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target ace_components_unittest --ccache
+FAILED target: ace_components_unittest
+No space left on device while writing out/rk3568/exe.unstripped/tests/unittest/ace_engine/ace_components_unittest

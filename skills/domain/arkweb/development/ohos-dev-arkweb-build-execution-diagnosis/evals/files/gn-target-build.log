@@ -1,0 +1,4 @@
+ERROR at //arkweb/components/demo/BUILD.gn:17:11: Unable to load "//arkweb/missing/BUILD.gn".
+  deps = [ "//arkweb/missing:feature" ]
+          ^-------------------------
+ninja: error: unknown target 'ohos_missing_target'

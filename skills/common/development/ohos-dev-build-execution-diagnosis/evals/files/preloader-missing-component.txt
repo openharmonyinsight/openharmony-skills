@@ -1,0 +1,30 @@
+command:
+./build.sh --product-name rk3568 --ccache
+
+out/rk3568/build.log:
+[preloader] generate product configuration
+Exception: find component disk_manager failed
+
+out/preloader/rk3568/parts.json:
+{
+  "parts": {
+    "filemanagement:disk_manager": {
+      "module_list": []
+    },
+    "startup:init": {
+      "module_list": ["//base/startup/init/services:init"]
+    }
+  }
+}
+
+productdefine/common/inherit/rich.json:
+{
+  "parts": ["filemanagement:disk_manager", "startup:init"]
+}
+
+foundation/filemanagement/storage_service/bundle.json:
+{
+  "component": {
+    "name": "storage_service"
+  }
+}

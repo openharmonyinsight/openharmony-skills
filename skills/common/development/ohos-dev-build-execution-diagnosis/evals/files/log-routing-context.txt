@@ -1,0 +1,24 @@
+regular product:
+product=rk3568
+expected primary log=out/rk3568/build.log
+
+sdk:
+product=ohos-sdk
+expected primary log=out/sdk/build.log
+
+host:
+product=host_product
+expected primary log=out/host/host_product/build.log
+
+minimal emulator:
+product=qemu-arm-linux-min
+actual output directory=out/qemu-arm-linux
+expected primary log=out/qemu-arm-linux/build.log
+
+full emulator:
+product=arm64_virt
+expected primary log=out/arm64_virt/build.log
+
+hb independent build:
+product argument for helper scripts=standard
+expected primary log=out/standard/build.log or relevant out/standard sublog
