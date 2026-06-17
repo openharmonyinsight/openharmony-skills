@@ -1,0 +1,147 @@
+{
+  "skill_name": "ohos-test-arkruntime-interop-testing",
+  "description": "Comprehensive test suite for ohos-test-arkruntime-interop-testing skill",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "trigger_create_interop_test",
+      "category": "trigger",
+      "prompt": "Help me write a new interop test case to verify TS to ETS class sharing.",
+      "expected_output": "Skill should trigger for interop test case creation and setup",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for interop test creation"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "trigger_cmake_config",
+      "category": "trigger",
+      "prompt": "How do I configure a new interop test in CMakeLists.txt?",
+      "expected_output": "Skill should trigger for interop test build configuration guidance",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for interop test build configuration"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "negative_trigger_java_junit",
+      "category": "negative_trigger",
+      "prompt": "Write a JUnit test case for checking if a string is numeric.",
+      "expected_output": "Skill should NOT trigger for standard Java JUnit testing",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill ignored Java JUnit test request"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "negative_trigger_python_pytest",
+      "category": "negative_trigger",
+      "prompt": "How do I mock requests in a python pytest test case?",
+      "expected_output": "Skill should NOT trigger for Python pytest scenarios",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill ignored Python pytest request"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "eval_name": "scenario_cmake_macro_setup",
+      "category": "core_scenario",
+      "prompt": "I added a new test case but it's not run by the test runner. Here is my CMakeLists.txt:\ntarget_sources(interop_test PRIVATE main.cpp)\nHow do I register it with GTest correctly in the ArkCompiler build system?",
+      "expected_output": "Should explain that interop tests in ArkCompiler are configured using the custom panda_ets_interop_js_gtest CMake macro. Detail the parameters for this macro, including target name, source files, header directories, and build flags. Advise against using generic target_sources and instead integrate with the interop_js test suite build structure.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "issue_identified",
+          "passed": true,
+          "evidence": "Identifies incorrect use of generic target_sources instead of panda_ets_interop_js_gtest"
+        },
+        {
+          "text": "fix_provided",
+          "passed": true,
+          "evidence": "Provides CMake configuration example using panda_ets_interop_js_gtest macro"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "eval_name": "scenario_arktsconfig_paths",
+      "category": "core_scenario",
+      "prompt": "My ETS file contains 'import { foo } from \"dynamic_js_module\"', but the test compiler fails with 'cannot find module dynamic_js_module'. How can I configure the compiler mapping in my test directory?",
+      "expected_output": "Should explain the role of arktsconfig.in.json in resolving TS/JS modules during compilation. Instruct the user to add path mappings in the arktsconfig.in.json file under compilerOptions.paths to bind the module name 'dynamic_js_module' to the relative or absolute path of its corresponding .d.ets declaration file.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "issue_identified",
+          "passed": true,
+          "evidence": "Identifies missing module resolution mapping in compiler config"
+        },
+        {
+          "text": "fix_provided",
+          "passed": true,
+          "evidence": "Provides example of arktsconfig.in.json path mapping configuration"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "eval_name": "scenario_cpp_runner_exceptions",
+      "category": "core_scenario",
+      "prompt": "In my C++ test runner, I call an ETS function that triggers an assertion failure. However, my C++ runner crashes directly instead of reporting a GTest failure. How do I assert that no exception is thrown, or handle pending exceptions in the runner?",
+      "expected_output": "Should explain that unhandled managed exceptions can crash the runner. The C++ runner should use InteropCtx::GetCurrent()->HasPendingException() to check for pending exceptions, print the error stack using InteropCtx::GetCurrent()->GetPendingException(), and clear it. Recommend using GTest macros like EXPECT_FALSE(InteropCtx::GetCurrent()->HasPendingException()) and asserting the returned boolean of CallEtsFunction to report test failure gracefully.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "issue_identified",
+          "passed": true,
+          "evidence": "Identifies unhandled exception crash in GTest runner"
+        },
+        {
+          "text": "fix_provided",
+          "passed": true,
+          "evidence": "Suggests checking and clearing pending exception via InteropCtx"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "eval_name": "scenario_ts_ets_dets_naming",
+      "category": "core_scenario",
+      "prompt": "I created my_helper.ts and my_helper.d.ets to declare classes to ETS. However, the compiler throws 'duplicate identifiers' or 'class signature mismatch' errors. What are the rules for naming and declaring classes across TS, .d.ets, and ETS?",
+      "expected_output": "Should explain class declaration matching rules in interop. The class name and namespace in the .d.ets declaration must exactly match the TS exports. The ETS code importing the module must match the declared types. Any mismatch in method signatures, return types, or namespace packages in the .d.ets file compared to the TS/ETS code will cause compilation or runtime failures. Detail proper packaging and naming conventions.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "rules_explained",
+          "passed": true,
+          "evidence": "Explains naming matching between TS, .d.ets, and ETS"
+        },
+        {
+          "text": "fix_provided",
+          "passed": true,
+          "evidence": "Shows correct structure for class definition and its matching .d.ets wrapper"
+        }
+      ]
+    }
+  ]
+}

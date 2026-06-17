@@ -1,0 +1,147 @@
+{
+  "skill_name": "ohos-dev-arkruntime-interop-development",
+  "description": "Comprehensive test suite for ohos-dev-arkruntime-interop-development skill",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "trigger_js_convert_unwrap",
+      "category": "trigger",
+      "prompt": "Check this C++ interop conversion code for wrapping/unwrapping JS values.",
+      "expected_output": "Skill should trigger for interop value conversion code analysis",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for interop value conversion analysis"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "trigger_reference_storage",
+      "category": "trigger",
+      "prompt": "Analyze how GlobalObjectStorage handles ETS proxy objects in ArkCompiler.",
+      "expected_output": "Skill should trigger for reference storage and GC lifecycle analysis",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_triggered",
+          "passed": true,
+          "evidence": "Skill is invoked for reference storage analysis"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "negative_trigger_unrelated_rust",
+      "category": "negative_trigger",
+      "prompt": "Write a Rust program to calculate the factorial of a number.",
+      "expected_output": "Skill should NOT trigger for unrelated languages or algorithms",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill ignored unrelated Rust request"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "negative_trigger_sql",
+      "category": "negative_trigger",
+      "prompt": "Optimize this SQL query for user table.",
+      "expected_output": "Skill should NOT trigger for SQL database queries",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered",
+          "passed": true,
+          "evidence": "Skill ignored SQL query request"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "eval_name": "scenario_napi_scope_leak",
+      "category": "core_scenario",
+      "prompt": "I have a native interop function converting large arrays from JS to ETS. It works for small arrays but crashes with 'out of local references' on large arrays. Here's my loop:\nfor (size_t i = 0; i < len; ++i) {\n    napi_value element;\n    napi_get_element(env, jsArray, i, &element);\n    // process element...\n}\nHow can I prevent this?",
+      "expected_output": "Should explain local reference exhaustion in NAPI. In a loop, new local references are created but not freed until the native function returns. Recommend using napi_open_handle_scope and napi_close_handle_scope inside the loop to reclaim references in each iteration, or pre-allocating an array of known size and reusing handle scopes.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "issue_identified",
+          "passed": true,
+          "evidence": "Identifies NAPI local reference leak in the loop"
+        },
+        {
+          "text": "fix_provided",
+          "passed": true,
+          "evidence": "Suggests using napi_handle_scope inside the loop"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "eval_name": "scenario_thread_state_violation",
+      "category": "core_scenario",
+      "prompt": "A native interop function calls an ETS method via napi_call_function or a runtime helper, but crashes in Debug mode with 'ManagedThread::GetCurrent()->GetState() == ManagedThread::ThreadState::RUNNING' assertion failure. What went wrong?",
+      "expected_output": "Should explain that the thread must be transitioned to the managed state before executing ETS code. When native C++ code runs, the thread state is typically NATIVE. Recommend wrapping the calling code in a ScopedManagedState or ScopedManagedCode block to perform the necessary state transitions and register the call stack in the interop context.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "issue_identified",
+          "passed": true,
+          "evidence": "Identifies invalid thread state for executing managed code"
+        },
+        {
+          "text": "fix_provided",
+          "passed": true,
+          "evidence": "Suggests using ScopedManagedState or ScopedManagedCode macro"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "eval_name": "scenario_napi_callback_exception",
+      "category": "core_scenario",
+      "prompt": "When an ETS function called from JS throws an exception, the JS VM doesn't receive the exception and crashes later with unhandled native exception. How should exceptions be propagated across the JS-ETS boundary in interop?",
+      "expected_output": "Should explain exception propagation across the language boundary. Suggest using InteropCtx::ThrowJSError or checking if an exception is pending in the ETS runtime (coro->HasPendingException()). If an exception exists, clear it in ETS, convert it, and throw a corresponding JS exception using NAPI (napi_throw) before returning control to the JS engine.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "issue_identified",
+          "passed": true,
+          "evidence": "Identifies lack of exception check before native return"
+        },
+        {
+          "text": "fix_provided",
+          "passed": true,
+          "evidence": "Suggests checking pending exception and calling napi_throw/ThrowJSError"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "eval_name": "scenario_global_ref_gc_safety",
+      "category": "core_scenario",
+      "prompt": "To store a JS callback in C++ interop, I call napi_create_reference. However, during GC, the VM crashes when visiting references. What are the rules for managing napi_ref lifecycles and thread safety in SharedReferenceStorage?",
+      "expected_output": "Should explain that napi_ref objects and SharedReferenceStorage mappings must only be created, modified, or destroyed on the main JS execution thread (main worker thread). Storing or accessing them from background GC threads without proper locking or thread-state synchronization leads to memory corruption or crashes. Suggest using InteropCtx/SharedReferenceStorage APIs to safely register references and check thread context.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "issue_identified",
+          "passed": true,
+          "evidence": "Identifies cross-thread napi_ref manipulation as GC-unsafe"
+        },
+        {
+          "text": "fix_provided",
+          "passed": true,
+          "evidence": "Suggests thread validation and using SharedReferenceStorage thread-safe APIs"
+        }
+      ]
+    }
+  ]
+}
