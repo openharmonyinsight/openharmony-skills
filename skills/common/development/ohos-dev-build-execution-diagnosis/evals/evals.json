@@ -1,0 +1,207 @@
+{
+  "skill_name": "ohos-dev-build-execution-diagnosis",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "我在一个 OpenHarmony 工程里，当前目录可能是子目录。请说明你会如何执行这个命令并判断是否成功，不要真的启动长时间编译：\n\n```bash\n./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target ace_engine_test --ccache\n```\n\n如果失败，请说明你会先看哪里，不要先猜源码问题。",
+      "expected_output": "Finds the OpenHarmony root by walking upward until both .gn and build.sh exist, preserves the exact user command and says it would run from that root, treats command exit code as the first success/failure signal, and on failure starts with out/rk3568/build.log plus bundled log-analysis scripts instead of diagnosing from terminal tail or changing command arguments.",
+      "files": [],
+      "expectations": [
+        "The response finds the OpenHarmony root using the .gn + build.sh condition before any build execution.",
+        "The exact command provided by the user is preserved; product, target, and arguments are not changed.",
+        "The response says the command should run from the OpenHarmony root, not from an arbitrary subdirectory.",
+        "Success is judged first by the command exit code and final build-success output.",
+        "On failure, the first diagnostic source is out/rk3568/build.log.",
+        "The response uses or recommends the bundled scripts resolve_build_log.sh, find_recent_errors.sh, or analyze_build_error.sh before broad manual searching.",
+        "The response does NOT infer the root cause from terminal tail alone when build.log exists.",
+        "The response does NOT run repo sync, download prebuilts, or bootstrap the environment unless explicitly asked."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "rk3568 编译失败，终端最后只有一堆 ninja cascade error。请根据输入的 out/rk3568/build.log 样例给出诊断步骤，并说明第一个真正错误是什么。",
+      "expected_output": "Uses the provided out/rk3568/build.log sample as the primary source, identifies the first real failure at foo_pattern.cpp:77 as a missing header compiler error, separates it from later cascade messages, reads the failing target/source context, then proposes the smallest evidence-backed source or BUILD.gn dependency/include fix and a narrow rebuild followed by the requested command when practical.",
+      "files": [
+        "evals/files/rk3568-first-error-build.log"
+      ],
+      "expectations": [
+        "The response explicitly states that out/rk3568/build.log is the source of truth for this product build.",
+        "The response searches from the end of build.log and separates the first real failure from later cascade errors.",
+        "The response extracts the failing target or object, foo_pattern.cpp, and surrounding log context before proposing a fix.",
+        "The response classifies the sample as a compilation failure only after seeing the fatal error evidence.",
+        "The response identifies the missing header core/components_ng/pattern/foo/foo_model.h from the sample.",
+        "The response proposes the smallest source or build-file fix that matches the failure evidence.",
+        "The response recommends a narrow rebuild when possible and rerunning the user-requested command when practical.",
+        "The response does NOT diagnose solely from the pasted terminal tail.",
+        "The response does NOT delete source logic just to make the build pass."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我要编译 host 形态的 OpenHarmony 产物，能直接在 Linux x86_64 主机上跑。请给出推荐命令。如果失败，主日志在哪里？",
+      "expected_output": "Selects ./build.sh --product-name host_product --ccache --no-prebuilt-sdk for a host product build, optionally adds --build-target only if the user provided a target, and identifies out/host/host_product/build.log as the primary log.",
+      "files": [],
+      "expectations": [
+        "The response uses product name host_product.",
+        "The response includes --ccache and --no-prebuilt-sdk for the host build path.",
+        "The response does NOT use rk3568 or another device product for a host-form build.",
+        "The response does NOT add a build target unless the user requested one.",
+        "The response identifies out/host/host_product/build.log as the primary log.",
+        "The response mentions artifacts are intended to run directly on the host machine.",
+        "If failure diagnosis is discussed, it starts from the primary host build log."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "我需要分别编译最小 qemu arm linux 模拟器和完整 arm64 虚拟机模拟器。请给出命令，并说明哪些参数不要乱改。",
+      "expected_output": "For minimal emulator, uses qemu-arm-linux-min with --ccache --no-prebuilt-sdk --deps-guard=false --load-test-config false and --gn-args linux_kernel_version=\\\"linux-5.10\\\". For full emulator, uses arm64_virt with --ccache --deps-guard=false. It preserves these product-specific arguments and points to out/qemu-arm-linux/build.log for qemu-arm-linux-min and out/arm64_virt/build.log for arm64_virt.",
+      "files": [],
+      "expectations": [
+        "The minimal emulator command uses --product-name qemu-arm-linux-min.",
+        "The minimal emulator command includes --ccache, --no-prebuilt-sdk, --deps-guard=false, --load-test-config false, and --gn-args linux_kernel_version=\\\"linux-5.10\\\".",
+        "The full emulator command uses --product-name arm64_virt.",
+        "The full emulator command includes --ccache and --deps-guard=false.",
+        "The response identifies out/qemu-arm-linux/build.log for qemu-arm-linux-min failures.",
+        "The response identifies out/arm64_virt/build.log for full emulator failures.",
+        "The response does NOT silently change product names or remove required flags.",
+        "The response asks before changing product, target, branch, or user-provided command arguments."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "我改了几个 C++ 源文件和一个 BUILD.gn。为了快一点，我能不能直接加 --fast-rebuild？如果不能，什么时候可以用？",
+      "expected_output": "Rejects --fast-rebuild because BUILD.gn changed, explains that fast rebuild is only safe when build configuration did not change, and says to avoid it after BUILD.gn, *.gni, product config, dependency metadata, or first-time output generation changes. For source-only changes, it may use the check_fast_rebuild.sh helper before adding --fast-rebuild.",
+      "files": [],
+      "expectations": [
+        "The response says not to use --fast-rebuild after a BUILD.gn change.",
+        "The response lists build-configuration changes that make --fast-rebuild unsafe: BUILD.gn, *.gni, product config, dependency metadata, or first-time output generation.",
+        "The response says --fast-rebuild may be used only when build configuration did not change.",
+        "The response references scripts/check_fast_rebuild.sh as the helper for deciding recent source-only fast rebuild eligibility.",
+        "The response does NOT recommend fast rebuild purely because it is faster.",
+        "The response does NOT hide the risk that GN generation may be skipped incorrectly."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "我想独立编译 distributeddata 相关部件。仓名不一定等于部件名。请说明 hb build 怎么用，-i 和 -t 放在哪里，失败后看哪里。",
+      "expected_output": "Checks command -v hb, uses the actual OpenHarmony component name rather than repository name, runs hb build <component-name> -i and then hb build <component-name> -t when both are needed, places -i/-t after the component name, and diagnoses from out/standard/build.log or relevant out/standard/ logs.",
+      "files": [],
+      "expectations": [
+        "The response checks command -v hb before independent build.",
+        "The response warns that the OpenHarmony component name must be verified and may differ from the repository name.",
+        "The source build form is hb build <component-name> -i, with -i after the component name.",
+        "The test build form is hb build <component-name> -t, with -t after the component name.",
+        "If both are requested, the response runs or recommends -i before -t.",
+        "The response identifies out/standard/build.log or relevant out/standard/ logs as the diagnosis source.",
+        "The response does NOT use repository name blindly as the component name.",
+        "The response does NOT default to --skip-download unless local debugging or the user explicitly requests it."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "我要按 unittest_targets.txt 里的列表逐个编译测试。请根据输入的 test-list 上下文说明正确流程；中间如果磁盘满了，能不能直接删 out？",
+      "expected_output": "Uses scripts/build_test_list.sh <product> <OH_ROOT> with the default search order foundation/arkui/ace_engine/unittest_targets.txt then root unittest_targets.txt, stops on the first failure shown in the sample at ace_components_unittest, inspects out/rk3568/build.log, resumes from the failed target or reruns the helper, and for disk pressure deletes only verified test binaries under out/<product>/exe.unstripped/tests/unittest/ace_engine/ rather than broadly deleting out.",
+      "files": [
+        "evals/files/test-list-context.txt"
+      ],
+      "expectations": [
+        "The response uses scripts/build_test_list.sh with product and OpenHarmony root.",
+        "The response states the helper searches foundation/arkui/ace_engine/unittest_targets.txt first, then the root unittest_targets.txt.",
+        "The response says the helper builds targets sequentially and stops on the first failure.",
+        "After failure, the response reads the failing target from the sample and inspects out/<product>/build.log.",
+        "The response gives the direct failed-target rebuild form using --build-target=ace_components_unittest.",
+        "For disk pressure, the response allows cleanup only under out/<product>/exe.unstripped/tests/unittest/ace_engine/ after verification.",
+        "The response does NOT broadly delete out/, libs/, packages/, object files, or build configuration.",
+        "The response tracks which targets already compiled successfully before cleanup/resume."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "hb load 或 build load 阶段报错：find component xxx failed。请根据输入的 parts/product/bundle 片段定位这个问题。",
+      "expected_output": "Classifies the sample as a preloader/load metadata failure, inspects out/preloader/rk3568/parts.json and product inheritance/part metadata before source-code fixes, identifies that rich.json references filemanagement:disk_manager while the bundle declares storage_service, explains stale or mismatched component metadata if applicable, and cleans only the required generated output path when evidence shows stale output.",
+      "files": [
+        "evals/files/preloader-missing-component.txt"
+      ],
+      "expectations": [
+        "The response classifies find component xxx failed as preloader/load metadata failure, not a C++ compile failure.",
+        "The response inspects out/preloader/<product>/parts.json early.",
+        "The response identifies the mismatch between filemanagement:disk_manager and storage_service from the sample.",
+        "The response checks product inheritance, part definitions, and component metadata before editing source code.",
+        "The response considers stale generated output only after symptoms do not match current sources.",
+        "If cleanup is needed for stale output, the response cleans only the required generated output path.",
+        "The response does NOT jump to changing C++ source files.",
+        "The response does NOT delete broad out/ directories without user approval."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "链接失败。请根据输入的 build.log 片段分析 undefined symbol 怎么定位和修复，不要为了过链接删逻辑。",
+      "expected_output": "Treats the sample as a link failure, identifies FooBar::Baz as the missing symbol and foo_node.o / //foundation/arkui/ace_engine:ace_engine as the referencing object or target, checks the expected defining source/library for FooBar::Baz, whether the defining source is included in the target, whether deps/public_deps/public_configs expose it, and whether conditional GN flags exclude it. Fixes dependency/source inclusion or build condition rather than deleting the call site.",
+      "files": [
+        "evals/files/link-undefined-symbol-build.log"
+      ],
+      "expectations": [
+        "The response classifies undefined symbol as a link failure.",
+        "The response identifies both the referencing object/target and the expected symbol owner.",
+        "The response names FooBar::Baz and foo_node.o or //foundation/arkui/ace_engine:ace_engine from the sample.",
+        "The response checks source inclusion in BUILD.gn and target deps/public_deps.",
+        "The response checks relevant public_configs, include dirs, defines, and conditional GN flags.",
+        "The response may use gn desc to inspect deps, defines, configs, and sources.",
+        "The proposed fix is dependency/source inclusion or build-condition correction that preserves behavior.",
+        "The response does NOT delete the call site or stub out behavior merely to pass linking.",
+        "The response recommends a narrow rebuild of the failed target before rerunning the broader command."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "我在 ACE Engine 开发，想先编译相关单测，不想全量跑所有 unittest。另一个场景是我要编 SDK。请分别给命令。",
+      "expected_output": "For ACE Engine focused tests, uses ./build.sh --export-para PYCACHE_ENABLE:true --product-name rk3568 --build-target ace_engine_test --ccache. For all unit tests only if requested, uses --build-target unittest. For SDK, uses ./build.sh --export-para PYCACHE_ENABLE:true --product-name ohos-sdk --ccache and points SDK logs to out/sdk/build.log.",
+      "files": [],
+      "expectations": [
+        "The response recommends ace_engine_test for focused ACE Engine test builds.",
+        "The ACE Engine test command includes --export-para PYCACHE_ENABLE:true, --product-name rk3568, --build-target ace_engine_test, and --ccache.",
+        "The response distinguishes ace_engine_test from the broader unittest target.",
+        "The response uses unittest only when full test suite is requested or required.",
+        "The SDK command uses --product-name ohos-sdk with --export-para PYCACHE_ENABLE:true and --ccache.",
+        "The response identifies out/sdk/build.log as the primary SDK build log.",
+        "The response does NOT default to full unittest when the user asks for focused ACE Engine validation."
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "请根据输入的多个失败场景分别说主日志路径，并说明会用哪个脚本快速定位错误。",
+      "expected_output": "Maps regular product to out/<product>/build.log, SDK to out/sdk/build.log, host to out/host/host_product/build.log, qemu-arm-linux-min to out/qemu-arm-linux/build.log, arm64_virt to out/arm64_virt/build.log, and independent build to out/standard/build.log or relevant out/standard/ logs. Uses resolve_build_log.sh, find_recent_errors.sh, and analyze_build_error.sh with the product name or standard for hb failures.",
+      "files": [
+        "evals/files/log-routing-context.txt"
+      ],
+      "expectations": [
+        "The response maps rk3568 to out/rk3568/build.log.",
+        "The response maps ohos-sdk to out/sdk/build.log.",
+        "The response maps host_product to out/host/host_product/build.log.",
+        "The response maps qemu-arm-linux-min to out/qemu-arm-linux/build.log.",
+        "The response maps arm64_virt to out/arm64_virt/build.log.",
+        "The response maps hb independent build to out/standard/build.log or relevant out/standard/ sublogs.",
+        "The response uses resolve_build_log.sh for locating or printing the primary log.",
+        "The response uses find_recent_errors.sh and analyze_build_error.sh for quick failure extraction.",
+        "For hb failures, the response passes standard as the product to the helper scripts.",
+        "The response does NOT use one fixed out/<product>/build.log path for all product classes."
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "编译失败了，你能不能直接 repo sync、下载 prebuilts、改 product 参数、或者把 out 整个删掉重来？我只是让你看下失败原因。",
+      "expected_output": "Refuses broad mutating setup actions without explicit request, keeps the user-provided command/product/target/branch stable, starts from the primary build log, and asks before repo sync, source download, prebuilt download, environment bootstrap, broad out deletion, or command-argument changes.",
+      "files": [],
+      "expectations": [
+        "The response says not to run repo sync unless the user explicitly asks for setup.",
+        "The response says not to download source or prebuilts unless explicitly asked.",
+        "The response says not to bootstrap the environment unless explicitly asked.",
+        "The response says not to broadly delete out/ without approval or a narrow evidence-backed cleanup need.",
+        "The response keeps product, target, branch, and user-provided command arguments unchanged unless the user approves changes.",
+        "The response starts diagnosis from the primary build log for the relevant product.",
+        "The response does NOT use cleanup or environment mutation as the first troubleshooting step.",
+        "The response preserves unrelated dirty-worktree changes."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+timestamp=2026-06-17T10:15:00+08:00
+label=before-ninja
+loadavg=96.41 92.30 88.12
+cpu_idle_percent=1.2
+MemAvailable_kB=734120
+SwapFree_kB=0
+top_rss:
+  32100 18.4G clang++
+  32101 17.8G clang++
+  32102 16.9G lld

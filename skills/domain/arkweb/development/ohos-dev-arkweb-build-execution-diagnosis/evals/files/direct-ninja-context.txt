@@ -1,0 +1,8 @@
+cwd hint: /work/arkweb_0617/src
+args.gn exists: src/out/rk3568_64/args.gn
+previous wrapper command: ./build_arkweb.sh rk3568_64 -t w -A
+previous target family: default WebView
+expected continuation target: ohos_nweb_hap
+
+native target family reference:
+adapter_ndk_stub libarkweb_engine libarkweb_render arkweb_crashpad_handler libffmpeg

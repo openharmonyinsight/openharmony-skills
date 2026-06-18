@@ -1,0 +1,11 @@
+[6120/9000] SOLINK libace_engine.z.so
+FAILED: lib.unstripped/libace_engine.z.so
+../../prebuilts/clang/ohos/linux-x86_64/llvm/bin/ld.lld @libace_engine.rsp
+ld.lld: error: undefined symbol: OHOS::Ace::FooBar::Baz()
+>>> referenced by foo_node.cpp:45 (../../foundation/arkui/ace_engine/frameworks/core/components_ng/pattern/foo/foo_node.cpp:45)
+>>>               obj/foundation/arkui/ace_engine/frameworks/core/components_ng/pattern/foo/foo_node.o:(OHOS::Ace::FooNode::Update())
+>>> did you mean: OHOS::Ace::FooBar::Bar()
+>>> defined in: obj/foundation/arkui/ace_engine/frameworks/core/components_ng/pattern/foo/foo_bar.o
+
+target:
+//foundation/arkui/ace_engine:ace_engine

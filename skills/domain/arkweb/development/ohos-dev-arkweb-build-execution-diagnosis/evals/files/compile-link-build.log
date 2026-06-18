@@ -1,0 +1,6 @@
+[2134/5000] CXX obj/arkweb/foo/bar.o
+FAILED: obj/arkweb/foo/bar.o
+../../third_party/llvm-build/Release+Asserts/bin/clang++ -MMD -MF obj/arkweb/foo/bar.o.d -DARKWEB_TEST -c ../../arkweb/foo/bar.cc -o obj/arkweb/foo/bar.o
+../../arkweb/foo/bar.cc:42:10: fatal error: 'arkweb/foo/missing.h' file not found
+1 error generated.
+[2135/5000] SOLINK libarkweb_engine.so

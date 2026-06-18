@@ -1,0 +1,12 @@
+src repo raw status:
+ M third_party/rust-toolchain/version
+ M third_party/ohos_ndk/includes/ohos_adapter/screenlock_manager_adapter.h
+ M arkweb/components/foo/foo.cc
+ M arkweb/components/foo/BUILD.gn
+
+src/arkweb repo raw status:
+ M build/search_engines/prepopulated_engines.json
+ M browser/feature/demo_controller.cc
+
+build.log first failure:
+../../arkweb/components/foo/foo.cc:88:10: fatal error: 'arkweb/components/foo/new_dep.h' file not found
