@@ -1,0 +1,92 @@
+{
+  "skill_name": "ohos-dev-distributed-cpp-callgraph-analysis",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "检查 OpenHarmony C++ 中 `groupId` 从客户端入口经过 IPC proxy/stub 到服务端处理函数的传递是否完整。请给出可审计的结论，不要只列搜索结果。",
+      "expected_output": "Produces an evidence-driven call-chain completeness assessment covering the IPC boundary and target-data propagation.",
+      "files": [],
+      "expectations": [
+        "The response defines the entry point, target data, included boundaries, and exclusions before concluding.",
+        "The response includes separate IPC proxy write, stub read, transaction code, and service handler evidence.",
+        "The response provides an Evidence Table and a Modification Coverage Matrix.",
+        "The conclusion is one of Complete, Incomplete, or Not provable and identifies exact missing or unknown items."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "分析一个通过虚函数和 callback 分发的 OpenHarmony C++ 事件路径。当前只能找到接口调用点和多个 override，以及 callback 注册点，无法确认运行时实际目标。请判断调用链是否完整。",
+      "expected_output": "Keeps unresolved virtual and callback targets as candidates or unknowns and avoids an unsupported completeness claim.",
+      "files": [],
+      "expectations": [
+        "The response classifies virtual and callback edges separately.",
+        "The response lists all relevant override candidates and both callback registration and invocation evidence.",
+        "The response requests runtime evidence when static evidence cannot resolve the target.",
+        "The response concludes Not provable rather than Complete while important runtime targets remain unknown."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "使用 ohos callgraph helper 反查谁调用 `UpdateTarget`，同时检查 `displayId` 是否沿调用链传递。请直接根据脚本输出判断是否完整。",
+      "expected_output": "Rejects the request to treat helper output as proof and explains the reverse and keyword-analysis limitations.",
+      "files": [],
+      "expectations": [
+        "The response states that helper output is only candidate discovery evidence.",
+        "The response states that reverse mode only reverses direct call edges and does not reverse vtable or dlopen hints.",
+        "The response states that name-keyword checks do not validate parameters, call arguments, member access, or IPC serialization.",
+        "The response requires source, LSP, build, symbol, or runtime evidence before a completeness conclusion."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "一个 OpenHarmony C++ 接口通过 `LoadLibrary<>` 加载实现。请检查新增参数是否被动态实现正确处理，并说明 helper、符号工具和运行时证据分别能证明什么。",
+      "expected_output": "Analyzes the dynamic-loading boundary with appropriately scoped evidence and confidence.",
+      "files": [],
+      "expectations": [
+        "The response identifies the load site, library or symbol name, factory or function-pointer use, and candidate implementation.",
+        "The response treats helper dlopen output as a best-effort hint rather than confirmed dispatch.",
+        "The response uses symbol or build evidence and requests runtime trace when the loaded target is runtime-dependent.",
+        "The response records confidence and change status for the dlopen edge in the Evidence Table."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "调用链分析时 clangd 无法解析正确的产品编译参数，部分 `.o` 也不是 LLVM bitcode，helper 报了大量 opt/llvm-dis 失败。请给出最终判断。",
+      "expected_output": "Reports evidence gaps and refuses to produce a trusted completeness result from incomplete tooling evidence.",
+      "files": [],
+      "expectations": [
+        "The response marks LSP evidence as incomplete because the compile context is invalid.",
+        "The response reports helper tool failures as missing candidate edges rather than no-call evidence.",
+        "The response uses alternative source, build, symbol, or runtime evidence where available.",
+        "The response concludes Not provable if important edges remain unknown."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "在一个新的 OpenHarmony C++ 仓环境中运行调用链分析。当前没有可用 LSP/MCP，但已知源码根、当前仓、产品和构建目标。请自动准备 LSP 后再开始分析。",
+      "expected_output": "Bootstraps a repository-scoped, tool-neutral clangd MCP service with explicit environment context and validates it before analysis.",
+      "files": [],
+      "expectations": [
+        "The response resolves and explicitly passes the OpenHarmony root, repository root, product, and build target instead of asking the setup script to search for them.",
+        "The response obtains approval before downloading dependencies, invoking an OpenHarmony build, or modifying MCP client configuration.",
+        "The response uses scripts/setup_lsp.py and avoids configuring clangd directly against a product-wide compile database.",
+        "The response warns about build-target validity and indexing resource cost when they are relevant to the environment.",
+        "For unsupported MCP clients, the response uses --client none and registers the printed tool-neutral bridge command manually.",
+        "The response treats --install-hook as Claude PreToolUse support only and uses the manual compile_commands.json fix for Codex or other clients.",
+        "The response verifies MCP tool discovery, warms clangd with hover before global definition or references, and falls back without blocking analysis if setup fails."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "当前 OpenHarmony 仓已经有可用 clangd/LSP，能正确解析定义、引用、call hierarchy 和 override。请检查一个普通 C++ direct-call 参数传递路径，是否还需要先跑 ohos_callgraph.py？",
+      "expected_output": "Uses LSP/source evidence as the primary path and does not run the helper unless artifact-level candidate discovery or an LSP/source evidence gap remains.",
+      "files": [],
+      "expectations": [
+        "The response states that LSP/source evidence is the primary path when clangd has the correct compile context.",
+        "The response skips ohos_callgraph.py for direct calls that LSP/source evidence already covers.",
+        "The response lists valid reasons to run the helper: LSP unavailable or incomplete, unexplained edges, or artifact-level candidate confirmation.",
+        "The response still refuses to treat helper output as proof of parameter propagation, callback, IPC, virtual dispatch, or dlopen completeness."
+      ]
+    }
+  ]
+}
