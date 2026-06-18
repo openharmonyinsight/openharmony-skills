@@ -1,6 +1,6 @@
 ---
 name: ohos-issue-arkruntime-gc-debugging
-description: Use when diagnosing a GC-related crash, missing write barrier, dangling pointer, AfterGC verify failure, or unexpected long pause/STW in ArkCompiler runtime; or when working under ecmascript/mem/** while investigating a bug; or when user mentions missing barrier, AfterGC, mark-sweep crash, CMC GC crash, GC stats, GC pause, or weak ref bug.
+description: "Use when diagnosing GC-related bugs in ArkCompiler runtime, including crashes during mark/sweep, missing write barriers, dangling pointers, AfterGC verify failures, long STW pauses, or weak ref issues. Triggered when working under ecmascript/mem/**."
 metadata:
   author: openharmony
   scope: domain
