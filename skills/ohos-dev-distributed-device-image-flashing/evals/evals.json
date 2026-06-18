@@ -1,0 +1,66 @@
+{
+  "skill_name": "ohos-dev-distributed-device-image-flashing",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "帮我下载最近可用的 DAYU200 OpenHarmony 日构建镜像，准备后续板侧测试。请说明使用哪个脚本、输出目录和下载失败时的处理方式。",
+      "expected_output": "Uses the bundled download helper with an explicit component and output directory, while preserving the fixed master daily-build behavior and reporting failure clearly.",
+      "files": [],
+      "expectations": [
+        "The response uses `download_daily.py` from the installed skill directory.",
+        "The response specifies `--component dayu200` and an explicit or default `daily_build` output directory.",
+        "The response does not claim that arbitrary source branches can be selected.",
+        "The response explains that the helper searches recent daily builds and fails clearly when none is found."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "我要把刚下载的镜像刷到连接在 Windows 测试机上的 DAYU200。请给出安全的操作步骤，要求任何 hdc 命令失败后不能继续刷写。",
+      "expected_output": "Uses the bundled flashing helper in updater mode and treats every non-zero hdc command result as a stop condition.",
+      "files": [],
+      "expectations": [
+        "The response uses `flash_device.py` with the image directory.",
+        "The response includes explicit destructive-action confirmation, such as `--yes` only after user approval.",
+        "The response requires updater mode rather than normal-mode partition writes.",
+        "The response states that a failed `hdc` command stops the workflow.",
+        "The response includes a post-reboot version verification step."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "板子接在远端 Windows 测试机上，本机只能通过 SSH 访问。请说明如何上传 skill 脚本、远端下载镜像、刷机并验证版本，不要假设固定用户名、主机名或端口。",
+      "expected_output": "Provides a parameterized SSH workflow without binding to a specific local environment or agent tool.",
+      "files": [],
+      "expectations": [
+        "The response uses placeholders or user-provided values for SSH host, user, and port.",
+        "The response uploads both helper scripts before remote execution.",
+        "The response runs download and flashing commands on the machine connected to the device.",
+        "The response does not reference Claude, Codex, localhost, or a user-specific path."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "刷完基础镜像后，我只想推送几个新编译的 .so。请判断什么时候可以这样做，什么时候必须重新全量刷机。",
+      "expected_output": "Explains the limited post-flash library push workflow and identifies interface or image compatibility changes that require a full flash.",
+      "files": [],
+      "expectations": [
+        "The response explains that compatible implementation-only library changes may be pushed after remounting writable.",
+        "The response warns that IDL, ABI, partition, or dependent image changes require a full flash.",
+        "The response includes service or device verification after pushing libraries.",
+        "The response does not present partial library push as universally safe."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "镜像包里缺少 parameter.txt，但我想继续刷机。请判断是否可以直接使用内置分区表。",
+      "expected_output": "Refuses implicit fallback partition use and requires explicit layout verification before using the RK3568 fallback option.",
+      "files": [],
+      "expectations": [
+        "The response says missing parameter.txt is a safety blocker by default.",
+        "The response only allows `--allow-fallback-partitions` after the RK3568 image layout has been verified.",
+        "The response does not claim the fallback partition list is generic for all devices.",
+        "The response recommends obtaining a complete image package with parameter.txt when layout cannot be verified."
+      ]
+    }
+  ]
+}
