@@ -98,7 +98,7 @@
       "files": ["evals/files/negative/capability-bad.h"],
       "expected_output": "应检出能力查询接口缺失或命名不规范问题",
       "expectations": [
-        "输出JSONL文件中包含rule_name为'针对一系列关联接口或特性是否支持提供能力查询接口'的检视意见"
+        "输出JSONL文件中包含rule_name为'针对关联接口提供能力查询接口'的检视意见"
       ]
     },
     {
@@ -107,7 +107,7 @@
       "files": ["evals/files/positive/capability-ok.h"],
       "expected_output": "不应检出能力查询接口问题",
       "expectations": [
-        "输出JSONL文件中不包含rule_name为'针对一系列关联接口或特性是否支持提供能力查询接口'的检视意见"
+        "输出JSONL文件中不包含rule_name为'针对关联接口提供能力查询接口'的检视意见"
       ]
     },
     {
@@ -261,7 +261,7 @@
       "files": ["evals/files/negative/enum-bitwise-bad.h"],
       "expected_output": "应检出枚举位运算缺少说明问题",
       "expectations": [
-        "输出JSONL文件中包含rule_name为'枚举型支持位运算的应该给出说明'的检视意见"
+        "输出JSONL文件中包含rule_name为'枚举型支持位运算的应给出说明'的检视意见"
       ]
     },
     {
@@ -270,7 +270,7 @@
       "files": ["evals/files/positive/enum-bitwise-ok.h"],
       "expected_output": "不应检出枚举位运算说明问题",
       "expectations": [
-        "输出JSONL文件中不包含rule_name为'枚举型支持位运算的应该给出说明'的检视意见"
+        "输出JSONL文件中不包含rule_name为'枚举型支持位运算的应给出说明'的检视意见"
       ]
     },
     {
@@ -279,7 +279,7 @@
       "files": ["evals/files/negative/binary-encoding-bad.h"],
       "expected_output": "应检出二进制数据编码格式说明缺失问题",
       "expectations": [
-        "输出JSONL文件中包含rule_name为'Byte[]/ArrayBuffer/Uint8Array类型给出编码格式'的检视意见"
+        "输出JSONL文件中包含rule_name为'Byte[]类型给出编码格式'的检视意见"
       ]
     },
     {
@@ -288,7 +288,7 @@
       "files": ["evals/files/positive/binary-encoding-ok.h"],
       "expected_output": "不应检出编码格式说明问题",
       "expectations": [
-        "输出JSONL文件中不包含rule_name为'Byte[]/ArrayBuffer/Uint8Array类型给出编码格式'的检视意见"
+        "输出JSONL文件中不包含rule_name为'Byte[]类型给出编码格式'的检视意见"
       ]
     },
     {

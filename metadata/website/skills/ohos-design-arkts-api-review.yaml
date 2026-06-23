@@ -12,7 +12,7 @@ category:
   capability: api-review
 
 status:
-  maturity: stable
+  maturity: trial
   version: 1.0.0
   owner: openharmony
 

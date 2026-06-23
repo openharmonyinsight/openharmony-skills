@@ -8,6 +8,8 @@
 
 ## Summary
 
+> 注：Iteration 3 跑分后，已根据评审反馈对 evals.json 的 `rule_name` 断言做对齐（5 处 ArkTS，仅修正字符串使其与 SKILL.md 标题一致，规则语义未变），不重新跑分。
+
 | Metric | with_skill | without_skill | Delta |
 |--------|-----------|---------------|-------|
 | Mean Pass Rate | 100.0% | 62.2% | +0.38 |

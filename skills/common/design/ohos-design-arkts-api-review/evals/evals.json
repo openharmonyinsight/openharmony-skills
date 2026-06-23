@@ -326,7 +326,7 @@
       "files": ["evals/files/negative/error-complete-bad.ts"],
       "expected_output": "应检出错误定义不完整的问题",
       "expectations": [
-        "输出JSONL文件中包含rule_name为'异常或者返回的错误定义必要完整'的检视意见"
+        "输出JSONL文件中包含rule_name为'异常或返回的错误定义必要完整'的检视意见"
       ]
     },
     {
@@ -335,7 +335,7 @@
       "files": ["evals/files/positive/error-complete-ok.ts"],
       "expected_output": "不应检出错误定义问题",
       "expectations": [
-        "输出JSONL文件中不包含rule_name为'异常或者返回的错误定义必要完整'的检视意见"
+        "输出JSONL文件中不包含rule_name为'异常或返回的错误定义必要完整'的检视意见"
       ]
     },
     {
@@ -596,7 +596,7 @@
       "files": ["evals/files/negative/capability-bad.ts"],
       "expected_output": "应检出能力查询接口缺失或命名不规范问题",
       "expectations": [
-        "输出JSONL文件中包含rule_name为'针对一系列关联接口或特性是否支持提供能力查询接口'的检视意见"
+        "输出JSONL文件中包含rule_name为'针对关联接口提供能力查询接口'的检视意见"
       ]
     },
     {
@@ -605,7 +605,7 @@
       "files": ["evals/files/positive/capability-ok.ts"],
       "expected_output": "不应检出能力查询接口问题",
       "expectations": [
-        "输出JSONL文件中不包含rule_name为'针对一系列关联接口或特性是否支持提供能力查询接口'的检视意见"
+        "输出JSONL文件中不包含rule_name为'针对关联接口提供能力查询接口'的检视意见"
       ]
     },
     {
@@ -614,7 +614,7 @@
       "files": ["evals/files/negative/callback-bad.ts"],
       "expected_output": "应检出Callback方式通过第二个参数返回成功/失败的问题",
       "expectations": [
-        "输出JSONL文件中包含rule_name为'Callback方式的异步方法禁止通过Callback回调函数中的第二个参数返回方法执行是否成功'的检视意见"
+        "输出JSONL文件中包含rule_name为'Callback异步方法禁止通过Callback第二参数返回成功/失败'的检视意见"
       ]
     },
     {
@@ -623,7 +623,7 @@
       "files": ["evals/files/positive/callback-ok.ts"],
       "expected_output": "不应检出Callback返回值问题",
       "expectations": [
-        "输出JSONL文件中不包含rule_name为'Callback方式的异步方法禁止通过Callback回调函数中的第二个参数返回方法执行是否成功'的检视意见"
+        "输出JSONL文件中不包含rule_name为'Callback异步方法禁止通过Callback第二参数返回成功/失败'的检视意见"
       ]
     },
     {
@@ -632,7 +632,7 @@
       "files": ["evals/files/negative/promise-bad.ts"],
       "expected_output": "应检出Promise方式通过resolve返回失败的问题",
       "expectations": [
-        "输出JSONL文件中包含rule_name为'Promise方式的异步方法禁止通过Promise的then方法中resolve函数返回方法执行失败'的检视意见"
+        "输出JSONL文件中包含rule_name为'Promise异步方法禁止通过resolve返回失败'的检视意见"
       ]
     },
     {
@@ -641,7 +641,7 @@
       "files": ["evals/files/positive/promise-ok.ts"],
       "expected_output": "不应检出Promise返回值问题",
       "expectations": [
-        "输出JSONL文件中不包含rule_name为'Promise方式的异步方法禁止通过Promise的then方法中resolve函数返回方法执行失败'的检视意见"
+        "输出JSONL文件中不包含rule_name为'Promise异步方法禁止通过resolve返回失败'的检视意见"
       ]
     },
     {
@@ -722,7 +722,7 @@
       "files": ["evals/files/negative/enum-bitwise-bad.ts"],
       "expected_output": "应检出枚举位运算缺少说明问题",
       "expectations": [
-        "输出JSONL文件中包含rule_name为'枚举型支持位运算的应该给出说明'的检视意见"
+        "输出JSONL文件中包含rule_name为'枚举型支持位运算的应给出说明'的检视意见"
       ]
     },
     {
@@ -731,7 +731,7 @@
       "files": ["evals/files/positive/enum-bitwise-ok.ts"],
       "expected_output": "不应检出枚举位运算说明问题",
       "expectations": [
-        "输出JSONL文件中不包含rule_name为'枚举型支持位运算的应该给出说明'的检视意见"
+        "输出JSONL文件中不包含rule_name为'枚举型支持位运算的应给出说明'的检视意见"
       ]
     },
     {
