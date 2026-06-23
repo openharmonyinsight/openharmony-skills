@@ -1,0 +1,19 @@
+diff --git a/libc.map.txt b/libc.map.txt
+index 1111111..2222222 100644
+--- a/libc.map.txt
++++ b/libc.map.txt
+@@ -50,6 +50,7 @@ LIBC {
+     pthread_attr_setstacksize;
+     pthread_cancel;
+     pthread_create;
++    pthread_create_ex;
+     pthread_detach;
+     pthread_equal;
+     pthread_exit;
+@@ -200,7 +201,6 @@ LIBC {
+     malloc;
+     memalign;
+-    memccpy;
+     memcpy;
+     memmove;
+     memory_barrier;

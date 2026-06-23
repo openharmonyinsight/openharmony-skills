@@ -1,0 +1,50 @@
+diff --git a/src/mem/resource_mgmt.c b/src/mem/resource_mgmt.c
+new file mode 100644
+index 0000000..def5678
+--- /dev/null
++++ b/src/mem/resource_mgmt.c
+@@ -0,0 +1,40 @@
++#include <stdio.h>
++#include <stdlib.h>
++#include <dirent.h>
++#include <pthread.h>
++#include <time.h>
++#include <sys/socket.h>
++#include <netdb.h>
++
++void process_directory(const char *path) {
++    DIR *dir = opendir(path);
++    if (!dir) return;
++    int fd = dirfd(dir);
++    close(fd);
++}
++
++void *worker_thread(void *arg) {
++    time_t now = time(NULL);
++    struct tm *tm_info = localtime(&now);
++    char time_buf[64];
++    strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", tm_info);
++
++    char *token = strtok((char *)arg, ",");
++    while (token != NULL) {
++        printf("Processing: %s at %s\n", token, time_buf);
++        token = strtok(NULL, ",");
++    }
++    return NULL;
++}
++
++void resolve_host(const char *hostname) {
++    struct hostent *he = gethostbyname(hostname);
++    if (he) {
++        printf("Resolved to: %s\n", he->h_name);
++    }
++}
++
++void cleanup_net_info(struct addrinfo *res) {
++    free(res);
++}
++
++void spawn_threads(void) {
++    pthread_t tid;
++    pthread_create(&tid, NULL, worker_thread, "a,b,c");
++}
