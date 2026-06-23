@@ -1,0 +1,547 @@
+{
+  "skill_name": "ohos-design-c-api-review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/positive-expr-bad.h"],
+      "expected_output": "应检出C接口命名使用否定表达式问题：IsNotEnabled、IsNotValid、IsUnavailable等",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'命名使用肯定表达式'的检视意见",
+        "检出了IsNotEnabled应改为IsDisabled的问题"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/positive-expr-ok.h"],
+      "expected_output": "不应检出否定表达式问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'命名使用肯定表达式'的检视意见"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/param-order-bad.h"],
+      "expected_output": "应检出参数排序问题：核心参数不在前",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'参数按逻辑关系排序'的检视意见"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/param-order-ok.h"],
+      "expected_output": "不应检出参数排序问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'参数按逻辑关系排序'的检视意见"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/constraint-bad.h"],
+      "expected_output": "应检出约束不合理问题：违背行业惯例、约束过多",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'约束限制合理'的检视意见"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/constraint-ok.h"],
+      "expected_output": "不应检出约束问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'约束限制合理'的检视意见"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/no-location-bad.h"],
+      "expected_output": "应检出Public接口返回位置信息问题：BSSID、MAC地址等",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'Public接口禁止返回位置信息'的检视意见"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/no-location-ok.h"],
+      "expected_output": "不应检出位置信息泄露问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'Public接口禁止返回位置信息'的检视意见"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/no-personal-bad.h"],
+      "expected_output": "应检出Public接口返回个人敏感数据问题：SN、MEID、MAC地址等",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'Public接口禁止返回个人敏感数据'的检视意见"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/no-personal-ok.h"],
+      "expected_output": "不应检出个人敏感数据问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'Public接口禁止返回个人敏感数据'的检视意见"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/capability-bad.h"],
+      "expected_output": "应检出能力查询接口缺失或命名不规范问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'针对一系列关联接口或特性是否支持提供能力查询接口'的检视意见"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/capability-ok.h"],
+      "expected_output": "不应检出能力查询接口问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'针对一系列关联接口或特性是否支持提供能力查询接口'的检视意见"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/c-buffer-bad.h"],
+      "expected_output": "应检出C接口buffer参数缺少大小参数的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'C接口中包含buffer等地址的参数需要指定buffer的大小'的检视意见",
+        "检出了指针参数缺少缓冲区大小参数的问题"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/c-buffer-ok.h"],
+      "expected_output": "不应检出buffer大小参数问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'C接口中包含buffer等地址的参数需要指定buffer的大小'的检视意见"
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/comment-audience-bad.h"],
+      "expected_output": "应检出注释不是面向开发者的问题：包含内部实现细节",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'注释的核心读者是应用开发者'的检视意见"
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/comment-audience-ok.h"],
+      "expected_output": "不应检出注释受众问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'注释的核心读者是应用开发者'的检视意见"
+      ]
+    },
+    {
+      "id": 17,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/comment-accuracy-bad.h"],
+      "expected_output": "应检出注释内容有误问题：参数名与注释不匹配、返回值描述错误",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'注释内容正确无歧义'的检视意见"
+      ]
+    },
+    {
+      "id": 18,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/comment-accuracy-ok.h"],
+      "expected_output": "不应检出注释准确性问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'注释内容正确无歧义'的检视意见"
+      ]
+    },
+    {
+      "id": 19,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/comment-concise-bad.h"],
+      "expected_output": "应检出注释不够简洁完备问题：冗余信息、关键信息缺失",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'注释内容突出重点，简洁完备'的检视意见"
+      ]
+    },
+    {
+      "id": 20,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/comment-concise-ok.h"],
+      "expected_output": "不应检出注释简洁性问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'注释内容突出重点，简洁完备'的检视意见"
+      ]
+    },
+    {
+      "id": 21,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/errcode-consist-bad.h"],
+      "expected_output": "应检出错误码不一致问题：实际返回的错误码和定义不一致",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'接口实现返回错误码时，实际返回的错误码和定义一致'的检视意见"
+      ]
+    },
+    {
+      "id": 22,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/errcode-consist-ok.h"],
+      "expected_output": "不应检出错误码一致性问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'接口实现返回错误码时，实际返回的错误码和定义一致'的检视意见"
+      ]
+    },
+    {
+      "id": 23,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/numeric-type-bad.h"],
+      "expected_output": "应检出数值类型使用char[]的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'合理使用数值类型'的检视意见"
+      ]
+    },
+    {
+      "id": 24,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/numeric-type-ok.h"],
+      "expected_output": "不应检出数值类型问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'合理使用数值类型'的检视意见"
+      ]
+    },
+    {
+      "id": 25,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/param-encap-bad.h"],
+      "expected_output": "应检出参数过多未封装为结构体的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'函数入参合理使用参数封装'的检视意见"
+      ]
+    },
+    {
+      "id": 26,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/param-encap-ok.h"],
+      "expected_output": "不应检出参数封装问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'函数入参合理使用参数封装'的检视意见"
+      ]
+    },
+    {
+      "id": 27,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/param-spec-bad.h"],
+      "expected_output": "应检出参数规格不一致问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'参数规格保持一致'的检视意见"
+      ]
+    },
+    {
+      "id": 28,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/param-spec-ok.h"],
+      "expected_output": "不应检出参数规格问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'参数规格保持一致'的检视意见"
+      ]
+    },
+    {
+      "id": 29,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/enum-bitwise-bad.h"],
+      "expected_output": "应检出枚举位运算缺少说明问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'枚举型支持位运算的应该给出说明'的检视意见"
+      ]
+    },
+    {
+      "id": 30,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/enum-bitwise-ok.h"],
+      "expected_output": "不应检出枚举位运算说明问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'枚举型支持位运算的应该给出说明'的检视意见"
+      ]
+    },
+    {
+      "id": 31,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/binary-encoding-bad.h"],
+      "expected_output": "应检出二进制数据编码格式说明缺失问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'Byte[]/ArrayBuffer/Uint8Array类型给出编码格式'的检视意见"
+      ]
+    },
+    {
+      "id": 32,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/binary-encoding-ok.h"],
+      "expected_output": "不应检出编码格式说明问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'Byte[]/ArrayBuffer/Uint8Array类型给出编码格式'的检视意见"
+      ]
+    },
+    {
+      "id": 33,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/empty-property-bad.h"],
+      "expected_output": "应检出空属性接口问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'禁止创建空属性接口'的检视意见"
+      ]
+    },
+    {
+      "id": 34,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/empty-property-ok.h"],
+      "expected_output": "不应检出空属性接口问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'禁止创建空属性接口'的检视意见"
+      ]
+    },
+    {
+      "id": 35,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/empty-method-bad.h"],
+      "expected_output": "应检出空方法接口问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'禁止创建空方法接口'的检视意见"
+      ]
+    },
+    {
+      "id": 36,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/empty-method-ok.h"],
+      "expected_output": "不应检出空方法接口问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'禁止创建空方法接口'的检视意见"
+      ]
+    },
+    {
+      "id": 37,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/empty-enum-bad.h"],
+      "expected_output": "应检出空枚举/常量接口问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'禁止创建空枚举/常量接口'的检视意见"
+      ]
+    },
+    {
+      "id": 38,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/empty-enum-ok.h"],
+      "expected_output": "不应检出空枚举/常量接口问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'禁止创建空枚举/常量接口'的检视意见"
+      ]
+    },
+    {
+      "id": 39,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/cross-lang-errcode-bad.h"],
+      "expected_output": "应检出了不同语言相同功能接口错误码不一致的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'不同语言相同功能接口错误码定义应保持一致'的检视意见"
+      ]
+    },
+    {
+      "id": 40,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/cross-lang-errcode-ok.h"],
+      "expected_output": "不应检出跨语言错误码问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'不同语言相同功能接口错误码定义应保持一致'的检视意见"
+      ]
+    },
+    {
+      "id": 41,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/api-coord-bad.h"],
+      "expected_output": "应检出API配合制约关系说明缺失问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'说明和其他API配合制约关系'的检视意见"
+      ]
+    },
+    {
+      "id": 42,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/api-coord-ok.h"],
+      "expected_output": "不应检出API配合关系问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'说明和其他API配合制约关系'的检视意见"
+      ]
+    },
+    {
+      "id": 43,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/callback-timing-bad.h"],
+      "expected_output": "应检出回调触发时机说明缺失问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'回调类接口说明清楚触发时机'的检视意见"
+      ]
+    },
+    {
+      "id": 44,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/callback-timing-ok.h"],
+      "expected_output": "不应检出回调触发时机问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'回调类接口说明清楚触发时机'的检视意见"
+      ]
+    },
+    {
+      "id": 45,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/comment-wrap-bad.h"],
+      "expected_output": "应检出注释包裹不规范问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'注释包裹规范'的检视意见"
+      ]
+    },
+    {
+      "id": 46,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/comment-wrap-ok.h"],
+      "expected_output": "不应检出注释包裹问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'注释包裹规范'的检视意见"
+      ]
+    },
+    {
+      "id": 47,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/constraint-violation-bad.h"],
+      "expected_output": "应检出超出约束行为说明缺失问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'给出超出取值约束时的行为'的检视意见"
+      ]
+    },
+    {
+      "id": 48,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/constraint-violation-ok.h"],
+      "expected_output": "不应检出超出约束行为问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'给出超出取值约束时的行为'的检视意见"
+      ]
+    },
+    {
+      "id": 49,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/enum-equiv-bad.h"],
+      "expected_output": "应检出枚举值等价关系说明缺失问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'说明枚举值等价关系'的检视意见"
+      ]
+    },
+    {
+      "id": 50,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/enum-equiv-ok.h"],
+      "expected_output": "不应检出枚举等价关系问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'说明枚举值等价关系'的检视意见"
+      ]
+    },
+    {
+      "id": 51,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/numeric-unit-bad.h"],
+      "expected_output": "应检出数值类型缺少单位说明的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'数值类型给出单位说明'的检视意见"
+      ]
+    },
+    {
+      "id": 52,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/numeric-unit-ok.h"],
+      "expected_output": "不应检出数值单位问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'数值类型给出单位说明'的检视意见"
+      ]
+    },
+    {
+      "id": 53,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/optional-default-bad.h"],
+      "expected_output": "应检出可选参数缺少默认值说明的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'可选属性或参数提供默认值'的检视意见"
+      ]
+    },
+    {
+      "id": 54,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/optional-default-ok.h"],
+      "expected_output": "不应检出可选参数默认值问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'可选属性或参数提供默认值'的检视意见"
+      ]
+    },
+    {
+      "id": 55,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/pointer-array-bad.h"],
+      "expected_output": "应检出指针数组属性不明确的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'指针数组属性明确化'的检视意见"
+      ]
+    },
+    {
+      "id": 56,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/pointer-array-ok.h"],
+      "expected_output": "不应检出指针数组问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'指针数组属性明确化'的检视意见"
+      ]
+    },
+    {
+      "id": 57,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/prerequisite-bad.h"],
+      "expected_output": "应检出前置依赖关系说明缺失问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'说明前置依赖关系和环境要求'的检视意见"
+      ]
+    },
+    {
+      "id": 58,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/prerequisite-ok.h"],
+      "expected_output": "不应检出前置依赖说明问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'说明前置依赖关系和环境要求'的检视意见"
+      ]
+    },
+    {
+      "id": 59,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/string-format-bad.h"],
+      "expected_output": "应检出字符串格式说明缺失问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'字符串类型给出字符串格式'的检视意见"
+      ]
+    },
+    {
+      "id": 60,
+      "prompt": "检视以下C API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/string-format-ok.h"],
+      "expected_output": "不应检出字符串格式问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'字符串类型给出字符串格式'的检视意见"
+      ]
+    }
+  ]
+}
