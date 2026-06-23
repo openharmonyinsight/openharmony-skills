@@ -1,0 +1,828 @@
+{
+  "skill_name": "ohos-design-arkts-api-review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/naming-bad.ts"],
+      "expected_output": "应检出命名规范类问题：函数命名模糊(process)、违背业界通用命名(convertToString)、与存量风格不一致(fetchUserInfo)",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'符合命名规范'的检视意见",
+        "检出了函数名'process'命名过于泛化的问题",
+        "检出了'convertToString'违背业界通用命名的问题",
+        "检出了'fetchUserInfo'与存量风格不一致的问题"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/naming-ok.ts"],
+      "expected_output": "不应检出任何命名规范类问题，所有命名均符合规范",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'符合命名规范'的检视意见",
+        "或者输出为空JSONL文件"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/positive-expr-bad.ts"],
+      "expected_output": "应检出命名使用否定表达式问题：isNotEnabled、isNotValid、isUnavailable等",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'命名使用肯定表达式'的检视意见",
+        "检出了isNotEnabled应改为isDisabled的问题",
+        "检出了isUnavailable应改为isAvailable的问题"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/positive-expr-ok.ts"],
+      "expected_output": "不应检出否定表达式问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'命名使用肯定表达式'的检视意见"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/english-only-bad.ts"],
+      "expected_output": "应检出非英语命名问题：拼音命名huoQuYongHuXinXi、中英混用",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'命名必须使用英语'的检视意见",
+        "检出了拼音命名的问题"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/english-only-ok.ts"],
+      "expected_output": "不应检出非英语命名问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'命名必须使用英语'的检视意见"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/grammar-bad.ts"],
+      "expected_output": "应检出语法词法错误：拼写错误(Infor)、词性错误(userGet)、时态错误(gettingUserInfo)",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'禁止出现语法词法错误'的检视意见",
+        "检出了拼写错误或词性错误或时态错误的问题"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/grammar-ok.ts"],
+      "expected_output": "不应检出语法词法错误问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'禁止出现语法词法错误'的检视意见"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/antonym-bad.ts"],
+      "expected_output": "应检出对仗词使用不当问题：有set无get、对仗词不准确(deleteChild应为removeChild)",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'准确使用对仗词'的检视意见",
+        "检出了对仗词缺失或不准确的问题"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/antonym-ok.ts"],
+      "expected_output": "不应检出对仗词问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'准确使用对仗词'的检视意见"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/abbreviation-bad.ts"],
+      "expected_output": "应检出缩写使用不当问题：非熟知缩写(UsrInf)、缩写格式错误(USER)、首字母未大写",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'合理使用缩写'的检视意见",
+        "检出了缩写不规范的问题"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/abbreviation-ok.ts"],
+      "expected_output": "不应检出缩写问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'合理使用缩写'的检视意见"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/controversial-bad.ts"],
+      "expected_output": "应检出有争议命名：master/slave、blacklist/whitelist、品牌名称、其他OS专有名词",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'禁止有争议的命名'的检视意见",
+        "检出了歧视性词汇或品牌名或其他OS专有名词的问题"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/controversial-ok.ts"],
+      "expected_output": "不应检出有争议命名问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'禁止有争议的命名'的检视意见"
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/func-verb-bad.ts"],
+      "expected_output": "应检出函数命名问题：名词结构(user)、形容词结构(ready)、动词时态错误(starting)",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'函数名称应该是动词或动宾/介宾结构'的检视意见",
+        "检出了函数名不以动词开头的问题"
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/func-verb-ok.ts"],
+      "expected_output": "不应检出函数命名结构问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'函数名称应该是动词或动宾/介宾结构'的检视意见"
+      ]
+    },
+    {
+      "id": 17,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/declarative-bad.ts"],
+      "expected_output": "应检出非声明式风格使用名词的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'声明式风格的函数名称可以使用名词'的检视意见"
+      ]
+    },
+    {
+      "id": 18,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/declarative-ok.ts"],
+      "expected_output": "不应检出声明式函数命名问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'声明式风格的函数名称可以使用名词'的检视意见"
+      ]
+    },
+    {
+      "id": 19,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/type-noun-bad.ts"],
+      "expected_output": "应检出数据类型命名问题：类名使用动词(ManageUser)、接口名使用动词(GetUserInfo)",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'数据类型的名称应该是名词'的检视意见"
+      ]
+    },
+    {
+      "id": 20,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/type-noun-ok.ts"],
+      "expected_output": "不应检出数据类型命名问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'数据类型的名称应该是名词'的检视意见"
+      ]
+    },
+    {
+      "id": 21,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/singular-plural-bad.ts"],
+      "expected_output": "应检出单复数不匹配问题：返回单个对象用复数(getUsers返回User)、返回数组用单数",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'名词的单复数和接口语义匹配'的检视意见"
+      ]
+    },
+    {
+      "id": 22,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/singular-plural-ok.ts"],
+      "expected_output": "不应检出单复数问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'名词的单复数和接口语义匹配'的检视意见"
+      ]
+    },
+    {
+      "id": 23,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/param-order-bad.ts"],
+      "expected_output": "应检出参数排序问题：核心参数不在前、必选参数在可选参数之后",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'参数按逻辑关系排序'的检视意见"
+      ]
+    },
+    {
+      "id": 24,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/param-order-ok.ts"],
+      "expected_output": "不应检出参数排序问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'参数按逻辑关系排序'的检视意见"
+      ]
+    },
+    {
+      "id": 25,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/module-bad.ts"],
+      "expected_output": "应检出模块划分问题：职责不单一、耦合度高",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'模块划分合理'的检视意见"
+      ]
+    },
+    {
+      "id": 26,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/module-ok.ts"],
+      "expected_output": "不应检出模块划分问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'模块划分合理'的检视意见"
+      ]
+    },
+    {
+      "id": 27,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/sync-return-bad.ts"],
+      "expected_output": "应检出同步方法通过返回值返回成功/失败的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'同步方法禁止通过返回值返回方法执行是否成功'的检视意见",
+        "检出了返回boolean表示成功/失败的问题"
+      ]
+    },
+    {
+      "id": 28,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/sync-return-ok.ts"],
+      "expected_output": "不应检出同步返回值问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'同步方法禁止通过返回值返回方法执行是否成功'的检视意见"
+      ]
+    },
+    {
+      "id": 29,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/industry-sync-bad.ts"],
+      "expected_output": "应检出了业界同步API不应提供异步版本的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'与业界同步API名称且功能一致的API只提供同步方式'的检视意见"
+      ]
+    },
+    {
+      "id": 30,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/industry-sync-ok.ts"],
+      "expected_output": "不应检出业界同步API问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'与业界同步API名称且功能一致的API只提供同步方式'的检视意见"
+      ]
+    },
+    {
+      "id": 31,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/uncertain-async-bad.ts"],
+      "expected_output": "应检出了涉及网络/长时间任务/用户交互但未提供异步方式的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'执行时长受外界影响且不确定的，API只提供异步方式'的检视意见"
+      ]
+    },
+    {
+      "id": 32,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/uncertain-async-ok.ts"],
+      "expected_output": "不应检出异步方式问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'执行时长受外界影响且不确定的，API只提供异步方式'的检视意见"
+      ]
+    },
+    {
+      "id": 33,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/long-async-bad.ts"],
+      "expected_output": "应检出IO/耗时/IPC操作未提供异步方式的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'执行时间长且受外界影响小的API优先提供异步方式'的检视意见"
+      ]
+    },
+    {
+      "id": 34,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/long-async-ok.ts"],
+      "expected_output": "不应检出异步方式问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'执行时间长且受外界影响小的API优先提供异步方式'的检视意见"
+      ]
+    },
+    {
+      "id": 35,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/error-complete-bad.ts"],
+      "expected_output": "应检出错误定义不完整的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'异常或返回的错误定义必要完整'的检视意见"
+      ]
+    },
+    {
+      "id": 36,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/error-complete-ok.ts"],
+      "expected_output": "不应检出错误定义问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'异常或返回的错误定义必要完整'的检视意见"
+      ]
+    },
+    {
+      "id": 37,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/errcode-bad.ts"],
+      "expected_output": "应检出错误码不规范问题：非标错误码(-1/1/0)、通用/业务错误码混用",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'错误码的码值符合设计规范'的检视意见"
+      ]
+    },
+    {
+      "id": 38,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/errcode-ok.ts"],
+      "expected_output": "不应检出错误码问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'错误码的码值符合设计规范'的检视意见"
+      ]
+    },
+    {
+      "id": 39,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/on-event-bad.ts"],
+      "expected_output": "应检出事件订阅方法名不以onXXX开头的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'事件订阅方法名前缀必须为onXXX'的检视意见"
+      ]
+    },
+    {
+      "id": 40,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/on-event-ok.ts"],
+      "expected_output": "不应检出事件订阅方法命名问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'事件订阅方法名前缀必须为onXXX'的检视意见"
+      ]
+    },
+    {
+      "id": 41,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/off-event-bad.ts"],
+      "expected_output": "应检出取消事件订阅方法名不以offXXX开头的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'取消事件订阅方法名前缀必须为offXXX'的检视意见"
+      ]
+    },
+    {
+      "id": 42,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/off-event-ok.ts"],
+      "expected_output": "不应检出取消订阅方法命名问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'取消事件订阅方法名前缀必须为offXXX'的检视意见"
+      ]
+    },
+    {
+      "id": 43,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/once-event-bad.ts"],
+      "expected_output": "应检出一次性订阅方法名不以onceXXX开头的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'一次性事件订阅方法名前缀必须为onceXXX'的检视意见"
+      ]
+    },
+    {
+      "id": 44,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/once-event-ok.ts"],
+      "expected_output": "不应检出一次性订阅方法命名问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'一次性事件订阅方法名前缀必须为onceXXX'的检视意见"
+      ]
+    },
+    {
+      "id": 45,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/emit-event-bad.ts"],
+      "expected_output": "应检出事件触发方法名不是emit的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'事件触发方法名称必须为emit'的检视意见"
+      ]
+    },
+    {
+      "id": 46,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/emit-event-ok.ts"],
+      "expected_output": "不应检出事件触发方法命名问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'事件触发方法名称必须为emit'的检视意见"
+      ]
+    },
+    {
+      "id": 47,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/empty-class-bad.ts"],
+      "expected_output": "应检出空class定义问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'禁止创建空class'的检视意见"
+      ]
+    },
+    {
+      "id": 48,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/empty-class-ok.ts"],
+      "expected_output": "不应检出空class问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'禁止创建空class'的检视意见"
+      ]
+    },
+    {
+      "id": 49,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/empty-interface-bad.ts"],
+      "expected_output": "应检出空interface定义问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'禁止创建空interface'的检视意见"
+      ]
+    },
+    {
+      "id": 50,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/empty-interface-ok.ts"],
+      "expected_output": "不应检出空interface问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'禁止创建空interface'的检视意见"
+      ]
+    },
+    {
+      "id": 51,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/empty-property-bad.ts"],
+      "expected_output": "应检出空属性接口问题：预留属性使用any/unknown类型",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'禁止创建空属性接口'的检视意见"
+      ]
+    },
+    {
+      "id": 52,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/empty-property-ok.ts"],
+      "expected_output": "不应检出空属性接口问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'禁止创建空属性接口'的检视意见"
+      ]
+    },
+    {
+      "id": 53,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/empty-event-bad.ts"],
+      "expected_output": "应检出空公共事件问题：声明了系统不会发送的CES事件",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'禁止创建空的公共事件'的检视意见"
+      ]
+    },
+    {
+      "id": 54,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/empty-event-ok.ts"],
+      "expected_output": "不应检出空公共事件问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'禁止创建空的公共事件'的检视意见"
+      ]
+    },
+    {
+      "id": 55,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/exception-desc-bad.ts"],
+      "expected_output": "应检出异常描述不完整问题：缺少Why要素、缺少处理建议",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'提供异常描述和异常处理建议'的检视意见"
+      ]
+    },
+    {
+      "id": 56,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/exception-desc-ok.ts"],
+      "expected_output": "不应检出异常描述问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'提供异常描述和异常处理建议'的检视意见"
+      ]
+    },
+    {
+      "id": 57,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/return-desc-bad.ts"],
+      "expected_output": "应检出返回值取值说明缺失问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'提供返回值取值说明'的检视意见"
+      ]
+    },
+    {
+      "id": 58,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/return-desc-ok.ts"],
+      "expected_output": "不应检出返回值说明问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'提供返回值取值说明'的检视意见"
+      ]
+    },
+    {
+      "id": 59,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/constraint-bad.ts"],
+      "expected_output": "应检出约束不合理问题：违背行业惯例、约束过多",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'约束限制合理'的检视意见"
+      ]
+    },
+    {
+      "id": 60,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/constraint-ok.ts"],
+      "expected_output": "不应检出约束问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'约束限制合理'的检视意见"
+      ]
+    },
+    {
+      "id": 61,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/no-location-bad.ts"],
+      "expected_output": "应检出Public接口返回位置信息问题：BSSID、MAC地址等",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'Public接口禁止返回位置信息'的检视意见"
+      ]
+    },
+    {
+      "id": 62,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/no-location-ok.ts"],
+      "expected_output": "不应检出位置信息泄露问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'Public接口禁止返回位置信息'的检视意见"
+      ]
+    },
+    {
+      "id": 63,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/no-personal-bad.ts"],
+      "expected_output": "应检出Public接口返回个人敏感数据问题：SN、MEID、手机号等",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'Public接口禁止返回个人敏感数据'的检视意见"
+      ]
+    },
+    {
+      "id": 64,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/no-personal-ok.ts"],
+      "expected_output": "不应检出个人敏感数据问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'Public接口禁止返回个人敏感数据'的检视意见"
+      ]
+    },
+    {
+      "id": 65,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/capability-bad.ts"],
+      "expected_output": "应检出能力查询接口缺失或命名不规范问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'针对关联接口提供能力查询接口'的检视意见"
+      ]
+    },
+    {
+      "id": 66,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/capability-ok.ts"],
+      "expected_output": "不应检出能力查询接口问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'针对关联接口提供能力查询接口'的检视意见"
+      ]
+    },
+    {
+      "id": 67,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/callback-bad.ts"],
+      "expected_output": "应检出Callback方式通过第二个参数返回成功/失败的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'Callback异步方法禁止通过Callback第二参数返回成功/失败'的检视意见"
+      ]
+    },
+    {
+      "id": 68,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/callback-ok.ts"],
+      "expected_output": "不应检出Callback返回值问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'Callback异步方法禁止通过Callback第二参数返回成功/失败'的检视意见"
+      ]
+    },
+    {
+      "id": 69,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/promise-bad.ts"],
+      "expected_output": "应检出Promise方式通过resolve返回失败的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'Promise异步方法禁止通过resolve返回失败'的检视意见"
+      ]
+    },
+    {
+      "id": 70,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/promise-ok.ts"],
+      "expected_output": "不应检出Promise返回值问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'Promise异步方法禁止通过resolve返回失败'的检视意见"
+      ]
+    },
+    {
+      "id": 71,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/usage-limit-bad.ts"],
+      "expected_output": "应检出使用限制/单位说明缺失问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'在描述中列出API的使用限制、特殊写法和单位'的检视意见"
+      ]
+    },
+    {
+      "id": 72,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/usage-limit-ok.ts"],
+      "expected_output": "不应检出使用限制说明问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'在描述中列出API的使用限制、特殊写法和单位'的检视意见"
+      ]
+    },
+    {
+      "id": 73,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/numeric-type-bad.ts"],
+      "expected_output": "应检出数值类型使用string的问题：年龄用string、金额用string",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'合理使用数值类型'的检视意见"
+      ]
+    },
+    {
+      "id": 74,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/numeric-type-ok.ts"],
+      "expected_output": "不应检出数值类型问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'合理使用数值类型'的检视意见"
+      ]
+    },
+    {
+      "id": 75,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/param-encap-bad.ts"],
+      "expected_output": "应检出参数过多未封装问题：参数超过5个",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'函数入参合理使用参数封装'的检视意见"
+      ]
+    },
+    {
+      "id": 76,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/param-encap-ok.ts"],
+      "expected_output": "不应检出参数封装问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'函数入参合理使用参数封装'的检视意见"
+      ]
+    },
+    {
+      "id": 77,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/param-spec-bad.ts"],
+      "expected_output": "应检出参数规格不一致问题：同一概念使用不同命名/类型/单位",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'参数规格保持一致'的检视意见"
+      ]
+    },
+    {
+      "id": 78,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/param-spec-ok.ts"],
+      "expected_output": "不应检出参数规格问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'参数规格保持一致'的检视意见"
+      ]
+    },
+    {
+      "id": 79,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/enum-bitwise-bad.ts"],
+      "expected_output": "应检出枚举位运算缺少说明问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'枚举型支持位运算的应给出说明'的检视意见"
+      ]
+    },
+    {
+      "id": 80,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/enum-bitwise-ok.ts"],
+      "expected_output": "不应检出枚举位运算说明问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'枚举型支持位运算的应给出说明'的检视意见"
+      ]
+    },
+    {
+      "id": 81,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/binary-encoding-bad.ts"],
+      "expected_output": "应检出二进制数据编码格式说明缺失问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'Byte[]/ArrayBuffer/Uint8Array类型给出编码格式'的检视意见"
+      ]
+    },
+    {
+      "id": 82,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/binary-encoding-ok.ts"],
+      "expected_output": "不应检出编码格式说明问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'Byte[]/ArrayBuffer/Uint8Array类型给出编码格式'的检视意见"
+      ]
+    },
+    {
+      "id": 83,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/null-undefined-bad.ts"],
+      "expected_output": "应检出null/undefined未显式声明问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'显式声明所有null/undefined'的检视意见"
+      ]
+    },
+    {
+      "id": 84,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/null-undefined-ok.ts"],
+      "expected_output": "不应检出null/undefined声明问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'显式声明所有null/undefined'的检视意见"
+      ]
+    },
+    {
+      "id": 85,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/query-null-bad.ts"],
+      "expected_output": "应检出查询类方法查询不到时应返回null的问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'查询类方法，查询不到时应返回null'的检视意见"
+      ]
+    },
+    {
+      "id": 86,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/query-null-ok.ts"],
+      "expected_output": "不应检出查询返回null问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'查询类方法，查询不到时应返回null'的检视意见"
+      ]
+    },
+    {
+      "id": 87,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/empty-method-bad.ts"],
+      "expected_output": "应检出空方法接口问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'禁止创建空方法接口'的检视意见"
+      ]
+    },
+    {
+      "id": 88,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/empty-method-ok.ts"],
+      "expected_output": "不应检出空方法接口问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'禁止创建空方法接口'的检视意见"
+      ]
+    },
+    {
+      "id": 89,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/negative/empty-enum-bad.ts"],
+      "expected_output": "应检出空枚举/常量接口问题",
+      "expectations": [
+        "输出JSONL文件中包含rule_name为'禁止创建空枚举/常量接口'的检视意见"
+      ]
+    },
+    {
+      "id": 90,
+      "prompt": "检视以下ArkTS API代码文件的规范性，检视意见保存目录save_dir='/tmp/eval_result'",
+      "files": ["evals/files/positive/empty-enum-ok.ts"],
+      "expected_output": "不应检出空枚举/常量接口问题",
+      "expectations": [
+        "输出JSONL文件中不包含rule_name为'禁止创建空枚举/常量接口'的检视意见"
+      ]
+    }
+  ]
+}
