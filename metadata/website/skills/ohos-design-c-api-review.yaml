@@ -1,0 +1,76 @@
+schemaVersion: 1
+
+id: ohos-design-c-api-review
+title: 鸿蒙 C API 规范检视
+summary: 检视鸿蒙 C API 接口设计是否符合命名、接口设计、指针/缓冲区、异常处理、类型数据、注释、结构定义等 50 条规范性要求。
+
+category:
+  scope: common
+  namespace: design
+  stage: design
+  domain: c
+  capability: api-review
+
+status:
+  maturity: stable
+  version: 1.0.0
+  owner: openharmony
+
+tags:
+  - c
+  - api
+  - specification
+  - review
+
+audience:
+  - C API 设计者
+  - NDK / C 接口评审人员
+  - 头文件接口签名 Reviewer
+  - 指针 / 缓冲区规范审查人员
+
+useCases:
+  - title: 评审新增 C API 接口设计
+    description: 在头文件上库前对 .h 中的函数声明、结构体、枚举、typedef 进行命名、签名、指针缓冲区、注释、错误码等规范性检视。
+  - title: 检视存量 C 接口规范一致性
+    description: 扫描已有头文件，发现命名不规范、指针缺大小参数、注释复制粘贴错误、错误码非标等问题。
+  - title: 缓冲区与指针参数审查
+    description: 校验 char* / void* / Type** 等指针参数是否配套 bufSize / count / 长度字段，避免溢出。
+
+whenToUse:
+  - 新增鸿蒙 C API 接口（.h）需要规范性评审
+  - API 命名审查、函数签名设计评审、参数设计检查
+  - 注释规范审查、错误码设计评审、指针 / 缓冲区规范检查
+  - 多设备能力差异接口需要校验是否提供能力查询接口
+
+whenNotToUse:
+  - 检视 ArkTS 接口（应使用 ohos-design-arkts-api-review）
+  - 仅评审 C/C++ 实现代码质量，不涉及 API 设计规范
+  - 仅评审 C++ 代码风格（应使用对应 coding-style 类 skill）
+
+inputs:
+  required:
+    - 待检视的 C API 头文件（.h），含函数声明、结构体、枚举、typedef、注释
+  optional:
+    - 同模块已有头文件，用于命名风格一致性参考
+    - 错误码定义表
+    - 接口预期的设备能力差异说明
+
+outputs:
+  - 按声明逐一列出的违规项，标注命中规则名与所在行号
+  - 每条违规的具体修改建议（命名替换、补大小参数、注释补充等）
+  - 指针 / 缓冲区配套参数建议（如 bufSize、count、size 字段）
+
+quickStart:
+  steps:
+    - 提供待检视的 C API 头文件路径或内容。
+    - 说明是否需要参考同模块已有头文件风格。
+    - 请求按 50 条规则逐一输出违规项与修改建议。
+  examplePrompt: |
+    请使用 ohos-design-c-api-review 检视这个 C API 头文件，按命名、
+    接口设计、指针缓冲区、异常、类型、注释、结构定义七类规则逐一输出
+    违规项与具体修改建议。
+
+related:
+  skills:
+    - ohos-design-arkts-api-review
+  docs: []
