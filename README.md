@@ -66,11 +66,13 @@ oh-ut-generator
 oh-xts-build-run
 oh-xts-generator-template
 ohos-app-build-debug
+ohos-dev-arkruntime-interop-development
 ohos-dev-graphics-pixel-tests-generator
 ohos-dev-graphics-stability-code-review
 ohos-dev-graphics3d-combined-postprocess
 ohos-issue-graphics-cppcrash-analysis
 ohos-issue-graphics-sysfreeze-analysis
+ohos-test-arkruntime-interop-testing
 ohos-test-fuzz-generation
 ohos-test-graphics3d-static-api-unit-test
 ohos-test-ut-generation
