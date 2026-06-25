@@ -122,9 +122,10 @@ bash ${SKILL_BASE_DIR}/scripts/monitor_progress.sh --root <OH_ROOT> --product <P
 
 If exit code is 0 (prints `active`), a build is in progress — wait for it or ask the user. If exit code is 1, safe to launch.
 
-Use `setsid` with console output redirected to `out/<product>/build_console.log`, `<product>` **MUST BE** the real output path following the #Environment special cases:
+Use `setsid` with console output redirected to `out/<product>/build_console.log`, `<product>` **MUST BE** the real output path following the #Environment special cases. **Always `mkdir -p` the output directory first** — it may not exist on a fresh build:
 
 ```bash
+mkdir -p out/<product>
 setsid ./build.sh <args> > out/<product>/build_console.log 2>&1 &
 echo "Build PID: $!"
 ```
