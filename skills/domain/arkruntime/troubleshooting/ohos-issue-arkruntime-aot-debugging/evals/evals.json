@@ -1,0 +1,143 @@
+{
+  "skill_name": "ohos-issue-arkruntime-aot-debugging",
+  "evaluation_method": {
+    "type": "rubric_assertion",
+    "pass_rule": "A case passes only when all expectations are satisfied. The with-skill run must pass every case. The without-skill run is evaluated with the same prompts and expectations to measure baseline gaps.",
+    "grading_notes": [
+      "Do not award a pass for generic AOT or compiler explanations that do not classify the failure stage.",
+      "Do not award a pass when the answer jumps to source patches before naming the decisive evidence gap.",
+      "Do not award a pass when the answer collapses compiler_service launch failures, ark_aot startup failures, PAOC compile crashes, runtime load/link failures, and compiled-code execution crashes into one bucket."
+    ]
+  },
+  "evals": [
+    {
+      "id": "compiler_service_read_int32_failure",
+      "prompt": "A static app AOT compile fails with outer logs containing `Read Int32 failed!` and `aot compiler fail`. There is also a compiler_service line `Parser check validation failed`, but no child `ark_aot` argv log. Diagnose whether this is static AOT codegen and what to inspect next.",
+      "files": [],
+      "expected_output": "The answer should classify this as a launch/service-side validation failure before child ark_aot execution, not static AOT codegen. It should explain that `Read Int32 failed!` is an outer wrapper and that `Parser check validation failed` means the next decisive evidence is compiler_service parser/input validation and child argv construction.",
+      "expectations": [
+        "Classifies the stage as compiler_service launch/argument validation, before child ark_aot starts.",
+        "Does not diagnose this as PAOC/codegen or compiled AOT execution.",
+        "Explains why `Read Int32 failed!` alone is not proof of IPC parcel corruption.",
+        "Uses `Parser check validation failed` as the stronger phase-specific evidence.",
+        "Names next inspection points: request fields, parser choice, executable path, constructed child argv, and dynamic/static module mode metadata.",
+        "Asks for at most one or two decisive artifacts rather than broad logs or bisection."
+      ]
+    },
+    {
+      "id": "ark_aot_startup_sigabrt",
+      "prompt": "An intermittent `/system/bin/ark_aot` SIGABRT stack ends in `Runtime::Create -> PoolManager::Initialize -> MmapMemPool`. There are no PAOC method compile logs. Diagnose the failure stage, likely owner, and what evidence is still needed before proposing a fix.",
+      "files": [],
+      "expected_output": "The answer should classify this as ark_aot startup/runtime initialization, before PAOC compilation. It should treat runtime resource configuration or memory pool initialization as the strongest suspect area and request the earliest fatal line, build flavor, memory/map limit context, and runtime startup arguments before proposing compiler pass fixes.",
+      "expectations": [
+        "Classifies the stage as ark_aot startup/runtime initialization.",
+        "Explicitly states that PAOC compilation has not been proven to start.",
+        "Names Runtime::Create, PoolManager, MmapMemPool, memory mapping limits, and startup configuration as source areas to inspect.",
+        "Requests earliest fatal log line and build flavor or sanitizer/debug/release context.",
+        "Does not propose compiler/codegen fixes before startup evidence is resolved.",
+        "Separates child ark_aot process context from compiler_service wrapper context."
+      ]
+    },
+    {
+      "id": "ark_aot_paoc_compile_crash",
+      "prompt": "A compiler_service request launches `/system/bin/ark_aot`. The child logs show PAOC started and the last line names a specific method and optimization pass before SIGABRT. There is no app runtime crash and no emitted `.an` file. Diagnose the failure category, what evidence to align, why this is not an AOT execution crash, and include at least one source-grounded suspect from the pass body.",
+      "files": [],
+      "expected_output": "The answer should classify this as a child ark_aot PAOC compile-time crash. It should use the last method/pass log to identify the current compile entity, explain that no emitted .an and no app runtime crash means compiled code did not execute, and inspect the named pass/helper before naming a source-backed suspect.",
+      "expectations": [
+        "Classifies the failure as PAOC compile-time crash inside child ark_aot.",
+        "Explains why it is not a runtime compiled-code execution crash.",
+        "Uses current panda file, method, pass, and helper as the localization target.",
+        "Says the last PAOC method/pass log is the first current-method candidate, not final proof if logs are buffered.",
+        "Distinguishes IR dumps, disassembly, and ark_aotdump evidence boundaries.",
+        "Includes at least one source-grounded suspect from the named pass/helper before proposing a fix."
+      ]
+    },
+    {
+      "id": "select_optimization_compile_crash",
+      "prompt": "Diagnose this `/system/bin/ark_aot` crash: SIGSEGV at 0xb8, top frames `SelectOptimization::TryOptimizeSelectInstWithSameOperandsChecked -> SelectOptimization::RunImpl -> PassManager::RunPass -> Pipeline::RunOptimizations -> Paoc::Compile`. Start with a short summary. Explain the stage, source-backed suspect mechanisms in the pass, how to identify the method being compiled without defaulting to broad bisection, whether IR dump/disasm/aotdump can identify the crashing method at this phase, targeted logging fields for the helper, how and where to use `--compiler-select-optimization=false` as secondary confirmation without letting it replace method/log/IR evidence, next decisive checks, and minimal fix direction.",
+      "files": [],
+      "expected_output": "The answer should start with the required three-line short summary, classify the crash as PAOC compile-time in SelectOptimization, request the current method through PAOC/pass logs before bisection, explain dump boundaries, suggest targeted logging inside the helper, and use disabling SelectOptimization only as an ownership isolation switch.",
+      "expectations": [
+        "Starts with `Short summary` containing Stage, Best current hypothesis, and Next decisive evidence.",
+        "Classifies the stage as child ark_aot PAOC compile-time optimization pass crash.",
+        "Names SelectOptimization helper behavior as the source area instead of generic null-pointer guessing.",
+        "Finds current method through PAOC method logs, CompileAot/TryCreateGraph/PassManager logging, or previous successful IR dump before recommending broad bisection.",
+        "States that ark_aotdump needs emitted AOT product data and may not help if the crash happens before .an emission.",
+        "Explains that IR dumps show pass-local state and the crashing pass dump may be absent if the pass does not return.",
+        "Uses `--compiler-select-optimization=false` only as a secondary path ownership check, not final proof.",
+        "Provides targeted logging fields for the helper such as current graph/method, select/check inputs, operand ids/types, null operands, and before/after transform state."
+      ]
+    },
+    {
+      "id": "aot_crash_bytecode_machine_code_alignment",
+      "prompt": "The user provides an AOT runtime crash stack, registers, bytecode disassembly, and AOT machine code around PC. The faulting instruction appears to load an object field and the next instruction reads array length. Diagnose how to align the evidence, decide whether the stack-top instruction is likely root cause or symptom, when to compare interpreter vs AOT mode, and what targeted logging to request next.",
+      "files": [],
+      "expected_output": "The answer should classify this as runtime compiled-code execution analysis and align PC, method, bytecode, machine instruction, registers, fault address, and runtime object state before naming codegen. It should warn that the faulting instruction can be a symptom of an earlier bad value and use interpreter/non-AOT comparison as supporting evidence.",
+      "expectations": [
+        "Classifies the stage as runtime compiled-code execution, not PAOC compile-time.",
+        "Requires PC-to-method mapping, bytecode PC, machine instruction, registers, fault address, and object/runtime state alignment.",
+        "Explains that the faulting load can be a symptom if an earlier instruction produced a bad base object.",
+        "Does not call it a codegen bug until bytecode semantics and runtime state are reconciled.",
+        "Uses interpreter or non-AOT mode comparison to distinguish AOT-only behavior from source/runtime state issues.",
+        "Requests targeted logs around the object/value producer and the bytecode operation, not broad logs."
+      ]
+    },
+    {
+      "id": "aot_deopt_iteration",
+      "prompt": "An emitted AOT .an product runs but repeatedly deopts in one method. Diagnose how to identify the exact deopt instruction and condition, decide whether the pass that inserted the deopt is actually at fault, when a narrow mode/pass/profile on-off comparison is useful, and guide the developer on what extra logs to add before changing compiler code.",
+      "files": [],
+      "expected_output": "The answer should classify this as runtime AOT execution/deopt analysis, localize to method, bytecode PC, deopt instruction, deopt type, condition input, and producer pass, and treat mode/pass/profile toggles as hypothesis isolation rather than root-cause proof.",
+      "expectations": [
+        "Classifies the issue as runtime AOT deopt behavior after .an load.",
+        "Requires exact method, bytecode PC, guard/check instruction, deopt type, condition value, and producer instruction/pass.",
+        "Separates legal deopt behavior from compiler incorrectness.",
+        "Does not blame the pass that inserted the deopt until the condition producer and runtime state are checked.",
+        "Uses narrow AOT/interpreter, pass, or profile input toggles as supporting isolation evidence.",
+        "Names targeted logging points before source changes."
+      ]
+    },
+    {
+      "id": "runtime_load_link_entrypoint_stays_bridge",
+      "prompt": "A valid-looking `.an` file exists on device and `ark_aotdump` shows code for a target method, but runtime tracing shows that after class loading the method entrypoint is still the compiled-code-to-interpreter bridge. Diagnose the failure stage, the source chain to inspect, and why dumped machine code is not enough proof that this method executed AOT code.",
+      "files": [],
+      "expected_output": "The answer should classify this as runtime AOT load/link analysis, not PAOC compile or compiled-code execution. It should trace AotManager::AddFile, ClassLinker::LoadMethods, FindPandaFile, MaybeLinkMethodToAotCode, and Method::SetCompiledEntryPoint, and ask for file/class/method identity plus link skip reason and pre/post entrypoint values.",
+      "expectations": [
+        "Classifies the issue as runtime load/link because the artifact exists but the method did not receive an AOT entrypoint.",
+        "Does not treat ark_aotdump output alone as proof that runtime dispatch entered the dumped method body.",
+        "Names the source chain AotManager::AddFile -> ClassLinker::LoadMethods/FindPandaFile -> MaybeLinkMethodToAotCode -> Method::SetCompiledEntryPoint.",
+        "Requires the expected panda file path, class id/name, method id/signature, and loaded AotPandaFile identity.",
+        "Asks for the link decision or skip reason and entrypoint value before and after linkage.",
+        "Separates loaded .an, method linked, and compiled code executed as distinct proof levels."
+      ]
+    },
+    {
+      "id": "profile_class_context_branch_scope",
+      "prompt": "PAOC is passed `--paoc-use-profile:path=app.ap`, but a branch-heavy method compiles as if no branch profile exists. Logs mention a possible class context hash mismatch in the profile, and the developer asks whether AOT/JIT/OSR should all consume the branch counters. Diagnose the profile failure path and consumer scope.",
+      "files": [],
+      "expected_output": "The answer should classify this as Profile and PGO debugging. It should first prove .ap load success and class-context match before consumer analysis, then explain that branch counters are accessed through Graph::GetBranchCounter and only specific consumers such as HotnessPropagation, LinearOrder, and IfConversion should be checked rather than assuming all AOT/JIT/OSR paths consume every counter.",
+      "expectations": [
+        "Routes the case to Profile and PGO rather than generic PAOC pass crash debugging.",
+        "Checks whether --paoc-use-profile loaded the .ap and whether class context/hash validation passed.",
+        "Treats class-context mismatch as a profile compatibility failure before optimizer-consumer blame.",
+        "Requires method profile lookup evidence: method id/class id and branch payload for the target bytecode PC.",
+        "Names Graph::GetBranchCounter as the shared access point for branch counters.",
+        "Limits consumer claims to verified paths such as HotnessPropagation, LinearOrder, and IfConversion instead of saying all AOT/JIT/OSR code consumes every counter.",
+        "Uses profile on/off or branch-collection on/off comparisons only as isolation, not final root-cause proof."
+      ]
+    },
+    {
+      "id": "artifact_reuse_shared_hsp",
+      "prompt": "A shared HSP has an existing `.an` file but an update flow appears to trigger AOT again for host applications. Explain how to classify the artifact lifecycle path, what source areas to inspect, and which universal conclusions are unsafe.",
+      "files": [],
+      "expected_output": "The answer should classify this as artifact lifecycle analysis, separate dynamic AOT, ordinary static app idle AOT, framework static AOT, and shared HSP host-private paths, and avoid universal reuse or cleanup claims without inspecting the exact BundleManager/installd/compiler_service owner path.",
+      "expectations": [
+        "Classifies the problem as artifact lifecycle rather than compiler crash or runtime execution.",
+        "Separates shared HSP host-private behavior from ordinary static app, dynamic AOT, and framework static AOT paths.",
+        "Names source areas such as BundleManager task construction, installd path handling, compiler_service request, and artifact existence/version checks.",
+        "Avoids saying an existing .an is always reused or always regenerated.",
+        "Identifies host app update/install flow and recorded artifact path/version checks as decisive evidence.",
+        "Proposes validation by path-specific logs and artifact timestamps or recorded paths."
+      ]
+    }
+  ]
+}

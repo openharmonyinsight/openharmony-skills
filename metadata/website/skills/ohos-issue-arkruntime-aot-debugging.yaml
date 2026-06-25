@@ -1,0 +1,94 @@
+schemaVersion: 1
+
+id: ohos-issue-arkruntime-aot-debugging
+title: ArkRuntime AOT 问题调试
+summary: 分析 OpenHarmony ArkRuntime AOT 启动、PAOC 编译、产物生命周期、加载链接和执行异常。
+
+category:
+  scope: domain
+  namespace: arkruntime
+  stage: troubleshooting
+  domain: arkruntime
+  capability: aot-debugging
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - arkruntime
+  - aot
+  - paoc
+  - compiler-service
+  - troubleshooting
+
+audience:
+  - ArkRuntime AOT 问题定位人员
+  - ArkCompiler Runtime Core 开发者
+  - OpenHarmony 应用编译和运行时问题跟进人员
+
+useCases:
+  - title: 区分 compiler_service 启动和参数错误
+    description: 根据服务侧校验、子进程启动和 ark_aot 参数边界判断失败是否发生在编译器子进程之前。
+  - title: 定位 PAOC 编译崩溃或 profile 问题
+    description: 结合当前 panda 文件、方法、编译 pass、PGO/AP 输入和编译日志形成可验证假设。
+  - title: 分析 AOT 产物加载和执行异常
+    description: 对齐 .an 产物、AotManager 加载链接、ark_aotdump、字节码和机器码证据，判断是否真正执行编译代码。
+
+whenToUse:
+  - 出现 compiler_service、BMS、installd 或 ark_aot 相关 AOT 启动、参数或模式选择问题。
+  - .an 产物未生成、被复用、被覆盖、更新清理异常，或涉及 framework/static/shared HSP AOT 路径。
+  - ark_aot 在 Runtime/PandaVM 初始化、PAOC 编译、profile 读取或并行编译过程中崩溃。
+  - AOT 文件存在但运行时未加载、未链接、未执行，或出现 compiled code crash、deopt、throw/fallback 语义疑问。
+
+whenNotToUse:
+  - 问题只是通用 OpenHarmony 构建失败，且与 AOT 目标、ark_aot 或 compiler_service 无关。
+  - 只是普通 C++ 崩溃、GC 问题、线程安全问题或 taskpool 依赖问题。
+  - 没有 AOT 相关日志、产物、运行模式、崩溃栈或可定位现象。
+
+inputs:
+  required:
+    - AOT 相关错误日志、崩溃栈、命令参数、产物路径或复现现象。
+    - 目标源码 checkout 或可对照的源码路径。
+  optional:
+    - .an 产物、ark_aotdump 输出、IR dump、反汇编、字节码或 profile/AP 文件。
+    - 设备构建类型、AOT 模式、SDK/系统版本和关联提交。
+    - 可复现的应用、模块、panda 文件、class/method 或命令行。
+
+outputs:
+  - AOT 失败阶段分类和当前最强假设。
+  - 已确认事实、竞争假设和不能下结论的证据缺口。
+  - 最小源码 owner、日志点、dump/disasm 边界或配置开关验证建议。
+  - 面向修复的最小方向和验证步骤。
+
+quickStart:
+  steps:
+    - 准备 AOT 失败日志、崩溃栈、命令参数和相关产物路径。
+    - 标出问题发生在安装、idle AOT、framework AOT、shared HSP AOT 还是运行期执行。
+    - 请求 Agent 使用该 Skill 先分类阶段，再给出下一条决定性证据和最小修复方向。
+  examplePrompt: |
+    请使用 ohos-issue-arkruntime-aot-debugging 分析这个 AOT 编译失败，
+    compiler_service 日志显示 Parser check validation failed，相关 ark_aot 参数和应用模块信息如下。
+
+related:
+  skills:
+    - ohos-issue-arkruntime-gc-debugging
+    - ohos-issue-arkruntime-thread-safety-audit
+  docs:
+    - title: Launch and arguments debugging
+      path: references/launch-and-args-debugging.md
+    - title: Artifact lifecycle debugging
+      path: references/artifact-lifecycle-debugging.md
+    - title: ark_aot startup debugging
+      path: references/ark-aot-startup-debugging.md
+    - title: PAOC compile crash debugging
+      path: references/paoc-compile-crash-debugging.md
+    - title: Profile and PGO debugging
+      path: references/profile-and-pgo-debugging.md
+    - title: Runtime link debugging
+      path: references/runtime-link-debugging.md
+    - title: Crash, deopt, throw, and fallback debugging
+      path: references/crash-deopt-throw-debugging.md
+    - title: Build and config debugging
+      path: references/build-config-debugging.md
