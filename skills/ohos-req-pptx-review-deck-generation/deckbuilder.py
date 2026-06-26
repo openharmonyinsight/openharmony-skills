@@ -20,7 +20,6 @@ Public API is unchanged from the original deckbuilder:
 """
 
 import os
-import sys
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
@@ -149,7 +148,18 @@ class Deck:
         """Light title block: no band — title + thin accent underline.
         Page number sits top-right; OpenHarmony logo goes bottom-left.
         `takeaway` is the page's one-line conclusion, rendered bold-accent right
-        under the title so every page leads with its point."""
+        under the title so every page leads with its point. It is REQUIRED — a
+        content page without a conclusion has no 突出重点, so the build aborts."""
+        if not (takeaway and str(takeaway).strip()):
+            raise ValueError(
+                "deckbuilder: slide %r was built without takeaway=. Every content "
+                "page MUST lead with its conclusion so the page 突出重点. Pass "
+                "takeaway=\"结论：…\" — a one-line VERDICT (an assertion, not a "
+                "restatement of the title), e.g. "
+                "takeaway=\"结论：不改变公开 API 行为，应用无需适配\". "
+                "(subtitle= is only a neutral scope note and does not satisfy this.)"
+                % (title or "")
+            )
         x = self.MARGIN
         if numbered:
             self._page += 1
@@ -189,13 +199,6 @@ class Deck:
                                self.W - x - Inches(0.6), Inches(0.32))
             r = tf.paragraphs[0].add_run(); r.text = subtitle
             self._run(r, 12.5, "grey")
-        if not takeaway:
-            sys.stderr.write(
-                '[deckbuilder] WARNING: slide "%s" has no takeaway= — every '
-                'review page should LEAD WITH ITS CONCLUSION. Add '
-                'takeaway="结论：…" (a one-line verdict, not a restatement of '
-                'the title).\n' % (title or "")
-            )
         self._footer(slide)
 
     def _card(self, slide, l, t, w, h, title, bullets, accent="accent"):
@@ -672,18 +675,20 @@ if __name__ == "__main__":
     d.cover("Deckbuilder Demo", "Every slide type in one file",
             ["deckbuilder.py", "smoke test"])
     d.content_slide("Content slide — auto card grid", [
-        {"title": "Type", "bullets": ["New feature", "Not a bugfix"], "accent": "green"},
-        {"title": "Effort", "bullets": ["~6.5 person-months"], "accent": "orange"},
-        {"title": "Scope", "bullets": ["Code + tests only"], "accent": "accent"},
-    ])
+        {"title": "Type", "bullets": ["New feature", "Not a bugfix"]},
+        {"title": "Effort", "bullets": ["~6.5 person-months"]},
+        {"title": "Scope", "bullets": ["Code + tests only"]},
+    ], takeaway="结论：新增能力，约 6.5 人月，仅代码与测试")
     d.table_slide("Table slide", ["Task", "Owner", "Effort"],
                   [["API", "TBD", "1.0"], ["Tests", "TBD", "1.0"],
-                   ["Total", "—", "2.0"]], highlight_last=True)
+                   ["Total", "—", "2.0"]], highlight_last=True,
+                  takeaway="结论：合计约 2.0 人月，人员待指派")
     d.flow_slide("Flow slide — pipeline with change points", [
         {"title": "HID device", "lines": ["USB / BT"]},
         {"title": "normalize", "lines": ["resolve binding"], "change": True},
         {"title": "windows mgr", "lines": ["hit test"], "change": True},
         {"title": "dispatch", "lines": ["UDS"]},
-    ], note="Orange ★变更 badges mark components that change.")
+    ], takeaway="结论：变更集中在 normalize 与窗口命中两处",
+       note="Amber ★变更 badges mark components that change.")
     out = d.save("deckbuilder_demo.pptx")
     print("saved:", out, "slides:", len(d.prs.slides._sldIdLst))

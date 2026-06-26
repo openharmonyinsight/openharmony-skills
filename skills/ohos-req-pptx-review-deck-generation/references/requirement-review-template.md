@@ -18,9 +18,9 @@ builders for section 4.
 >    now forces those builders to one accent family, but a field table is still the
 >    correct, cleaner layout for 1/2/3 — use it.)
 > 2. **Pages with no 突出重点.** EVERY section slide must pass `takeaway="结论：…"`.
->    A page that is just a topic title over a table has no point. The engine prints a
->    `WARNING: slide "…" has no takeaway=` to stderr for any page you forget — fix
->    every such warning before claiming done.
+>    A page that is just a topic title over a table has no point. **`takeaway` is
+>    mandatory: a content page built without it raises `ValueError` and the deck will
+>    not save** — so you cannot ship a page that lacks its 突出重点.
 
 | # | Slide title | Builder | Required fields to cover |
 |---|-------------|---------|--------------------------|
@@ -43,9 +43,9 @@ Pass `takeaway="结论：…"` to every section slide — one short verdict sent
 bold petrol under the (ink) title. The numbered title stays the topic
 (`五、兼容性分析`); the takeaway states the finding (`不改变公开 API 行为，应用无需适配`).
 A reviewer should get each page's point from the takeaway alone, before reading the
-table. Write an **assertion**, not a restatement of the title. If you omit it the
-engine prints a `WARNING: slide "…" has no takeaway=` — treat every such warning as a
-build error to fix.
+table. Write an **assertion**, not a restatement of the title. **`takeaway` is
+mandatory — a content page built without it raises `ValueError`**, so every page is
+forced to lead with its 突出重点.
 
 **1. Diagrams are block diagrams (框图), never bullet lists.** Every section-4 design
 slide must be boxes-and-arrows built with `architecture_slide` / `layered_diagram_slide`

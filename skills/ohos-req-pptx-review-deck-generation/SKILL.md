@@ -85,14 +85,17 @@ you never set colors or coordinates:
 from deckbuilder import Deck
 
 deck = Deck()                    # 16:9; font defaults to "Microsoft YaHei"
+# NOTE: every content slide below REQUIRES takeaway="结论：…" (the page's one-line
+# conclusion) — pass it as a keyword. Omitting it raises ValueError. Only cover()
+# takes no takeaway.
 deck.cover(title, subtitle=None, meta_lines=[...])
-deck.content_slide(title, cards, subtitle=None, takeaway=None)
-deck.banded_slide(title, sections, subtitle=None, takeaway=None)
-deck.bullets_slide(title, bullets, subtitle=None, takeaway=None)
-deck.table_slide(title, headers, rows, takeaway=None, col_widths=None, highlight_last=False)
-deck.flow_slide(title, stages, takeaway=None, note=None, lane_label=None)
-deck.layered_diagram_slide(title, layers, takeaway=None, connect=None, note=None)
-deck.architecture_slide(title, nodes, edges, takeaway=None, note=None)
+deck.content_slide(title, cards, takeaway="结论：…", subtitle=None)
+deck.banded_slide(title, sections, takeaway="结论：…", subtitle=None)
+deck.bullets_slide(title, bullets, takeaway="结论：…", subtitle=None)
+deck.table_slide(title, headers, rows, takeaway="结论：…", col_widths=None, highlight_last=False)
+deck.flow_slide(title, stages, takeaway="结论：…", note=None, lane_label=None)
+deck.layered_diagram_slide(title, layers, takeaway="结论：…", connect=None, note=None)
+deck.architecture_slide(title, nodes, edges, takeaway="结论：…", note=None)
 deck.save("output.pptx")
 ```
 
@@ -103,9 +106,9 @@ reviewer's eye lands on the point before the detail.
 The title stays the topic label (`五、兼容性分析`); the `takeaway` carries the verdict
 (`不改变公开 API 行为，应用无需适配`). Write an assertion, not a restatement of the
 title. `subtitle` (small grey) still exists for neutral scope notes; if both are
-given, `takeaway` wins the slot. **If you omit `takeaway`, the library prints a
-`WARNING: slide "…" has no takeaway=` to stderr** — every such warning is a page with
-no 突出重点; add the conclusion and rebuild before claiming done.
+given, `takeaway` wins the slot. **`takeaway` is mandatory: a content slide built
+without it raises `ValueError` and the deck will not save.** There is no way to ship a
+page without its 突出重点 — write the one-line verdict for every slide.
 
 Page numbers auto-increment (cover is excluded). Header band, accent colors, and
 spacing are automatic. **Colors are passed by name string** — `"accent"` (petrol)
@@ -185,7 +188,8 @@ What this page reliably gets wrong (the top two are the most-reported):
   ("不纯粹"). Build the 字段｜内容 pages as two-column tables. (The engine also forces
   those builders to one color now, but tables are the right layout here.)
 - **Every page must pass `takeaway="结论：…"`** — a topic title over a table with no
-  conclusion has no 突出重点. The engine warns on stderr for any page you forget.
+  conclusion has no 突出重点. This is enforced: a slide without `takeaway` raises
+  `ValueError`, so the deck will not build until every page has its verdict.
 - **Design diagrams must be 框图 (boxes + arrows), never bullet lists** — use
   `architecture_slide` / `layered_diagram_slide` / `flow_slide` for every section-4 slide.
 - **Section 4's first diagram is HIGH-LEVEL module interaction** — this module ↔ the
@@ -227,9 +231,11 @@ print("slides:", len(p.slides._sldIdLst), "overflow:", bad)   # overflow must be
 
 No renderer (LibreOffice) is needed; the bounds check is the smoke test.
 
-**Also watch the script's stderr.** The library prints `WARNING: slide "…" has no
-takeaway=` for any page built without a conclusion. A clean run has **zero** such
-warnings — each one is a page missing its 突出重点; add the `takeaway` and rebuild.
+**`takeaway` is enforced — the build fails without it.** A content slide built
+without `takeaway="结论：…"` raises `ValueError` naming the slide, so a deck that saves
+successfully already has a conclusion on every page. If your script errors with
+`slide '…' was built without takeaway=`, add the one-line verdict to that slide and
+rerun — do not work around it.
 
 ## Common Mistakes
 
@@ -241,7 +247,7 @@ warnings — each one is a page missing its 突出重点; add the `takeaway` and
 | Passing `RGBColor(...)` everywhere | Pass color **names**; default to `"accent"`/`"grey"`, names map to the palette |
 | Giving every card/section a different `accent` (rainbow 横条) | Don't — per-card/section colors are ignored by design; for 需求评审 1/2/3 use `table_slide` |
 | Pages 1/2/3 as colored `banded_slide` bars | Use `table_slide` (字段｜内容 two-column) — the bars invite the "不纯粹" rainbow |
-| Pages with no point — just a topic title over a table | Give every content slide a `takeaway="结论：…"` one-liner; fix every stderr `no takeaway=` warning |
+| Pages with no point — just a topic title over a table | Give every content slide a `takeaway="结论：…"` one-liner; it's required — a slide without it raises `ValueError` |
 | Cramming 8+ cards on one slide | Max 6 per `content_slide`; split across slides |
 | Putting >8 rows in one table at full font | The library auto-shrinks; still split very long tables |
 | Claiming done without running it | Run the script + the overflow check, report path & slide count |
