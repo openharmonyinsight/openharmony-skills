@@ -20,6 +20,7 @@ Public API is unchanged from the original deckbuilder:
 """
 
 import os
+import sys
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
@@ -188,6 +189,13 @@ class Deck:
                                self.W - x - Inches(0.6), Inches(0.32))
             r = tf.paragraphs[0].add_run(); r.text = subtitle
             self._run(r, 12.5, "grey")
+        if not takeaway:
+            sys.stderr.write(
+                '[deckbuilder] WARNING: slide "%s" has no takeaway= — every '
+                'review page should LEAD WITH ITS CONCLUSION. Add '
+                'takeaway="结论：…" (a one-line verdict, not a restatement of '
+                'the title).\n' % (title or "")
+            )
         self._footer(slide)
 
     def _card(self, slide, l, t, w, h, title, bullets, accent="accent"):
@@ -361,7 +369,9 @@ class Deck:
             t = self.BODY_TOP + rr * (ch + gap)
             self._card(s, l, t, cw, ch,
                        c.get("title", ""), c.get("bullets", []),
-                       c.get("accent", "accent"))
+                       # force one accent family — per-card colors are ignored on
+                       # purpose so cards never become a multi-colored ("不纯粹") grid
+                       "accent")
         return s
 
     def banded_slide(self, title, sections, subtitle=None, takeaway=None):
@@ -382,7 +392,9 @@ class Deck:
         bsize = 13 if n <= 4 else 12
         for i, sec in enumerate(sections):
             t = self.BODY_TOP + i * (bh + gap)
-            accent = sec.get("accent", "accent")
+            # force one accent family — per-section colors are ignored on purpose
+            # so the horizontal bars never turn into multi-colored ("不纯粹") 横条
+            accent = "accent"
             # band background + thin solid border + left accent stripe
             self._rect(s, x, t, w, bh, _tint(accent), line=_RULE, line_w=0.75)
             self._rect(s, x, t, Inches(0.12), bh, accent)

@@ -96,14 +96,16 @@ deck.architecture_slide(title, nodes, edges, takeaway=None, note=None)
 deck.save("output.pptx")
 ```
 
-**Every page leads with its conclusion.** Pass `takeaway="结论：…"` (one short
-sentence) to any content slide — it renders as a bold petrol line with a petrol
-kicker right under the (subdued ink) title, so the reviewer's eye lands on the point
-before the detail.
+**Every page leads with its conclusion — `takeaway` is REQUIRED.** Pass
+`takeaway="结论：…"` (one short sentence) to every content slide — it renders as a bold
+petrol line with a petrol kicker right under the (subdued ink) title, so the
+reviewer's eye lands on the point before the detail.
 The title stays the topic label (`五、兼容性分析`); the `takeaway` carries the verdict
 (`不改变公开 API 行为，应用无需适配`). Write an assertion, not a restatement of the
 title. `subtitle` (small grey) still exists for neutral scope notes; if both are
-given, `takeaway` wins the slot.
+given, `takeaway` wins the slot. **If you omit `takeaway`, the library prints a
+`WARNING: slide "…" has no takeaway=` to stderr** — every such warning is a page with
+no 突出重点; add the conclusion and rebuild before claiming done.
 
 Page numbers auto-increment (cover is excluded). Header band, accent colors, and
 spacing are automatic. **Colors are passed by name string** — `"accent"` (petrol)
@@ -117,8 +119,8 @@ don't vary it per card just to add color.
 | Method | Key argument shape |
 |--------|--------------------|
 | `cover` | strings + `meta_lines=["Team", "2026-06-23"]` |
-| `content_slide` | `cards=[{"title","bullets":[...]}]` (1–6 auto-grid; omit `accent` to keep one color family) |
-| `banded_slide` | same `sections=[{"title","bullets","accent"}]` shape as `content_slide`, but rendered as full-width horizontal bars stacked top→bottom (title in a left label column, points on the right). Use when the brief wants sections shown 从上往下 as 横框 rather than a card grid |
+| `content_slide` | `cards=[{"title","bullets":[...]}]` (1–6 auto-grid). **Per-card `accent` is ignored — all cards render in one family** (no rainbow). For 需求评审 1/2/3 use `table_slide`, not this |
+| `banded_slide` | same `sections=[{"title","bullets"}]` shape, rendered as full-width horizontal bars stacked top→bottom. **Per-section `accent` is ignored — all bars are one color.** Avoid for 需求评审 1/2/3 (use `table_slide`); the colored 横条 it used to make were the #1 "不纯粹" complaint |
 | `bullets_slide` | `bullets=["text", {"text","level":1,"accent","bold"}]` |
 | `table_slide` | `headers=[...]`, `rows=[[...],[...]]`, `highlight_last=True` for totals. `col_widths` are relative weights — auto-scaled to fit, never overflow |
 | `flow_slide` | `stages=[{"title","lines":[...],"change":True}]` → 1 row, auto arrows |
@@ -176,8 +178,14 @@ checklist → 需求拆解), **follow the 8-section structure** in
 [requirement-review-template.md](references/requirement-review-template.md) instead of inventing
 an outline. `examples/requirement_review_example.py` is a complete, generic fill-in deck.
 
-What this page reliably gets wrong:
+What this page reliably gets wrong (the top two are the most-reported):
 
+- **Pages 1/2/3 must be `table_slide`, never `banded_slide` / `content_slide`.** The
+  bar/card builders tempt you to color each section differently → multi-colored 横条
+  ("不纯粹"). Build the 字段｜内容 pages as two-column tables. (The engine also forces
+  those builders to one color now, but tables are the right layout here.)
+- **Every page must pass `takeaway="结论：…"`** — a topic title over a table with no
+  conclusion has no 突出重点. The engine warns on stderr for any page you forget.
 - **Design diagrams must be 框图 (boxes + arrows), never bullet lists** — use
   `architecture_slide` / `layered_diagram_slide` / `flow_slide` for every section-4 slide.
 - **Section 4's first diagram is HIGH-LEVEL module interaction** — this module ↔ the
@@ -219,6 +227,10 @@ print("slides:", len(p.slides._sldIdLst), "overflow:", bad)   # overflow must be
 
 No renderer (LibreOffice) is needed; the bounds check is the smoke test.
 
+**Also watch the script's stderr.** The library prints `WARNING: slide "…" has no
+takeaway=` for any page built without a conclusion. A clean run has **zero** such
+warnings — each one is a page missing its 突出重点; add the `takeaway` and rebuild.
+
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -227,8 +239,9 @@ No renderer (LibreOffice) is needed; the bounds check is the smoke test.
 | `from pptx.dgm...` / guessing import paths | The library already imports correctly — just `from deckbuilder import Deck` |
 | Design slide is a bullet list, not a diagram | Use `flow_slide` or `layered_diagram_slide` |
 | Passing `RGBColor(...)` everywhere | Pass color **names**; default to `"accent"`/`"grey"`, names map to the palette |
-| Giving every card a different `accent` (rainbow deck) | Omit `accent`; reserve hue changes for real meaning (`red` = risk) |
-| Pages with no point — just a topic title over a table | Give every content slide a `takeaway="结论：…"` one-liner |
+| Giving every card/section a different `accent` (rainbow 横条) | Don't — per-card/section colors are ignored by design; for 需求评审 1/2/3 use `table_slide` |
+| Pages 1/2/3 as colored `banded_slide` bars | Use `table_slide` (字段｜内容 two-column) — the bars invite the "不纯粹" rainbow |
+| Pages with no point — just a topic title over a table | Give every content slide a `takeaway="结论：…"` one-liner; fix every stderr `no takeaway=` warning |
 | Cramming 8+ cards on one slide | Max 6 per `content_slide`; split across slides |
 | Putting >8 rows in one table at full font | The library auto-shrinks; still split very long tables |
 | Claiming done without running it | Run the script + the overflow check, report path & slide count |

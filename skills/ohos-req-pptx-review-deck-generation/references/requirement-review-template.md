@@ -7,11 +7,20 @@ sections in order** rather than inventing your own outline.
 ## The sections (+ cover)
 
 Each section is one slide unless noted. Section 4 (技术方案) usually spans 2–3
-slides (`可分页输出`). Use `table_slide` for the section-1/2/3 field pages (a
-two-column 字段｜内容 table reads cleaner and aligns with the matrix/checklist
-pages) as well as for matrices/checklists, and the diagram builders for section 4.
-`banded_slide` (full-width 横框, stacked top→bottom) is an acceptable fallback for
-1/2/3 only when the brief is genuinely prose with no field structure.
+slides (`可分页输出`). **Use `table_slide` for the section-1/2/3 field pages** (a
+two-column 字段｜内容 table) as well as for matrices/checklists, and the diagram
+builders for section 4.
+
+> ⚠️ **The two failures reviewers keep reporting — do NOT repeat them:**
+> 1. **Multi-colored horizontal bars on pages 2/3/4.** Build 1/2/3 with
+>    **`table_slide`**, NOT `banded_slide` / `content_slide`. The bar/card builders
+>    invite "give each section its own color" → a rainbow ("不纯粹") deck. (The engine
+>    now forces those builders to one accent family, but a field table is still the
+>    correct, cleaner layout for 1/2/3 — use it.)
+> 2. **Pages with no 突出重点.** EVERY section slide must pass `takeaway="结论：…"`.
+>    A page that is just a topic title over a table has no point. The engine prints a
+>    `WARNING: slide "…" has no takeaway=` to stderr for any page you forget — fix
+>    every such warning before claiming done.
 
 | # | Slide title | Builder | Required fields to cover |
 |---|-------------|---------|--------------------------|
@@ -29,11 +38,14 @@ pages) as well as for matrices/checklists, and the diagram builders for section 
 
 ## Five rules that matter most
 
-**0. Every page leads with its conclusion.** Pass `takeaway="结论：…"` to every
-section slide — one short verdict sentence rendered bold petrol under the (ink) title. The
-numbered title stays the topic (`五、兼容性分析`); the takeaway states the finding
-(`不改变公开 API 行为，应用无需适配`). A reviewer should get each page's point from
-the takeaway alone, before reading the table.
+**0. Every page leads with its conclusion — `takeaway` is REQUIRED, not optional.**
+Pass `takeaway="结论：…"` to every section slide — one short verdict sentence rendered
+bold petrol under the (ink) title. The numbered title stays the topic
+(`五、兼容性分析`); the takeaway states the finding (`不改变公开 API 行为，应用无需适配`).
+A reviewer should get each page's point from the takeaway alone, before reading the
+table. Write an **assertion**, not a restatement of the title. If you omit it the
+engine prints a `WARNING: slide "…" has no takeaway=` — treat every such warning as a
+build error to fix.
 
 **1. Diagrams are block diagrams (框图), never bullet lists.** Every section-4 design
 slide must be boxes-and-arrows built with `architecture_slide` / `layered_diagram_slide`
