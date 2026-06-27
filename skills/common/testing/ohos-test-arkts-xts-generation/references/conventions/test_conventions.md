@@ -23,10 +23,10 @@ SUB_[子系统]_[模块]_[API]_[类型]_[序号]
 ```typescript
 // ❌ 反模式：不同文件中复用 @tc.number
 // FileA.test.ets
-* @tc.number SUB_UTILS_UTIL_TREESET_ADD_PARAM_0001
+* @tc.number SUB_UTILS_UTIL_TREESET_ADD_PARAM_0100
 
 // FileB.test.ets（另一个文件）
-* @tc.number SUB_UTILS_UTIL_TREESET_ADD_PARAM_0001  // 重复！
+* @tc.number SUB_UTILS_UTIL_TREESET_ADD_PARAM_0100  // 重复！
 
 // ✅ 正确：确保全局唯一，检查已有文件后从新序号开始
 ```
@@ -35,10 +35,10 @@ SUB_[子系统]_[模块]_[API]_[类型]_[序号]
 
 | 标识 | 说明 | 示例 |
 |------|------|------|
-| PARAM | 参数测试 | SUB_UTILS_UTIL_TREESET_ADD_PARAM_0001 |
-| ERROR | 错误码测试 | SUB_UTILS_UTIL_TREESET_POPFIRST_ERROR_401_0001 |
-| RETURN | 返回值测试 | SUB_UTILS_UTIL_TREESET_GETFIRST_RETURN_0001 |
-| BOUNDARY | 边界值测试 | SUB_UTILS_UTIL_TREESET_ADD_BOUNDARY_0001 |
+| PARAM | 参数测试 | SUB_UTILS_UTIL_TREESET_ADD_PARAM_0100 |
+| ERROR | 错误码测试 | SUB_UTILS_UTIL_TREESET_POPFIRST_ERROR_401_0100 |
+| RETURN | 返回值测试 | SUB_UTILS_UTIL_TREESET_GETFIRST_RETURN_0100 |
+| BOUNDARY | 边界值测试 | SUB_UTILS_UTIL_TREESET_ADD_BOUNDARY_0100 |
 
 ### 1.3 子系统和模块识别
 
@@ -65,24 +65,24 @@ SUB_[子系统]_[模块]_[API]_[类型]_[序号]
 
 ```typescript
 // 格式: test[MethodName][Scenario][Number]
-it('testAdd001', Level.LEVEL1, () => {});
-it('testAddNull002', Level.LEVEL2, () => {});
-it('testPopFirstError401001', Level.LEVEL2, () => {});
+it('testAdd001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {});
+it('testAddNull002', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {});
+it('testPopFirstError401001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {});
 ```
 
 ### 2.1.1 测试命名描述性反模式
 
 ```typescript
 // ❌ 反模式：无描述性命名（纯编号）
-it('test001', Level.LEVEL1, () => { ... });
-it('test002', Level.LEVEL1, () => { ... });
+it('test001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => { ... });
+it('test002', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => { ... });
 
 // ❌ 反模式：过于通用的命名
-it('testMethod001', Level.LEVEL1, () => { ... });
+it('testMethod001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => { ... });
 
 // ✅ 正确：描述性命名（包含方法名和场景）
-it('testAddStringNormal001', Level.LEVEL1, () => { ... });
-it('testAddStringNull002', Level.LEVEL2, () => { ... });
+it('testAddStringNormal001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => { ... });
+it('testAddStringNull002', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => { ... });
 ```
 
 ### 2.2 测试套件命名

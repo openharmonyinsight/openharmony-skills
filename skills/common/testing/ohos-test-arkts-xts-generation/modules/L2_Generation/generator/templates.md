@@ -71,13 +71,13 @@ export default function APINameTest() {
 ```typescript
 /**
  * @tc.name test{MethodName}{ParamType}{Scenario}0001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_{PARAM}_{SCENARIO}_0001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_{PARAM}_{SCENARIO}_0100
  * @tc.desc 测试 {API} 的 {method} 方法 - {scenario}场景
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL1
  */
-it('test{MethodName}{ParamType}{Scenario}0001', Level.LEVEL1, () => {
+it('test{MethodName}{ParamType}{Scenario}0001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
   // 1. 准备测试数据
   let apiObject = new APIName();
   let paramValue: ParamType = normalValue;
@@ -95,13 +95,13 @@ it('test{MethodName}{ParamType}{Scenario}0001', Level.LEVEL1, () => {
 ```typescript
 /**
  * @tc.name test{MethodName}Null001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_NULL_001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_NULL_0100
  * @tc.desc 测试 {API} 的 {method} 方法 - null参数场景
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL2
  */
-it('test{MethodName}Null001', Level.LEVEL2, () => {
+it('test{MethodName}Null001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   let apiObject = new APIName();
   let errCode{CodeName} = {Code};
 
@@ -119,13 +119,13 @@ it('test{MethodName}Null001', Level.LEVEL2, () => {
 ```typescript
 /**
  * @tc.name test{MethodName}Undefined001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_UNDEFINED_001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_UNDEFINED_0100
  * @tc.desc 测试 {API} 的 {method} 方法 - undefined参数场景
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL2
  */
-it('test{MethodName}Undefined001', Level.LEVEL2, () => {
+it('test{MethodName}Undefined001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   let apiObject = new APIName();
   let errCode{CodeName} = {Code};
 
@@ -149,13 +149,13 @@ it('test{MethodName}Undefined001', Level.LEVEL2, () => {
 ```typescript
 /**
  * @tc.name test{MethodName}Error{Code}0001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_ERROR_{CODE}_0001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_ERROR_{CODE}_0100
  * @tc.desc 测试 {API} 的 {method} 方法 - 错误码 {Code}：{触发条件}
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL2
  */
-it('test{MethodName}Error{Code}0001', Level.LEVEL2, () => {
+it('test{MethodName}Error{Code}0001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   let apiObject = new APIName();
   let errCode{CodeName} = {Code};
 
@@ -180,13 +180,13 @@ it('test{MethodName}Error{Code}0001', Level.LEVEL2, () => {
 ```typescript
 /**
  * @tc.name test{MethodName}Return001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_RETURN_001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_RETURN_0100
  * @tc.desc 测试 {API} 的 {method} 方法 - 返回值验证
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL1
  */
-it('test{MethodName}Return001', Level.LEVEL1, () => {
+it('test{MethodName}Return001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
   let apiObject = new APIName();
   let result: ReturnType = apiObject.methodName(validParam);
 
@@ -203,13 +203,13 @@ it('test{MethodName}Return001', Level.LEVEL1, () => {
 ```typescript
 /**
  * @tc.name test{MethodName}ReturnUnion001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_RETURN_UNION_001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_RETURN_UNION_0100
  * @tc.desc 测试 {API} 的 {method} 方法 - 联合类型返回值
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL1
  */
-it('test{MethodName}ReturnUnion001', Level.LEVEL1, () => {
+it('test{MethodName}ReturnUnion001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
   let apiObject = new APIName();
   let result: ReturnType = apiObject.methodName(validParam);
 
@@ -224,36 +224,39 @@ it('test{MethodName}ReturnUnion001', Level.LEVEL1, () => {
 
 ## 七、异步方法测试模板
 
-> **重要**：所有异步模板必须使用 `async (done: Function)` 回调形式，且 `.then` 和 `.catch` 分支都必须调用 `done()`。（缺少 `done()` 的分支会导致测试无限挂起直到超时，测试运行器资源被占用，且超时错误掩盖了真实的测试意图）
+> **重要**：异步模板的 `done()` 使用规则取决于测试模式（详见 `param_test.md` 3.3 节）：
+> - **Promise.then/.catch 模式**：必须声明 `done: () => void` 参数，`.then` 和 `.catch` 分支都必须调用 `done()`（缺少 `done()` 的分支会导致测试无限挂起直到超时）
+> - **async/await 模式**（返回 `Promise<T>`）：不需要 `done` 参数
+> - **callback/事件监听模式**：需要 `done` 参数，`done()` 在回调内部调用
 
 ### 7.0.1 异步模板通用反模式
 
 ```typescript
 // ❌ 反模式1：缺少 async 关键字（Promise 可能未执行完就退出）
-it('testAsync001', Level.LEVEL1, (done: Function) => {  // 缺少 async！
+it('testAsync001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, (done: () => void) => {  // ❌ 缺少 async！
   api.method(param)
     .then((result) => { expect(result); done(); })
     .catch((error: BusinessError) => { expect().assertFail(); done(); });
 });
 
 // ❌ 反模式2：使用 function 表达式（ArkTS 禁止）
-it('testAsync001', Level.LEVEL1, async function(done: Function) { ... });
+it('testAsync001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async function(done: () => void) { ... });  // ❌ 使用 function 表达式
 
 // ❌ 反模式3：同步 catch 带类型注解（ArkTS 不允许）
-it('testSync001', Level.LEVEL1, () => {
+it('testSync001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
   try { api.method(); } catch (error: BusinessError) { ... }  // 同步 catch 不能带类型
 });
-// ✅ 异步 .catch 可以带类型：(error: BusinessError) => { ... }
-// ✅ 同步 catch 不能带类型：catch (error) { ... }
+// ✅️ 异步 .catch 可以带类型：(error: BusinessError) => { ... }
+// ✅️ 同步 catch 不能带类型：catch (error) { ... }
 
 // ❌ 反模式4：同步 it() 中使用 done 参数（导致并发问题）
-it('testSync001', Level.LEVEL1, (done: Function) => {  // 同步回调不需要 done
+it('testSync001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, (done: () => void) => {  // ❌ 同步回调不需要 done
   let result = api.syncMethod();
   expect(result).assertEqual(expected);
   done();  // 多余！可能导致并发问题
 });
-// ✅ 正确：同步 it() 不要声明 done 参数
-it('testSync001', Level.LEVEL1, () => {
+// ✅️ 正确：同步 it() 不要声明 done 参数
+it('testSync001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
   let result = api.syncMethod();
   expect(result).assertEqual(expected);
 });
@@ -264,13 +267,13 @@ it('testSync001', Level.LEVEL1, () => {
 ```typescript
 /**
  * @tc.name test{AsyncMethod}0001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_0001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_0100
  * @tc.desc 测试 {API} 的 {asyncMethod} 方法 - 正常场景
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL1
  */
-it('test{AsyncMethod}0001', Level.LEVEL1, async (done: Function) => {
+it('test{AsyncMethod}0001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
   let apiObject = new APIName();
   let param: ParamType = validParam;
 
@@ -293,13 +296,13 @@ it('test{AsyncMethod}0001', Level.LEVEL1, async (done: Function) => {
 ```typescript
 /**
  * @tc.name test{AsyncMethod}Error{Code}0001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_ERROR_{CODE}_0001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_ERROR_{CODE}_0100
  * @tc.desc 测试 {API} 的 {asyncMethod} 方法 - 错误码 {code}
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL2
  */
-it('test{AsyncMethod}Error{Code}0001', Level.LEVEL2, async (done: Function) => {
+it('test{AsyncMethod}Error{Code}0001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, async (done: () => void) => {
   let apiObject = new APIName();
   let errCode{CodeName} = {Code};
   let invalidParam: ParamType = invalidValue;
@@ -325,13 +328,13 @@ it('test{AsyncMethod}Error{Code}0001', Level.LEVEL2, async (done: Function) => {
 ```typescript
 /**
  * @tc.name test{MethodName}BoundaryMin001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_BOUNDARY_MIN_001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_BOUNDARY_MIN_0100
  * @tc.desc 测试 {API} 的 {method} 方法 - 最小边界值
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL2
  */
-it('test{MethodName}BoundaryMin001', Level.LEVEL2, () => {
+it('test{MethodName}BoundaryMin001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   let apiObject = new APIName();
   let minValue: number = Number.MIN_SAFE_INTEGER;
   let result: ReturnType = apiObject.methodName(minValue);
@@ -344,13 +347,13 @@ it('test{MethodName}BoundaryMin001', Level.LEVEL2, () => {
 ```typescript
 /**
  * @tc.name test{MethodName}BoundaryMax001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_BOUNDARY_MAX_001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_BOUNDARY_MAX_0100
  * @tc.desc 测试 {API} 的 {method} 方法 - 最大边界值
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL2
  */
-it('test{MethodName}BoundaryMax001', Level.LEVEL2, () => {
+it('test{MethodName}BoundaryMax001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   let apiObject = new APIName();
   let maxValue: number = Number.MAX_SAFE_INTEGER;
   let result: ReturnType = apiObject.methodName(maxValue);
@@ -366,6 +369,42 @@ it('test{MethodName}BoundaryMax001', Level.LEVEL2, () => {
 > - `{Code}` 和 `{expectedErrorCode}` 必须从 API 的 `@throws` 标记中提取
 > - 不同 API 的错误码可能不同，不能假设所有参数错误都抛出 401
 > - 错误码参考：通用错误码（`docs/en/application-dev/onlyfortest/reference/errorcode-universal.md`）和子系统特有错误码（`docs/zh-cn/application-dev/reference/apis-xxx/errorcode-xxx.md`）
+
+---
+
+## 十、801 设备能力防护模板（全局）
+
+> **触发条件**：当 API 的 `@throws` 声明了 801 错误码时，该 API 的**所有用例**（PARAM/RETURN/BOUNDARY/EVENT 等）都必须包裹 801 防护逻辑。详见 `error_test.md` 第七章。
+
+### 10.1 同步方法 801 防护
+
+```typescript
+it('test{MethodName}Normal0100', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
+  let errCodeCapabilityNotSupported = 801;
+  try {
+    // 正常场景逻辑 + 断言
+    let result = api.method(param);
+    expect(result).assertEqual(expected);
+  } catch (error) {
+    expect(error.code).assertEqual(errCodeCapabilityNotSupported);
+  }
+});
+```
+
+### 10.2 异步方法 801 防护（async/await）
+
+```typescript
+it('test{AsyncMethod}Normal0100', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
+  let errCodeCapabilityNotSupported = 801;
+  try {
+    let result = await api.asyncMethod(param);
+    expect(result).assertEqual(expected);
+  } catch (error) {
+    expect(error.code).assertEqual(errCodeCapabilityNotSupported);
+  }
+  done();
+});
+```
 
 ---
 
@@ -385,7 +424,7 @@ import Utils from '../common/Utils';
 export default function UiTestApiTest() {
   let driver: Driver;
 
-  beforeAll(async (done: Function) => {
+  beforeAll(async (done: () => void) => {
     await Utils.pushPage('MainAbility/pages/TestPage', done);
     await Utils.sleep(1000);
     driver = await Driver.create();
@@ -408,13 +447,13 @@ export default function UiTestApiTest() {
 ```typescript
 /**
  * @tc.name testFindComponentById001
- * @tc.number SUB_UTILS_UITEST_DRIVER_FINDCOMPONENT_ID_001
+ * @tc.number SUB_UTILS_UITEST_DRIVER_FINDCOMPONENT_ID_0100
  * @tc.desc 测试 Driver 的 findComponent 方法 - 按id查找控件
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL1
  */
-it('testFindComponentById001', Level.LEVEL1, async (done: Function) => {
+it('testFindComponentById001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
   const component = await driver.findComponent(ON.id('test-id'));
 
   if (component) {
@@ -433,13 +472,13 @@ it('testFindComponentById001', Level.LEVEL1, async (done: Function) => {
 ```typescript
 /**
  * @tc.name testWaitForComponent001
- * @tc.number SUB_UTILS_UITEST_DRIVER_WAITFORCOMPONENT_001
+ * @tc.number SUB_UTILS_UITEST_DRIVER_WAITFORCOMPONENT_0100
  * @tc.desc 测试 Driver 的 waitForComponent 方法 - 轮询等待控件出现
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL1
  */
-it('testWaitForComponent001', Level.LEVEL1, async (done: Function) => {
+it('testWaitForComponent001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
   // 使用 waitForComponent 在 2000ms 内轮询查找组件
   const component = await driver.waitForComponent(ON.id('test-id'), 2000);
 
@@ -460,13 +499,13 @@ it('testWaitForComponent001', Level.LEVEL1, async (done: Function) => {
 ```typescript
 /**
  * @tc.name testGetProperty001
- * @tc.number SUB_UTILS_UITEST_COMPONENT_GETPROPERTY_001
+ * @tc.number SUB_UTILS_UITEST_COMPONENT_GETPROPERTY_0100
  * @tc.desc 测试 Component 的 getProperty 方法 - 获取字符串属性
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL1
  */
-it('testGetProperty001', Level.LEVEL1, async (done: Function) => {
+it('testGetProperty001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
   const component = await driver.waitForComponent(ON.id('text-id'), 2000);
 
   if (component) {
@@ -492,13 +531,13 @@ it('testGetProperty001', Level.LEVEL1, async (done: Function) => {
 ```typescript
 /**
  * @tc.name testComponentClick001
- * @tc.number SUB_UTILS_UITEST_COMPONENT_CLICK_001
+ * @tc.number SUB_UTILS_UITEST_COMPONENT_CLICK_0100
  * @tc.desc 测试 Component 的 click 方法
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL1
  */
-it('testComponentClick001', Level.LEVEL1, async (done: Function) => {
+it('testComponentClick001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
   const component = await driver.waitForComponent(ON.id('button-id'), 2000);
 
   if (component) {
@@ -529,31 +568,31 @@ it('testComponentClick001', Level.LEVEL1, async (done: Function) => {
 // ❌ 错误 - */ 和 it() 之间有空行（@tc 块不会被识别）
 /**
  * @tc.name testMethod001
- * @tc.number SUB_MODULE_API_METHOD_PARAM_001
+ * @tc.number SUB_MODULE_API_METHOD_PARAM_0100
  * @tc.desc 测试描述
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL1
  */
 
-it('testMethod001', Level.LEVEL1, () => { ... });
+it('testMethod001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => { ... });
 
-// ✅ 正确 - */ 紧跟 it()
+// ✅️ 正确 - */ 紧跟 it()
 /**
  * @tc.name testMethod001
- * @tc.number SUB_MODULE_API_METHOD_PARAM_001
+ * @tc.number SUB_MODULE_API_METHOD_PARAM_0100
  * @tc.desc 测试描述
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL1
  */
-it('testMethod001', Level.LEVEL1, () => { ... });
+it('testMethod001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => { ... });
 ```
 
 ### 12.3 getProperty 返回值是字符串
 
 ```typescript
-// ✅ 正确 - 使用 assertEqual 比较字符串
+// ✅️ 正确 - 使用 assertEqual 比较字符串
 const enabled = await component.getProperty('enabled');
 expect(enabled).assertEqual('true');
 

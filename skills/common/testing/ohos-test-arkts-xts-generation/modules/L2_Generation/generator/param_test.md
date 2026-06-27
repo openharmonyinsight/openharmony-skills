@@ -76,7 +76,7 @@ setBlur({5: 0.1, 10: 0.4}) // Record<number, number> 分支
 ```typescript
 /**
  * @tc.name {MethodName}{ParamType}{Scenario}0001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_{PARAM}_{SCENARIO}_0001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_{PARAM}_{SCENARIO}_0100
  * @tc.desc 测试 {API} 的 {method} 方法 - {scenario}场景
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
@@ -96,21 +96,21 @@ it('test{MethodName}{ParamType}{Scenario}0001', TestType.FUNCTION | Size.MEDIUMT
 
 ```typescript
 // 正常值
-it('testAddStringNormal001', Level.LEVEL1, () => {
+it('testAddStringNormal001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
   let treeSet = new TreeSet<string>();
   let result = treeSet.add("hello");
   expect(result).assertTrue();
 });
 
 // 空字符串
-it('testAddStringEmpty002', Level.LEVEL2, () => {
+it('testAddStringEmpty002', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   let treeSet = new TreeSet<string>();
   let result = treeSet.add("");
   expect(result).assertTrue();
 });
 
 // null - 必须根据 API 的 @throws 标记确定实际的错误码
-it('testAddStringNull003', Level.LEVEL2, () => {
+it('testAddStringNull003', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   let treeSet = new TreeSet<string>();
   try {
     treeSet.add(null);  // ✅ 直接传入 null，不使用 as any
@@ -121,7 +121,7 @@ it('testAddStringNull003', Level.LEVEL2, () => {
 });
 
 // undefined
-it('testAddStringUndefined004', Level.LEVEL2, () => {
+it('testAddStringUndefined004', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   let treeSet = new TreeSet<string>();
   try {
     treeSet.add(undefined);  // ✅ 直接传入 undefined，不使用 as any
@@ -136,28 +136,28 @@ it('testAddStringUndefined004', Level.LEVEL2, () => {
 
 ```typescript
 // 正常值
-it('testAddNumberNormal001', Level.LEVEL1, () => {
+it('testAddNumberNormal001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
   let treeSet = new TreeSet<number>();
   let result = treeSet.add(100);
   expect(result).assertTrue();
 });
 
 // 零值
-it('testAddNumberZero002', Level.LEVEL1, () => {
+it('testAddNumberZero002', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
   let treeSet = new TreeSet<number>();
   let result = treeSet.add(0);
   expect(result).assertTrue();
 });
 
 // 负数
-it('testAddNumberNegative003', Level.LEVEL1, () => {
+it('testAddNumberNegative003', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
   let treeSet = new TreeSet<number>();
   let result = treeSet.add(-100);
   expect(result).assertTrue();
 });
 
 // 边界值
-it('testAddNumberBoundary004', Level.LEVEL2, () => {
+it('testAddNumberBoundary004', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   let treeSet = new TreeSet<number>();
   let result = treeSet.add(Number.MAX_SAFE_INTEGER);
   expect(result).assertTrue();
@@ -172,7 +172,7 @@ it('testAddNumberBoundary004', Level.LEVEL2, () => {
 
 ```typescript
 // 基础类型
-it('test{MethodName}Return001', Level.LEVEL1, () => {
+it('test{MethodName}Return001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
   let apiObject = new APIName();
   let result = apiObject.methodName();
 
@@ -181,7 +181,7 @@ it('test{MethodName}Return001', Level.LEVEL1, () => {
 });
 
 // 联合类型
-it('test{MethodName}Return002', Level.LEVEL1, () => {
+it('test{MethodName}Return002', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
   let apiObject = new APIName();
   let result = apiObject.methodName();
 
@@ -192,7 +192,7 @@ it('test{MethodName}Return002', Level.LEVEL1, () => {
 });
 
 // Promise 类型
-it('test{MethodName}Return003', Level.LEVEL1, async (done: Function) => {
+it('test{MethodName}Return003', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
   let apiObject = new APIName();
 
   apiObject.methodName()
@@ -231,13 +231,13 @@ it('test{MethodName}Return003', Level.LEVEL1, async (done: Function) => {
 
 ```typescript
 // 模式 A：返回 Promise<T> → async/await，无 done
-it('testPromise001', Level.LEVEL1, async () => {
+it('testPromise001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async () => {
   let result = await api.asyncMethod(param);
   expect(result).assertEqual(expected);
 });
 
 // 模式 B：接受 callback → done() 在 callback 内部
-it('testCallback001', Level.LEVEL1, async (done: Function) => {
+it('testCallback001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
   api.method(param, (result) => {
     expect(result).assertEqual(expected);
     done();
@@ -245,7 +245,7 @@ it('testCallback001', Level.LEVEL1, async (done: Function) => {
 });
 
 // 模式 C：事件监听 → done() 在事件回调内部
-it('testEvent001', Level.LEVEL1, async (done: Function) => {
+it('testEvent001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
   emitter.on('event', (data) => {
     expect(data).assertEqual(expected);
     done();
@@ -254,7 +254,7 @@ it('testEvent001', Level.LEVEL1, async (done: Function) => {
 });
 
 // 模式 D：同步 → 不用 async，不用 done
-it('testSync001', Level.LEVEL1, () => {
+it('testSync001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
   let result = api.syncMethod(param);
   expect(result).assertEqual(expected);
 });
@@ -269,7 +269,7 @@ it('testSync001', Level.LEVEL1, () => {
 
 ```typescript
 // ❌ 反模式1：catch 分支忘记 done()，Promise reject 时测试超时
-it('testAsync001', Level.LEVEL1, async (done: Function) => {
+it('testAsync001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
   api.method(param)
     .then((result) => {
       expect(result).assertEqual(expected);
@@ -282,7 +282,7 @@ it('testAsync001', Level.LEVEL1, async (done: Function) => {
 });
 
 // ❌ 反模式2：done() 被多次调用
-it('testAsync002', Level.LEVEL1, async (done: Function) => {
+it('testAsync002', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
   api.method(param)
     .then((result) => {
       expect(result).assertEqual(expected);
@@ -292,7 +292,7 @@ it('testAsync002', Level.LEVEL1, async (done: Function) => {
 });
 
 // ❌ 反模式3：回调 API 中 done() 在回调外部调用
-it('testCallback001', Level.LEVEL1, async (done: Function) => {
+it('testCallback001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
   emitter.on('event', (data) => {
     expect(data).assertEqual(expected);
   });
@@ -300,7 +300,7 @@ it('testCallback001', Level.LEVEL1, async (done: Function) => {
 });
 
 // ✅ 正确：回调 API 的 done() 在回调内部调用
-it('testCallback001', Level.LEVEL1, async (done: Function) => {
+it('testCallback001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
   emitter.on('event', (data) => {
     expect(data).assertEqual(expected);
     done();  // 在回调内部调用 done()
@@ -309,14 +309,14 @@ it('testCallback001', Level.LEVEL1, async (done: Function) => {
 });
 
 // ❌ 反模式4：在同步 it() 中使用 done 参数（导致并发问题）
-it('testSync001', Level.LEVEL1, (done: Function) => {
+it('testSync001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, (done: () => void) => {
   let result = api.syncMethod();
   expect(result).assertEqual(expected);
   done();  // 多余！同步测试不需要 done，可能导致并发问题
 });
 
 // ✅ 正确：同步 it() 不使用 done 参数
-it('testSync001', Level.LEVEL1, () => {
+it('testSync001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
   let result = api.syncMethod();
   expect(result).assertEqual(expected);
 });
@@ -340,13 +340,13 @@ it('testSync001', Level.LEVEL1, () => {
 ```typescript
 /**
  * @tc.name test{MethodName}Boundary001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_BOUNDARY_001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_BOUNDARY_0100
  * @tc.desc 测试 {API} 的 {method} 方法 - 最小边界值
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL2
  */
-it('test{MethodName}Boundary001', Level.LEVEL2, () => {
+it('test{MethodName}Boundary001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   let minValue = /* 计算最小边界值 */;
   let apiObject = new APIName();
   let result = apiObject.methodName(minValue);

@@ -22,6 +22,9 @@ APICoverageDetector/APIScan.log
 .coverage_data/
 coverage_data/
 
+# 会话追踪（Issue 日志、session 状态）
+.task_summary/
+
 # 批次执行工作区
 batch_workspace/
 
@@ -117,6 +120,14 @@ references/subsystems/ArkUI/
 references/subsystems/ArkWeb/
 references/subsystems/multimedia/
 references/subsystems/security/
+
+# ==================== 评估报告 ====================
+EVALUATION_REPORT.md
+.gate-quality-ai-report.md
+
+# ==================== Skill 依赖校验 ====================
+.probe_results
+.parse_cache/
 
 # ==================== 其他 ====================
 # 变更记录和优化建议（工作文件）

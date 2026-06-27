@@ -3,8 +3,14 @@
 # Group 编译对象清理脚本
 # 用法: ./cleanup_group.sh <OH_ROOT> <子系统名>
 
-OH_ROOT="${1:-/mnt/data/c00810129/oh_0130}"
-SUBSYSTEM="${2:-testfwk}"
+OH_ROOT="$1"
+SUBSYSTEM="$2"
+
+if [ -z "$OH_ROOT" ] || [ -z "$SUBSYSTEM" ]; then
+    echo "❌ 参数缺失。用法: ./cleanup_group.sh <OH_ROOT> <子系统名>"
+    echo "   示例: ./cleanup_group.sh /path/to/ohos testfwk"
+    exit 1
+fi
 
 if [ ! -d "$OH_ROOT/test/xts/acts/$SUBSYSTEM" ]; then
     echo "❌ 子系统目录不存在: $OH_ROOT/test/xts/acts/$SUBSYSTEM"

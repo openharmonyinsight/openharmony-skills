@@ -101,7 +101,7 @@ expect(result).not().assertEqual(unexpected);
 
 ```typescript
 // ❌ 反模式：在 setTimeout 中使用 expect（测试可能已结束，断言无效）
-it('testDelay001', Level.LEVEL1, (done: Function) => {
+it('testDelay001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, (done: () => void) => {
   let result = api.method();
   setTimeout(() => {
     expect(result).assertEqual(expected);  // 测试可能已结束
@@ -110,7 +110,7 @@ it('testDelay001', Level.LEVEL1, (done: Function) => {
 });
 
 // ✅ 正确：使用 Hypium 的 done() 机制或 await
-it('testDelay001', Level.LEVEL1, async (done: Function) => {
+it('testDelay001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
   let result = await api.asyncMethod();
   expect(result).assertEqual(expected);
   done();
@@ -201,7 +201,7 @@ ArkTS-Sta 模式下 `as any` 直接导致编译错误。即使在 ArkTS-Dyn 模�
 
 ```typescript
 // ❌ 错误：使用 as any 转换
-it('testMethodNull001', Level.LEVEL2, async () => {
+it('testMethodNull001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, async () => {
     try {
         const driver = Driver.create();
         await driver.swipeBetween(startPoint, endPoint, null as any); // ❌ 错误：as any
@@ -216,7 +216,7 @@ it('testMethodNull001', Level.LEVEL2, async () => {
 
 ```typescript
 // ✅ 正确：直接传入 null
-it('testMethodNull001', Level.LEVEL2, async () => {
+it('testMethodNull001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, async () => {
     try {
         const driver = Driver.create();
         await driver.swipeBetween(startPoint, endPoint, null); // ✅ 正确：直接传入 null
@@ -227,7 +227,7 @@ it('testMethodNull001', Level.LEVEL2, async () => {
 })
 
 // ✅ 正确：直接传入 undefined
-it('testMethodUndefined002', Level.LEVEL2, async () => {
+it('testMethodUndefined002', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, async () => {
     try {
         const driver = Driver.create();
         await driver.dragBetween(startPoint, endPoint, 1000, undefined); // ✅ 正确：直接传入 undefined
@@ -262,7 +262,7 @@ ArkTS 静态模式下，`as any` 会导致编译错误。
 ```typescript
 /**
  * @tc.name testMethodError401001
- * @tc.number SUB_MODULE_API_METHOD_ERROR_401_001
+ * @tc.number SUB_MODULE_API_METHOD_ERROR_401_0100
  * @tc.desc 测试 API 的 method 方法 - 参数为null时抛出错误码401
  * @tc.type   FUNCTION
  * @tc.size   MEDIUMTEST
@@ -284,7 +284,7 @@ it('testMethodError401001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, 
 
 ```typescript
 // ❌ 错误1：使用不存在的断言方法
-it('testMethodError001', Level.LEVEL2, async () => {
+it('testMethodError001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, async () => {
     try {
         const driver = Driver.create();
         await driver.method(param, null);
@@ -299,7 +299,7 @@ it('testMethodError001', Level.LEVEL2, async () => {
  * @tc.desc 测试 API 的 method 方法 - 参数为null
  * 预期结果: 抛出 401 或 17000007 错误码  // ❌ 错误：错误码不明确
  */
-it('testMethodError002', Level.LEVEL2, async () => {
+it('testMethodError002', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, async () => {
     try {
         const driver = Driver.create();
         await driver.method(param, null);

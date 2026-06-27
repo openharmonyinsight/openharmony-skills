@@ -85,7 +85,7 @@
       {
         "type": "测试用例编号",
         "rule": "SUB_testfwk_{模块}_{方法}_{类型}_{序号}",
-        "example": "SUB_testfwk_DRIVER_CLICK_PARAM_001"
+        "example": "SUB_testfwk_DRIVER_CLICK_PARAM_0100"
       }
     ],
     "apiSpecific": [
@@ -169,7 +169,7 @@
       "apis": ["Driver", "Component", "On", "UiWindow", "UIEventObserver", "PointerMatrix"],
       "testScenarios": ["元素查找和交互", "UI状态验证", "用户行为模拟"],
       "specialFeatures": ["错误码处理", "场景测试", "静态测试", "多屏操作"],
-      "testConfig": ["UiTest.md"]
+      "testConfig": ["UiTest.md", "UiTest_error_codes.md"]
     },
     "PerfTest": {
       "description": "性能测试框架",
@@ -227,6 +227,8 @@
 
 ### 4.1 基本使用
 
+> **语法模式**：ArkTS-Dyn（动态语法）
+
 ```typescript
 import { describe, it, expect, Level, Size, TestType } from '@ohos/hypium';
 import { Driver, ON, Component } from '@ohos.UiTest';
@@ -235,12 +237,12 @@ export default function {Module}{Method}Test() {
   describe('{Module}{Method}Test', () => {
     let driver = Driver.create();
 
-    beforeAll(async (done: Function) => {
+    beforeAll(async (done: () => void) => {
       await driver.delayMs(1000);
       done();
     });
 
-    it('testCase_001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async () => {
+    it('testCase_0100', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async () => {
       // 测试代码
     });
   });
@@ -251,6 +253,8 @@ export default function {Module}{Method}Test() {
 
 #### UiTest 示例
 
+> **语法模式**：ArkTS-Dyn（动态语法）
+
 来源：`test/xts/acts/testfwk/uitest/entry/src/ohosTest/ets/test/uitest.test.ets`
 
 ```typescript
@@ -260,13 +264,13 @@ import { Driver, ON, Component } from '@ohos.UiTest';
 export default function uitest() {
   describe('uitest', () => {
     let driver: Driver
-    beforeAll(async (done: Function) => {
+    beforeAll(async (done: () => void) => {
       driver = Driver.create()
       await driver.delayMs(1000)
       done()
     })
 
-    it('test_click_001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async () => {
+    it('test_click_0100', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async () => {
       await startAbility('com.uitestScene.acts', 'com.uitestScene.acts.MainAbility');
       let button = await driver.findComponent(ON.type('Button'));
       if (button) {
@@ -288,7 +292,7 @@ import { BusinessError, Callback } from '@kit.BasicServicesKit';
 
 export default function PerfTestTest() {
   describe('PerfTestTest', () => {
-    it('testPerfTestCalculate', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async (done: Function) => {
+    it('testPerfTestCalculate', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async (done: () => void) => {
       let metrics: Array<PerfMetric> = [PerfMetric.DURATION, PerfMetric.CPU_LOAD];
       let actionCode = async (finish: Callback<boolean>) => {
         finish(true);
@@ -301,7 +305,7 @@ export default function PerfTestTest() {
         perfTest.destroy();
         expect(res.average).assertLargerOrEqual(0);
       } catch (error) {
-        expect(false).assertTrue();
+        expect().assertFail();
       }
       done();
     })

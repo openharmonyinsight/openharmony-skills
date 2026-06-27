@@ -25,7 +25,7 @@
 |---------|------|
 | 箭头函数 | 必须使用箭头函数 |
 | 显式类型注解 | 所有变量、函数参数必须有类型 |
-| 回调函数类型 | `done: Function` |
+| 回调函数类型 | `done: () => void`（禁止 `done: Function`，ArkTS 编译器报错 10605008） |
 | 异步 catch 类型 | `(error: BusinessError)` |
 | 业务错误类型 | `import { BusinessError } from '@kit.BasicServicesKit'` |
 
@@ -82,7 +82,7 @@ import {media} from '@kit.mediamediakit';  // 全小写错误
 // ❌ 反模式：使用目标项目不支持版本的 API
 // 目标项目 API 版本为 10，但使用了 @since 12 的 API
 import { newMethod } from '@kit.SomeKit';
-it('testNewMethod001', Level.LEVEL1, () => {
+it('testNewMethod001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
   newMethod();  // API 10 设备上不存在
 });
 
@@ -124,7 +124,7 @@ const errCode: number = 401;
 const TAG: string = 'TestTag';
 
 // 回调函数类型
-beforeAll((done: Function) => {
+beforeAll((done: () => void) => {
   // 测试准备
   done();
 });
@@ -178,13 +178,17 @@ expect(result).assertNotUndefined();  // 不存在此方法
 ### 5.1 异步方法（Promise）
 
 ArkTS 特有约束：
-- 所有异步 `it()` 回调：`async (done: Function) => { ... }`，每个分支都须调用 done()
+- `done` 参数类型：`done: () => void`（禁止 `done: Function`）
+- Promise `.then/.catch` 模式：必须声明 `done` 参数，每个分支都须调用 `done()`
+- `async/await` 模式（返回 `Promise<T>`）：不需要 `done` 参数
+- callback 模式（接受回调参数）：需要 `done` 参数，`done()` 在回调内部调用
+- 事件监听模式：需要 `done` 参数，`done()` 在事件回调内部调用
 - Promise `.catch`：`(error: BusinessError) => { ... }`（带类型注解）
 - `await` 的 `catch`：`catch (error) { ... }`（不带类型注解）
 
 ```typescript
 // Promise.then/.catch
-it('asyncMethodTest', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async (done: Function) => {
+it('asyncMethodTest', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async (done: () => void) => {
   api.asyncMethod(param)
     .then((result) => {
       expect(result).assertEqual(expected);
@@ -197,7 +201,7 @@ it('asyncMethodTest', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async 
 });
 
 // async/await
-it('asyncMethodTest', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async (done: Function) => {
+it('asyncMethodTest', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async (done: () => void) => {
   try {
     let result: ReturnType = await api.asyncMethod(param);
     expect(result).assertEqual(expected);

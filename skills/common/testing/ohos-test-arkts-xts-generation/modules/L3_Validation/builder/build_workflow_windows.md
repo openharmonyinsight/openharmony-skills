@@ -320,8 +320,8 @@ MyApplication3/
 
 | ETS 版本 | 配置字段 | 用途 |
 |----------|---------|------|
-| ArkTS-Dyn（动态） | `for_windows.hvigor_path_1.1` | 动态语法项目编译 |
-| ArkTS-Sta（静态） | `for_windows.hvigor_path_1.2` | 静态语法项目编译 |
+| ArkTS-Dyn（动态） | `hvigor_path_1.1` | 动态语法项目编译 |
+| ArkTS-Sta（静态） | `hvigor_path_1.2` | 静态语法项目编译 |
 
 **选择逻辑**：
 1. 检查目标项目的 `build-profile.json5` 中的 `arkTSVersion` 字段
@@ -331,6 +331,43 @@ MyApplication3/
 **下文中所有 `{hvigor_path}` 表示根据上述规则选择的 hvigor 路径**：
 - ArkTS-Dyn 项目：`{hvigor_path}` = `.oh-xts-config.json` 中的 `hvigor_path_1.1` 值
 - ArkTS-Sta 项目：`{hvigor_path}` = `.oh-xts-config.json` 中的 `hvigor_path_1.2` 值
+
+### 3.0.1 动静态 hvigor 编译命令差异
+
+**核心差异**：动态和静态测试套使用不同的 hvigor 版本、编译参数和测试代码目录。
+
+| 差异项 | 动态测试套（ArkTS-Dyn） | 静态测试套（ArkTS-Sta） |
+|--------|------------------------|------------------------|
+| **module 参数** | `-p module=entry@ohosTest` | `-p module=entry` |
+| **测试代码目录** | `entry\src\ohosTest\` | `entry\src\main\src\test\` |
+| **编译产物** | `entry-ohosTest-unsigned.hap` | `entry-default-unsigned.hap` |
+
+> **hvigor 路径**：根据 3.0 节的选择逻辑，从 `.oh-xts-config.json` 读取 `hvigor_path_1.1`（动态）或 `hvigor_path_1.2`（静态）。
+
+**动态测试套编译命令**：
+```powershell
+cd {测试套目录}
+"{hvigor_path}\hvigorw.bat" assembleHap --mode module -p module=entry@ohosTest -p product=default
+```
+
+**静态测试套编译命令**：
+```powershell
+cd {测试套目录}
+"{hvigor_path}\hvigorw.bat" assembleHap --mode module -p module=entry -p product=default
+```
+
+> **重要**：
+> 1. 静态测试套**没有** `ohosTest` target，测试代码作为主模块的一部分编译
+> 2. 必须使用对应版本的 hvigor，版本不匹配会导致编译失败（如 `Unsupported modelVersion` 错误）
+> 3. `local.properties` 中 `sdk.dir` 应指向正确的 SDK 路径
+> 4. 静态测试套的 BUILD.gn **必须**使用 `ohos_js_app_static_suite` 模板函数
+
+> **⚠️ BUILD.gn 模板函数校验**：选择 hvigor 版本后，还应检查 BUILD.gn 中的模板函数是否匹配：
+> - ArkTS-Dyn 项目：BUILD.gn 应使用 `ohos_js_app_suite` 或 `ohos_js_hap_suite`
+> - ArkTS-Sta 项目：BUILD.gn **必须**使用 `ohos_js_app_static_suite`
+> - BUILD.gn 中 `test_hap` 字段必须注释掉（当前 ohosTest 不可用）
+>
+> 模板函数不匹配是静态编译失败的首要原因之一。详见 `references/conventions/ets_version_naming.md` §三。
 
 ### 3.1 IDE 同步（首次或 SDK 变更后必须执行）
 
@@ -407,8 +444,8 @@ cd /d {xts_acts_path}\testfwk\uitest
 
 ```powershell
 # 0. 根据 ETS 版本从 .oh-xts-config.json 读取 hvigor 路径
-# ArkTS-Dyn: $hvigorPath = (读取 for_windows.hvigor_path_1.1)
-# ArkTS-Sta: $hvigorPath = (读取 for_windows.hvigor_path_1.2)
+# ArkTS-Dyn: $hvigorPath = (读取 hvigor_path_1.1)
+# ArkTS-Sta: $hvigorPath = (读取 hvigor_path_1.2)
 
 # 1. 停止可能残留的 daemon
 & "$hvigorPath\hvigorw.bat" --stop-daemon

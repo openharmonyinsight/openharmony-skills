@@ -12,7 +12,7 @@
 
 本模块负责 Phase 7 步骤 A 的**生成上下文检查**——验证生成阶段特有的质量项。
 
-代码质量深度检查（@tc 格式、命名规范、断言方法等 11 条规则）由 `check-test-code-quality` 技能在 Phase 7 步骤 B 中执行，不在本模块中重复。
+代码质量深度检查（@tc 格式、命名规范、断言方法等 17 条规则）由 `ohos-test-xts-code-quality` 技能在 Phase 7 步骤 B 中执行，不在本模块中重复。
 
 ### 1.1 核心职责
 
@@ -117,7 +117,7 @@ afterEach(() => {
 
 ```typescript
 // ❌ 反模式1：在 it() 内部释放（异常时不执行）
-it('testPlay001', Level.LEVEL1, async (done: Function) => {
+it('testPlay001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
   let player = await media.createAVPlayer();
   await player.play();
   await player.release();  // 如果 play() 抛异常，release 不会执行
@@ -173,7 +173,7 @@ let player = await media.createAVPlayer() as any;
 
 ### 7.1 异步测试 done() 检查
 
-- 所有 `async (done: Function)` 的 `.then` 和 `.catch` 分支都调用了 `done()`
+- 所有 `async (done: () => void)` 的 `.then` 和 `.catch` 分支都调用了 `done()`
 - `done()` 没有被多次调用
 - 回调风格 API 的 `done()` 在回调内部调用（不是外部）
 
@@ -209,7 +209,7 @@ let player = await media.createAVPlayer() as any;
 - [ ] try-catch 分支断言覆盖完整
 - [ ] 无空 describe 块
 
-## 步骤 B: check-test-code-quality 深度扫描
+## 步骤 B: ohos-test-xts-code-quality 深度扫描
 
 - 扫描规则: R002,R003,R004,R008,R009,R013,R015,R016,R018,R022,R023,R024,R025,R026,R027,R028,R029
 - 扫描结果: {通过/失败} ({issue数} issues)
@@ -218,4 +218,4 @@ let player = await media.createAVPlayer() as any;
 ---
 
 **更新日期**: 2026-04-21
-**版本**: 2.0.0 - 精简为生成上下文检查，代码质量扫描委托给 check-test-code-quality
+**版本**: 2.0.0 - 精简为生成上下文检查，代码质量扫描委托给 ohos-test-xts-code-quality

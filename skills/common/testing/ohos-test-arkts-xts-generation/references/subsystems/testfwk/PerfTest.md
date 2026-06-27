@@ -157,6 +157,8 @@ let actionCode = async (finish: Callback<boolean>) => {
 
 ### 7.1 标准功能测试模板
 
+> **语法模式**：ArkTS-Dyn（动态语法）
+
 来源：`test/xts/acts/testfwk/perftest/entry/src/ohosTest/ets/test/PerfTest.test.ets`
 
 ```typescript
@@ -167,9 +169,9 @@ import { BusinessError, Callback } from '@kit.BasicServicesKit';
 
 export default function PerfTestTest() {
   describe('PerfTestTest', () => {
-    beforeAll(async (done: Function) => { done() })
+    beforeAll(async (done: () => void) => { done() })
 
-    it('testPerfTestCalculate', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async (done: Function) => {
+    it('testPerfTestCalculate', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async (done: () => void) => {
       let metrics: Array<PerfMetric> = [PerfMetric.DURATION, PerfMetric.CPU_LOAD, PerfMetric.CPU_USAGE,
                                           PerfMetric.MEMORY_RSS, PerfMetric.MEMORY_PSS];
       let actionCode = async (finish: Callback<boolean>) => {
@@ -190,7 +192,7 @@ export default function PerfTestTest() {
         expect(res1.metric).assertEqual(PerfMetric.DURATION);
         expect(res1.average).assertLargerOrEqual(0);
       } catch (error) {
-        expect(false).assertTrue();
+        expect().assertFail();
       }
       done();
     })

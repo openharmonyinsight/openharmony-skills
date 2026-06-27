@@ -234,9 +234,9 @@ test/xts/acts/util/test/TreeSet.test.ets
       "type": "method_not_tested",
       "priority": "high",
       "recommended_tests": [
-        "SUB_UTILS_UTIL_TREESET_GETLAST_PARAM_001",
-        "SUB_UTILS_UTIL_TREESET_GETLAST_RETURN_001",
-        "SUB_UTILS_UTIL_TREESET_GETLAST_ERROR_401_001"
+        "SUB_UTILS_UTIL_TREESET_GETLAST_PARAM_0100",
+        "SUB_UTILS_UTIL_TREESET_GETLAST_RETURN_0100",
+        "SUB_UTILS_UTIL_TREESET_GETLAST_ERROR_401_0100"
       ]
     },
     {
@@ -245,7 +245,7 @@ test/xts/acts/util/test/TreeSet.test.ets
       "priority": "medium",
       "missing_scenarios": ["boundary", "large_value"],
       "recommended_tests": [
-        "SUB_UTILS_UTIL_TREESET_ADD_BOUNDARY_001"
+        "SUB_UTILS_UTIL_TREESET_ADD_BOUNDARY_0100"
       ]
     }
   ]

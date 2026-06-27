@@ -4,12 +4,12 @@
 > - 层级：L2_Generation
 > - 子模块：generator/
 > - 用途：定义 ArkTS-Sta 静态项目测试代码生成时必须遵循的 ArkTS 静态语法约束
-> - 来源：提取自 arkts-static-spec 技能
+> - 来源：提取自 ohos-dev-arkts-static-specification-reference 技能
 > - 适用条件：仅当目标语法类型为 ArkTS-Sta（静态项目）时加载
 
 ---
 
-ArkTS 静态语法与动态语法有本质区别，生成的测试代码必须遵循以下约束，否则无法通过编译。详细的语法规范参考见 `arkts-static-spec` 技能，本文件只列出与测试代码生成直接相关的约束。
+ArkTS 静态语法与动态语法有本质区别，生成的测试代码必须遵循以下约束，否则无法通过编译。详细的语法规范参考见 `ohos-dev-arkts-static-specification-reference` 技能，本文件只列出与测试代码生成直接相关的约束。
 
 ---
 
@@ -20,12 +20,14 @@ ArkTS 静态语法与动态语法有本质区别，生成的测试代码必须�
 所有变量、参数、返回值必须有显式类型声明，禁止使用 `any` 或 `unknown`。（ArkTS-Sta 编译器会拒绝包含 any/unknown 的代码，直接报编译错误 `Type 'any' is not allowed`，无法生成 HAP）
 
 ```typescript
+// ✅️ 显式类型声明
 let player: media.AVPlayer | null = null
 let fd: number = -1
 let result: string = await someFunction()
 ```
 
 ```typescript
+// ❌ any/unknown 或隐式推断
 let player: any = null
 let result = await someFunction()
 ```
@@ -53,11 +55,13 @@ try {
 ### 2.1 禁止 `var`，只使用 `let` 和 `const`
 
 ```typescript
+// ✅️ let/const
 let count: number = 0
 const TAG: string = 'AVPlayerTest'
 ```
 
 ```typescript
+// ❌ var
 var count = 0
 ```
 
@@ -66,12 +70,14 @@ var count = 0
 所有成员变量在声明时必须赋初值。
 
 ```typescript
+// ✅️ 变量声明时赋初值
 let avPlayer: media.AVPlayer | null = null
 let fd: number = -1
 let isPrepared: boolean = false
 ```
 
 ```typescript
+// ❌ 声明未初始化
 let avPlayer: media.AVPlayer
 let fd: number
 ```
@@ -83,21 +89,25 @@ let fd: number
 ### 3.1 禁止对象解构
 
 ```typescript
+// ✅️ 逐个赋值
 let width: number = rect.width
 let height: number = rect.height
 ```
 
 ```typescript
+// ❌ 对象解构
 let { width, height } = rect
 ```
 
 ### 3.2 禁止 `in` 运算符
 
 ```typescript
+// ✅️ instanceof
 if (obj instanceof MyClass) { ... }
 ```
 
 ```typescript
+// ❌ in 运算符
 if ("property" in obj) { ... }
 ```
 
@@ -108,17 +118,19 @@ if ("property" in obj) { ... }
 ### 3.4 禁止 `require`
 
 ```typescript
+// ✅️ ES6 import
 import media from '@ohos.multimedia.media'
 ```
 
 ```typescript
+// ❌ require
 const media = require('@ohos.multimedia.media')
 ```
 
 ### 3.5 禁止 `as` 类型断言（除 `as any` 外的其他类型断言也应注意）
 
 ```typescript
-// ✅ 正确：使用类型守卫
+// ✅️ 正确：使用类型守卫
 let item = container.get(0)
 if (typeof item === 'string') {
   expect(item).assertEqual('expected')
@@ -136,10 +148,12 @@ let value = data as unknown as TargetType
 ### 3.6 禁止计算属性名
 
 ```typescript
+// ✅️ 直接赋值
 obj.propertyName = value
 ```
 
 ```typescript
+// ❌ 计算属性名
 let key: string = 'propertyName'
 obj[key] = value  // ArkTS 静态模式不支持动态属性访问
 ```
@@ -147,6 +161,7 @@ obj[key] = value  // ArkTS 静态模式不支持动态属性访问
 ### 3.7 禁止 `arguments` 对象
 
 ```typescript
+// ✅️ 使用剩余参数
 function testHelper(...args: string[]) {
   for (let i = 0; i < args.length; i++) {
     console.log(args[i])
@@ -155,6 +170,7 @@ function testHelper(...args: string[]) {
 ```
 
 ```typescript
+// ❌ arguments 对象
 function testHelper() {
   let args = arguments  // ArkTS 静态模式不支持
 }
@@ -163,6 +179,7 @@ function testHelper() {
 ### 3.8 禁止 `for...in` 循环
 
 ```typescript
+// ✅️ Object.keys + for 循环
 let keys = Object.keys(obj)
 for (let i = 0; i < keys.length; i++) {
   console.log(keys[i])
@@ -170,6 +187,7 @@ for (let i = 0; i < keys.length; i++) {
 ```
 
 ```typescript
+// ❌ for...in 循环
 for (let key in obj) {  // 禁止：与 3.2 节 in 运算符禁用规则一致
   console.log(key)
 }
@@ -192,7 +210,8 @@ for (let key in obj) {  // 禁止：与 3.2 节 in 运算符禁用规则一致
 - 运行时逻辑错误码（如 5400102 操作不支持、801 能力未启用等）
 
 ```typescript
-it('playbackRateBoundaryTest001', ..., async (done) => {
+// ✅️ 测试边界值和运行时逻辑错误码
+it('playbackRateBoundaryTest001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async (done: () => void) => {
     await prepareAndPlay(avPlayer)
     avPlayer.rate = media.PlaybackSpeed.SPEED_FORWARD_2_00_X
     expect(avPlayer.rate).assertEqual(media.PlaybackSpeed.SPEED_FORWARD_2_00_X)
@@ -201,7 +220,8 @@ it('playbackRateBoundaryTest001', ..., async (done) => {
 ```
 
 ```typescript
-it('invalidTypeErrorTest001', ..., async (done) => {
+// ❌ 测试编译时已拦截的参数类型错误（静态项目永远不会触发 401）
+it('invalidTypeErrorTest001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async (done: () => void) => {
     avPlayer.rate = "invalid" as any
     expect(error.code).assertEqual(401)
     done()

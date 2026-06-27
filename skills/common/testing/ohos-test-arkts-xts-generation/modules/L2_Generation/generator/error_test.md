@@ -73,13 +73,13 @@ method(param: ParamType): ReturnType;
 ```typescript
 /**
  * @tc.name test{MethodName}Error{Code}0001
- * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_ERROR_{CODE}_0001
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_ERROR_{CODE}_0100
  * @tc.desc 测试 {API} 的 {method} 方法 - 错误码 {code}：{触发条件}
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL2
  */
-it('test{MethodName}Error{Code}0001', Level.LEVEL2, () => {
+it('test{MethodName}Error{Code}0001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   let errCode{CodeName} = {Code};
   try {
     let apiObject = new APIName();
@@ -107,13 +107,13 @@ function popFirst(): T;
 
 /**
  * @tc.name testPopFirstError401001
- * @tc.number SUB_UTILS_UTIL_TREESET_POPFIRST_ERROR_401_001
+ * @tc.number SUB_UTILS_UTIL_TREESET_POPFIRST_ERROR_401_0100
  * @tc.desc 测试 TreeSet 的 popFirst 方法 - 容器为空时抛出 401
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL2
  */
-it('testPopFirstError401001', Level.LEVEL2, () => {
+it('testPopFirstError401001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   let treeSet = new TreeSet<number>();
   let errCodeParamError = 401;
 
@@ -137,13 +137,13 @@ function popLast(): T;
 
 /**
  * @tc.name testPopLastError10200010001
- * @tc.number SUB_UTILS_UTIL_TREESET_POPLAST_ERROR_10200010_001
+ * @tc.number SUB_UTILS_UTIL_TREESET_POPLAST_ERROR_10200010_0100
  * @tc.desc 测试 TreeSet 的 popLast 方法 - 容器为空时抛出 10200010
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL2
  */
-it('testPopLastError10200010001', Level.LEVEL2, () => {
+it('testPopLastError10200010001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   let treeSet = new TreeSet<number>();
   let errCodeContainerEmpty = 10200010;
 
@@ -167,7 +167,7 @@ it('testPopLastError10200010001', Level.LEVEL2, () => {
  */
 function createNetConnection(): void;
 
-it('testCreateNetConnectionError401001', Level.LEVEL2, () => {
+it('testCreateNetConnectionError401001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   let errCodeParamError = 401;
   try {
     let connection = connection.createNetConnection(invalidParam);
@@ -190,7 +190,7 @@ it('testCreateNetConnectionError401001', Level.LEVEL2, () => {
  * API 声明：
  * @throws { BusinessError } 401 - Parameter error.
  */
-it('testAddStringNull003', Level.LEVEL2, () => {
+it('testAddStringNull003', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   let treeSet = new TreeSet<string>();
   let errCodeParamError = 401;
   try {
@@ -211,7 +211,7 @@ it('testAddStringNull003', Level.LEVEL2, () => {
 ```typescript
 // ❌ 反模式1：try 块中忘记 expect().assertFail()
 // 如果 api.method 没有抛异常，测试会静默通过（无效测试）
-it('testError401', Level.LEVEL2, () => {
+it('testError401', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   try {
     api.method(invalidParam);
     // 缺少 expect().assertFail()！异常未抛出时测试静默通过
@@ -221,7 +221,7 @@ it('testError401', Level.LEVEL2, () => {
 });
 
 // ❌ 反模式2：catch 块为空或只有 console.log（吞掉异常）
-it('testError401', Level.LEVEL2, () => {
+it('testError401', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   try {
     api.method(invalidParam);
     expect().assertFail();
@@ -232,7 +232,7 @@ it('testError401', Level.LEVEL2, () => {
 
 // ❌ 反模式3：生成无法触发的错误码测试
 // 错误码 201 在 XTS 测试环境中通常已配置权限，无法触发
-it('testError201', Level.LEVEL2, () => {
+it('testError201', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
   try {
     api.method();
     expect().assertFail();
@@ -250,3 +250,146 @@ it('testError201', Level.LEVEL2, () => {
 > - 子系统特有错误码：需要具体分析触发条件是否可在测试环境构造
 
 > 完整的错误码断言规范（包括正确/错误示例）见 `references/conventions/hypium_framework.md` 第九章。
+
+---
+
+## 七、801 设备能力不匹配的全局处理规则（重要！）
+
+> **触发条件**：当 API 的 `.d.ts` 中 `@throws` 声明了 **801** 错误码时，该 API 的**所有测试用例**（PARAM、RETURN、BOUNDARY、EVENT 等，不仅仅是 ERROR 类型）都必须包裹 801 防护逻辑。
+
+> **范围说明**：本规则仅覆盖"用例在不支持该能力的设备上不应误报失败"的防护逻辑。针对接口在不同设备上的**差异表现**（如不同设备类型的返回值差异、特性裁剪导致的行为差异等），统一由 **acts_device 仓**覆盖，本仓（acts）不重复构造设备差异用例。
+
+### 7.1 规则说明
+
+801 表示"设备能力不支持"。当测试运行在不具备该 API 所需能力的设备上时，**任何调用该 API 的操作**都会抛出 801 异常，而非按预期逻辑执行。因此：
+
+- **正常场景用例**（PARAM/RETURN/BOUNDARY/EVENT）：try 执行正常逻辑 + 断言；catch 直接 `expect(error.code).assertEqual(801)`——设备支持则 try 通过，不支持则 catch 断言 801 通过，其他异常则断言失败
+- **ERROR_{业务码} 用例**（如 ERROR_401）：catch 中需先判断 801（设备不支持→跳过），再断言预期错误码——因为设备不支持时优先返回 801 而非业务码
+
+### 7.2 同步方法 801 防护模板
+
+```typescript
+/**
+ * @tc.name test{MethodName}Normal0100
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_PARAM_0100
+ * @tc.desc 测试 {API} 的 {method} 方法 - 正常场景（含 801 设备能力防护）
+ * @tc.type FUNCTION
+ * @tc.size MEDIUMTEST
+ * @tc.level LEVEL1
+ */
+it('test{MethodName}Normal0100', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
+  let errCodeCapabilityNotSupported = 801;
+  let apiObject = new APIName();
+  try {
+    // 正常测试场景
+    let result: ReturnType = apiObject.methodName(validParam);
+    expect(result).assertEqual(expectedValue);
+  } catch (error) {
+    expect(error.code).assertEqual(errCodeCapabilityNotSupported);
+  }
+});
+```
+
+### 7.3 异步方法 801 防护模板（Promise.then/.catch）
+
+```typescript
+/**
+ * @tc.name test{AsyncMethod}Normal0100
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_0100
+ * @tc.desc 测试 {API} 的 {asyncMethod} 方法 - 正常场景（含 801 设备能力防护）
+ * @tc.type FUNCTION
+ * @tc.size MEDIUMTEST
+ * @tc.level LEVEL1
+ */
+it('test{AsyncMethod}Normal0100', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
+  let errCodeCapabilityNotSupported = 801;
+  let apiObject = new APIName();
+  apiObject.asyncMethod(validParam)
+    .then((result: ReturnType) => {
+      expect(result).assertEqual(expectedValue);
+      done();
+    })
+    .catch((error: BusinessError) => {
+      expect(error.code).assertEqual(errCodeCapabilityNotSupported);
+      done();
+    });
+});
+```
+
+### 7.4 异步方法 801 防护模板（async/await）
+
+```typescript
+/**
+ * @tc.name test{AsyncMethod}Normal0100
+ * @tc.number SUB_[子系统]_[模块]_{API}_{METHOD}_0100
+ * @tc.desc 测试 {API} 的 {asyncMethod} 方法 - 正常场景（含 801 设备能力防护）
+ * @tc.type FUNCTION
+ * @tc.size MEDIUMTEST
+ * @tc.level LEVEL1
+ */
+it('test{AsyncMethod}Normal0100', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
+  let errCodeCapabilityNotSupported = 801;
+  let apiObject = new APIName();
+  try {
+    let result: ReturnType = await apiObject.asyncMethod(validParam);
+    expect(result).assertEqual(expectedValue);
+  } catch (error) {
+    expect(error.code).assertEqual(errCodeCapabilityNotSupported);
+  }
+  done();
+});
+```
+
+### 7.6 判定流程图
+
+```
+API 的 @throws 中包含 801？
+├── 否 → 正常生成测试用例，无需 801 防护
+└── 是 → 该 API 的所有用例应用 801 防护
+         │
+         ├── PARAM/RETURN/BOUNDARY/EVENT 用例
+         │   try { 正常场景 + 断言 }
+         │   catch { expect(error.code).assertEqual(801) }
+         │
+         └── ERROR_401/ERROR_{业务码} 用例
+             try { 构造错误场景 }
+             catch { if 801 → 跳过; else → 断言预期错误码 }
+```
+
+### 7.7 示例：inputText 方法（@throws 含 401 和 801）
+
+```typescript
+// .d.ts 声明：
+// @throws { BusinessError } 401 - Parameter error.
+// @throws { BusinessError } 801 - Input text mode not supported.
+
+// ✅ 正常参数用例（包裹 801 防护）
+it('testInputTextParam0100', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
+  let errCodeCapabilityNotSupported = 801;
+  let driver = Driver.create();
+  try {
+    driver.inputText(ON.id('input'), 'hello');
+    console.info('inputText succeeded');
+  } catch (error) {
+    expect(error.code).assertEqual(errCodeCapabilityNotSupported);
+  }
+});
+
+// ✅ 401 错误码用例（也包裹 801 防护，因为可能在不支持的设备上运行）
+it('testInputTextError4010100', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
+  let errCodeParamError = 401;
+  let errCodeCapabilityNotSupported = 801;
+  let driver = Driver.create();
+  try {
+    driver.inputText(null, null);  // 触发 401
+    expect().assertFail();
+  } catch (error) {
+    // 先判断 801（设备不支持），再判断 401（参数错误）
+    if (error.code === errCodeCapabilityNotSupported) {
+      console.info('inputText not supported on this device, skip test');
+      return;
+    }
+    expect(error.code).assertEqual(errCodeParamError);
+  }
+});
+```

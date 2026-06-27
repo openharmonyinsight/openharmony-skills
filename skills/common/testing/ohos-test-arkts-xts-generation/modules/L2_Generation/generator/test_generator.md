@@ -45,6 +45,28 @@
 
 ---
 
+## 二·5、801 设备能力不匹配的全局防护规则
+
+> **强制规则**：当 API 的 `@throws` 声明了 **801** 错误码时，该 API 的**所有测试用例**都必须包裹 801 防护逻辑。
+
+**背景**：801 表示"设备能力不支持"。测试可能运行在不具备该 API 能力的设备上，此时任何调用都会抛 801 异常，而非按正常逻辑执行。如果不做防护，这些用例在低配设备上会失败。
+
+**生成规则**：
+
+| 用例类型 | 801 防护方式 |
+|---------|-------------|
+| PARAM / RETURN / BOUNDARY / EVENT | try 正常逻辑+断言；catch `expect(error.code).assertEqual(801)` |
+| ERROR_401 / ERROR_{业务码} | catch 先判断 801→跳过，再断言预期错误码 |
+
+> **注意**：不生成 ERROR_801 专属用例（acts 仓不存在此类型用例）。801 仅作为其他用例的防护逻辑存在。
+> 针对接口在不同设备上的差异表现，统一在 **acts_device 仓**覆盖，本仓不重复构造设备差异用例。
+
+**模板**：详见 `error_test.md` 第七章和 `templates.md` 第十章。
+
+> **注意**：801 防护**不影响错误码断言的精确性**——catch 块中先判断 801（设备不支持→正常通过），再断言预期错误码。只有当设备支持且仍报错时，才会执行精确错误码断言。
+
+---
+
 ## 三、测试隔离原则
 
 > **每个测试用例必须独立可执行，不依赖其他用例的执行结果或执行顺序。**（Hypium 测试运行器可能并行或乱序执行用例，共享可变状态会导致间歇性失败，无法稳定复现）
@@ -54,14 +76,14 @@
 describe('TreeSetTest', () => {
   let treeSet = new TreeSet<string>();
   treeSet.add("item1");  // describe 顶层修改状态
-  it('testSize001', Level.LEVEL1, () => {
+  it('testSize001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
     expect(treeSet.length).assertEqual(1);  // 依赖前置状态
   });
 });
 
 // ✅ 正确：每个测试内部独立创建和清理状态
 describe('TreeSetTest', () => {
-  it('testAdd001', Level.LEVEL1, () => {
+  it('testAdd001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
     let treeSet = new TreeSet<string>();  // 独立实例
     let result = treeSet.add("item");
     expect(result).assertTrue();
@@ -159,18 +181,18 @@ export default function APINameTest() {
 # 生成的测试用例清单
 
 ## 参数测试 (5 个)
-- SUB_UTILS_UTIL_TREESET_ADD_PARAM_001 - 正常值
+- SUB_UTILS_UTIL_TREESET_ADD_PARAM_0100 - 正常值
 - SUB_UTILS_UTIL_TREESET_ADD_PARAM_002 - null
 - SUB_UTILS_UTIL_TREESET_ADD_PARAM_003 - undefined
 - SUB_UTILS_UTIL_TREESET_ADD_PARAM_004 - 边界值
 - SUB_UTILS_UTIL_TREESET_ADD_PARAM_005 - 超长字符串
 
 ## 错误码测试 (2 个)
-- SUB_UTILS_UTIL_TREESET_POPFIRST_ERROR_401_001 - 容器为空
-- SUB_UTILS_UTIL_TREESET_POPFIRST_ERROR_402_001 - 参数无效
+- SUB_UTILS_UTIL_TREESET_POPFIRST_ERROR_401_0100 - 容器为空
+- SUB_UTILS_UTIL_TREESET_POPFIRST_ERROR_402_0100 - 参数无效
 
 ## 返回值测试 (3 个)
-- SUB_UTILS_UTIL_TREESET_GETFIRST_RETURN_001 - 返回有效值
+- SUB_UTILS_UTIL_TREESET_GETFIRST_RETURN_0100 - 返回有效值
 - SUB_UTILS_UTIL_TREESET_GETFIRST_RETURN_002 - 返回 undefined
 - SUB_UTILS_UTIL_TREESET_GETFIRST_RETURN_003 - 返回值类型验证
 

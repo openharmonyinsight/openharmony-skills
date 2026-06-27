@@ -7,8 +7,8 @@
 
 > **⚠️ Linux 编译铁律**
 >
-> - ✅ **必须使用** `./test/xts/acts/build.sh`
-> - ❌ **禁止使用** `hvigorw`（Windows 专用）
+> - ✅ **优先使用** `./test/xts/acts/build.sh`
+> - ⬇️ 编译环境问题导致失败时，降级使用 hvigor 直接编译定位问题
 > - 编译前**必须**从 BUILD.gn 提取正确的测试套名称
 > - 编译前**必须**执行预编译清理
 
@@ -88,6 +88,28 @@ out/{product_name}/suites/acts/acts/testcases/
 | 动态测试套 | `ohos_js_app_suite("Name")` | `test_hap = true` | 默认 |
 | 静态测试套 | `ohos_js_app_static_suite("Name")` | 不设置 | `xts_suitetype=hap_static` |
 
+> **⚠️ 模板函数必须与 ETS 版本匹配**：1.2 工程必须使用 `ohos_js_app_static_suite`，否则编译环境按 1.1 编译，静态语法测试用例全部编译失败。详见 `references/conventions/ets_version_naming.md` §三。
+
+### 2.1.1 BUILD.gn 模板函数校验（编译前必须执行）
+
+编译前验证 BUILD.gn 模板函数与目标 ETS 版本是否匹配：
+
+```bash
+# 提取模板函数名
+TEMPLATE=$(grep -E "ohos_(js_app_suite|js_app_static_suite)\(" BUILD.gn | head -1)
+
+# 校验
+if echo "$TEMPLATE" | grep -q "ohos_js_app_static_suite"; then
+    echo "静态测试套（1.2）"
+elif echo "$TEMPLATE" | grep -q "ohos_js_app_suite"; then
+    echo "动态测试套（1.1）"
+else
+    echo "❌ 未找到有效模板函数"
+fi
+```
+
+**同时检查 BUILD.gn 中 `test_hap` 字段是否已注释**（当前 ohosTest 不可用，未注释会编译报错）。
+
 ### 2.2 提取命令
 
 ```bash
@@ -99,9 +121,11 @@ grep -E "ohos_(js_app_suite|js_app_static_suite)\(" BUILD.gn | \
 awk -F'"' '/ohos_(js_app_suite|js_app_static_suite)\(/ {print $2; exit}' BUILD.gn
 ```
 
-### 2.3 编译 group
+### 2.3 按 group 编译（仅 Linux build.sh 支持）
 
-`suite` 参数不支持多个目标，但可以使用 BUILD.gn 中的 `group()` 名称编译该 group 下所有测试套：
+Linux 使用 `build.sh` 时支持按 group 编译。
+
+使用 BUILD.gn 中的 `group()` 名称编译该 group 下所有测试套：
 
 ```bash
 # 编译 testfwk group 下所有测试套
@@ -112,6 +136,45 @@ awk -F'"' '/ohos_(js_app_suite|js_app_static_suite)\(/ {print $2; exit}' BUILD.g
 ```
 
 group 名称来源于子系统 BUILD.gn 中的 `group("子系统名")` 定义。
+
+---
+
+### 2.4 降级 hvigor 编译（build.sh 因环境问题失败时使用）
+
+当 `build.sh` 因编译环境问题（如 SDK 版本不匹配、构建工具异常、缓存污染等）导致编译失败，且无法通过常规清理解决时，可降级使用 hvigor 直接编译以定位问题。
+
+**hvigor 路径**（有 OH 源码时）：
+
+| 测试套类型 | hvigor 路径 | 版本 |
+|-----------|------------|------|
+| 动态（ArkTS-Dyn） | `{OH_ROOT}/prebuilts/tool/command-line-tools/6.x/hvigor/bin/hvigorw` | 6.20.0 |
+| 静态（ArkTS-Sta） | `{OH_ROOT}/prebuilts-sta/command-line-tools/hvigor/bin/hvigorw` | 6.0.0-arkts1.2-ohosTest-* |
+
+**动态测试套编译命令**：
+```bash
+cd {测试套目录}
+{hvigor_path} assembleHap --mode module -p module=entry@ohosTest -p product=default
+```
+
+**静态测试套编译命令**：
+```bash
+cd {测试套目录}
+{hvigor_path} assembleHap --mode module -p module=entry -p product=default
+```
+
+**编译产物输出路径对比**：
+
+| 编译方式 | 动态测试套产物路径 | 静态测试套产物路径 |
+|---------|-------------------|-------------------|
+| **build.sh** | `{OH_ROOT}/out/rk3568/suites/acts/acts/testcases/{SUITE_NAME}/{SUITE_NAME}.hap` | `{OH_ROOT}/out/rk3568/suites/acts/acts/testcases/{SUITE_NAME}/{SUITE_NAME}.hap` |
+| **hvigor** | `{测试套目录}/entry/build/default/outputs/ohosTest/entry-ohosTest-unsigned.hap` | `{测试套目录}/entry/build/default/outputs/default/entry-default-unsigned.hap` |
+
+> **重要**：
+> 1. 静态测试套**没有** `ohosTest` target，测试代码作为主模块的一部分编译
+> 2. 必须使用对应版本的 hvigor，版本不匹配会导致编译失败
+> 3. `local.properties` 中 `sdk.dir` 应指向正确的 SDK 路径（动态用 `prebuilts/ohos-sdk`，静态用 `prebuilts-sta/ohos-sdk`）
+> 4. hvigor 编译仅用于问题定位，修复环境问题后仍应使用 `build.sh` 重新编译验证
+> 5. 两种编译方式的产物路径不同，验证时需使用对应路径
 
 ---
 

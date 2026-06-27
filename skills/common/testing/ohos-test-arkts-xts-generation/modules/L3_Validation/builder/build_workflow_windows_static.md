@@ -86,9 +86,10 @@ $env:PATH = "{deveco_studio_path}\tools\node;" + $env:PATH
 # 3. 执行静态编译
 Write-Host "[3/4] 开始 ArkTS 静态编译..." -ForegroundColor Yellow
 & "{deveco_studio_path}\tools\node\node.exe" "{hvigor_path}\hvigorw.js" `
-  --mode module `
-  -p product=default `
   assembleHap `
+  --mode module `
+  -p module=entry `
+  -p product=default `
   --analyze=normal `
   --parallel `
   --incremental `
@@ -96,7 +97,7 @@ Write-Host "[3/4] 开始 ArkTS 静态编译..." -ForegroundColor Yellow
 
 # 4. 检查编译结果
 Write-Host "[4/4] 检查编译产物..." -ForegroundColor Yellow
-$TestHapPath = "entry\build\default\outputs\ohosTest\entry-ohosTest-signed.hap"
+$TestHapPath = "entry\build\default\outputs\default\entry-default-signed.hap"
 if (Test-Path $TestHapPath) {
     $FileSize = (Get-Item $TestHapPath).Length / 1KB
     Write-Host "✓ 静态编译成功: $TestHapPath ($FileSize KB)" -ForegroundColor Green
@@ -118,7 +119,7 @@ powershell -ExecutionPolicy Bypass -File build_arkts_static.ps1
 ```powershell
 # 进入项目目录，设置 JAVA_HOME（同 10.2.2），然后执行
 cd C:\Users\{username}\Desktop\xts_demo_1
-"{hvigor_path}\hvigorw.bat" assembleHap --mode module -p module=entry@ohosTest -p product=default
+"{hvigor_path}\hvigorw.bat" assembleHap --mode module -p module=entry -p product=default
 ```
 
 ### 10.4 编译输出示例
@@ -126,16 +127,17 @@ cd C:\Users\{username}\Desktop\xts_demo_1
 **成功输出**：
 
 ```
-> hvigor UP-TO-DATE :entry:ohosTest@PreBuild...
-> hvigor Finished :entry:ohosTest@CompileResource... after 378 ms
-> hvigor Finished :entry:ohosTest@OhosTestCompileArkTS... after 15 s 234 ms
-> hvigor Finished :entry:ohosTest@SignHap... after 209 ms
+> hvigor UP-TO-DATE :entry:default@PreBuild...
+> hvigor Finished :entry:default@CompileResource... after 378 ms
+> hvigor Finished :entry:default@CompileArkTSEvolution... after 15 s 234 ms
+> hvigor Finished :entry:default@SignHap... after 209 ms
 > hvigor BUILD SUCCESSFUL in 18 s 451 ms
 ```
 
 **关键差异**：
 - 静态编译通常比动态编译慢（需要额外的类型检查）
-- `OhosTestCompileArkTS` 阶段耗时更长（静态类型检查）
+- `CompileArkTSEvolution` 阶段耗时更长（静态类型检查）
+- 静态测试套使用 `default` target 而非 `ohosTest`
 
 ### 10.5 静态类型检查
 
@@ -144,12 +146,12 @@ cd C:\Users\{username}\Desktop\xts_demo_1
 #### 10.5.1 类型注解完整性检查
 
 ```typescript
-// ✓ 正确 - 显式类型注解
+// ✅️ 正确 - 显式类型注解
 function add(a: number, b: number): number {
   return a + b;
 }
 
-// ✗ 错误 - 缺少类型注解（静态模式下会报错）
+// ❌ 错误 - 缺少类型注解（静态模式下会报错）
 function add(a, b) {
   return a + b;
 }
@@ -158,10 +160,10 @@ function add(a, b) {
 #### 10.5.2 禁止 any 类型检查
 
 ```typescript
-// ✗ 错误 - 静态模式禁止使用 any
+// ❌ 错误 - 静态模式禁止使用 any
 let data: any = getSomeData();
 
-// ✓ 正确 - 使用具体类型（静态模式也禁止 unknown，必须使用具体类型）
+// ✅️ 正确 - 使用具体类型（静态模式也禁止 unknown，必须使用具体类型）
 let data: string = getSomeData();
 // 或使用联合类型
 let data: string | null = getSomeData();
@@ -170,13 +172,13 @@ let data: string | null = getSomeData();
 #### 10.5.3 字段初始化检查
 
 ```typescript
-// ✓ 正确 - 所有字段都初始化
+// ✅️ 正确 - 所有字段都初始化
 class Person {
   name: string = "";
   age: number = 0;
 }
 
-// ✗ 错误 - 字段未初始化
+// ❌ 错误 - 字段未初始化
 class Person {
   name: string;
   age: number;
@@ -210,7 +212,7 @@ Type 'string' is not assignable to type 'number'
 1. 检查是否使用了 `any` 类型
 2. 确保所有函数参数和返回值都有类型注解
 3. 验证类型兼容性
-4. 参考：`references/arkts-static-spec/` 目录下的规范文档
+4. 参考：`ohos-dev-arkts-static-specification-reference` 技能目录下的规范文档
 
 #### 错误3：字段未初始化
 
@@ -241,7 +243,7 @@ class MyClass {
 
 ```powershell
 # 使用 hdc 安装
-hdc install entry\build\default\outputs\ohosTest\entry-ohosTest-signed.hap
+hdc install entry\build\default\outputs\default\entry-default-signed.hap
 
 # 或使用自动安装（推荐）
 hdc shell aa test -b <BundleName> -m entry_test -s unittest OpenHarmonyTestRunner -s class <TestSuite>
@@ -284,9 +286,10 @@ Write-Host "`n[1/3] 执行 ArkTS 静态编译..." -ForegroundColor Yellow
 Set-Location $ProjectPath
 
 & "{deveco_studio_path}\tools\node\node.exe" "{hvigor_path}\hvigorw.js" `
-  --mode module `
-  -p product=default `
   assembleHap `
+  --mode module `
+  -p module=entry `
+  -p product=default `
   --analyze=normal `
   --parallel `
   --incremental `

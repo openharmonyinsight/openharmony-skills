@@ -1,19 +1,27 @@
 ---
 name: ohos-test-arkts-xts-generation
 description: >
-  Generate and validate OpenHarmony ArkTS XTS tests, including .d.ts parsing,
-  Hypium test design, .ets generation, API coverage analysis with
-  APICoverageDetector, batch generation, registration, build verification, and
-  existing test quality checks. Use when the task mentions XTS, ArkTS-Dyn,
-  ArkTS-Sta, APICoverageDetector, API coverage, Hypium, @tc annotations, test
-  design documents, .d.ts files, .ets test files, or batch test generation.
+  OpenHarmony ArkTS XTS测试用例生成器。解析.d.ts API定义，生成符合Hypium框架的测试用例，支持覆盖率分析、编译验证和Demo+UiTest生成。
+  支持ArkTS-Dyn（动态）和ArkTS-Sta（静态）两种语法模式，覆盖12-Phase完整工作流。
+  Use when: (1) 用户提到XTS测试、ArkTS测试用例生成、API覆盖率扫描,
+  (2) 用户需要为@kit.* SDK生成测试,
+  (3) 用户提到APICoverageDetector、未覆盖API、测试补充,
+  (4) 用户需要批量生成测试或分批执行,
+  (5) 用户需要为UI组件生成Demo+UiTest测试,
+  (6) 验证已有测试代码质量或编译测试套,
+  (7) 用户要求编译指定的测试套（如"编译xxx"、"build xxx"、"重新编译"）,
+  (8) 用户提到编译失败、编译错误、SDK补齐后重新编译。
+  Trigger keywords: XTS, ArkTS-Dyn, ArkTS-Sta, test generation, API coverage, APICoverageDetector,
+  Hypium, batch generation, .ets files, @tc annotation, test design documents, .d.ts files,
+  coverage analysis, UiTest, Demo, 未覆盖API, 编译, build, compile, 重新编译, 编译验证,
+  async_build, cleanup_group, build.sh, 测试套编译
 metadata:
   author: openharmony
   scope: common
   stage: testing
   domain: arkts
   capability: xts-generation
-  version: 0.1.0
+  version: 0.5.0
   status: draft
   tags:
     - xts
@@ -21,83 +29,94 @@ metadata:
     - test-generation
     - coverage-analysis
   related-skills:
-    - ohos-test-capi-xts-generation
-    - check-test-code-quality
-    - arkts-static-spec
-allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Grep
-  - Glob
-  - Bash
+    - name: ohos-test-xts-code-quality
+      min_version: "2.0.12"
+      required: true
+      probes:
+        - "{dir}/scripts/main.py --help 2>&1 | grep -q -- '--rules'"
+        - "{dir}/scripts/main.py --help 2>&1 | grep -q -- '--sta-mode'"
+    - name: ohos-dev-arkts-static-specification-reference
+      min_version: "0.1.0"
+      required: false
+    - name: arkts-skill
+      min_version: "1.0.0"
+      required: false
+      probes:
+        - "test -f {dir}/scripts/search_docs.py"
+    - name: demo-pipeline
+      min_version: "1.0.0"
+      required: false
+  allowed-tools:
+    - Read
+    - Write
+    - Edit
+    - Grep
+    - Glob
+    - Bash
 ---
 
 # ohos-test-arkts-xts-generation
 
 > OpenHarmony ArkTS XTS 测试用例生成器
 
-## 路径说明
-
-**本文档中所有相对路径均以本技能的根目录（skill-root）为起点。**
-
-例如：
-- `prompts/system.md` 表示技能根目录下的 `prompts/system.md`
-- `references/conventions/hypium_framework.md` 表示技能根目录下的 `references/conventions/hypium_framework.md`
-
-技能根目录的绝对路径取决于所使用的工具，例如：
-- opencode: `{用户主目录}/.opencode/skills/ohos-test-arkts-xts-generation/`
-- Claude Code: `{用户主目录}/.claude/skills/ohos-test-arkts-xts-generation/`
-- 其他工具: 请参考对应工具的 skill 安装目录
-
-具体路径以 `.oh-xts-config.json` 中 `skill_root` 字段的值为准。
-
 ## 配置加载（优先级最高）
 
-**必须首先读取配置文件**：`{skill_root}/.oh-xts-config.json`
+**所有相对路径以 `{skill_root}` 为起点**，具体值从 `{skill_root}/.oh-xts-config.json` 的 `skill_root` 字段读取（不存在则从 `.oh-xts-config.example.json` 自动初始化，详见 `prompts/phase-1-config-loading.md` 步骤 0）。
 
-配置文件核心字段：`skill_root`（所有相对路径的基准）、`scan_tool_root`（APICoverageDetector 路径，仅 Windows）、平台特定路径（`for_windows.*` / `for_linux.OH_ROOT`）。
+核心字段：`platform`（`wsl`/`windows`/`linux`）、`skill_root`、`OH_ROOT`（源码根目录）、`scan_tool_root`（APICoverageDetector 路径，无效时向用户确认：更新路径 / 提供扫描结果 / 跳过扫描）。
 
-首次使用时自动初始化：将 `.oh-xts-config.example.json` 复制为 `.oh-xts-config.json`，从用户消息提取路径或交互式询问。详见 `prompts/phase-1-config-loading.md` 步骤 0。
-
-**工具路径**（基于配置文件和 skill_root）：
-- 覆盖率工具: `{scan_tool_root}/`（路径无效时向用户确认：更新路径 / 提供扫描结果 / 跳过扫描）
-- 脚本工具: `{skill_root}/scripts/`
-- 提示词: `{skill_root}/prompts/`
-- 参考配置: `{skill_root}/references/subsystems/`
-
-**脚本工具速查**：
+**脚本工具**（`{skill_root}/scripts/`）：
 
 | 脚本 | 用途 | 调用时机 |
 |------|------|---------|
-| `manage_scan_env.py` | 文件复制到扫描目录 + arkts_config.json 配置 | Phase 2 步骤 1/4、Phase 9 |
-| `convert_results.py` | Excel→CSV 批量转换 | Phase 2 步骤 3.5、Phase 9 |
-| `validate_test_context.py` | 测试文件生成上下文检查（5/9 项） | Phase 7 步骤 A |
-| `compare_coverage.py` | 覆盖率 before/after 对比报告 | Phase 9 |
-| `register_test.py` | List.test.ets 注册新测试文件 | Phase 6 |
-| `extract_uncovered.py` | 提取未覆盖 API 列表 | Phase 3 |
-| `sync_ets_version.py` | 同步 ets_version 到 arkts_config.json | Phase 1 |
-| `async_coverage_scan.py` | 异步覆盖率扫描 | Phase 2、Phase 9 |
-| `batch_manager.py` | 分批执行管理器（计划/执行/续传） | Phase 3-5 批量模式 |
-| `batch_lock.py` | 文件锁（多 subagent 并发写入保护） | batch_manager.py 内部依赖 |
+| `async_coverage_scan.py` | 异步覆盖率扫描（自动清理旧残留、PID 检查） | Phase 2、10 |
+| `extract_uncovered.py` | 提取未覆盖 API（8维度判断、双输出） | Phase 2、3 |
+| `compare_uncovered.py` | 覆盖率 before/after 对比 | Phase 10 |
+| `manage_scan_env.py` | 扫描环境准备（`setup`/`sync`/`teardown`） | Phase 2、10 |
+| `validate_test_context.py` | 生成上下文检查（5/9 项） | Phase 7A |
+| `register_test.py` | List.test.ets 注册 | Phase 6 |
+| `phase_tracker.py` | Phase 状态追踪 | 每个 Phase |
+| `batch_manager.py` | 分批执行管理 | Phase 3-5 |
 
 **必需依赖技能**：
 
 | 依赖技能 | 用途 | 触发时机 |
 |---------|------|---------|
-| `check-test-code-quality` | 代码质量深度扫描（11 条规则） | Phase 7 步骤 B 必选 |
-| `arkts-static-spec` | ArkTS 静态语法规范校验 | Phase 7 步骤 A，仅静态项目（ArkTS-Sta）时 |
+| `ohos-test-xts-code-quality` | 代码质量深度扫描（17 条规则：R002-R023 合规 + R201-R205 技术） | Phase 7 步骤 B 必选 |
+| `ohos-dev-arkts-static-specification-reference` | ArkTS 静态语法规范校验 | Phase 7 步骤 A，仅静态项目（ArkTS-Sta）时 |
+| `arkts-skill` | ArkTS 动态语法/API 按需检索（search_docs.py） | Phase 3 常见模式查表（`arkts_api_pattern_rules.md`），特殊场景 `search_docs.py` 兜底查询；Phase 8 编译错误修复 |
+| `demo-pipeline` | Demo 被测应用生成（UI 类测试点） | Phase 5A Step 1，仅存在 UI 类用例时 |
+
+## 依赖安装
+
+依赖列表见上方「必需依赖技能」表格。安装方式与兼容性校验详见 `prompts/phase-0-init-config.md` 步骤 5。
 
 ## Initialization
 
 1. 读取 `{skill_root}/.oh-xts-config.json` 获取配置（不存在则自动初始化，见上方配置加载）
-2. 读取 `{skill_root}/prompts/system.md` 获取系统提示词
-3. 所有后续文件引用均使用 `{skill_root}` + 相对路径格式
-4. 详细初始化步骤（ETS 版本选择、子系统确定、模块加载、语法类型判断等）→ `prompts/phase-1-config-loading.md`
+2. **会话恢复**：读取 `{skill_root}/.task_summary/` 下最新的 `session_issues_*.md`，向用户汇报上次未解决问题，询问继续还是新任务
+3. 判断用户意图：
+   - **编译任务**（用户提到"编译"、"build"、"重新编译"、"编译验证"等）→ 直接进入 Phase 8 独立编译模式，跳过 Phase 1-7
+   - **测试生成任务**（默认）→ 从 Phase 1 开始完整流程
+4. 所有后续文件引用均使用 `{skill_root}` + 相对路径格式
+5. 详细初始化步骤（ETS 版本选择、子系统确定、模块加载、语法类型判断等）→ `prompts/phase-1-config-loading.md`
 
-**模块加载原则**：仅加载当前阶段需要的模块，不要一次性加载所有模块。参考下方 Module Loading 映射表。
+**模块加载原则**：仅加载当前阶段需要的模块，不要一次性加载所有模块。参考各 Phase prompt 文件开头的指令部分。
 
 **语法类型**：支持 ArkTS-Dyn（动态，默认）和 ArkTS-Sta（静态）。通过目标工程的 `build-profile.json5` 中 `arkTSVersion` 字段判断。两者在 API 可用性、测试目录、编译工具链上有差异，详细处理逻辑见 `prompts/phase-1-config-loading.md` 步骤 9。
+
+**关键差异速查**：
+
+| 差异项 | ArkTS-Dyn（ets1.1） | ArkTS-Sta（ets1.2） |
+|-------|---------------------|---------------------|
+| hypium 导入 | `from "@ohos/hypium"` | `from "{相对路径}/hypium/index"`（hypium 固定位于 `entry/src/hypium/index`，按文件深度计算 `../` 数量，详见 `prompts/phase-5-generation.md`） |
+| 401 错误码测试 | 生成（运行时检查） | **不生成**（编译时已拦截） |
+| `as any` | 可用（不推荐） | **禁止**（编译错误 ESE0143） |
+| 变量声明 | `let` 为主 | 非重赋值变量使用 `const` |
+| 返回类型标注 | 可省略 | 必须显式标注 `: void`、`: Promise<void>` |
+| 测试代码目录 | `entry/src/ohosTest/` | `entry/src/main/src/test/` |
+
+**测试用例编号格式**：`SUB_[子系统]_[模块]_[API]_[类型]_[序号]`，类型取值：PARAM / ERROR / RETURN / BOUNDARY / EVENT。
 
 ## Architecture Overview
 
@@ -107,106 +126,196 @@ allowed-tools:
           references/subsystems/     references/conventions/（框架规范）
 ```
 
-## Quick File Index
-
-| 我要做什么 | 看哪个文件 |
-|-----------|-----------|
-| 理解 API 定义 | `modules/L1_Analysis/parser/unified_api_parser.md` |
-| 判断语法类型 | `modules/L1_Analysis/parser/unified_api_parser_syntax_filter.md` |
-| 了解断言方法 | `references/conventions/hypium_framework.md` |
-| 了解 ArkTS 语法 | `references/conventions/arkts_standards.md` |
-| 了解命名规范 | `references/conventions/test_conventions.md` |
-| 生成测试设计 | `modules/L2_Generation/generator/design_doc_generator.md` |
-| 生成测试用例 | `modules/L2_Generation/generator/test_generator.md` |
-| 参数/返回值/边界值测试 | `modules/L2_Generation/generator/param_test.md` |
-| 错误码测试 | `modules/L2_Generation/generator/error_test.md` |
-| HarmonyOS 特有测试场景 | `modules/L2_Generation/generator/HarmonyOS_Test_Design_Spec.md` |
-| 查看代码模板 | `modules/L2_Generation/generator/templates.md` |
-| 验证测试格式 | `modules/L3_Validation/validator/format_validator.md` |
-| 编译测试套（Linux） | `modules/L3_Validation/builder/build_workflow_linux.md` |
-| 编译测试套（Windows） | `modules/L3_Validation/builder/build_workflow_windows.md` |
-| 处理执行错误 | `references/error_handling.md` |
-
 ## Workflow
 
-根据用户是否提供覆盖率报告，各阶段执行方式有所不同，差异已在各 Phase 文件中说明：
+### 入口判定
+
+| 用户意图 | 入口 Phase | 说明 |
+|---------|-----------|------|
+| 首次使用 / 配置异常 | **Phase 0** | 加载 `prompts/phase-0-init-config.md`，交互式引导配置 |
+| 编译/重新编译测试套 | **Phase 8（独立编译模式）** | 跳过 Phase 1-7，直接加载 `prompts/phase-8-build.md` |
+| 生成测试用例（完整流程） | Phase 1 | 从 Phase 1 开始，Phase 0-11 完整 12-Phase 流程 |
+
+**编译模式触发关键词**：编译、build、compile、重新编译、编译验证、编译失败、SDK补齐后重新编译
+
+根据用户是否提供覆盖率报告、以及是否为新增接口，各阶段执行方式有所不同，差异已在各 Phase 文件中说明：
 
 **重要**：所有 Prompt File 路径均使用 `{skill_root}/` 前缀，其中 `skill_root` 从配置文件读取。
 
-| Phase | Name | Prompt File | Flow A（有覆盖率报告） | Flow B（无覆盖率报告） |
-|-------|------|-------------|----------------------|----------------------|
-| 1 | Determine Subsystem Config | `prompts/phase-1-config-loading.md` | 相同 | 相同 |
-| 2 | Initial Coverage Scan | `prompts/phase-2-coverage.md` | 仅代码风格扫描 | APICoverageDetector 精确扫描（支持同步/异步） |
-| 3 | Targeted API Info Parsing | `prompts/phase-3-api-parsing.md` | 仅解析报告中的未覆盖项 | 仅解析 Phase 2 识别的未覆盖项 |
-| 4 | Generate Test Design | `prompts/phase-4-design.md` | 仅设计报告中的未覆盖项 | 设计全部目标 API 的测试 |
-| 5 | Generate Test Cases | `prompts/phase-5-generation.md` | 依据设计文档生成 | 依据设计文档生成 |
-| 6 | Register Test Suites | `prompts/phase-6-registration.md` | 相同 | 相同 |
-| 7 | Format & Validate | `prompts/phase-7-validation.md` | **步骤A: 生成上下文检查 + 步骤B: check-test-code-quality深度扫描** | **步骤A: 生成上下文检查 + 步骤B: check-test-code-quality深度扫描** |
-| 8 | Build Verification | `prompts/phase-8-build.md` | 推荐 | 推荐 |
-| 9 | Coverage Verification | `prompts/phase-9-coverage.md` | 可选 | 必须（再次扫描对比，支持异步） |
-| 10 | Output Results | `prompts/phase-10-output.md` | 相同 | 相同 |
+**Flow 判定规则**（Phase 1 步骤 0 中检测，优先级从高到低）：
 
-## Module Loading
+| 优先级 | 条件 | Flow | 说明 |
+|--------|------|------|------|
+| 1 | 用户明确说明"新增接口"/"新 API"/"new API" | **Flow C** | 新增接口，生成前覆盖率必为 0，跳过 before 扫描 |
+| 2 | 用户提供了覆盖率报告（CSV/XLSX/JSON/MD） | **Flow A** | 基于用户报告解析覆盖缺口 |
+| 3 | 以上均不满足 | **Flow B** | 标准 APICoverageDetector 扫描 |
 
-> **重要提示**：详细的加载规则已嵌入到每个 Phase 的描述文件中。
-> 
-> SKILL.md 仅提供概念性说明：
-> - MANDATORY：必须完整阅读的文件（前置加载）
-> - 按需加载：根据任务条件加载
-> - Do NOT Load：禁止加载的模块
+> **MANDATORY READ**：每个 Phase 开始前，**必须完整读取**对应 `prompts/phase-N-xxx.md` 获取详细指令、加载规则和检查清单。下表仅用于路由决策，不含执行细节。**Phase 4（设计）和 Phase 7（验证）为强制 Phase，不可跳过**。
 
-每个 Phase 的具体加载规则请参考对应 prompt 文件开头的指令部分。
+| Phase | Name | Prompt File | Flow A | Flow B | Flow C | 并行 |
+|-------|------|-------------|--------|--------|--------|------|
+| 0 | Init Config | `prompts/phase-0-init-config.md` | 仅首次 | 仅首次 | 仅首次 | — |
+| 1 | Task Config & Subsystem | `prompts/phase-1-config-loading.md` | 相同 | 相同 | 相同（额外检测 new_api_mode） | — |
+| 2 | Initial Coverage Scan | `prompts/phase-2-coverage.md` | 仅 `extract_uncovered.py` 精准筛选 | APICoverageDetector 精确扫描 + `extract_uncovered.py` 精准筛选 | **跳过**（默认覆盖率为 0） | — |
+| 3 | Targeted API Info Parsing | `prompts/phase-3-api-parsing.md` | 仅解析报告中的未覆盖项 | 仅解析 Phase 2 识别的未覆盖项 | 直接解析用户提供的全部新增 API | ✅ 多 d.ts |
+| 4 | Generate Test Design | `prompts/phase-4-design.md` | 仅设计报告中的未覆盖项 | 设计全部目标 API 的测试 | 设计全部新增 API 的测试 | ✅ 多 API 组 |
+| 5A | Generate Demo (UI类用例) | `prompts/phase-5-demo-generation.md` | 用例分类 + Demo 生成（仅UI类用例） | 用例分类 + Demo 生成（仅UI类用例） | 相同 | ✅ 多页面 |
+| 5 | Generate Test Cases (非UI类) | `prompts/phase-5-generation.md` | 依据设计文档生成非UI类用例 | 依据设计文档生成非UI类用例 | 相同 | ✅ 多文件 |
+| 5B | Generate UiTest (UI类用例) | `prompts/phase-5-uitest-generation.md` | 依据设计文档生成UiTest代码（仅UI类用例） | 依据设计文档生成UiTest代码（仅UI类用例） | 相同 | ✅ 与 5A/5 并行 |
+| 6 | Register Test Suites | `prompts/phase-6-registration.md` | 相同 | 相同 | 相同 | — |
+| 7 | Format & Validate | `prompts/phase-7-validation.md` | 步骤A + 步骤B | 步骤A + 步骤B | 步骤A + 步骤B | — |
+| 8 | Build Verification | `prompts/phase-8-build.md` | 推荐 | 推荐 | 推荐 | — |
+| 9 | Device Test Execution | `prompts/phase-9-test-execution.md` | 可选 | 可选 | 可选 | ✅ 与 10 并行 |
+| 10 | Coverage Verification | `prompts/phase-10-coverage.md` | 可选 | 必须（before/after 对比） | 必须（**仅 after 扫描**，无 before baseline） | ✅ 与 9 并行 |
+| 11 | Output Results | `prompts/phase-11-output.md` | 相同 | 相同 | 覆盖率表标注"生成前: 0（新增接口）" | — |
 
-## Configuration Architecture
+**Phase 5 执行顺序**：
+1. Phase 5A（Step 0 用例分类 + Step 1 Demo 生成）— 仅存在 UI 类用例时执行
+2. Phase 5（非 UI 类测试代码）和 Phase 5B（UiTest 测试代码）和 Phase 5A Step 1（Demo 代码生成）— **代码生成阶段可并行**，均从 Phase 4 设计文档的控件 ID 清单读取
+3. 编译阶段：Demo 和 UiTest 测试代码一起进入编译——同 HAP 作为同一编译单元；辅助包模式下按平台选择编译方式（详见 Phase 8）
 
+### Phase Tracker
+
+使用 `scripts/phase_tracker.py` 追踪每个 Phase 的执行状态，确保按序执行、关键 Phase 不可跳过。
+
+**强制 Phase**：Phase 4（测试设计文档）和 Phase 7（格式验证）**不可跳过**。
+
+```bash
+# 每个 Phase 开始前必须执行 check（确认前置 Phase 已完成）
+python {skill_root}/scripts/phase_tracker.py check 5 --output .coverage_data
+
+# Phase 完成后标记（可附加输出文件路径）
+python {skill_root}/scripts/phase_tracker.py complete 4 --output-file path/to/design.md --output .coverage_data
 ```
-Priority: User Custom > Module Config > Subsystem Config > Core Config
 
-Core:      references/subsystems/_common.md          (shared mandatory + default rules)
-Subsystem: references/subsystems/{Subsystem}/_common.md  (differential rules)
-Module:    references/subsystems/{Subsystem}/{Module}.md  (module-specific rules)
+其他子命令：`init`（初始化）、`start`（标记开始）、`skip`（跳过非强制 Phase，需 `--reason`）、`status`（查看状态）、`report`（生成检查清单）。详细用法见 `scripts/phase_tracker.py --help`。
 
-Note: 覆盖率扫描环境通过文件复制方式自动准备
-```
+**每个 Phase 开始前必须执行 `check` 命令**，确认前置 Phase 已完成。若前置 Phase 为 pending 或 in_progress，则阻止当前 Phase 开始。
 
-## Key Constraints
+## 配置层级
 
-1. **Validation is mandatory** — Phase 7 can never be skipped（跳过会导致无效测试、资源泄漏、编译失败等问题流入下游）
-2. **Strict API adherence** — Only use interfaces declared in `.d.ts` files（未声明的接口在编译环境中不存在，生成的代码无法编译）
-3. **No project config modification** — Only create test files in designated directories（修改 BUILD.gn 等配置会导致编译环境损坏、影响其他开发者）
-4. **@tc annotation required** — Every test case must have standard `@tc` block（缺少 @tc 则测试报告系统无法识别用例元数据）
-5. **Design-driven generation** — Phase 4 generates design docs, Phase 5 generates test code based on design docs（确保从测试代码到需求的完整可追溯性）
-6. **Conventions shared across phases** — `references/conventions/` is loaded in both Phase 5 (generation) and Phase 7 (validation)（生成和验证使用同一套规范，确保一致性）
-7. **Error handling** — When any Phase execution fails or encounters unexpected results, read `references/error_handling.md` for recovery guidance
+用户自定义 > 模块配置 > 子系统配置 > 核心配置。详细规则见 `references/subsystems/_common.md`。
 
-## Quick Reference
+## 执行原则
 
-| Subsystem | Kit | Test Path | Config Path |
-|-----------|-----|-----------|-------------|
-| testfwk | @kit.TestKit | test/xts/acts/testfwk/ | references/subsystems/testfwk/ |
-| ArkUI | @kit.ArkUI | test/xts/acts/arkui/ | references/subsystems/ArkUI/ |
-| ArkWeb | @kit.ArkWeb | test/xts/acts/arkweb/ | references/subsystems/ArkWeb/ |
-| multimedia | @kit.MediaKit | test/xts/acts/multimedia/ | references/subsystems/multimedia/ |
-| ability | @kit.AbilityKit | test/xts/acts/ability/ | references/subsystems/ability/ |
+1. 每个 Phase 开始前，读取对应的 prompt 文件获取详细指令
+2. 严格按 Phase 顺序执行；强制 Phase（4、7）不可跳过
+3. 每个 Phase 完成后，更新 `phase_tracker` 状态
+4. 懒加载模块：仅读取当前 Phase 所需的参考文档和按需模块
+5. 遇到错误时，读取错误处理指南进行恢复
+6. **必读标记**：当 Phase prompt 中标注 `[必读]` 条件满足时，**必须先读取知识库文档再执行任何修复/操作**；禁止跳过文档进行试错
+7. **Issue 日志**：遇到问题时立即追加记录到 `session_issues_{日期}.md`，禁止延迟
+
+## Anti-Patterns
+
+### NEVER 使用未在.d.ts中声明的接口
+- **原因**：编译环境中不存在该接口，代码无法编译；且即使绕过编译检查，也无法验证真实的 API 行为（接口可能在不同版本有不同实现或被移除）
+- **正确做法**：仅使用.d.ts中明确声明的接口和参数
+
+### NEVER 修改BUILD.gn、build-profile.json5、oh-package.json5等项目配置文件
+- **原因**：这些配置文件是编译环境的基础，修改会导致编译环境损坏、已有测试失效，且影响共享同一环境的其他开发者
+- **正确做法**：仅在指定目录创建测试文件
+
+### NEVER 跳过Phase 7验证
+- **原因**：未验证的测试可能包含资源泄漏、无效断言、格式错误
+- **后果**：这些问题流入下游，修复成本指数级增长
+
+### NEVER 在测试用例中省略@tc注解
+- **原因**：@tc 是 OpenHarmony 统一规范要求，测试报告系统依赖 @tc 元数据进行用例的编号管理、归属追踪和质量统计，缺失会导致用例无法被识别和追溯
+- **正确做法**：每个测试用例必须有标准@tc块
+
+### NEVER 用非 camelCase 方式命名测试用例
+- **原因**：OpenHarmony XTS 测试套统一使用 `test[MethodName][Scenario][Number]` 格式（如 `testAddNull001`），详见 `references/conventions/test_conventions.md`。偏离此格式会导致与已有测试套风格不一致，影响用例的可读性和可维护性
+- **正确做法**：测试用例名称使用小驼峰 camelCase（首字母小写），包含方法名和场景描述
+
+### NEVER 硬编码系统路径或设备信息
+- **原因**：不同设备/环境下路径不同，硬编码导致测试不可移植
+- **正确做法**：使用框架提供的接口获取路径和设备信息
+
+### NEVER 在cleanup步骤中忽略异常
+- **原因**：资源未释放会影响后续测试执行
+- **正确做法**：cleanup中的异常必须捕获并记录，不能静默忽略
+
+### NEVER 为@throws声明以外的错误码构造测试
+- **原因**：401 是 SDK 公共错误码（不在 @throws 中声明），动态模式下入参类型错误、入参个数异常时自动抛出；17xxxxxx 等业务错误码在 @throws 中声明。两者来源不同，不可混淆
+- **正确做法**：ArkTS-Dyn 模式下，401 测试（传 null/错误类型/参数缺失）和 @throws 声明的业务错误码测试**都应生成**；ArkTS-Sta 模式下，401 不应测试（编译时已拦截类型错误，401 不会到达运行时）。禁止凭空编造 @throws 中未声明的业务错误码
+
+### NEVER 跳过 Phase 4 测试设计文档
+- **原因**：没有设计文档，Demo/UiTest/测试代码之间的控件 ID 契约无法保证，用例缺乏可追溯性
+- **正确做法**：Phase 4 在所有模式下（Flow A/B/C、ArkTS-Sta）都必须生成设计文档（`.design.md`），Phase 5 基于设计文档生成代码
+- **后果**：跳过会导致控件 ID 不一致、测试意图无法追溯。且无法通过 Phase 7 的 A.10/A.11 检查项
+
+### NEVER 跳过 Phase 2 before/after 覆盖率对比
+- **原因**：没有 before baseline 无法量化测试用例的覆盖率贡献
+- **正确做法**：Phase 2 执行 `extract_uncovered.py` 生成 before baseline，Phase 10 执行 `compare_uncovered.py` 对比
+
+### NEVER 不经备份直接修改 prebuilts 文件
+- **原因**：prebuilts 中的 SDK 和编译工具版本是编译环境的核心依赖，误删或覆盖将导致编译环境不可用
+- **正确做法**：先备份 `cp -r {目标路径} {目标路径}.bak.$(date +%Y%m%d_%H%M%S)`，再修改
+- **后果**：环境损坏后恢复耗时长，影响其他开发者
+
+### NEVER 为已废弃接口生成测试用例
+- **原因**：标记 @deprecated 的接口已被弃用，测试价值低且维护成本高
+- **正确做法**：跳过 @deprecated 接口（除非用户明确要求），依据 .d.ts 中的 @useinstead 使用新接口替代
+- **后果**：生成废弃接口测试浪费资源，且废弃接口可能在后续版本被移除
+
+### NEVER 在新生成的代码中调用已废弃接口
+- **原因**：废弃接口在后续版本可能被移除，生成的测试将无法维护
+- **正确做法**：参考历史代码时若发现 @deprecated 接口，在新生成的代码中使用已知的新接口替代（不修改历史代码）
+- **后果**：依赖废弃接口的测试用例在 SDK 升级后编译失败
+
+### NEVER 在ArkTS-Sta项目中使用 as any 类型断言
+- **原因**：`as any` 是动态语法特性，ArkTS-Sta 静态编译模式下不通过
+- **正确做法**：使用具体的类型声明或类型守卫（type guard）。参考 `ohos-dev-arkts-static-specification-reference` 技能转换语法
+- **后果**：静态编译失败，错误码 `ESE0143` 或 `ESE0046`
+
+### NEVER 直接调用APICoverageDetector可执行文件
+- **原因**：直接调用跳过了环境准备（文件复制、arkts_config.json 配置）和残留文件清理
+- **正确做法**：使用 `scripts/async_coverage_scan.py` 或 `scripts/manage_scan_env.py` 封装脚本
+- **后果**：扫描结果不准确或扫描失败
+
+### NEVER 在多版本模式下并行编译动态和静态测试套
+- **原因**：ets1.1 和 ets1.2 的 hvigor 版本不兼容，并行编译会导致编译失败
+- **正确做法**：串行编译 — 先完成 ets1.1 全流程（生成→注册→验证→编译通过），再切换 prebuilts 环境编译 ets1.2
+- **后果**：编译环境冲突，两个版本都无法通过
+
+### NEVER 跳过 prebuilts 环境切换直接编译静态版本
+- **原因**：未切换 prebuilts 时使用的是动态 SDK 的 hvigor（5.x），无法编译静态语法（ets1.2）
+- **正确做法**：按「多版本串行生成模式」的 prebuilts 切换流程操作，编译前验证 hvigor 版本
+- **后果**：编译失败，错误信息指向类型不兼容
+
+### NEVER 在静态版本测试中设计传 null/undefined 触发 401 的用例
+- **原因**：ArkTS-Sta（ets1.2）在编译时已检查参数类型，null/undefined 不会到达运行时的 401 错误码
+- **正确做法**：静态版本跳过 ERROR_401 类型测试，仅保留参数功能测试
+- **后果**：测试用例编译失败
+
+### NEVER 延迟创建 session_issues 日志
+- **原因**：延迟记录会导致 issue 上下文丢失（错误信息、Phase 状态、当时的环境），无法追溯
+- **正确做法**：Phase 1 步骤 0 立即创建 `session_issues_{日期}.md`，遇到问题时立即追加记录
+- **后果**：任务结束时无法准确复盘问题和优化
+
+### NEVER 在 Phase 9 设备测试后自动修复断言失败
+- **原因**：断言失败（assertEqual/assertTrue 等未通过）可能是被测接口自身的实现 bug，预期值来源于 .d.ts 接口声明和官方文档，具有权威性。自动修改断言会掩盖接口缺陷
+- **正确做法**：Phase 9 执行后仅可修复基础设施类问题（beforeAll/beforeEach 钩子异常、页面路由未注册、控件 ID 不匹配、done() 未调用、超时）。断言失败只记录实际值 vs 预期值差异并标注 `[疑似接口缺陷]`，由用户确认后才可修改
+- **后果**：自动修改断言会让接口 bug 被隐藏，失去测试的缺陷发现价值
 
 ## 分批执行模式（Batch Mode）
 
-当未覆盖 API 数量较多时（>20），支持分批生成测试用例（每批 ≤10 API）。详见 `prompts/batch-mode.md`。
+当未覆盖 API 数量较多时，支持分批生成测试用例。分批决策依据（API数量>20、复杂度高、跨模块、Context紧张→倾向分批）和分批经验（同模块同批、UI/非UI分开）详见 `prompts/batch-mode.md`。
 
-## APICoverageDetector 工具
+**覆盖率结果标签**（Phase 11 输出必须标注）：
 
-集成于 Phase 2/9，**仅支持 Windows 环境**。Linux 环境需用户提供扫描结果或跳过扫描。路径无效时向用户确认：1）更新路径；2）提供扫描结果（CSV/XLSX）；3）跳过扫描。详细用法见 `docs/ASYNC_COVERAGE_SCAN.md`，扫描流程见 `prompts/phase-2-coverage.md`。
+| 标签 | 含义 | 触发条件 |
+|------|------|---------|
+| `coverage verified` | before/after 对比完成，覆盖率提升已量化 | Flow A/B Phase 10 正常完成 |
+| `coverage report provided` | 用户提供了覆盖率报告 | Flow A 用户提供报告 |
+| `coverage scan skipped` | 扫描不可用，用户确认跳过 | Phase 2 用户选择跳过 |
+| `coverage: new API (baseline=0)` | 新增接口，生成前覆盖率为 0 | Flow C |
+
+**NEVER 将 `coverage scan skipped` 标注为 `coverage verified`**。
+
+> **会话连续性**：Issue 日志初始化和会话恢复已内嵌于 `prompts/phase-1-config-loading.md`（步骤 0）和 `prompts/phase-11-output.md`（会话收尾）。
 
 ## Documentation
 
-**所有文档路径使用 `{skill_root}/docs/` 前缀**，其中 `skill_root` 从配置文件读取。
-
-> **注意**：`docs/` 目录下的文件供**人类用户参考**，Agent 在执行期间**不加载**这些文件。如需特定知识（如异步扫描流程），请加载对应的 prompt 文件（如 `prompts/phase-2-coverage.md`）。
-
-| Doc | Path | Purpose |
-|-----|------|---------|
-| Usage Guide | `docs/USAGE.md` | 3 usage methods with examples |
-| Cross-Platform Config | `docs/CROSS_PLATFORM_CONFIG.md` | Cross-platform configuration with hvigor support |
-| Config Guide | `docs/CONFIG.md` | Configuration mechanism |
-| Troubleshooting | `docs/TROUBLESHOOTING.md` | 11 FAQ items |
-| Async Coverage Scan | `docs/ASYNC_COVERAGE_SCAN.md` | APICoverageDetector 工具详解 + 异步扫描流程 |
+> **注意**：`{skill_root}/docs/` 下的文件供**人类用户参考**，Agent 在执行期间**不加载**这些文件。如需特定知识（如异步扫描流程），请加载对应的 prompt 文件（如 `prompts/phase-2-coverage.md`）。

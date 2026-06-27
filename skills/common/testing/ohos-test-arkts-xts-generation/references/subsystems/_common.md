@@ -51,6 +51,8 @@
 | @tc 注释块 | 每个it()前必须包含完整JSDoc，字段与it()参数一致 | [test_conventions §3](../conventions/test_conventions.md#三jsdoc-注释规范) |
 | 断言方法 | 仅使用 Hypium 定义的23种方法，禁止编造 | [hypium_framework §二-三](../conventions/hypium_framework.md#二断言方法列表) |
 | 测试级别/类型/粒度 | Level0-4, TestType, Size 的枚举值和含义 | [hypium_framework §五-七](../conventions/hypium_framework.md#五测试级别说明) |
+| ETS 版本命名 | 目录名/bundleName/hap_name/用例名必须匹配 1.1/1.2/Interop 版本差异矩阵 | [ets_version_naming](../conventions/ets_version_naming.md) |
+| 工程配置关联 | Test.json module-name="entry"，test-file-name=hap_name，BUILD.gn 模板函数匹配 ETS 版本 | [project_structure](../conventions/project_structure.md) |
 
 ---
 

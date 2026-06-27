@@ -2,13 +2,13 @@
 
 ---
 
-### 📦 MANDATORY - 必须先加载以下模块
+### 📚 参考文档（按需查阅）
 
-**在执行本 Phase 前，你必须完整阅读以下文件**（不得设置行数限制）：
+本 Phase 执行过程中可参考以下文件，遇到具体问题时按需查阅：
 
-```
-{skill_root}/modules/L2_Generation/generator/design_doc_generator.md
-```
+| 文件 | 内容 | 何时查阅 |
+|------|------|---------|
+| `{skill_root}/modules/L2_Generation/generator/design_doc_generator.md` | 测试设计文档生成方法论（测试类型、边界条件、错误码映射） | 设计策略不确定、需要参考测试类型定义时 |
 
 ---
 
@@ -18,20 +18,9 @@
 
 ---
 
-### 🚫 Do NOT Load - 禁止加载
-
-本 Phase 期间禁止加载以下模块：
-
-```
-所有 L1_Analysis 模块（modules/L1_Analysis/）
-所有 L3_Validation 模块（modules/L3_Validation/）
-references/conventions/ 目录
-references/error_handling.md
-```
-
 ---
 
-**加载模块**: `modules/L2_Generation/generator/design_doc_generator.md`
+**加载模块**: `{skill_root}/modules/L2_Generation/generator/design_doc_generator.md`
 
 **关键变更**：此阶段专注于生成测试设计文档，不生成测试代码。设计文档将作为 Phase 5 生成测试用例代码的依据。
 
@@ -84,7 +73,7 @@ references/error_handling.md
 
    | 字段 | 说明 | 示例 |
    |------|------|------|
-   | 用例编号 | 唯一标识符，格式：`SUB_[子系统]_[模块]_[API]_[类型]_[序号]` | `SUB_ARKUI_COMPONENT_ONCLICK_PARAM_001` |
+   | 用例编号 | 唯一标识符，格式：`SUB_[子系统]_[模块]_[API]_[类型]_[序号]` | `SUB_ARKUI_COMPONENT_ONCLICK_PARAM_0100` |
    | 用例名 | 简洁描述 | `正常值参数测试` |
    | 预置条件 | 测试前需要满足的条件 | `已初始化测试环境，已导入 @kit.XXXKit` |
    | 测试步骤 | 详细步骤说明（必须精确可执行） | `1. 调用 methodA(param1="test", param2=100)\n2. 等待 Promise 返回` |
@@ -92,7 +81,7 @@ references/error_handling.md
    | 场景 | 测试场景分类 | `正常场景` / `异常场景` / `边界场景` |
    | 类型 | 测试类型 | `PARAM` / `ERROR` / `RETURN` / `BOUNDARY` / `EVENT` |
    | 级别 | 优先级 | `P0`（核心） / `P1`（重要） / `P2`（一般） |
-   | 依赖关系 | 依赖的其他用例 | `无` 或 `依赖 XXX_METHOD_PARAM_001` |
+   | 依赖关系 | 依赖的其他用例 | `无` 或 `依赖 XXX_METHOD_PARAM_0100` |
 
 > **设计文档准确性约束（重要！）**：
 > - 所有字段（参数名、参数类型、返回值类型、错误码）必须与 Phase 3 解析的 UnifiedAPIInfo **严格一致**
@@ -112,6 +101,11 @@ references/error_handling.md
    - 文件命名: `{测试文件名}.design.md`
    - 按接口/方法分组组织
    - 每个测试用例占用一个章节
+   - **必须包含以下章节（问题 8+9 约束）**：
+     1. **文件清单**表格：测试文件、Demo页面（标注"新建"或"复用"）、设计文档路径
+     2. **Demo页面设计**：页面路由、页面结构、组件数量、验证方式（`getInspectorByKey`）
+     3. **每个用例必须包含 `**组件id**` 字段**：值为 `getInspectorByKey('xxx')` 中使用的 id，三方（设计文档、Demo页面、测试代码）必须完全一致
+     4. **Demo页面组件清单**表格：组件id → API → 属性值 → 预期Inspector值
 
 ### 参数测试设计规则
 
@@ -130,6 +124,7 @@ references/error_handling.md
 - 每个错误码设计一个测试用例
 - 场景标记为"异常场景"
 - 级别根据上述三维度评估设置
+- **801 设备能力防护设计**：如果 API 的 `@throws` 声明了 801，设计文档中必须在"备注"列标注"含 801 设备能力防护"，提示 Phase 5 生成时为该 API 的所有用例包裹 801 防护逻辑
 
 ### 输出格式
 
@@ -138,17 +133,33 @@ references/error_handling.md
 ```markdown
 # {测试文件名} 测试设计文档
 
+## 文件清单
+
+| 文件 | 路径 | 说明 |
+|------|------|------|
+| 测试文件 | `{测试文件路径}` | {用例数}个测试用例 |
+| Demo页面（新建/复用） | `{页面文件路径}` | {独立Demo页面/复用历史页面}，包含{N}个带id的组件 |
+| 设计文档 | `{设计文档路径}` | 本文件 |
+
+## Demo页面设计
+
+- **页面路由**: `MainAbility/pages/XXX`
+- **页面结构**: {Scroll > Column / Column 等}
+- **组件数量**: {N}个
+- **验证方式**: `getInspectorByKey` + `$attrs` 属性断言
+
 ## 接口/方法 1: methodName
 
-### 测试用例 1: SUB_MODULE_METHOD_PARAM_001
+### 测试用例 1: SUB_MODULE_METHOD_PARAM_0100
 
 | 字段 | 内容 |
 |------|------|
-| 用例编号 | SUB_MODULE_METHOD_PARAM_001 |
+| 用例编号 | SUB_MODULE_METHOD_PARAM_0100 |
 | 用例名 | 正常值参数测试 |
+| **组件id** | `{component_id}` |
 | 预置条件 | 已初始化测试环境，已导入 @kit.XXXKit |
 | 测试步骤 | 1. 调用 methodA(param1="test", param2=100)\n2. 等待 Promise 返回\n3. 验证无异常 |
-| 预期结果 | 返回 void，无异常抛出 |
+| 预期结果 | `obj.$attrs.xxx === 'expected_value'` (精确断言表达式) |
 | 场景 | 正常场景 |
 | 类型 | PARAM |
 | 级别 | P0 |
@@ -156,7 +167,13 @@ references/error_handling.md
 
 ### 测试用例 2: SUB_MODULE_METHOD_PARAM_002
 
-...（后续用例）
+...（后续用例，每个用例都必须有 **组件id** 字段）
+
+## Demo页面组件清单
+
+| 组件id | API | 属性值 | 预期Inspector值 |
+|--------|-----|--------|----------------|
+| `{text_xxx_value}` | {API名} | {属性值} | {预期值} |
 
 ## 接口/方法 2: anotherMethod
 

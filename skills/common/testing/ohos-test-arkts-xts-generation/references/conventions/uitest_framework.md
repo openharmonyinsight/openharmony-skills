@@ -58,7 +58,7 @@ import { Driver, ON, BY, Component } from '@ohos.UiTest';
 ```typescript
 import { Driver } from '@ohos.UiTest';
 
-let driver: Driver = await Driver.create();
+let driver: Driver = Driver.create();
 ```
 
 ### 3.2 Driver 生命周期
@@ -67,9 +67,9 @@ let driver: Driver = await Driver.create();
 describe('ComponentTest', () => {
   let driver: Driver;
 
-  beforeAll(async (done: Function) => {
+  beforeAll(async (done: () => void) => {
     // 在所有测试前创建 Driver
-    driver = await Driver.create();
+    driver = Driver.create();
     done();
   });
 
@@ -261,7 +261,7 @@ describe('ComponentTest', () => {
   let driver: Driver;
 
   beforeEach(async () => {
-    driver = await Driver.create();
+    driver = Driver.create();
     await Utils.sleep(500);
   });
 
@@ -289,8 +289,8 @@ export default function testsuite() {
 
 ```typescript
 // ⚠️ 可以在 it() 中创建 Driver，但多个 it() 使用时推荐共享
-it('test001', Level.LEVEL1, async (done: Function) => {
-  let driver = await Driver.create();
+it('test001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, async (done: () => void) => {
+  let driver = Driver.create();
   const component = await driver.findComponent(ON.id('xxx'));
   // Driver 使用完成后自动销毁，无需手动关闭
   done();
@@ -340,10 +340,10 @@ const component = await driver.waitForComponent(ON.id('button-not-exist'), 2000)
 ```typescript
 import Utils from '../common/Utils';
 
-beforeAll(async (done: Function) => {
+beforeAll(async (done: () => void) => {
   await Utils.pushPage('MainAbility/pages/ComponentTestPage', done);
   await Utils.sleep(1000);
-  driver = await Driver.create();
+  driver = Driver.create();
   await Utils.sleep(1000);
   done();
 });
@@ -356,7 +356,7 @@ beforeAll(async (done: Function) => {
 ### 10.1 组件属性测试
 
 ```typescript
-it('testComponentProperty001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async (done: Function) => {
+it('testComponentProperty001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async (done: () => void) => {
   const component = await driver.waitForComponent(ON.id('text-id'), 2000);
 
   if (component) {
@@ -373,7 +373,7 @@ it('testComponentProperty001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL
 ### 10.2 组件点击测试
 
 ```typescript
-it('testComponentClick001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async (done: Function) => {
+it('testComponentClick001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async (done: () => void) => {
   const component = await driver.waitForComponent(ON.id('button-id'), 2000);
 
   if (component) {
@@ -393,7 +393,7 @@ it('testComponentClick001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, 
 ### 10.3 文本输入测试
 
 ```typescript
-it('testTextInput001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async (done: Function) => {
+it('testTextInput001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async (done: () => void) => {
   const component = await driver.waitForComponent(ON.id('input-id'), 2000);
 
   if (component) {

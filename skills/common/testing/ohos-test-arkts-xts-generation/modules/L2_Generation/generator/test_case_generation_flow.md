@@ -280,7 +280,7 @@ if (subsystem === 'testfwk') {
 ```typescript
 /**
  * @tc.name testInputTextNull401
- * @tc.number SUB_testfwk_Component_inputText_ERROR_401_001
+ * @tc.number SUB_testfwk_Component_inputText_ERROR_401_0100
  * @tc.desc Test inputText with null parameter - 401
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
@@ -318,7 +318,7 @@ it('testInputTextNull401', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, a
 ```typescript
 /**
  * @tc.name testScrollToTopOptionalParam
- * @tc.number SUB_testfwk_Component_scrollToTop_PARAM_001
+ * @tc.number SUB_testfwk_Component_scrollToTop_PARAM_0100
  * @tc.desc Test scrollToTop with optional parameter
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
@@ -332,10 +332,8 @@ it('testScrollToTopOptionalParam', TestType.FUNCTION | Size.MEDIUMTEST | Level.L
   try {
     let driver = Driver.create();
     let component = await driver.findComponent(ON.type('List'));
-    // 可选参数传入 null，预期不抛出错误
+    // 可选参数传入 null，预期不抛出错误；正常执行即通过，由 catch 中的 assertFail 做失败保护
     await component.scrollToTop(null);
-    // 正常执行
-    expect(true).assertTrue();
   } catch (error) {
     expect().assertFail();
   }

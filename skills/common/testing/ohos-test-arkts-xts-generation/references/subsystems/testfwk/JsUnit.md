@@ -228,7 +228,7 @@ grep -r "MockKit" ${OH_ROOT}/docs/
 ```typescript
 /**
  * @tc.name JsUnitTestSuite001
- * @tc.number SUB_ARKXTEST_JSUNIT_SUITE_001
+ * @tc.number SUB_ARKXTEST_JSUNIT_SUITE_0100
  * @tc.desc 测试 JsUnit 测试套件功能
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
@@ -245,7 +245,7 @@ describe('JsUnit API Test', () => {
 
   /**
    * @tc.name testMethod001
-   * @tc.number SUB_ARKXTEST_JSUNIT_METHOD_001
+   * @tc.number SUB_ARKXTEST_JSUNIT_METHOD_0100
    * @tc.desc 测试 JsUnit 方法功能
    */
   it('testMethod001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
@@ -258,10 +258,12 @@ describe('JsUnit API Test', () => {
 
 ### Mock 测试模板（核心）
 
+> **语法模式**：ArkTS-Dyn（动态语法）
+
 ```typescript
 /**
  * @tc.name testMockVerify001
- * @tc.number SUB_ARKXTEST_JSUNIT_MOCK_001
+ * @tc.number SUB_ARKXTEST_JSUNIT_MOCK_0100
  * @tc.desc 测试 MockKit 对象验证
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
@@ -288,29 +290,34 @@ it('testMockVerify001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () =
 
 ### 条件生命周期模板（特有）
 
+> **语法模式**：ArkTS-Dyn（动态语法）
+
 ```typescript
 /**
  * @tc.name testBeforeItSpecified001
- * @tc.number SUB_ARKXTEST_JSUNIT_CONDITIONAL_LIFECYCLE_001
+ * @tc.number SUB_ARKXTEST_JSUNIT_CONDITIONAL_LIFECYCLE_0100
  * @tc.desc 测试条件生命周期钩子
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
  * @tc.level LEVEL2
  */
 describe('Conditional Lifecycle Test', () => {
+  let setupRan = false;
+
   // 仅在指定测试用例前执行
   beforeItSpecified(['testSpecialCase'], () => {
     console.log('Setup for special test case');
+    setupRan = true;
   });
 
   it('testNormalCase', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL1, () => {
     // 不会触发 beforeItSpecified
-    expect(true).assertTrue();
+    expect(setupRan).assertFalse();
   });
 
   it('testSpecialCase', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () => {
     // 会触发 beforeItSpecified
-    expect(true).assertTrue();
+    expect(setupRan).assertTrue();
   });
 });
 ```
@@ -320,7 +327,7 @@ describe('Conditional Lifecycle Test', () => {
 ```typescript
 /**
  * @tc.name testPromiseAssertion001
- * @tc.number SUB_ARKXTEST_JSUNIT_PROMISE_001
+ * @tc.number SUB_ARKXTEST_JSUNIT_PROMISE_0100
  * @tc.desc 测试 Promise 断言
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
@@ -337,10 +344,12 @@ it('testPromiseAssertion001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2
 
 ### SysTestKit 工具类模板
 
+> **语法模式**：ArkTS-Dyn（动态语法）
+
 ```typescript
 /**
  * @tc.name testSysTestKit001
- * @tc.number SUB_ARKXTEST_JSUNIT_SYSTESTKIT_001
+ * @tc.number SUB_ARKXTEST_JSUNIT_SYSTESTKIT_0100
  * @tc.desc 测试 SysTestKit 工具类
  * @tc.type FUNCTION
  * @tc.size MEDIUMTEST
@@ -361,7 +370,7 @@ it('testSysTestKit001', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL2, () =
   SysTestKit.actionEnd('API_CALL');
 
   // 验证结果
-  expect(result).assertNotNull();
+  expect(result).not().assertNull();
 });
 ```
 
