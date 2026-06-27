@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "pr": {
+    "number": 102,
+    "repo": "openharmony/demo_service",
+    "title": "Clarify cache hit log"
+  },
+  "files": [
+    {
+      "path": "src/metrics_logger.cpp",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1,
+      "commentable_lines": [
+        8
+      ],
+      "hunks": [
+        {
+          "old_start": 5,
+          "old_lines": 5,
+          "new_start": 5,
+          "new_lines": 5
+        }
+      ]
+    }
+  ]
+}

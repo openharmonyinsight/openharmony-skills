@@ -1,0 +1,87 @@
+schemaVersion: 1
+
+id: ohos-dev-arkui-build-error-analyzer
+title: ArkUI 编译错误分析
+summary: 分析 ACE Engine 的编译、链接和 GN/Ninja 构建错误，基于 last_error.log 给出根因和修复建议。
+
+category:
+  scope: domain
+  namespace: arkui
+  stage: development
+  domain: arkui
+  capability: build-error-analyzer
+
+status:
+  maturity: trial
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - arkui
+  - ace-engine
+  - build-error
+  - linker-error
+  - gn
+  - ninja
+
+audience:
+  - ArkUI ACE Engine 开发者
+  - OpenHarmony 编译问题定位人员
+  - 负责修复构建门禁失败的维护者
+
+useCases:
+  - title: 分析 ACE Engine 编译错误
+    description: 从 build.log 提取 last_error.log 后识别语法、缺头文件、不完整类型等 C++ 编译问题。
+  - title: 分析链接 undefined symbol
+    description: 判断缺少实现文件、未加入 BUILD.gn、符号未导出或 libace.map 白名单缺失等场景。
+  - title: 分析 GN/Ninja 构建系统问题
+    description: 识别 GN 配置、source_set、测试目标缺失和特殊平台导出属性问题。
+
+whenToUse:
+  - ArkUI ACE Engine 构建失败，需要分析 build.log 或 last_error.log。
+  - 日志中包含 ld.lld undefined symbol、incomplete type、redefinition、GN error 或 Ninja stopped 等错误。
+  - 需要基于错误类型给出文件、根因、修复方式和验证命令。
+  - 需要分析测试链接失败、libace 符号导出或 MinGW dllexport 不一致。
+
+whenNotToUse:
+  - 需求是选择构建命令或执行 ACE Engine 编译，而不是分析错误。
+  - 构建目标不是 ArkUI ACE Engine 或相关库。
+  - 用户要求自动修改源码；该 Skill 只提供分析和修复建议。
+
+inputs:
+  required:
+    - OpenHarmony 构建输出目录。
+    - out/<product>/build.log 或已提取的 last_error.log。
+  optional:
+    - 目标产品名和构建目标。
+    - 相关变更文件或 PR diff。
+    - 出错符号、文件路径或任务片段。
+
+outputs:
+  - 编译、链接或构建系统错误分类。
+  - 根因分析和影响说明。
+  - 带文件路径、代码片段或 BUILD.gn 调整方向的修复建议。
+  - 推荐验证命令和后续排查步骤。
+
+quickStart:
+  steps:
+    - 准备 ACE Engine 构建失败后的 out/<product>/build.log。
+    - 使用提取脚本生成 last_error.log，或提供现有 last_error.log。
+    - 请求 Agent 使用该 Skill 按错误类型分析根因并给出修复建议。
+  examplePrompt: |
+    请使用 ohos-dev-arkui-build-error-analyzer 分析 out/rk3568/build.log，
+    重点看 undefined symbol 和相关 BUILD.gn 修复建议。
+
+related:
+  skills:
+    - ohos-dev-arkui-ace-engine-build
+    - ohos-dev-arkui-header-optimization
+  docs:
+    - title: undefined symbol 缺少源码文件
+      path: references/undefined-symbol-missing-cpp.md
+    - title: libace.map 符号导出
+      path: references/symbol-export-libace-map.md
+    - title: RefPtr 前向声明
+      path: references/forward-declaration-refptr-member.md
+    - title: 测试缺少源码文件
+      path: references/test-missing-source-files.md

@@ -1,0 +1,87 @@
+schemaVersion: 1
+
+id: ohos-dev-arkui-header-optimization
+title: ArkUI 头文件依赖优化
+summary: 优化 ACE Engine C++ 头文件依赖，通过移除无用 include、前向声明和拆分轻量头降低编译成本。
+
+category:
+  scope: domain
+  namespace: arkui
+  stage: development
+  domain: arkui
+  capability: header-optimization
+
+status:
+  maturity: trial
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - arkui
+  - ace-engine
+  - header-optimization
+  - include
+  - forward-declaration
+  - cpp
+
+audience:
+  - ArkUI ACE Engine C++ 开发者
+  - 编译性能优化人员
+  - 头文件依赖治理人员
+
+useCases:
+  - title: 减少头文件 include 依赖
+    description: 识别无用 include、冗余 include 和可改为前向声明的依赖。
+  - title: 抽出内联实现或轻量类型头
+    description: 将较重 inline 实现迁移到 .cpp，或把枚举和常量拆分到轻量头文件。
+  - title: 优化后验证单文件编译
+    description: 每一步结构优化后用单文件编译和依赖分析确认没有破坏构建。
+
+whenToUse:
+  - 需要优化 ACE Engine C++ 头文件、减少依赖或降低编译时间。
+  - 用户提到 optimize header、forward declaration、减少依赖、头文件编译开销。
+  - 需要分析某个头文件中 include 的使用方式并选择优化策略。
+  - 需要结合编译效率分析做优化前后验证。
+
+whenNotToUse:
+  - 目标不是 ACE Engine C++ 头文件。
+  - 需求是修改业务逻辑、功能行为或公共接口语义。
+  - 需求是分析构建失败日志，而不是优化头文件依赖结构。
+
+inputs:
+  required:
+    - 待优化的 ACE Engine 头文件路径。
+    - 对应 .cpp 文件或可执行单文件编译环境。
+  optional:
+    - 编译效率基线数据。
+    - include 初筛脚本输出。
+    - 目标文件的依赖树和相关构建错误。
+
+outputs:
+  - include 使用分类和可优化项列表。
+  - 具体优化策略，如移除 include、前向声明、抽出 inline、拆分 constants/types。
+  - 修改后需要验证的编译命令。
+  - 建议审查和暂存的文件清单。
+
+quickStart:
+  steps:
+    - 准备待优化头文件和对应 ACE Engine 构建环境。
+    - 先使用编译分析或 include 初筛脚本建立基线。
+    - 按移除无用 include、前向声明、抽出 inline、拆分轻量头的顺序小步优化并验证。
+  examplePrompt: |
+    请使用 ohos-dev-arkui-header-optimization 优化 frameworks/core/components_ng/base/example.h，
+    目标是减少 include 依赖，并用单文件编译验证每一步改动。
+
+related:
+  skills:
+    - ohos-dev-arkui-compile-analysis
+    - ohos-dev-arkui-build-error-analyzer
+  docs:
+    - title: click_event 前向声明案例
+      path: references/case-click_event-forward-declaration.md
+    - title: drag_event include 缩减案例
+      path: references/case-drag-event-include-reduction.md
+    - title: drag_drop 前向声明案例
+      path: references/case-drag-drop-forward-declaration.md
+    - title: 枚举拆分案例
+      path: references/case-split-enums.md

@@ -50,7 +50,7 @@ CURRENT_BRANCH=$(git branch --show-current)
 
 # ===== 执行步骤 =====
 # 1. 安装 oh-gc CLI（如未安装）
-npm install -g @oh-gc/cli@0.7.5 2>/dev/null
+npm install -g @oh-gc/cli@latest 2>/dev/null
 
 # 2. 检查 oh-gc 认证
 oh-gc auth status || oh-gc auth login
@@ -107,7 +107,7 @@ oh-gc pr create \
 
 ```bash
 # 检查是否已安装
-which oh-gc || npm install -g @oh-gc/cli@0.7.5
+which oh-gc || npm install -g @oh-gc/cli@latest
 
 # 如果 npm 全局路径不在 PATH 中，使用完整路径
 OH_GC="/home/user/.npm-global/bin/oh-gc"

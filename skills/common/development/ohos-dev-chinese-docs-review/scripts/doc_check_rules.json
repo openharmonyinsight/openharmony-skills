@@ -1,0 +1,24 @@
+{
+  "model_text": {
+    "famodelonly": [
+      "**模型约束**：此接口仅可在FA模型下使用。",
+      "**模型约束：** 此接口仅可在FA模型下使用。"
+    ],
+    "stagemodelonly": [
+      "**模型约束**：此接口仅可在Stage模型下使用。",
+      "**模型约束：** 此接口仅可在Stage模型下使用。"
+    ]
+  },
+  "system_title_marker": "(系统接口)",
+  "mixed_module_note": "当前页面仅包含本模块的系统接口",
+  "error_required_blocks": [
+    "**错误信息**",
+    "**错误描述**",
+    "**可能原因**",
+    "**处理步骤**"
+  ],
+  "forbidden_permission_connectors": [
+    "and",
+    "or"
+  ]
+}

@@ -1,0 +1,226 @@
+{
+  "skill_name": "ohos-dev-arkweb-build-execution-diagnosis",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "我在 ArkWeb 工程的某个子目录里，想编译默认 WebView 产物。请你判断应该在哪里执行命令、用什么命令、怎么判断这是首次构建还是增量构建。如果失败，先看哪个日志？",
+      "expected_output": "Finds the ArkWeb wrapper root by requiring both build_arkweb.sh and src/arkweb/build/build.sh, runs cd <arkweb-root>; ./build_arkweb.sh rk3568_64 -t w -A, checks whether src/out/rk3568_64/build.log already exists to distinguish first build from incremental build, warns first builds may take 2 to 3 hours, and diagnoses failures from <arkweb-root>/src/out/rk3568_64/build.log.",
+      "files": [],
+      "expectations": [
+        "The response identifies the wrapper root by checking for both build_arkweb.sh and src/arkweb/build/build.sh.",
+        "The build command is run from the ArkWeb wrapper root, not from src/.",
+        "The default WebView command is ./build_arkweb.sh rk3568_64 -t w -A.",
+        "The response checks src/out/rk3568_64/build.log to distinguish first build from incremental build.",
+        "If build.log is missing, the response treats it as likely first build and calls out the 2 to 3 hour duration.",
+        "The primary failure log is <arkweb-root>/src/out/rk3568_64/build.log.",
+        "The response does NOT mislabel a first build as a normal short incremental build.",
+        "The response does NOT run build_arkweb.sh from <arkweb-root>/src."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "工作流上下文里已经给了 context.automation.buildCommands 和 verifyCommands，里面指定了 product、target 和超时时间。你是否还应该用默认的 ./build_arkweb.sh rk3568_64 -t w -A？",
+      "expected_output": "Preserves workflow-provided buildCommands, verifyCommands, buildTarget, buildOutputDir, and buildTimeoutMinutes when present, using defaults only for missing configuration, and does not replace the user's configured product/target/timeout with rk3568_64 -t w -A.",
+      "files": [],
+      "expectations": [
+        "The response gives precedence to context.automation.buildCommands.",
+        "The response gives precedence to context.automation.verifyCommands.",
+        "The response preserves context.automation.buildTarget, buildOutputDir, and buildTimeoutMinutes when present.",
+        "Defaults are used only when workflow configuration is incomplete.",
+        "The response does NOT override a configured product or target with rk3568_64 -t w -A.",
+        "The response asks or reports missing configuration instead of silently inventing incompatible defaults.",
+        "The response still records the exact command and working directory it will use."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "请给我 ArkWeb 常见构建命令：默认 native、BrowserShell、WebView、coreut 单测、release native、ASan native。顺便说明 product 到 out 目录的关系。",
+      "expected_output": "Provides wrapper-root commands using ./build_arkweb.sh with product rk3568_64 by default: -t n -A for native, -t b -A for BrowserShell, -t w -A for WebView, -t coreut for core unit tests, -t n -A -r for release native, and -t n -A -asan for ASan. Maps rk3568, rk3568_64, musl_64, and x86_64 to src/out/<product>/.",
+      "files": [],
+      "expectations": [
+        "The response states commands must run from the ArkWeb wrapper root.",
+        "Default native command uses ./build_arkweb.sh rk3568_64 -t n -A.",
+        "BrowserShell command uses ./build_arkweb.sh rk3568_64 -t b -A.",
+        "WebView command uses ./build_arkweb.sh rk3568_64 -t w -A.",
+        "Core unit test command uses the coreut target alias.",
+        "Release native command includes -r with -t n -A.",
+        "ASan native command includes -asan with -t n -A.",
+        "The response maps product output directories to src/out/rk3568, src/out/rk3568_64, src/out/musl_64, and src/out/x86_64.",
+        "The response does NOT use OpenHarmony ./build.sh commands for ArkWeb wrapper builds."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "ArkWeb 编译失败了，build_arkweb.sh 返回非 0。请根据输入的 build.log 样例判断失败阶段，并说明下一步诊断和修复策略。",
+      "expected_output": "Starts from the provided build.log sample and <arkweb-root>/src/out/rk3568_64/build.log, runs or references analyze_build_error.sh/find_recent_errors.sh, classifies the sample as pre-gn/sdk-lfs because it shows missing SDK packages and archive extraction errors before GN/Ninja, and chooses an LFS/setup rerun strategy rather than source-code edits.",
+      "files": [
+        "evals/files/stage-classification-build.log"
+      ],
+      "expectations": [
+        "The response uses <arkweb-root>/src/out/rk3568_64/build.log as the primary log.",
+        "The response uses scripts/analyze_build_error.sh for structured stage classification.",
+        "The response may use scripts/find_recent_errors.sh for quick recent-error scanning.",
+        "The response classifies the provided sample as pre-gn/sdk-lfs.",
+        "The response cites the package-missing and gzip/tar extraction lines as evidence.",
+        "The response recognizes gn-generation and ninja-graph-or-target stages.",
+        "The response recognizes ninja-compile-link failures.",
+        "The response recognizes explicit resource-or-terminated and suspected silent resource-stop cases.",
+        "The rerun strategy for this sample checks or restores SDK/LFS assets before rerunning the configured build command.",
+        "The response does NOT suggest editing unrelated C++ source for this sample.",
+        "The response does NOT diagnose from terminal tail alone when build.log exists."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "最近 ArkWeb 编译失败。请根据输入的 raw status 和 build.log 片段，说明哪些变更应当优先看、哪些是默认 dirty 噪声，以及为什么。",
+      "expected_output": "Runs bash <skill-dir>/scripts/show_relevant_changes.sh <arkweb-root> first, filters known default dirty entries, inspects src and src/arkweb as separate git repositories, treats arkweb/components/foo/foo.cc and arkweb/components/foo/BUILD.gn as relevant because build.log points to foo.cc, treats the listed rust/ohos_ndk/search_engines entries as default noise, and only broadens the search if current changes do not explain the failure.",
+      "files": [
+        "evals/files/relevant-changes-sample.txt"
+      ],
+      "expectations": [
+        "The response starts with scripts/show_relevant_changes.sh <arkweb-root> to filter expected dirty entries.",
+        "The response knows src and src/arkweb are different git repositories and checks them separately.",
+        "The response can fall back to git -C <arkweb-root>/src status/diff and git -C <arkweb-root>/src/arkweb status/diff.",
+        "The response filters known default dirty entries such as third_party/rust-toolchain, third_party/rust/chromium_crates_io, selected ohos_ndk/hap entries, and arkweb build/search_engines/prepopulated_engines.json.",
+        "The response identifies arkweb/components/foo/foo.cc and arkweb/components/foo/BUILD.gn as relevant changes from the sample.",
+        "The response identifies browser/feature/demo_controller.cc as a separate src/arkweb repo change rather than mixing it into src repo results.",
+        "The response correlates the failing file, target, or missing symbol from build.log with current developer changes first.",
+        "If the current patch explains the failure, the response keeps the fix near the changed code or dependency declaration.",
+        "The response does NOT treat default dirty entries as developer edits.",
+        "The response does NOT start by searching unrelated directories when current changes already explain the failure."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "ArkWeb 构建早期报 SDK 解压失败。请根据输入的 .install、.gitattributes 和文件内容样例，判断是不是 LFS 资源问题。能不能直接改 src/ohos_sdk/.install 或 SDK 脚本？",
+      "expected_output": "Classifies this as pre-gn/sdk-lfs, runs check_lfs_artifacts.sh, inspects src/.gitattributes, src/ohos_sdk/.gitattributes, src/third_party/ohos_ndk/.gitattributes, and src/ohos_sdk/.install, recognizes the sample archive content as a Git LFS pointer, prioritizes packages listed in .install, restores project-local LFS assets via git lfs pull or repo forall -c 'git lfs pull', and does not patch src/ohos_sdk/ scripts or archives.",
+      "files": [
+        "evals/files/lfs-artifact-sample.txt"
+      ],
+      "expectations": [
+        "The response classifies archive extraction/package-missing failures before GN/Ninja as pre-gn/sdk-lfs.",
+        "The response runs or recommends scripts/check_lfs_artifacts.sh <arkweb-root>.",
+        "The response inspects src/.gitattributes and src/ohos_sdk/.gitattributes.",
+        "The response treats src/ohos_sdk/.install as the authoritative current package list.",
+        "The response checks whether failing archives are Git LFS pointer files.",
+        "The response recognizes the sample version https://git-lfs.github.com/spec/v1 content as an LFS pointer.",
+        "The response prioritizes current packages from .install before secondary third_party/ohos_ndk clues.",
+        "The allowed fix restores project-local LFS assets, such as git -C <arkweb-root>/src lfs pull or repo forall -c 'git lfs pull'.",
+        "The response does NOT edit files under src/ohos_sdk/ as a workaround.",
+        "The response does NOT modify global server files or unrelated checkout files."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "请根据输入的 build.log 片段判断：修完源码或 BUILD.gn 后，能不能直接跑 FAILED 后面的命令验证？在哪个目录跑？之后还要做什么？",
+      "expected_output": "Allows rerunning the exact failed compiler/linker command only because the provided sample is a ninja-compile-link failure, runs the clang++ command shown after the first FAILED line from <arkweb-root>/src/out/<product> because the command is relative to the Ninja output directory, treats it as a fast local check, then captures a new resource snapshot and reruns the full configured build_arkweb.sh command from <arkweb-root> or the same direct Ninja target set from <arkweb-root>/src.",
+      "files": [
+        "evals/files/compile-link-build.log"
+      ],
+      "expectations": [
+        "The response says single failed-command verification is only for ninja-compile-link failures.",
+        "The failed compiler/linker command must be the exact command shown after the first FAILED line.",
+        "The response extracts or references the clang++ command from the provided sample.",
+        "The command is run from <arkweb-root>/src/out/<product>, not from wrapper root or src.",
+        "The single command is treated as a fast local check, not final verification.",
+        "After the fast check succeeds, the response records a fresh resource snapshot.",
+        "Final broader verification reruns the configured build_arkweb.sh command from <arkweb-root>.",
+        "If using direct Ninja afterward, it runs from <arkweb-root>/src and uses the same target set.",
+        "The response does NOT use this single-command strategy for GN generation, SDK/LFS setup, or Ninja graph failures."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "请根据输入的 GN/Ninja 错误日志判断失败阶段，说明怎么修和验证。能不能直接跑 clang++ 那条命令？",
+      "expected_output": "Classifies ERROR at //... as gn-generation and unknown target/build.ninja graph errors as ninja-graph-or-target, checks target names, dependency paths, and src/out/<product>/args.gn, fixes GN/target wiring, reruns the configured build command or same target set, and does not run a single clang++/linker command because no compiler/linker command is valid for these stages.",
+      "files": [
+        "evals/files/gn-target-build.log"
+      ],
+      "expectations": [
+        "The response classifies ERROR at //... / Unable to load as gn-generation.",
+        "The response classifies ninja unknown target or graph loading errors as ninja-graph-or-target.",
+        "The response cites the missing BUILD.gn dependency and unknown target from the provided sample.",
+        "The response checks target names and dependency paths in BUILD.gn or .gni.",
+        "The response inspects src/out/<product>/args.gn to confirm product/build settings.",
+        "The response fixes GN configuration or target wiring rather than source code unrelated to the GN error.",
+        "Verification reruns the configured build command or the same intended target set after graph regeneration.",
+        "The response explicitly says not to use the single clang++/linker-command verification path for these stages.",
+        "The response does NOT switch products or random targets without user approval."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "ArkWeb 编译跑着跑着进程没了。请根据输入的 build.log 尾部和 resource snapshot，判断是不是资源压力，并说明下一步怎么跑。",
+      "expected_output": "Classifies the case as resource-or-terminated-suspected because the build.log tail only shows Ninja progress with no FAILED or ERROR at, inspects the latest resource snapshot under src/out/<product>/resource_snapshots/, correlates high load, low CPU idle, low MemAvailable, and zero SwapFree, and suggests rerunning with lower parallelism such as -j 32 then -j 16 before making unrelated code changes.",
+      "files": [
+        "evals/files/silent-stop-build.log",
+        "evals/files/resource-snapshot-before-ninja.txt"
+      ],
+      "expectations": [
+        "The response classifies silent stop with Ninja-looking tail and no FAILED/GN error as resource-or-terminated-suspected.",
+        "The response checks the latest resource snapshot under src/out/<product>/resource_snapshots/.",
+        "The response cites high load, low CPU idle, low MemAvailable, or zero SwapFree from the provided snapshot.",
+        "If no snapshot exists, the response records one before the next build or Ninja phase using scripts/capture_resource_snapshot.sh.",
+        "The response uses CPU idle/load average, MemAvailable, SwapFree, and top consumers as evidence.",
+        "The response suggests lowering parallelism proactively, typically to -j 32 and then -j 16 if needed.",
+        "The response does NOT invent a source-code cause without compiler/linker/GN evidence.",
+        "The response does NOT clean the tree as the first response to a silent stop."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "请根据输入的 direct Ninja 上下文判断：src/out/rk3568_64/args.gn 已经存在，我是在继续同一个失败的增量构建。能不能不用 build_arkweb.sh，直接 ninja？如果可以，在哪跑，目标怎么选？",
+      "expected_output": "Allows direct Ninja only when output is already configured and this is the same incremental build, runs from <arkweb-root>/src with third_party/depot_tools/ninja -C out/rk3568_64 <targets>, reuses the same target set from the previous build (for default WebView usually ohos_nweb_hap; for native usually adapter_ndk_stub libarkweb_engine libarkweb_render arkweb_crashpad_handler libffmpeg), and does not switch to random single targets to hide build_arkweb.sh failures.",
+      "files": [
+        "evals/files/direct-ninja-context.txt"
+      ],
+      "expectations": [
+        "The response allows direct Ninja only because args.gn exists and the user is continuing the same incremental build.",
+        "The direct Ninja command runs from <arkweb-root>/src.",
+        "The command uses third_party/depot_tools/ninja -C out/rk3568_64 <targets>.",
+        "The response reuses the same target set as the previous build.",
+        "For default WebView, the response identifies ohos_nweb_hap as the usual continuation target.",
+        "For default native, the response identifies adapter_ndk_stub, libarkweb_engine, libarkweb_render, arkweb_crashpad_handler, and libffmpeg as the usual target set.",
+        "The response uses the provided previous WebView command to choose ohos_nweb_hap rather than a random target.",
+        "The response records a resource snapshot before direct Ninja.",
+        "The response does NOT switch to direct Ninja just to hide a build_arkweb.sh failure.",
+        "The response does NOT choose a random unrelated single target."
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "ArkWeb 构建失败后，你默认要不要只输出错误摘要就结束？你能改哪些文件，哪些地方明确不能动？",
+      "expected_output": "States that the default loop is diagnose -> root-cause analysis -> allowed minimal fix -> rebuild -> reverify. Allowed fixes are inside the current ArkWeb tree, including source, BUILD.gn/.gni, ArkWeb-owned scripts/config, project-local LFS assets, or build target/resume/parallelism. It must not modify src/ohos_sdk/ toolchains/SDK archives/install scripts, server files outside the current project, global environment files, system directories, or unrelated user-home files.",
+      "files": [],
+      "expectations": [
+        "The response states the default expectation is to continue beyond error extraction into fix and reverify.",
+        "The response allows modifying source files inside the current ArkWeb tree.",
+        "The response allows modifying BUILD.gn/.gni and ArkWeb-owned build scripts/config inside the current project.",
+        "The response allows restoring missing project-local Git LFS assets.",
+        "The response allows adjusting build target, resume strategy, or parallelism when justified.",
+        "The response forbids modifying toolchains, SDK archives, install scripts, or other prebuilt payloads under src/ohos_sdk/.",
+        "The response forbids modifying server files outside the current project, global environment files, system directories, or unrelated home-directory files.",
+        "If only a forbidden-area bypass would work, the response calls out the constraint and switches to in-project alternatives.",
+        "The response does NOT use git clean, git reset --hard, rm -rf src/out, gn clean, ninja -t clean, or dependency resync automatically."
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "你完成一次 ArkWeb 构建或失败诊断后，最终回复里最少应该包含哪些关键信息？",
+      "expected_output": "Reports the exact command used, working directory, product and target, exit status, log path checked, failure type and location if failed, and the minimal next fix or next command. It also includes whether the run was first-build or incremental when relevant and any resource/LFS/change-first evidence used.",
+      "files": [],
+      "expectations": [
+        "The final answer includes the exact command used.",
+        "The final answer includes the working directory.",
+        "The final answer includes product and target.",
+        "The final answer includes exit status.",
+        "The final answer includes the log path checked.",
+        "If failed, the final answer includes failure type and concrete location.",
+        "The final answer includes the minimal next fix or next command.",
+        "When relevant, the final answer includes first-build versus incremental-build status.",
+        "When relevant, the final answer includes resource snapshot, LFS, or change-first evidence.",
+        "The response does NOT provide only a vague summary such as 'build failed, check logs'."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "ok": true,
+  "pr": {
+    "number": 101,
+    "repo": "openharmony/demo_service",
+    "title": "Avoid expiring sessions without explicit timeout"
+  },
+  "files": [
+    {
+      "path": "src/session_manager.cpp",
+      "status": "modified",
+      "additions": 4,
+      "deletions": 1,
+      "commentable_lines": [
+        17,
+        18,
+        19,
+        20
+      ],
+      "hunks": [
+        {
+          "old_start": 13,
+          "old_lines": 7,
+          "new_start": 13,
+          "new_lines": 10
+        }
+      ]
+    }
+  ]
+}

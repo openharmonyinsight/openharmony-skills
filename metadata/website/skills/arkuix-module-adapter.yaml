@@ -1,0 +1,98 @@
+schemaVersion: 1
+
+id: arkuix-module-adapter
+title: ArkUIX 模块跨平台适配
+summary: 指导 OpenHarmony 模块适配到 Android 和 iOS，覆盖信息收集、DTS 分析、架构分析、方案推荐和实现生成。
+
+category:
+  scope: domain
+  namespace: arkui
+  stage: development
+  domain: arkui
+  capability: module-adapter
+
+status:
+  maturity: trial
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - arkui
+  - arkuix
+  - cross-platform
+  - module-adapter
+  - dts-analysis
+  - architecture-analysis
+
+audience:
+  - ArkUIX 跨平台适配开发者
+  - OpenHarmony 子系统模块维护者
+  - Android 和 iOS 平台适配人员
+
+useCases:
+  - title: 评估 OHOS 模块跨平台适配方案
+    description: 根据模块类型、DTS 覆盖率、代码复用比例和平台依赖选择 OHOS Reuse、Hybrid 或 Independent 模式。
+  - title: 分析 .d.ts 跨平台覆盖情况
+    description: 统计接口总量、已适配接口、待适配接口和 @crossplatform 注解覆盖率。
+  - title: 生成跨平台适配代码和配置
+    description: 基于模块名、仓名和 API 版本生成接口骨架、平台适配层和必要配置文件。
+
+whenToUse:
+  - 需要将 @ohos.data.preferences、@ohos.intl、@ohos.multimedia.image 等 OHOS 模块适配到 Android 或 iOS。
+  - 需要分析模块架构、平台依赖比例、DTS 覆盖率或跨平台适配工作量。
+  - 需要在 OHOS Reuse、Hybrid、Independent 三种适配模式之间做技术选型。
+  - 需要使用 dts_analyzer.py、architecture_analyzer.py 或 code_generator.py 辅助模块适配。
+
+whenNotToUse:
+  - 目标不是 OHOS 模块到 Android 或 iOS 的跨平台适配。
+  - 需求是把已有 C++ native 模块直接适配到 Android 或 iOS。
+  - 需求是从零创建新的 Native 插件。
+
+inputs:
+  required:
+    - 待适配模块名，例如 @ohos.data.preferences。
+    - OpenHarmony 源码目录或模块仓库路径。
+    - 对应 .d.ts 接口定义文件。
+  optional:
+    - 目标 API 版本。
+    - 参考适配模块或已有 plugins 目录。
+    - 模块仓名、子系统路径和平台约束。
+
+outputs:
+  - 模块识别和源码定位结果。
+  - DTS 跨平台覆盖率分析。
+  - 模块代码组成、依赖和平台实现必要性分析。
+  - 推荐适配架构模式和工作量估算。
+  - 可用于落地的接口、平台适配层和配置文件建议。
+
+quickStart:
+  steps:
+    - 准备模块名、OpenHarmony 源码路径和对应 .d.ts 文件。
+    - 先完成模块信息收集和 DTS 覆盖率分析。
+    - 再分析模块架构和平台依赖，确认适配模式后生成实现方案。
+  examplePrompt: |
+    请使用 arkuix-module-adapter 分析 @ohos.data.preferences 的跨平台适配方案，
+    源码在 foundation/distributeddatamgr/preferences，接口文件在 interface/sdk-js/api/@ohos.data.preferences.d.ts。
+
+related:
+  skills: []
+  docs:
+    - title: 信息收集流程
+      path: references/phase1-information-collection.md
+    - title: API 接口分析
+      path: references/phase3-api-analysis.md
+    - title: 架构分析流程
+      path: references/phase4-architecture-analysis.md
+    - title: 架构模式说明
+      path: references/architecture-modes.md
+    - title: 实现指导
+      path: references/phase6-implementation-guide.md
+    - title: 代码示例
+      path: references/code-examples.md
+
+extractionNotes:
+  confidence: medium
+  missing:
+    - SKILL.md metadata
+  comments:
+    - SKILL.md front matter 未包含 OpenHarmony 扩展 metadata，category 和 status 根据目录位置、技能名称和正文内容提取，需要人工确认。

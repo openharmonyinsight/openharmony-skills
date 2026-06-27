@@ -1,0 +1,7 @@
+{
+  "number": 101,
+  "repo": "openharmony/demo_service",
+  "title": "Avoid expiring sessions without explicit timeout",
+  "author": "contributor",
+  "description": "Treat sessions without explicit timeout as active."
+}

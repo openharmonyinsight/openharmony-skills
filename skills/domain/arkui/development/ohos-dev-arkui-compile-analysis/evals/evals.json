@@ -1,0 +1,81 @@
+{
+  "skill_name": "ohos-dev-arkui-compile-analysis",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "帮我分析 frame_node.cpp 的编译效率，看看编译时间和头文件依赖情况。",
+      "expected_output": "Uses analyze_compile.sh to orchestrate the full workflow: extract compile command → execute with timing/memory → parse .ii → display dependency tree.",
+      "files": [],
+      "expectations": [
+        "The response mentions running analyze_compile.sh as the main entry point.",
+        "The response explains the workflow: extract compile command → execute with timing → parse .ii for dependencies.",
+        "The response specifies that compilation commands must execute from the out/{product}/ directory.",
+        "The response mentions that results must be based on actual execution, not speculation.",
+        "The response saves the dependency tree output to out/{product}/{name}_dependency_tree.txt."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "我想看看 touch_event.h 的头文件依赖树，哪些 ace_engine 内部的头文件被引入了。",
+      "expected_output": "Uses parse_ii.py on the .ii file to extract and display the header dependency tree filtered to foundation/arkui/ headers.",
+      "files": [],
+      "expectations": [
+        "The response uses parse_ii.py to parse the .ii preprocessed file (NOT clang -E, gcc -M, or manual parsing).",
+        "The response describes the decision tree for obtaining the .ii file: check if it exists → generate compile script → execute to produce .ii.",
+        "The response mentions that the dependency tree is filtered to foundation/arkui/ headers (system headers excluded by design).",
+        "The response saves results to a _dependency_tree.txt file."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我要做头文件优化的 before/after 对比测试，帮我生成可复用的编译脚本。",
+      "expected_output": "Uses analyze_compile.sh --save-script to generate a reusable benchmark script, describes the before/after workflow.",
+      "files": [],
+      "expectations": [
+        "The response uses --save-script flag with analyze_compile.sh to generate compile_single_file_{name}.sh.",
+        "The response describes the before/after workflow: run baseline → apply optimization → run same script again.",
+        "The response emphasizes running under identical conditions (same script, same directory).",
+        "The response mentions recording compile time and peak memory for comparison.",
+        "The generated script can be executed from out/{product}/ directory independently."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "分析结果出来了：frame_node.cpp 编译时间 23 秒，峰值内存 680MB，依赖深度 7 层，直接 include 12 个。这正常吗？该怎么优化？",
+      "expected_output": "Correctly interprets all metrics as 'High' (above thresholds), recommends strategies in priority order.",
+      "files": [],
+      "expectations": [
+        "The response identifies all four metrics as above normal thresholds (compile time >15s, memory >500MB, depth >6, breadth >10).",
+        "The response recommends strategies in priority order: forward declarations first, then remove unused includes, then break deep chains, then reduce template overhead.",
+        "The response specifically mentions frame_node.h as a very-high-impact file (500+ dependents) and explains why optimizing it matters.",
+        "The response does NOT suggest precompiled headers (PCH) as the first solution.",
+        "The response references the high-impact files table for prioritization guidance."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "frame_node.cpp 的依赖树太深了，有 7 层，我想把 frame_node.h 里的某些 include 替换成前向声明来降低深度。分析一下哪些可以改。",
+      "expected_output": "Cross-references with header-optimization skill. Identifies pointer/ref usages as candidates, avoids base class and value members.",
+      "files": [],
+      "expectations": [
+        "The response cross-references the header-optimization skill for the actual optimization work.",
+        "The response uses the dependency tree to identify which headers contribute the most to depth.",
+        "The response recommends targeting the long dependency chains (frame_node.h → ui_node.h → element.h → render_node.h).",
+        "The response does NOT recommend modifying ace_type.h or ref_ptr.h (NEVER rule).",
+        "The response suggests measuring before and after using the benchmarking workflow."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "get_compile_command.py 报错说找不到编译规则，文件路径是 frameworks/core/event/my_new_file.cpp。这是一个新加的文件。",
+      "expected_output": "Explains that new files require a full build first to populate ninja build database, then the script can extract commands.",
+      "files": [],
+      "expectations": [
+        "The response explains that the file must be built at least once before get_compile_command.py can find its rule.",
+        "The response recommends running a full build or --build-target first to populate the ninja build database.",
+        "The response suggests using a relative path from ace_engine root rather than absolute path.",
+        "The response does NOT suggest modifying the script to handle unbuilt files."
+      ]
+    }
+  ]
+}

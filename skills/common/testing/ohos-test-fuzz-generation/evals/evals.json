@@ -1,0 +1,1660 @@
+{
+  "skill_name": "ohos-test-fuzz-generation",
+  "description": "Test suite for ohos-test-fuzz-generation skill - generating FUZZ test cases for C/C++ projects with security code review and semantic corpus generation",
+  "version": "3.0",
+  "created_date": "2026-06-14",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "trigger_fuzz_generation",
+      "category": "trigger",
+      "prompt": "帮我为RSInterfaces类生成fuzz测试用例",
+      "expected_output": "Skill should trigger and begin fuzz generation workflow",
+      "files": [
+        "files/headers/synthetic/simple_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "skill_triggered"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "trigger_fuzzer_keyword",
+      "category": "trigger",
+      "prompt": "我需要创建一个fuzzer，测试DisplayManager的安全性",
+      "expected_output": "Skill should trigger for fuzzer creation request",
+      "files": [
+        "files/headers/synthetic/simple_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "skill_triggered"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "trigger_fuzz_check",
+      "category": "trigger",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范",
+      "expected_output": "Skill should trigger and enter rule check workflow (phase 5)",
+      "files": [
+        "files/fuzzers/good/good_fuzzer.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "skill_triggered"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "trigger_fuzz_test",
+      "category": "trigger",
+      "prompt": "为这个类编写fuzz_test，类名是ConfigManager",
+      "expected_output": "Skill should trigger for fuzz_test keyword",
+      "files": [
+        "files/headers/synthetic/simple_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "skill_triggered"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "eval_name": "trigger_LLVMFuzzerTestOneInput",
+      "category": "trigger",
+      "prompt": "这个LLVMFuzzerTestOneInput函数的实现有问题，帮我检查一下",
+      "expected_output": "Skill should trigger for LLVMFuzzerTestOneInput keyword",
+      "files": [
+        "files/fuzzers/good/good_fuzzer.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "skill_triggered"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "eval_name": "trigger_fuzzer_cpp_file",
+      "category": "trigger",
+      "prompt": "帮我检查这个*_fuzzer.cpp文件是否符合规范",
+      "files": [
+        "files/fuzzers/good/good_fuzzer.cpp"
+      ],
+      "expected_output": "Skill should trigger for *_fuzzer.cpp file reference",
+      "assertions": [
+        {
+          "text": "skill_triggered"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "eval_name": "trigger_fuzztest_dir",
+      "category": "trigger",
+      "prompt": "fuzztest/目录下的测试代码需要更新，帮我修改",
+      "files": [
+        "files/fuzzers/good/good_fuzzer.cpp"
+      ],
+      "expected_output": "Skill should trigger for fuzztest/ directory reference",
+      "assertions": [
+        {
+          "text": "skill_triggered"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "eval_name": "trigger_seed_generation",
+      "category": "trigger",
+      "prompt": "为这个fuzzer生成语义化种子数据（corpus）",
+      "expected_output": "Skill should trigger and jump to phase 4 (seed generation)",
+      "files": [
+        "files/fuzzers/good/good_fuzzer.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "skill_triggered"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "eval_name": "trigger_report_generation",
+      "category": "trigger",
+      "prompt": "生成fuzz测试的合规报告",
+      "expected_output": "Skill should trigger and jump to report generation phase",
+      "files": [
+        "files/fuzzers/good/good_fuzzer.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "skill_triggered"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "eval_name": "negative_trigger_unit_test",
+      "category": "trigger",
+      "prompt": "帮我写ConfigManager类的单元测试",
+      "expected_output": "Skill should NOT trigger - unit test, not fuzz test",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "eval_name": "negative_trigger_integration_test",
+      "category": "trigger",
+      "prompt": "为这个模块写集成测试，测试多个组件的交互",
+      "expected_output": "Skill should NOT trigger - integration test, not fuzz test",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "eval_name": "negative_trigger_bug_fix",
+      "category": "trigger",
+      "prompt": "这个代码有bug，帮我修复这个空指针问题",
+      "expected_output": "Skill should NOT trigger - bug fixing, not fuzz generation",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "eval_name": "negative_trigger_perf_test",
+      "category": "trigger",
+      "prompt": "帮我做性能测试，看看这个接口的响应时间",
+      "expected_output": "Skill should NOT trigger - performance test, not fuzz test",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "eval_name": "negative_trigger_code_review_general",
+      "category": "trigger",
+      "prompt": "帮我review这段C++代码的质量，看看有什么改进建议",
+      "expected_output": "Skill should NOT trigger - general code review, not fuzz-specific review",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "eval_name": "negative_trigger_api_design",
+      "category": "trigger",
+      "prompt": "帮我设计一个REST API接口",
+      "expected_output": "Skill should NOT trigger",
+      "files": [],
+      "assertions": [
+        {
+          "text": "skill_not_triggered"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "eval_name": "generate_simple_class_fuzzer",
+      "category": "core_scenario",
+      "prompt": "为ConfigManager类生成fuzz测试用例，头文件在files/headers/synthetic/simple_class.h，命名空间是OHOS::Utils",
+      "expected_output": "Should generate complete 5-file fuzzer project (.cpp/.h/BUILD.gn/project.xml/corpus) with proper FuzzedDataProvider usage, explicit types, LLVMFuzzerInitialize, switch-case dispatch",
+      "files": [
+        "files/headers/synthetic/simple_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "five_files_generated"
+        },
+        {
+          "text": "fdp_used_correctly"
+        },
+        {
+          "text": "explicit_types"
+        },
+        {
+          "text": "switch_case_pattern"
+        },
+        {
+          "text": "copyright_header_correct"
+        },
+        {
+          "text": "self_check_performed"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "eval_name": "generate_ipc_stub_fuzzer",
+      "category": "core_scenario",
+      "prompt": "为IDisplayService类生成fuzz测试用例，头文件在files/headers/synthetic/ipc_class.h，这是一个IPC接口，需要通过OnRemoteRequest测试stub",
+      "expected_output": "Should recognize IPC pattern (IRemoteBroker inheritance), generate stub fuzzer with OnRemoteRequest dispatch, MessageParcel construction, NOT generate proxy-style fuzzer",
+      "files": [
+        "files/headers/synthetic/ipc_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "ipc_pattern_detected"
+        },
+        {
+          "text": "stub_pattern_generated"
+        },
+        {
+          "text": "message_parcel_constructed"
+        },
+        {
+          "text": "code_descriptor_used"
+        },
+        {
+          "text": "rule_007_followed"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "eval_name": "generate_complex_param_fuzzer",
+      "category": "core_scenario",
+      "prompt": "为ScreenManager类生成fuzz测试用例，头文件在files/headers/synthetic/complex_param_class.h，命名空间OHOS::Rosen",
+      "expected_output": "Should handle complex types properly: RSScreenModeInfo uses multi-field construction, std::vector uses loop consumption, sptr<Surface> uses Mock class, callbacks initialized as nullptr",
+      "files": [
+        "files/headers/synthetic/complex_param_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "struct_fields_populated"
+        },
+        {
+          "text": "vector_loop_construction"
+        },
+        {
+          "text": "mock_class_generated"
+        },
+        {
+          "text": "callback_nullptr_handled"
+        },
+        {
+          "text": "rule_005_referenced"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "eval_name": "generate_enum_fuzzer",
+      "category": "core_scenario",
+      "prompt": "为GraphicComposer类生成fuzz测试用例，头文件在files/headers/synthetic/enum_class.h，命名空间OHOS::Graphic",
+      "expected_output": "Should use uint8_t for enum consumption (rule 013), include ENUM_SIZE_MAP constants, use static_cast for enum conversion",
+      "files": [
+        "files/headers/synthetic/enum_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "uint8_t_for_enum"
+        },
+        {
+          "text": "enum_size_constants"
+        },
+        {
+          "text": "static_cast_used"
+        },
+        {
+          "text": "rule_013_followed"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "eval_name": "reject_no_param_class",
+      "category": "core_scenario",
+      "prompt": "为MemoryMonitor类生成fuzz测试用例，头文件在files/headers/synthetic/no_param_class.h",
+      "expected_output": "Should detect that all public methods have no parameters, reject fuzz generation per rule 001, suggest unit test instead",
+      "files": [
+        "files/headers/synthetic/no_param_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "no_param_detected"
+        },
+        {
+          "text": "generation_rejected"
+        },
+        {
+          "text": "unit_test_suggested"
+        },
+        {
+          "text": "rule_001_cited"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "eval_name": "check_good_fuzzer",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/good/good_fuzzer.cpp",
+      "expected_output": "Should find minimal violations in well-written fuzzer code. May report low-severity items but should NOT flag false positives for correct patterns.",
+      "files": [
+        "files/fuzzers/good/good_fuzzer.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "check_tool_used"
+        },
+        {
+          "text": "no_false_positive_on_fdp"
+        },
+        {
+          "text": "no_false_positive_on_explicit_types"
+        },
+        {
+          "text": "rule_coverage_complete"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "eval_name": "check_rand_violation",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/bad/data_extraction/bad_fuzzer_rand.cpp",
+      "expected_output": "Should detect rule 017 violation: rand()/srand() usage instead of FuzzedDataProvider",
+      "files": [
+        "files/fuzzers/bad/data_extraction/bad_fuzzer_rand.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "rand_detected"
+        },
+        {
+          "text": "rule_017_cited"
+        },
+        {
+          "text": "fdp_alternative_suggested"
+        },
+        {
+          "text": "auto_fix_possible"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "eval_name": "check_data_ptr_violation",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/bad/data_extraction/bad_fuzzer_data_ptr.cpp",
+      "expected_output": "Should detect rule 018 violation: direct data pointer dereference *(int32_t*)data",
+      "files": [
+        "files/fuzzers/bad/data_extraction/bad_fuzzer_data_ptr.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "data_ptr_dereference_detected"
+        },
+        {
+          "text": "rule_018_cited"
+        },
+        {
+          "text": "fdp_alternative_suggested"
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "eval_name": "check_size_misuse_violation",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/bad/data_extraction/bad_fuzzer_size_misuse.cpp",
+      "expected_output": "Should detect rule 010 violation: size parameter passed as business input to API",
+      "files": [
+        "files/fuzzers/bad/data_extraction/bad_fuzzer_size_misuse.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "size_misuse_detected"
+        },
+        {
+          "text": "rule_010_cited"
+        },
+        {
+          "text": "fdp_extraction_suggested"
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "eval_name": "check_uninit_global_violation",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/bad/bad_fuzzer_uninit_global.cpp",
+      "expected_output": "Should detect rule 019 violation: global pointer declared as nullptr without LLVMFuzzerInitialize",
+      "files": [
+        "files/fuzzers/bad/bad_fuzzer_uninit_global.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "uninit_global_detected"
+        },
+        {
+          "text": "rule_019_cited"
+        },
+        {
+          "text": "init_function_suggested"
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "eval_name": "check_auto_violation",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/bad/bad_fuzzer_auto.cpp",
+      "expected_output": "Should detect rule 016 violation: auto keyword for fuzz-derived variables",
+      "files": [
+        "files/fuzzers/bad/bad_fuzzer_auto.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "auto_usage_detected"
+        },
+        {
+          "text": "rule_016_cited"
+        },
+        {
+          "text": "explicit_type_suggested"
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "eval_name": "check_ipc_proxy_violation",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/bad/bad_fuzzer_ipc_proxy.cpp",
+      "expected_output": "Should detect rule 007 violation: IPC proxy pattern without OnRemoteRequest",
+      "files": [
+        "files/fuzzers/bad/bad_fuzzer_ipc_proxy.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "ipc_proxy_detected"
+        },
+        {
+          "text": "rule_007_cited"
+        },
+        {
+          "text": "stub_pattern_suggested"
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "eval_name": "check_enum_uint32_violation",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/bad/bad_fuzzer_enum_uint32.cpp",
+      "expected_output": "Should detect rule 013 violation: uint32_t used for enum instead of uint8_t",
+      "files": [
+        "files/fuzzers/bad/bad_fuzzer_enum_uint32.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "uint32_for_enum_detected"
+        },
+        {
+          "text": "rule_013_cited"
+        },
+        {
+          "text": "uint8_t_suggested"
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "eval_name": "workflow_generation_full",
+      "category": "workflow",
+      "prompt": "为ConfigManager类生成完整的fuzz测试项目，从代码分析到最终交付",
+      "expected_output": "Should follow complete 6-phase workflow: 1) analyze header, 2) generate skeleton, 3) fill implementation, 4) generate seeds, 5) run rule check, 6) auto-fix if needed",
+      "files": [
+        "files/headers/synthetic/simple_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "phase1_analysis"
+        },
+        {
+          "text": "phase2_skeleton"
+        },
+        {
+          "text": "phase3_implementation"
+        },
+        {
+          "text": "phase4_seeds"
+        },
+        {
+          "text": "phase5_check"
+        },
+        {
+          "text": "phase6_fix_or_report"
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "eval_name": "workflow_check_only",
+      "category": "workflow",
+      "prompt": "检查这个已有的fuzz测试代码是否合规，不需要重新生成",
+      "expected_output": "Should skip to phase 5 (rule check) directly, not start from phase 1",
+      "files": [
+        "files/fuzzers/good/good_fuzzer.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "skip_to_phase5"
+        },
+        {
+          "text": "no_regeneration"
+        },
+        {
+          "text": "26_rules_applied"
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "eval_name": "workflow_seed_only",
+      "category": "workflow",
+      "prompt": "为这个已有的fuzzer生成语义化种子数据",
+      "expected_output": "Should skip to phase 4 (seed generation), analyze parameter types, generate semantic seeds",
+      "files": [
+        "files/fuzzers/good/good_fuzzer.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "skip_to_phase4"
+        },
+        {
+          "text": "param_types_analyzed"
+        },
+        {
+          "text": "semantic_seeds_generated"
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "eval_name": "self_check_before_generation",
+      "category": "workflow",
+      "prompt": "为MemoryMonitor类生成fuzz测试用例",
+      "expected_output": "Should perform self-check questions: 1) has parameters? 2) is IPC? 3) >10 methods? 4) all output params? Should reject because no parameters",
+      "files": [
+        "files/headers/synthetic/no_param_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "param_check_performed"
+        },
+        {
+          "text": "ipc_check_performed"
+        },
+        {
+          "text": "method_count_checked"
+        },
+        {
+          "text": "rejection_with_reason"
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "eval_name": "exception_header_not_found",
+      "category": "edge_case",
+      "prompt": "为RSRenderService类生成fuzz测试，头文件路径是rosen/modules/render_service.h，但这个文件不存在",
+      "expected_output": "Should handle header parse failure: check spelling, ask for correct path, offer manual parsing",
+      "files": [],
+      "assertions": [
+        {
+          "text": "failure_handled"
+        },
+        {
+          "text": "spelling_check_suggested"
+        },
+        {
+          "text": "path_guidance"
+        },
+        {
+          "text": "manual_parse_offered"
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "eval_name": "exception_too_many_methods",
+      "category": "edge_case",
+      "prompt": "为这个类生成fuzz测试，它有15个有参public方法",
+      "expected_output": "Should detect >10 methods per rule 006, suggest splitting into multiple fuzzer files",
+      "files": [
+        "files/headers/synthetic/many_methods_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "method_count_detected"
+        },
+        {
+          "text": "split_suggested"
+        },
+        {
+          "text": "rule_006_cited"
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "eval_name": "exception_all_output_params",
+      "category": "edge_case",
+      "prompt": "为DataExporter类生成fuzz测试，它的所有方法参数都是非const引用输出参数",
+      "expected_output": "Should detect that all parameters are output type (non-const refs), skip fuzz generation as no input needs fuzzing",
+      "files": [
+        "files/headers/synthetic/all_output_params_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "output_param_detected"
+        },
+        {
+          "text": "skip_with_reason"
+        },
+        {
+          "text": "self_check_item4"
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "eval_name": "auto_fix_rand",
+      "category": "edge_case",
+      "prompt": "检查并修复这个fuzz代码的问题，文件在files/fuzzers/bad/data_extraction/bad_fuzzer_rand.cpp，需要自动修复",
+      "expected_output": "Should detect rand() violation (rule 017), auto-fix by replacing rand() calls with fdp.ConsumeIntegral<T>(), add FuzzedDataProvider parameter",
+      "files": [
+        "files/fuzzers/bad/data_extraction/bad_fuzzer_rand.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "violation_detected"
+        },
+        {
+          "text": "auto_fix_attempted"
+        },
+        {
+          "text": "fdp_replacement_correct"
+        },
+        {
+          "text": "fix_verified"
+        }
+      ]
+    },
+    {
+      "id": 37,
+      "eval_name": "auto_fix_uninit_global",
+      "category": "edge_case",
+      "prompt": "检查并修复这个fuzz代码的问题，文件在files/fuzzers/bad/bad_fuzzer_uninit_global.cpp，需要自动修复",
+      "expected_output": "Should detect uninitialized global pointer (rule 019), auto-fix by adding LLVMFuzzerInitialize function",
+      "files": [
+        "files/fuzzers/bad/bad_fuzzer_uninit_global.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "violation_detected"
+        },
+        {
+          "text": "auto_fix_attempted"
+        },
+        {
+          "text": "init_function_added"
+        }
+      ]
+    },
+    {
+      "id": 38,
+      "eval_name": "auto_fix_copyright",
+      "category": "edge_case",
+      "prompt": "检查并修复这个fuzz代码的问题，文件中缺少版权头",
+      "expected_output": "Should detect missing copyright header (rule F), auto-fix by adding Huawei Device Co., Ltd. copyright",
+      "files": [
+        "files/fuzzers/good/good_fuzzer.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "copyright_rule_checked"
+        },
+        {
+          "text": "huawei_copyright_format"
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "eval_name": "auto_fix_max_rounds",
+      "category": "edge_case",
+      "prompt": "检查并修复这个fuzz代码的所有问题，文件在files/fuzzers/bad/data_extraction/bad_fuzzer_rand.cpp，持续修复直到没有问题",
+      "expected_output": "Should attempt auto-fix up to max 3 rounds, then stop and output remaining violations for manual review",
+      "files": [
+        "files/fuzzers/bad/data_extraction/bad_fuzzer_rand.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "fix_round_limit"
+        },
+        {
+          "text": "remaining_violations_reported"
+        },
+        {
+          "text": "manual_review_suggested"
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "eval_name": "reference_on_demand_loading",
+      "category": "documentation",
+      "prompt": "为ConfigManager类生成fuzz测试用例，这是一个简单类",
+      "expected_output": "Should NOT load all rule files at start, should only load violated rules during phase 5, must load rule 005 for complex params if needed",
+      "files": [
+        "files/headers/synthetic/simple_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "no_bulk_rule_loading"
+        },
+        {
+          "text": "violated_rules_only"
+        },
+        {
+          "text": "rule_005_mandatory_for_complex"
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "eval_name": "reference_tool_source_loading",
+      "category": "documentation",
+      "prompt": "为ScreenManager类生成fuzz测试，参数类型包括ScreenId和RSScreenModeInfo，我需要了解如何构造这些类型",
+      "expected_output": "Should load tools/fuzz_generator.py to check TYPE_CONSUMER_MAP (ScreenId → uint64_t) and COMPLEX_TYPE_MAP (RSScreenModeInfo → multi-field construction)",
+      "files": [
+        "files/headers/synthetic/complex_param_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "tool_source_loaded_for_unknown_type"
+        },
+        {
+          "text": "type_consumer_map_used"
+        },
+        {
+          "text": "complex_type_map_used"
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "eval_name": "reference_template_not_loaded",
+      "category": "documentation",
+      "prompt": "为ConfigManager类生成fuzz测试用例",
+      "expected_output": "Should NOT load templates/fuzzer.cpp during normal generation - the tool handles template internally",
+      "files": [
+        "files/headers/synthetic/simple_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "template_not_loaded"
+        },
+        {
+          "text": "tool_used_for_generation"
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "eval_name": "forbidden_rand_usage",
+      "category": "forbidden",
+      "prompt": "为ConfigManager类生成fuzz测试用例，有些参数需要随机值",
+      "expected_output": "Should NEVER use rand()/random() - must use FuzzedDataProvider for all random data generation per rule 017",
+      "files": [
+        "files/headers/synthetic/simple_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "no_rand_in_generation"
+        },
+        {
+          "text": "fdp_used_exclusively"
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "eval_name": "forbidden_auto_in_fuzz_vars",
+      "category": "forbidden",
+      "prompt": "为ConfigManager类生成fuzz测试用例",
+      "expected_output": "Should NEVER use auto for fuzz-derived variables - must use explicit types like int32_t, std::string per rule 016",
+      "files": [
+        "files/headers/synthetic/simple_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "no_auto_in_generation"
+        },
+        {
+          "text": "explicit_types_used"
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "eval_name": "forbidden_size_as_data",
+      "category": "forbidden",
+      "prompt": "为ConfigManager类生成fuzz测试用例，size参数需要传给API",
+      "expected_output": "Should NEVER pass size as business input to API - size is determined by fuzz engine, not business logic per rule 010",
+      "files": [
+        "files/headers/synthetic/simple_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "no_size_as_api_param"
+        },
+        {
+          "text": "fdp_for_business_length"
+        }
+      ]
+    },
+    {
+      "id": 46,
+      "eval_name": "forbidden_data_ptr_dereference",
+      "category": "forbidden",
+      "prompt": "为ConfigManager类生成fuzz测试用例，需要从data指针读取参数",
+      "expected_output": "Should NEVER directly dereference data pointer - must use FuzzedDataProvider per rule 018",
+      "files": [
+        "files/headers/synthetic/simple_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "no_data_dereference"
+        },
+        {
+          "text": "fdp_used_for_extraction"
+        }
+      ]
+    },
+    {
+      "id": 47,
+      "eval_name": "forbidden_uint32_for_enum",
+      "category": "forbidden",
+      "prompt": "为GraphicComposer类生成fuzz测试用例，包含枚举参数",
+      "expected_output": "Should NEVER use uint32_t for enum consumption - must use uint8_t for 1-byte mutation efficiency per rule 013",
+      "files": [
+        "files/headers/synthetic/enum_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "no_uint32_for_enum"
+        },
+        {
+          "text": "uint8_for_enum"
+        }
+      ]
+    },
+    {
+      "id": 48,
+      "eval_name": "forbidden_uninit_global",
+      "category": "forbidden",
+      "prompt": "为ConfigManager类生成fuzz测试用例，使用全局对象实例",
+      "expected_output": "Should NEVER leave global pointer uninitialized - must add LLVMFuzzerInitialize per rule 019",
+      "files": [
+        "files/headers/synthetic/simple_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "global_initialized"
+        },
+        {
+          "text": "init_function_present"
+        }
+      ]
+    },
+    {
+      "id": 49,
+      "eval_name": "forbidden_no_param_generation",
+      "category": "forbidden",
+      "prompt": "为MemoryMonitor类生成fuzz测试",
+      "expected_output": "Should NEVER generate fuzz for no-param APIs - coverage will always be 0 per rule 001",
+      "files": [
+        "files/headers/synthetic/no_param_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "generation_rejected"
+        },
+        {
+          "text": "rule_001_cited"
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "eval_name": "forbidden_over_10_methods",
+      "category": "forbidden",
+      "prompt": "为这个类生成fuzz测试，它有12个有参public方法",
+      "expected_output": "Should NEVER allow >10 methods in single fuzzer file per rule 006, must suggest splitting",
+      "files": [
+        "files/headers/synthetic/many_methods_class.h"
+      ],
+      "assertions": [
+        {
+          "text": "split_suggested"
+        },
+        {
+          "text": "rule_006_cited"
+        }
+      ]
+    },
+    {
+      "id": 51,
+      "eval_name": "real_ipc_stub_screenid_enum",
+      "category": "core_scenario",
+      "prompt": "为 RSInterfaces 类生成fuzz测试用例。这是一个IPC接口（继承IRemoteBroker），方法包括：SetScreenPowerStatus(ScreenId, ScreenPowerStatus), SetScreenCorrection(ScreenId, ScreenRotation), SetPixelFormat(ScreenId, GraphicPixelFormat), SetScreenColorGamut(ScreenId, int32_t), RegisterCallback(sptr<IDisplayCallback>), GetScreenSupportedColorGamuts(ScreenId, vector<GraphicColorGamut>&), SetScreenVsyncEnabled(bool), SetScreenColorTransform(vector<float>&), 共14个方法。命名空间OHOS::Rosen",
+      "expected_output": "Should detect IPC pattern (IRemoteBroker), split into 2 fuzzer files (>10 methods, rule 006), use stub OnRemoteRequest, ScreenId→uint64_t typedef, enums→uint8_t+%ENUM_SIZE, sptr→nullptr in parcel",
+      "files": [
+        "files/headers/real_ohos/2d/rs_interfaces.h"
+      ],
+      "assertions": [
+        {
+          "text": "ipc_stub_pattern"
+        },
+        {
+          "text": "screenid_uint64_t"
+        },
+        {
+          "text": "enum_uint8_t"
+        },
+        {
+          "text": "split_for_14_methods"
+        },
+        {
+          "text": "sptr_nullptr_parcel"
+        }
+      ]
+    },
+    {
+      "id": 52,
+      "eval_name": "real_hdi_screen_enum_types",
+      "category": "core_scenario",
+      "prompt": "为 HdiScreen 类生成fuzz测试用例。非IPC类，方法：SetScreenPowerStatus(GraphicDispPowerStatus), SetScreenColorGamut(GraphicColorGamut), SetScreenGamutMap(GraphicGamutMap), SetScreenVsyncEnabled(bool), SetScreenMode(uint32_t), SetScreenColorTransform(vector<float>). 命名空间OHOS::Rosen",
+      "expected_output": "Should use direct method calls (not IPC), GraphicDispPowerStatus→uint8_t%6, GraphicColorGamut→uint8_t%8, GraphicGamutMap→uint8_t%4, FDP exclusively, LLVMFuzzerInitialize",
+      "files": [
+        "files/headers/real_ohos/2d/hdi_screen.h"
+      ],
+      "assertions": [
+        {
+          "text": "non_ipc_direct_calls"
+        },
+        {
+          "text": "hdi_enum_uint8_t"
+        },
+        {
+          "text": "fdp_used"
+        },
+        {
+          "text": "llvm_fuzzer_init"
+        }
+      ]
+    },
+    {
+      "id": 53,
+      "eval_name": "real_ipc_sptr_complex",
+      "category": "core_scenario",
+      "prompt": "为 RSIWindowAnimationController 类生成fuzz测试用例。IPC接口继承IRemoteBroker，方法：OnStartApp(StartingAppType, sptr<RSWindowAnimationTarget>, sptr<RSIWindowAnimationFinishedCallback>), OnMinimizeAllWindow(vector<sptr<RSWindowAnimationTarget>>, sptr<RSIWindowAnimationFinishedCallback>), OnWallpaperUpdate(sptr<RSWindowAnimationTarget>). 共9个方法。命名空间OHOS::Rosen",
+      "expected_output": "Should use IPC stub pattern, OnRemoteRequest, sptr→nullptr in parcel, StartingAppType→uint8_t%3, vector<sptr>→uint8_t count%32 + nullptr loop",
+      "files": [],
+      "assertions": [
+        {
+          "text": "ipc_stub_pattern"
+        },
+        {
+          "text": "starting_app_type_uint8"
+        },
+        {
+          "text": "sptr_nullptr_parcel"
+        },
+        {
+          "text": "vector_sptr_count_pattern"
+        }
+      ]
+    },
+    {
+      "id": 54,
+      "eval_name": "real_reject_no_param_ipc",
+      "category": "core_scenario",
+      "prompt": "为 RSIBufferAvailableCallback 类生成fuzz测试用例。IPC接口继承IRemoteBroker，唯一方法OnBufferAvailable()无参数。命名空间OHOS::Rosen",
+      "expected_output": "Should reject or note that no meaningful fuzzable input exists for direct method, but IPC stub can still fuzz message code+parcel. Primary: reject direct method fuzz per rule 001.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "no_param_detected"
+        },
+        {
+          "text": "rule_001_cited"
+        },
+        {
+          "text": "alternative_suggested"
+        }
+      ]
+    },
+    {
+      "id": 55,
+      "eval_name": "real_screen_change_callback",
+      "category": "core_scenario",
+      "prompt": "为 RSScreenChangeCallback 类生成fuzz测试用例。非IPC类，方法：OnScreenConnect(ScreenId), OnScreenDisconnect(ScreenId), OnScreenChange(ScreenId, ScreenChangeReason)。命名空间OHOS::Rosen",
+      "expected_output": "Should use direct method calls, ScreenId→uint64_t typedef, ScreenChangeReason not in ENUM_SIZE_MAP→MUST check header file or load tools/fuzz_generator.py",
+      "files": [],
+      "assertions": [
+        {
+          "text": "screenid_uint64_t"
+        },
+        {
+          "text": "unknown_enum_strategy"
+        },
+        {
+          "text": "fdp_used"
+        }
+      ]
+    },
+    {
+      "id": 56,
+      "eval_name": "real_check_existing_fuzzer",
+      "category": "core_scenario",
+      "prompt": "检查以下fuzz代码是否符合安全编码规范。代码使用GetData<T>模板而非FuzzedDataProvider，枚举用uint32_t读取，无LLVMFuzzerInitialize，全局指针data_=nullptr，使用memcpy_s(data_+pos)直接访问data指针",
+      "expected_output": "Should detect: rule 013 (enum uint32_t), rule 017/019 (no LLVMFuzzerInitialize), rule 018 (data pointer access), rule 016 (auto usage), ScreenId type mapping error",
+      "files": [
+        "files/fuzzers/real_ohos/2d/hdiscreen_fuzzer_bad.cpp",
+        "files/headers/real_ohos/2d/hdi_screen.h"
+      ],
+      "assertions": [
+        {
+          "text": "enum_uint32_detected"
+        },
+        {
+          "text": "no_init_function"
+        },
+        {
+          "text": "data_ptr_access"
+        },
+        {
+          "text": "fdp_replacement_suggested"
+        }
+      ]
+    },
+    {
+      "id": 57,
+      "eval_name": "real_baseline_comparison_fdp",
+      "category": "forbidden",
+      "prompt": "为 RSIClientToServiceConnection 类生成fuzz测试用例，使用Parcel的WriteBuffer和Read方法来消费数据",
+      "expected_output": "Should NEVER use Parcel-based data consumption - MUST use FuzzedDataProvider exclusively. Parcel read methods are for IPC serialization, not fuzz data consumption.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "fdp_exclusive"
+        }
+      ]
+    },
+    {
+      "id": 58,
+      "eval_name": "real_baseline_comparison_proxy",
+      "category": "forbidden",
+      "prompt": "为 IDisplayService 类生成fuzz测试，创建DisplayServiceProxy对象测试proxy端方法",
+      "expected_output": "Should NEVER fuzz IPC proxy - MUST fuzz stub OnRemoteRequest per rule 007",
+      "files": [],
+      "assertions": [
+        {
+          "text": "stub_not_proxy"
+        }
+      ]
+    },
+    {
+      "id": 59,
+      "eval_name": "check_build_gn_format",
+      "category": "core_scenario",
+      "prompt": "检查这个BUILD.gn文件是否符合fuzz测试格式规范，文件在files/configs/BUILD_gn_bad.gn",
+      "expected_output": "Should detect rule B violations: missing copyright header, missing import statement, wrong target naming convention",
+      "files": [
+        "files/configs/build_gn/build_gn_bad.gn"
+      ],
+      "assertions": [
+        {
+          "text": "missing_copyright_detected"
+        },
+        {
+          "text": "missing_import_detected"
+        },
+        {
+          "text": "wrong_target_name"
+        }
+      ]
+    },
+    {
+      "id": 60,
+      "eval_name": "check_good_build_gn",
+      "category": "core_scenario",
+      "prompt": "检查这个BUILD.gn文件是否符合fuzz测试格式规范，文件在files/configs/BUILD_gn_good.gn",
+      "expected_output": "Should pass all format rules (A-G)",
+      "files": [
+        "files/configs/build_gn/build_gn_good.gn"
+      ],
+      "assertions": [
+        {
+          "text": "copyright_present"
+        },
+        {
+          "text": "import_present"
+        },
+        {
+          "text": "target_name_correct"
+        }
+      ]
+    },
+    {
+      "id": 61,
+      "eval_name": "check_project_xml_bad",
+      "category": "core_scenario",
+      "prompt": "检查这个project.xml文件是否符合fuzz测试格式规范，文件在files/configs/project_xml_bad.xml",
+      "expected_output": "Should detect rule C violations: wrong root element <config> instead of <fuzz_config>, missing XML declaration, missing max_len/max_total_time/rss_limit_mb, wrong project_name format",
+      "files": [
+        "files/configs/project_xml/project_xml_bad.xml"
+      ],
+      "assertions": [
+        {
+          "text": "wrong_root_element"
+        },
+        {
+          "text": "missing_xml_declaration"
+        },
+        {
+          "text": "missing_max_len"
+        },
+        {
+          "text": "rule_C_cited"
+        }
+      ]
+    },
+    {
+      "id": 62,
+      "eval_name": "check_project_xml_good",
+      "category": "core_scenario",
+      "prompt": "检查这个project.xml文件是否符合fuzz测试格式规范，文件在files/configs/project_xml_good.xml",
+      "expected_output": "Should pass all format rules for project.xml",
+      "files": [
+        "files/configs/project_xml/project_xml_good.xml"
+      ],
+      "assertions": [
+        {
+          "text": "root_element_correct"
+        },
+        {
+          "text": "max_len_present"
+        },
+        {
+          "text": "project_name_correct"
+        }
+      ]
+    },
+    {
+      "id": 63,
+      "eval_name": "check_fuzzer_header_bad",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzzer头文件是否符合格式规范，文件在files/configs/fuzzer_header_bad.h",
+      "expected_output": "Should detect rule A violations: missing #ifndef guard, missing FUZZ_PROJECT_NAME, missing system includes, using namespace",
+      "files": [
+        "files/configs/fuzzer_header/fuzzer_header_bad.h"
+      ],
+      "assertions": [
+        {
+          "text": "missing_ifndef_guard"
+        },
+        {
+          "text": "missing_project_name"
+        },
+        {
+          "text": "using_namespace_detected"
+        },
+        {
+          "text": "rule_A_cited"
+        }
+      ]
+    },
+    {
+      "id": 64,
+      "eval_name": "check_fuzzer_header_good",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzzer头文件是否符合格式规范，文件在files/configs/fuzzer_header_good.h",
+      "expected_output": "Should pass all format rules for fuzzer header",
+      "files": [
+        "files/configs/fuzzer_header/fuzzer_header_good.h"
+      ],
+      "assertions": [
+        {
+          "text": "ifndef_guard_present"
+        },
+        {
+          "text": "project_name_defined"
+        },
+        {
+          "text": "system_includes_correct"
+        }
+      ]
+    },
+    {
+      "id": 65,
+      "eval_name": "check_fixed_params_violation",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/bad/data_extraction/bad_fuzzer_fixed_params.cpp",
+      "expected_output": "Should detect rule 014 violation: hardcoded fixed values instead of fdp-derived data",
+      "files": [
+        "files/fuzzers/bad/data_extraction/bad_fuzzer_fixed_params.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "fixed_params_detected"
+        },
+        {
+          "text": "rule_014_cited"
+        },
+        {
+          "text": "fdp_replacement_suggested"
+        }
+      ]
+    },
+    {
+      "id": 66,
+      "eval_name": "check_unused_mutation_violation",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/bad/data_extraction/bad_fuzzer_unused_mutation.cpp",
+      "expected_output": "Should detect rule 003 violation: FDP declared but no Consume* calls",
+      "files": [
+        "files/fuzzers/bad/data_extraction/bad_fuzzer_unused_mutation.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "unused_mutation_detected"
+        },
+        {
+          "text": "rule_003_cited"
+        },
+        {
+          "text": "fdp_usage_suggested"
+        }
+      ]
+    },
+    {
+      "id": 67,
+      "eval_name": "check_data_reuse_violation",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/bad/data_extraction/bad_fuzzer_data_reuse.cpp",
+      "expected_output": "Should detect rule 004 violation: same fdp variable reused for multiple API calls",
+      "files": [
+        "files/fuzzers/bad/data_extraction/bad_fuzzer_data_reuse.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "data_reuse_detected"
+        },
+        {
+          "text": "rule_004_cited"
+        },
+        {
+          "text": "separate_variables_suggested"
+        }
+      ]
+    },
+    {
+      "id": 68,
+      "eval_name": "check_intermediate_violation",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/bad/bad_fuzzer_intermediate.cpp",
+      "expected_output": "Should detect rule 015 violation: unnecessary encode→decode before API call",
+      "files": [
+        "files/fuzzers/bad/bad_fuzzer_intermediate.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "intermediate_detected"
+        },
+        {
+          "text": "rule_015_cited"
+        },
+        {
+          "text": "direct_usage_suggested"
+        }
+      ]
+    },
+    {
+      "id": 69,
+      "eval_name": "check_driver_bug_violation",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/bad/bad_fuzzer_driver_bug.cpp",
+      "expected_output": "Should detect rule 009 violations: integer overflow, potential OOM, out-of-bounds read, memory leak",
+      "files": [
+        "files/fuzzers/bad/bad_fuzzer_driver_bug.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "overflow_detected"
+        },
+        {
+          "text": "oom_detected"
+        },
+        {
+          "text": "leak_detected"
+        },
+        {
+          "text": "rule_009_cited"
+        }
+      ]
+    },
+    {
+      "id": 70,
+      "eval_name": "real_surface_ipc_buffer_producer",
+      "category": "core_scenario",
+      "prompt": "为 IBufferProducer 类生成fuzz测试用例。这是一个IPC接口（继承IRemoteBroker），方法包括：RequestBuffer(sptr<SurfaceBuffer>, BufferRequestConfig, RequestBufferReturnValue), FlushBuffer(sptr<SurfaceBuffer>, sptr<SyncFence>, BufferFlushConfigWithDamages), SetTransform(GraphicTransformType), SetScalingMode(ScalingMode), GetLastFlushedBuffer(sptr<SurfaceBuffer>&, sptr<SyncFence>&, uint32_t&), 等35个方法。命名空间OHOS",
+      "expected_output": "Should detect IPC pattern, suggest splitting into 3+ fuzzer files (>10 methods), use stub OnRemoteRequest, handle RequestBufferReturnValue struct (with sptr fields), use GraphicTransformType/ScalingMode enums from ENUM_SIZE_MAP",
+      "files": [
+        "files/headers/real_ohos/surface/ibuffer_producer.h"
+      ],
+      "assertions": [
+        {
+          "text": "ipc_stub_pattern"
+        },
+        {
+          "text": "split_for_35_methods"
+        },
+        {
+          "text": "surface_enums_uint8_t"
+        },
+        {
+          "text": "struct_with_sptr_handled"
+        }
+      ]
+    },
+    {
+      "id": 71,
+      "eval_name": "real_3d_engine_non_ipc",
+      "category": "core_scenario",
+      "prompt": "为 IEngine 类生成fuzz测试用例。非IPC类，方法包括：Initialize(std::string, PlatformData), SetupBackground(BackgroundType), AddGeometry(std::vector<std::shared_ptr<Geometry>>), AddAnimation(std::vector<std::shared_ptr<GLTFAnimation>>), OnWindowChange(std::shared_ptr<RSUIContext>, WindowChangeInfo, std::string), UpdatePointerEvent(PointerEvent)。共约15方法。命名空间OHOS::Render3D",
+      "expected_output": "Should use direct method calls (non-IPC), handle BackgroundType enum→uint8_t, handle vector<shared_ptr<>>, handle WindowChangeInfo struct, handle shared_ptr mock pattern",
+      "files": [
+        "files/headers/real_ohos/3d/i_engine.h"
+      ],
+      "assertions": [
+        {
+          "text": "non_ipc_direct_calls"
+        },
+        {
+          "text": "background_type_uint8"
+        },
+        {
+          "text": "vector_shared_ptr_pattern"
+        },
+        {
+          "text": "llvm_fuzzer_init"
+        }
+      ]
+    },
+    {
+      "id": 72,
+      "eval_name": "real_wm_display_agent_ipc",
+      "category": "core_scenario",
+      "prompt": "为 IDisplayManagerAgent 类生成fuzz测试用例。IPC接口继承IRemoteBroker，方法包括：OnScreenConnect(sptr<ScreenInfo>), OnScreenDisconnect(sptr<ScreenInfo>), OnScreenChange(sptr<ScreenChangeInfo>, ScreenChangeEvent), OnDisplayCreate(sptr<DisplayInfo>), OnDisplayDestroy(DisplayId), OnDisplayChange(sptr<DisplayChangeInfo>, DisplayChangeEvent), OnDisplayPowerEvent(DisplayPowerEvent, EventStatus), 等21个通知方法。命名空间OHOS::Rosen",
+      "expected_output": "Should detect IPC pattern, suggest splitting into 3 fuzzer files (>10 methods), use stub OnRemoteRequest, handle DisplayManagerAgentType enum(17 values), handle sptr<ScreenInfo>/sptr<DisplayInfo> in parcel as nullptr",
+      "files": [
+        "files/headers/real_ohos/wm/idisplay_manager_agent.h"
+      ],
+      "assertions": [
+        {
+          "text": "ipc_stub_pattern"
+        },
+        {
+          "text": "split_for_21_methods"
+        },
+        {
+          "text": "display_agent_enum_uint8"
+        },
+        {
+          "text": "sptr_nullptr_parcel"
+        }
+      ]
+    },
+    {
+      "id": 73,
+      "eval_name": "real_effect_shader_factory",
+      "category": "core_scenario",
+      "prompt": "为 ShaderEffect 类生成fuzz测试用例。非IPC类，方法为静态工厂方法：CreateBlurImageFilter(float, float, ImageBlurType, std::shared_ptr<ImageFilter>), CreateColorFilterImageFilter(std::shared_ptr<ColorFilter>), CreateOffsetImageFilter(float, float, std::shared_ptr<ImageFilter>), CreateComposeImageFilter(std::shared_ptr<ImageFilter>, std::shared_ptr<ImageFilter>), CreateGradientBlurImageFilter(float, float, GradientBlurType, GradientDir, std::vector<std::pair<float,float>>), CreateArithmeticImageFilter(std::vector<scalar>, std::shared_ptr<ImageFilter>), 等。命名空间OHOS::Rosen::Drawing",
+      "expected_output": "Should handle factory method pattern (static Create* methods), handle ShaderEffectType enum→uint8_t, handle shared_ptr<ImageFilter>→nullptr or mock, handle vector<pair<float,float>> pattern, handle ImageBlurType/GradientBlurType enums",
+      "files": [
+        "files/headers/real_ohos/effect/shader_effect.h"
+      ],
+      "assertions": [
+        {
+          "text": "factory_pattern_handled"
+        },
+        {
+          "text": "shader_effect_type_uint8"
+        },
+        {
+          "text": "shared_ptr_nullptr"
+        },
+        {
+          "text": "vector_pair_pattern"
+        }
+      ]
+    },
+    {
+      "id": 74,
+      "eval_name": "real_composer_ipc_callback",
+      "category": "core_scenario",
+      "prompt": "为 IRSComposerToRenderConnection 类生成fuzz测试用例。IPC接口继承IRemoteBroker，方法包括：RegisterReleaseLayerBuffersCB(std::function<void(ReleaseLayerBuffersInfo&)>), RegisterJudgeLppLayerCB(std::function<void(uint64_t, unordered_set<uint64_t>&)>), RegisterLayerStateChangedCB(std::function<void(uint64_t, LayerStateChange, uint64_t)>), ExecuteRenderLayer(RSLayerId, sptr<SurfaceBuffer>, sptr<SyncFence>), 等7方法。命名空间OHOS::Rosen",
+      "expected_output": "Should detect IPC pattern, use stub OnRemoteRequest, handle std::function callback params→nullptr in parcel, handle ReleaseLayerBuffersInfo struct (with vector<tuple>), handle unordered_set<uint64_t>→skip or simplified",
+      "files": [
+        "files/headers/real_ohos/composer/irs_composer_to_render_connection.h"
+      ],
+      "assertions": [
+        {
+          "text": "ipc_stub_pattern"
+        },
+        {
+          "text": "std_function_nullptr_parcel"
+        },
+        {
+          "text": "layer_state_enum_uint8"
+        },
+        {
+          "text": "struct_with_vector_tuple"
+        }
+      ]
+    },
+    {
+      "id": 75,
+      "eval_name": "check_good_ipc_stub_fuzzer",
+      "category": "core_scenario",
+      "prompt": "检查这个IPC stub fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/good/good_fuzzer_ipc_stub.cpp",
+      "expected_output": "Should find minimal violations in well-written IPC stub fuzzer code. Should NOT flag OnRemoteRequest, MessageParcel, LLVMFuzzerInitialize as violations.",
+      "files": [
+        "files/fuzzers/good/good_fuzzer_ipc_stub.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "no_false_positive_on_stub"
+        },
+        {
+          "text": "no_false_positive_on_message_parcel"
+        },
+        {
+          "text": "no_false_positive_on_init"
+        },
+        {
+          "text": "rule_007_passed"
+        }
+      ]
+    },
+    {
+      "id": 76,
+      "eval_name": "check_good_singleton_fuzzer",
+      "category": "core_scenario",
+      "prompt": "检查这个单例模式fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/good/good_fuzzer_singleton.cpp",
+      "expected_output": "Should find minimal violations in well-written singleton fuzzer with LLVMFuzzerInitialize and explicit types",
+      "files": [
+        "files/fuzzers/good/good_fuzzer_singleton.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "no_false_positive_on_explicit_types"
+        },
+        {
+          "text": "no_false_positive_on_init"
+        },
+        {
+          "text": "no_false_positive_on_fdp"
+        }
+      ]
+    },
+    {
+      "id": 77,
+      "eval_name": "real_check_animation_command_fuzzer",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/real_ohos/2d/rsanimationcommand_fuzzer.cpp",
+      "expected_output": "Should detect GetData/data_ pattern violation, auto declarations, no LLVMFuzzerInitialize, namespace-level mutable globals",
+      "files": [
+        "files/fuzzers/real_ohos/2d/rsanimationcommand_fuzzer.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "get_data_pattern_detected"
+        },
+        {
+          "text": "auto_detected"
+        },
+        {
+          "text": "no_init_detected"
+        },
+        {
+          "text": "fdp_replacement_suggested"
+        }
+      ]
+    },
+    {
+      "id": 78,
+      "eval_name": "real_check_kawase_blur_fuzzer",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/real_ohos/effect/ge_kawase_blur_shader_filter_fuzzer.cpp",
+      "expected_output": "Should detect pattern inconsistency (mixing FDP and GetPlainData), auto declarations, no LLVMFuzzerInitialize",
+      "files": [
+        "files/fuzzers/real_ohos/effect/ge_kawase_blur_shader_filter_fuzzer.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "pattern_inconsistency_detected"
+        },
+        {
+          "text": "auto_detected"
+        },
+        {
+          "text": "no_init_detected"
+        },
+        {
+          "text": "fdp_exclusive_suggested"
+        }
+      ]
+    },
+    {
+      "id": 79,
+      "eval_name": "real_check_nativewindow_fuzzer",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/real_ohos/surface/nativewindow_fuzzer.cpp",
+      "expected_output": "Should detect int32_t enum casting (OHSurfaceSource, OHScalingMode, OH_NativeBuffer_TransformType), auto declarations",
+      "files": [
+        "files/fuzzers/real_ohos/surface/nativewindow_fuzzer.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "int32_enum_cast_detected"
+        },
+        {
+          "text": "rule_013_cited"
+        },
+        {
+          "text": "auto_detected"
+        },
+        {
+          "text": "uint8_replacement_suggested"
+        }
+      ]
+    },
+    {
+      "id": 80,
+      "eval_name": "real_check_windowstub_fuzzer",
+      "category": "core_scenario",
+      "prompt": "检查这个IPC stub fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/real_ohos/wm/windowstubget_fuzzer.cpp",
+      "expected_output": "Should detect uint32_t casting for IPC message codes, raw data pattern (no FDP), IPC stub pattern (correct structure but with violations)",
+      "files": [
+        "files/fuzzers/real_ohos/wm/windowstubget_fuzzer.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "uint32_ipc_code_detected"
+        },
+        {
+          "text": "raw_data_pattern_detected"
+        },
+        {
+          "text": "ipc_stub_structure_ok"
+        },
+        {
+          "text": "fdp_replacement_suggested"
+        }
+      ]
+    },
+    {
+      "id": 81,
+      "eval_name": "real_check_memory_manager_fuzzer",
+      "category": "core_scenario",
+      "prompt": "检查这个fuzz测试代码是否符合安全编码规范，文件在files/fuzzers/real_ohos/2d/rsmemorymanager001_fuzzer.cpp",
+      "expected_output": "Should find minimal violations in this mostly-compliant real fuzzer. Should NOT false-positive on LLVMFuzzerInitialize, FDP usage, uint8_t dispatch",
+      "files": [
+        "files/fuzzers/real_ohos/2d/rsmemorymanager001_fuzzer.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "no_false_positive_on_fdp"
+        },
+        {
+          "text": "no_false_positive_on_init"
+        },
+        {
+          "text": "no_false_positive_on_uint8_dispatch"
+        }
+      ]
+    }
+  ],
+  "last_updated": "2026-06-15"
+}

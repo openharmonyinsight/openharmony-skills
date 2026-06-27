@@ -1,0 +1,108 @@
+{
+  "skill_name": "ohos-test-graphics-3d-static-api-unit-test",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "为 OpenHarmony graphic_3d 模块新增的 `CameraETS` 包装类生成单元测试文件。该类有 `Create()`、`IsValid()`、`Destroy()` 方法。请生成创建验证和有效性检查的测试用例，输出完整的测试文件。",
+      "expected_output": "Produces a complete `camera_ets_unit_test.cpp` test file with proper OpenHarmony test conventions for CameraETS creation and validity checks.",
+      "files": [],
+      "expectations": [
+        "The output file name follows `<module>_ets_unit_test.cpp` convention (e.g., `camera_ets_unit_test.cpp`).",
+        "The test class is named `CameraETSUnitTest` and inherits from `EtsTest`.",
+        "Each test case has the `@tc.name`, `@tc.desc`, `@tc.type` annotation block.",
+        "Test cases use `HWTEST_F` macro (not `TEST()` or `TEST_F()`).",
+        "Test case names follow `<Class>_<Method>_<Number>` pattern (e.g., `CameraETS_Create_001`, `CameraETS_IsValid_001`).",
+        "Every test case calls `Destroy()` on the ETS object before the test body ends.",
+        "The code is wrapped in `namespace OHOS::Render3D {}`.",
+        "The file includes `common/ets_test.h` and the target header `CameraETS.h`."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "为 `SceneETS` 的 `Load()` 方法补充错误路径测试用例。需要覆盖空路径、有效路径和无效路径三种场景。已有的 `SceneETS_Load_001` 测试了空路径，请生成剩余场景。",
+      "expected_output": "Generates additional Load error path test cases with appropriate test levels and distinct test case numbers.",
+      "files": [],
+      "expectations": [
+        "The output generates at least two additional test cases beyond the existing `SceneETS_Load_001`.",
+        "Test case numbers are sequential and do not collide with existing `SceneETS_Load_001` (e.g., `SceneETS_Load_002`, `SceneETS_Load_003`).",
+        "Error scenario tests use `TestSize.Level2` instead of `Level1`.",
+        "The invalid path test uses `EXPECT_FALSE` to verify the Load failure.",
+        "Each test case still calls `sceneETS->Destroy()` before the test body ends.",
+        "Each test case has a complete `@tc.name/@tc.desc/@tc.type` annotation block with distinct descriptions."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "为 `MaterialETS` 的 `SetAlbedoColor(float r, float g, float b)` 和 `GetAlbedoColor()` 方法生成属性往返测试。验证设置后能正确读取。",
+      "expected_output": "Produces a property roundtrip test that sets a value and verifies the getter returns the same value.",
+      "files": [],
+      "expectations": [
+        "The test follows the setter-then-getter roundtrip pattern.",
+        "The test uses `EXPECT_EQ` or equivalent to compare the getter result with the expected color value.",
+        "The test case name follows the naming convention (e.g., `MaterialETS_SetProperty_001`).",
+        "The test calls `material->Destroy()` before the test body ends.",
+        "The test uses `EXPECT_*` assertions (not `ASSERT_*`) so Destroy() is always reached."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "帮我 review 下面这段 OpenHarmony graphic_3d 单元测试代码是否符合规范，重点看注解、宏、清理和断言用法。先给 findings，再给结论。\n\n```cpp\n#include <gtest/gtest.h>\n#include \"SceneETS.h\"\n\nusing namespace testing;\nusing namespace testing::ext;\n\nclass SceneETS_Test : public EtsTest {\n};\n\nTEST(SceneETS_Test, SceneETS_Load) {\n    auto sceneETS = std::make_shared<SceneETS>();\n    ASSERT_TRUE(sceneETS->IsValid());\n    bool result = sceneETS->Load(\"\");\n    EXPECT_TRUE(result);\n}\n```",
+      "expected_output": "Returns a review with findings-first structure identifying OpenHarmony test convention violations in the snippet.",
+      "files": [],
+      "expectations": [
+        "The review identifies all convention violations with specific line references or code snippets, not just generic advice.",
+        "The review identifies the missing `@tc.name/@tc.desc/@tc.type` annotation block.",
+        "The review identifies `TEST()` should be `HWTEST_F` for OpenHarmony test discovery.",
+        "The review identifies the class name `SceneETS_Test` should be `SceneETSUnitTest`.",
+        "The review identifies the test case name `SceneETS_Load` is missing the `_Number` suffix.",
+        "The review identifies `ASSERT_TRUE` should be `EXPECT_TRUE` to avoid skipping `Destroy()`.",
+        "The review identifies the missing `sceneETS->Destroy()` call before test body ends.",
+        "The review identifies the missing `namespace OHOS::Render3D` wrapper.",
+        "The review identifies the missing `#include \"common/ets_test.h\"`."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "我要为 `MaterialETS` 新增一个独立的单元测试模块 `MaterialETSUnitTest`，请告诉我如何更新 `BUILD.gn`。需要添加源文件 `api_unit_test/material_ets_unit_test.cpp`，头文件在 `kits/ets/include/material` 目录下。请加载 UNITTEST_GUIDE.md 中的完整 BUILD.gn 模板，给出需要修改的片段。",
+      "expected_output": "Provides BUILD.gn snippets for adding the new MaterialETS test module with sources, include_dirs, and platform-specific defines.",
+      "files": [],
+      "expectations": [
+        "The response adds `api_unit_test/material_ets_unit_test.cpp` to the `sources` list.",
+        "The response adds `//foundation/graphic/graphic_3d/kits/ets/include/material` to `include_dirs`.",
+        "The response either adds a new `ohos_unittest(\"MaterialETSUnitTest\")` target or updates the existing target appropriately.",
+        "The response includes the new target in `group(\"unittest\")` deps.",
+        "The response preserves platform-specific `target_cpu` defines for `arm` and `arm64`.",
+        "The response mentions the `LIB_ENGINE_CORE` macro define."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "下面这个测试用例在运行时会导致后续的测试崩溃。请分析原因并修复。\n\n```cpp\n/**\n * @tc.name: SceneETS_Destroy_001\n * @tc.desc: Test SceneETS Destroy\n * @tc.type: FUNC\n */\nHWTEST_F(SceneETSUnitTest, SceneETS_Destroy_001, TestSize.Level1)\n{\n    auto sceneETS = std::make_shared<SceneETS>();\n    ASSERT_TRUE(sceneETS->Load(\"\"));\n    bool result = sceneETS->Load(\"/data/test.glb\");\n    EXPECT_TRUE(result);\n}\n```",
+      "expected_output": "Identifies the missing Destroy() call and the risky ASSERT_TRUE usage, then provides a corrected version.",
+      "files": [],
+      "expectations": [
+        "The response identifies the missing `sceneETS->Destroy()` call as the primary cause of subsequent test crashes.",
+        "The response identifies that `ASSERT_TRUE` on `Load(\"\")` will skip `Destroy()` if the assertion fails.",
+        "The response recommends changing `ASSERT_TRUE` to `EXPECT_TRUE` so the test continues to cleanup.",
+        "The corrected code includes `sceneETS->Destroy()` before the test body ends.",
+        "The response explains that EtsTest TearDown handles engine-level cleanup but per-object Destroy() is the test author's responsibility."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "为 `SceneETS` 的 `Reset()` 方法生成单元测试。`Reset()` 会将场景重置为初始状态，无返回值，调用前场景必须已通过 `Load()` 加载过内容。请根据测试策略表确定需要哪些测试用例，并生成完整代码。",
+      "expected_output": "Applies the test strategy table to determine appropriate test cases for the Reset() method (a method type not explicitly exemplified in the skill), generating tests that cover normal reset, reset without prior Load, and double reset scenarios.",
+      "files": [],
+      "expectations": [
+        "The response applies the test strategy table to determine that Reset() requires: a normal operation test (reset after successful Load), an error path test (reset without prior Load), and an edge case test (double reset).",
+        "The normal reset test uses TestSize.Level1 and verifies Reset() succeeds after a valid Load() call.",
+        "The error path tests (reset without Load, double reset) use TestSize.Level2 instead of Level1.",
+        "All test cases follow the naming convention: SceneETS_Reset_001, SceneETS_Reset_002, etc. with sequential numbering.",
+        "Every test case calls sceneETS->Destroy() before the test body ends.",
+        "All test cases use EXPECT_* assertions (not ASSERT_*) so Destroy() is always reached.",
+        "Each test case has complete @tc.name/@tc.desc/@tc.type annotation blocks with distinct descriptions.",
+        "The code is wrapped in namespace OHOS::Render3D and uses HWTEST_F macro with SceneETSUnitTest class."
+      ]
+    }
+  ]
+}

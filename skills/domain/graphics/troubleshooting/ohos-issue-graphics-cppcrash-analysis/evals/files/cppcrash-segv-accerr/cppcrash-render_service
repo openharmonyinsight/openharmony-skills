@@ -1,0 +1,32 @@
+Device info:OpenHarmony 5.0.1 (SDK API 12) huawei p50 pro
+BuildId: a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0
+Module name: com.ohos.render_service
+Pid: 8901
+Uid: 1000
+Reason: Signal:SIGSEGV(SEGV_ACCERR) fault_addr:0x00000059810e9658
+LastFatalMessage: fatal signal 11
+Stack trace:
+  #00 pc 0000000000003fe0ec /system/lib/librender_service_base.z.so
+  #01 pc 0000000000004a2b30 /system/lib/librender_service_base.z.so
+  #02 pc 0000000000001f5c00 /system/lib/librender_service.z.so
+Registers:
+  x0: 00000059810e9658
+  x1: 0000000000000008
+  x8: 00000059810e9658
+  x19: 00000059810e9658
+  x20: 00000059810e9630
+  x21: 00000059810e9610
+  x22: 0000000000000000
+  x29(fp): 0000007f80001000
+  x30(lr): 00000059810e9610
+  sp: 0000007f80000f00
+Other thread info:
+  Tid: 8902, Name: RSMainThread
+  #00 pc 0000000000003a5c00 /system/lib/librender_service_base.z.so(RSMainThread::OnVsync())
+Memory near registers:
+  x19(+0): 5981 0e96 5800 0000 5981 0e96 5800 0000
+  x19(+16): 5981 0e96 5800 0000 5981 0e96 1000 0000
+Maps:
+  00000050-00000060 /system/lib/librender_service_base.z.so (r-xp)
+  00000058-0000005900000000 /dev/ashmem/dalvik-heap (rw-p)
+  0000005981000000-00000059810f0000 /dev/ashmem/dalvik-heap (rw-p)

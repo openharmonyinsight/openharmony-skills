@@ -1,0 +1,112 @@
+{
+  "skill_name": "ohos-dev-arkruntime-base-lib-code-review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我审查 third_party_musl 仓库的 PR #2463，这是仓库地址 https://gitcode.com/openharmony/third_party_musl",
+      "expected_output": "一份结构化审查报告，包含5个章节：PR信息、通用审查、语言补充审查（C/C++检查清单8项逐项通过/不通过）、仓库专属审查（musl导出符号兼容性检查）、总结（严重/警告/建议数量统计）。由于无法实际拉取PR分支，agent应说明需要先fetch PR分支，或基于用户提供的内容进行分析。",
+      "files": [],
+      "assertions": [
+        "输出包含5步审查流程的完整结构：PR信息、通用审查、语言补充审查、仓库专属审查、总结",
+        "语言补充审查中C/C++检查清单8项全部被逐项检查，每项有明确的通过/不通过结论",
+        "仓库专属审查中包含musl导出符号兼容性（libc.map.txt）的检查",
+        "总结中包含按严重程度（严重/警告/建议）的统计",
+        "识别出仓库为third_party_musl并执行了仓库专属检查（Step 4）"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "review一下基础库的代码，这是signal handler相关的变更",
+      "expected_output": "识别触发信号，执行C/C++检查清单。对信号安全性检查项应重点关注，发现信号处理函数中使用非信号安全函数（snprintf、printf、malloc、free、getenv等）的问题，标记为严重。同时应指出fork后使用非信号安全函数的问题。",
+      "files": ["evals/files/signal_handler_diff.patch"],
+      "assertions": [
+        "正确识别任务为代码审查并执行审查流程",
+        "发现信号处理函数sigusr1_handler中使用了snprintf（非信号安全函数）",
+        "发现信号处理函数中使用了printf（非信号安全函数）",
+        "发现信号处理函数中使用了malloc/free（非信号安全函数）",
+        "发现信号处理函数中使用了getenv（非信号安全函数）",
+        "发现fork_with_logging函数中fork后使用了printf和fopen（非信号安全函数）",
+        "信号安全性违规被标记为'严重'级别",
+        "检查了C/C++检查清单中所有8项，不仅仅是信号安全性"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Please review this C code change for resource management issues in a base library project",
+      "expected_output": "一份完整的审查报告，应发现：接口配对错误（opendir/close而非closedir）、线程不安全接口（localtime、strtok、gethostbyname）、接口配对错误（getaddrinfo/free而非freeaddrinfo）、pthread_create未检查返回值且未join/detach。每类问题应关联到对应的检查清单项目。",
+      "files": ["evals/files/resource_mgmt_diff.patch"],
+      "assertions": [
+        "发现opendir/close配对错误（应使用closedir），关联到接口配对使用规范检查项",
+        "发现localtime是线程不安全接口（应使用localtime_r），关联到多线程调用线程不安全接口检查项",
+        "发现strtok是线程不安全接口（应使用strtok_r）",
+        "发现gethostbyname是线程不安全接口（应使用getaddrinfo）",
+        "发现cleanup_net_info中使用free释放getaddrinfo结果（应使用freeaddrinfo），关联到接口配对使用规范",
+        "发现pthread_create未检查返回值，关联到错误处理与异常捕获检查项",
+        "发现pthread_create未join/detach线程，关联到错误处理与异常捕获检查项",
+        "C/C++检查清单8项全部被逐项检查"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "帮我review一下这个musl仓库的libc.map变更，看看有没有ABI兼容性问题",
+      "expected_output": "识别为third_party_musl仓库审查，重点检查libc.map.txt导出符号变更。应发现：1)新增pthread_create_ex符号（需验证命名规范）；2)删除memccpy符号（ABI破坏，严重）。同时执行C/C++通用检查清单。",
+      "files": ["evals/files/musl_libc_map_diff.patch"],
+      "assertions": [
+        "识别出libc.map.txt变更，执行musl导出符号兼容性检查",
+        "发现删除了memccpy导出符号，标记为ABI破坏性变更（严重）",
+        "发现新增了pthread_create_ex导出符号，检查其命名规范",
+        "将删除导出符号标记为'严重'级别",
+        "执行了C/C++语言补充知识审查（Step 3）"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "帮我审查一下 arkcompiler_runtime_core 的 PR #100",
+      "expected_output": "识别为arkcompiler_runtime_core仓库，但该仓库暂无专属审查项，应在报告中注明跳过仓库专属检查，仍然执行Step 1-3的通用审查和语言补充审查。",
+      "files": [],
+      "assertions": [
+        "正确识别目标仓库为arkcompiler_runtime_core",
+        "报告中注明该仓库暂无专属审查项，已跳过Step 4",
+        "仍然执行了通用审查（Step 2）和语言补充审查（Step 3）",
+        "未编造runtime_core的仓库专属检查项"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "review一下这个第三方库 xyz_lib 的PR #50",
+      "expected_output": "识别仓库不在支持列表中，跳过仓库专属检查（Step 4），但仍然执行Step 1-3。报告中应明确注明仓库专属检查已跳过及原因。",
+      "files": [],
+      "assertions": [
+        "识别出仓库xyz_lib不在支持列表中",
+        "跳过Step 4仓库专属知识审查",
+        "仍然执行了Step 1-3的审查流程",
+        "报告中注明仓库专属检查已跳过及原因"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "帮我审查一下这个PR，只有文档变更",
+      "expected_output": "识别PR仅包含文档变更（非代码文件），跳过语言专属和仓库专属检查，仅对文档内容进行通用审查。应遵循Exceptions and Fallbacks中的规定。",
+      "files": ["evals/files/docs_only_diff.patch"],
+      "assertions": [
+        "识别出变更仅包含文档文件（无C/C++/ArkTS代码）",
+        "跳过语言专属检查（Step 3）和仓库专属检查（Step 4）",
+        "仍对文档内容进行通用审查",
+        "报告中注明跳过语言和仓库专属检查的原因"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "这段代码里用了setenv和getenv，帮我审查一下有没有问题，这是基础库项目",
+      "expected_output": "识别setenv/getenv崩溃风险，执行C/C++检查清单第5项。应指出setenv/getenv的并发风险、悬空指针问题，以及推荐的替代方案。",
+      "files": [],
+      "assertions": [
+        "识别出setenv/getenv使用场景，触发对应的检查清单项",
+        "指出setenv/getenv的线程安全风险（并发调用导致悬空指针）",
+        "提及getenv返回值可能因setenv而失效",
+        "提供替代方案（如启动时一次性读取、secure_getenv、全局读写锁等）",
+        "检查了C/C++检查清单中的其他项（不仅仅是setenv/getenv）"
+      ]
+    }
+  ]
+}

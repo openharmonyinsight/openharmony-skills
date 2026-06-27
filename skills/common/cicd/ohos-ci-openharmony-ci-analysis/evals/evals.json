@@ -1,0 +1,57 @@
+{
+  "skill_name": "ohos-ci-openharmony-ci-analysis",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我查看 PR 82764 的 CI 状态，仓库是 openharmony/arkui_ace_engine，看看有没有编译失败",
+      "expected_output": "使用 bundled script 查询 PR CI 状态，输出 per-job 结果和 overall 判定",
+      "files": [],
+      "expectations": [
+        "Agent uses the bundled script scripts/openharmony_ci.py with --pr 82764 and --repo openharmony/arkui_ace_engine",
+        "Agent requests network permission before running the script",
+        "Output includes overall CI result (overall=success/failed) and per-job status",
+        "Agent uses --log-mode auto (default) to only fetch logs for failed jobs",
+        "Agent correctly interprets the CI results rather than just dumping raw output"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "这个 PR 的 CI 怎么挂了？https://gitcode.com/openharmony/arkui_ace_engine/pull/82764 帮我看下失败日志和静态检查错误",
+      "expected_output": "使用 bundled script 查询 PR URL 的 CI 状态，获取失败日志和静态检查详情",
+      "files": [],
+      "expectations": [
+        "Agent uses the bundled script with --pr-url flag containing the full GitCode PR URL",
+        "Agent requests network permission before running the script",
+        "Agent fetches failure logs for failed jobs (not just status summary)",
+        "Agent fetches and reports static check defects from codeCheckSummary",
+        "Output distinguishes between build failures and static check failures"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "DCP event id 是 69c51ede64650f998b1d01a4，帮我分析下这个 CI event 的构建结果，只要失败的 job 的日志",
+      "expected_output": "使用 bundled script 查询 event ID 的 CI 状态，仅获取失败 job 日志",
+      "files": [],
+      "expectations": [
+        "Agent uses the bundled script with --event-id 69c51ede64650f998b1d01a4",
+        "Agent requests network permission before running the script",
+        "Agent uses --log-mode auto so only failed job logs are fetched",
+        "Output includes per-job result breakdown with failure reasons",
+        "Agent reports both the DCP overall result and individual job failures explicitly"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "查PR 82764 的 CI 时如果发现 static check 失败了，要通过 DCP API 查具体的缺陷详情，这个 API 调用需要注意哪些坑？把完整的请求流程写出来",
+      "expected_output": "Complete DCP codecheck API flow with pitfalls: uuid vs event_id, POST body HTTP 500, defectDetailList, XDG_CACHE_HOME",
+      "files": [],
+      "expectations": [
+        "Distinguishes DCP event_id from payload uuid for codecheck endpoint",
+        "Documents POST body format with pageNum and pageSize",
+        "Warns about empty POST body causing HTTP 500",
+        "Correctly identifies defectDetailList as the source of real errors",
+        "Documents XDG_CACHE_HOME sandbox handling"
+      ]
+    }
+  ]
+}

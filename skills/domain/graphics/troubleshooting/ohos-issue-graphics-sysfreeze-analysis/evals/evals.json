@@ -1,0 +1,578 @@
+{
+  "skill_name": "ohos-issue-graphics-sysfreeze-analysis",
+  "description": "Test suite for ohos-issue-graphics-sysfreeze-analysis skill - verifying that analysis results correctly identify blocking root causes, trace complete blocking chains, prioritize system vs business issues, filter out interference threads, and produce effective diagnostic conclusions from sysfreeze/appfreeze logs with realistic thread noise",
+  "version": "1.2",
+  "created_date": "2026-06-11",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "service_block_mutex_blocking_chain",
+      "category": "core_analysis",
+      "prompt": "分析这个sysfreeze日志，定位进程冻结根因",
+      "expected_output": "Should trace blocking chain from main thread (Tid:1234) mutex wait in PostAndWait/OnVsync to RSUniRenderThread (Tid:5678) as blocking source executing RenderFrame (PostAndWait waits UniRenderThread completion). Must correctly exclude interference threads: OS_IPC_7_8900 (unrelated IPC), RSGpuThread (idle epoll_wait), AppSpawn (unrelated futex_wait), HandlerThread (unrelated RenderNode callbacks). Both stacks identical indicates persistent same-task (FlushFrame) blocking. Root cause: RSUniRenderThread blocking main thread via PostAndWait synchronization in vsync-driven rendering pipeline",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "blocking_chain_from_main_to_unirender",
+          "passed": true,
+          "evidence": "Correctly traces blocking from main thread (Tid:1234) mutex wait in PostAndWait to RSUniRenderThread (Tid:5678) as blocking source executing RenderFrame (main thread synchronously waits UniRenderThread completion per blocking-patterns.md PostAndWait pattern)"
+        },
+        {
+          "text": "root_cause_unirender_blocking_main",
+          "passed": true,
+          "evidence": "Root cause correctly identified as RSUniRenderThread blocking main thread via PostAndWait synchronization in rendering pipeline, not just 'main thread blocked on mutex'"
+        },
+        {
+          "text": "same_task_blocking_concluded",
+          "passed": true,
+          "evidence": "Correctly concludes same task (FlushFrame) persistently blocking based on identical stacks in both grabs, not just 'thread is blocked' per SKILL.md stack comparison strategy"
+        },
+        {
+          "text": "business_scenario_vsync_rendering",
+          "passed": true,
+          "evidence": "Identifies business scenario as vsync-driven rendering pipeline where main thread synchronously waits for UniRenderThread completion in PostAndWait"
+        },
+        {
+          "text": "interference_threads_correctly_filtered",
+          "passed": true,
+          "evidence": "Does NOT include OS_IPC_7_8900 (unrelated IPC NotifySurfaceNodeStatus), RSGpuThread (idle epoll_wait), AppSpawn (unrelated futex_wait), or HandlerThread (RenderNode callbacks with mutex) in the blocking chain. Only traces chain through relevant threads (Tid:1234 → Tid:5678) per SKILL.md: '阻塞通常是由锁竞争或 IPC 调用链导致，需要找到最终的问题线程'"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "thread_block_vsync_mutex_chain",
+      "category": "core_analysis",
+      "prompt": "分析这个sysfreeze日志，定位线程阻塞根因",
+      "expected_output": "Should trace IPC thread (Tid:9500) mutex wait in RequestVsync to main thread (Tid:9200) as lock holder in PostAndWait context. Must correctly exclude interference threads: OS_IPC_2_8100 (unrelated IPC RegisterCallback), RSUniRenderThre (Tid:5500, separate PostAndWait context unrelated to vsync blocking), HandlerThread (idle epoll_wait), RSProperty (idle futex_wait). hilog shows vsync signal not processed and RequestNextVsync too many times corroborating vsync processing blocked. Root cause: mutex contention in vsync request processing between IPC thread and main thread",
+      "files": ["files/sysfreeze-thread-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "blocking_chain_ipc_to_main_thread",
+          "passed": true,
+          "evidence": "Correctly traces IPC thread (Tid:9500) mutex wait in RequestVsync to main thread (Tid:9200) as lock holder in PostAndWait context per blocking-patterns.md mutex analysis"
+        },
+        {
+          "text": "root_cause_mutex_contention_in_vsync",
+          "passed": true,
+          "evidence": "Root cause correctly identified as mutex contention in vsync request processing path between IPC thread and main thread, not just 'IPC thread blocked'"
+        },
+        {
+          "text": "hilog_evidence_corroborates",
+          "passed": true,
+          "evidence": "Uses hilog vsync timeout evidence (vsync signal not processed, RequestNextVsync too many times) to corroborate vsync processing blocking conclusion per hilog-refernce.md"
+        },
+        {
+          "text": "business_scenario_app_vsync_request",
+          "passed": true,
+          "evidence": "Identifies business scenario as app vsync request blocked by render_service internal mutex contention, with hilog showing vsync timeout symptoms"
+        },
+        {
+          "text": "interference_threads_correctly_filtered",
+          "passed": true,
+          "evidence": "Does NOT include OS_IPC_2_8100 (unrelated IPC RegisterCallback), RSUniRenderThre Tid:5500 (separate PostAndWait context not involved in vsync mutex contention), HandlerThread (idle), or RSProperty (idle) in the blocking chain. Correctly focuses on Tid:9500 → Tid:9200 chain only"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "task_queue_ipc_blocking_analysis",
+      "category": "core_analysis",
+      "prompt": "分析这个sysfreeze日志，定位线程阻塞根因",
+      "expected_output": "Should identify CommitTransaction IPC blocking and trace via BinderCatcher to peer 4000:4100 with 6s wait. Must correctly exclude interference threads: OS_IPC_3_8200 (unrelated GetDisplaySnapshot IPC), RSUniRenderThre (idle epoll_wait), RSWatchdog (unrelated CheckThreadBlock routine), HandlerThread (idle futex_wait), RSGpuThread (idle epoll_wait). VIP queue CommitTransaction blocking prevents all task processing. hilog TransactionDataStatistics (2MB, 500 cmds) and IDisplayComposer (800ms) as contributing factors. Root cause: CommitTransaction IPC blocked with large data volume and HDI latency",
+      "files": ["files/sysfreeze-task-queue/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "ipc_blocking_with_binder_traced",
+          "passed": true,
+          "evidence": "Correctly identifies CommitTransaction IPC blocking and traces via BinderCatcher to peer process 4000:4100 with 6s wait per SKILL.md IPC blocking handling"
+        },
+        {
+          "text": "root_cause_ipc_blocked_with_factors",
+          "passed": true,
+          "evidence": "Root cause correctly identified as CommitTransaction IPC call blocked, with large transaction data (2MB, 500 cmds) and HDI latency (800ms) as contributing factors, not just 'IPC call slow'"
+        },
+        {
+          "text": "vip_queue_blocking_concluded",
+          "passed": true,
+          "evidence": "Correctly concludes VIP queue CommitTransaction blocking prevents main thread task processing, blocking all lower priority queued tasks per SKILL.md task queue analysis"
+        },
+        {
+          "text": "business_scenario_transaction_commit",
+          "passed": true,
+          "evidence": "Identifies business scenario as render transaction commit with abnormally large data volume causing IPC latency and task queue stagnation"
+        },
+        {
+          "text": "interference_threads_correctly_filtered",
+          "passed": true,
+          "evidence": "Does NOT include OS_IPC_3_8200 (unrelated GetDisplaySnapshot IPC), RSUniRenderThre (idle), RSWatchdog (routine CheckThreadBlock, not the blocking source), HandlerThread (idle), or RSGpuThread (idle) in the blocking chain analysis. Correctly focuses on Tid:7500 CommitTransaction IPC blocking only"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "post_and_wait_unirender_blocking",
+      "category": "core_analysis",
+      "prompt": "分析这个sysfreeze日志，定位线程阻塞根因",
+      "expected_output": "Should identify PostAndWait pattern where main thread (Tid:4500) waits UniRenderThread completion via condition variable. RSUniRenderThread (Tid:6000) blocked on mutex in Render prevents PostAndWait completion. Must correctly exclude interference threads: OS_IPC_1_3200 (unrelated SurfaceNode notification IPC), RSGpuThread (idle epoll_wait), RSMainLoopTimer (idle timer wait). Root cause: UniRenderThread Render blocked by mutex, main thread PostAndWait cannot receive completion signal",
+      "files": ["files/sysfreeze-post-and-wait/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "post_and_wait_pattern_correctly_identified",
+          "passed": true,
+          "evidence": "Correctly identifies PostAndWait pattern where main thread waits UniRenderThread completion via condition variable per blocking-patterns.md PostAndWait pattern"
+        },
+        {
+          "text": "blocking_source_unirender_mutex",
+          "passed": true,
+          "evidence": "Correctly traces blocking to RSUniRenderThread (Tid:6000) mutex wait in Render as the blocking source preventing PostAndWait completion"
+        },
+        {
+          "text": "root_cause_unirender_render_mutex",
+          "passed": true,
+          "evidence": "Root cause correctly identified as UniRenderThread Render blocked by mutex, preventing main thread PostAndWait from receiving completion signal"
+        },
+        {
+          "text": "business_scenario_uni_render_draw",
+          "passed": true,
+          "evidence": "Identifies business scenario as unified rendering where main thread synchronously waits for UniRenderThread draw completion via PostAndWait"
+        },
+        {
+          "text": "interference_threads_correctly_filtered",
+          "passed": true,
+          "evidence": "Does NOT include OS_IPC_1_3200 (unrelated IPC), RSGpuThread (idle), RSMainLoopTimer (timer wait) - superficially similar pattern but different context, not part of the vsync rendering chain) in the blocking chain. Correctly distinguishes between Tid:4500→Tid:6000 rendering PostAndWait vs Tid:2800 RenderNode PostAndWait"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "eval_name": "mutex_deadlock_multi_lock_chain",
+      "category": "core_analysis",
+      "prompt": "分析这个sysfreeze日志，定位线程阻塞根因",
+      "expected_output": "Should identify lock ordering issue with SwingFrameRate mutex and FrameRateControl recursive_mutex causing blocking chain. Must correctly exclude interference threads: OS_IPC_1_7800 (unrelated ApsManagerStub IPC, not part of deadlock), ApsTimer (timer processing, idle), ApsProperty (idle futex_wait), OS_IPC_5_4400 (mutex wait in GetFrameRateInfo - superficially similar mutex pattern but waiting on different lock, not part of SwingFrameRate/FrameRateControl chain). Complete blocking chain from detected thread: 9876 (holds FrameRateControl, waits SwingFrameRate) → 61947 (holds/in SwingFrameRate, blocked on IPC) → IPC peer. Additionally, 5566 is blocked waiting FrameRateControl held by 9876. Root cause: lock ordering issue where FrameRateControl and SwingFrameRate acquired in different order by concurrent threads, with IPC blocking prolonging SwingFrameRate hold time",
+      "files": ["files/sysfreeze-mutex-deadlock/sysfreeze-apsmgr"],
+      "assertions": [
+        {
+          "text": "deadlock_pattern_correctly_identified",
+          "passed": true,
+          "evidence": "Correctly identifies lock ordering issue pattern with two lock resources (SwingFrameRate mutex + FrameRateControl recursive_mutex) causing blocking chain per blocking-patterns.md mutex example"
+        },
+        {
+          "text": "blocking_chain_from_detected_thread",
+          "passed": true,
+          "evidence": "Correctly traces blocking chain starting from detected thread 9876 (holds FrameRateControl, waits SwingFrameRate) → 61947 (holds/in SwingFrameRate, blocked on IPC) → IPC peer per SKILL.md: '分析从基本信息中的 Tid:<TID> 线程开始'. Also identifies 5566 as additionally blocked waiting FrameRateControl held by 9876"
+        },
+        {
+          "text": "lock_resource_and_ordering",
+          "passed": true,
+          "evidence": "Identifies specific lock resources (SwingFrameRate mutex, FrameRateControl recursive_mutex) and their acquisition ordering causing blocking chain per blocking-patterns.md"
+        },
+        {
+          "text": "root_cause_lock_ordering_with_ipc_blocking",
+          "passed": true,
+          "evidence": "Root cause correctly identified as lock ordering issue: FrameRateControl and SwingFrameRate acquired in different order by concurrent threads, with IPC blocking prolonging SwingFrameRate hold time causing chain blocking"
+        },
+        {
+          "text": "interference_threads_correctly_filtered",
+          "passed": true,
+          "evidence": "Does NOT include OS_IPC_1_7800 (unrelated ApsManagerStub IPC), ApsTimer (timer event processing, not involved in lock contention), ApsProperty (idle), or OS_IPC_5_4400 (mutex wait in GetFrameRateInfo - superficially similar mutex wait but on a different lock, not part of SwingFrameRate/FrameRateControl chain) in the blocking chain. Correctly identifies Tid:9876, Tid:61947 as chain participants, and Tid:5566 as additionally blocked by 9876"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "eval_name": "low_memory_primary_root_cause",
+      "category": "core_analysis",
+      "prompt": "分析这个sysfreeze日志，定位进程冻结根因",
+      "expected_output": "Should identify low memory (ReclaimAvailBuffer=5000) as primary root cause over PostAndWait business blocking. Must correctly exclude interference threads: OS_IPC_1_3800 (unrelated IPC, not affected by memory), RSUniRenderThre (Tid:5500, separate rendering PostAndWait - must NOT treat as independent root cause), RSWatchdog (routine check), HandlerThread (idle), RSGpuThread (idle epoll_wait - GPU context adds noise but is not root cause). MemoryOverflow and GetSaWrap SA:10 timeout corroborate low memory. PostAndWait blocking is symptom of system stress. Root cause: system low memory causing service degradation and task scheduling issues",
+      "files": ["files/sysfreeze-low-memory/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "system_resource_as_primary_root_cause",
+          "passed": true,
+          "evidence": "Correctly identifies low memory (ReclaimAvailBuffer=5000) as primary root cause, not PostAndWait business blocking per SKILL.md: '如果整机资源严重异常，优先报告整机问题'"
+        },
+        {
+          "text": "memory_overflow_evidence_corroborates",
+          "passed": true,
+          "evidence": "Uses MemoryOverflow and GetSaWrap SA:10 timeout hilog evidence to corroborate low memory root cause per hilog-refernce.md"
+        },
+        {
+          "text": "business_blocking_as_symptom",
+          "passed": true,
+          "evidence": "Correctly identifies PostAndWait blocking as symptom/secondary effect of low memory system stress, not independent root cause per SKILL.md system priority rules"
+        },
+        {
+          "text": "root_cause_system_low_memory",
+          "passed": true,
+          "evidence": "Root cause correctly identified as system low memory causing service performance degradation and task scheduling issues, with business blocking being consequential"
+        },
+        {
+          "text": "interference_threads_correctly_filtered",
+          "passed": true,
+          "evidence": "Does NOT treat RSUniRenderThre Tid:5500 PostAndWait as an independent root cause separate from the main thread PostAndWait, does NOT misattribute RSGpuThread GPU context as a memory-related root cause, and correctly identifies all OTHER_THREADS (OS_IPC_1_3800, RSWatchdog, HandlerThread, RSGpuThread) as unrelated to the low memory root cause per SKILL.md: '不要孤立分析单个线程'"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "eval_name": "ipc_block_cross_process_chain",
+      "category": "core_analysis",
+      "prompt": "分析这个sysfreeze日志，定位进程冻结根因",
+      "expected_output": "Should trace cross-process blocking chain: render_service main thread IPC CommitTransaction → BinderCatcher (Caller 3000:3000 → Peer 5000:5100, 15s) → display_manager Tid:5100 blocked on mutex in SetScreenPowerStatus. Must correctly exclude interference threads: RSUniRenderThre (Tid:4200, rendering PostAndWait unrelated to CommitTransaction), OS_IPC_4_6800 (unrelated CreateConnection IPC), RSGpuThread (idle epoll_wait), RSProperty (unrelated property processing). Root cause: display_manager SetScreenPowerStatus mutex blocking causing render_service CommitTransaction IPC to hang",
+      "files": ["files/sysfreeze-ipc-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "cross_process_chain_traced",
+          "passed": true,
+          "evidence": "Correctly traces cross-process blocking chain from render_service main thread → IPC CommitTransaction → BinderCatcher → display_manager peer Tid:5100 per SKILL.md IPC blocking handling"
+        },
+        {
+          "text": "peer_mutex_blocking_identified",
+          "passed": true,
+          "evidence": "Correctly identifies peer thread (display_manager Tid:5100) blocked on mutex in SetScreenPowerStatus as the blocking source per PeerBinder Stacktrace analysis"
+        },
+        {
+          "text": "ipc_wait_duration_contextualized",
+          "passed": true,
+          "evidence": "Correctly contextualizes 15s Binder wait time as severe IPC blocking indicating long-standing cross-process dependency, not just 'IPC call detected'"
+        },
+        {
+          "text": "root_cause_display_manager_mutex",
+          "passed": true,
+          "evidence": "Root cause correctly identified as display_manager SetScreenPowerStatus mutex blocking causing render_service CommitTransaction IPC call to hang"
+        },
+        {
+          "text": "interference_threads_correctly_filtered",
+          "passed": true,
+          "evidence": "Does NOT include RSUniRenderThre Tid:4200 (rendering PostAndWait unrelated to CommitTransaction IPC blocking), OS_IPC_4_6800 (CreateConnection IPC, different transaction not related to CommitTransaction blocking), RSGpuThread (idle), or RSProperty (property processing) in the cross-process blocking chain. Only traces chain through Tid:3000 → BinderCatcher → Tid:5100"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "eval_name": "cond_wait_ddgr_overload_source",
+      "category": "core_analysis",
+      "prompt": "分析这个sysfreeze日志，定位线程阻塞根因",
+      "expected_output": "Should identify DDGRTask thread (Tid:9000, state=R, utime=15000) as blocking SOURCE running but overloaded/slow, not as blocked thread. Must correctly exclude interference threads: OS_IPC_2_5600 (RequestVsync IPC - superficially similar vsync function but unrelated to DDGR overload), RSUniRenderThre (Tid:3400, rendering PostAndWait - different rendering path, not the blocking source for the main thread), HandlerThread (idle epoll_wait), RSGpuThread (idle epoll_wait). PostAndWait condition_variable::wait waits for DDGRTask DrawOp completion. Root cause: DDGRTask execution overload (DoExecute slow) causing PostAndWait to not receive completion signal",
+      "files": ["files/sysfreeze-cond-wait/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "ddgr_task_as_blocking_source_not_blocked",
+          "passed": true,
+          "evidence": "Correctly identifies DDGRTask thread (Tid:9000, state=R) as blocking SOURCE (overloaded/slow execution), not as a blocked thread per SKILL.md thread state analysis"
+        },
+        {
+          "text": "overload_evidence_from_utime_stime",
+          "passed": true,
+          "evidence": "Uses DDGRTask high utime=15000 and stime=8000 as evidence of thread overload/long execution time corroborating PostAndWait blocking per SKILL.md thread state analysis"
+        },
+        {
+          "text": "post_and_wait_wait_pattern_identified",
+          "passed": true,
+          "evidence": "Correctly identifies PostAndWait with condition_variable::wait pattern where main thread waits for DDGRTask DrawOp execution completion per blocking-patterns.md"
+        },
+        {
+          "text": "root_cause_ddgr_execution_overload",
+          "passed": true,
+          "evidence": "Root cause correctly identified as DDGRTask thread execution overload (DoExecute/GrDrawOp slow) causing PostAndWait condition wait to not receive completion signal in time"
+        },
+        {
+          "text": "interference_threads_correctly_filtered",
+          "passed": true,
+          "evidence": "Does NOT misidentify RSUniRenderThre Tid:3400 (PostAndWait rendering path) as the blocking source for the main thread condition_variable wait. Does NOT include OS_IPC_2_5600 (RequestVsync - superficially similar vsync context but unrelated to DDGR overload) in the blocking chain. Correctly identifies only DDGRTask Tid:9000 as the blocking source and main thread Tid:7800 as the blocked thread"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "eval_name": "no_isolate_single_thread",
+      "category": "forbidden_analysis",
+      "prompt": "快速分析这个sysfreeze日志，给我根因",
+      "expected_output": "Must NOT conclude root cause as 'main thread blocked on mutex' without tracing who holds the mutex and why. Must NOT misidentify interference threads (OS_IPC_7_8900, HandlerThread with mutex) as blocking chain participants. Must trace blocking chain to RSUniRenderThread as actual blocking source. Root cause must include complete chain context: who blocks whom and why per SKILL.md forbidden rule #3",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "root_cause_not_just_blocked_thread",
+          "passed": true,
+          "evidence": "Does NOT conclude root cause as 'main thread blocked on mutex' without identifying who holds the mutex (RSUniRenderThread) and why (RenderFrame) per SKILL.md: '不要孤立分析单个线程'"
+        },
+        {
+          "text": "blocking_chain_not_missed",
+          "passed": true,
+          "evidence": "Does NOT miss blocking chain analysis, includes other thread (RSUniRenderThread) context in root cause per SKILL.md: '阻塞通常是由锁竞争或 IPC 调用链导致，需要找到最终的问题线程'"
+        },
+        {
+          "text": "complete_chain_in_conclusion",
+          "passed": true,
+          "evidence": "Root cause conclusion includes complete chain context: blocked thread → blocking source thread → blocking reason, not isolated single-thread analysis"
+        },
+        {
+          "text": "interference_threads_not_in_chain",
+          "passed": true,
+          "evidence": "Does NOT include HandlerThread (with mutex in ProcessPendingCallbacks) or OS_IPC_7_8900 (with IPC WaitForCompletion) in the blocking chain despite superficial mutex/IPC similarity. Correctly identifies only RSUniRenderThre Tid:5678 as the lock holder per SKILL.md blocking chain tracing rules"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "eval_name": "no_ignore_system_resource_severe",
+      "category": "forbidden_analysis",
+      "prompt": "分析这个sysfreeze日志",
+      "expected_output": "Must NOT treat PostAndWait as independent root cause when ReclaimAvailBuffer=5000 indicates severe low memory. Must NOT misattribute RSUniRenderThre (Tid:5500) PostAndWait as separate business blocking root cause. Must prioritize system resource issue over business blocking per SKILL.md. PostAndWait blocking is consequential effect of low memory, not root cause per SKILL.md forbidden rule #2",
+      "files": ["files/sysfreeze-low-memory/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "system_resource_not_overlooked",
+          "passed": true,
+          "evidence": "Does NOT overlook ReclaimAvailBuffer=5000 indicating severe low memory per SKILL.md: '不要忽略整机资源状态'"
+        },
+        {
+          "text": "business_blocking_not_misattributed",
+          "passed": true,
+          "evidence": "Does NOT misattribute PostAndWait blocking as independent root cause when system resource is severely abnormal per SKILL.md priority rules"
+        },
+        {
+          "text": "priority_per_skill_rules",
+          "passed": true,
+          "evidence": "Follows SKILL.md priority: '如果整机资源严重异常（如内存接近耗尽），优先报告整机问题' - low memory is primary, PostAndWait is secondary"
+        },
+        {
+          "text": "interference_threads_not_over_interpreted",
+          "passed": true,
+          "evidence": "Does NOT misattribute RSUniRenderThre Tid:5500 PostAndWait as an additional independent business blocking root cause, and does NOT treat RSGpuThread (GPU epoll_wait context) as evidence of GPU memory root cause per SKILL.md: '不要忽略整机资源状态' and '不要强行结论'"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "eval_name": "no_treat_running_as_blocked",
+      "category": "forbidden_analysis",
+      "prompt": "分析这个sysfreeze日志",
+      "expected_output": "Must NOT misidentify DDGRTask (state=R) as a blocked thread. Must NOT misidentify RSUniRenderThre (Tid:3400, state=S) as blocking source for the main thread - it's a separate rendering path. Must NOT treat OS_IPC_2_5600 (RequestVsync) as part of the blocking chain. state=R means running, high utime=15000 means long execution time. DDGRTask is the blocking SOURCE (slow execution blocking PostAndWait), not a blocked thread itself. Correct analysis: overloaded running thread causes others to wait per SKILL.md thread state analysis",
+      "files": ["files/sysfreeze-cond-wait/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "running_state_correctly_interpreted",
+          "passed": true,
+          "evidence": "Correctly interprets DDGRTask state=R as running (executing), does NOT misidentify as blocked per SKILL.md: '如果线程栈顶未等待资源/陷入内核但未处于执行状态（state=S）'"
+        },
+        {
+          "text": "high_utime_not_blocking_evidence",
+          "passed": true,
+          "evidence": "Does NOT use high utime=15000 as evidence that DDGRTask is 'blocked' - high utime means long execution time, indicating overload not blocking"
+        },
+        {
+          "text": "blocking_direction_correct",
+          "passed": true,
+          "evidence": "Identifies DDGRTask as blocking SOURCE (slow execution blocking others via PostAndWait), not as a blocked thread itself"
+        },
+        {
+          "text": "interference_render_thread_not_misidentified",
+          "passed": true,
+          "evidence": "Does NOT misidentify RSUniRenderThre Tid:3400 (state=S, separate rendering PostAndWait path) as the blocking source for the main thread's condition_variable wait. DDGRTask Tid:9000 is the only blocking source per SKILL.md: '阻塞通常是由锁竞争或 IPC 调用链导致，需要找到最终的问题线程'"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "eval_name": "no_skip_stack_comparison_implication",
+      "category": "forbidden_analysis",
+      "prompt": "分析这个sysfreeze日志",
+      "expected_output": "Must NOT just confirm 'thread is blocked' from identical stacks. Must NOT include interference threads (OS_IPC_7_8900 IPC, HandlerThread mutex) in the persistent blocking conclusion. Identical stacks across two detection points means persistent same-task blocking, not just 'confirmed blocking'. Must correctly conclude FlushFrame task continuously blocking across entire detection period, not transient or different-task blocking per SKILL.md",
+      "files": ["files/sysfreeze-service-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "identical_stacks_not_just_confirmed",
+          "passed": true,
+          "evidence": "Does NOT just confirm 'thread is blocked' from identical stacks but correctly concludes persistent same-task blocking per SKILL.md: '两次抓栈一致：卡在同一业务'"
+        },
+        {
+          "text": "persistent_blocking_concluded",
+          "passed": true,
+          "evidence": "Correctly concludes persistent (not transient) blocking from identical stacks across two detection points per SKILL.md stack comparison strategy"
+        },
+        {
+          "text": "same_task_blocking_not_transient",
+          "passed": true,
+          "evidence": "Identifies same task (FlushFrame) continuously blocking across entire detection period, not different tasks or transient blocking per SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "eval_name": "low_memory_vs_business_priority",
+      "category": "root_cause_correctness",
+      "prompt": "分析这个sysfreeze日志，这个进程为什么会冻结",
+      "expected_output": "When both system resource issue (ReclaimAvailBuffer=5000) and business blocking (PostAndWait) exist, must correctly prioritize: primary root cause is low memory causing system-level crisis, PostAndWait blocking is secondary effect. Must NOT misidentify RSUniRenderThre (Tid:5500) PostAndWait as a separate independent root cause. Must present both issues and explain priority with evidence per SKILL.md",
+      "files": ["files/sysfreeze-low-memory/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "primary_root_cause_is_low_memory",
+          "passed": true,
+          "evidence": "Primary root cause is correctly identified as system low memory (ReclaimAvailBuffer=5000 near exhaustion + MemoryOverflow), not PostAndWait blocking"
+        },
+        {
+          "text": "both_issues_presented",
+          "passed": true,
+          "evidence": "Both system resource and business blocking issues are presented in analysis per SKILL.md: '如果无法确定，在报告中同时列出两种可能性'"
+        },
+        {
+          "text": "priority_evidence_explained",
+          "passed": true,
+          "evidence": "Priority judgment is explained with evidence: ReclaimAvailBuffer near exhaustion + MemoryOverflow indicates system-level crisis overriding business blocking per SKILL.md priority rules"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "eval_name": "deadlock_vs_simple_mutex_correctness",
+      "category": "root_cause_correctness",
+      "prompt": "分析这个sysfreeze日志，判断阻塞类型和根因",
+      "expected_output": "Must correctly distinguish lock ordering issue with multi-lock chain (SwingFrameRate mutex + FrameRateControl recursive_mutex, 9876 holds FrameRateControl waiting SwingFrameRate, 61947 holds/in SwingFrameRate blocked on IPC) from simple mutex wait (single lock, single holder like OS_IPC_5_4400). Must NOT misidentify OS_IPC_5_4400 (mutex wait in GetFrameRateInfo) as part of the lock ordering chain. Root cause: lock ordering issue with IPC blocking prolonging lock hold time, not simple mutex contention",
+      "files": ["files/sysfreeze-mutex-deadlock/sysfreeze-apsmgr"],
+      "assertions": [
+        {
+          "text": "lock_ordering_not_simple_mutex",
+          "passed": true,
+          "evidence": "Correctly distinguishes lock ordering issue with multi-lock chain (FrameRateControl and SwingFrameRate acquired in different order by concurrent threads) from simple mutex wait (single lock, single holder like OS_IPC_5_4400) per blocking-patterns.md"
+        },
+        {
+          "text": "lock_chain_dependency_identified",
+          "passed": true,
+          "evidence": "Identifies lock chain dependency: 9876 holds FrameRateControl waiting SwingFrameRate, 61947 holds/in SwingFrameRate blocked on IPC, creating blocking chain where lock ordering causes threads to block each other per blocking-patterns.md example"
+        },
+        {
+          "text": "chain_structure_multi_lock_specific",
+          "passed": true,
+          "evidence": "Blocking chain structure identified as multi-lock chain (lock ordering with concurrent threads acquiring locks in different order, IPC blocking prolonging hold time), not just linear chain from blocked thread to single lock holder"
+        },
+        {
+          "text": "interference_mutex_not_in_chain",
+          "passed": true,
+          "evidence": "Does NOT misidentify OS_IPC_5_4400 (mutex wait in GetFrameRateInfo) as a lock ordering chain participant - it's a simple mutex wait on a different lock resource, not part of the SwingFrameRate/FrameRateControl chain"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "eval_name": "overload_source_not_blocked_thread",
+      "category": "root_cause_correctness",
+      "prompt": "分析这个sysfreeze日志，判断阻塞源头",
+      "expected_output": "Must correctly identify DDGRTask (state=R, utime=15000) as blocking source thread executing but slow/overloaded, NOT as blocked thread. Must NOT misidentify RSUniRenderThre (Tid:3400) as blocking source for the main thread. Must NOT include OS_IPC_2_5600 (RequestVsync) in the blocking chain. Root cause direction: slow DDGRTask execution causes PostAndWait timeout on main thread. Must combine state=R + utime=15000 to conclude overload, not blocking per SKILL.md thread state analysis",
+      "files": ["files/sysfreeze-cond-wait/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "ddgr_correctly_identified_as_source",
+          "passed": true,
+          "evidence": "DDGRTask correctly identified as blocking source thread (executing but slow/overloaded), not as blocked thread itself"
+        },
+        {
+          "text": "state_and_utime_correctly_combined",
+          "passed": true,
+          "evidence": "Combines state=R (running) + utime=15000 (long execution) to conclude thread overload, NOT blocking per SKILL.md: '结合 utime/stime 和抓栈时间间隔，确定线程在用户态和内核态的执行时长'"
+        },
+        {
+          "text": "root_cause_direction_correct",
+          "passed": true,
+          "evidence": "Root cause direction correct: slow DDGRTask execution causes PostAndWait timeout on main thread, not 'blocked DDGRTask causes other thread to wait'"
+        },
+        {
+          "text": "interference_threads_not_misidentified",
+          "passed": true,
+          "evidence": "Does NOT misidentify RSUniRenderThre Tid:3400 (state=S, separate rendering path) as blocking source for main thread, and does NOT include OS_IPC_2_5600 (RequestVsync, unrelated IPC) in the blocking chain per SKILL.md: '阻塞通常是由锁竞争或 IPC 调用链导致，需要找到最终的问题线程'"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "eval_name": "blocking_path_complete_description",
+      "category": "report_quality",
+      "prompt": "分析这个sysfreeze日志，定位进程冻结根因并生成分析报告",
+      "expected_output": "Report must describe complete blocking path: start point (render_service main thread CommitTransaction IPC) → cross-process point (BinderCatcher Caller→Peer, 15s) → end point (display_manager Tid:5100 mutex in SetScreenPowerStatus). Must NOT include interference threads (RSUniRenderThre, OS_IPC_4_6800, RSGpuThread, RSProperty) in the blocking path. Must clearly mark IPC as cross-process blocking point with specific peer details",
+      "files": ["files/sysfreeze-ipc-block/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "blocking_path_start_end_marked",
+          "passed": true,
+          "evidence": "Report describes complete blocking path with clear start (render_service main thread IPC CommitTransaction) and end (display_manager mutex SetScreenPowerStatus) per SKILL.md: '描述从阻塞线程开始到最终问题线程的完整调用链'"
+        },
+        {
+          "text": "ipc_cross_process_marked",
+          "passed": true,
+          "evidence": "IPC cross-process blocking point clearly marked with BinderCatcher details (Caller 3000:3000 → Peer 5000:5100, WaitTime 15s, SyncCall) per SKILL.md: '标注关键阻塞点和等待的资源'"
+        },
+        {
+          "text": "lock_resource_at_endpoint",
+          "passed": true,
+          "evidence": "Lock resource at blocking chain endpoint (mutex in DisplayManagerService::SetScreenPowerStatus) identified and marked per SKILL.md: '标注关键阻塞点和等待的资源'"
+        },
+        {
+          "text": "interference_threads_excluded_from_path",
+          "passed": true,
+          "evidence": "Blocking path does NOT include RSUniRenderThre Tid:4200, OS_IPC_4_6800, RSGpuThread, or RSProperty in the path description. Only includes relevant chain: Tid:3000 main → BinderCatcher → display_manager Tid:5100"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "eval_name": "optimization_suggestion_matches_root_cause",
+      "category": "report_quality",
+      "prompt": "分析这个sysfreeze日志，定位线程阻塞根因并给出优化建议",
+      "expected_output": "Optimization suggestions must specifically address identified lock ordering root cause: lock ordering fix, lock scope reduction, avoiding nested SwingFrameRate+FrameRateControl locks, reducing IPC blocking duration. Must NOT give generic 'optimize performance' suggestions or suggestions based on interference threads (ApsTimer, ApsProperty, OS_IPC_5_4400). Must include practical code-level suggestions for lock management in frame rate control",
+      "files": ["files/sysfreeze-mutex-deadlock/sysfreeze-apsmgr"],
+      "assertions": [
+        {
+          "text": "suggestions_address_lock_ordering",
+          "passed": true,
+          "evidence": "Optimization suggestions specifically address lock ordering root cause (lock ordering fix, lock scope reduction, avoiding nested SwingFrameRate+FrameRateControl locks, reducing IPC blocking duration)"
+        },
+        {
+          "text": "suggestions_not_generic",
+          "passed": true,
+          "evidence": "Suggestions are NOT generic 'optimize performance' but specific to identified lock ordering issue and the SwingFrameRate/FrameRateControl lock management"
+        },
+        {
+          "text": "suggestions_practical",
+          "passed": true,
+          "evidence": "Suggestions include practical code-level changes relevant to SwingFrameRate/FrameRateControl lock acquisition ordering and scope, plus IPC timeout handling"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "eval_name": "task_queue_timing_and_priority_analysis",
+      "category": "deep_analysis",
+      "prompt": "分析这个sysfreeze日志，重点分析任务队列阻塞情况",
+      "expected_output": "Should analyze VIP queue CommitTransaction blocking main thread, High queue unfinished RenderFrame_Task2 timing, Watchdog task submission time matching expected detection time. Must NOT treat RSWatchdog (Tid:9800) in OTHER_THREADS as the blocking source - it's an interference thread doing routine checking. Should identify VIP task blocking preventing all lower priority tasks. Should conclude task queue stagnation from IPC blocked VIP task",
+      "files": ["files/sysfreeze-task-queue/sysfreeze-render_service"],
+      "assertions": [
+        {
+          "text": "vip_queue_blocking_chain_concluded",
+          "passed": true,
+          "evidence": "Correctly concludes VIP queue CommitTransaction blocking prevents main thread from processing all queued tasks (High, Immediate, Low) per SKILL.md task queue analysis"
+        },
+        {
+          "text": "task_timing_analyzed",
+          "passed": true,
+          "evidence": "Analyzes task queue timing: CommitTransaction trigger time vs Watchdog time, RenderFrame_Task2 trigger time vs complete time to identify execution patterns per SKILL.md: '验证时间合理性'"
+        },
+        {
+          "text": "unfinished_task_impact",
+          "passed": true,
+          "evidence": "Identifies impact of unfinished RenderFrame_Task2 (completeTime=null) as additional queue stagnation indicator alongside VIP CommitTransaction blocking"
+        },
+        {
+          "text": "root_cause_queue_stagnation_from_ipc",
+          "passed": true,
+          "evidence": "Root cause correctly identified as task queue stagnation caused by IPC-blocked VIP CommitTransaction task preventing all queue processing"
+        },
+        {
+          "text": "interference_threads_not_blocking_source",
+          "passed": true,
+          "evidence": "Does NOT treat RSWatchdog Tid:9800 (CheckThreadBlock routine in OTHER_THREADS) as a blocking source or as evidence that Watchdog detected blocking - it's an interference thread doing routine checking, not the cause per SKILL.md: '阻塞通常是由锁竞争或 IPC 调用链导致，需要找到最终的问题线程'"
+        }
+      ]
+    }
+  ]
+}

@@ -76,3 +76,42 @@ Phase 5 三重校验发现问题时：
 | 参数类型不一致 | 对照 C++ 实现修正类型声明后重新检查 |
 
 所有自动修复完成后，如果仍有未通过的检查项，提交给用户确认。
+
+## 4. Common Failure Patterns
+
+### 编译失败：OH_xxx 函数未定义
+- **症状**：`undefined reference to 'OH_Camera_Start'`（链接阶段报错，不是编译阶段）
+- **根因**：.h 头文件中该函数被 `#ifdef OHOS_ENABLE_*` 包裹，目标编译配置未启用该 feature
+- **排查**：在 .h 中搜索目标函数，检查其上方是否有条件编译宏；如果有，确认目标设备的 feature 配置是否启用
+- **修复**：在 N-API 封装中加 `#ifdef` 守卫，或跳过该函数
+
+### 运行时崩溃：所有 N-API 函数都是 undefined
+- **症状**：`TypeError: testNapi.xxx is not a function`（不是某个函数，而是**所有**函数都报错）
+- **根因**：`napi_module` 的 `nm_modname` 字段不是 `"entry"`，或 ETS 侧 `import testNapi from 'libentry.so'` 中 so 名与模块名不匹配
+- **排查**：检查 NapiTest.cpp 中 `napi_module` 的 `.nm_modname` → 检查 `oh-package.json5` 的 `name` 字段 → 检查 ETS import 路径，三者必须一致
+- **修复**：统一使用 `nm_modname = "entry"`，ETS 侧 `import testNapi from 'libentry.so'`
+
+### 编译失败：测试套名称不匹配
+- **症状**：`build.sh` 执行成功但 `out/` 目录下无 HAP 产物
+- **根因**：传入的 `suite` 参数与 BUILD.gn 中 `ohos_js_app_suite("Name")` 的 Name 不一致
+- **排查**：读取测试套目录下的 BUILD.gn，用 `grep -E 'ohos_js_app_suite\(' BUILD.gn | sed -n 's/.*("\([^"]*\)").*/\1/p'` 提取正确名称
+- **修复**：用提取的名称重新执行编译命令
+- **注意**：名称区分大小写，且可能与目录名不同
+
+### 运行时崩溃：三层名称不一致
+- **症状**：单个函数 `TypeError: testNapi.someFunc is not a function`（其他函数正常）
+- **根因**：NapiTest.cpp 中 `DECLARE_NAPI_FUNCTION("someFunc", ...)` 的第一个字符串参数 ↔ index.d.ts 中 `export const someFunc: ...` ↔ .test.ets 中 `testNapi.someFunc(...)` 三者名称不完全一致（大小写差异、拼写错误、命名风格混用）
+- **排查**：运行 `bash scripts/verify_napi_triple.sh ${TARGET_PATH}`，脚本会列出定义/注册/声明/调用四层的不一致
+- **修复**：以 index.d.ts 的声明名为准，修改 NapiTest.cpp 中的字符串参数和 .test.ets 中的调用名
+
+### 编译通过但行为异常：字符串参数截断
+- **症状**：编译通过，但某些测试运行时 C API 返回意外结果（如 HiLog 输出乱码、文件路径无效）
+- **根因**：N-API 封装中 `napi_get_value_string_utf8(env, args[0], buffer, bufferSize, &len)` 的 `bufferSize` 设置过小（如 64），字符串被截断但函数不报错（返回 `napi_ok`）
+- **排查**：检查 NapiTest.cpp 中所有字符串提取的 buffer 大小，对比 .h 中文档声明的最大长度
+- **修复**：使用 256 或更大的缓冲区，或先用 `napi_get_value_string_utf8` 传入 `nullptr` 获取所需长度再动态分配
+
+### 覆盖率扫描：API 调用计数为 0
+- **症状**：APICoverageDetector 扫描报告显示测试文件存在但目标 API 调用计数为 0
+- **根因**：N-API 封装中调用的 C 函数名与 .h 中声明的函数名不完全匹配（大小写差异、拼写错误、或调用了内部实现而非公开 API）
+- **排查**：对比 NapiTest.cpp 中的函数调用名与 .h 中的声明，逐字符比对
+- **修复**：确保 N-API 封装中调用的函数名与 .h 头文件中的公开 API 声明完全一致

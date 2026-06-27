@@ -1,0 +1,11 @@
+[142/900] ACTION //build:preloader
+[2881/9031] CXX obj/foundation/arkui/ace_engine/frameworks/core/components_ng/pattern/foo/foo_pattern.o
+FAILED: obj/foundation/arkui/ace_engine/frameworks/core/components_ng/pattern/foo/foo_pattern.o
+../../prebuilts/clang/ohos/linux-x86_64/llvm/bin/clang++ -MMD -MF obj/foundation/arkui/ace_engine/frameworks/core/components_ng/pattern/foo/foo_pattern.o.d -c ../../foundation/arkui/ace_engine/frameworks/core/components_ng/pattern/foo/foo_pattern.cpp -o obj/foundation/arkui/ace_engine/frameworks/core/components_ng/pattern/foo/foo_pattern.o
+../../foundation/arkui/ace_engine/frameworks/core/components_ng/pattern/foo/foo_pattern.cpp:77:10: fatal error: 'core/components_ng/pattern/foo/foo_model.h' file not found
+1 error generated.
+[2882/9031] CXX obj/foundation/arkui/ace_engine/frameworks/core/components_ng/pattern/bar/bar_pattern.o
+ninja: build stopped: subcommand failed.
+Traceback (most recent call last):
+  File "build.py", line 88, in <module>
+Exception: ninja phase failed after previous compiler error

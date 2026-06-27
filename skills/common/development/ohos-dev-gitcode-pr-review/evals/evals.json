@@ -1,0 +1,86 @@
+{
+  "skill_name": "ohos-dev-gitcode-pr-review",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "gitcode-pr-url-collection-workflow",
+      "prompt": "帮我检视这个 GitCode PR：https://gitcode.com/openharmony/demo_service/pull/321。请先获取 PR 元数据、diff 和评论，再结合本地仓库代码给出评审意见；如果当前仓库无法推断 repo，请明确说明需要传入 --repo openharmony/demo_service。",
+      "expected_output": "Agent 应先规范化 PR URL，使用 collect_pr_context.py 或等价 oh-gc 命令采集 pr-view、diff、name-only、文本 diff、PR 评论和 diff 评论；从 summary.json、pr-diff.txt、pr-view.json 开始阅读；若无法从本地 GitCode remote 推断仓库，应要求或使用 --repo openharmony/demo_service；不得只凭 URL 或 diff 摘要直接给结论。",
+      "files": [],
+      "expectations": [
+        "Agent 使用 scripts/normalize_pr_ref.py 或等价逻辑从 URL 提取 PR 号 321 和 repo openharmony/demo_service",
+        "Agent 调用 scripts/collect_pr_context.py，或明确列出需要执行的 oh-gc pr view/diff/name-only/comments 命令来生成 .review-gitcode-pr 产物",
+        "Agent 说明采集后优先读取 summary.json、pr-diff.txt、pr-view.json，而不是默认加载全部原始 JSON",
+        "Agent 在 repo 无法从当前 GitCode remote 推断时使用或要求 --repo openharmony/demo_service",
+        "Agent 不在缺少 PR artifact 和本地代码上下文时声称已经完成深度评审"
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "deep-review-finds-caller-contract-regression",
+      "prompt": "请在 evals/files/deep-review-contract-regression 这个离线工作区里评审 GitCode PR #101。该目录已经包含 .review-gitcode-pr/pr-101 产物和本地代码，请不要联网提交评论，只输出评审发现。",
+      "expected_output": "Agent 应读取 summary.json、pr-diff.txt、pr-view.json，并检查 src/session_manager.cpp 的本地实现、src/account_service.cpp 调用方和 tests/session_manager_test.cpp。应发现 line 18 将非正 expireAtMs 当作未过期，破坏调用方和既有测试对缺失过期时间必须重新认证的契约；以 medium finding 输出，包含 src/session_manager.cpp:18、具体证据和修复建议。",
+      "files": [
+        "evals/files/deep-review-contract-regression/.review-gitcode-pr/pr-101/summary.json",
+        "evals/files/deep-review-contract-regression/.review-gitcode-pr/pr-101/pr-diff.txt",
+        "evals/files/deep-review-contract-regression/.review-gitcode-pr/pr-101/pr-view.json",
+        "evals/files/deep-review-contract-regression/src/session_manager.h",
+        "evals/files/deep-review-contract-regression/src/session_manager.cpp",
+        "evals/files/deep-review-contract-regression/src/account_service.cpp",
+        "evals/files/deep-review-contract-regression/tests/session_manager_test.cpp"
+      ],
+      "expectations": [
+        "Agent explicitly reads or cites summary.json, pr-diff.txt, and pr-view.json before giving findings",
+        "Agent inspects at least one local caller, specifically src/account_service.cpp",
+        "Agent inspects related tests, specifically tests/session_manager_test.cpp",
+        "Agent reports a medium finding for src/session_manager.cpp line 18 or otherwise targets the commentable new-side line for the changed return",
+        "Finding explains that expireAtMs <= 0 now returns false, so sessions with missing expiry bypass re-authentication",
+        "Finding evidence ties together the changed branch, AccountService::RequireFreshSession, and the ExpiredWhenTimestampMissing test expectation",
+        "Finding includes a concrete fix such as preserving expireAtMs <= 0 as expired or updating callers/tests only if the contract intentionally changes",
+        "Agent does not stop after diff-only inspection and does not classify the file as mechanical-low-risk"
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "no-finding-output-requires-coverage-evidence",
+      "prompt": "请在 evals/files/no-finding-mechanical-log 这个离线工作区里评审 GitCode PR #102。该目录已经包含 .review-gitcode-pr/pr-102 产物和本地代码。若没有发现问题，请按 skill 要求输出无发现结论。",
+      "expected_output": "Agent 应完成文件覆盖后再给出无发现结论。输出应包含每个变更文件的 review status，说明检查了 metrics_logger.cpp 的调用路径和 metrics_logger_test.cpp，列出已验证的 checklist 类别、未完全验证项和残余风险；不得只写 LGTM、looks good 或一行 no issue。",
+      "files": [
+        "evals/files/no-finding-mechanical-log/.review-gitcode-pr/pr-102/summary.json",
+        "evals/files/no-finding-mechanical-log/.review-gitcode-pr/pr-102/pr-diff.txt",
+        "evals/files/no-finding-mechanical-log/.review-gitcode-pr/pr-102/pr-view.json",
+        "evals/files/no-finding-mechanical-log/src/metrics_logger.cpp",
+        "evals/files/no-finding-mechanical-log/tests/metrics_logger_test.cpp"
+      ],
+      "expectations": [
+        "Agent assigns a final status to src/metrics_logger.cpp, such as reviewed or mechanical-low-risk, and does not omit changed-file coverage",
+        "Agent states that only a log message string changed and verifies this against local code context",
+        "Agent inspects or cites tests/metrics_logger_test.cpp when explaining why behavior is unchanged",
+        "Agent includes checklist coverage with verified categories and at least one not-fully-verified limitation",
+        "Agent includes concrete residual risk rather than style commentary",
+        "Agent does not invent style-only findings or generic recommendations just to produce a finding"
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "submission-draft-preview-confirmation-gate",
+      "prompt": "请在 evals/files/submission-preview 这个离线工作区里，把 findings.json 转成 GitCode review 草稿并预览将要提交的命令。不要真正提交；请告诉我会发几条评论，等待我确认。",
+      "expected_output": "Agent 应使用 prepare_review_submission.py --context-dir .review-gitcode-pr/pr-103 --findings findings.json --write-draft review-draft.json 进行预览，不带 --execute；应生成 review-draft.json，校验 line comment 目标在 summary.json 的 commentable_lines 中，展示评论数量和命令预览，并明确需要用户确认后才可执行。",
+      "files": [
+        "evals/files/submission-preview/.review-gitcode-pr/pr-103/summary.json",
+        "evals/files/submission-preview/.review-gitcode-pr/pr-103/pr-diff.txt",
+        "evals/files/submission-preview/.review-gitcode-pr/pr-103/pr-view.json",
+        "evals/files/submission-preview/findings.json"
+      ],
+      "expectations": [
+        "Agent runs or instructs the exact preview flow using scripts/prepare_review_submission.py with --findings and --write-draft",
+        "Agent does not use --execute and does not call oh-gc pr comment or oh-gc pr review directly",
+        "Agent validates that src/session_manager.cpp line 18 is commentable according to summary.json",
+        "Agent reports the planned comment count before any execution",
+        "Agent explains that explicit user confirmation is required before executing the same command with --execute",
+        "Generated or described submitted comment body is Chinese Markdown with paragraphs or bullets, not a single pipe-delimited finding line",
+        "Agent does not set approve true because the findings contain a blocking or unresolved issue"
+      ]
+    }
+  ]
+}

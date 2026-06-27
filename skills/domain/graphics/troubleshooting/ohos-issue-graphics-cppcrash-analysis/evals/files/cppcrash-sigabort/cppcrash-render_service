@@ -1,0 +1,33 @@
+Device info:OpenHarmony 5.0.1 (SDK API 12) huawei mate60 pro
+BuildId: e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0
+Module name: com.ohos.render_service
+Pid: 3456
+Uid: 1000
+Reason: Signal:SIGABRT(SI_TKILL) fault_addr:0x0000000000000000
+LastFatalMessage: abort() called
+Stack trace:
+  #00 pc 0000000000004b000 /system/lib/libc.z.so(abort+48)
+  #01 pc 0000000000006a1c0 /system/lib/librender_service_base.z.so
+  #02 pc 0000000000003b24c0 /system/lib/librender_service_base.z.so
+  #03 pc 0000000000001f5c00 /system/lib/librender_service.z.so
+Registers:
+  x0: 0000000000000000
+  x1: 0000000000000006
+  x8: 0000000000000000
+  x19: 00000059810e9658
+  x20: 00000059810e9610
+  x21: 0000000000000000
+  x22: 0000000000000000
+  x29(fp): 0000007f80001000
+  x30(lr): 00000059810e9610
+  sp: 0000007f80000f00
+Other thread info:
+  Tid: 3457, Name: RSMainThread
+  #00 pc 0000000000003a5c00 /system/lib/librender_service_base.z.so(RSMainThread::OnVsync())
+  Tid: 3458, Name: RSUniRenderThread
+  #00 pc 0000000000002f8a00 /system/lib/librender_service_base.z.so(RSUniRenderThread::Process())
+Memory near registers:
+  x19(+0): 5981 0e96 5800 0000 5981 0e96 5800 0000
+Maps:
+  00000050-00000060 /system/lib/librender_service_base.z.so (r-xp)
+  00000058-0000005900000000 /dev/ashmem/dalvik-heap (rw-p)

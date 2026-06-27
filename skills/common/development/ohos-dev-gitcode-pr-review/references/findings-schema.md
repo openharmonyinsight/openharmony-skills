@@ -47,10 +47,10 @@ Finding fields:
 
 ## Conversion Rules
 
-Run from the directory that contains this skill's `SKILL.md`:
+Run from the repository checkout being reviewed. The example assumes this skill directory is available through `$SKILL_DIR`:
 
 ```bash
-python3 scripts/prepare_review_submission.py \
+python3 "$SKILL_DIR/scripts/prepare_review_submission.py" \
   --context-dir .review-gitcode-pr/pr-123 \
   --findings findings.json \
   --write-draft review-draft.json

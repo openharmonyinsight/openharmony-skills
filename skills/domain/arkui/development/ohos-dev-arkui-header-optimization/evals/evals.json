@@ -1,0 +1,81 @@
+{
+  "skill_name": "ohos-dev-arkui-header-optimization",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "帮我优化这个头文件，减少编译依赖。文件路径是 frameworks/core/event/click_event.h，它有很多 include，编译很慢。",
+      "expected_output": "Uses extract-includes.py for initial screening, then manually classifies each include by usage pattern, applies strategies in priority order (remove unused → forward declare → extract inline → split enums).",
+      "files": [],
+      "expectations": [
+        "The response mentions running extract-includes.py or equivalent include analysis as a first step.",
+        "The response classifies includes into categories such as unused, candidate for forward declaration, and must-keep (base class, value member).",
+        "The response applies strategies in the documented priority order: remove unused includes before forward declarations, and forward declarations before PIMPL.",
+        "The response does NOT suggest PIMPL as the first or primary strategy for a generic header optimization task.",
+        "The response mentions verifying compilation after each change step."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "这个头文件里 FrameNode 只作为指针和 RefPtr 使用，帮我把 #include \"frame_node.h\" 替换成前向声明。",
+      "expected_output": "Correctly replaces the include with a forward declaration in the header, moves the full include to the .cpp file, handles RefPtr<T> with forward-declared T correctly.",
+      "files": [],
+      "expectations": [
+        "The response adds a forward declaration like 'namespace OHOS::Ace::NG { class FrameNode; }' in the header.",
+        "The response moves '#include \"frame_node.h\"' to the corresponding .cpp file.",
+        "The response explicitly mentions that RefPtr<T> works with forward-declared T when T is only used as pointer/reference.",
+        "The response warns about cases where RefPtr<T> requires the full definition (operator->, DynamicCast, constructing new T).",
+        "The response mentions declaring special member functions in the header and implementing them in .cpp if unique_ptr<Impl> is introduced."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我发现 gesture_info.h 里只有 GestureType 枚举和一些常量，但 45+ 个文件 include 了整个 gesture_info.h 只为了用 GestureType。怎么优化？",
+      "expected_output": "Recognizes the split-enums strategy: extract enums/constants to a lightweight header, consumers needing only enums include the lightweight one.",
+      "files": [],
+      "expectations": [
+        "The response recommends splitting enums/constants into a separate lightweight header file.",
+        "The response checks whether a _constants.h or _types.h already exists before creating a new file.",
+        "The response places enums in the correct namespace (OHOS::Ace if used across NG and non-NG code).",
+        "The response updates the original heavy header to include the lightweight one.",
+        "The response mentions updating consumers to include the lightweight header instead of the heavy one."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "我想用 PIMPL 模式优化 click_event.h，这个类有 8 个私有成员，依赖很多。帮我重构。",
+      "expected_output": "Evaluates PIMPL applicability against NEVER rules: not for performance-critical paths (event handling is hot path in ACE Engine).",
+      "files": [],
+      "expectations": [
+        "The response checks whether PIMPL is appropriate for the specific file before applying it.",
+        "The response recognizes that click_event.h is in the event/gesture hot path and warns about pointer indirection cost.",
+        "The response considers alternative strategies first (forward declarations, inline extraction) before PIMPL.",
+        "If PIMPL is still applied, the response follows the ACE Engine PIMPL pattern with std::unique_ptr<Impl>, destructor in .cpp, and deleted copy operations.",
+        "The response does NOT apply PIMPL if simpler strategies are sufficient."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "帮我看看 ace_engine 的 base/memory/ace_type.h，它 include 了太多东西，可以优化一下吗？",
+      "expected_output": "Refuses to optimize hub headers. ace_type.h is included by 1000+ files and explicitly listed in NEVER rules.",
+      "files": [],
+      "expectations": [
+        "The response refuses to modify ace_type.h and explicitly explains why (used by 1000+ files, critical dependency).",
+        "The response references the NEVER rule about not modifying hub headers (ace_type.h, frame_node.h).",
+        "The response suggests optimizing the consumers of ace_type.h instead, or reducing includes in files that include ace_type.h.",
+        "The response does NOT propose changes to ace_type.h itself."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I want to remove #include \"render_node.h\" from this header because RenderNode is only used as a pointer. But I see the include is wrapped in `#ifdef OHOS_BUILD_ENABLE_RENDER_PIPELINE`. Should I remove it?",
+      "expected_output": "Refuses to remove conditionally-guarded includes. They may be needed in other build configurations.",
+      "files": [],
+      "expectations": [
+        "The response refuses to remove the include and explains that conditionally-guarded includes must be kept.",
+        "The response references the NEVER rule about #ifdef OHOS_BUILD_ENABLE_* guarded includes.",
+        "The response explains that removing it would break non-default build configurations.",
+        "The response suggests analyzing the usage inside the #ifdef block instead of removing the include."
+      ]
+    }
+  ]
+}

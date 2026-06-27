@@ -1,0 +1,79 @@
+{
+  "skill_name": "ohos-dev-arkui-ace-engine-build",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "我改了几个 .cpp 文件，想快速编译验证一下 ace_engine 组件，帮我生成编译命令。",
+      "expected_output": "Generates a build command with --fast-rebuild and --build-target ace_engine after verifying GN files are unchanged.",
+      "files": [],
+      "expectations": [
+        "The response asks or checks whether BUILD.gn / *.gni files were modified before recommending --fast-rebuild.",
+        "The response generates a command including --product-name rk3568 (or the appropriate product).",
+        "The response includes --build-target ace_engine for component-only build.",
+        "The response includes --ccache and --export-para PYCACHE_ENABLE:true.",
+        "The response includes --fast-rebuild (after confirming it is safe)."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "我刚改了一个 BUILD.gn 文件，加了新的 source，现在要编译 ace_engine 验证。给我编译命令。",
+      "expected_output": "Recognizes BUILD.gn change and generates a full build command WITHOUT --fast-rebuild.",
+      "files": [],
+      "expectations": [
+        "The response explicitly warns that --fast-rebuild must NOT be used when BUILD.gn is modified.",
+        "The response generates a standard build command without --fast-rebuild.",
+        "The response explains why: BUILD.gn changes require gn gen to regenerate ninja files, --fast-rebuild skips this and produces stale output.",
+        "The response includes --build-target ace_engine to limit scope."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我要跑 ace_engine_test 的单测，帮我生成编译命令，要带覆盖率。",
+      "expected_output": "Generates ace_engine_test build with coverage flag. NEVER skips coverage for test builds.",
+      "files": [],
+      "expectations": [
+        "The response includes --build-target ace_engine_test.",
+        "The response includes --gn-args ace_engine_feature_enable_coverage=true (mandatory for test builds).",
+        "The response uses the simple target name 'ace_engine_test', NOT a GN path format like '//path:ace_engine_test'.",
+        "The response includes --ccache and --product-name."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "帮我编译 SDK，我要验证一下 API 变更对 SDK 的影响。",
+      "expected_output": "Generates SDK build command with --product-name ohos-sdk and NO --build-target.",
+      "files": [],
+      "expectations": [
+        "The response uses --product-name ohos-sdk.",
+        "The response does NOT include --build-target (SDK build requires full build, target causes cryptic failures).",
+        "The response mentions that SDK output goes to out/sdk/ (NOT out/ohos-sdk/).",
+        "The response includes --ccache."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "我有一个 unittest_targets.txt 文件，里面列了要跑的测试，帮我逐个编译。",
+      "expected_output": "Describes the test list build workflow: read targets from file, build sequentially with stop-on-error.",
+      "files": [],
+      "expectations": [
+        "The response describes reading targets from unittest_targets.txt (checks foundation/arkui/ace_engine/ first, then root).",
+        "The response builds targets sequentially (one at a time) with stop-on-error behavior.",
+        "The response uses --build-target=<target> syntax for each target.",
+        "The response mentions disk space management: can delete verified test binaries from exe.unstripped/ but NEVER other artifacts.",
+        "The response mentions resuming from the failed target if disk full occurs."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "我不确定能不能用 --fast-rebuild，帮我检查一下。项目根目录是 /home/user/openharmony。",
+      "expected_output": "Recommends running check_fast_rebuild.sh to verify, or explains the three-stage safety check.",
+      "files": [],
+      "expectations": [
+        "The response mentions running scripts/check_fast_rebuild.sh as the recommended approach.",
+        "The response describes the three checks: uncommitted GN changes, GN vs ninja timestamp, recent GN modifications.",
+        "The response states that if any check fails, standard build must be used.",
+        "The response defaults to full build when uncertain."
+      ]
+    }
+  ]
+}

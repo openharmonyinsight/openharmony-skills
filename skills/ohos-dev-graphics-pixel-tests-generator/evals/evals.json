@@ -1,0 +1,202 @@
+{
+  "skill_name": "ohos-dev-graphics-pixel-tests-generator",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "请为 OpenHarmony Rosen 图形像素比对框架生成一个测试用例，验证 RSCanvasNode 的背景色渲染。需要测试至少三种纯色背景（红色 0xffff0000、绿色 0xff00ff00、蓝色 0xff0000ff）是否能正确绘制并截图。\n\n要求：\n1. 选择合适的测试目录和 RSGraphicTestType。\n2. 使用正确的测试宏。\n3. 如果新增文件，说明如何更新 graphic_test/test/BUILD.gn。\n4. 确保节点不会提前释放导致截图空白。\n\n请在响应中给出完整的 .cpp 文件内容和 BUILD.gn 的修改方式。",
+      "expected_output": "Generates a CONTENT_DISPLAY_TEST pixel test under rs_display_effect/property_display (or content_display), using the correct GRAPHIC_TEST macro, an RSGraphicTest-derived fixture with BeforeEach/SetScreenSize, RSCanvasNode nodes with SetBounds/SetFrame/SetBackgroundColor, AddChild + RegisterNode for every node, the Apache copyright header, namespace OHOS::Rosen, and an explanation of inserting the relative path into rs_display_effect_sources without creating a new ohos_unittest target.",
+      "files": [],
+      "expectations": [
+        "The generated test is placed under rs_display_effect/property_display (or rs_display_effect/content_display) and uses CONTENT_DISPLAY_TEST as the RSGraphicTestType.",
+        "The generated test uses the GRAPHIC_TEST macro (the canonical auto-capture macro) with a fixture class that derives from RSGraphicTest.",
+        "The fixture overrides BeforeEach and calls SetScreenSize(screenWidth, screenHeight) with declared member constants.",
+        "Every rendered node follows the full lifecycle: RSCanvasNode::Create, SetBounds, SetFrame, SetBackgroundColor, GetRootNode()->AddChild, and RegisterNode.",
+        "The generated code calls RegisterNode on each node added via AddChild (RegisterNode must appear).",
+        "The generated code is wrapped in namespace OHOS::Rosen.",
+        "The generated file includes the Apache copyright header.",
+        "The response explains inserting the new file's relative path into the rs_display_effect_sources array in graphic_test/test/BUILD.gn.",
+        "The response does NOT create a new ohos_unittest build target for a plain graphic test.",
+        "The generated test does NOT invent Drawing helpers or RenderService APIs that are not part of the framework (no paintSetColor, no fabricated modifiers)."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "请在 rs_display_effect/animation 目录生成一个动画像素测试，验证一个 RSCanvasNode modifier 的 position 动画（从 (0,0) 动到 (500,500)）。要求动画结束后能稳定截图。\n\n给出完整 .cpp，并说明 BUILD.gn 改动。",
+      "expected_output": "Generates an ANIMATION_TEST pixel test under rs_display_effect/animation, using GRAPHIC_TEST with an RSGraphicTest fixture, an animation via RSNode::Animate with RSAnimationTimingProtocol and RSAnimationTimingCurve and an RSUIContext (or a content-style modifier added via AddModifier), registered nodes, and a few-hundred-millisecond duration; explains adding the path to rs_display_effect_sources.",
+      "files": [],
+      "expectations": [
+        "The generated test is placed under rs_display_effect/animation and uses ANIMATION_TEST as the RSGraphicTestType.",
+        "The generated test uses the GRAPHIC_TEST macro with an RSGraphicTest-derived fixture.",
+        "The animation uses RSNode::Animate (with GetRSUIContext() or an RSUIContext) together with RSAnimationTimingProtocol (SetDuration) and RSAnimationTimingCurve (e.g. LINEAR), or a ModifierNG::RSContentStyleModifier added via AddModifier.",
+        "The animation duration is in the few-hundred-millisecond range, not seconds-long (unless a neighbor file dictates otherwise).",
+        "Every node that must render is registered via RegisterNode after AddChild.",
+        "The response explains inserting the relative path into rs_display_effect_sources (no new ohos_unittest target).",
+        "The generated test does NOT add an unnecessary explicit FlushImplicitTransaction/sleep for an ordinary auto-capture animation test (the framework flushes in TearDown)."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "在 rs_effect_feature 目录新增一个测试，验证带背景图片节点的 system bar effect（或 blur）效果。要求：节点使用背景图片，设置边框，并应用效果。\n\n请给出完整 .cpp 和 BUILD.gn 改动。注意：不要使用设备上不存在的图片资源路径。",
+      "expected_output": "Generates an EFFECT_TEST under rs_effect_feature, including rs_graphic_test_img.h, using SetUpNodeBgImage with a reused /data/local/tmp path, border/blur/effect APIs (SetBorderWidth/SetBorderColor/SetBackgroundBlurRadius or SetSystemBarEffect), AddChild + RegisterNode, and an explanation of rs_effect_feature_sources.",
+      "files": [],
+      "expectations": [
+        "The generated test is placed under rs_effect_feature and uses EFFECT_TEST as the RSGraphicTestType.",
+        "The generated file includes rs_graphic_test_img.h (required for SetUpNodeBgImage / DecodePixelMap / ImageCustomModifier).",
+        "The node is created via SetUpNodeBgImage with an existing /data/local/tmp resource path (e.g. /data/local/tmp/Images/backGroundImage.jpg), NOT an invented or unverifiable path.",
+        "The node sets border and effect properties such as SetBorderWidth, SetBorderColor(Vector4<Color>(RgbPalette::Red())), and SetBackgroundBlurRadius or SetSystemBarEffect.",
+        "The node is added via GetRootNode()->AddChild and registered via RegisterNode.",
+        "The response explains inserting the relative path into rs_effect_feature_sources (no new ohos_unittest target)."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "验证 SetAlpha 对边界值的钳制行为。参数取值：-1.0, 0.0, 0.5, 1.0, 2.0。用户希望在同一张截图里把这些 alpha 值并排对比，方便看钳制效果。\n\n请生成测试，给出完整 .cpp。",
+      "expected_output": "Generates a single GRAPHIC_TEST with an in-test grid layout computing sizeX/sizeY/x/y from screenWidth/screenHeight and columnCount/rowCount, creating one node per boundary value, covering -1.0/0.0/0.5/1.0/2.0, with each node registered.",
+      "files": [],
+      "expectations": [
+        "The generated test uses a SINGLE GRAPHIC_TEST with an in-test grid layout, NOT five independent GRAPHIC_TEST functions (the user wants one comparison screenshot).",
+        "The grid layout computes sizeX/sizeY from screenWidth/screenHeight and columnCount/rowCount, and computes x = (i % columnCount) * sizeX, y = (i / columnCount) * sizeY.",
+        "The parameter values include the boundary set -1.0f, 0.0f, 0.5f, 1.0f, 2.0f (testing clamping below 0, at 0, mid, at 1, and above 1).",
+        "Each node calls SetAlpha with the corresponding value and is registered via RegisterNode after AddChild.",
+        "The generated test does NOT misuse GRAPHIC_TESTS here: the matrix is expressed inside one GRAPHIC_TEST, not as multiple aggregated GRAPHIC_TESTS functions (negative case)."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "我有两个需求：\n\n需求 A：测试 border width 取值 1, 3, 5, 8, 10，用户希望这些值拼成同一张网格截图做对比。\n\n需求 B：测试三种不同的文字内容渲染，每个文字场景需要独立的截图分别比对。\n\n请分别为这两个需求说明应该用 GRAPHIC_TEST 还是 GRAPHIC_TESTS，并给出关键代码结构（fixture + 宏用法）。",
+      "expected_output": "For demand A (one comparison grid) use GRAPHIC_TESTS so multiple test functions aggregate into one PNG with a shared SetScreenSize and a filename that omits the single test name. For demand B (independent screenshots) use independent GRAPHIC_TEST so each text case gets its own PNG.",
+      "files": [],
+      "expectations": [
+        "For demand A, the response selects GRAPHIC_TESTS (multiple test functions aggregating into a single grid screenshot).",
+        "For demand A, the fixture shares a single SetScreenSize and each test function places its border-width node in a grid cell.",
+        "For demand A, the response notes that GRAPHIC_TESTS output filenames omit the single test name (path/<TestClass>.png).",
+        "For demand B, the response selects independent GRAPHIC_TEST invocations (one PNG per text case), NOT GRAPHIC_TESTS.",
+        "The response correctly distinguishes the two macros and does NOT use GRAPHIC_TESTS for demand B (negative case).",
+        "The response does NOT recommend GRAPHIC_D_TEST for either demand (recording/replay is unrelated here)."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "我需要测试一个渲染场景，它必须在节点提交后等待一段时间、手动控制截图时机才能稳定截图（不能用框架自动截图）。\n\n请生成完整的手动截图测试 .cpp，包括把截图保存到 /data/local/graphic_test/ 下。",
+      "expected_output": "Generates a GRAPHIC_N_TEST manual capture test that flushes via RSTransactionProxy::GetInstance()->FlushImplicitTransaction(), usleep(SLEEP_TIME_FOR_PROXY), then calls a TestCaseCapture that uses DisplayManager::GetInstance().GetScreenshot + WriteToPngWithPixelMap, with the correct includes and the SLEEP_TIME_FOR_PROXY constant.",
+      "files": [],
+      "expectations": [
+        "The generated test uses the GRAPHIC_N_TEST macro (manual mode), NOT GRAPHIC_TEST, because the framework must not auto-capture.",
+        "The generated test includes transaction/rs_interfaces.h (for RSTransactionProxy), display_manager.h (for DisplayManager), and rs_graphic_test_utils.h (for WriteToPngWithPixelMap).",
+        "The generated test defines a SLEEP_TIME_FOR_PROXY constant (or reuses the neighbor value) and calls usleep(SLEEP_TIME_FOR_PROXY) after FlushImplicitTransaction.",
+        "After flush + usleep, the test calls TestCaseCapture() (a helper it overrides or defines).",
+        "The capture uses DisplayManager::GetInstance().GetScreenshot(DisplayManager::GetInstance().GetDefaultDisplayId()) and writes via WriteToPngWithPixelMap to a /data/local/graphic_test/... path.",
+        "The generated test still registers the rendered node via RegisterNode after AddChild.",
+        "The generated test does NOT use GRAPHIC_TEST (auto-capture) for this manual-timing scenario (negative case)."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "生成一个子窗口像素测试：在一个子窗口（bounds {100,100,500,500}，位于主窗口之上）上渲染一个红色节点，验证子窗口渲染正确。\n\n请给出完整 .cpp。",
+      "expected_output": "Generates a sub-window pixel test using CreateSubWindow(SubWindowOptions), GetRootNode()->AddChildToSubWindow(subId, node), and RegisterNode(node); notes the framework auto-switches to display capture when a sub-window exists.",
+      "files": [],
+      "expectations": [
+        "The generated test calls CreateSubWindow with a SubWindowOptions that sets bounds and order (e.g. SubWindowOrder::ABOVE_MAIN).",
+        "The node is added via GetRootNode()->AddChildToSubWindow(subId, node) (not the plain AddChild).",
+        "The node is still registered via RegisterNode(node) even though it lives in a sub-window (RegisterNode must appear).",
+        "The response notes that the framework automatically switches to display capture when a sub-window exists, so the test does NOT need to manually call SetCaptureScope(CaptureScope::FULL_DISPLAY).",
+        "The node has visible properties (SetBounds/SetBackgroundColor) so the capture is non-empty."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "我在 rs_func_feature 目录新增了一个文件 rs_func_feature/surface_capture_test.cpp。请生成测试主体并明确告诉我：\n\n1. 应该把文件加入 graphic_test/test/BUILD.gn 的哪个 sources 数组？\n2. 要不要新建 ohos_unittest target？\n3. 修改时要注意什么？",
+      "expected_output": "Generates a CONTENT_DISPLAY_TEST under rs_func_feature and explains: insert the relative path into rs_func_feature_sources, do NOT create a new ohos_unittest target (the existing RSGraphicTest target aggregates the sources arrays), and preserve the local array indentation/formatting without reformatting the whole file.",
+      "files": [],
+      "expectations": [
+        "The response states the new file must be inserted into the rs_func_feature_sources array in graphic_test/test/BUILD.gn.",
+        "The response explicitly states NOT to create a new ohos_unittest target for a plain graphic test.",
+        "The response notes that the existing RSGraphicTest ohos_unittest target already aggregates the category sources arrays.",
+        "The response instructs preserving the local array formatting/indentation (e.g. two-space indent where used) and NOT reformatting the whole BUILD.gn.",
+        "The generated test uses CONTENT_DISPLAY_TEST (the common type for rs_func_feature capture tests)."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "我写了一个像素测试，但是运行后截图是空白的。代码如下，请帮我诊断原因并修正：\n\n```cpp\nGRAPHIC_TEST(ColorTest, CONTENT_DISPLAY_TEST, Color_Red_Test)\n{\n    auto node = RSCanvasNode::Create();\n    node->SetBounds({ 100, 100, 300, 300 });\n    node->SetFrame({ 100, 100, 300, 300 });\n    node->SetBackgroundColor(0xffff0000);\n    GetRootNode()->AddChild(node);\n}\n```\n\n补充信息：这个 node 是函数局部变量。",
+      "expected_output": "Diagnoses the missing RegisterNode call as the cause of the blank screenshot (the local node is released before capture) and fixes it by calling RegisterNode(node) after AddChild; also notes parent/child trees must register both levels.",
+      "files": [],
+      "expectations": [
+        "The response identifies that RegisterNode(node) is missing as the root cause of the blank screenshot.",
+        "The response explains that because node is a function-local shared_ptr leaving scope, it is released before capture, so the screenshot is empty.",
+        "The fix adds RegisterNode(node) after GetRootNode()->AddChild(node).",
+        "The response notes that for parent/child node trees, if either the parent or child local variable can leave scope, BOTH parent and child must be registered.",
+        "The corrected code keeps the SetBounds/SetFrame/SetBackgroundColor visible properties and adds RegisterNode."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "我需要在一个 RSCanvasNode 上用 Drawing 画一个实心矩形和带描边的矩形。请生成测试代码。注意：不要用占位的 paint helper，要贴合本地真实 Drawing API 风格。",
+      "expected_output": "Generates a test using testNode->BeginRecording(width,height), a Drawing::Brush with SetColor + AttachBrush + DrawRect + DetachBrush, and a Drawing::Pen with SetColor/SetWidth + AttachPen + DrawRect + DetachPen, then FinishRecording; does not use invented paint helpers like paintSetColor.",
+      "files": [],
+      "expectations": [
+        "The generated test obtains a recording canvas via testNode->BeginRecording(width, height) and calls testNode->FinishRecording() at the end.",
+        "The filled rect uses Drawing::Brush with SetColor, then canvas->AttachBrush(brush) / DrawRect / DetachBrush.",
+        "The stroked rect uses Drawing::Pen with SetColor and SetWidth, then canvas->AttachPen(pen) / DrawRect / DetachPen.",
+        "The generated test does NOT use an invented helper such as paintSetColor (negative case).",
+        "The generated test does NOT pass a generalized paint object as a parameter to DrawRect (it uses the Attach/Detach local style).",
+        "The node is added via AddChild and registered via RegisterNode."
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "在 open_capability 目录新增一个测试，验证把一个 PixelMap 渲染到节点上。问题是：我手上没有现成的图片文件路径，设备上的图片资源也不能保证存在。\n\n请生成测试，并说明如何处理资源问题。",
+      "expected_output": "Generates an open_capability CONTENT_DISPLAY_TEST that either reuses an existing /data/local/tmp path from a neighbor file, or generates a PixelMap programmatically in code, and explicitly avoids an unverified resource path.",
+      "files": [],
+      "expectations": [
+        "The generated test is placed under open_capability and uses CONTENT_DISPLAY_TEST (or the neighbor type).",
+        "The test does NOT use an invented/unverified image resource path; it either reuses an existing /data/local/tmp path found in neighbor files OR generates a PixelMap in code.",
+        "If DecodePixelMap / SetUpNodeBgImage / ImageCustomModifier is used, the file includes rs_graphic_test_img.h.",
+        "The node created from the PixelMap is added via AddChild and registered via RegisterNode.",
+        "The response explains the resource-safety rule: prefer reusing neighbor /data/local/tmp paths or generating PixelMap data rather than hardcoding a path that may not exist on the device."
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "我需要测试一个场景：提交节点后，立即从一个 surface 查询 PixelMap（用 RSInterfaces::GetInstance().CreatePixelMapFromSurfaceId）来做后续处理。请生成测试。",
+      "expected_output": "Generates a GRAPHIC_N_TEST that sets the test surface, calls FlushImplicitTransaction + usleep before querying, uses RSInterfaces::GetInstance().CreatePixelMapFromSurfaceId, registers the surviving surface/node, and includes transaction/rs_interfaces.h.",
+      "files": [],
+      "expectations": [
+        "The generated test uses GRAPHIC_N_TEST (manual mode) because it must flush and wait before querying.",
+        "The test calls GetRootNode()->SetTestSurface(surfaceNode) then RSTransactionProxy::GetInstance()->FlushImplicitTransaction() then usleep before the query.",
+        "The query uses RSInterfaces::GetInstance().CreatePixelMapFromSurfaceId(surfaceId, rect, ...).",
+        "The surface node and/or pixel-providing node is registered via RegisterNode so it survives until the query completes.",
+        "The generated file includes transaction/rs_interfaces.h (for RSTransactionProxy / RSInterfaces).",
+        "The generated test does NOT query the surface before flushing the transaction (negative case)."
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "我要生成一个普通的自动截图属性测试（测试 RSCanvasNode 的圆角属性），不需要在测试函数里立即查询渲染结果。请生成测试，并说明什么时候才需要在测试里加 FlushImplicitTransaction 和 sleep。",
+      "expected_output": "Generates a plain auto-capture CONTENT_DISPLAY_TEST that does NOT add FlushImplicitTransaction or sleep (the framework flushes in TearDown), and explains the conditions that justify an explicit flush (manual capture, immediate surface/PixelMap query, sleep to a specific render state, neighbor convention).",
+      "files": [],
+      "expectations": [
+        "The generated test is a plain auto-capture GRAPHIC_TEST / CONTENT_DISPLAY_TEST that does NOT call FlushImplicitTransaction or usleep inside the test function (negative case).",
+        "The generated test does NOT include transaction/rs_interfaces.h since no explicit flush is needed.",
+        "The response explains that the framework flushes and captures in TearDown, so ordinary auto tests need no explicit flush.",
+        "The response lists the conditions that justify adding FlushImplicitTransaction: manual capture, immediate surface/PixelMap query after submitting a node, sleeping to a specific render state, or when neighbor tests in the same area already use explicit flush.",
+        "Every rendered node is registered via RegisterNode."
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "我有五个不同的测试需求，请为每个需求选择合适的测试目录和 RSGraphicTestType（必要时也可指出测试宏），并简述理由：\n\n1. 测试节点背景色、边框、内容显示等外观属性。\n2. 测试动画曲线和 modifier 动画的视觉效果。\n3. 测试 NG shader/filter/mask 等 effect 渲染特性。\n4. 测试 GPU composer 相关的性能渲染。\n5. 测试 hybrid render 相关的性能渲染。",
+      "expected_output": "Maps each scenario to the correct directory and RSGraphicTestType: (1) rs_display_effect/property_display or content_display + CONTENT_DISPLAY_TEST; (2) rs_display_effect/animation + ANIMATION_TEST; (3) rs_effect_feature + EFFECT_TEST; (4) rs_perform_feature + GPU_COMPOSER_TEST; (5) rs_perform_feature + HYBRID_RENDER_TEST; and notes copying the neighbor type over guessing.",
+      "files": [],
+      "expectations": [
+        "Scenario 1 (appearance properties) maps to rs_display_effect/property_display (or content_display) with CONTENT_DISPLAY_TEST.",
+        "Scenario 2 (animation) maps to rs_display_effect/animation with ANIMATION_TEST.",
+        "Scenario 3 (NG shader/filter/mask) maps to rs_effect_feature with EFFECT_TEST.",
+        "Scenario 4 (GPU composer) maps to rs_perform_feature with GPU_COMPOSER_TEST.",
+        "Scenario 5 (hybrid render) maps to rs_perform_feature with HYBRID_RENDER_TEST.",
+        "The response notes the rule that when a directory already has similar tests, the neighbor's type should be copied rather than guessed from the directory name alone.",
+        "The response does NOT assign GRAPHIC_D_TEST / recording mode to any of these scenarios (negative case)."
+      ]
+    }
+  ]
+}

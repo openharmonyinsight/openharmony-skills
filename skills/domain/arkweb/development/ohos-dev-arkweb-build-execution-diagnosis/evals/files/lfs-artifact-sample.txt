@@ -1,0 +1,12 @@
+src/ohos_sdk/.install:
+native-linux-x64-6.1.0.31-Release.zip
+llvm-linux-x64-6.1.0.31-Release.tar.gz
+
+src/ohos_sdk/.gitattributes:
+*.zip filter=lfs diff=lfs merge=lfs -text
+*.tar.gz filter=lfs diff=lfs merge=lfs -text
+
+native-linux-x64-6.1.0.31-Release.zip:
+version https://git-lfs.github.com/spec/v1
+oid sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+size 734003200

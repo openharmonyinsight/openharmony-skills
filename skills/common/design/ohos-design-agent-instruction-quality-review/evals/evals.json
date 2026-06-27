@@ -1,0 +1,199 @@
+{
+  "skill_name": "ohos-design-agent-instruction-quality-review",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "请评审这个 OpenHarmony 仓库根目录 `AGENTS.md` 的 agent 指令质量，判断能不能作为团队基线。请给出评分、证据和最小整改建议。\n\n```md\n# AGENTS.md\n\n## Project\nThis repository contains a distributed scheduling service for OpenHarmony.\n\n## Directory\n- `services/` contains service implementation.\n- `interfaces/` contains APIs.\n- `test/` contains tests.\n- `docs/` contains documents.\n\n## Development\nFollow best practices. Keep code clean. Understand the architecture before modifying code.\n\n## Testing\nRun tests before submitting.\n```\n",
+      "expected_output": "Reviews the instruction file as weak README-style guidance, scores it below the quality gate, cites the provided sections or phrases because line numbers are unavailable, and recommends concrete agent-behavior additions.",
+      "files": [],
+      "expectations": [
+        "The response uses the exact Agent Instruction Quality Review report structure with these top-level sections: `Overall result`, `Score breakdown`, `Detailed findings`, `Critical gaps`, `Minimal remediation plan`, and `Final judgment`.",
+        "The score breakdown table contains exactly the four skill rubric elements `Code map`, `Knowledge routing`, `Constraints and boundaries`, and `Verification loop`, with scores shown against `/20`, `/30`, `/30`, and `/20` respectively.",
+        "The overall score is the sum of the four rubric element scores and is below 70, and the quality gate is `Fail`.",
+        "The review identifies README-style or generic guidance as a key weakness rather than treating the project introduction and directory list as sufficient.",
+        "The review cites exact section titles or quoted phrases and explicitly notes that line numbers were unavailable.",
+        "The critical gaps include missing validation guidance and at least two missing high-risk boundaries from the skill's list, such as public API, permissions/security, protocol compatibility, generated files, destructive commands, persistent data, or DFX behavior.",
+        "The remediation plan includes minimal patch-style additions for task-to-path routing, task/document routing, do-not or ask-before rules, and concrete build/test/lint commands.",
+        "The response does not use an alternate scoring framework such as generic `specificity`, `coverage`, `actionability`, or a five-point category scale in place of the skill rubric."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "帮我审一下 `foundation/ability/AGENTS.md` 的质量，判断它对 agent 是否足够可执行。下面内容带行号，请 findings 和评分都用 `foundation/ability/AGENTS.md:line` 引用。\n\n```text\n1 # AGENTS.md\n2 Scope: `foundation/ability/` only.\n3 This repository implements ability management and lifecycle scheduling.\n4\n5 ## References\n6 - `docs/architecture.md`\n7 - `docs/ability_lifecycle.md`\n8 - `docs/permissions.md`\n9 - `docs/ipc.md`\n10 - `docs/dfx.md`\n11 - `interfaces/inner_api/README.md`\n12 - `services/abilitymgr/README.md`\n13\n14 ## Rules\n15 Read the related documents before editing.\n16 Do not break compatibility.\n17 Run the relevant tests.\n```\n",
+      "expected_output": "Scores the file as partial/conditional or failing because it lists references without trigger conditions, cites line-backed evidence, and proposes task/path/vocabulary routing additions.",
+      "files": [],
+      "expectations": [
+        "The response uses the exact Agent Instruction Quality Review report structure with `Overall result`, `Score breakdown`, `Detailed findings`, `Critical gaps`, `Minimal remediation plan`, and `Final judgment` sections.",
+        "The score breakdown table contains exactly the four skill rubric elements `Code map`, `Knowledge routing`, `Constraints and boundaries`, and `Verification loop`, with scores shown against `/20`, `/30`, `/30`, and `/20` respectively.",
+        "Every finding that cites the source uses `foundation/ability/AGENTS.md:<line>` references rather than bare line numbers.",
+        "The review identifies the References section as a link dump because lines 5-12 list documents without when-to-read trigger conditions.",
+        "Knowledge routing receives a score of 5/30 or lower because the document list lacks task-based, path-based, or vocabulary-based routing.",
+        "The review does not assume the referenced documents are correct or complete; it evaluates only whether routing exists in the instruction file.",
+        "The recommended fix includes examples of trigger-based routing for API, lifecycle, permission, IPC, DFX, or specific paths.",
+        "The quality gate is `Fail` if the overall score is below 70 or if the review identifies critical gaps in public API compatibility, permissions/security, protocol compatibility, or missing validation.",
+        "The response does not use an alternate scoring framework such as generic `specificity`, `coverage`, `actionability`, or a five-point category scale in place of the skill rubric."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "对下面这个 OpenHarmony 子系统级 `CLAUDE.md` 做质量评审，判断它能否作为团队基线。\n\n路径：`base/security/access_token/CLAUDE.md`\n\n```text\n1 # CLAUDE.md\n2 Scope: `base/security/access_token/`.\n3 The subsystem manages access tokens and permission state.\n4\n5 ## Where to look\n6 | Task | Paths |\n7 | Permission grant/revoke | `services/accesstokenmanager/`, `interfaces/innerkits/accesstoken/` |\n8 | Token persistence | `services/common/database/`, `frameworks/common/` |\n9 | Unit tests | `test/unittest/` |\n10\n11 ## Knowledge routing\n12 For API changes, read `docs/api.md`.\n13 For database changes, read `docs/storage.md`.\n14 For failures in logs containing `TOKEN_SYNC`, read `docs/sync.md`.\n15 Before editing, state which route applies and which docs were read.\n16\n17 ## Verification\n18 Run `./build.sh --product-name rk3568 --ccache` for subsystem build.\n19 Run `./test.sh access_token_unittest` for unit tests.\n20 If validation cannot run, report why and what remains unverified.\n```\n",
+      "expected_output": "Recognizes good code map/routing/verification but fails or conditional-fails due to missing security, permission, persistence, API compatibility, and escalation boundaries.",
+      "files": [],
+      "expectations": [
+        "The response uses the exact Agent Instruction Quality Review report structure with `Overall result`, `Score breakdown`, `Detailed findings`, `Critical gaps`, `Minimal remediation plan`, and `Final judgment` sections.",
+        "The score breakdown table contains exactly the four skill rubric elements `Code map`, `Knowledge routing`, `Constraints and boundaries`, and `Verification loop`, with scores shown against `/20`, `/30`, `/30`, and `/20` respectively.",
+        "The review gives relatively strong scores for code map, knowledge routing, and verification compared with constraints and boundaries.",
+        "The constraints and boundaries score is 10/30 or lower because the file lacks explicit do-not or ask-before rules for security, permission, trust, API compatibility, and persistent data behavior.",
+        "Critical gaps include security/permission trust boundary changes and persistent token or database compatibility risks.",
+        "The review cites line-backed evidence from `base/security/access_token/CLAUDE.md:<line>`.",
+        "The review recommends concrete do-not and ask-before rules rather than generic advice to be careful.",
+        "The quality gate is `Fail` even if the overall score is 70 or higher, because the skill requires any critical security, permission, protocol, persistent-data, public API, generated-file, or missing-validation gap to fail.",
+        "The final judgment does not pass the file as a team baseline without remediation."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "请评审下面 `AGENTS.md` 是否达到 OpenHarmony 团队基线。\n\n路径：`foundation/window/window_manager/AGENTS.md`\n\n```text\n1 # AGENTS.md\n2 Scope: repository root; nested guidance under `wmserver/AGENTS.md` overrides this file for window-manager service internals.\n3 Responsibility: window management framework, public window APIs, scene session lifecycle, and DFX around window state.\n4\n5 ## Where to look\n6 | User task | Start here | Also read |\n7 | Public API or NAPI behavior | `interfaces/kits/napi/window/`, `interfaces/innerkits/wm/` | `docs/api_compatibility.md` |\n8 | Scene session lifecycle | `wmserver/session/`, `wmserver/scene/` | `docs/scene_session_lifecycle.md` |\n9 | Permission or caller identity | `wmserver/permission/`, `wmserver/ipc/` | `docs/permission_model.md` |\n10 | Logging, HiSysEvent, fault attribution | `wmserver/dfx/`, `utils/log/` | `docs/dfx.md` |\n11 | Tests | `window_scene/test/`, `wmserver/test/` | `docs/test_matrix.md` |\n12\n13 ## Routing rules\n14 If a task mentions `SceneSession`, `RSNode`, `FocusChange`, `WindowToken`, `DisplayId`, or `HiSysEvent`, state the term and read the matching document before editing.\n15 If changing files under `interfaces/`, read `docs/api_compatibility.md` and preserve API signatures, error codes, and lifecycle semantics unless the user explicitly approves a breaking change.\n16 If changing files under `wmserver/ipc/` or `wmserver/permission/`, read `docs/permission_model.md` and list caller identity and permission checks before editing.\n17 Before edits, summarize task category, docs read, and constraints found.\n18\n19 ## Boundaries\n20 Do not bypass permission checks, caller identity validation, or IPC parcel validation to make tests pass.\n21 Ask before changing public API signatures, persisted window state formats, protocol fields, generated NAPI bindings, or cross-device behavior.\n22 Do not edit generated files directly; update the source schema and regenerate.\n23 Keep dependency direction from interfaces to service internals blocked.\n24\n25 ## Verification\n26 Minimum checks: `./build.sh --product-name rk3568 --ccache`, `./test.sh wmserver_unittest`, and `./tools/lint_changed.sh <changed-files>`.\n27 For API changes, also run `./tools/check_api_compatibility.sh`.\n28 For permission or IPC changes, add or update negative authorization tests.\n29 Done means build, relevant tests, lint, and any task-specific compatibility/security checks pass, or the final response names exactly what could not run and what risk remains.\n30 Final response must list files changed, checks run, and unresolved risks.\n```\n",
+      "expected_output": "Scores the instruction file as A/pass or near-pass with no critical gaps, citing strong evidence for all four rubric elements and giving only minor improvements.",
+      "files": [],
+      "expectations": [
+        "The response uses the exact Agent Instruction Quality Review report structure with `Overall result`, `Score breakdown`, `Detailed findings`, `Critical gaps`, `Minimal remediation plan`, and `Final judgment` sections.",
+        "The score breakdown table contains exactly the four skill rubric elements `Code map`, `Knowledge routing`, `Constraints and boundaries`, and `Verification loop`, with scores shown against `/20`, `/30`, `/30`, and `/20` respectively.",
+        "The overall score is the sum of the four rubric element scores, is 85 or higher, and the quality gate is `Pass` unless the review identifies a clearly justified critical gap.",
+        "The score breakdown rates code map, knowledge routing, constraints and boundaries, and verification loop as Present and Strong or Excellent.",
+        "The review cites specific line-backed evidence from `foundation/window/window_manager/AGENTS.md:<line>` for key strengths.",
+        "Critical gaps are reported as `None identified` or equivalent if no high-risk missing boundary is found.",
+        "The remediation plan is minimal and does not demand embedding full architecture manuals or full glossaries in the instruction file.",
+        "The review recognizes vocabulary-based routing, path-based routing, ask-before rules, generated-code boundary, dependency-direction boundary, and task-specific verification as strengths.",
+        "The response does not use an alternate scoring framework such as generic `specificity`, `coverage`, `actionability`, or a five-point category scale in place of the skill rubric."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "我只有这段 Cursor rule，没有文件路径和行号。请判断它作为 OpenHarmony agent 指令是否足够，不要臆造行号。\n\n```md\n# Cursor Rules\n\nWhen working in the media codec repository, read `README.md` first. Use existing code style. Ask before large refactors.\n\nAvoid changing public interfaces if possible.\n\nRun build and tests.\n```\n",
+      "expected_output": "Reviews the rule without inventing file:line citations, treats it as insufficient and vague, and recommends concrete routing, boundaries, and verification additions.",
+      "files": [],
+      "expectations": [
+        "The response uses the exact Agent Instruction Quality Review report structure with `Overall result`, `Score breakdown`, `Detailed findings`, `Critical gaps`, `Minimal remediation plan`, and `Final judgment` sections.",
+        "The score breakdown table contains exactly the four skill rubric elements `Code map`, `Knowledge routing`, `Constraints and boundaries`, and `Verification loop`, with scores shown against `/20`, `/30`, `/30`, and `/20` respectively.",
+        "The response does not fabricate file paths or line numbers.",
+        "The response cites exact section titles or quoted phrases and states that line numbers were unavailable.",
+        "The review identifies vague instructions such as `Use existing code style`, `Ask before large refactors`, and `Run build and tests` as weak.",
+        "The overall result is `Fail` or `Conditional pass` with a score below 85, and it is `Fail` if the review identifies critical gaps in public codec APIs, generated files, protocol/capability compatibility, hardware/device validation, or missing concrete validation.",
+        "The recommendations include concrete media-codec-relevant routing or boundaries such as public codec APIs, codec capability compatibility, generated files, or device/hardware validation.",
+        "The output remains an agent instruction quality review rather than a general Cursor editor rule tutorial.",
+        "The response does not use an alternate scoring framework such as generic `specificity`, `coverage`, `actionability`, or a five-point category scale in place of the skill rubric."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "下面是一份 OpenHarmony 仓库说明文档。请判断它是否适合拿来当这个仓库的 `AGENTS.md`；如果不适合，给出最小改造方向。\n\n```md\n# arkui_napi_component\n\nThis repository provides ArkUI NAPI components for OpenHarmony applications.\n\n## Build\nRun `hb build`.\n\n## Directory\n- `interfaces/` public API\n- `frameworks/` implementation\n- `test/` tests\n\n## Contribution\nSubmit clean code and add tests.\n```\n",
+      "expected_output": "Treats the README as candidate agent guidance, not a general README review, fails it as incomplete, and explains the minimal changes needed to turn it into actionable AGENTS.md guidance.",
+      "files": [],
+      "expectations": [
+        "The response uses the exact Agent Instruction Quality Review report structure with `Overall result`, `Score breakdown`, `Detailed findings`, `Critical gaps`, `Minimal remediation plan`, and `Final judgment` sections.",
+        "The score breakdown table contains exactly the four skill rubric elements `Code map`, `Knowledge routing`, `Constraints and boundaries`, and `Verification loop`, with scores shown against `/20`, `/30`, `/30`, and `/20` respectively.",
+        "The response explicitly evaluates whether the README can function as agent instruction guidance rather than reviewing README writing quality.",
+        "The overall score is the sum of the four rubric element scores and is below 70, or the quality gate is `Fail` due to a critical gap.",
+        "The review gives some credit for basic directory and build information but identifies missing knowledge routing, high-risk boundaries, and verification loop details.",
+        "The review flags public API and NAPI compatibility as critical or high-priority boundaries for an ArkUI NAPI component repository.",
+        "The remediation plan proposes converting generic README content into actionable `AGENTS.md` instructions with where-to-look mapping, routing triggers, do-not/ask-before rules, and concrete validation.",
+        "The response avoids asking for a full architecture rewrite as the first fix.",
+        "The response does not use an alternate scoring framework such as generic `specificity`, `coverage`, `actionability`, or a five-point category scale in place of the skill rubric."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "请帮我判断下面这个 `AGENTS.md` 能不能直接作为 OpenHarmony 图形栈仓库的团队基线。\n\n路径：`foundation/graphic/graphic_2d/AGENTS.md`\n\n```text\n1 # AGENTS.md\n2 Scope: `foundation/graphic/graphic_2d/`.\n3 Responsibility: rendering framework, surface lifecycle, buffer queue, and display composition.\n4\n5 ## Code map\n6 - `interfaces/`: public graphics APIs.\n7 - `frameworks/`: client libraries and common rendering helpers.\n8 - `rosen/`: rendering service implementation.\n9 - `test/`: unit and module tests.\n10 - `tools/`: local developer tools.\n11\n12 ## Read before editing\n13 - For API changes, read `docs/api.md`.\n14 - For render service changes, read `docs/render_service.md`.\n15 - For buffer queue changes, read `docs/buffer_queue.md`.\n16 - For tests, read `docs/test.md`.\n17\n18 ## Rules\n19 Keep the architecture clean.\n20 Do not break compatibility.\n21 Generated files are checked in for convenience.\n22 Prefer updating nearby tests.\n23\n24 ## Verification\n25 Run `./build.sh --product-name rk3568 --ccache`.\n26 Run `./test.sh graphic_unittest`.\n27 Run `./tools/lint_changed.sh <changed-files>`.\n28 If tests cannot run, say so.\n```\n",
+      "expected_output": "Does not over-credit a long-looking instruction file; recognizes useful code map/routing/verification but fails or conditional-fails because constraints are generic, generated-code source-of-truth is unsafe, and graphics-specific public API, buffer/protocol, hardware/device, DFX, and destructive-operation boundaries are missing.",
+      "files": [],
+      "expectations": [
+        "The response uses the exact Agent Instruction Quality Review report structure with `Overall result`, `Score breakdown`, `Detailed findings`, `Critical gaps`, `Minimal remediation plan`, and `Final judgment` sections.",
+        "The score breakdown table contains exactly the four skill rubric elements `Code map`, `Knowledge routing`, `Constraints and boundaries`, and `Verification loop`, with scores shown against `/20`, `/30`, `/30`, and `/20` respectively.",
+        "The review gives meaningful credit for scope, responsibility, key paths, basic read-before-edit routing, and concrete build/test/lint commands.",
+        "The constraints and boundaries score is low or partial because `Keep the architecture clean`, `Do not break compatibility`, and `Generated files are checked in for convenience` do not establish concrete do-not, ask-before, or generated-code source-of-truth rules.",
+        "The quality gate is `Fail` if the review identifies critical gaps involving public graphics APIs, buffer queue/protocol compatibility, generated files, hardware/device validation, permissions/security, DFX, destructive commands, or missing validation fallback.",
+        "The review cites line-backed evidence from `foundation/graphic/graphic_2d/AGENTS.md:<line>`.",
+        "The remediation plan includes minimal patch-style additions for generated-code handling, public API compatibility, buffer/surface lifecycle compatibility, hardware/device validation, DFX/fault attribution, destructive commands, and task-specific verification.",
+        "The final judgment does not pass the file as a team baseline without remediation."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "请读取随附文件 `evals/files/real-agents/arkui_ace_engine_AGENTS.md`，判断它能否作为 OpenHarmony ArkUI `ace_engine` 仓库的 agent 指令团队基线。请只根据文件内容给出评分、证据和最小整改建议。",
+      "expected_output": "Reviews the real ArkUI ace_engine AGENTS.md fixture as a strong/pass-quality instruction file, giving high scores for code map, KB-first knowledge routing, hard boundaries, generated-file rules, and verification guidance while still noting any minor gaps.",
+      "files": [
+        "evals/files/real-agents/arkui_ace_engine_AGENTS.md"
+      ],
+      "expectations": [
+        "The response uses the exact Agent Instruction Quality Review report structure with `Overall result`, `Score breakdown`, `Detailed findings`, `Critical gaps`, `Minimal remediation plan`, and `Final judgment` sections.",
+        "The score breakdown table contains exactly the four skill rubric elements `Code map`, `Knowledge routing`, `Constraints and boundaries`, and `Verification loop`, with scores shown against `/20`, `/30`, `/30`, and `/20` respectively.",
+        "The overall score is 85 or higher and the quality gate is `Pass` unless the review identifies a clearly justified critical gap.",
+        "The review cites line-backed evidence from `evals/files/real-agents/arkui_ace_engine_AGENTS.md:<line>` or from the reviewed file path with line numbers.",
+        "The review recognizes KB-first routing, task routing through `docs/kb_search.py`, project map entries, `components_ng` guidance, public API/ABI boundaries, generated-file boundaries, dependency boundaries, and destructive-command restrictions as strengths.",
+        "The review recognizes concrete build/test guidance such as `./build.sh --product-name rk3568 --build-target ace_engine`, `linux_unittest_capi`, gtest filtering, benchmark commands, or C API test executables.",
+        "Critical gaps are reported as `None identified` or only minor/non-blocking if no high-risk missing boundary is found.",
+        "The remediation plan is minimal and does not ask to embed full ArkUI architecture manuals or full KB content into AGENTS.md."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "请读取随附文件 `evals/files/real-agents/arkui_napi_AGENTS.md`，判断它能否作为 OpenHarmony ArkUI NAPI 仓库的 agent 指令团队基线。请只根据文件内容给出评分、证据和最小整改建议。",
+      "expected_output": "Reviews the real ArkUI napi AGENTS.md fixture as useful but incomplete or conditional/failing because it has build/test and implementation details but weak knowledge routing, high-risk boundaries, and completion/reporting rules.",
+      "files": [
+        "evals/files/real-agents/arkui_napi_AGENTS.md"
+      ],
+      "expectations": [
+        "The response uses the exact Agent Instruction Quality Review report structure with `Overall result`, `Score breakdown`, `Detailed findings`, `Critical gaps`, `Minimal remediation plan`, and `Final judgment` sections.",
+        "The `Overall result` section uses the skill's table format with `Item` and `Result` columns and rows for `File reviewed`, `Scope`, `Overall score`, `Grade`, and `Conclusion`.",
+        "The score breakdown table uses the skill's exact columns `Element`, `Existence`, `Quality`, `Score`, and `Key finding`, and contains exactly the four skill rubric elements `Code map`, `Knowledge routing`, `Constraints and boundaries`, and `Verification loop` with scores shown against `/20`, `/30`, `/30`, and `/20` respectively.",
+        "The review cites line-backed evidence from `evals/files/real-agents/arkui_napi_AGENTS.md:<line>` or from the reviewed file path with line numbers.",
+        "The review gives credit for concrete GN/hb/build/test commands, key implementation paths such as `native_engine/impl/ark/`, public/internal API header locations, platform/architecture notes, and thread-safety notes.",
+        "Knowledge routing is scored as partial or weak because the file gives implementation details but does not route tasks by API, platform, thread-safety, error handling, compatibility, or domain vocabulary to deeper docs.",
+        "Constraints and boundaries are scored partial or weak because the file lacks concrete do-not or ask-before rules for public NAPI API signatures, ABI/API compatibility, thread safety, platform conditionals, data protection behavior, generated/config files, or destructive commands.",
+        "The quality gate is `Fail`, not `Conditional pass`, when the review identifies any critical public API, thread-safety, compatibility, data-protection, generated/config-file, destructive-command, or validation/reporting gap.",
+        "The detailed findings include separate subsections for `Code map`, `Knowledge routing`, `Constraints and boundaries`, and `Verification loop`, each with evidence, assessment, gap, and recommended fix content.",
+        "The remediation plan includes minimal patch-style additions for task routing, public/internal API boundaries, thread-safety requirements, platform-specific behavior, concrete validation fallback, and final response expectations."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "请读取随附文件 `evals/files/real-agents/graphic_2d_AGENTS.md`，判断它能否作为 OpenHarmony Graphic 2D 仓库的 agent 指令团队基线。请只根据文件内容给出评分、证据和最小整改建议。",
+      "expected_output": "Reviews the real Graphic 2D AGENTS.md fixture as strong/pass-quality guidance because it includes domain routing, project map, concrete verification, constraints, ask-before rules, generated-file handling, device-validation caveats, and completion definitions.",
+      "files": [
+        "evals/files/real-agents/graphic_2d_AGENTS.md"
+      ],
+      "expectations": [
+        "The response uses the exact Agent Instruction Quality Review report structure with `Overall result`, `Score breakdown`, `Detailed findings`, `Critical gaps`, `Minimal remediation plan`, and `Final judgment` sections.",
+        "The score breakdown table contains exactly the four skill rubric elements `Code map`, `Knowledge routing`, `Constraints and boundaries`, and `Verification loop`, with scores shown against `/20`, `/30`, `/30`, and `/20` respectively.",
+        "The overall score is 85 or higher and the quality gate is `Pass` unless the review identifies a clearly justified critical gap.",
+        "The review cites line-backed evidence from `evals/files/real-agents/graphic_2d_AGENTS.md:<line>` or from the reviewed file path with line numbers.",
+        "The review recognizes the domain trigger table, docs/knowledge routing, project map for `rosen/`, `frameworks/`, `interfaces/`, tests/tools, and scenario workflow as strengths.",
+        "The review recognizes boundaries for public API/ABI, generated code, third-party dependencies, destructive operations, HWC/SurfaceBuffer/fence/refresh-rate behavior, IPC transaction/Parcel/TLV compatibility, and cross-repository or device/performance claims.",
+        "The review recognizes concrete verification and fallback guidance such as `./build.sh --product-name <product-name> --build-target graphic_2d --ccache`, ninja target checks, `git diff --check`, static checks in single-repo environments, and device-validation caveats.",
+        "Critical gaps are reported as `None identified` or only minor/non-blocking if no high-risk missing boundary is found."
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "请读取随附文件 `evals/files/real-agents/window_manager_AGENTS.md`，判断它能否作为 OpenHarmony Window Manager 仓库的 agent 指令团队基线。请只根据文件内容给出评分、证据和最小整改建议。",
+      "expected_output": "Reviews the real Window Manager AGENTS.md fixture as partial/conditional or failing because it has repository overview, style, testing and commit rules but lacks concrete knowledge routing, high-risk API/permission/IPC/generated-file boundaries, exact validation commands, and task-specific verification.",
+      "files": [
+        "evals/files/real-agents/window_manager_AGENTS.md"
+      ],
+      "expectations": [
+        "The response uses the exact Agent Instruction Quality Review report structure with `Overall result`, `Score breakdown`, `Detailed findings`, `Critical gaps`, `Minimal remediation plan`, and `Final judgment` sections.",
+        "The `Overall result` section uses the skill's table format with `Item` and `Result` columns and rows for `File reviewed`, `Scope`, `Overall score`, `Grade`, and `Conclusion`.",
+        "The score breakdown table uses the skill's exact columns `Element`, `Existence`, `Quality`, `Score`, and `Key finding`, and contains exactly the four skill rubric elements `Code map`, `Knowledge routing`, `Constraints and boundaries`, and `Verification loop` with scores shown against `/20`, `/30`, `/30`, and `/20` respectively.",
+        "The review cites line-backed evidence from `evals/files/real-agents/window_manager_AGENTS.md:<line>` or from the reviewed file path with line numbers.",
+        "The review gives credit for the code map describing `wm/`, `dm/`, `wmserver/`, `dmserver/`, `window_scene/`, `interfaces/`, `extension/`, and `utils/`, plus the architecture switch.",
+        "Knowledge routing is scored weak or partial because CodeStyle and Testing links are not enough task-based, path-based, or vocabulary-based routing for public API, scene lifecycle, permission/caller identity, IPC, DFX, generated files, or compatibility work.",
+        "Constraints and boundaries are scored weak or partial because the file lacks concrete do-not or ask-before rules for public API signatures, IPC parcel validation, permissions/caller identity, generated files, persisted state, protocol fields, cross-device behavior, dependencies, or destructive commands.",
+        "Verification loop is scored weak or partial because it links to Testing guidance but does not include concrete build/test/lint/API compatibility/security commands, task-specific checks, Done definition, or validation fallback.",
+        "The quality gate is `Fail`, not `Conditional pass` or `Pass`, when the review identifies any critical missing public API, permission/security, IPC/protocol, generated-file, destructive-command, or validation gap.",
+        "The detailed findings include separate subsections for `Code map`, `Knowledge routing`, `Constraints and boundaries`, and `Verification loop`, each with evidence, assessment, gap, and recommended fix content.",
+        "The remediation plan includes minimal patch-style additions for task-to-path routing, docs-to-read triggers, do-not/ask-before boundaries, generated-file handling, concrete validation commands, and final response expectations."
+      ]
+    }
+  ]
+}

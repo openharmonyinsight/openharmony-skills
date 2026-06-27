@@ -1,23 +1,27 @@
 ---
 name: ohos-test-fuzz-generation
 description: >
-  为 C/C++ 项目自动生成 FUZZ 测试用例、执行安全规范审查、生成语义化种子数据（corpus）。支持 LLVM libFuzzer 框架，兼容 OpenHarmony、Linux、Android 等构建系统。
+  为 C/C++ 项目生成 LLVM libFuzzer FUZZ 测试用例、执行 26 条安全规范审查、生成语义化种子数据。
+  兼容 OpenHarmony / Linux / Android 构建系统。
 
-  **必须激活场景**：
-  - 用户提及 "fuzz 测试"、"生成 fuzzer"、"创建 fuzz 用例"、"fuzz 规范检查"、"fuzz_test"、"LLVMFuzzerTestOneInput"
-  - 需要为类/API 编写 FUZZ 测试
-  - 需要生成或验证 FUZZ 种子数据
-  - 需要检查 FUZZ 代码是否符合安全编码规范
-
-  **能力**：代码分析 → 用例生成 → 种子构造 → 26条规则合规审查 → 自动修复 → 报告生成。
+  触发关键词：fuzz 测试、生成 fuzzer、创建 fuzz 用例、fuzz 规范检查、fuzz_test、LLVMFuzzerTestOneInput、种子数据/corpus
 metadata:
   author: openharmony
   scope: common
   stage: testing
   domain: fuzz
   capability: test-generation
-  version: 0.1.0
-  status: draft
+  version: 0.2.0
+  status: production
+  triggers:
+    - fuzz 测试
+    - 生成 fuzzer
+    - 创建 fuzz 用例
+    - fuzz 规范检查
+    - fuzz_test
+    - LLVMFuzzerTestOneInput
+    - 种子数据
+    - corpus
   tags:
     - fuzz
     - testing
@@ -42,14 +46,14 @@ metadata:
       ↓
 [阶段 2] 骨架生成 —— 创建 5 文件标准化工程（.cpp/.h/BUILD.gn/project.xml/corpus）
       ↓
-[阶段 3] 实现填充 —— 模板替换为实际 API 调用与数据构造逻辑
+[阶段 3] 实现填充 —— 模板替换为实际 API 职责与数据构造逻辑
       ↓
 [阶段 4] 种子语义生成 —— 基于参数类型/名称特征生成高价值初始 corpus
       ↓
 [阶段 5] 规范审查 —— 26 条规则逐一验证，输出合规报告
     **加载触发**：仅加载违规规则的 rules/SecurityCodeReview_FuzzCheck_XXX.md
     **必须加载**：规则 005 详细说明（复杂参数构造，误报高发区）
-    **不要加载**：未违规规则
+    **不要加载**：未违规规则、规则速查表（`references/rules-overview.md` 仅在审查时加载）
       ↓
 [阶段 6] 自动修复 —— 可自动修复规则执行修复（最多 3 轮）
       ↓
@@ -72,11 +76,11 @@ metadata:
 
 ## 关键决策
 
-### 生成测试前的自检问题
+### 生成前的自检
 
 开始生成前，先确认：
 1. **目标 API 是否有参数？** 无参数 → 拒绝生成，建议单元测试（规则 001）
-2. **是 IPC 接口吗？** 继承 `IRemoteBroker` 或方法名含 `OnRemoteRequest` → 必须通过 stub 测试（规则 007）
+2. **是 IPC 接口吗？** 继承 `IRemoteBroker` / 含 `DECLARE_INTERFACE_DESCRIPTOR` → 必须生成 IPC stub fuzzer（`LLVMFuzzerInitialize` 初始化全局 `g_stub`，`LLVMFuzzerTestOneInput` 用 `code % CODE_MAX` 驱动），`sptr<T>` 参数写入 `WriteRemoteObject(nullptr)`（规则 007）
 3. **单文件接口数量？** >10 个 → 拆分为多个 fuzzer（规则 006）
 4. **参数是否全为输出类型？** 非 const 引用/指针 → 跳过，无需 fuzz 输入
 
@@ -111,50 +115,13 @@ metadata:
 - **NEVER** 跳过 Verify 循环 —— 无法发现状态机相关 bug（资源泄漏、顺序依赖）
 - **NEVER** 对枚举使用 `uint32_t` —— 1 字节变异效率远高于 4 字节（规则 013）
 
-## 规范审查规则速查
-
-### 代码安全规范（001–019）
-
-| 规则 | 严重度 | 规则名称 | 自动检查 | 自动修复 |
-|------|--------|----------|----------|----------|
-| 001 | 🔴 高危 | 目标 API FUZZ 适用性评估（无参数/仅固定参数） | ✅ | ❌ |
-| 002 | 🔴 高危 | 关键有参 API 覆盖完整性检查 | ✅ | ❌ |
-| 003 | 🔴 高危 | 变异数据使用检测（FuzzedDataProvider 提取验证） | ✅ | ❌ |
-| 004 | 🟡 中危 | 变异数据复用检测（同一变量多接口调用） | ✅ | ❌ |
-| 005 | 🔴 高危 | 复杂参数构造合理性（结构体/指针/回调/容器） | ✅ | ❌ |
-| 006 | 🟡 中危 | 单文件接口数量限制（超过 10 个告警） | ✅ | ❌ |
-| 007 | 🔴 高危 | IPC 接口测试规范（必须通过 OnRemoteRequest 测试 stub） | ✅ | ❌ |
-| 008 | 🟡 中危 | 种子合理构造（corpus 目录、种子文件大小和格式） | ✅ | ❌ |
-| 009 | 🔴 高危 | FUZZ Driver 安全性（堆溢出/内存泄漏/整数溢出等 10 项检测） | ✅ | ❌ |
-| 010 | 🔴 高危 | size 参数误用检测（禁止将 size 当作变异数据） | ✅ | ❌ |
-| 011 | 🔴 高危 | 系统安全准入条件（权限/UID/Capability 等） | ⚠️ 部分 | ❌ 需人工 |
-| 012 | 🔴 高危 | 目标 API 内部分支覆盖率评估 | ⚠️ 部分 | ❌ 需人工 |
-| 013 | 🟡 中危 | 枚举值构造优化（优先 uint8_t 而非 uint32_t） | ✅ | ❌ |
-| 014 | 🔴 高危 | 固定参数使用检测（可豁免场景识别） | ✅ | ❌ |
-| 015 | 🔴 高危 | 中间产物合法性验证（编解码/序列化/加密等） | ⚠️ 部分 | ❌ 需人工 |
-| 016 | 🔴 高危 | 数据类型匹配性（字节宽度/符号性/类型类别） | ✅ | ❌ |
-| 017 | 🔴 高危 | 随机函数禁用检测（禁止 random/rand，强制使用 FDP） | ✅ | ✅ |
-| 018 | 🔴 高危 | data 指针直接使用检测（禁止解引用/强转/当字符串使用） | ✅ | ❌ |
-| 019 | 🔴 高危 | 全局变量初始化检查（禁止未初始化全局指针） | ✅ | ✅ |
-
-### 文件格式规范（A–G）
-
-| 规则 | 规则名称 | 自动检查 | 自动修复 |
-|------|----------|----------|----------|
-| A | 头文件规范（保护宏、系统头文件、FUZZ_PROJECT_NAME） | ✅ | ❌ |
-| B | BUILD.gn 规范（ohos_fuzztest()、fuzz_config_file 路径、group("fuzztest")） | ✅ | ❌ |
-| C | project.xml 规范（XML 声明、根元素 fuzz_config、必需配置项） | ✅ | ❌ |
-| D | 目录名/文件名一致性（XxxXxx_fuzzer 格式） | ✅ | ❌ |
-| E | .cpp 文件头文件完整性（自身头文件名一致且可编译） | ✅ | ❌ |
-| F | 版权头规范（`Copyright (c) <year> Huawei Device Co., Ltd.`） | ✅ | ✅ |
-| G | BUILD.gn 目标命名规范（XxxXxxFuzzTest，驼峰式 + FuzzTest 后缀） | ✅ | ❌ |
-
-> **详细规则说明、正误示例和豁免条件**见 `rules/` 目录下的独立 Markdown 文件。
-> **自动修复说明**：标注 ✅ 的规则支持 `fuzz_check.py --fix` 自动修复（当前支持规则 017/019/F）；标注 ⚠️ 的规则需要人工审查确认。
-
 ## References
 
 **根据任务按需加载：**
+
+- **`references/rules-overview.md`** — 26 条规则速查表（名称/严重度/自动检查/自动修复）
+  - **加载时机**：仅阶段 5 规范审查时
+  - **不要加载**：生成阶段
 
 - **`rules/SecurityCodeReview_FuzzCheck_XXX.md`** — 违规规则详细说明（正误示例 + 豁免条件）
   - **加载时机**：阶段 5 规范审查发现违规时

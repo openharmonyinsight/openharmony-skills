@@ -1,0 +1,3 @@
+ohos_fuzztest("hdiScreenFuzzTest") {
+sources = [ "hdiscreen_fuzzer.cpp" ]
+}

@@ -1,0 +1,76 @@
+DOMAIN:DEVICE_INFO
+PRODUCTMODEL:XXXX
+DOMAIN:FREEZE_INFO
+TIMESTAMP:2026-05-25 09:00:00.000
+PID:800
+UID:1000
+PACKAGE:render_service
+PROCESSNAME:render_service
+Reason:THREAD_BLOCK_6S
+Action:3
+DOMAIN:FRAMEWORK
+FIRST_STACK (THREAD_BLOCK_3S):
+Tid:7800, Name:render_service
+#00 pc 001d4338 /system/lib64/ld-musl-aarch64.so.1(__timedwait_cp)
+#01 pc 001da3f0 /system/lib64/ld-musl-aarch64.so.1(__pthread_cond_timedwait)
+#02 pc 000c76ac /system/lib64/chipset-sdk-sp/libc++.so(std::__h::condition_variable::wait)
+#03 pc 001c5fbc /system/lib64/librender_service.z.so(OHOS::Rosen::RSDrawFrame::PostAndWait)
+#04 pc 001b4474 /system/lib64/librender_service.z.so(OHOS::Rosen::RSMainThread::OnUniRenderDraw)
+state:S
+utime:300
+stime:100
+
+SECOND_STACK (THREAD_BLOCK_6S):
+Tid:7800, Name:render_service
+#00 pc 001d4338 /system/lib64/ld-musl-aarch64.so.1(__timedwait_cp)
+#01 pc 001da3f0 /system/lib64/ld-musl-aarch64.so.1(__pthread_cond_timedwait)
+#02 pc 000c76ac /system/lib64/chipset-sdk-sp/libc++.so(std::__h::condition_variable::wait)
+#03 pc 001c5fbc /system/lib64/librender_service.z.so(OHOS::Rosen::RSDrawFrame::PostAndWait)
+#04 pc 001b4474 /system/lib64/librender_service.z.so(OHOS::Rosen::RSMainThread::OnUniRenderDraw)
+state:S
+utime:300
+stime:100
+
+OTHER_THREADS:
+Tid:9000, Name:DDGRTask
+#00 pc 001a7830 /system/lib64/librender_service.z.so(DDGR::GrDrawOp::DoExecute)
+#01 pc 001c34f0 /system/lib64/librender_service.z.so(DDGR::GrRenderTask::Execute)
+state:R
+utime:15000
+stime:8000
+
+Tid:5600, Name:OS_IPC_2_5600
+#00 pc 00191e0c /system/lib64/ld-musl-aarch64.so.1(ioctl)
+#01 pc 0000f030 /system/lib64/platformsdk/libipc_common.z.so(OHOS::BinderConnector::WriteBinder)
+#02 pc 00071c54 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::TransactWithDriver)
+#03 pc 00070654 /system/lib64/platformsdk/libipc_single.z.so(OHOS::BinderInvoker::WaitForCompletion)
+#04 pc 001a5c4c /system/lib64/librender_service.z.so(OHOS::Rosen::RSRenderService::RequestVsync)
+state:S
+utime:40
+stime:15
+
+Tid:3400, Name:RSUniRenderThre
+#00 pc 001c4560 /system/lib64/librender_service.z.so(std::future::get)
+#01 pc 001a3c5b /system/lib64/librender_service.z.so(OHOS::Rosen::RSDrawFrame::RenderFrame)
+#02 pc 001a5f37 /system/lib64/librender_service.z.so(OHOS::Rosen::RSDrawFrame::PostAndWait)
+state:S
+utime:1800
+stime:700
+
+Tid:8200, Name:HandlerThread
+#00 pc 001d55a0 /system/lib64/ld-musl-aarch64.so.1(epoll_wait)
+#01 pc 001b56f8 /system/lib64/librender_service.z.so(OHOS::Rosen::RSMainThread::HandlePendingMessages)
+state:S
+utime:20
+stime:5
+
+Tid:4100, Name:RSGpuThread
+#00 pc 001d55a0 /system/lib64/ld-musl-aarch64.so.1(epoll_wait)
+#01 pc 001b2340 /system/lib64/librender_service.z.so(OHOS::Rosen::RSGpuThread::RunLoop)
+state:S
+utime:150
+stime:400
+
+DOMAIN:SYSTEM_RESOURCE
+ReclaimAvailBuffer:1024000
+ThermalLevel info:0

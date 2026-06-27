@@ -1,0 +1,14 @@
+diff --git a/docs/README.md b/docs/README.md
+index aaa0000..bbb1111 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -1,3 +1,8 @@
+ # Project Documentation
+
+-This is the base library project.
++This is the OpenHarmony base library project.
++
++## Building
++
++Run `./build.sh` to build the project.
++See the wiki for more details.

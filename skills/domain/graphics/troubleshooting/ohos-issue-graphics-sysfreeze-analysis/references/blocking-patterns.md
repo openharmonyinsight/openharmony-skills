@@ -50,7 +50,7 @@ Tid:61947, Name:OS_IPC_33_61947
 
 | 阻塞函数 | 说明 | 分析方法 |
 |------|------|------|
-| OHOS::Rosen::RSDrawFrame::PostAndWait | render_sevice主线程等RSUniRenderThread线程 | 分析RSUniRenderThread线程 |
+| OHOS::Rosen::RSDrawFrame::PostAndWait | render_service主线程等RSUniRenderThread线程 | 分析RSUniRenderThread线程 |
 | `X`Thread::PostSyncTask | 向X线程抛同步任务被阻塞 | 分析对应X线程 |
 | DDGR::GrDrawOp::DoExecute -> std::future::get | DrawOp异步任务等待 | 线程等待DrawOp异步任务在DDGRTask线程完成，分析DDGRTask线程 |
 | OHOS::BinderInvoker::SendRequest -> ioctl | 线程发起IPC请求 | 查看Binder信息，分析当前线程ipc的对端线程 |

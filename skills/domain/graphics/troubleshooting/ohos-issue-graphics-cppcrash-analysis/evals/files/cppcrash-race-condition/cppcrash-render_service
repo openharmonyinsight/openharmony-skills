@@ -1,0 +1,35 @@
+Device info:OpenHarmony 5.0.1 (SDK API 12) huawei mate60 pro
+BuildId: c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9
+Module name: com.ohos.render_service
+Pid: 7890
+Uid: 1000
+Reason: Signal:SIGSEGV(SEGV_MAPERR) fault_addr:0x0000000000000000
+LastFatalMessage: fatal signal 11
+Stack trace:
+  #00 pc 0000000000004a2b30 /system/lib/librender_service_base.z.so
+  #01 pc 0000000000003b24c0 /system/lib/librender_service_base.z.so
+  #02 pc 0000000000001f5c00 /system/lib/librender_service.z.so
+Registers:
+  x0: 0000000000000000
+  x1: 0000000000000010
+  x8: 0000000000000010
+  x19: 00000059810e9658
+  x20: 0000000000000000
+  x21: 0000000000000000
+  x22: 0000000000000000
+  x29(fp): 0000007f80001000
+  x30(lr): 00000059810e9610
+  sp: 0000007f80000f00
+Other thread info:
+  Tid: 7891, Name: RSUniRenderThread
+  #00 pc 0000000000002f8a00 /system/lib/librender_service_base.z.so(RSUniRenderThread::Process())
+  #01 pc 0000000000004a2b30 /system/lib/librender_service_base.z.so(RSRenderNodeDrawableCache::GetDrawableById())
+  Tid: 7892, Name: RSMainThread
+  #00 pc 0000000000003a5c00 /system/lib/librender_service_base.z.so(RSMainThread::OnVsync())
+  #01 pc 0000000000003a5b00 /system/lib/librender_service_base.z.so(RSMainThread::ProcessCommand())
+Memory near registers:
+  x19(+0): 5981 0e96 5800 0000 5981 0e96 5800 0000
+  x20(+0): 0000 0000 0000 0000 0000 0000 0000 0000
+Maps:
+  00000050-00000060 /system/lib/librender_service_base.z.so (r-xp)
+  00000058-0000005900000000 /dev/ashmem/dalvik-heap (rw-p)

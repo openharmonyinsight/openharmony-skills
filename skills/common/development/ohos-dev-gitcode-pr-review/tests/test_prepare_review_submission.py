@@ -114,7 +114,9 @@ class PrepareReviewSubmissionFindingsTest(unittest.TestCase):
         payload = json.loads(proc.stdout)
         self.assertTrue(payload["ok"])
         self.assertEqual(payload["command_count"], 2)
-        self.assertEqual(payload["commands"][0][:3], ["oh-gc", "pr:comment", "123"])
+        self.assertEqual(payload["commands"][0][:4], ["oh-gc", "pr", "comment", "123"])
+        for command in payload["commands"]:
+            self.assertFalse(any(":comment" in arg or ":review" in arg for arg in command))
         self.assertIn("--path", payload["commands"][1])
         self.assertIn("--line", payload["commands"][1])
         self.assertIn("11", payload["commands"][1])

@@ -1,0 +1,103 @@
+{
+  "skill_name": "ohos-dev-hdc-command-usage",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "ci-multiple-target-install-guardrails",
+      "prompt": "我们的 CI 机器偶尔同时连着一台 USB 真机和一个历史 TCP target。请帮我写一个 hdc 安装脚本片段，把 out/debug/demo.hap 安装到目标设备上。CI 不能人工点授权，也不能装错设备；如果设备异常请直接失败并收集诊断信息。",
+      "expected_output": "Agent 应先要求或使用明确 connect-key，不能直接 hdc install。脚本应 list targets -v，检查 Connected 数量和 Unauthorized/Offline/[Empty]，在 mutating install 前用 hdc -t <key> shell echo ok 探测，异常时输出 hdc checkserver/list targets 诊断并失败，不无限 wait 或等待人工授权。",
+      "files": [],
+      "expectations": [
+        "输出要求显式 connect-key 参数，或在 hdc list targets -v 仅有一个 Connected 目标时才允许继续",
+        "安装命令使用 hdc -t <connect-key> install out/debug/demo.hap，而不是裸 hdc install",
+        "脚本在 install 前执行 harmless probe，例如 hdc -t <connect-key> shell echo ok",
+        "脚本把 Unauthorized、Offline、[Empty] 和多个 Connected 目标作为 CI hard failure 处理",
+        "异常分支收集 hdc checkserver 和 hdc list targets -v 等 hdc 服务/目标状态诊断",
+        "输出没有让 CI 无限 hdc wait，也没有建议等待用户在设备上点击授权",
+        "输出没有基于 hdc 错误提示的完整自然语言文案做脆弱字符串分支"
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "system-component-push-safe-sequence",
+      "prompt": "我要把本地 libfoo.z.so 推到 OpenHarmony 设备的 /system/lib64/libfoo.z.so 覆盖系统库。现在 hdc file send 提示 read-only file system。设备可能还有另一台测试板在线。请给我安全的操作步骤，包含验证和回滚考虑。",
+      "expected_output": "Agent 应先列出目标并要求 -t，先探测远端路径、id、mount/stat，而不是把权限错误直接转成 remount。若确实需要系统分区替换，应包含备份/回滚、remount 前置条件、file send、ls/stat 验证大小/owner/mode、shell sync，并说明只在需要时重启或重启相关服务。",
+      "files": [],
+      "expectations": [
+        "步骤从 hdc list targets -v 开始，并要求后续 mutating 命令全部带 hdc -t <connect-key>",
+        "在 remount 或覆盖前先探测 shell id、mount、ls -l 或 stat 目标路径",
+        "输出明确 read-only/permission 错误不是自动 remount 的理由，需要确认确实是系统分区替换且设备/构建支持",
+        "步骤包含覆盖前备份或拉取原文件作为回滚路径",
+        "覆盖后验证远端文件存在、大小、owner/mode 或可读/可执行状态",
+        "重要系统写入后包含 hdc -t <connect-key> shell sync",
+        "重启建议有条件：优先重启受影响服务/进程，只在组件或分区语义要求时 reboot",
+        "输出没有提供不带 -t 的 file send、shell rm、target boot 或其他 mutating 命令"
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "connection-diagnosis-layered-empty-offline-daemon",
+      "prompt": "hdc list targets 显示 [Empty]，有时又出现 Offline 或 Failed to communicate with daemon。我在 Windows 和 Linux 都遇到过。请给一个排查顺序，不要让我盲目重启机器。",
+      "expected_output": "Agent 应按 Host tool -> target inventory -> USB/TCP/remote transport -> daemon/version -> evidence 的分层顺序排查。[Empty] 要覆盖 PATH、USB 调试、数据线/直连端口、驱动、SDK/版本、hdc 服务状态；Offline 要区分 stale TCP/USB/daemon 重启并建议 tconn -remove；daemon 通信失败要检查服务、端口冲突、SDK/设备版本。不得推荐 tmode usb。",
+      "files": [],
+      "expectations": [
+        "排查顺序先检查 hdc -h、hdc -v 或 hdc checkserver，再检查 hdc list targets -v",
+        "[Empty] 分支覆盖 hdc 不在 PATH、USB/无线调试未开启、数据线/端口、驱动或 lsusb、SDK/设备版本、hdc kill -r 等因素",
+        "Unauthorized 分支要求在设备侧接受 trust/永久信任，而不是用重启替代授权",
+        "Offline 分支说明 stale TCP、断开的 USB 或 daemon 重启等原因，并包含 hdc tconn <IP:port> -remove 处理 stale TCP",
+        "Failed to communicate with daemon 分支包含 hdc 服务重启、端口冲突或多个 hdc/hdc_std、SDK/toolchains 版本匹配检查",
+        "输出建议在重启设备或切换模式前保留 hdc list targets -v、hdc checkserver、hdc service log 等证据",
+        "输出没有建议使用已废弃的 tmode usb 作为切换 USB 模式命令",
+        "输出没有把 hdc kill -r 当作替代线缆、授权、网络或版本排查的万能步骤"
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "hap-hsp-install-dependency-decision",
+      "prompt": "我安装 entry-default-signed.hap 失败，错误看起来像 missing dependent module。构建产物目录里还有 feature-default-signed.hap 和 libs/entry-default-signed.hsp、libs/share-default-signed.hsp。请告诉我应该怎么用 hdc 安装，别让我只是反复装 entry HAP。",
+      "expected_output": "Agent 应根据包形态选择安装路径：有多个 HAP/HSP 时优先 hdc install -p <folder>，或者对单 HAP + application HSP 用 hdc install -s <hsp-path> <hap>，并说明每个 -s 目录包含一个 HSP。应提醒确认依赖 HSP 已构建/签名/放入安装目录；若文件已在设备端才使用 bm install -p。",
+      "files": [],
+      "expectations": [
+        "输出明确 missing dependent module 不应通过反复安装同一个 entry HAP 解决",
+        "对于多个 HAP/HSP 文件，优先建议把它们整理到同一安装目录后使用 hdc install -p <folder>",
+        "对于单 HAP 搭配 application HSP，说明可用 hdc install -s <hsp-path> <hap>",
+        "输出说明每个 -s 指定的 HSP 目录应只包含一个 HSP，避免依赖选择错误",
+        "输出提醒检查 HSP 文件是否已构建、签名并包含在 install folder 或 -s 路径中",
+        "如果提到 bm install，明确这是文件已经推到设备端时的路径：hdc shell bm install -p <remote-path>",
+        "输出没有把 .app、.hap、HSP 多包场景混为同一个裸 hdc install 命令"
+      ]
+    },
+    {
+      "id": 5,
+      "eval_name": "crash-log-evidence-pull-with-size-check",
+      "prompt": "设备上某个 native 服务崩溃了，我需要把 hilog、tombstone 和 bugreport 拉回来给同事分析。可能接着两台设备，日志目录很大。请给我一套 hdc 命令流程。",
+      "expected_output": "Agent 应先选择目标并带 -t，区分 device hilog、tombstone/log evidence 和 hdc service logs。流程应先 ls/du 检查远端路径和大小，再 file recv；hilog 应先 start、复现、stop，然后拉 /data/log/hilog；需要系统状态时用 bugreport。多目标输出目录应按设备和时间隔离。",
+      "files": [],
+      "expectations": [
+        "流程从 hdc list targets -v 和明确 connect-key 开始，后续日志/拉取命令使用 hdc -t <connect-key>",
+        "拉取 /data/log/hilog、tombstone 或 crash/log 目录前先执行 shell ls、du 或等价大小/存在性检查",
+        "hilog 持久化流程包含 shell hilog -w start、复现、shell hilog -w stop、file recv /data/log/hilog",
+        "输出区分设备侧 hilog/崩溃证据和 hdc client/server service logs，不把 hdc -l 当作设备运行日志替代品",
+        "需要系统快照时建议 hdc bugreport [FILE]",
+        "多设备场景建议按 connect-key 和时间戳隔离本地输出目录",
+        "输出没有建议盲目 file recv 整个大目录，也没有使用 file recv -z 或 file send -z"
+      ]
+    },
+    {
+      "id": 6,
+      "eval_name": "remote-server-and-forwarding-security-boundary",
+      "prompt": "我想让同事从另一台电脑通过我的 hdc server 操作设备，并把设备上的调试端口转发到局域网其他机器也能访问。请给命令，顺便说明风险。",
+      "expected_output": "Agent 应说明 -s 是每条命令指定远端 server，服务端若绑定非 loopback 会暴露设备控制能力；不应默认推荐 0.0.0.0。端口转发应区分 fport 和 rport，并说明 API 20 起 -e 可控制本地 TCP listen IP，但非 loopback 是安全决策。应建议最小暴露、信任边界和使用后清理 fport。",
+      "files": [],
+      "expectations": [
+        "输出解释 hdc -s <server-ip>:<port> 是 per-command 远程 server 选择，并会覆盖该命令的 OHOS_HDC_SERVER_PORT",
+        "输出在给出非 loopback server bind 或 LAN IP 前明确设备控制能力暴露风险",
+        "输出没有把 0.0.0.0 或局域网监听作为默认便利推荐",
+        "输出区分 hdc fport 是 host listen 转发到 device，hdc rport 是 device listen 转发到 host",
+        "如果提到 -e <listen-ip>，说明它用于控制本地 TCP 转发监听 IP，且从 API 20 起可用",
+        "输出建议限制监听地址、确认同事/网络信任边界，并在使用后用 fport ls/rm 清理",
+        "输出没有在缺少目标确认时给出裸 mutating 命令让远端 server 直接操作设备"
+      ]
+    }
+  ]
+}

@@ -13,7 +13,27 @@ metadata:
 
 # Explain Code
 
-Interactive code analysis and documentation that ensures accuracy through user confirmation at key stages.
+Code analysis and documentation that ensures accuracy through confirmation when possible, and produces complete output even in non-interactive contexts.
+
+## Mode Selection
+
+This skill operates in two modes depending on the interaction context:
+
+### Interactive Mode (default)
+
+When you can exchange multiple messages with the user, follow the full three-phase workflow with confirmation gates at Phase 1 and Phase 2. This is the preferred mode for producing the most accurate documentation.
+
+### Single-Turn Mode
+
+When the context is non-interactive (single API call, batch processing, evaluation, or the user will not respond to follow-up questions), compress all three phases into one response:
+
+1. Briefly state your understanding of scope and any assumptions you're making (2-3 sentences)
+2. Present a concise call flow summary (5-8 numbered steps with file/line references)
+3. Generate the full documentation immediately
+
+In single-turn mode, note any uncertainties or assumptions in the documentation's "Notes" section rather than asking the user to clarify.
+
+**How to decide**: If the user's request includes specific file paths, module names, or class names, and the request is detailed enough to infer what they need → single-turn mode. If the request is vague ("explain the graphics module") or the target is genuinely ambiguous → interactive mode and ask clarifying questions.
 
 ## Workflow
 
@@ -34,7 +54,7 @@ Before diving into the code, ensure you understand what needs to be analyzed:
 - You need to understand the user's depth requirement (high-level vs detailed)
 - Context is missing (e.g., "explain the payment flow" - which payment system?)
 
-**Continue only when the user confirms alignment.**
+In interactive mode, continue only when the user confirms alignment. In single-turn mode, state your assumptions and proceed directly to Phase 2.
 
 **If the codebase appears large (>50 files)**: before Phase 2 exploration,
 MUST read the entire file structure first — do a tree walk of the module
@@ -62,7 +82,7 @@ Before writing full documentation, present the code's call flow or architecture 
 
 4. **Ask for confirmation**: "Is this understanding of the flow correct? Any missing or incorrect steps?"
 
-**Do NOT proceed to documentation until the user confirms the flow is accurate.**
+In interactive mode, do not proceed to documentation until the user confirms the flow is accurate. In single-turn mode, present the flow briefly and proceed to documentation, noting any uncertainties in the "Notes" section.
 
 #### Handling Disagreement
 
@@ -204,6 +224,12 @@ represents a documentation failure Claude has observed in the wild.
 
 ### Confirmation anti-patterns
 
-- **NEVER skip confirmation to save time** — a wrong document is worse
+- **NEVER skip confirmation in interactive mode** — a wrong document is worse
   than no document. Skipping Phase 2 confirmation produces confident
   but incorrect output that erodes trust in all future documentation.
+
+- **NEVER block on confirmation in single-turn mode** — when the context
+  is non-interactive and the user cannot respond, producing incomplete
+  output because you stopped at a confirmation gate is worse than producing
+  documentation with noted assumptions. State your understanding, generate
+  the documentation, and flag uncertainties in the "Notes" section.

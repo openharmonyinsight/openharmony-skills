@@ -1,0 +1,92 @@
+{
+  "skill_name": "ohos-dev-napi-module",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我正在为 OpenHarmony 应用写一个原生模块，叫 MediaProcessor，属于 multimedia 子系统、media_processor 部件。我需要从 ArkTS 导出两个方法：'processAudio' 和 'processVideo'。请帮我写完整的 C++ 注册代码和 BUILD.gn。模块要安装到 module/multimedia。",
+      "expected_output": "完整的 C++ 源文件，包含 napi_module 结构体（nm_modname=MediaProcessor）、使用 DECLARE_NAPI_FUNCTION 宏的 Init 函数、__attribute__((constructor)) 注册函数，以及 BUILD.gn（包含 ohos_shared_library、ace_napi 依赖、CFI/PAC 安全配置、正确的 relative_install_dir、subsystem_name 和 part_name）。",
+      "files": [],
+      "expectations": [
+        "napi_module 结构体中 nm_modname 设置为 'MediaProcessor'",
+        "Init 函数为 static，使用 DECLARE_NAPI_FUNCTION 声明 'processAudio' 和 'processVideo'",
+        "构造函数使用 __attribute__((constructor)) 并调用 napi_module_register",
+        "BUILD.gn 的 external_deps 中包含 'napi:ace_napi'",
+        "BUILD.gn 的 sanitize 块中设置了 cfi=true 和 cfi_cross_dso=true",
+        "BUILD.gn 中设置了 branch_protector_ret='pac_ret'",
+        "relative_install_dir 为 'module/multimedia'",
+        "subsystem_name 为 'multimedia'，part_name 为 'media_processor'"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我在把一个 Node.js 原生插件移植到 OpenHarmony。原代码用 NAPI_MODULE(modulename, Init) 做注册，有一个 binding.gyp 文件。另外还用了 napi_create_error 并给 code 参数传了数字，还调用了 napi_run_script 来执行 JS。我需要改哪些地方？",
+      "expected_output": "明确指出：1) NAPI_MODULE 必须替换为 napi_module 结构体加构造函数注册；2) binding.gyp 必须替换为 BUILD.gn；3) napi_create_error 在 OpenHarmony 中 code 参数接受 String 和 Number 两种类型（不需要改）；4) napi_run_script 在 OpenHarmony 中是空实现（需要改用 napi_run_script_path）。",
+      "files": [],
+      "expectations": [
+        "指出 NAPI_MODULE 必须替换为 napi_module + napi_module_register 模式",
+        "指出 binding.gyp 必须替换为 BUILD.gn",
+        "说明 napi_create_error 传入 Number 类型的 code 在 OpenHarmony 中可行，与 Node.js 不同",
+        "警告 napi_run_script 在 OpenHarmony 中是空实现",
+        "建议用 napi_run_script_path 替代 napi_run_script",
+        "提到构造函数必须是 extern 'C' 并带 __attribute__((constructor))"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "我需要给模块加一个叫 'encodeImage' 的异步 NAPI 方法，接收一个图片路径字符串，在后台线程压缩图片，返回一个 Promise 带压缩后的数据。这个任务是用户触发的，应该以高优先级执行。帮我生成实现代码。",
+      "expected_output": "完整的异步工作实现，包含 AsyncContext 结构体（env、asyncWork、deferred、图片路径、压缩数据等字段），入口函数创建 Promise，napi_create_async_work 带 execute 回调（后台压缩逻辑占位）和 complete 回调（resolve promise、清理 async work 和 context），使用 napi_queue_async_work_with_qos 并设置 napi_qos_user_initiated。",
+      "files": [],
+      "expectations": [
+        "包含 AsyncContext 结构体，有 env、asyncWork、deferred 及数据字段",
+        "入口函数通过 napi_create_promise 创建 Promise",
+        "使用 napi_create_async_work，分别定义 execute 和 complete 回调",
+        "execute 回调中不调用 NAPI 函数（只做后台工作）",
+        "complete 回调中调用 napi_resolve_deferred 或 napi_reject_deferred",
+        "complete 回调中通过 napi_delete_async_work 和 delete context 清理资源",
+        "使用 napi_queue_async_work_with_qos 并传入 napi_qos_user_initiated 高优先级"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "我的原生模块编译没问题，但 ArkTS 代码执行 'import myNetworkModule from @ohos.network_module' 时报 module not found。这是我的 BUILD.gn：\n\nohos_shared_library('network_lib') {\n  sources = ['src/network_module.cpp']\n  external_deps = ['napi:ace_napi']\n}\n\n注册代码：\n\nNAPI_MODULE(myNetworkModule, Init)\n\n哪里出问题了？",
+      "expected_output": "诊断出三个问题：1) NAPI_MODULE 必须替换为 napi_module 结构体 + napi_module_register 构造函数；2) nm_modname 应与导入标识 'myNetworkModule' 匹配；3) BUILD.gn 缺少安全配置（CFI/PAC）、安装路径、subsystem_name 和 part_name。",
+      "files": [],
+      "expectations": [
+        "指出 NAPI_MODULE 是注册失败的主要原因",
+        "解释 OpenHarmony 需要使用 napi_module 结构体并显式调用 napi_module_register",
+        "确认 nm_modname 应为 'myNetworkModule' 以匹配导入标识",
+        "指出 BUILD.gn 缺少 sanitize/cfi 配置",
+        "指出 BUILD.gn 缺少 branch_protector_ret",
+        "指出 BUILD.gn 缺少 relative_install_dir、subsystem_name、part_name"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "我有一个 Worker 线程场景，需要在主线程和 Worker 之间共享原生数据。我目前在主线程用 napi_wrap 包装 C++ 对象，但 Worker 访问不到。应该改用哪些 OpenHarmony API？这些对象需要支持数组数据，还要能追踪内存大小来触发 GC。",
+      "expected_output": "推荐使用 Sendable API（napi_create_sendable_array、napi_wrap_sendable）进行跨线程共享，介绍序列化传输方式（napi_serialize/napi_deserialize），建议使用 napi_wrap_enhance 配合 native_binding_size 实现 GC 感知的内存追踪。",
+      "files": [],
+      "expectations": [
+        "推荐使用 Sendable API 替代普通 napi_wrap",
+        "提到 napi_create_sendable_array 用于数组数据共享",
+        "提到 napi_wrap_sendable 或 napi_wrap_sendable_with_size",
+        "提到 napi_serialize/napi_deserialize 用于跨线程传输",
+        "推荐 napi_wrap_enhance 配合 native_binding_size 进行 GC 追踪"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "请帮我审查一下这个 audio session 模块的 NAPI 代码，是一个新提交的贡献。关键部分如下：\n\n// audio_session_module.cpp\n#include <node_api.h>\n\nstatic napi_value Init(napi_env env, napi_value exports) {\n    napi_property_descriptor desc[] = {\n        DECLARE_NAPI_FUNCTION('startSession', StartSessionCallback),\n        DECLARE_NAPI_FUNCTION('stopSession', StopSessionCallback),\n    };\n    napi_define_properties(env, exports, 2, desc);\n    return exports;\n}\n\nNAPI_MODULE(audio_session, Init)\n\n// BUILD.gn\nohos_shared_library('audio_session') {\n    sources = ['audio_session_module.cpp']\n    external_deps = ['napi:ace_napi']\n}\n\n我刚开始接触 OpenHarmony NAPI，可能有很多遗漏。",
+      "expected_output": "审查指出：1) 头文件错误（<node_api.h> 应改为 napi/native_api.h）；2) NAPI_MODULE 必须替换为 napi_module + 构造函数注册；3) nm_modname 应为 'audio_session'；4) 缺少安全配置（CFI/PAC）；5) 缺少安装路径、subsystem_name、part_name；6) 需要确认是普通原生导出还是需要 bundle JS/ABC 的 napi_module_with_js。",
+      "files": [],
+      "expectations": [
+        "指出头文件 include 错误（node_api.h 应为 napi/native_api.h）",
+        "指出 NAPI_MODULE 应改为 napi_module 结构体加构造函数注册",
+        "指出缺少 extern C 构造函数中的 napi_module_register 调用",
+        "指出 BUILD.gn 缺少 CFI/PAC 安全配置",
+        "指出 BUILD.gn 缺少 relative_install_dir、subsystem_name、part_name",
+        "确认 nm_modname 必须匹配导入标识 'audio_session'",
+        "提到需要判断是否使用 napi_module_with_js 还是普通原生导出"
+      ]
+    }
+  ]
+}

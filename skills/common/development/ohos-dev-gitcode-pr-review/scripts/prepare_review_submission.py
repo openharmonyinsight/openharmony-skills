@@ -153,13 +153,14 @@ def build_commands(pr: dict[str, object], draft: dict[str, object]) -> list[list
     commands: list[list[str]] = []
     summary_text = draft.get("summary")
     if isinstance(summary_text, str) and summary_text.strip():
-        commands.append(["oh-gc", "pr:comment", number, "--body", summary_text, *repo_args])
+        commands.append(["oh-gc", "pr", "comment", number, "--body", summary_text, *repo_args])
 
     for comment in draft.get("line_comments", []) or []:
         commands.append(
             [
                 "oh-gc",
-                "pr:comment",
+                "pr",
+                "comment",
                 number,
                 "--body",
                 str(comment["body"]),
@@ -172,7 +173,7 @@ def build_commands(pr: dict[str, object], draft: dict[str, object]) -> list[list
         )
 
     if draft.get("approve") is True:
-        commands.append(["oh-gc", "pr:review", number, *repo_args])
+        commands.append(["oh-gc", "pr", "review", number, *repo_args])
     return commands
 
 

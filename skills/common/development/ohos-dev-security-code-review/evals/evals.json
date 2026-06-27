@@ -1,0 +1,95 @@
+{
+  "skill_name": "ohos-dev-security-code-review",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "请使用 ohos-dev-security-code-review 审查下面 OpenHarmony C++ 系统服务代码。按 skill 的安全审查格式输出 confirmed vulnerabilities；如果证据不足，请明确说明还需要追踪什么。\n\n文件路径：services/account/account_data_stub.cpp\n\n```cpp\nint AccountDataStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option)\n{\n    if (data.ReadInterfaceToken() != GetDescriptor()) {\n        return ERR_INVALID_DATA;\n    }\n    switch (code) {\n        case TRANS_DELETE_ACCOUNT_CACHE:\n            return HandleDeleteAccountCache(data, reply);\n        case TRANS_QUERY_OWN_ACCOUNT:\n            return HandleQueryOwnAccount(data, reply);\n        default:\n            return IPCObjectStub::OnRemoteRequest(code, data, reply, option);\n    }\n}\n\nint AccountDataStub::HandleDeleteAccountCache(MessageParcel &data, MessageParcel &reply)\n{\n    uint32_t tokenId = data.ReadUint32();\n    int32_t targetUserId = data.ReadInt32();\n    std::string bundleName = data.ReadString();\n    if (!AccessTokenKit::VerifyAccessToken(tokenId, \"ohos.permission.CLEAN_ACCOUNT_CACHE\")) {\n        HILOG_WARN(LOG_CORE, \"clean cache permission denied for %{public}s\", bundleName.c_str());\n        return ERR_PERMISSION_DENIED;\n    }\n    accountStore_.DeleteCache(targetUserId, bundleName);\n    reply.WriteInt32(ERR_OK);\n    return ERR_OK;\n}\n\nint AccountDataStub::HandleQueryOwnAccount(MessageParcel &data, MessageParcel &reply)\n{\n    uint32_t callerToken = IPCSkeleton::GetCallingTokenID();\n    int32_t userId = GetUserIdByToken(callerToken);\n    std::string bundleName = GetBundleNameByToken(callerToken);\n    reply.WriteString(accountStore_.Query(userId, bundleName));\n    return ERR_OK;\n}\n```",
+      "expected_output": "Reports a high security risk for caller-controlled token/user/bundle values authorizing deletion of another user's account cache, while not treating the descriptor check as authorization.",
+      "files": [],
+      "expectations": [
+        "The review reports a HIGH SECURITY RISK finding for HandleDeleteAccountCache or TRANS_DELETE_ACCOUNT_CACHE.",
+        "The finding states that tokenId, targetUserId, and/or bundleName are attacker-controlled because they are read from MessageParcel.",
+        "The finding explains that ReadInterfaceToken/GetDescriptor is not authorization (descriptor checks only verify interface type).",
+        "The finding identifies accountStore_.DeleteCache as the sensitive sink and explains cross-user or cross-bundle cache deletion impact.",
+        "The required fix uses IPCSkeleton::GetCallingTokenID or equivalent server-side caller identity and binds targetUserId/bundleName to the caller or requires explicit cross-user authority.",
+        "The review does not report HandleQueryOwnAccount as vulnerable because it derives identity from IPCSkeleton and token-bound helpers.",
+        "The review follows the skill's output format with Location, Issue, Evidence, Required fix, and Impact sections for each finding."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "请使用 ohos-dev-security-code-review 审查下面 OpenHarmony IPC 处理代码，重点看 MessageParcel、fd、IRemoteObject callback 的输入校验和权限边界。请只报告有可利用路径的安全问题。\n\n文件路径：services/media/media_import_stub.cpp\n\n```cpp\nint MediaImportStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option)\n{\n    if (data.ReadInterfaceToken() != GetDescriptor()) {\n        return ERR_INVALID_DATA;\n    }\n    if (code == TRANS_IMPORT_PHOTOS) {\n        return ImportPhotos(data, reply);\n    }\n    if (code == TRANS_IMPORT_PHOTOS_SAFE) {\n        return ImportPhotosSafe(data, reply);\n    }\n    return IPCObjectStub::OnRemoteRequest(code, data, reply, option);\n}\n\nint MediaImportStub::ImportPhotos(MessageParcel &data, MessageParcel &reply)\n{\n    int32_t count = data.ReadInt32();\n    int fd = data.ReadFileDescriptor();\n    sptr<IRemoteObject> callback = data.ReadRemoteObject();\n    importCallbacks_.push_back(callback);\n\n    std::vector<PhotoMeta> metas(count);\n    for (int32_t i = 0; i < count; ++i) {\n        metas[i].name = data.ReadString();\n        metas[i].size = data.ReadInt64();\n    }\n    importer_.ImportFromFd(fd, metas, callback);\n    reply.WriteInt32(ERR_OK);\n    return ERR_OK;\n}\n\nint MediaImportStub::ImportPhotosSafe(MessageParcel &data, MessageParcel &reply)\n{\n    int32_t count = 0;\n    if (!data.ReadInt32(count) || count < 0 || count > MAX_IMPORT_COUNT) {\n        return ERR_INVALID_DATA;\n    }\n    int fd = data.ReadFileDescriptor();\n    if (fd < 0) {\n        return ERR_INVALID_DATA;\n    }\n    UniqueFd importFd(fd);\n    sptr<IRemoteObject> callback = data.ReadRemoteObject();\n    if (callback == nullptr) {\n        return ERR_INVALID_DATA;\n    }\n    std::vector<PhotoMeta> metas;\n    metas.reserve(count);\n    for (int32_t i = 0; i < count; ++i) {\n        std::string name;\n        int64_t size = 0;\n        if (!data.ReadString(name) || !data.ReadInt64(size) || size < 0 || size > MAX_PHOTO_SIZE) {\n            return ERR_INVALID_DATA;\n        }\n        metas.push_back({name, size});\n    }\n    importer_.ImportFromFd(importFd.Get(), metas, callback);\n    reply.WriteInt32(ERR_OK);\n    return ERR_OK;\n}\n```",
+      "expected_output": "Finds the unsafe import path's unchecked parcel reads, unbounded allocation/loop, unvalidated fd and callback storage/use, and avoids flagging the safe import path.",
+      "files": [],
+      "expectations": [
+        "The review reports at least one HIGH SECURITY RISK finding for ImportPhotos.",
+        "The finding names count as attacker-controlled and explains unchecked ReadInt32 plus missing lower/upper bounds before vector allocation and loop.",
+        "The finding identifies fd from ReadFileDescriptor as an untrusted capability and requires validation plus clear ownership/RAII or close behavior.",
+        "The finding identifies callback from ReadRemoteObject as untrusted and explains that storing or invoking it requires null validation and authorization or lifecycle checks.",
+        "The evidence connects the untrusted values to std::vector allocation, importCallbacks_.push_back, or importer_.ImportFromFd.",
+        "The review does not flag ImportPhotosSafe for the same issues because it checks read success, bounds, fd validity, callback null, and uses UniqueFd.",
+        "The review follows the skill's output format with Location, Issue, Evidence, Required fix, and Impact sections for each finding."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "请使用 ohos-dev-security-code-review 审查下面跨 System Ability 调用路径。重点判断是否存在 confused-deputy 风险，而不是泛泛说“内部服务可信”。\n\n文件路径：services/settings/secure_settings_service.cpp\n\n```cpp\nint SecureSettingsStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option)\n{\n    if (data.ReadInterfaceToken() != GetDescriptor()) {\n        return ERR_INVALID_DATA;\n    }\n    if (code == TRANS_UPDATE_SECURE_SETTING) {\n        return UpdateSecureSettingInner(data, reply);\n    }\n    return IPCObjectStub::OnRemoteRequest(code, data, reply, option);\n}\n\nint SecureSettingsStub::UpdateSecureSettingInner(MessageParcel &data, MessageParcel &reply)\n{\n    std::string key = data.ReadString();\n    std::string value = data.ReadString();\n    int32_t userId = data.ReadInt32();\n\n    int32_t uid = IPCSkeleton::GetCallingUid();\n    if (IsSystemAbilityCaller(uid)) {\n        settingsStore_.PutSecureSetting(userId, key, value);\n        return ERR_OK;\n    }\n    return ERR_PERMISSION_DENIED;\n}\n\nint DevicePolicyService::SetScreenLockPolicy(const std::string &policyJson, int32_t userId)\n{\n    MessageParcel data;\n    MessageParcel reply;\n    data.WriteInterfaceToken(SecureSettingsProxy::GetDescriptor());\n    data.WriteString(\"screen_lock_policy\");\n    data.WriteString(policyJson);\n    data.WriteInt32(userId);\n    return secureSettingsProxy_->SendRequest(TRANS_UPDATE_SECURE_SETTING, data, reply);\n}\n\nint DevicePolicyStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option)\n{\n    if (code == TRANS_SET_SCREEN_LOCK_POLICY) {\n        std::string policyJson = data.ReadString();\n        int32_t userId = data.ReadInt32();\n        return service_.SetScreenLockPolicy(policyJson, userId);\n    }\n    return IPCObjectStub::OnRemoteRequest(code, data, reply, option);\n}\n```",
+      "expected_output": "Reports a confused-deputy vulnerability where a lower-privilege caller can drive DevicePolicyService to use its SA identity to update secure settings for an arbitrary user.",
+      "files": [],
+      "expectations": [
+        "The review reports a HIGH SECURITY RISK confused-deputy finding.",
+        "The finding names the lower-privilege entry path DevicePolicyStub::OnRemoteRequest or TRANS_SET_SCREEN_LOCK_POLICY.",
+        "The finding names SecureSettingsStub::UpdateSecureSettingInner/settingsStore_.PutSecureSetting as the privileged action.",
+        "The finding explains that IsSystemAbilityCaller(uid) is insufficient because it authorizes the intermediary SA rather than preserving or rechecking the original caller authority.",
+        "The finding identifies userId and policyJson/key/value as caller-influenced data reaching a secure setting mutation.",
+        "The required fix preserves the original caller token/user or rechecks operation-specific permission and user binding at SecureSettingsStub before PutSecureSetting.",
+        "The review follows the skill's output format with Location, Issue, Evidence, Required fix, and Impact sections for each finding."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "请使用 ohos-dev-security-code-review 审查下面 OpenHarmony 服务日志代码，判断哪些日志是安全风险，哪些只是可接受的粗粒度诊断信息。请输出 confirmed vulnerabilities，不要把所有 HILOG 都当问题。\n\n文件路径：services/input/input_audit_service.cpp\n\n```cpp\nvoid InputAuditService::RecordTouch(const TouchEvent &event, WindowInfo *window)\n{\n    HILOG_INFO(LOG_CORE, \"touch point %{public}d,%{public}d window=%{public}s bounds=%{public}d,%{public}d,%{public}d,%{public}d\",\n        event.x, event.y, window->bundleName.c_str(), window->left, window->top, window->right, window->bottom);\n    HILOG_DEBUG(LOG_CORE, \"event object=%{public}p raw=%{public}s\", &event, event.rawTrace.c_str());\n    auditStore_.Record(event.userId, event.type);\n}\n\nvoid InputAuditService::RecordSmsAuth(const std::string &phone, const std::string &smsCode, const std::string &token)\n{\n    HILOG_INFO(LOG_CORE, \"sms auth phone=%{public}s code=%{private}s token=%{private}s\", phone.c_str(), smsCode.c_str(), token.c_str());\n    authStore_.RecordSms(phone);\n}\n\nvoid InputAuditService::RecordResultOnly(int32_t resultCode)\n{\n    HILOG_INFO(LOG_CORE, \"input audit result=%{public}d\", resultCode);\n}\n```",
+      "expected_output": "Reports public logging of raw input activity, window/user context, pointers, phone number, and sensitive auth material, while accepting the coarse result-code log.",
+      "files": [],
+      "expectations": [
+        "The review reports at least one HIGH SECURITY RISK privacy/logging finding.",
+        "The finding identifies public touch coordinates, window bundle/bounds, or rawTrace as input-event exposure that can reconstruct user activity or screen context.",
+        "The finding identifies %{public}p or object address logging as pointer disclosure or ASLR weakening.",
+        "The finding identifies the phone number as PII exposed with %{public}s.",
+        "The finding explains that %{private} is not sufficient for smsCode/token and recommends suppressing credentials or replacing them with coarse result labels.",
+        "The review does not flag RecordResultOnly as a vulnerability because it logs only a coarse public result code.",
+        "The review follows the skill's output format with Location, Issue, Evidence, Required fix, and Impact sections for each finding."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "请使用 ohos-dev-security-code-review 审查下面 OpenHarmony 回调管理代码，重点看 IPC 注册、death recipient、异步通知之间的并发安全。请只报告能说明可达交错和影响的风险。\n\n文件路径：services/notification/notification_callback_manager.cpp\n\n```cpp\nint NotificationCallbackManager::RegisterCallback(MessageParcel &data)\n{\n    int32_t userId = data.ReadInt32();\n    sptr<IRemoteObject> remote = data.ReadRemoteObject();\n    if (remote == nullptr) {\n        return ERR_INVALID_DATA;\n    }\n    std::lock_guard<std::mutex> lock(callbackMutex_);\n    callbacks_[userId].push_back(remote);\n    remote->AddDeathRecipient(deathRecipient_);\n    return ERR_OK;\n}\n\nvoid NotificationCallbackManager::UnregisterCallback(int32_t userId, const sptr<IRemoteObject> &remote)\n{\n    auto &list = callbacks_[userId];\n    list.erase(std::remove(list.begin(), list.end(), remote), list.end());\n}\n\nvoid NotificationCallbackManager::OnRemoteDied(const wptr<IRemoteObject> &remote)\n{\n    for (auto &[userId, list] : callbacks_) {\n        list.erase(std::remove(list.begin(), list.end(), remote.promote()), list.end());\n    }\n}\n\nvoid NotificationCallbackManager::NotifyUser(int32_t userId, const Notice &notice)\n{\n    std::lock_guard<std::mutex> lock(callbackMutex_);\n    for (auto &remote : callbacks_[userId]) {\n        sptr<INoticeCallback> callback = iface_cast<INoticeCallback>(remote);\n        if (callback != nullptr) {\n            callback->OnNotice(notice);\n        }\n    }\n}\n```",
+      "expected_output": "Reports race or deadlock/reentrancy risks with reachable IPC/death/notify interleavings, including inconsistent locking and invoking remote callbacks while holding the mutex.",
+      "files": [],
+      "expectations": [
+        "The review reports a HIGH SECURITY RISK or concrete concurrency finding for callbacks_.",
+        "The finding identifies that RegisterCallback uses callbackMutex_ but UnregisterCallback and OnRemoteDied mutate callbacks_ without the same lock.",
+        "The finding explains a reachable interleaving among IPC RegisterCallback/UnregisterCallback, death recipient OnRemoteDied, and NotifyUser.",
+        "The finding identifies container mutation/iteration as the sink and explains denial of service, stale callback, iterator invalidation, or use-after-free/stale remote impact.",
+        "The review also flags that NotifyUser holds callbackMutex_ while invoking remote callback->OnNotice, which can re-enter the service or deadlock.",
+        "The required fix recommends consistent lock/owner discipline, copying callbacks under lock then invoking remote callbacks after releasing the lock, and death-recipient cleanup under the same owner.",
+        "The review follows the skill's output format with Location, Issue, Evidence, Required fix, and Impact sections for each finding."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "请使用 ohos-dev-security-code-review 审查下面 OpenHarmony C++ 系统服务代码。这个用例用于检查误报控制：如果没有确认漏洞，请说明未形成 finding 的证据，而不是强行输出漏洞。\n\n文件路径：services/location/location_policy_stub.cpp\n\n```cpp\nint LocationPolicyStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option)\n{\n    if (data.ReadInterfaceToken() != GetDescriptor()) {\n        return ERR_INVALID_DATA;\n    }\n    switch (code) {\n        case TRANS_UPDATE_POLICY:\n            return UpdatePolicy(data, reply);\n        default:\n            return IPCObjectStub::OnRemoteRequest(code, data, reply, option);\n    }\n}\n\nbool LocationPolicyStub::EnforceUpdatePolicyPermission(int32_t targetUserId) const\n{\n    uint32_t tokenId = IPCSkeleton::GetCallingTokenID();\n    if (AccessTokenKit::VerifyAccessToken(tokenId, \"ohos.permission.MANAGE_LOCATION_POLICY\") != PERMISSION_GRANTED) {\n        return false;\n    }\n    if (targetUserId != GetUserIdByToken(tokenId) &&\n        AccessTokenKit::VerifyAccessToken(tokenId, \"ohos.permission.INTERACT_ACROSS_USERS\") != PERMISSION_GRANTED) {\n        return false;\n    }\n    return true;\n}\n\nint LocationPolicyStub::UpdatePolicy(MessageParcel &data, MessageParcel &reply)\n{\n    int32_t targetUserId = 0;\n    bool enabled = false;\n    std::string provider;\n    if (!data.ReadInt32(targetUserId) || !data.ReadBool(enabled) || !data.ReadString(provider)) {\n        return ERR_INVALID_DATA;\n    }\n    if (provider != \"gps\" && provider != \"network\") {\n        return ERR_INVALID_DATA;\n    }\n    if (!EnforceUpdatePolicyPermission(targetUserId)) {\n        return ERR_PERMISSION_DENIED;\n    }\n    policyStore_.SetLocationEnabled(targetUserId, provider, enabled);\n    HILOG_INFO(LOG_CORE, \"location policy updated result=%{public}d\", ERR_OK);\n    reply.WriteInt32(ERR_OK);\n    return ERR_OK;\n}\n```",
+      "expected_output": "Produces no confirmed vulnerability and explains that authorization, cross-user binding, parcel read checks, provider validation, and coarse logging are present.",
+      "files": [],
+      "expectations": [
+        "The review does not output a HIGH SECURITY RISK finding for UpdatePolicy.",
+        "The review recognizes EnforceUpdatePolicyPermission as a wrapper that uses IPCSkeleton::GetCallingTokenID and VerifyAccessToken.",
+        "The review recognizes the targetUserId cross-user boundary is guarded by INTERACT_ACROSS_USERS or equivalent cross-user authority.",
+        "The review recognizes MessageParcel reads are checked before use and provider is logically validated before policyStore_.SetLocationEnabled.",
+        "The review does not claim ReadInterfaceToken alone is the authorization mechanism because the wrapper performs the operation-specific check.",
+        "The review treats the result-code log as coarse non-sensitive logging and does not flag it as a privacy leak.",
+        "The review follows the skill's output format with Location, Issue, Evidence, Required fix, and Impact sections for each finding."
+      ]
+    }
+  ]
+}
