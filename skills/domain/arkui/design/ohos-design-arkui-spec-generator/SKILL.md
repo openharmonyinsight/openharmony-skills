@@ -135,12 +135,16 @@ Ask which findings should be emphasized in the spec. Selected items become input
 
 Write `specs/<func-domain>/Feat-XX-<name>-spec.md`. Required content:
 
-- US (User Stories) + AC (Acceptance Criteria, numbered AC-X.Y)
-- Business rules / functional rules / exception rules / recovery contracts
+- US (User Stories) + AC table (numbered AC-X.Y, each with WHEN/THEN format and 类型: 正常/异常/边界)
+- Unified rule table (R-N IDs with type labels: 行为/边界/异常/恢复) — replaces the old FR/BR/EX/RC four-category split
+- Rule quality: each rule must pass 5 checks (触发条件可复现, 预期行为可观测, 边界值已标注, 关联AC已填写, 无重叠冲突)
 - Verification mapping (every AC has at least one verification means)
-- API change analysis (ArkTS + C-API dual channel)
+- API change analysis (ArkTS + C-API dual channel, with 开放范围/入参概要/返回值/错误码范围 columns)
+- Interface specification (接口规格): per-API 接口定义 + 参数约束 + 行为场景 tables (L0 can write "N/A")
 - Compatibility declaration (behavior differences listed by API version)
-- Behavior scenarios (Gherkin Given/When/Then)
+- Multi-device adaptation declaration (多设备适配声明: behavior differences by device type)
+- Global feature impact (全局特性影响: accessibility, dark mode, multi-window, etc.)
+- Behavior scenarios (Gherkin — use for L2+ complexity; L1 uses 接口规格→行为场景 table instead)
 
 ### Step 5: Handle design.md (**critical step**)
 
@@ -155,8 +159,9 @@ When the functional domain has no design doc, create one as the baseline before 
 
 Key points:
 - Fixed filename `design.md`, written to `specs/<func-domain>/`
-- Top-level chapters must follow the "standard 13-chapter" structure
+- Top-level chapters must follow the standard skeleton structure (see design-doc-init.md)
 - Design ID format: `DESIGN-Func-<domain-numbers>` (e.g. `DESIGN-Func-04-03-01`)
+- Must include **调用链层级分析** (layer-by-layer call chain scan from top to bottom — missing layers cause implementation rework)
 - The current feature is the **first** Feat under this design — all ADRs / architecture diagrams / data models / detailed designs go **directly into the corresponding chapters** without `(Feat-XX)` suffixes (they're the baseline)
 - Subsequent Feats use the 5B incremental-merge path
 
@@ -171,14 +176,15 @@ Merge checklist:
 1. **Design metadata** — append new Feat-XX to the `Target Feature` field
 2. **需求基线** — append new feature's goal to the supplementary notes
 3. **Repos & modules** table — append new module rows
-4. **Key design decisions** table — append `ADR-FX-N` rows (right after existing ADRs)
-5. **API 签名与权限** — append new API entries with signature, d.ts location, permissions, SysCap
-6. **构建系统影响** — append BUILD.gn / bundle.json changes
-7. **Architecture diagram** — under the existing diagram, add a `#### XX Architecture Diagram (Feat-XX)` subsection
-8. **Data model design** — under the existing data model, add a `#### XX Data Model (Feat-XX)` subsection
-9. **Detailed design** — append `### <capability name>` subsections (same level as existing ones — do NOT open a new H2)
-10. **Risks & open issues** table — append new risk rows
-11. **后续 Task 拆分** table — append the new task row
+4. **调用链层级分析** table — append new layers or annotate existing rows with Feat-XX additional impact
+5. **Key design decisions** table — append `ADR-FX-N` rows (right after existing ADRs)
+6. **API 签名、Kit 与权限** — append new API entries with signature, Kit, d.ts location, permissions, SysCap
+7. **构建系统影响** — append BUILD.gn / bundle.json changes
+8. **Architecture diagram** — under the existing diagram, add a `#### XX Architecture Diagram (Feat-XX)` subsection
+9. **Data model design** — under the existing data model, add a `#### XX Data Model (Feat-XX)` subsection
+10. **Detailed design** — append `### <capability name>` subsections (same level as existing ones — do NOT open a new H2)
+11. **Risks & open issues** table — append new risk rows
+12. **后续 Task 拆分** table — append the new task row
 
 ### Step 6: Self-review and delivery
 

@@ -7,16 +7,17 @@ When the functional-domain directory has no `design.md`, generate one first as t
 - Path: `specs/<func-domain-path>/design.md` (fixed filename)
 - A functional domain has **exactly one** design.md, covering every Feat in that domain
 
-## Standard chapter skeleton (13 top-level H2s, fixed order)
+## Standard chapter skeleton (fixed order)
 
 ```
 # 架构设计
-> <one-line statement of the functional domain's role>
+> 确认目标仓和模块的架构约束、关键设计决策、Spec 拆分方向。
 
 ## 设计元数据
 ## 需求基线
 ## 上下文和现状
 ### 涉及仓和模块
+### 调用链层级分析
 ### 适用架构规则
 ## 不涉及项承接
 ## 关键设计决策
@@ -24,7 +25,7 @@ When the functional-domain directory has no `design.md`, generate one first as t
 ### 骨架范围
 ### 骨架 Spec 拆分
 ## 后续 Task 拆分
-## API 签名与权限
+## API 签名、Kit 与权限
 ### 新增 API
 ### 变更/废弃 API
 ## 构建系统影响
@@ -62,7 +63,7 @@ When the functional-domain directory has no `design.md`, generate one first as t
 | 复杂度 | 简单 / 标准 / 复杂 / 关键 |
 | 目标版本 | API version range |
 | Owner | ArkUI SIG / specific team |
-| 状态 | Baselined（已有实现补录） / Drafting / Approved |
+| 状态 | Baselined（已有实现补录） / Draft / Reviewing / Approved / Superseded |
 
 ### 需求基线
 
@@ -74,7 +75,18 @@ When the functional-domain directory has no `design.md`, generate one first as t
 
 ### 上下文和现状
 
-`涉及仓和模块` table — required columns: 仓库 | 模块路径 | 当前职责 | 本 Feature 影响.
+`涉及仓和模块` — required columns: 仓库 | 补充架构说明.
+
+> 仓、模块、当前职责、影响类型详见 proposal.md"影响范围"。本节补充设计层面的架构现状。
+
+`调用链层级分析` — required columns: 层 | 模块 | 职责 | 修改类型.
+
+> 从最上层到最底层逐层扫描调用链路。遗漏层意味着设计深度不足，实现阶段可能被迫返工。此处关注**层和模块**的职责边界，具体文件清单在 execution-plan.md 中展开。
+
+检查项：
+- [ ] 调用链每一层都已覆盖（从最上层到最底层）
+- [ ] 每层职责边界清晰，无跨层违规调用
+- [ ] 每层修改类型明确
 
 `适用架构规则` table — populate OH-ARCH-* rules with their design conclusions. Standard rules:
 
@@ -101,6 +113,8 @@ ADR table — columns: 决策 ID | 问题 | 推荐方案 | 探索过的替代方
 
 Initial ADRs are numbered `ADR-1, ADR-2, ...` (baseline decisions). Decisions added later by subsequent Feats use `ADR-FX-N` (e.g. `ADR-F2-1` is the first decision of Feat-02).
 
+> 标准及以上复杂度：每个关键决策至少记录 2-3 个探索过的替代方案及取舍理由。简单变更可只填推荐方案。
+
 ### 设计骨架
 
 `骨架范围` table — columns: 骨架项 | 目标 | 不包含 | 验证方式.
@@ -109,13 +123,15 @@ Initial ADRs are numbered `ADR-1, ADR-2, ...` (baseline decisions). Decisions ad
 
 ### 后续 Task 拆分 (table)
 
+> design.md 以 proposal.md 和已批准的 spec.md 为上游输入。本节描述 design 输出到 Plan 阶段的衔接信息。
+
 Columns: Task ID | 目标 | 受影响文件 | 依赖. First row registers the baseline task.
 
-### API 签名与权限
+### API 签名、Kit 与权限
 
 > 本节承接 spec.md"API 变更分析"中识别的 API，给出签名、权限和 d.ts 位置等实现细节。
 
-`新增 API` table — columns: API 签名 | 类型 (Public/System/Internal) | d.ts 位置 | 权限要求 | SysCap.
+`新增 API` table — columns: API 签名 | 类型 (Public/System/InnerApi) | Kit | d.ts 位置 | 权限要求 | SysCap.
 
 `变更/废弃 API` table — columns: 原有 API | 变更类型 (变更/废弃) | 新 API | 迁移说明.
 
@@ -127,18 +143,20 @@ Columns: Task ID | 目标 | 受影响文件 | 依赖. First row registers the ba
 
 ### 可选设计扩展
 
-Each subsection is marked with `<!-- 展开 -->` and contains:
+> 复杂变更时按需展开以下章节。各子章节引用块标注了必填条件，满足条件时必填，不满足时可跳过。
 
-- **架构图**: Mermaid `graph` diagram showing layering (API layer / Property layer / Render layer / Layout algorithm layer). **Must use Mermaid** — do NOT use ASCII box art. Preferred subgraph types: `graph TB` for layered architectures, `graph LR` for data flow, `graph TD` for pipeline steps.
-- **数据流/控制流**: Table with columns 步骤 | 调用方 | 被调用方 | 数据/接口 | 说明
-- **时序设计**: Mermaid `sequenceDiagram`
-- **数据模型设计**: TypeScript (API-layer types) + C++ (framework-layer structs)
-- **算法与状态机**: Mermaid `stateDiagram-v2` or algorithm pseudocode
-- **测试性设计**: Table with columns 测试层级 | 测试目标 | Mock 策略 | 验证方式
-- **异常传播时序图**: Mermaid `sequenceDiagram` covering all exception/recovery rules
-- **资源所有权矩阵**: Table with columns 资源 | 创建方 | 持有方 | 销毁触发 | 实际释放 | 异常回收
-- **接口参数规约**: Table with columns 接口 | 参数 | 类型 | 合法范围 | 非法处理 | 边界说明
-- **线程与并发模型**: Table with columns 操作 | 发起线程 | 回调线程 | 跨进程边界 | 线程安全 | 重入约束
+Each subsection contains:
+
+- **架构图**: Mermaid `graph` diagram showing layering (API layer / Property layer / Render layer / Layout algorithm layer). **Must use Mermaid** — do NOT use ASCII box art. Preferred subgraph types: `graph TB` for layered architectures, `graph LR` for data flow, `graph TD` for pipeline steps. > 复杂跨模块/跨仓依赖时必填。
+- **数据流/控制流**: Table with columns 步骤 | 调用方 | 被调用方 | 数据/接口 | 说明. > 涉及主流程/异常流程/重试降级时必填。
+- **时序设计**: Mermaid `sequenceDiagram`. > 涉及 API/IPC/SA/异步调用链时必填。
+- **数据模型设计**: TypeScript (API-layer types) + C++ (framework-layer structs) + 存储方案 table. > 涉及数据结构/持久化/迁移时必填。
+- **算法与状态机**: Mermaid `stateDiagram-v2` or algorithm pseudocode. > 涉及算法/状态机/并发控制时必填。
+- **测试性设计**: Table with columns 测试层级 | 测试目标 | Mock 策略 | 验证方式. > 涉及 Mock/XTS/故障注入时必填。
+- **异常传播时序图**: Mermaid `sequenceDiagram` covering all exception/recovery rules + 异常场景 table. > 涉及跨层/跨进程 API 调用时必填。
+- **资源所有权矩阵**: Table with columns 资源 | 创建方 | 持有方 | 销毁触发 | 实际释放 | 异常回收. > 涉及动态资源创建/跨模块传递/异步释放时必填。
+- **接口参数规约**: Table with columns 接口 | 参数 | 类型 | 合法范围 | 非法处理 | 边界说明. > 涉及 Public/System API 变更时必填。
+- **线程与并发模型**: Table with columns 操作 | 发起线程 | 回调线程 | 跨进程边界 | 线程安全 | 重入约束 + 并发场景 table. > 涉及异步回调/跨进程/并发访问时必填。
 
 ## Diagram style guide
 
@@ -161,16 +179,17 @@ Each `### <capability>` subsection contains: algorithm pseudocode / formulas / f
 
 ### 风险和开放问题 (table)
 
-Columns: 项 | 类型 (兼容性 / API / 架构 / 文档 / 性能 / 安全) | 影响 (高/中/低) | 处理方式 | Owner.
+Columns: 项 | 类型 (架构 / API / 构建 / 测试) | 影响 (高/中/低) | 处理方式 | Owner.
 
 ### 设计审批
 
-Fixed 10-item checkbox list:
+Fixed 11-item checkbox list:
 
 ```
 - [x] 需求基线已确认，设计覆盖 P0/P1 AC
 - [x] 不涉及项已承接，N/A 和展开项都有结论
 - [x] 涉及仓和模块职责清楚
+- [x] 调用链层级分析完整，每层覆盖到位
 - [x] 适用架构规则已识别并形成设计结论
 - [x] 分层和子系统边界合规
 - [x] API 变更有签名、权限、错误码和兼容性说明
@@ -185,10 +204,11 @@ Followed by a conclusion line: `**结论:** 通过（已有实现补录）`.
 ## Generation steps
 
 1. **Resolve Design ID**: derive `DESIGN-Func-XX-XX-XX` from the feature path
-2. **Lay down the 13 top-level chapters** in the fixed order above
+2. **Lay down the top-level chapters** in the fixed order above
 3. **Baseline ADRs**: convert Step 3 highlights into `ADR-1, ADR-2, ...` (all decisions of the first Feat are baseline — no `FX` prefix)
 4. **Baseline architecture diagram / data model / detailed design**: place directly into the corresponding chapters **without** `(Feat-XX)` suffixes
-5. **Register the first spec**: add the new spec filename to the "后续 Task 拆分" table
+5. **Fill 调用链层级分析**: scan every layer from top to bottom, ensure no layer is missed
+6. **Register the first spec**: add the new spec filename to the "后续 Task 拆分" table
 
 ## Relationship with incremental merging
 
@@ -201,3 +221,4 @@ Followed by a conclusion line: `**结论:** 通过（已有实现补录）`.
 ❌ Naming first-Feat decisions `ADR-F1-N` (they should be baseline `ADR-1, ADR-2, ...`)
 ❌ Skipping `## 不涉及项承接` or `## 设计审批`
 ❌ Inventing a custom Design ID format (must be `DESIGN-Func-XX-XX-XX`)
+❌ Skipping 调用链层级分析 — missing layers cause implementation rework
