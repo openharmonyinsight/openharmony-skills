@@ -1,0 +1,85 @@
+{
+  "skill_name": "ohos-dev-arkui-hdc-demo-device-self-verify",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "我有一个 demo.hap，要在 Windows USB 连接的 OpenHarmony 设备上验证 ArkUI 交互。hdc list targets -v 同时显示两个 Connected 设备，bundle 是 com.example.demo，ability 是 EntryAbility。请执行端到端验证并给出证据。",
+      "expected_output": "Stops before mutation, requires an explicit HDC connect-key, then describes a target-scoped install, launch, interaction, and evidence workflow.",
+      "files": [],
+      "expectations": [
+        "The response uses or explicitly invokes ohos-dev-hdc-command-usage for generic HDC target-selection and safety rules.",
+        "The response treats two Connected targets as ambiguous and requires DEVICE_ID/connect-key before install, file send, shell state changes, or cleanup.",
+        "Every mutating HDC command shown after selection includes -t <connect-key> or an equivalent target-scoped helper.",
+        "Each native HDC invocation checks LASTEXITCODE before the next command and stops on failure.",
+        "The response creates a unique run directory and does not reuse HAP, screenshot, or dump files from an earlier run.",
+        "The response installs the HAP, launches the specified bundle and ability, performs a deterministic UI action, and collects screenshot plus log/dump evidence.",
+        "The response does not declare pass until runtime or visual evidence confirms the expected ArkUI behavior."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "我要验证一个由 entry.hap 和两个 HSP 组成的 ArkUI Demo。文件已经构建好，请给出设备端安装和启动验证方案。",
+      "expected_output": "Selects an HAP/HSP-aware install flow instead of installing only the entry HAP, then verifies bundle launch and UI evidence.",
+      "files": [],
+      "expectations": [
+        "The response inspects package shape and does not repeatedly install only entry.hap.",
+        "The response chooses a folder-based or -s HSP dependency-aware install route from ohos-dev-hdc-command-usage.",
+        "The response confirms the intended target before any install or file transfer.",
+        "The response verifies each transfer before installation and does not continue after a failed native HDC command.",
+        "The response verifies bundle registration, ability launch, process/window state, and at least one ArkUI-visible or dump/log outcome."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "把新编译的 libace_example.z.so 替换到真机系统目录并验证 ArkUI 进程加载了新库。设备路径还不确定。",
+      "expected_output": "Finds the actual device path, preserves rollback evidence, performs a guarded replacement, syncs, and proves the running process loaded the intended library.",
+      "files": [],
+      "expectations": [
+        "The response refuses to guess the destination and uses device find, package layout, or /proc/<pid>/maps to establish the real path.",
+        "The response requires an explicit target, probes permissions and mount state, and does not jump directly from a write error to remount advice.",
+        "The response records original hash, numeric mode, owner/group, and security context and creates a rollback copy before overwrite.",
+        "The response stages the new file under a unique temporary path, restores attributes, uses an atomic same-filesystem replacement, and rolls back if attribute verification fails.",
+        "The response verifies post-push hash/mode/owner/context, runs shell sync, and restarts only the affected process or service unless reboot is required.",
+        "The response requires /proc/<pid>/maps, logs, or behavior evidence before declaring the new native library active."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Demo 能启动，但截图是全黑的，uitest dumpLayout 也失败了。可以直接算端到端验证通过吗？",
+      "expected_output": "Rejects a pass result, captures device/display/window state, and reports a concrete blocker and recovery action.",
+      "files": [],
+      "expectations": [
+        "The response explicitly says a black screenshot and failed layout dump are not valid visual evidence.",
+        "The response captures power/display state, window or ability state, a blocker screenshot, and focused hilog or dump output before retrying.",
+        "The response deletes old evidence paths and requires a newly generated non-empty screenshot or layout file for the current run.",
+        "The response distinguishes app launch success from ArkUI feature verification success.",
+        "The response reports the exact blocker and the manual unlock/display recovery action needed instead of declaring pass."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "我刚安装 ArkUI HDC 端到端自验证 skill，但本地没有 ohos-dev-hdc-command-usage。现在直接开始跑 HDC 命令。",
+      "expected_output": "Indexes or installs the required common HDC skill before constructing the device workflow.",
+      "files": [],
+      "expectations": [
+        "The response identifies ohos-dev-hdc-command-usage as a required dependency.",
+        "The response runs or recommends scripts/install_related_skills.sh before device mutation.",
+        "The response verifies the dependency is indexed and does not silently duplicate generic HDC recovery or safety guidance."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "ArkUI Demo 已经安装，准备采截图时反向 SSH 断开；恢复后 hdc list targets -v 先显示 [Empty]，Windows 设备管理器还能看到开发板。请从中断处继续并判断是否要刷机。",
+      "expected_output": "Stops the interrupted run, checks script/SSH/HDC/hardware/image layers, then starts a fresh evidence run only after the same target is Connected.",
+      "files": [],
+      "expectations": [
+        "The response stops all mutation and does not reuse the partially completed run or its screenshot/layout evidence.",
+        "The response checks that the Windows reverse-SSH script is configured correctly and still running, then revalidates listener and SSH before HDC.",
+        "The response runs or requests hdc checkserver and hdc list targets -v and requires the same intended connect-key to be Connected before continuing.",
+        "The response asks the user to check power/boot, USB debugging, data cable/direct port, Windows driver, and authorization even though Windows enumerates the board.",
+        "The response checks board/product/variant image identity, HDC daemon presence/startup, and SDK/image compatibility when transport is healthy but HDC still fails.",
+        "The response preserves diagnostics, requires explicit approval before reflashing, and creates a new RUN_ID after recovery."
+      ]
+    }
+  ]
+}

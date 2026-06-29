@@ -1,0 +1,84 @@
+schemaVersion: 1
+
+id: ohos-dev-arkui-hdc-demo-device-self-verify
+title: ArkUI HDC 设备端自验证
+summary: 通过 HDC 将 HAP 或 native 产物推送到设备，启动 Demo 并采集截图、日志和 dump 证据完成端到端自验证。
+
+category:
+  scope: domain
+  namespace: arkui
+  stage: development
+  domain: arkui
+  capability: hdc-demo-device-self-verify
+
+status:
+  maturity: trial
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - arkui
+  - ace-engine
+  - hdc
+  - e2e-verification
+  - self-verification
+
+audience:
+  - ArkUI ACE Engine 开发者
+  - OpenHarmony 端到端自验证人员
+  - SDD 验证证据提交人员
+
+useCases:
+  - title: 验证 Demo HAP
+    description: 推送 HAP、安装 bundle、启动 ability，并采集窗口、截图和日志证据。
+  - title: 验证 native 库替换
+    description: 查找本地产物和设备真实路径，替换后通过 maps、日志或行为确认加载生效。
+  - title: 产出端到端自验证证据
+    description: 汇总命令结果、截图、dump、hilog 和通过/阻塞判断。
+  - title: 恢复中断的端到端验证
+    description: 在 SSH 或 HDC 中断后停止 mutation，检查脚本配置、硬件连接与设备镜像，再以新 RUN_ID 继续。
+
+whenToUse:
+  - ArkUI 或 ACE Engine 变更需要在 OpenHarmony 真机上完成端到端自验证。
+  - 需要通过 HDC 推送 HAP、native 库或其他构建产物到设备。
+  - 需要采集截图、窗口状态、UI tree、hilog 等证据用于 SDD 或 PR 自验。
+  - Linux 端已具备 HDC 访问能力，或已通过反向 SSH 连接到 Windows HDC 主机。
+
+whenNotToUse:
+  - 只需要编译或分析构建失败。
+  - 没有可用设备、HDC 通道或可验证的 Demo/期望结果。
+  - 需求是搭建反向 SSH/HDC 通道本身，而不是执行设备端验证。
+
+inputs:
+  required:
+    - 可执行 HDC 命令的环境或 Linux 到 Windows 的 SSH/HDC 通道。
+    - 待验证的 HAP、native 库或其他构建产物。
+    - bundle name、ability name 或目标进程/库名。
+    - 预期验证动作和可观察结果。
+  optional:
+    - 设备 ID。
+    - Windows 临时目录和设备临时目录。
+    - 截图文件名、目标设备路径、模块名。
+
+outputs:
+  - HAP 安装或文件替换执行结果。
+  - Demo 启动、进程、窗口和设备状态证据。
+  - 截图、layout dump、hilog 或 hidumper 证据摘要。
+  - 通过条件检查结果，或具体阻塞命令、故障层级和下一步恢复建议。
+
+quickStart:
+  steps:
+    - 确认 HDC 通道可用，必要时先使用 reverse SSH HDC setup skill。
+    - 准备待验证产物、bundle/ability 信息和预期可见结果。
+    - 运行预检、推送或安装、启动、功能操作和证据采集步骤。
+  examplePrompt: |
+    请使用 ohos-dev-arkui-hdc-demo-device-self-verify 验证这个 Demo HAP，
+    HDC 通过 Windows 反向 SSH 可用，bundle 是 com.example.demo，启动 EntryAbility，
+    需要截图和 hilog 证明新交互效果生效。
+
+related:
+  skills:
+    - ohos-dev-hdc-command-usage
+    - ohos-dev-hdc-reverse-ssh-setup
+    - ohos-dev-arkui-ace-engine-build
+  docs: []
