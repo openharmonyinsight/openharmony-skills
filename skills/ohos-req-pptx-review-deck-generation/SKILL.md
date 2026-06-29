@@ -75,9 +75,10 @@ you never set colors or coordinates:
 - **OpenHarmony logo, bottom-left of every page** (cover included) — added
   automatically from `oh_logo.png`. If the file is missing it's silently skipped.
 - **Diagrams are real drawing boxes** — rounded rectangles joined by arrows.
-- **Light, harmonious tables** — faint-petrol header with black bold text,
-  white/very-light neutral zebra body, faint-petrol total row (`highlight_last=True`).
-  All one quiet family, drawn for you.
+- **Tables** — **light-blue header** (`DEEBF7`) with black bold text, white body, and
+  **black solid grid lines**; fonts follow the value/design page standard (header
+  **15pt bold**, body **13.5pt**). Faint-petrol total row when `highlight_last=True`.
+  All drawn for you.
 
 ## The Only API You Need
 
@@ -96,6 +97,9 @@ deck.table_slide(title, headers, rows, takeaway="结论：…", col_widths=None,
 deck.flow_slide(title, stages, takeaway="结论：…", note=None, lane_label=None)
 deck.layered_diagram_slide(title, layers, takeaway="结论：…", connect=None, note=None)
 deck.architecture_slide(title, nodes, edges, takeaway="结论：…", note=None)
+# Two-column pages (左文右图) — title is 28pt bold YaHei; takeaway is OPTIONAL here:
+deck.value_slide(title="需求价值描述", background=[...], features=[...], scope=[...], image=None)
+deck.design_slide(title="需求设计方案", design=[...], changes=[...], extra=None, image=None)
 deck.save("output.pptx")
 ```
 
@@ -122,13 +126,67 @@ don't vary it per card just to add color.
 | Method | Key argument shape |
 |--------|--------------------|
 | `cover` | strings + `meta_lines=["Team", "2026-06-23"]` |
-| `content_slide` | `cards=[{"title","bullets":[...]}]` (1–6 auto-grid). **Per-card `accent` is ignored — all cards render in one family** (no rainbow). For 需求评审 1/2/3 use `table_slide`, not this |
-| `banded_slide` | same `sections=[{"title","bullets"}]` shape, rendered as full-width horizontal bars stacked top→bottom. **Per-section `accent` is ignored — all bars are one color.** Avoid for 需求评审 1/2/3 (use `table_slide`); the colored 横条 it used to make were the #1 "不纯粹" complaint |
+| `content_slide` | `cards=[{"title","bullets":[...]}]` (1–6 auto-grid). **Per-card `accent` is ignored — all cards render in one family** (no rainbow). For 需求变更评审 4–7 use `table_slide`, not this |
+| `banded_slide` | same `sections=[{"title","bullets"}]` shape, rendered as full-width horizontal bars stacked top→bottom. **Per-section `accent` is ignored — all bars are one color.** Avoid for 需求变更评审 4–7 (use `table_slide`); the colored 横条 it used to make were the #1 "不纯粹" complaint |
 | `bullets_slide` | `bullets=["text", {"text","level":1,"accent","bold"}]` |
 | `table_slide` | `headers=[...]`, `rows=[[...],[...]]`, `highlight_last=True` for totals. `col_widths` are relative weights — auto-scaled to fit, never overflow |
 | `flow_slide` | `stages=[{"title","lines":[...],"change":True}]` → 1 row, auto arrows |
 | `layered_diagram_slide` | `layers=[{"label","nodes":[{"title","lines","change"}]}]` + optional `connect` |
 | `architecture_slide` | `nodes=[{"id","title","lines","row","col","change"}]`, `edges=[{"from","to","label","dir":"f"/"both","accent"}]` — labeled directional connectors for high-level module interaction |
+| `value_slide` | `background=[...]`, `features=[...]`, `scope=[...]`, `image=None`. Two-column 需求价值描述 page (see below). `takeaway` optional |
+| `design_slide` | `design=[...]`, `changes=[...]`, `extra=[{"heading","lines"}]`, `image=None`. Two-column 需求设计方案 page (see below). `takeaway` optional |
+
+## 需求价值描述 / 需求设计方案 — the two-column pages (左文右图)
+
+Two dedicated builders for the standard 需求评审 value + design pages. **Title is
+Microsoft YaHei, bold, 28pt** (auto-shrinks only if absurdly long). Left column =
+stacked sections; **right column = a scene/architecture image** (pass `image=`) or,
+if omitted, a labeled placeholder card telling the user where to paste one.
+Typography is fixed and built in — section heading **15pt bold**, body **13.5pt,
+not bold**. `takeaway=` is OPTIONAL on these two pages (they lead with their sections,
+not a one-line verdict).
+
+### `value_slide` — 需求价值描述 (3 sections)
+
+```python
+deck.value_slide(
+    title="需求价值描述",
+    background=["…"],   # 段一「背景」    — body BLACK 13.5pt
+    features=["…"],     # 段二「特性及价值点」— body BLUE 13.5pt
+    scope=["…"],        # 段三「需求收益（影响）范围」— body BLUE 13.5pt
+    image="scene.png",  # 右侧场景图（可选，缺省显示占位卡）
+)
+```
+
+- **段一「背景」** — 黑色正文。需求由来 / 现状问题。
+- **段二「特性及价值点」** — 蓝色正文。**明确需求价值所在**，参考：用户痛点、需求功能点、
+  范围、用户场景、所带来的价值。toD 内容需明确**开发者适用范围**、明确**开发者完成后达成的
+  结果**；能力提升需求不能脱离业务（除能力目标外，需能力提供后的**业务目标**、**能力开放范围**）；
+  **可量化目标**：用户活跃数、好评率、新增用户留存等；**产品范围**：1+8+N 涉及的产品。
+- **段三「需求收益（影响）范围」** — 蓝色正文。描述特性的**使用范围、地区、具体产品**，
+  **重点关注特性通用性**，不允许仅为单个产品做特性（硬件依赖除外）。
+- **右半部分贴场景图**展示该特性的价值。
+
+### `design_slide` — 需求设计方案 (左文右图，可多页)
+
+```python
+deck.design_slide(
+    title="需求设计方案",
+    design=["…"],    # 1、设计方案：设计重点（交互模块及如何达成需求的规格等）
+    changes=["…"],   # 2、变更点及影响（见下）
+    extra=[{"heading": "三、UI 示意", "lines": ["…"]},
+           {"heading": "四、裁剪说明", "lines": ["…"]}],   # 可选追加段落
+    image="arch.png",   # 右侧架构图（可选）
+)
+```
+
+- **1、设计方案** — 输出设计方案设计重点，如交互模块及如何达成需求的规格等。
+- **2、体现变更点及影响** — 包括但不限于：数据结构变更、外部接口变更、外部依赖分析、
+  性能功耗评估、影响用户体验的关键 KPI 等。
+- **设计方案可以有多种，可多页输出** —— 每个方案各调用一次 `design_slide`（自动翻页）。
+- **如涉及 UI，需具体示意图** —— 把示意图作为 `image=` 贴在右侧，或在 `extra` 里加「UI 示意」段。
+- **如裁剪已上线需求，需需求方意见** —— 在 `extra` 里加一段说明。
+- **右边可贴架构图补充展示**（`image=`）。
 
 ## Architecture diagrams (the part models get wrong)
 
@@ -173,34 +231,44 @@ deck.layered_diagram_slide("System Design — Framework", [
    note="Helper feeds the normalize stage.")
 ```
 
-## Requirement-review decks (需求评审) — use the fixed template
+## Requirement-CHANGE-review decks (需求变更评审) — use the fixed template
 
-When the user asks for a 需求评审 / requirement-review deck, or gives a page-by-page
-brief (新增需求与工作量 → 原始需求 → 特性价值 → 系统方案 → 兼容性 → RAM/ROM → 风险
-checklist → 需求拆解), **follow the 8-section structure** in
+When the user asks for a 需求变更评审 / requirement-change-review deck, or gives a
+page-by-page brief (需求价值 → 需求设计方案 → 需求变更背景 → 需求变更影响性分析 →
+兼容性分析 → 风险评估), **follow the 7-page structure** in
 [requirement-review-template.md](references/requirement-review-template.md) instead of inventing
 an outline. `examples/requirement_review_example.py` is a complete, generic fill-in deck.
 
+The fixed page order (cover counts as page 1):
+
+1. **封面** — `cover`
+2. **需求价值描述** — `value_slide` (左文右图, unchanged)
+3. **需求设计方案** — `design_slide` (左文右图 + 右侧框图, unchanged; 可多页)
+4. **需求变更背景** — `table_slide`: ① 需裁剪/变更的需求说明（原始需求/编号、特性概述与影响、使用场景，重点 2C/2D 价值与影响）；② 原始被接纳时的决策纪要（SIG 评审通过记录）
+5. **需求变更影响性分析** — `table_slide`, **5 行**: 北向应用开发者／南向开发者／分布式设备／系统开发者（跨子系统依赖）／设备使用者
+6. **兼容性分析** — `table_slide`: 是否涉及应用兼容性；兼容性包括（机制/权限/API行为/其它）；兼容性方案；应用适配方案和计划
+7. **风险评估** — `table_slide`, **固定 2 列 8 行** checklist
+
 What this page reliably gets wrong (the top two are the most-reported):
 
-- **Pages 1/2/3 must be `table_slide`, never `banded_slide` / `content_slide`.** The
+- **Pages 4–7 must be `table_slide`, never `banded_slide` / `content_slide`.** The
   bar/card builders tempt you to color each section differently → multi-colored 横条
-  ("不纯粹"). Build the 字段｜内容 pages as two-column tables. (The engine also forces
-  those builders to one color now, but tables are the right layout here.)
-- **Every page must pass `takeaway="结论：…"`** — a topic title over a table with no
-  conclusion has no 突出重点. This is enforced: a slide without `takeaway` raises
-  `ValueError`, so the deck will not build until every page has its verdict.
-- **Design diagrams must be 框图 (boxes + arrows), never bullet lists** — use
-  `architecture_slide` / `layered_diagram_slide` / `flow_slide` for every section-4 slide.
-- **Section 4's first diagram is HIGH-LEVEL module interaction** — this module ↔ the
-  modules around it, as a few labeled boxes with directional connectors. Internal class
-  names / private fields there read as "偏实现，看不出与其他模块的交互"; keep those in the
-  control-plane/data-plane diagram and the impact table.
-- **Always include 工作量评估 and RAM/ROM 评估** — total effort on P1, per-task 人月
-  breakdown + 合计 row on the last page; a dedicated RAM/ROM table (新增结构/典型/极限/
-  默认≈0；so 体积/资源；实测要求).
-- **Mark absent brief fields `待评估 / TBD`** (需求来源/产品、适用地区、工作量人月、
-  开发/设计人员、外部承诺) and list them back to the user — never fabricate them.
+  ("不纯粹"). Build them as two-column 分项｜内容 tables. (The engine also forces those
+  builders to one color now, but tables are the right layout here.)
+- **Every `table_slide` page must pass `takeaway="结论：…"`** — a topic title over a
+  table with no conclusion has no 突出重点. This is enforced: a slide without
+  `takeaway` raises `ValueError`, so the deck will not build until every page has its
+  verdict. (`value_slide` / `design_slide` take `takeaway` optionally.)
+- **Keep pages 2–3 (价值/设计) as the two-column 左文右图 builders** — do NOT convert
+  them to tables. Page 3's right column is a real **框图** (`diagram=` layers or
+  `image=`), never a bullet list.
+- **Page 5 has exactly 5 影响对象 rows, in order**: 北向应用开发者 → 南向开发者 →
+  分布式设备 → 系统开发者（跨子系统/部件依赖）→ 设备使用者（性能/功耗/功能/体验）.
+- **Page 7 is a fixed 2×8 checklist** — these 8 rows, in order: 对性能/功耗/RAM/ROM
+  是否有影响；是否存在其他依赖关系；是否有安全风险；是否涉及合法/合规问题；是否涉及外部
+  承诺；是否开源；是否涉及 AI；隐私风险特性识别. Answer each with 是/否/待评估 + 一句话。
+- **Mark absent fields `待评估 / TBD`** (需求编号、SIG 决策纪要、适用地区/产品、外部承诺、
+  合规/安全结论) and list them back to the user — never fabricate them.
 
 ## Workflow
 
@@ -245,8 +313,8 @@ rerun — do not work around it.
 | `from pptx.dgm...` / guessing import paths | The library already imports correctly — just `from deckbuilder import Deck` |
 | Design slide is a bullet list, not a diagram | Use `flow_slide` or `layered_diagram_slide` |
 | Passing `RGBColor(...)` everywhere | Pass color **names**; default to `"accent"`/`"grey"`, names map to the palette |
-| Giving every card/section a different `accent` (rainbow 横条) | Don't — per-card/section colors are ignored by design; for 需求评审 1/2/3 use `table_slide` |
-| Pages 1/2/3 as colored `banded_slide` bars | Use `table_slide` (字段｜内容 two-column) — the bars invite the "不纯粹" rainbow |
+| Giving every card/section a different `accent` (rainbow 横条) | Don't — per-card/section colors are ignored by design; for 需求变更评审 4–7 use `table_slide` |
+| Pages 4–7 as colored `banded_slide` bars | Use `table_slide` (分项｜内容 two-column) — the bars invite the "不纯粹" rainbow |
 | Pages with no point — just a topic title over a table | Give every content slide a `takeaway="结论：…"` one-liner; it's required — a slide without it raises `ValueError` |
 | Cramming 8+ cards on one slide | Max 6 per `content_slide`; split across slides |
 | Putting >8 rows in one table at full font | The library auto-shrinks; still split very long tables |
@@ -254,9 +322,8 @@ rerun — do not work around it.
 
 ## Real-World Impact
 
-This skill was distilled from building 11-slide OpenHarmony requirement-review
-decks (cover, agenda, requirement, value, framework/module-interaction diagram,
-control/data-plane change-impact, compatibility, risk checklist, task breakdown,
-acceptance). The diagram slides — control/data-plane layers with badged change
-points and auto-drawn arrows — are reproducible in a few lines via
-`layered_diagram_slide` / `flow_slide`.
+This skill was distilled from building OpenHarmony 需求变更评审 decks (cover, 需求价值
+描述, 需求设计方案, 需求变更背景, 需求变更影响性分析, 兼容性分析, 风险评估). The
+两-column 价值/设计 pages carry a real 框图 on the right, and the change-review pages
+(4–7) are clean 分项｜内容 field tables — both reproducible in a few lines via
+`value_slide` / `design_slide` / `table_slide`.

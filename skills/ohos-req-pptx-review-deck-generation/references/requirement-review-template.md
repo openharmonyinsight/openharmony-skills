@@ -1,127 +1,173 @@
-# Requirement-Review Deck Template (OpenHarmony 需求评审)
+# Requirement-CHANGE-Review Deck Template (OpenHarmony 需求变更评审)
 
-A fixed section structure for OpenHarmony-style requirement-review decks. When a
-user asks for a "需求评审 PPT" or gives a page-by-page brief, **build these
-sections in order** rather than inventing your own outline.
+A fixed page structure for OpenHarmony-style **需求变更评审** decks. When a user
+asks for a "需求变更评审 PPT" or gives a page-by-page brief, **build these pages in
+order** rather than inventing your own outline.
 
-## The sections (+ cover)
-
-Each section is one slide unless noted. Section 4 (技术方案) usually spans 2–3
-slides (`可分页输出`). **Use `table_slide` for the section-1/2/3 field pages** (a
-two-column 字段｜内容 table) as well as for matrices/checklists, and the diagram
-builders for section 4.
+This template has **7 pages (+ cover counts as page 1)**. Pages 2–3 reuse the two
+two-column 左文右图 builders unchanged; pages 4–7 are the change-review core, built
+as `table_slide` field tables.
 
 > ⚠️ **The two failures reviewers keep reporting — do NOT repeat them:**
-> 1. **Multi-colored horizontal bars on pages 2/3/4.** Build 1/2/3 with
->    **`table_slide`**, NOT `banded_slide` / `content_slide`. The bar/card builders
->    invite "give each section its own color" → a rainbow ("不纯粹") deck. (The engine
->    now forces those builders to one accent family, but a field table is still the
->    correct, cleaner layout for 1/2/3 — use it.)
-> 2. **Pages with no 突出重点.** EVERY section slide must pass `takeaway="结论：…"`.
+> 1. **Multi-colored horizontal bars / rainbow cards.** Build the field pages (4–7)
+>    with **`table_slide`**, NOT `banded_slide` / `content_slide`. The bar/card
+>    builders invite "give each section its own color" → a rainbow ("不纯粹") deck.
+>    A two-column 分项｜内容 table is the correct, cleaner layout.
+> 2. **Pages with no 突出重点.** EVERY `table_slide` page must pass `takeaway="结论：…"`.
 >    A page that is just a topic title over a table has no point. **`takeaway` is
 >    mandatory: a content page built without it raises `ValueError` and the deck will
->    not save** — so you cannot ship a page that lacks its 突出重点.
+>    not save** — so you cannot ship a page that lacks its 突出重点. (`value_slide` /
+>    `design_slide` take `takeaway` optionally — they lead with their sections.)
 
-| # | Slide title | Builder | Required fields to cover |
-|---|-------------|---------|--------------------------|
-| — | Cover | `cover` | 标题、子标题、模块/日期 |
-| 1 | 需求性质与工作量概览 | `table_slide` | 是否新增需求；复杂度驱动；**总工作量估算**（详见拆解页） |
-| 2 | 原始需求描述 | `table_slide` | 需求来源/产品；需求场景；需求描述；特性概述；影响范围与限制；适用范围/地区/产品 |
-| 3 | 特性及价值点 | `table_slide` | 用户痛点；需求价值；功能点与主要场景；可量化目标；支持产品范围 |
-| 4 | 系统设计方案 (1/n) | `architecture_slide` | **框图**：本模块 ↔ 周边模块交互（见下） |
-| 4 | 系统设计方案 (2/n) | `layered_diagram_slide` | 控制面/数据面拆分 + 关键变更点（框图） |
-| 4 | 系统设计方案 (3/n) | `table_slide` | 数据结构变更／外部接口变更／外部依赖／性能功耗／关键KPI／对用户与周边领域影响 |
-| 5 | 兼容性分析 | `table_slide` | 系统机制变化／权限管理变化／API行为变化／其它行为变化／适配方案与计划 |
-| 6 | RAM / ROM 评估 | `table_slide` | RAM（新增结构/典型/极限/默认≈0）；ROM（so体积/资源）；实测要求 |
-| 7 | 风险 Checklist | `table_slide` | 使用习惯／安全风险／合法合规／外部承诺／性能·功耗·RAM·ROM／其它依赖 |
-| 8 | 需求拆解列表（工作量） | `table_slide` (`highlight_last=True`) | 子任务｜内容｜开发｜设计｜工作量(人月)｜**预计代码行数(估算)**；末行合计 |
+## The pages (in order)
+
+| # | Page (slide) title | Builder | Required fields to cover |
+|---|--------------------|---------|--------------------------|
+| 1 | Cover | `cover` | 标题、子标题、模块/日期 |
+| 2 | 需求价值描述 | `value_slide` | 背景；特性及价值点；需求收益（影响）范围；右侧场景图 |
+| 3 | 需求设计方案 (可多页) | `design_slide` | 设计方案重点；变更点及影响；右侧架构框图（`diagram=`）|
+| 4 | 需求变更背景 | `table_slide` | ① 需裁剪/变更的需求说明（含原始需求/编号、特性概述与影响、使用场景）；② 原始被接纳时的决策纪要（SIG 评审通过记录）|
+| 5 | 需求变更影响性分析 | `table_slide` | 北向应用开发者／南向开发者／分布式设备／系统开发者（跨子系统依赖）／设备使用者 —— 共 5 行 |
+| 6 | 兼容性分析 | `table_slide` | 是否涉及应用兼容性；兼容性包括（机制/权限/API行为/其它）；兼容性方案；应用适配方案和计划 |
+| 7 | 风险评估 | `table_slide` | **固定 2 列 8 行** checklist（见下）|
+
+Pages 2 and 3 are **unchanged** from the standard 需求价值描述 / 需求设计方案
+builders — see SKILL.md「需求价值描述 / 需求设计方案 — the two-column pages」. Do not
+restyle them. The change-review content lives entirely on pages 4–7.
 
 ## Five rules that matter most
 
-**0. Every page leads with its conclusion — `takeaway` is REQUIRED, not optional.**
-Pass `takeaway="结论：…"` to every section slide — one short verdict sentence rendered
-bold petrol under the (ink) title. The numbered title stays the topic
-(`五、兼容性分析`); the takeaway states the finding (`不改变公开 API 行为，应用无需适配`).
-A reviewer should get each page's point from the takeaway alone, before reading the
-table. Write an **assertion**, not a restatement of the title. **`takeaway` is
-mandatory — a content page built without it raises `ValueError`**, so every page is
-forced to lead with its 突出重点.
+**0. Every field page leads with its conclusion — `takeaway` is REQUIRED.**
+Pages 4–7 each pass `takeaway="结论：…"` — one short verdict sentence rendered bold
+petrol under the (ink) title. The title stays the topic (`五、兼容性分析`); the
+takeaway states the finding (`不改变公开 API 行为，应用无需适配`). Write an
+**assertion**, not a restatement of the title. A content page built without
+`takeaway` raises `ValueError` and the deck will not save.
 
-**1. Diagrams are block diagrams (框图), never bullet lists.** Every section-4 design
-slide must be boxes-and-arrows built with `architecture_slide` / `layered_diagram_slide`
-/ `flow_slide`. A design slide that is a card/bullet list is wrong.
+**1. Keep pages 2–3 (价值/设计) as the two-column 左文右图 builders.** Do NOT convert
+them to tables and do NOT change their typography. Page 3's right column must be a
+real **框图** (pass `diagram=` layers, or `image=` an architecture picture) — never a
+bullet list.
 
-**2. The architecture slide is HIGH-LEVEL module interaction.** Section 4's first
-diagram shows how THIS subsystem interacts with the modules around it — as a few
-labeled boxes joined by **labeled, directional connectors**. Do NOT fill it with
-internal class names / private fields; that reads as "偏实现，看不出与其他模块的交互".
-Put the internal control-plane/data-plane split on the SECOND section-4 slide, and
-code-level field changes in the impact TABLE. Use `architecture_slide`: central
-module in the grid center, peers around it; every edge gets a **label** (what the
-link is) and a **direction** — `dir:"f"` for a data/output flow, `dir:"both"` for a
-依赖/查询 relationship. State the control-plane vs data-plane split in the Notes box.
+**2. Pages 4–7 are 分项｜内容 field tables.** Two columns: a left「分项 / 影响对象 /
+评估项」label column and a right「内容 / 影响分析 / 结论·说明」column. Use `col_widths`
+to keep the label column narrow (~1.8–2.6) and let the content column take the rest.
 
-**3. Always include 工作量评估 and RAM/ROM 评估.** Effort: break the work into
-work-packages, size each in 人月 (rough scale S=0.5 / M=1 / L=2, or explicit), show
-the **total on P1** and the **per-task breakdown + a 合计 row** on the last page
-(`highlight_last=True`). The breakdown table carries a **预计代码行数(估算)** column
-right after 工作量(人月); estimate it as **人月 × 500 行**（约定基准：1 人月 ≈ 500 行代码）
-and label the column `估算` (it is an estimate, not measured). RAM/ROM: a dedicated table — RAM rows (新增结构估算 / 典型场景
-/ 极限场景 / 默认≈0 懒创建) and ROM rows (so 体积变化 / 是否新增资源) + an "实测要求" row.
-If the design doc gives real numbers use them; otherwise label estimates `估算` and
-the measured values `实现阶段输出`.
+**3. Page 7 风险评估 is a fixed 2-column, 8-row checklist — these 8 rows, in order:**
+   1. 对性能、功耗、RAM/ROM 是否有影响
+   2. 是否存在其他依赖关系？
+   3. 是否有安全风险
+   4. 是否涉及合法 / 合规问题？
+   5. 是否涉及外部承诺？
+   6. 是否开源
+   7. 是否涉及 AI
+   8. 隐私风险特性识别
 
-**4. Never invent missing facts.** Frequently-absent brief fields: 需求来源/产品、
-适用地区、工作量人月、开发/设计人员、外部承诺. Mark each `待评估 / TBD` or `待产品确认`,
-and list them back to the user as "needs your input" — do not fabricate a product
-name, region, or effort number.
+Header is `["评估项", "结论 / 说明"]`. Answer each row with a verdict (是/否/待评估)
+plus a one-line reason — never leave a row blank.
 
-## Module-interaction diagram pattern (section 4, slide 1)
+**4. Never invent missing facts.** Frequently-absent fields: 需求编号、SIG 决策纪要、
+适用地区/产品、外部承诺、合规/安全结论. Mark each `待评估 / TBD` or `待产品确认`, and
+list them back to the user as "needs your input" — do not fabricate a 需求编号, a SIG
+评审结论, a product name, or a region.
 
-`architecture_slide` places module boxes on a `row`/`col` grid and draws labeled,
-directional connectors between them — the central module in the middle, peers
-around it. Rename the generic roles below to the real modules your feature touches.
+## Page 4 — 需求变更背景 (two sections)
 
 ```python
-deck.architecture_slide("四、系统设计方案（1/3）：本模块与周边模块交互（框图）", [
-    {"id": "svc", "title": "调用方服务", "lines": ["发起请求"], "row": 0, "col": 0},
-    {"id": "app", "title": "应用",       "lines": ["结果消费"], "row": 0, "col": 1},
-    {"id": "drv", "title": "驱动 / HAL", "lines": ["数据来源"], "row": 1, "col": 0},
-    {"id": "me",  "title": "本模块（目标子系统）", "lines": ["本需求新增能力"], "row": 1, "col": 1, "change": True},
-    {"id": "pc",  "title": "周边服务 C", "lines": ["输出对接"], "row": 1, "col": 2},
-    {"id": "src", "title": "外部输入源", "lines": ["<设备/数据>"], "row": 2, "col": 0},
-    {"id": "pa",  "title": "周边服务 A", "lines": ["信息查询"], "row": 2, "col": 1},
-    {"id": "pb",  "title": "周边服务 B", "lines": ["拓扑/状态"], "row": 2, "col": 2},
-], edges=[
-    {"from": "src", "to": "drv", "label": "原始输入",      "dir": "f",    "accent": "accent"},
-    {"from": "drv", "to": "me",  "label": "数据/事件",      "dir": "f",    "accent": "accent"},
-    {"from": "svc", "to": "me",  "label": "请求 (Binder)",  "dir": "f",    "accent": "accent"},
-    {"from": "me",  "to": "app", "label": "结果输出",       "dir": "f",    "accent": "accent"},
-    {"from": "me",  "to": "pa",  "label": "查询/依赖",      "dir": "both", "accent": "grey"},
-    {"from": "me",  "to": "pb",  "label": "状态/拓扑",      "dir": "both", "accent": "grey"},
-    {"from": "me",  "to": "pc",  "label": "输出对接",       "dir": "f",    "accent": "accent"},
-], note=[
-    "青绿＝数据/输出/请求主链路；灰色＝依赖/查询关系。",
-    "用 2 种中性色把同类关系归一，避免每条边一个颜色显得杂乱。",
-])
+deck.table_slide("四、需求变更背景",
+    ["分项", "说明"],
+    [
+        ["需裁剪/变更的需求说明\n（重点说明 2C/2D 详细价值及产生影响）",
+         "原始需求（含需求背景及需求描述，如有需求编号一并附上）；"
+         "概述软件所有特性/功能及该需求产生的影响 —— 给评审人一个简洁视角，"
+         "快速判断有无该需求的差别；使用场景说明。"],
+        ["原始被接纳时的决策纪要",
+         "提供该需求最初通过 SIG 评审的记录（评审结论 / 日期 / 决策要点）。"],
+    ],
+    takeaway="结论：…（一句话点明本次变更的对象与核心理由）",
+    col_widths=[2.6, 7])
 ```
 
-**Keep the edge palette to ~2 neutral colors** — petrol (`accent`) for data/output/
-request flows, grey for 依赖/查询. (Reserve amber `orange` for `change` boxes, not
-edges.) A different color per edge reads as rainbow clutter; grouping by relation
-type is what makes the diagram look coordinated. Edge labels auto-fit their text
-width and `layered_diagram_slide` caps + centers each layer's boxes, so rows with
-different node counts still align.
+- **段一「需裁剪/变更的需求说明」** —— 重点说明 **2C/2D** 的详细价值和产生的影响。
+  含：原始需求（背景+描述，**如有需求编号一并附上**）；软件所有特性/功能概述 + 需求产生
+  的影响（**一个简洁视角，让评审人快速判断有无该需求的差别**）；使用场景说明。
+- **段二「原始被接纳时的决策纪要」** —— 提供 **SIG 评审通过的记录**。若无原始纪要，标
+  `待评估 / TBD` 并向用户索取。
 
-Layout tips: keep peers in **distinct grid directions** from the center so
-connectors don't cross boxes; horizontal edges connect to side mid-points,
-vertical edges to top/bottom mid-points (handled automatically). Use `dir:"both"`
-sparingly — only for genuine query/dependency links.
+## Page 5 — 需求变更影响性分析 (five rows)
+
+```python
+deck.table_slide("五、需求变更影响性分析",
+    ["影响对象", "影响分析"],
+    [
+        ["北向应用开发者",
+         "是否涉及 API 变更；是否影响调试调测；对开发者体验影响（上架包尺寸、编译速度等）。"],
+        ["南向开发者",
+         "对南向芯片平台影响；对 OEM 适配厂商是否有影响。"],
+        ["分布式设备",
+         "是否涉及分布式场景体验影响（影响是什么）；是否涉及多设备互联互通调试影响（影响是什么）。"],
+        ["系统开发者\n（跨子系统/部件依赖）",
+         "对 <xxx> 子系统影响；若涉及架构影响，需提供评审意见。"],
+        ["设备使用者\n（性能/功耗/功能/体验）",
+         "是否涉及原型机/PC 等产品影响（影响的设备列表）；是否有对应领域意见；"
+         "对性能功耗的影响；对用户体验的影响。"],
+    ],
+    takeaway="结论：…（一句话点明影响面最大/最需关注的对象）",
+    col_widths=[2.4, 7])
+```
+
+Exactly **5 rows, these objects in this order**: 北向应用开发者 → 南向开发者 →
+分布式设备 → 系统开发者（跨子系统/部件依赖）→ 设备使用者（性能/功耗/功能/体验）.
+
+## Page 6 — 兼容性分析
+
+```python
+deck.table_slide("六、兼容性分析",
+    ["分项", "内容"],
+    [
+        ["是否涉及应用兼容性",
+         "是/否；如涉及，需提供兼容性方案与应用/设备适配方案及计划。"],
+        ["兼容性包括",
+         "系统机制或功能发生变化；系统权限管理发生变化；API 行为发生变化；"
+         "其他导致应用行为发生变化的因素。"],
+        ["兼容性方案",
+         "…（如涉及兼容性，给出方案；不涉及则填「无兼容性影响」）。"],
+        ["应用适配方案和计划",
+         "…（受影响应用清单、适配方式、时间计划）。"],
+    ],
+    takeaway="结论：…（是否影响应用兼容性 + 是否需适配）",
+    col_widths=[2.2, 7])
+```
+
+「兼容性包括」四类判定因素是固定的：**系统机制/功能变化、系统权限管理变化、API 行为
+变化、其他导致应用行为变化的因素**。若任一为「是」，必须在「兼容性方案」「应用适配方案
+和计划」两行给出实质内容，而非留空。
+
+## Page 7 — 风险评估 (fixed 2×8 checklist)
+
+```python
+deck.table_slide("七、风险评估",
+    ["评估项", "结论 / 说明"],
+    [
+        ["对性能、功耗、RAM/ROM 是否有影响", "…"],
+        ["是否存在其他依赖关系？",            "…"],
+        ["是否有安全风险",                   "…"],
+        ["是否涉及合法 / 合规问题？",         "…"],
+        ["是否涉及外部承诺？",               "…"],
+        ["是否开源",                        "…"],
+        ["是否涉及 AI",                     "…"],
+        ["隐私风险特性识别",                 "…"],
+    ],
+    takeaway="结论：…（主要风险点 + 需要的后续动作/评审）",
+    col_widths=[3.0, 6])
+```
+
+These **8 rows are fixed** — same wording, same order, no additions or omissions.
+Each answer is a verdict (是/否/待评估) + one-line reason.
 
 ## Full worked example
 
-`requirement_review_example.py` in this directory builds the complete deck (cover +
-8 sections, section 4 = 3 slides) as a **generic fill-in template** — every string
-is a `<placeholder>` and the effort/RAM/ROM numbers are examples. Copy it, replace
-the placeholders and module names, keep the structure. It passes the overflow smoke
-test and every page fills the canvas.
+`examples/requirement_review_example.py` in this skill builds the complete deck
+(cover + 价值 + 设计 + 变更背景 + 影响性分析 + 兼容性 + 风险) as a **generic fill-in
+template** — every string is a `<placeholder>`. Copy it, replace the placeholders,
+keep the structure. It passes the overflow smoke test and every page fills the canvas.

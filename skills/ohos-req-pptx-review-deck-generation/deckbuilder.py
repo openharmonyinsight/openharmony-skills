@@ -43,6 +43,7 @@ PALETTE = {
     "green":   RGBColor(0x3A, 0x9A, 0x57),   # logo green
     "orange":  RGBColor(0xBE, 0x7A, 0x22),   # amber → change border/badge/title only
     "red":     RGBColor(0xB5, 0x40, 0x3A),   # muted brick-red → genuine risk only
+    "blue":    RGBColor(0x1F, 0x60, 0xC0),   # body-text blue (value/impact sections)
 }
 # soft tint backgrounds keyed by accent name (kept very light, desaturated)
 _TINT = {
@@ -250,7 +251,8 @@ class Deck:
         box_h = lh_title + lh_sub * max(0, max_lines - 1) + pad_h
         return (box_w, box_h, title_pt, sub_pt)
 
-    def _flowbox(self, slide, l, t, w, h, title, lines, change=False):
+    def _flowbox(self, slide, l, t, w, h, title, lines, change=False,
+                 title_pt=12.5, sub_pt=10.5):
         """A real drawing box (rounded rectangle) for system diagrams."""
         border = "orange" if change else _BOX_LINE
         fill = _tint("orange") if change else _BOX_FILL
@@ -262,13 +264,13 @@ class Deck:
         p = tf.paragraphs[0]; p.alignment = PP_ALIGN.CENTER
         r = p.add_run(); r.text = title
         inner_w = (w - Inches(0.16)) / 914400.0           # box inner width (in)
-        tsize = self._fit_size(title, 12.5, inner_w)       # shrink long titles
+        tsize = self._fit_size(title, title_pt, inner_w)   # shrink long titles
         self._run(r, tsize, _color("orange") if change else "dark",
                   bold=True)
         for sub in lines:
             pp = tf.add_paragraph(); pp.alignment = PP_ALIGN.CENTER
             pp.space_before = Pt(2)
-            r = pp.add_run(); r.text = str(sub); self._run(r, 10.5, "dark")
+            r = pp.add_run(); r.text = str(sub); self._run(r, sub_pt, "dark")
         if change:
             bw, bh = Inches(0.52), Inches(0.23)
             bx = l + w - bw - Inches(0.04)
@@ -299,10 +301,10 @@ class Deck:
             ln.append(ln.makeelement(qn("a:prstDash"), {"val": "solid"}))
             tcPr.insert(0, ln)
 
-    def _style_table(self, table, header_size=12, body_size=11,
+    def _style_table(self, table, header_size=15, body_size=13.5,
                      highlight_last=False):
-        HDR = RGBColor(0xE6, 0xED, 0xEE)      # faint petrol header (accent family)
-        GRID = "C9CED3"                        # soft neutral-grey grid (not harsh black)
+        HDR = RGBColor(0xDE, 0xEB, 0xF7)      # light blue header background
+        GRID = "000000"                        # black solid grid lines
         for cell in table.rows[0].cells:
             cell.fill.solid(); cell.fill.fore_color.rgb = HDR
             cell.vertical_anchor = MSO_ANCHOR.MIDDLE
@@ -320,7 +322,7 @@ class Deck:
                 else:
                     cell.fill.background()
                 cell.vertical_anchor = MSO_ANCHOR.MIDDLE
-                self._cell_border(cell, color=GRID, w_pt=0.5)
+                self._cell_border(cell, color=GRID, w_pt=0.75)
                 for p in cell.text_frame.paragraphs:
                     for r in p.runs:
                         self._run(r, body_size, "dark", bold=last)
@@ -462,8 +464,10 @@ class Deck:
         for ri, row in enumerate(rows, start=1):
             for ci, val in enumerate(row):
                 tbl.cell(ri, ci).text = str(val)
-        body = 11.5 if nrow <= 8 else 10.5
-        self._style_table(tbl, 12.5, body, highlight_last=highlight_last)
+        # Fonts follow the value/design page standard: header 15pt bold, body 13.5pt.
+        # Very dense tables shrink the body only (header stays 15pt) to avoid overflow.
+        body = 13.5 if nrow <= 9 else (12 if nrow <= 12 else 10.5)
+        self._style_table(tbl, 15, body, highlight_last=highlight_last)
         body_h = int(self.BODY_BOTTOM - self.BODY_TOP)
         header_h = int(body_h * 0.9 / nrow)
         data_h = int((body_h - header_h) / (nrow - 1)) if nrow > 1 else body_h
@@ -661,6 +665,223 @@ class Deck:
                        note if isinstance(note, list) else [note],
                        accent="grey")
         return s
+
+    # ---------------- two-column value / design slides ----------------
+    def _plain_header(self, slide, title, title_pt=28, takeaway=None,
+                      numbered=True):
+        """Title block for the two-column pages — like `_header` but the title
+        size is configurable (default 28pt bold YaHei) and `takeaway` is OPTIONAL
+        (these pages lead with their section content, not a one-line verdict).
+        Keeps the page number (top-right), accent underline, and logo."""
+        x = self.MARGIN
+        if numbered:
+            self._page += 1
+            tf = self._textbox(slide, self.W - Inches(1.4), Inches(0.34),
+                               Inches(0.9), Inches(0.5), MSO_ANCHOR.MIDDLE)
+            p = tf.paragraphs[0]; p.alignment = PP_ALIGN.RIGHT
+            r = p.add_run(); r.text = "%02d" % self._page
+            self._run(r, 14, "grey", bold=True)
+        title_w = self.W - x - Inches(1.5)
+        tf = self._textbox(slide, x, Inches(0.36), title_w, Inches(0.74),
+                           MSO_ANCHOR.MIDDLE)
+        tf.word_wrap = False
+        p = tf.paragraphs[0]
+        r = p.add_run(); r.text = title
+        tsize = self._fit_size(title, title_pt, title_w / 914400.0, minsize=18)
+        # title — Microsoft YaHei, bold, 28pt (auto-shrinks only if too long)
+        self._run(r, tsize, "primary", bold=True)
+        self._rect(slide, x, Inches(1.16), Inches(2.4), Inches(0.055), "accent")
+        self._rect(slide, x + Inches(2.4), Inches(1.175),
+                   self.W - x - Inches(2.4) - Inches(0.5), Inches(0.025), _RULE)
+        if takeaway and str(takeaway).strip():
+            self._rect(slide, x, Inches(1.335), Inches(0.09), Inches(0.09),
+                       "accent")
+            tf = self._textbox(slide, x + Inches(0.17), Inches(1.235),
+                               self.W - x - Inches(0.77), Inches(0.34))
+            tf.word_wrap = False
+            p = tf.paragraphs[0]
+            r = p.add_run(); r.text = takeaway
+            tw = self.W - x - Inches(0.77)
+            ts = self._fit_size(takeaway, 14, tw / 914400.0, minsize=11)
+            self._run(r, ts, "accent", bold=True)
+        self._footer(slide)
+
+    def _place_image(self, slide, l, t, w, h, image, placeholder):
+        """Right-column visual: fit `image` into the (l,t,w,h) box preserving its
+        aspect ratio and centering it; if no usable image is given, draw a light
+        bordered placeholder so the user knows where to paste a 场景图 / 架构图."""
+        if image and os.path.exists(image):
+            pic = slide.shapes.add_picture(image, l, t)
+            nw, nh = int(pic.width), int(pic.height)
+            if nw > 0 and nh > 0:
+                scale = min(float(w) / nw, float(h) / nh)
+                pic.width = int(nw * scale)
+                pic.height = int(nh * scale)
+                pic.left = int(l + (int(w) - pic.width) / 2)
+                pic.top = int(t + (int(h) - pic.height) / 2)
+            return pic
+        # placeholder card
+        self._rect(slide, l, t, w, h, "white", line=_BOX_LINE, line_w=1.0,
+                   shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        tf = self._textbox(slide, l + Inches(0.2), t, w - Inches(0.4), h,
+                           MSO_ANCHOR.MIDDLE)
+        for i, ln in enumerate(placeholder if isinstance(placeholder, list)
+                               else [placeholder]):
+            p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+            p.alignment = PP_ALIGN.CENTER; p.space_after = Pt(4)
+            r = p.add_run(); r.text = str(ln)
+            self._run(r, 13 if i == 0 else 11, "grey", bold=(i == 0))
+
+    def _mini_layered_diagram(self, slide, l, t, w, h, layers, caption=None):
+        """Compact vertical layered diagram sized to fit an arbitrary box — used
+        to embed a framework 框图 in a slide's right column. Each layer is a band
+        with a small grey label on the left and a row of real rounded boxes;
+        adjacent layers are joined by a centered grey down-arrow. Coordinates are
+        all derived from (l,t,w,h) so the whole stack is fully contained."""
+        def I(v):
+            return Emu(int(v))
+        n = max(1, len(layers))
+        cap_h = Inches(0.40) if caption else 0
+        avail_h = h - cap_h
+        g = Inches(0.20)                                   # inter-band gap
+        band_h = (avail_h - g * (n - 1)) / n
+        label_w = Inches(0.50)
+        box_l = l + label_w
+        box_area_w = w - label_w
+        inner_gap = Inches(0.12)
+        cx = box_l + box_area_w / 2                         # arrow centre-x
+        for i, layer in enumerate(layers):
+            by = t + i * (band_h + g)
+            lbl = layer.get("label")
+            if lbl:
+                tf = self._textbox(slide, I(l), I(by), I(label_w - Inches(0.04)),
+                                   I(band_h), MSO_ANCHOR.MIDDLE)
+                p = tf.paragraphs[0]; p.alignment = PP_ALIGN.CENTER
+                r = p.add_run(); r.text = lbl
+                self._run(r, 8.5, "grey", bold=True)
+            nodes = layer.get("nodes", [])
+            nn = max(1, len(nodes))
+            bw = (box_area_w - inner_gap * (nn - 1)) / nn
+            for j, nd in enumerate(nodes):
+                bx = box_l + j * (bw + inner_gap)
+                self._flowbox(slide, I(bx), I(by), I(bw), I(band_h),
+                              nd.get("title", ""), nd.get("lines", []),
+                              change=nd.get("change", False),
+                              title_pt=10, sub_pt=8.5)
+            if i < n - 1:                                   # down-arrow to next band
+                ay = by + band_h + Inches(0.015)
+                self._arrow(slide, I(cx - Inches(0.085)), I(ay),
+                            I(Inches(0.17)), I(g - Inches(0.03)),
+                            MSO_SHAPE.DOWN_ARROW, color="grey")
+        if caption:
+            tf = self._textbox(slide, I(l), I(t + avail_h + Inches(0.03)),
+                               I(w), I(cap_h))
+            for k, ln in enumerate(caption if isinstance(caption, list)
+                                   else [caption]):
+                p = tf.paragraphs[0] if k == 0 else tf.add_paragraph()
+                p.space_after = Pt(1)
+                r = p.add_run(); r.text = str(ln)
+                self._run(r, 8.5, "grey")
+
+    def _two_col_sections(self, title, sections, image=None,
+                          image_placeholder=None, takeaway=None, title_pt=28,
+                          diagram=None, diagram_caption=None):
+        """Render a page with a left text column of stacked sections and a right
+        column holding a visual (a framework 框图 via `diagram=`, else an image or
+        a placeholder).
+        sections: list of {heading, lines, head_color, body_color}.
+        Section heading → 15pt bold; body lines → 13.5pt, colored per section."""
+        s = self._slide()
+        self._plain_header(s, title, title_pt=title_pt, takeaway=takeaway)
+        top = self.BODY_TOP + (Inches(0.18) if takeaway else 0)
+        bottom = self.BODY_BOTTOM
+        left_x = self.MARGIN
+        left_w = Inches(6.9)
+        gap = Inches(0.4)
+        right_x = left_x + left_w + gap
+        right_w = self.W - self.MARGIN - right_x
+        # faint divider between the two columns
+        self._rect(s, left_x + left_w + gap / 2, top + Inches(0.05),
+                   Inches(0.013), bottom - top - Inches(0.10), _RULE)
+        # left column — one text frame, sections as paragraph groups
+        tf = self._textbox(s, left_x, top, left_w, bottom - top)
+        first = True
+        for sec in sections:
+            head = sec.get("heading", "")
+            hc = sec.get("head_color", "dark")
+            bc = sec.get("body_color", "dark")
+            p = tf.paragraphs[0] if first else tf.add_paragraph()
+            p.space_before = Pt(0 if first else 12)
+            p.space_after = Pt(5)
+            r = p.add_run(); r.text = head
+            self._run(r, 15, hc, bold=True)            # heading 15pt bold
+            first = False
+            for ln in sec.get("lines", []):
+                pp = tf.add_paragraph(); pp.space_after = Pt(4)
+                r = pp.add_run(); r.text = "• " + str(ln)
+                self._run(r, 13.5, bc, bold=False)     # body 13.5pt not bold
+        # right column — framework 框图, scene/architecture image, or placeholder
+        if diagram:
+            self._mini_layered_diagram(s, right_x + Inches(0.12), top,
+                                       right_w - Inches(0.12), bottom - top,
+                                       diagram, caption=diagram_caption)
+        else:
+            self._place_image(s, right_x, top, right_w, bottom - top,
+                              image, image_placeholder)
+        return s
+
+    def value_slide(self, title="需求价值描述", background=None, features=None,
+                    scope=None, image=None, takeaway=None):
+        """需求价值描述页 — 左侧三段（背景 / 特性及价值点 / 需求收益（影响）范围），
+        右侧贴场景图展示该特性的价值。
+        - background: 背景 正文（黑色 13.5pt）
+        - features:   特性及价值点 正文（蓝色 13.5pt）—— 用户痛点 / 需求功能点 / 范围 /
+                      用户场景 / 所带来的价值；toD 明确开发者适用范围与达成结果；
+                      可量化目标（活跃数/好评率/留存）；产品范围（1+8+N）
+        - scope:      需求收益（影响）范围 正文（蓝色 13.5pt）—— 使用范围 / 地区 /
+                      具体产品；重点关注特性通用性（硬件依赖除外）
+        - image:      右侧场景图路径（可选）"""
+        sections = [
+            {"heading": "背景", "lines": background or [],
+             "head_color": "dark", "body_color": "dark"},
+            {"heading": "特性及价值点", "lines": features or [],
+             "head_color": "dark", "body_color": "blue"},
+            {"heading": "需求收益（影响）范围", "lines": scope or [],
+             "head_color": "dark", "body_color": "blue"},
+        ]
+        return self._two_col_sections(
+            title, sections, image=image, takeaway=takeaway,
+            image_placeholder=["场景图 / 价值示意",
+                               "在此粘贴展示该特性价值的场景图"])
+
+    def design_slide(self, title="需求设计方案", design=None, changes=None,
+                     extra=None, image=None, takeaway=None, diagram=None,
+                     diagram_caption=None):
+        """需求设计方案页 — 左侧设计方案与变更点及影响，右侧贴架构图补充展示。
+        设计方案可有多种、可多页输出（每页各调用一次本方法）。
+        - design:  设计方案设计重点（交互模块及如何达成需求的规格等）
+        - changes: 变更点及影响（数据结构变更 / 外部接口变更 / 外部依赖分析 /
+                   性能功耗评估 / 影响用户体验的关键 KPI 等）
+        - extra:   追加段落 [{"heading","lines"}]，如「UI 示意」「裁剪已上线需求需求方意见」
+        - image:   右侧架构图路径（可选）
+        - diagram: 右侧内嵌框图 layers（与 layered_diagram_slide 同结构，优先于 image）
+                   [{"label","nodes":[{"title","lines","change"}]}]
+        - diagram_caption: 框图下方小字说明（可选）"""
+        sections = [
+            {"heading": "一、设计方案", "lines": design or [],
+             "head_color": "dark", "body_color": "dark"},
+            {"heading": "二、变更点及影响", "lines": changes or [],
+             "head_color": "dark", "body_color": "dark"},
+        ]
+        for sec in (extra or []):
+            sections.append({"heading": sec.get("heading", ""),
+                             "lines": sec.get("lines", []),
+                             "head_color": "dark", "body_color": "dark"})
+        return self._two_col_sections(
+            title, sections, image=image, takeaway=takeaway,
+            diagram=diagram, diagram_caption=diagram_caption,
+            image_placeholder=["架构图 / 补充示意",
+                               "在此粘贴架构图补充展示"])
 
     def save(self, path):
         self.prs.save(path)

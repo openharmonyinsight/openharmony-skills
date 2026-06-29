@@ -10,9 +10,9 @@ OpenHarmony 需求评审 PPT 生成 Skill。面向维护者的说明文档（Age
 框图节点），所有坐标、配色、字体、间距、箭头绘制都由库内部负责，杜绝手搓 `python-pptx`
 导致的版式错乱、框体重叠、"图变成文字列表"等问题。
 
-需求评审场景下，按 [`references/requirement-review-template.md`](references/requirement-review-template.md)
-的固定 8 段结构生成（需求性质 → 原始需求 → 特性价值 → 系统方案 ×3 → 兼容性 →
-RAM/ROM → 风险 Checklist → 工作量拆解）。
+需求变更评审场景下，按 [`references/requirement-review-template.md`](references/requirement-review-template.md)
+的固定 7 页结构生成（封面 → 需求价值描述 → 需求设计方案 → 需求变更背景 →
+需求变更影响性分析 → 兼容性分析 → 风险评估）。
 
 ## 目录结构
 
@@ -22,7 +22,7 @@ RAM/ROM → 风险 Checklist → 工作量拆解）。
 | `README.md` | 本文件，面向维护者 |
 | `deckbuilder.py` | 核心库；调用方 `from deckbuilder import Deck` |
 | `oh_logo.png` | OpenHarmony logo，自动放置在每页左下角 |
-| `references/requirement-review-template.md` | 需求评审固定 8 段模板（生成时以此为准） |
+| `references/requirement-review-template.md` | 需求变更评审固定 7 页模板（生成时以此为准） |
 | `examples/requirement_review_example.py` | 完整可运行的填充示例脚本 |
 | `evals/cases.yaml` | 评测用例索引 |
 | `evals/prompts/` | 评测输入 prompt |
