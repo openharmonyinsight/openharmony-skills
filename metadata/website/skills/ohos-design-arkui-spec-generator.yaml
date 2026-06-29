@@ -1,0 +1,83 @@
+schemaVersion: 1
+
+id: ohos-design-arkui-spec-generator
+title: ArkUI 已有特性规格补录
+summary: 基于 ace_engine 现有实现反向生成特性规格文档（Feat-XX-spec.md）和设计文档（design.md），用于补齐 SDD 流程所需的规格基线。
+
+category:
+  scope: domain
+  namespace: arkui
+  stage: design
+  domain: arkui
+  capability: spec-generator
+
+status:
+  maturity: trial
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - arkui
+  - ace-engine
+  - spec
+  - design
+  - backfill
+  - reverse-engineering
+
+audience:
+  - ArkUI ace_engine 框架开发者
+  - ArkUI 特性规格维护者
+  - SDD 流程使用者
+
+useCases:
+  - title: 补录已有特性规格
+    description: 为已实现但缺少规格文档的 ace_engine 特性生成 Feat-XX-spec.md，包含用户故事、验收标准、API 分析和兼容性声明。
+  - title: 生成功能域初始设计文档
+    description: 当功能域尚无 design.md 时，基于现有实现生成标准 13 章结构的初始设计文档。
+  - title: 增量合并设计文档
+    description: 当功能域已有 design.md 时，将新特性内容按合并映射规则增量合并到现有章节，不创建独立顶级章节。
+  - title: 特性分解分析
+    description: 当用户仅提供组件或功能域名称时，扫描 API 面并提出 Feat 拆分建议，避免生成单一巨型规格。
+
+whenToUse:
+  - 用户要求为已有 ArkUI 特性生成、补录或补齐规格文档。
+  - 用户提到 "generate spec"、"backfill spec"、"生成规格"、"补录规格"、"特性规格"、"规格文档"、"document existing capability" 等关键词。
+  - 用户指定了特性路径，如 "04-common-capability/03-common-attributes/01-layout-attributes/Feat-XX-XXX"。
+  - 需要为 SDD 流程补齐现有实现的规格基线。
+
+whenNotToUse:
+  - 需要设计全新特性（尚未实现）的规格。
+  - 需要修改产品源码或修复 Bug。
+  - 需要编译、构建或运行测试。
+  - 需要创建或维护知识库文档（应使用 ohos-design-arkui-knowledgebase-generator）。
+
+inputs:
+  required:
+    - 目标特性名称或功能域路径（如组件名、FuncID 路径）。
+  optional:
+    - 具体 Feat 范围（如仅补录某些子属性/API）。
+    - API 版本范围要求。
+    - 设计文档处理策略偏好（增量合并 vs 新建）。
+    - ace_engine 源码目录。
+
+outputs:
+  - specs/ 下的特性规格文档（Feat-XX-name-spec.md）。
+  - specs/ 下的设计文档（design.md，新建或增量合并）。
+  - 更新后的 specs/registry/features.yaml 和 specs/registry/functions.yaml。
+  - 重新生成的 specs/index.md。
+
+quickStart:
+  steps:
+    - 提供目标特性名称或功能域路径（如 "补齐 padding/margin 属性规格"）。
+    - Agent 进行 Feat 分解分析（如适用），确认拆分方案。
+    - 通过多轮问答确认子能力范围、覆盖广度和 API 版本要求。
+    - Agent 并行探索源码各实现层并交叉验证 SDK 类型定义。
+    - 确认关键设计发现后，Agent 生成规格文档和设计文档。
+  examplePrompt: |
+    请补录 04-通用能力层/03-通用属性/01-布局属性 下 padding 相关特性的规格。
+
+related:
+  skills:
+    - ohos-req-arkui-spec-generator
+    - ohos-design-arkui-knowledgebase-generator
+  docs: []

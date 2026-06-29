@@ -1,6 +1,12 @@
 ---
 name: ohos-design-arkui-spec-generator
-description: Generate ArkUI framework feature specifications by reverse-engineering the current ace_engine implementation. Use when the user asks to "generate spec", "backfill spec", "produce spec for existing feature", "document existing capability" (or Chinese equivalents like "生成规格", "补录规格"), or names a feature path like "04-common-capability/03-common-attributes/01-layout-attributes/Feat-XX-XXX". Produces a spec document under the specs directory (Feat-XX-name-spec.md) and either creates an initial design.md or incrementally updates the existing one. Handles multi-round scope clarification, source-code verification, SDK API cross-check, and incremental design-doc merging (never standalone chapters).
+description: >-
+  Generate or backfill feature specification documents for existing ArkUI ace_engine implementations.
+  Use when the user asks to "generate spec", "backfill spec", "produce spec for existing feature",
+  "document existing capability" (or Chinese equivalents like "生成规格", "补录规格", "特性规格", "规格文档", "已有特性文档化"),
+  or names a feature path like "04-common-capability/03-common-attributes/01-layout-attributes/Feat-XX-XXX".
+  Covers Feat decomposition, multi-round scope clarification, source-code verification, SDK API cross-check,
+  spec generation, and incremental design-doc merging.
 metadata:
   author: openharmony
   scope: domain
@@ -24,41 +30,50 @@ Backfill specification documents for features **already implemented** in the Ark
 
 ## Feature taxonomy (FuncID / FeatID)
 
-ArkUI specs live in a 3-level functional-domain tree (definition lives outside this repo and is imported incrementally). Top-level examples:
+ArkUI specs live in a 3-level functional-domain tree. The **single source of truth** is `specs/registry/functions.yaml` (for FuncID / functional domains) and `specs/registry/features.yaml` (for FeatID / feature specs). `specs/index.md` is **generated output** — never hand-edit it.
+
+L1 categories: 01-架构通用设计, 02-跨平台适配层, 03-引擎框架层, 04-通用能力层, 05-组件层, 06-通用接口层, 07-前端层, 08-NDK, 09-开发者工具, 10-产品化定制. Each L1 contains L2 sub-domains, each L2 contains L3 functional domains. Full tree lives in `specs/registry/functions.yaml`. Example:
 
 ```
-01-架构通用设计
-   01-架构设计
-      01-编译构建
-      02-目录结构
-      03-部件化
-      04-兼容性设计
-   02-架构优化
-      01-产品化解耦       ← FuncID = 01-02-01
-      02-新老框架拆分     ← FuncID = 01-02-02
-02-跨平台适配层
-   ...
+04-通用能力层
+   03-通用属性
+      01-布局属性       ← FuncID = 04-03-01, path: 04-common-capability/03-common-attributes/01-layout-attributes/
+      02-视效属性       ← FuncID = 04-03-02
 ```
 
-- **FuncID** = 3-segment number (e.g. `01-02-01`), identifies a functional domain (the 3rd-level node)
+- **FuncID** = 3-segment number (e.g. `04-03-01`), identifies a functional domain (the 3rd-level node)
 - **FeatID** = `Feat-NN`, identifies one feature within that domain
 - **FuncID + FeatID** uniquely identifies a feature system-wide
 - Each functional domain owns **one** `design.md`; each feature owns one `Feat-NN-<name>-spec.md`
 - Directory under `specs/` mirrors the tree (English-slug names — e.g. `04-common-capability/03-common-attributes/01-layout-attributes/`)
+- FeatIDs under the same FuncID must be **contiguous** from `Feat-01`; do not skip numbers
 
-If the target feature is **not yet registered** in the local tree, add the directory path under `specs/` before doing anything else. Confirm the FuncID with the user when the mapping is ambiguous.
+If the target feature is **not yet registered** in the registry, add entries to the YAML files and create the directory path under `specs/` before doing anything else. Confirm the FuncID with the user when the mapping is ambiguous.
 
 ## Workflow (execute in order)
 
-### Step 0: Index registration (**mandatory pre-step**)
+### Step 0: Registry registration (**mandatory pre-step**)
 
-1. **Read** `specs/index.md` — it is the single source of truth for the feature taxonomy, FuncID/FeatID assignments, and status tracking
-2. **Locate or create** the FuncID entry in the "功能域层级树" table:
-   - If the target functional domain already has a row → confirm FuncID matches
-   - If not → add a new row (斜体 + 下划线 for uncreated) **in FuncID ascending order** and confirm with the user
-3. **Determine FeatID**: look at the "已注册特性清单" section for the target FuncID, find the highest existing FeatID, assign the next one (Feat-NN)
-4. **Pre-register**: add a FeatID row with status `Draft` to the特性清单 table. If adding a new FuncID section header, ensure it is placed in **FuncID ascending order** within the "已注册特性清单" section
-5. Proceed to Step 1 only after the index is updated
+1. **Read** `specs/registry/functions.yaml` and `specs/registry/features.yaml` — these are the single source of truth for FuncID functional domains and FeatID feature specs respectively. **Do NOT read or edit `specs/index.md`** — it is generated output.
+2. **Locate or create** the FuncID entry in `registry/functions.yaml`:
+   - If the target functional domain already has an entry → confirm FuncID matches
+   - If not → add a new entry with `id`, `l1`/`l2`/`l3` titles, `path`, `design` (null if no design.md yet), and `status: active` — maintain **FuncID ascending order** and confirm with the user
+   - For new two-digit node IDs, prefer quotes (e.g. `'08'`) to prevent YAML number parsing
+3. **Determine FeatID**:
+   - If the user **did not specify** a concrete Feat scope (e.g. only said "补齐Toggle组件规格") → **jump to Step 0.5** for Feat decomposition analysis before assigning FeatIDs. Return here after user confirms the breakdown.
+   - If the user named a specific Feat, or Step 0.5 has already produced a confirmed breakdown → look at `registry/features.yaml` entries for the target `func_id`, find the highest existing FeatID, assign the next one (Feat-NN). FeatIDs must be **contiguous** from Feat-01; do not skip numbers.
+4. **Pre-register**: add a FeatID entry to `registry/features.yaml` with `func_id`, `id`, `title`, `spec` (path to the spec file or `null` for placeholder), and `status: Draft`
+5. **Create directory** if the `path` in functions.yaml doesn't exist on disk yet
+6. **Regenerate index**: run `python3 tools/generate_index.py` then `python3 tools/generate_index.py --check` to validate
+   - **If `--check` fails**: read the error output — common causes are duplicate FuncIDs, non-contiguous FeatIDs, or YAML syntax errors (unquoted `08`/`09`). Fix the YAML and re-run. Do NOT proceed with a broken registry.
+7. Proceed to Step 1 only after the registry is updated and check passes
+
+### Step 0.5: Feat decomposition analysis (conditional)
+
+**Trigger**: the user provides only a component or functional-domain name without specifying a concrete FeatID. Skip if the user named a specific Feat or the component has ≤ 5 public APIs.
+
+**MANDATORY — READ ENTIRE FILE**: Read [`references/feat-decomposition.md`](references/feat-decomposition.md) completely before proceeding. It defines the API scan method, 5 decomposition heuristics, sizing guidelines, and AskUserQuestion format.
+**Do NOT load** other reference files at this step.
 
 ### Step 1: Locate target and clarify scope (multi-round Q&A)
 
@@ -80,11 +95,10 @@ If the target feature is **not yet registered** in the local tree, add the direc
 
 Choose the exploration emphasis based on whether the feature is **external-facing** or **framework-internal**:
 
-- **External API features** (ArkTS attributes, declarative methods): cross-verify implementation source against the **canonical SDK type definitions** under `<OpenHarmony_root>/interface/sdk-js/api/`. This is the **only** source of truth for external API contracts — never infer API signatures from internal source code or knowledge-base markdown files. Typical lookup paths:
-  - **Static API**: `interface/sdk-js/api/arkui/component/<name>.static.d.ets` (e.g. `text.static.d.ets`)
-  - **Dynamic API**: `interface/sdk-js/api/@internal/component/ets/<name>.d.ts` (e.g. `text.d.ts`)
-  - **Dynamic Modifier**: `interface/sdk-js/api/arkui/<Name>Modifier.d.ts` (e.g. `TextModifier.d.ts`)
-  - `docs/sdk/ArkUI_SDK_API_Knowledge_Base.md` and `docs/sdk/Component_API_Knowledge_Base_CN.md` serve as supplementary references only — if they disagree with the `.d.ts`/`.d.ets` files, the type definition files win
+- **External API features** (ArkTS attributes, declarative methods): cross-verify implementation source against the **canonical SDK type definitions** (see "Conflict resolution" for the authority hierarchy). Typical lookup paths:
+  - **Static API**: `interface/sdk-js/api/arkui/component/<name>.static.d.ets`
+  - **Dynamic API**: `interface/sdk-js/api/@internal/component/ets/<name>.d.ts`
+  - **Dynamic Modifier**: `interface/sdk-js/api/arkui/<Name>Modifier.d.ts`
 - **Framework-internal capabilities** (layout pipeline, render flow, lifecycle, internal utilities): focus exclusively on the source code; SDK type definitions typically don't cover these
 
 Use **multiple parallel Explore agents** to cover each implementation layer. Typical layers:
@@ -97,11 +111,22 @@ Use **multiple parallel Explore agents** to cover each implementation layer. Typ
 
 Focus areas: API version differences, storage location, property change flags (`PROPERTY_UPDATE_*`), mutual exclusion, RTL/localization handling, **and any external input that affects behavior** (parent-context state, system locale, screen density, theme).
 
+**Fallbacks when exploration hits dead ends**:
+- **Source path not found** (renamed/moved): try `grep -rn "<ClassName>Pattern\|<ClassName>Model" frameworks/` to locate the actual module, or ask the user
+- **SDK `.d.ts` file missing**: fall back to `docs/sdk/*.md` but mark the API entry as "未经 d.ts 验证" in the spec's risks table
+- **Layer has no matching code** (e.g. no C-API for this feature): skip that layer and note "C-API 未实现" in the spec
+
 If the feature is too large for a single sweep (e.g. 10+ sub-properties or multi-layer overhaul), **split into sub-tasks** — generate one Feat-XX spec per cohesive sub-capability, share the same design.md baseline, and register all of them in the "后续 Task 拆分" table.
 
 ### Step 3: Highlight key findings, get confirmation
 
-Present **3-7 non-obvious design decisions** to the user (e.g. storage-layer split, API version behavior changes, mutual-exclusion priority, special default values) and ask which should be emphasized in the spec. Selected items become inputs for ADRs, risks, and compatibility entries.
+Present **3-7 non-obvious design decisions** to the user using this format:
+
+| # | Finding | Source evidence | Why it matters for spec |
+|---|---------|----------------|------------------------|
+| 1 | e.g. padding stores in SafeAreaPadding, not PaddingProperty | layout_property.cpp:123 | Affects AC scope: must test SafeArea path |
+
+Ask which findings should be emphasized in the spec. Selected items become inputs for ADRs, risks, and compatibility entries.
 
 ### Step 4: Generate the spec document
 
@@ -160,7 +185,16 @@ Merge checklist:
 - Verify the spec file's H2/H3 structure is complete (cross-check against Feat-01's standard chapters)
 - Verify design.md has no leftover standalone `## Feat-XX` chapters
 - Run `grep -n "^## "` against design.md to confirm the top-level chapter sequence is correct
-- **Update `specs/index.md`**: change the FeatID row status from `Draft` to `Baselined`
+- **Update `specs/registry/features.yaml`**: change the FeatID entry status from `Draft` to `Baselined`
+- If design.md was newly created, verify its path is set in the corresponding `registry/functions.yaml` entry (not `null`)
+- **Regenerate and validate**:
+  ```bash
+  python3 tools/generate_index.py
+  python3 tools/generate_index.py --check
+  python3 tools/generate_site.py
+  ```
+  If `--check` fails after status update, the most likely cause is a `spec:` path in `features.yaml` that doesn't match the actual filename on disk — fix and re-run.
+- Verify every `design.md` on disk is registered in `functions.yaml` and every `Feat-*.md` on disk is registered in `features.yaml`
 
 ## Diagram rules
 
@@ -171,9 +205,10 @@ Merge checklist:
 
 ## Anti-patterns (forbidden)
 
-❌ Opening a new `## Feat-XX 详细设计` top-level chapter in design.md — always merge into existing chapters (see merge mapping in `design-doc-merge.md`)
+❌ Opening a new `## Feat-XX 详细设计` top-level chapter in design.md — breaks the shared-baseline model: downstream tools expect one flat chapter list, standalone Feat chapters create duplicate structure and merge conflicts
 ❌ Naming first-Feat decisions `ADR-F1-N` — first Feat uses baseline `ADR-1, ADR-2, ...`; only subsequent Feats use `ADR-FX-N`
 ❌ Proposing fixes or improvements when source behavior is questionable — annotate as risk/note only ("the current implementation IS the spec")
+❌ Skipping Feat decomposition when user provides only a component name — a monolithic spec for 10+ APIs becomes unmaintainable and blocks incremental SDD; always run Step 0.5 to propose a breakdown first
 ❌ Asking all scope questions in a single `AskUserQuestion` call — batch by dimension across 2-4 waves
 ❌ Writing spec content without reading the template — the chapter skeleton is non-negotiable
 ❌ Creating one design.md per Feat — one functional domain owns exactly one design.md shared by all Feats
@@ -181,7 +216,9 @@ Merge checklist:
 ❌ Skipping `## 不涉及项承接` or `## 设计审批` chapters in design.md
 ❌ Using ASCII box art for diagrams — all diagrams must use Mermaid syntax
 ❌ Silently reconciling SDK-vs-source discrepancies — the deviation must be visible in both spec and risks table
-❌ Inferring API signatures from internal C++ source, JS bridge files, or knowledge-base markdown instead of reading the canonical `.d.ts` / `.d.ets` / `.static.d.ets` files under `interface/sdk-js/api/`
+❌ Inferring API signatures from internal C++ source, JS bridge files, or knowledge-base markdown instead of reading the canonical `.d.ts` / `.d.ets` / `.static.d.ets` files under `interface/sdk-js/api/` — internal representations often diverge from the public contract (different parameter names, extra overloads, missing deprecation marks), producing specs that mislead downstream consumers
+❌ Hand-editing `specs/index.md` — it is generated output; edit `registry/functions.yaml` and `registry/features.yaml` instead, then run `python3 tools/generate_index.py`
+❌ Skipping `python3 tools/generate_index.py --check` before declaring Step 6 complete
 
 ## Conflict resolution
 
@@ -202,10 +239,11 @@ When source code behavior and SDK type definitions disagree:
 
 - **Implementation IS the spec**: if source behavior is questionable, write a risk/note — do NOT propose fixes
 - **All claims need file:line references**: every assertion must trace back to ace_engine source
-- **APIs must be SDK-verified from canonical type definitions**: for external APIs, read the actual `.d.ts` / `.d.ets` / `.static.d.ets` files under `<OpenHarmony_root>/interface/sdk-js/api/` — these are the single source of truth for API signatures, parameter types, return types, and `@since` versions. Do NOT infer API signatures from internal C++ source, JS bridge files, or knowledge-base markdown. `docs/sdk/*.md` files are supplementary only; when they disagree with type definitions, type definitions win. Framework-internal capabilities don't need SDK cross-check.
+- **APIs must be SDK-verified**: for external APIs, read the canonical `.d.ts` / `.d.ets` / `.static.d.ets` files — see "Conflict resolution" for the full authority hierarchy. Framework-internal capabilities don't need SDK cross-check.
 - **Incremental first**: when design.md exists, never open a new `## Feat-XX` top-level chapter
 - **No fabricated ACs**: every AC must map to existing source behavior or tests
 - **Don't over-batch AskUserQuestion**: ask in waves — scope first, then strategy, then highlight confirmation
 - **Cover every external input**: parent state, system locale, density/scale, theme, API version, lifecycle stage — anything that can change behavior must be enumerated, especially anything that could become a future **compatibility risk**
 - **Split large features into sub-tasks**: if scope grows beyond a single coherent spec, generate multiple Feat-XX specs sharing one design.md
+- **Feat decomposition before registration**: when the user doesn't specify a concrete Feat, always run Step 0.5 to scan the API surface and propose a breakdown — never default to a single monolithic Feat for components with > 5 APIs
 - **Spec consumers are the SDD flow**: downstream SDD flow reads these specs to plan incremental changes — be exhaustive on observable behavior and version differences, since omissions become silent regressions
