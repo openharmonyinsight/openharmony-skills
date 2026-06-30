@@ -235,7 +235,7 @@ deck.layered_diagram_slide("System Design — Framework", [
 
 When the user asks for a 需求变更评审 / requirement-change-review deck, or gives a
 page-by-page brief (需求价值 → 需求设计方案 → 需求变更背景 → 需求变更影响性分析 →
-兼容性分析 → 风险评估), **follow the 7-page structure** in
+版本交付计划 → 兼容性分析 → 风险评估), **follow the 8-page structure** in
 [requirement-review-template.md](references/requirement-review-template.md) instead of inventing
 an outline. `examples/requirement_review_example.py` is a complete, generic fill-in deck.
 
@@ -246,15 +246,17 @@ The fixed page order (cover counts as page 1):
 3. **需求设计方案** — `design_slide` (左文右图 + 右侧框图, unchanged; 可多页)
 4. **需求变更背景** — `table_slide`: ① 需裁剪/变更的需求说明（原始需求/编号、特性概述与影响、使用场景，重点 2C/2D 价值与影响）；② 原始被接纳时的决策纪要（SIG 评审通过记录）
 5. **需求变更影响性分析** — `table_slide`, **5 行**: 北向应用开发者／南向开发者／分布式设备／系统开发者（跨子系统依赖）／设备使用者
-6. **兼容性分析** — `table_slide`: 是否涉及应用兼容性；兼容性包括（机制/权限/API行为/其它）；兼容性方案；应用适配方案和计划
-7. **风险评估** — `table_slide`, **固定 2 列 8 行** checklist
+6. **版本交付计划** — `table_slide`, **11 列**横向计划表：承接领域／承接类型(IR/SR)／主要需求内容／落地版本／设计者／代码行数／是否涉及API／端到端工作量(500行≈1人月)／领域PM／管道是否满足／工作量是否由领域PM审核OK。**把需求拆解成多个子需求，一行一个、逐行呈现工作量**，末行用 `highlight_last=True` 合计
+7. **兼容性分析** — `table_slide`: 是否涉及应用兼容性；兼容性包括（机制/权限/API行为/其它）；兼容性方案；应用适配方案和计划
+8. **风险评估** — `table_slide`, **固定 2 列 8 行** checklist
 
 What this page reliably gets wrong (the top two are the most-reported):
 
-- **Pages 4–7 must be `table_slide`, never `banded_slide` / `content_slide`.** The
+- **Pages 4–8 must be `table_slide`, never `banded_slide` / `content_slide`.** The
   bar/card builders tempt you to color each section differently → multi-colored 横条
-  ("不纯粹"). Build them as two-column 分项｜内容 tables. (The engine also forces those
-  builders to one color now, but tables are the right layout here.)
+  ("不纯粹"). Build them as field tables (页 4/5/7/8 两列 分项｜内容；页 6 为 11 列宽表).
+  (The engine also forces those builders to one color now, but tables are the right
+  layout here.)
 - **Every `table_slide` page must pass `takeaway="结论：…"`** — a topic title over a
   table with no conclusion has no 突出重点. This is enforced: a slide without
   `takeaway` raises `ValueError`, so the deck will not build until every page has its
@@ -264,11 +266,15 @@ What this page reliably gets wrong (the top two are the most-reported):
   `image=`), never a bullet list.
 - **Page 5 has exactly 5 影响对象 rows, in order**: 北向应用开发者 → 南向开发者 →
   分布式设备 → 系统开发者（跨子系统/部件依赖）→ 设备使用者（性能/功耗/功能/体验）.
-- **Page 7 is a fixed 2×8 checklist** — these 8 rows, in order: 对性能/功耗/RAM/ROM
+- **Page 6 版本交付计划 is a fixed 11-列 wide table** — 把需求拆解成多个子需求，一行一个、
+  逐行呈现工作量，末行 `highlight_last=True` 合计；表头/正文字号随列数自动收缩，不要手设字号
+  或写死列宽英寸；`col_widths` 传相对权重。
+- **Page 8 is a fixed 2×8 checklist** — these 8 rows, in order: 对性能/功耗/RAM/ROM
   是否有影响；是否存在其他依赖关系；是否有安全风险；是否涉及合法/合规问题；是否涉及外部
   承诺；是否开源；是否涉及 AI；隐私风险特性识别. Answer each with 是/否/待评估 + 一句话。
-- **Mark absent fields `待评估 / TBD`** (需求编号、SIG 决策纪要、适用地区/产品、外部承诺、
-  合规/安全结论) and list them back to the user — never fabricate them.
+- **Mark absent fields `待评估 / TBD`** (需求编号、SIG 决策纪要、落地版本、设计者、代码行数、
+  端到端工作量、领域PM、适用地区/产品、外部承诺、合规/安全结论) and list them back to the
+  user — never fabricate them.
 
 ## Workflow
 
@@ -314,7 +320,7 @@ rerun — do not work around it.
 | Design slide is a bullet list, not a diagram | Use `flow_slide` or `layered_diagram_slide` |
 | Passing `RGBColor(...)` everywhere | Pass color **names**; default to `"accent"`/`"grey"`, names map to the palette |
 | Giving every card/section a different `accent` (rainbow 横条) | Don't — per-card/section colors are ignored by design; for 需求变更评审 4–7 use `table_slide` |
-| Pages 4–7 as colored `banded_slide` bars | Use `table_slide` (分项｜内容 two-column) — the bars invite the "不纯粹" rainbow |
+| Pages 4–8 as colored `banded_slide` bars | Use `table_slide` (分项｜内容 / 计划宽表) — the bars invite the "不纯粹" rainbow |
 | Pages with no point — just a topic title over a table | Give every content slide a `takeaway="结论：…"` one-liner; it's required — a slide without it raises `ValueError` |
 | Cramming 8+ cards on one slide | Max 6 per `content_slide`; split across slides |
 | Putting >8 rows in one table at full font | The library auto-shrinks; still split very long tables |

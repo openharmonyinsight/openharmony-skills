@@ -11,8 +11,8 @@ OpenHarmony 需求评审 PPT 生成 Skill。面向维护者的说明文档（Age
 导致的版式错乱、框体重叠、"图变成文字列表"等问题。
 
 需求变更评审场景下，按 [`references/requirement-review-template.md`](references/requirement-review-template.md)
-的固定 7 页结构生成（封面 → 需求价值描述 → 需求设计方案 → 需求变更背景 →
-需求变更影响性分析 → 兼容性分析 → 风险评估）。
+的固定 8 页结构生成（封面 → 需求价值描述 → 需求设计方案 → 需求变更背景 →
+需求变更影响性分析 → 版本交付计划 → 兼容性分析 → 风险评估）。
 
 ## 目录结构
 
@@ -22,7 +22,7 @@ OpenHarmony 需求评审 PPT 生成 Skill。面向维护者的说明文档（Age
 | `README.md` | 本文件，面向维护者 |
 | `deckbuilder.py` | 核心库；调用方 `from deckbuilder import Deck` |
 | `oh_logo.png` | OpenHarmony logo，自动放置在每页左下角 |
-| `references/requirement-review-template.md` | 需求变更评审固定 7 页模板（生成时以此为准） |
+| `references/requirement-review-template.md` | 需求变更评审固定 8 页模板（生成时以此为准） |
 | `examples/requirement_review_example.py` | 完整可运行的填充示例脚本 |
 | `evals/cases.yaml` | 评测用例索引 |
 | `evals/prompts/` | 评测输入 prompt |

@@ -28,18 +28,19 @@ as `table_slide` field tables.
 | 3 | 需求设计方案 (可多页) | `design_slide` | 设计方案重点；变更点及影响；右侧架构框图（`diagram=`）|
 | 4 | 需求变更背景 | `table_slide` | ① 需裁剪/变更的需求说明（含原始需求/编号、特性概述与影响、使用场景）；② 原始被接纳时的决策纪要（SIG 评审通过记录）|
 | 5 | 需求变更影响性分析 | `table_slide` | 北向应用开发者／南向开发者／分布式设备／系统开发者（跨子系统依赖）／设备使用者 —— 共 5 行 |
-| 6 | 兼容性分析 | `table_slide` | 是否涉及应用兼容性；兼容性包括（机制/权限/API行为/其它）；兼容性方案；应用适配方案和计划 |
-| 7 | 风险评估 | `table_slide` | **固定 2 列 8 行** checklist（见下）|
+| 6 | 版本交付计划 | `table_slide` | **11 列**横向计划表（承接领域/类型、需求内容、落地版本、设计者、代码行数、是否涉及API、端到端工作量、领域PM、管道是否满足、PM审核OK）|
+| 7 | 兼容性分析 | `table_slide` | 是否涉及应用兼容性；兼容性包括（机制/权限/API行为/其它）；兼容性方案；应用适配方案和计划 |
+| 8 | 风险评估 | `table_slide` | **固定 2 列 8 行** checklist（见下）|
 
 Pages 2 and 3 are **unchanged** from the standard 需求价值描述 / 需求设计方案
 builders — see SKILL.md「需求价值描述 / 需求设计方案 — the two-column pages」. Do not
-restyle them. The change-review content lives entirely on pages 4–7.
+restyle them. The change-review content lives entirely on pages 4–8.
 
 ## Five rules that matter most
 
 **0. Every field page leads with its conclusion — `takeaway` is REQUIRED.**
-Pages 4–7 each pass `takeaway="结论：…"` — one short verdict sentence rendered bold
-petrol under the (ink) title. The title stays the topic (`五、兼容性分析`); the
+Pages 4–8 each pass `takeaway="结论：…"` — one short verdict sentence rendered bold
+petrol under the (ink) title. The title stays the topic (`七、兼容性分析`); the
 takeaway states the finding (`不改变公开 API 行为，应用无需适配`). Write an
 **assertion**, not a restatement of the title. A content page built without
 `takeaway` raises `ValueError` and the deck will not save.
@@ -49,11 +50,13 @@ them to tables and do NOT change their typography. Page 3's right column must be
 real **框图** (pass `diagram=` layers, or `image=` an architecture picture) — never a
 bullet list.
 
-**2. Pages 4–7 are 分项｜内容 field tables.** Two columns: a left「分项 / 影响对象 /
-评估项」label column and a right「内容 / 影响分析 / 结论·说明」column. Use `col_widths`
-to keep the label column narrow (~1.8–2.6) and let the content column take the rest.
+**2. Pages 4/5/7/8 are 分项｜内容 field tables; page 6 is a wide 11-列 plan table.**
+Field tables use two columns: a left「分项 / 影响对象 / 评估项」label column and a
+right「内容 / 影响分析 / 结论·说明」column — use `col_widths` to keep the label column
+narrow (~1.8–2.6) and let the content column take the rest. The 版本交付计划 page is a
+single wide table (font auto-shrinks for ≥7 columns; do not hand-set sizes).
 
-**3. Page 7 风险评估 is a fixed 2-column, 8-row checklist — these 8 rows, in order:**
+**3. Page 8 风险评估 is a fixed 2-column, 8-row checklist — these 8 rows, in order:**
    1. 对性能、功耗、RAM/ROM 是否有影响
    2. 是否存在其他依赖关系？
    3. 是否有安全风险
@@ -119,10 +122,57 @@ deck.table_slide("五、需求变更影响性分析",
 Exactly **5 rows, these objects in this order**: 北向应用开发者 → 南向开发者 →
 分布式设备 → 系统开发者（跨子系统/部件依赖）→ 设备使用者（性能/功耗/功能/体验）.
 
-## Page 6 — 兼容性分析
+## Page 6 — 版本交付计划 (wide 11-column table)
+
+A horizontal plan table. **11 fixed columns, in order.** **把整个需求拆解成多个子需求，
+每行一个子需求，并呈现各自的工作量**；末行加一个 **合计行**（`highlight_last=True`）汇总
+代码行数与端到端工作量。
 
 ```python
-deck.table_slide("六、兼容性分析",
+deck.table_slide("六、版本交付计划",
+    ["承接领域", "承接类型", "主要需求内容", "落地版本", "设计者",
+     "代码行数", "是否涉及API", "端到端工作量", "领域PM", "管道是否满足",
+     "工作量是否由领域PM审核OK"],
+    [
+        # —— 一行一个子需求，工作量逐行呈现 ——
+        ["<xx 子系统>", "<IR/SR>", "<子需求1：简述>", "<OpenHarmony 6.0>",
+         "<设计者>", "<行数(估算)>", "<是/否>", "<人月(估算)>", "<领域PM>", "<是/否>", "<是/否>"],
+        ["<xx 子系统>", "<IR/SR>", "<子需求2：简述>", "<OpenHarmony 6.0>",
+         "<设计者>", "<行数(估算)>", "<是/否>", "<人月(估算)>", "<领域PM>", "<是/否>", "<是/否>"],
+        ["<xx 子系统>", "<IR/SR>", "<子需求3：简述>", "<OpenHarmony 6.0>",
+         "<设计者>", "<行数(估算)>", "<是/否>", "<人月(估算)>", "<领域PM>", "<是/否>", "<是/否>"],
+        # —— 合计行（highlight_last=True 高亮）：仅代码行数 / 工作量列求和 ——
+        ["合计（估算）", "—", "—", "—", "—", "<Σ行>", "—", "<Σ人月>", "—", "—", "—"],
+    ],
+    takeaway="结论：…（子需求数 + 合计端到端工作量 + 管道/审核是否就绪）",
+    col_widths=[1.4, 0.9, 2.6, 1.2, 0.9, 1.0, 1.3, 1.3, 0.9, 1.0, 1.4],
+    highlight_last=True)
+```
+
+每列含义（11 列固定，顺序不变）：
+1. **承接领域** —— 承接的子系统，如「xx 子系统」。
+2. **承接类型** —— `IR` / `SR`。
+3. **主要需求内容** —— 子需求简要描述（**一行一个子需求**）。
+4. **落地版本** —— 形如 `OpenHarmony 6.0`。
+5. **设计者** —— 责任设计人。
+6. **代码行数** —— `xx 行`（估算）。
+7. **是否涉及API** —— 该子需求对外 API 是否有改动（是/否）。
+8. **端到端工作量** —— `xx 人月`，**约定 500 行 ≈ 1 人月**（逐子需求呈现，末行合计）。
+9. **领域PM** —— 领域 PM 姓名。
+10. **管道是否满足** —— 是/否。
+11. **工作量是否由领域PM审核OK** —— 是/否。
+
+- **需求拆解**：把整个需求拆成若干子需求，每个子需求占一行，**工作量（人月）与代码行数逐行给出**；
+  末行用 `highlight_last=True` 的合计行汇总代码行数与端到端工作量。
+- 工作量/代码行数若文档未给，按 **500 行 ≈ 1 人月** 估算并在表头或单元格标 `估算`；其它缺失字段
+  （落地版本/设计者/领域PM/审核结论）标 `待评估 / TBD`，不要编造。
+- 字号随列数自动收缩（`table_slide` 对 ≥7 列的宽表自动减小表头与正文字号），**不要手设字号
+  或写死列宽英寸**；`col_widths` 作为相对权重传入。
+
+## Page 7 — 兼容性分析
+
+```python
+deck.table_slide("七、兼容性分析",
     ["分项", "内容"],
     [
         ["是否涉及应用兼容性",
@@ -143,10 +193,10 @@ deck.table_slide("六、兼容性分析",
 变化、其他导致应用行为变化的因素**。若任一为「是」，必须在「兼容性方案」「应用适配方案
 和计划」两行给出实质内容，而非留空。
 
-## Page 7 — 风险评估 (fixed 2×8 checklist)
+## Page 8 — 风险评估 (fixed 2×8 checklist)
 
 ```python
-deck.table_slide("七、风险评估",
+deck.table_slide("八、风险评估",
     ["评估项", "结论 / 说明"],
     [
         ["对性能、功耗、RAM/ROM 是否有影响", "…"],
@@ -168,6 +218,7 @@ Each answer is a verdict (是/否/待评估) + one-line reason.
 ## Full worked example
 
 `examples/requirement_review_example.py` in this skill builds the complete deck
-(cover + 价值 + 设计 + 变更背景 + 影响性分析 + 兼容性 + 风险) as a **generic fill-in
-template** — every string is a `<placeholder>`. Copy it, replace the placeholders,
-keep the structure. It passes the overflow smoke test and every page fills the canvas.
+(cover + 价值 + 设计 + 变更背景 + 影响性分析 + 版本交付计划 + 兼容性 + 风险) as a
+**generic fill-in template** — every string is a `<placeholder>`. Copy it, replace the
+placeholders, keep the structure. It passes the overflow smoke test and every page
+fills the canvas.

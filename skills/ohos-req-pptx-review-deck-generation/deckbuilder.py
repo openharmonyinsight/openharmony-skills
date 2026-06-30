@@ -465,9 +465,15 @@ class Deck:
             for ci, val in enumerate(row):
                 tbl.cell(ri, ci).text = str(val)
         # Fonts follow the value/design page standard: header 15pt bold, body 13.5pt.
-        # Very dense tables shrink the body only (header stays 15pt) to avoid overflow.
+        # Dense tables shrink: many rows shrink the body; many columns (wide tables)
+        # shrink both header and body so 11-column plans still fit horizontally.
         body = 13.5 if nrow <= 9 else (12 if nrow <= 12 else 10.5)
-        self._style_table(tbl, 15, body, highlight_last=highlight_last)
+        header = 15
+        if ncol >= 9:
+            body = min(body, 9.0); header = min(header, 11.0)
+        elif ncol >= 7:
+            body = min(body, 10.5); header = min(header, 12.5)
+        self._style_table(tbl, header, body, highlight_last=highlight_last)
         body_h = int(self.BODY_BOTTOM - self.BODY_TOP)
         header_h = int(body_h * 0.9 / nrow)
         data_h = int((body_h - header_h) / (nrow - 1)) if nrow > 1 else body_h

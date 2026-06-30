@@ -12,7 +12,7 @@ skill: ohos-req-pptx-review-deck-generation
 
 cases:
   - id: ohos-req-pptx-001-template-structure
-    title: 需求文档 → 变更评审 deck 遵循固定 7 页模板
+    title: 需求文档 → 变更评审 deck 遵循固定 8 页模板
     prompt: prompts/req-review-from-doc.md
     fixtures: [fixtures/04-feature.md]
     expected: expected/req-review-from-doc.md
