@@ -1,0 +1,4 @@
+interface:
+  display_name: "ArkRuntime AOT Debugging"
+  short_description: "Debug OpenHarmony ArkRuntime AOT launch, PAOC, artifact, link, crash, and deopt issues."
+  default_prompt: "Diagnose this OpenHarmony ArkRuntime AOT issue: classify the failure type and stage, align the provided logs/code/disassembly evidence, identify likely root causes, propose the minimal fix direction, and list validation steps."
