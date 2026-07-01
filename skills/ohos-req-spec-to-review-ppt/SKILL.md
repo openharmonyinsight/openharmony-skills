@@ -1,12 +1,12 @@
 ---
-name: ohos-req-pptx-review-deck-generation
+name: ohos-req-spec-to-review-ppt
 description: Use when asked to generate, build, or create a PowerPoint / PPT / .pptx slide deck — especially polished multi-slide decks for requirement reviews, design reviews, or feature proposals, including ones with architecture/flow diagrams (boxes connected by arrows) and tables. Triggers on "生成PPT", "做个PPT", "make slides", "build a deck".
 metadata:
   author: openharmony
   scope: common
   stage: requirements
   domain: pptx
-  capability: review-deck-generation
+  capability: spec-to-review-ppt
   version: 0.1.0
   status: trial
   tags:
@@ -51,33 +51,32 @@ directory). Then write ONE script that imports it and calls slide methods in ord
 
 ### Visual style (built in — do not re-implement)
 
-The library renders a **light, understated theme** ("quiet ink + petrol"): titles
-are **near-black ink** (subdued, not a loud color), a single **muted petrol** accent
-carries each page's **conclusion** and primary path, structure is **soft neutral
-grey**, and **amber** is reserved for change points. Every choice below is automatic,
-you never set colors or coordinates:
+The library renders a **light theme with a red accent** ("red ink"): titles are
+**near-black ink** (subdued, not a loud color), a single **red** accent carries each
+page's **conclusion** and primary path, structure is **soft neutral grey**, **blue**
+is used for value-page body text and table headers, and **amber** is reserved for
+change points. Every choice below is automatic, you never set colors or coordinates:
 
 - **The conclusion is the highlight, not the title.** Each page's 32pt title is calm
   near-black ink (`primary`); the eye is drawn instead to the `takeaway` conclusion
-  line, rendered in muted petrol (`accent`) right under the title. The petrol accent
-  also draws the title underline, table header, and primary data-flow arrows.
+  line, rendered in **red** (`accent`) right under the title. The red accent also draws
+  the title underline and primary data-flow arrows.
   **Everything else — secondary arrows, grid, connector bars, box borders — is soft
   grey** (`grey`). **Do NOT give cards/sections different accent colors** — that
-  produces a rainbow ("不纯粹") deck. Leave `accent` unset (defaults to petrol).
+  produces a rainbow ("不纯粹") deck. Leave `accent` unset (defaults to red).
 - **Reserve hue changes for real meaning only:** `red` (a muted brick-red) for an
   actual risk/blocker; the built-in `★变更` change box (a light-amber fill with an
-  amber badge, drawn for you when you pass `"change": True`) — change points are the
-  one warm mark on an otherwise cool/neutral deck, so they pop. `green` (the logo
+  amber badge, drawn for you when you pass `"change": True`). `green` (the logo
   green) exists but is rarely needed — don't sprinkle colors to "add color".
-- **Cover & headers.** Cover has a thin petrol spine; each content page is a 32pt
-  Microsoft YaHei **ink** title on white with a thin petrol underline and the page
+- **Cover & headers.** Cover has a thin red spine; each content page is a 32pt
+  Microsoft YaHei **ink** title on white with a thin red underline and the page
   number top-right.
 - **OpenHarmony logo, bottom-left of every page** (cover included) — added
   automatically from `oh_logo.png`. If the file is missing it's silently skipped.
 - **Diagrams are real drawing boxes** — rounded rectangles joined by arrows.
-- **Tables** — **light-blue header** (`DEEBF7`) with black bold text, white body, and
+- **Tables** — **slate-blue header** (`C6D7EC`) with black bold text, white body, and
   **black solid grid lines**; fonts follow the value/design page standard (header
-  **15pt bold**, body **13.5pt**). Faint-petrol total row when `highlight_last=True`.
+  **15pt bold**, body **13.5pt**). Light-red total row when `highlight_last=True`.
   All drawn for you.
 
 ## The Only API You Need
@@ -105,7 +104,7 @@ deck.save("output.pptx")
 
 **Every page leads with its conclusion — `takeaway` is REQUIRED.** Pass
 `takeaway="结论：…"` (one short sentence) to every content slide — it renders as a bold
-petrol line with a petrol kicker right under the (subdued ink) title, so the
+red line with a red kicker right under the (subdued ink) title, so the
 reviewer's eye lands on the point before the detail.
 The title stays the topic label (`五、兼容性分析`); the `takeaway` carries the verdict
 (`不改变公开 API 行为，应用无需适配`). Write an assertion, not a restatement of the
@@ -115,7 +114,7 @@ without it raises `ValueError` and the deck will not save.** There is no way to 
 page without its 突出重点 — write the one-line verdict for every slide.
 
 Page numbers auto-increment (cover is excluded). Header band, accent colors, and
-spacing are automatic. **Colors are passed by name string** — `"accent"` (petrol)
+spacing are automatic. **Colors are passed by name string** — `"accent"` (red)
 and `"grey"` (soft grey) cover almost everything; `"red"` for a genuine risk;
 `"green"`, `"orange"`, `"primary"` exist but are rarely the right call. **Default to
 omitting `accent` (or using `"accent"`)** so the deck stays one coordinated family —
@@ -151,14 +150,14 @@ not a one-line verdict).
 ```python
 deck.value_slide(
     title="需求价值描述",
-    background=["…"],   # 段一「背景」    — body BLACK 13.5pt
+    background=["…"],   # 段一「背景」    — body BLUE 13.5pt
     features=["…"],     # 段二「特性及价值点」— body BLUE 13.5pt
     scope=["…"],        # 段三「需求收益（影响）范围」— body BLUE 13.5pt
     image="scene.png",  # 右侧场景图（可选，缺省显示占位卡）
 )
 ```
 
-- **段一「背景」** — 黑色正文。需求由来 / 现状问题。
+- **段一「背景」** — 蓝色正文。需求由来 / 现状问题。
 - **段二「特性及价值点」** — 蓝色正文。**明确需求价值所在**，参考：用户痛点、需求功能点、
   范围、用户场景、所带来的价值。toD 内容需明确**开发者适用范围**、明确**开发者完成后达成的
   结果**；能力提升需求不能脱离业务（除能力目标外，需能力提供后的**业务目标**、**能力开放范围**）；

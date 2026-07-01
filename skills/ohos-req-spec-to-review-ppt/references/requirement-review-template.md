@@ -40,7 +40,7 @@ restyle them. The change-review content lives entirely on pages 4–8.
 
 **0. Every field page leads with its conclusion — `takeaway` is REQUIRED.**
 Pages 4–8 each pass `takeaway="结论：…"` — one short verdict sentence rendered bold
-petrol under the (ink) title. The title stays the topic (`七、兼容性分析`); the
+red under the (ink) title. The title stays the topic (`七、兼容性分析`); the
 takeaway states the finding (`不改变公开 API 行为，应用无需适配`). Write an
 **assertion**, not a restatement of the title. A content page built without
 `takeaway` raises `ValueError` and the deck will not save.

@@ -1,4 +1,4 @@
-# Evaluation cases for ohos-req-pptx-review-deck-generation
+# Evaluation cases for ohos-req-spec-to-review-ppt
 #
 # Each case pairs an input prompt (prompts/) with the criteria a correct
 # response must satisfy (expected/). These are rubric-style checks, scored by
@@ -8,7 +8,7 @@
 # the deck, then verify every `must` item holds and no `must_not` item appears.
 
 version: 1
-skill: ohos-req-pptx-review-deck-generation
+skill: ohos-req-spec-to-review-ppt
 
 cases:
   - id: ohos-req-pptx-001-template-structure

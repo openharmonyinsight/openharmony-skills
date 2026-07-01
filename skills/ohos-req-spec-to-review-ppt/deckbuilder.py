@@ -28,13 +28,13 @@ from pptx.enum.shapes import MSO_SHAPE
 
 # --------------------------------------------------------------------------
 # palette — pass colors by NAME (string) anywhere a color is accepted
-# theme "quiet ink + petrol": near-black ink titles (素); ONE muted petrol
-#   accent carries the conclusion + structure highlight; soft grey for chrome;
-#   amber reserved for change points; muted brick-red for genuine risk only.
+# theme "red ink": near-black ink titles (素); ONE red accent carries the
+#   conclusion + structure highlight; soft grey for chrome; blue for value-page
+#   body text + table headers; amber reserved for change points.
 # --------------------------------------------------------------------------
 PALETTE = {
     "primary": RGBColor(0x23, 0x28, 0x2E),   # near-black ink — titles (subdued)
-    "accent":  RGBColor(0x33, 0x6E, 0x74),   # muted petrol — conclusion/underline/headers
+    "accent":  RGBColor(0xD8, 0x1E, 0x1E),   # red — conclusion/underline/headers/primary arrows
     "dark":    RGBColor(0x1A, 0x1D, 0x21),   # body text — soft black
     "ink":     RGBColor(0x23, 0x28, 0x2E),
     "grey":    RGBColor(0x8A, 0x90, 0x98),   # soft neutral grey (subtitles/structure)
@@ -43,21 +43,21 @@ PALETTE = {
     "green":   RGBColor(0x3A, 0x9A, 0x57),   # logo green
     "orange":  RGBColor(0xBE, 0x7A, 0x22),   # amber → change border/badge/title only
     "red":     RGBColor(0xB5, 0x40, 0x3A),   # muted brick-red → genuine risk only
-    "blue":    RGBColor(0x1F, 0x60, 0xC0),   # body-text blue (value/impact sections)
+    "blue":    RGBColor(0x2B, 0x5A, 0xA6),   # calm slate-blue (value body + table-header family)
 }
 # soft tint backgrounds keyed by accent name (kept very light, desaturated)
 _TINT = {
     "primary": RGBColor(0xEC, 0xED, 0xEF),
-    "accent":  RGBColor(0xE4, 0xED, 0xEE),   # light petrol (table total / accent cards)
+    "accent":  RGBColor(0xF8, 0xE0, 0xE0),   # light red (table total / accent cards)
     "green":   RGBColor(0xEA, 0xF3, 0xEC),
     "orange":  RGBColor(0xFA, 0xE9, 0xCF),   # light amber (change box fill)
     "red":     RGBColor(0xF4, 0xE6, 0xE5),
-    "grey":    RGBColor(0xEE, 0xEF, 0xF1),
+    "grey":    RGBColor(0xEF, 0xEE, 0xEC),   # warm neutral (coordinates under the red lead)
 }
-# neutral box fill / border for un-changed diagram nodes (cool, airy)
-_BOX_FILL = RGBColor(0xF7, 0xF8, 0xF9)
-_BOX_LINE = RGBColor(0xC8, 0xCD, 0xD2)
-_RULE     = RGBColor(0xE4, 0xE7, 0xEA)        # faint neutral separators
+# neutral box fill / border for un-changed diagram nodes (warm-leaning, airy)
+_BOX_FILL = RGBColor(0xF8, 0xF7, 0xF6)
+_BOX_LINE = RGBColor(0xCB, 0xC8, 0xC6)
+_RULE     = RGBColor(0xE8, 0xE5, 0xE3)        # faint warm separators
 
 
 def _color(c):
@@ -184,7 +184,7 @@ class Deck:
         self._rect(slide, x + Inches(2.4), Inches(1.175), self.W - x - Inches(2.4)
                    - Inches(0.5), Inches(0.025), _RULE)
         if takeaway:
-            # small petrol kicker square + bold petrol one-line conclusion —
+            # small red kicker square + bold red one-line conclusion —
             # the verdict is the page's highlight; ink title stays subdued above it
             self._rect(slide, x, Inches(1.335), Inches(0.09), Inches(0.09), "accent")
             tf = self._textbox(slide, x + Inches(0.17), Inches(1.235),
@@ -303,7 +303,7 @@ class Deck:
 
     def _style_table(self, table, header_size=15, body_size=13.5,
                      highlight_last=False):
-        HDR = RGBColor(0xDE, 0xEB, 0xF7)      # light blue header background
+        HDR = RGBColor(0xC6, 0xD7, 0xEC)      # light slate-blue header (same family as body blue)
         GRID = "000000"                        # black solid grid lines
         for cell in table.rows[0].cells:
             cell.fill.solid(); cell.fill.fore_color.rgb = HDR
@@ -331,7 +331,7 @@ class Deck:
     def cover(self, title, subtitle=None, meta_lines=None):
         """Light full-bleed title slide (not page-numbered)."""
         s = self._slide()
-        # white background with a left accent spine — same petrol language as
+        # white background with a left accent spine — same red accent language as
         # the interior pages (no heavy top band, keeps cover & body coordinated)
         self._rect(s, 0, 0, Inches(0.32), self.H, "accent")
         self._rect(s, 0, 0, self.W, Inches(0.05), "accent")
@@ -840,7 +840,7 @@ class Deck:
                     scope=None, image=None, takeaway=None):
         """需求价值描述页 — 左侧三段（背景 / 特性及价值点 / 需求收益（影响）范围），
         右侧贴场景图展示该特性的价值。
-        - background: 背景 正文（黑色 13.5pt）
+        - background: 背景 正文（蓝色 13.5pt）
         - features:   特性及价值点 正文（蓝色 13.5pt）—— 用户痛点 / 需求功能点 / 范围 /
                       用户场景 / 所带来的价值；toD 明确开发者适用范围与达成结果；
                       可量化目标（活跃数/好评率/留存）；产品范围（1+8+N）
@@ -849,7 +849,7 @@ class Deck:
         - image:      右侧场景图路径（可选）"""
         sections = [
             {"heading": "背景", "lines": background or [],
-             "head_color": "dark", "body_color": "dark"},
+             "head_color": "dark", "body_color": "blue"},
             {"heading": "特性及价值点", "lines": features or [],
              "head_color": "dark", "body_color": "blue"},
             {"heading": "需求收益（影响）范围", "lines": scope or [],

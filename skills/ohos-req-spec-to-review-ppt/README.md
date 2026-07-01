@@ -1,4 +1,4 @@
-# ohos-req-pptx-review-deck-generation
+# ohos-req-spec-to-review-ppt
 
 OpenHarmony 需求评审 PPT 生成 Skill。面向维护者的说明文档（Agent 加载入口是
 [`SKILL.md`](SKILL.md)）。
@@ -41,9 +41,9 @@ python3 examples/requirement_review_example.py   # 产出一份示例 deck
 
 | 字段 | 值 |
 | --- | --- |
-| `name` | `ohos-req-pptx-review-deck-generation` |
+| `name` | `ohos-req-spec-to-review-ppt` |
 | `scope` / `stage` | `common` / `requirements` |
-| `domain` / `capability` | `pptx` / `review-deck-generation` |
+| `domain` / `capability` | `pptx` / `spec-to-review-ppt` |
 | `status` | `trial` |
 
 命名与放置遵循 OpenHarmony Skills 命名空间与目录放置规范
@@ -53,5 +53,5 @@ python3 examples/requirement_review_example.py   # 产出一份示例 deck
 
 - 改样式只动 `deckbuilder.py`（`PALETTE` / `_style_table` / `_header` / `cover`），
   不要在调用脚本里手算坐标或传 `RGBColor`。
-- 配色为浅色素雅主题：标题用近黑墨色（克制），结论用一种柔和青绿（petrol）高亮；结构统一柔灰；`★变更` 框用浅琥珀色高亮，风险用柔砖红。
+- 配色为浅色主题 + 红色主色：标题用近黑墨色（克制），结论/标题下划线/主箭头用红色（accent）；结构统一柔灰；价值页正文与表格表头用蓝色；`★变更` 框用浅琥珀色高亮，风险用柔砖红。
 - 改动后必须跑 `evals/` 用例与 overflow 检查再提交。
