@@ -67,14 +67,9 @@ if [[ "$CHECK_ONLY" == true ]]; then
     # Extract PID from first line (BUILD_PID=<pid>)
     BUILD_PID=$(head -1 "$BUILD_LOG" 2>/dev/null | grep -oP '^BUILD_PID=\K\d+' || echo "")
 
-    # If PID exists, verify process is alive
-    if [[ -n "$BUILD_PID" ]]; then
-        if ! kill -0 "$BUILD_PID" 2>/dev/null; then
-            echo "killed"
-            exit 1
-        fi
-    fi
-
+    # Terminal markers take precedence over PID liveness — a wrapper-launched
+    # build that finished (success or failure) will always have a dead PID, so
+    # checking PID first would misreport those as "killed".
     if grep -q 'build  successful\|build success' "$BUILD_LOG" 2>/dev/null; then
         echo "completed"
         exit 1
@@ -83,6 +78,13 @@ if [[ "$CHECK_ONLY" == true ]]; then
         echo "failed"
         exit 1
     fi
+
+    # No terminal marker: PID-dead means the process was killed mid-build.
+    if [[ -n "$BUILD_PID" ]] && ! kill -0 "$BUILD_PID" 2>/dev/null; then
+        echo "killed"
+        exit 1
+    fi
+
     # If PID is alive, build is active (even if log temporarily not growing)
     if [[ -n "$BUILD_PID" ]] && kill -0 "$BUILD_PID" 2>/dev/null; then
         echo "active"
