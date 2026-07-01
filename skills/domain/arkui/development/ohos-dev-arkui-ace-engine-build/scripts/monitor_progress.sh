@@ -56,13 +56,20 @@ else
 fi
 
 # --check mode: test whether a build is active, then exit
-#   exit 0 = build active (log exists, growing, no completion marker)
-#   exit 1 = no active build (log missing, stale, or already finished)
+#   exit 0 = build active (log exists, growing, no completion marker, PID alive)
+#   exit 1 = no active build (log missing, stale, already finished, or PID dead)
 if [[ "$CHECK_ONLY" == true ]]; then
     if [[ ! -f "$BUILD_LOG" ]]; then
         echo "no_log"
         exit 1
     fi
+
+    # Extract PID from first line (BUILD_PID=<pid>)
+    BUILD_PID=$(head -1 "$BUILD_LOG" 2>/dev/null | grep -oP '^BUILD_PID=\K\d+' || echo "")
+
+    # Terminal markers take precedence over PID liveness — a wrapper-launched
+    # build that finished (success or failure) will always have a dead PID, so
+    # checking PID first would misreport those as "killed".
     if grep -q 'build  successful\|build success' "$BUILD_LOG" 2>/dev/null; then
         echo "completed"
         exit 1
@@ -71,6 +78,20 @@ if [[ "$CHECK_ONLY" == true ]]; then
         echo "failed"
         exit 1
     fi
+
+    # No terminal marker: PID-dead means the process was killed mid-build.
+    if [[ -n "$BUILD_PID" ]] && ! kill -0 "$BUILD_PID" 2>/dev/null; then
+        echo "killed"
+        exit 1
+    fi
+
+    # If PID is alive, build is active (even if log temporarily not growing)
+    if [[ -n "$BUILD_PID" ]] && kill -0 "$BUILD_PID" 2>/dev/null; then
+        echo "active"
+        exit 0
+    fi
+
+    # No PID recorded — fallback to log growth detection
     S1=$(stat -c '%s' "$BUILD_LOG" 2>/dev/null || stat -f '%z' "$BUILD_LOG" 2>/dev/null || echo 0)
     sleep 2
     S2=$(stat -c '%s' "$BUILD_LOG" 2>/dev/null || stat -f '%z' "$BUILD_LOG" 2>/dev/null || echo 0)
@@ -94,6 +115,12 @@ if [[ ! -f "$BUILD_LOG" ]]; then
     while [[ ! -f "$BUILD_LOG" ]]; do
         sleep 2
     done
+fi
+
+# Extract PID from first line (BUILD_PID=<pid>)
+BUILD_PID=$(head -1 "$BUILD_LOG" 2>/dev/null | grep -oP '^BUILD_PID=\K\d+' || echo "")
+if [[ -n "$BUILD_PID" ]]; then
+    echo -e "${CYAN}Build PID: ${BUILD_PID}${NC}"
 fi
 
 LAST_LINE=""
@@ -147,6 +174,29 @@ print_progress() {
 }
 
 check_done() {
+    # Check if build process is still alive (if PID was recorded)
+    if [[ -n "$BUILD_PID" ]]; then
+        if ! kill -0 "$BUILD_PID" 2>/dev/null; then
+            # Process is dead — check if build completed successfully or crashed
+            if grep -q 'build  successful\|build success' "$BUILD_LOG" 2>/dev/null; then
+                local COST=$(grep -oP 'Cost Time:\s*\K\S+' "$BUILD_LOG" 2>/dev/null || true)
+                printf "\r\033[K"
+                if [[ -n "$COST" ]]; then
+                    echo -e "${GREEN}=====build successful=====${NC} (${LAST_LINE}, cost ${COST})"
+                else
+                    echo -e "${GREEN}=====build successful=====${NC} (${LAST_LINE})"
+                fi
+                exit 0
+            else
+                printf "\r\033[K"
+                echo -e "${RED}=====build process killed=====${NC} (PID $BUILD_PID no longer exists)"
+                echo ""
+                grep -iE '(error:|FAILED:)' "$BUILD_LOG" 2>/dev/null | tail -20 || true
+                exit 1
+            fi
+        fi
+    fi
+
     # Success: log contains "build  successful" or "<product> build success"
     if grep -q 'build  successful\|build success' "$BUILD_LOG" 2>/dev/null; then
         local COST=$(grep -oP 'Cost Time:\s*\K\S+' "$BUILD_LOG" 2>/dev/null || true)

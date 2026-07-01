@@ -1,0 +1,82 @@
+schemaVersion: 1
+
+id: ohos-design-arkui-knowledgebase-generator
+title: ArkUI 知识库生成与迁移
+summary: 创建、更新、修复或迁移 ArkUI ace_engine 知识库文档及路由元数据，支持组件化状态判定和 API 解析路径生成。
+
+category:
+  scope: domain
+  namespace: arkui
+  stage: design
+  domain: arkui
+  capability: knowledgebase-generator
+
+status:
+  maturity: trial
+  version: 0.2.0
+  owner: openharmony
+
+tags:
+  - arkui
+  - ace-engine
+  - knowledge-base
+  - kb
+  - migration
+  - context-registry
+  - componentization
+
+audience:
+  - ArkUI ace_engine 框架开发者
+  - ArkUI 知识库维护者
+  - ArkUI 组件文档补齐人员
+
+useCases:
+  - title: 创建新组件知识库
+    description: 为 docs/kb/ 下尚无 KB 的组件或能力创建轻量级路由页，包含源码、API、测试、Spec 入口。
+  - title: 迁移旧知识库到新结构
+    description: 将 docs/pattern/、docs/common/、docs/layout/ 等旧 KB 迁移到 docs/kb/，更新 context_registry.json 并清理旧 INDEX。
+  - title: 修复路由元数据
+    description: 修复 context_registry.json 或 knowledge_base_INDEX.json 中的错误条目、缺失字段或过期路径。
+  - title: 生成 API 解析实现路径
+    description: 判定组件是否已完成组件化改造，列出 JSView/Bridge/node_modifier/C API 等解析实现路径。
+
+whenToUse:
+  - 用户要求创建、更新或迁移 ArkUI/ace_engine 知识库文档。
+  - 需要补齐 docs/kb/ 下组件或能力的 KB 页面。
+  - 需要修复 context_registry.json 或 knowledge_base_INDEX.json 路由错误。
+  - 需要判定组件组件化状态并生成 API 解析实现路径表。
+  - 用户提到知识库、KB、文档补齐、索引修复、context registry 等关键词。
+
+whenNotToUse:
+  - 需要修改产品源码、Spec 文件或生成文件。
+  - 需要创建 CLAUDE.md、AGENTS.md 或与知识库无关的 README。
+  - 构建、编译或运行测试相关需求。
+
+inputs:
+  required:
+    - 目标组件或能力名称。
+    - 操作类型：新建、更新、迁移或修复。
+  optional:
+    - 组件类型（公共组件、通用能力、架构/框架、API/SDK、ArkTS 语法）。
+    - 旧 KB 文件路径（迁移场景）。
+    - ace_engine 源码目录。
+
+outputs:
+  - docs/kb/ 下的轻量级知识库路由页。
+  - 更新后的 docs/context_registry.json 条目。
+  - 更新后的 docs/knowledge_base_INDEX.json（迁移时移除已迁移条目）。
+  - 验证结果（JSON 语法、validate_context.py、kb_search.py 搜索确认）。
+
+quickStart:
+  steps:
+    - 确认目标组件/能力名称和操作类型（新建、迁移、更新、修复）。
+    - Agent 运行 kb_search.py 判断目标是否已有 KB 以及所在位置。
+    - Agent 验证源码/API/测试路径后创建或更新 KB 页面和路由元数据。
+  examplePrompt: |
+    帮我把 Slider 组件的旧知识库迁移到 docs/kb/ 新结构，
+    并更新 context_registry.json。
+
+related:
+  skills:
+    - ohos-design-arkui-spec-generator
+  docs: []

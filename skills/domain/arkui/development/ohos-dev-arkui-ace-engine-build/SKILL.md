@@ -114,7 +114,9 @@ out/
 
 ## Build Execution
 
-**MUST** Launch the build fully detached from the current process group so it survives subagent cleanup. Before launching, check if a previous build is still running:
+**MUST use `build_wrapper.sh`** to launch builds — it handles PID tracking, detached execution, and log management automatically.
+
+Before launching, check if a previous build is still running:
 
 ```bash
 bash ${SKILL_BASE_DIR}/scripts/monitor_progress.sh --root <OH_ROOT> --product <PRODUCT> --check
@@ -122,29 +124,33 @@ bash ${SKILL_BASE_DIR}/scripts/monitor_progress.sh --root <OH_ROOT> --product <P
 
 If exit code is 0 (prints `active`), a build is in progress — wait for it or ask the user. If exit code is 1, safe to launch.
 
-Use `setsid` with console output redirected to `out/<product>/build_console.log`, `<product>` **MUST BE** the real output path following the #Environment special cases:
+Launch the build via wrapper:
 
 ```bash
-setsid ./build.sh <args> > out/<product>/build_console.log 2>&1 &
-echo "Build PID: $!"
+bash ${SKILL_BASE_DIR}/scripts/build_wrapper.sh --product <PRODUCT> -- <build.sh args>
 ```
 
-**MUST** output a progress monitoring tip to the user so they can watch in a separate terminal:
-
-```
-编译已启动。如需监听编译进度，在终端运行：
-bash ${SKILL_BASE_DIR}/scripts/monitor_progress.sh --root <OH_ROOT> --product <PRODUCT>
+Example:
+```bash
+bash ${SKILL_BASE_DIR}/scripts/build_wrapper.sh --product rk3568 -- --export-para PYCACHE_ENABLE:true --build-target ace_engine --ccache
 ```
 
-Replace `<OH_ROOT>` and `<PRODUCT>` with actual values.
+The wrapper:
+1. Auto-injects `--product-name` from `--product` if not already in build args
+2. Writes `BUILD_PID=<pid>` as the first line of `build_console.log` — PID is the real `build.sh` process (written from inside `setsid` via `exec`, not the `setsid` parent)
+3. Launches `build.sh` in a detached session (`setsid`) that survives subagent cleanup
+4. Outputs monitoring tip and log location
 
-After launching and monitoring tip, use `monitor_progress.sh` to watch `build_console.log` and wait for the build to complete:
+After launching, use `monitor_progress.sh` to watch the build:
 
 ```bash
 bash ${SKILL_BASE_DIR}/scripts/monitor_progress.sh --root <OH_ROOT> --product <PRODUCT>
 ```
 
 ## Scripts
+
+- **`${SKILL_BASE_DIR}/scripts/build_wrapper.sh`** `--product <name> -- [build.sh args...]` — Launch a detached build with PID tracking. Writes `BUILD_PID=<pid>` as the first line of `build_console.log`, auto-injects `--product-name` if not provided, and prints a monitoring tip.
+  **Use when**: always — all builds MUST go through this wrapper.
 
 - **`${SKILL_BASE_DIR}/scripts/check_fast_rebuild.sh`** `[--root <path>] [--product <name>] [minutes]` — Three-stage safety check before using `--fast-rebuild`:
   1. `git status` for uncommitted BUILD.gn/*.gni changes
@@ -155,7 +161,7 @@ bash ${SKILL_BASE_DIR}/scripts/monitor_progress.sh --root <OH_ROOT> --product <P
   **Use when**: Q1 is unresolved — user is unsure whether GN files changed.
   **Skip when**: user explicitly confirmed only .cpp/.ts/.ets changes, or Q1 already resolved.
 
-- **`${SKILL_BASE_DIR}/scripts/monitor_progress.sh`** `[--interval <seconds>] [--root <path>] [--product <name>] [--check]` — Monitor an ongoing build by tailing `build_console.log`. Prints `[current/total]` with progress bar every 1s (configurable via `--interval`). Auto-detects build completion or failure.
-  With `--check`: non-interactive probe — prints status (`active`/`completed`/`failed`/`stale`/`no_log`) and exits. Exit 0 = build active; exit 1 = no active build.
-  **Use when**: always after launching a build via setsid. Use `--check` before launching to detect a running build.
+- **`${SKILL_BASE_DIR}/scripts/monitor_progress.sh`** `[--interval <seconds>] [--root <path>] [--product <name>] [--check]` — Monitor an ongoing build by tailing `build_console.log`. Prints `[current/total]` with progress bar every 1s (configurable via `--interval`). Auto-detects build completion, failure, or process killed (via PID check).
+  With `--check`: non-interactive probe — prints status (`active`/`completed`/`failed`/`killed`/`stale`/`no_log`) and exits. Exit 0 = build active; exit 1 = no active build.
+  **Use when**: always after launching a build via `build_wrapper.sh`. Use `--check` before launching to detect a running build.
   **Skip when**: build is expected to complete in <30s (e.g., single small target with `--fast-rebuild`).
