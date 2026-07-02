@@ -102,7 +102,7 @@ cp {skill_root}/.oh-xts-config.example.json {skill_root}/.oh-xts-config.json
 | 平台 | 必须存在 | 建议存在 | 可选 |
 |------|---------|---------|------|
 | Windows | `xts_acts_path`、`interface_path` | `deveco_studio_path`、`hvigor_path_1.1` | `scan_tool_root`、`hvigor_path_1.2`、`docs_path` |
-| Linux/WSL | `OH_ROOT` | — | 其他所有路径（从 `OH_ROOT` 自动推导） |
+| Linux/WSL | `OH_ROOT` | `hvigor_path_1.1`（降级编译用） | `hvigor_path_1.2`、`scan_tool_root`、`docs_path` 等（从 `OH_ROOT` 自动推导） |
 
 3. 无效路径给出警告但不阻断流程（用户可能只需要用例生成，不需要编译验证）
 

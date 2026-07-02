@@ -82,8 +82,8 @@
   "sdk_local_path": "[wsl only] Linux local SDK path",
   "use_builtin_sdk": true,
   "deveco_studio_path": "[windows only]",
-  "hvigor_path_1.1": "[windows only]",
-  "hvigor_path_1.2": "[windows only]",
+  "hvigor_path_1.1": "[可选] 全平台。Linux/WSL默认从OH_ROOT推导",
+  "hvigor_path_1.2": "[可选] 全平台。Linux/WSL默认从OH_ROOT推导",
   "docs_path": "[auto-derived from OH_ROOT if not set]"
 }
 ```
@@ -101,8 +101,8 @@
 | **sdk_path** | 可选 | 全部 | 未设置时从 `OH_ROOT` 自动推导 |
 | **sdk_local_path** | 可选 | WSL | WSL 本地 SDK 路径（Linux 格式） |
 | **deveco_studio_path** | 可选 | Windows | 自动推导 Java 和 Node.js 路径 |
-| **hvigor_path_1.1** | 可选 | Windows | ArkTS-Dyn 构建工具路径 |
-| **hvigor_path_1.2** | 可选 | Windows | ArkTS-Sta 构建工具路径 |
+| **hvigor_path_1.1** | 可选 | 全部 | ArkTS-Dyn 构建工具路径。Windows: `{deveco_studio_path}\tools\hvigor\bin`；Linux/WSL: `{OH_ROOT}/prebuilts/tool/command-line-tools/6.x/hvigor/bin/hvigorw` |
+| **hvigor_path_1.2** | 可选 | 全部 | ArkTS-Sta 构建工具路径。Windows: 静态版 hvigor\bin；Linux/WSL: `{OH_ROOT}/prebuilts-sta/command-line-tools/hvigor/bin/hvigorw` |
 
 ### 路径自动推导规则
 
@@ -124,12 +124,21 @@
 
 ### hvigor 版本化配置
 
-hvigor 是 DevEco Studio 的构建工具，ArkTS-Dyn 和 ArkTS-Sta 使用不同版本：
+hvigor 是构建工具，ArkTS-Dyn 和 ArkTS-Sta 使用不同版本：
 - `hvigor_path_1.1`：ArkTS-Dyn 动态语法编译
 - `hvigor_path_1.2`：ArkTS-Sta 静态语法编译
-- 两者包含相同可执行文件：`hvigorw.bat` (Windows) / `hvigorw.sh` (Linux)
+- 可执行文件：`hvigorw.bat` (Windows) / `hvigorw` (Linux/WSL)
 
-查找路径：DevEco Studio → `File` → `Settings` → `Build Tools` → 查看 Hvigor Path。
+**路径查找方式**：
+
+| 平台 | ArkTS-Dyn (1.1) | ArkTS-Sta (1.2) |
+|------|-----------------|-----------------|
+| **Windows** | `{deveco_studio_path}\tools\hvigor\bin` | 静态版 hvigor\bin |
+| **Linux/WSL** | `{OH_ROOT}/prebuilts/tool/command-line-tools/6.x/hvigor/bin/hvigorw` | `{OH_ROOT}/prebuilts-sta/command-line-tools/hvigor/bin/hvigorw` |
+
+Windows 查找路径：DevEco Studio → `File` → `Settings` → `Build Tools` → 查看 Hvigor Path。
+
+Linux/WSL 未配置 `hvigor_path` 时，优先使用 `build.sh` 编译；`build.sh` 失败时自动降级使用上述默认路径的 hvigor 工具。
 
 ### 平台配置示例
 
@@ -157,6 +166,8 @@ hvigor 是 DevEco Studio 的构建工具，ArkTS-Dyn 和 ArkTS-Sta 使用不同�
   "scan_tool_root": "/home/user/APICoverageDetector",
   "skill_root": "/home/user/.opencode/skills/ohos-test-arkts-xts-generation",
   "ets_version": ["ets1.1"],
+  "hvigor_path_1.1": "/home/user/openharmony/prebuilts/tool/command-line-tools/6.x/hvigor/bin/hvigorw",
+  "hvigor_path_1.2": "/home/user/openharmony/prebuilts-sta/command-line-tools/hvigor/bin/hvigorw",
   "use_builtin_sdk": true
 }
 ```
@@ -169,6 +180,8 @@ hvigor 是 DevEco Studio 的构建工具，ArkTS-Dyn 和 ArkTS-Sta 使用不同�
   "scan_tool_root": "/mnt/d/APICoverageDetector",
   "skill_root": "/home/chen/.opencode/skills/ohos-test-arkts-xts-generation",
   "ets_version": ["ets1.1"],
+  "hvigor_path_1.1": "/home/chen/ohos/prebuilts/tool/command-line-tools/6.x/hvigor/bin/hvigorw",
+  "hvigor_path_1.2": "/home/chen/ohos/prebuilts-sta/command-line-tools/hvigor/bin/hvigorw",
   "sdk_local_path": "/home/chen/.sdk/ets",
   "use_builtin_sdk": true
 }

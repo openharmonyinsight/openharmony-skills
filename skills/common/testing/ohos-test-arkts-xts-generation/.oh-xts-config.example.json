@@ -10,7 +10,7 @@
   "sdk_local_path": "[可选][wsl专用] 供覆盖率扫描工具使用。默认从 OH_ROOT 推导: {OH_ROOT}/prebuilts/ohos-sdk/linux/{ver}/ets",
   "use_builtin_sdk": true, // [可选][wsl专用] 是否使用 APICoverageDetector 内置 SDK。默认 true。内置 SDK 版本位于 {scan_tool_root}/sdk/openharmony/ets。如果内置 SDK 版本不匹配或缺失，才使用 sdk_local_path 指定的 SDK 版本",
   "deveco_studio_path": "[可选][windows] DevEco Studio 安装目录",
-  "hvigor_path_1.1": "[可选][windows] ArkTS-Dyn 编译工具路径。未填且无 deveco_studio_path 时跳过编译验证",
-  "hvigor_path_1.2": "[可选][windows] ArkTS-Sta 编译工具路径。仅当 ets_version 包含 ets1.2 时需要",
+  "hvigor_path_1.1": "[可选] ArkTS-Dyn 编译工具路径。Windows: DevEco Studio 下的 hvigor\\bin；Linux/WSL: {OH_ROOT}/prebuilts/tool/command-line-tools/6.x/hvigor/bin/hvigorw。未填时跳过 hvigor 降级编译验证",
+  "hvigor_path_1.2": "[可选] ArkTS-Sta 编译工具路径。仅当 ets_version 包含 ets1.2 时需要。Windows: 静态版 hvigor\\bin；Linux/WSL: {OH_ROOT}/prebuilts-sta/command-line-tools/hvigor/bin/hvigorw",
   "docs_path": "[可选] OpenHarmony 文档目录。提供后 Phase 3 可查阅官方 API 文档补充知识库。WSL/Linux默认从 OH_ROOT 推导: {OH_ROOT}/docs"
 }

@@ -247,6 +247,15 @@
 - 说明：已修复编译错误，请重新编译
 ```
 
+**场景 15b：编译并修改编译问题至多尝试5轮**
+
+```
+请编译验证以下 XTS 测试套，编译失败时自动分析错误并修复，至多尝试 5 轮。
+- 子系统：ArkUI开发框架
+- 测试目录：test/xts/acts/arkui/ace_ets_text/
+- 最大重试次数：5
+```
+
 ### 扫描类场景
 
 **场景 16：仅扫描覆盖率（不生成用例）**
@@ -448,13 +457,15 @@ Demo + UiTest 同 HAP 编译
 | `references/conventions/ets_version_naming.md` | ETS 版本命名（影响目录名/bundleName/hap_name） |
 | `references/subsystems/{Subsystem}/_common.md` | 子系统特有规则 |
 
-### Phase 6：注册测试
+### Phase 6：注册测试 + Demo
 
-在 List.test.ets 中注册新测试文件：
+在 List.test.ets 中注册新测试文件，同时注册 Demo 应用（UI 类用例场景）：
 
 ```bash
 python {skill_root}/scripts/register_test.py
 ```
+
+**Demo 注册**：当测试用例包含 UI 类场景时，Phase 5A 生成的 Demo 应用需要在 List.test.ets 中注册，确保 Demo + UiTest 同 HAP 编译。
 
 ### Phase 7：格式验证（**强制**，不可跳过）
 

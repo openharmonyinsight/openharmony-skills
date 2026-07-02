@@ -143,12 +143,32 @@ group 名称来源于子系统 BUILD.gn 中的 `group("子系统名")` 定义。
 
 当 `build.sh` 因编译环境问题（如 SDK 版本不匹配、构建工具异常、缓存污染等）导致编译失败，且无法通过常规清理解决时，可降级使用 hvigor 直接编译以定位问题。
 
-**hvigor 路径**（有 OH 源码时）：
+**hvigor 路径选择**（优先级从高到低）：
 
-| 测试套类型 | hvigor 路径 | 版本 |
-|-----------|------------|------|
+1. **配置文件**：从 `.oh-xts-config.json` 读取 `hvigor_path_1.1`（动态）或 `hvigor_path_1.2`（静态）
+2. **默认路径**：如果配置文件未填写，则尝试以下默认路径：
+
+| 测试套类型 | 默认 hvigor 路径 | 版本 |
+|-----------|-----------------|------|
 | 动态（ArkTS-Dyn） | `{OH_ROOT}/prebuilts/tool/command-line-tools/6.x/hvigor/bin/hvigorw` | 6.20.0 |
 | 静态（ArkTS-Sta） | `{OH_ROOT}/prebuilts-sta/command-line-tools/hvigor/bin/hvigorw` | 6.0.0-arkts1.2-ohosTest-* |
+
+**路径检查逻辑**：
+```bash
+# 读取配置（示例）
+HVIGOR_PATH=$(jq -r '.hvigor_path_1.1 // empty' {skill_root}/.oh-xts-config.json)
+
+# 如果配置为空，使用默认路径
+if [ -z "$HVIGOR_PATH" ]; then
+    HVIGOR_PATH="{OH_ROOT}/prebuilts/tool/command-line-tools/6.x/hvigor/bin/hvigorw"
+fi
+
+# 验证路径存在
+if [ ! -f "$HVIGOR_PATH" ]; then
+    echo "❌ hvigor 工具不存在：$HVIGOR_PATH"
+    exit 1
+fi
+```
 
 **动态测试套编译命令**：
 ```bash
