@@ -65,57 +65,7 @@ node --version
 
 ### 10.3 静态编译流程
 
-#### 10.3.1 方法1：使用 PowerShell 脚本（推荐）
-
-创建 `build_arkts_static.ps1`：
-
-```powershell
-# ============================================
-# ArkTS 静态 XTS 编译脚本
-# ============================================
-
-# 1. 设置 Java 环境
-Write-Host "[1/4] 配置 Java 环境..." -ForegroundColor Yellow
-$env:JAVA_HOME = "{deveco_studio_path}\jbr"
-$env:PATH = "$env:JAVA_HOME\bin;" + $env:PATH
-
-# 2. 设置 Node.js 路径
-Write-Host "[2/4] 配置 Node.js 环境..." -ForegroundColor Yellow
-$env:PATH = "{deveco_studio_path}\tools\node;" + $env:PATH
-
-# 3. 执行静态编译
-Write-Host "[3/4] 开始 ArkTS 静态编译..." -ForegroundColor Yellow
-& "{deveco_studio_path}\tools\node\node.exe" "{hvigor_path}\hvigorw.js" `
-  assembleHap `
-  --mode module `
-  -p module=entry `
-  -p product=default `
-  --analyze=normal `
-  --parallel `
-  --incremental `
-  --no-daemon
-
-# 4. 检查编译结果
-Write-Host "[4/4] 检查编译产物..." -ForegroundColor Yellow
-$TestHapPath = "entry\build\default\outputs\default\entry-default-signed.hap"
-if (Test-Path $TestHapPath) {
-    $FileSize = (Get-Item $TestHapPath).Length / 1KB
-    Write-Host "✓ 静态编译成功: $TestHapPath ($FileSize KB)" -ForegroundColor Green
-} else {
-    Write-Host "✗ 编译失败，未找到 Test HAP" -ForegroundColor Red
-    exit 1
-}
-```
-
-**使用方法**：
-
-```powershell
-# 在项目目录下执行
-$policy = "Bypass"
-powershell -ExecutionPolicy $policy -File build_arkts_static.ps1
-```
-
-#### 10.3.2 方法2：直接使用 hvigorw 命令
+#### 10.3.1 直接使用 hvigorw 命令
 
 ```powershell
 # 进入项目目录，设置 JAVA_HOME（同 10.2.2），然后执行
