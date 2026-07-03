@@ -237,8 +237,8 @@ grep 'result="false"' ~/.xdevice/latest/summary_report.xml | \
 
 ```bash
 SUITE_DIR=/mnt/d/acts_suite/acts
-rm -rf "${SUITE_DIR:?}"
-cp -r {OH_ROOT}/out/rk3568/suites/acts/acts/ "$SUITE_DIR"
+mkdir -p "$SUITE_DIR"
+rsync -a --delete-before {OH_ROOT}/out/rk3568/suites/acts/acts/ "$SUITE_DIR"
 ```
 
 #### 步骤 2：通过 PowerShell 执行测试
