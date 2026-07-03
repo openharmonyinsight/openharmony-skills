@@ -111,7 +111,8 @@ if (Test-Path $TestHapPath) {
 
 ```powershell
 # 在项目目录下执行
-powershell -ExecutionPolicy Bypass -File build_arkts_static.ps1
+$policy = "Bypass"
+powershell -ExecutionPolicy $policy -File build_arkts_static.ps1
 ```
 
 #### 10.3.2 方法2：直接使用 hvigorw 命令

@@ -236,8 +236,9 @@ grep 'result="false"' ~/.xdevice/latest/summary_report.xml | \
 #### 步骤 1：同步 acts 套件到 Windows 盘
 
 ```bash
-rm -rf /mnt/d/acts_suite/acts/
-cp -r {OH_ROOT}/out/rk3568/suites/acts/acts/ /mnt/d/acts_suite/acts/
+SUITE_DIR=/mnt/d/acts_suite/acts
+rm -rf "${SUITE_DIR:?}"
+cp -r {OH_ROOT}/out/rk3568/suites/acts/acts/ "$SUITE_DIR"
 ```
 
 #### 步骤 2：通过 PowerShell 执行测试
