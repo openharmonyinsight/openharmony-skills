@@ -1,0 +1,12 @@
+{
+  "app": {
+    "products": [
+      {
+        "name": "default",
+        "compatibleSdkVersion": "6.0.0(22)",
+        "targetSdkVersion": "6.0.0(22)",
+        "runtimeOS": "HarmonyOS"
+      }
+    ]
+  }
+}
