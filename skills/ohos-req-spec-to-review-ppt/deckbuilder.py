@@ -20,6 +20,7 @@ Public API is unchanged from the original deckbuilder:
 """
 
 import os
+import warnings
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
@@ -69,6 +70,40 @@ def _color(c):
 
 def _tint(name):
     return _TINT.get(str(name).lower(), PALETTE["light"])
+
+
+def _num(v):
+    """Parse the leading number out of a value like '1200 行' / '2.5 人月'.
+    Returns 0.0 when nothing numeric is present (so 合计 stays honest)."""
+    if v is None:
+        return 0.0
+    if isinstance(v, (int, float)):
+        return float(v)
+    import re
+    m = re.search(r"-?\d+(?:\.\d+)?", str(v))
+    return float(m.group()) if m else 0.0
+
+
+# Titles that MUST use the dedicated two-column builders, never the generic
+# card/bar grid. A weak model tends to reach for content_slide (four boxes) for
+# these — we warn (not fail) so the mistake is visible without breaking other use.
+_TWO_COL_TITLES = ("需求价值描述", "需求设计方案")
+
+
+def _warn_wrong_builder(title, used, suggested):
+    t = str(title or "")
+    for key in _TWO_COL_TITLES:
+        if key in t:
+            warnings.warn(
+                "deckbuilder: 页面 '%s' 用了 %s()，但需求评审的『%s』页应改用 "
+                "%s()（左文右图两栏；设计页右侧传 diagram= 画框图）。"
+                "最省心的做法是整套评审直接调 Deck.requirement_review_deck(spec)，"
+                "由代码固定 8 页结构与每页 builder。"
+                % (t, used, key, suggested),
+                stacklevel=3)
+            break
+
+
 
 
 class Deck:
@@ -230,6 +265,61 @@ class Deck:
         units = sum(1.0 if ord(c) > 0x2E80 else 0.55 for c in text)
         return units * pt / 72.0
 
+    @staticmethod
+    def _text_units(text):
+        """Approx glyph-width units for a line (CJK=1.0, latin/space=0.55)."""
+        return sum(1.0 if ord(c) > 0x2E80 else 0.55 for c in str(text))
+
+    @classmethod
+    def _fit_box_fonts(cls, title, lines, inner_w_in, inner_h_in,
+                       title_pt, sub_pt, min_title=8.0, min_sub=7.0):
+        """Shrink a box's title+body fonts so the WRAPPED text fits inside
+        (inner_w_in × inner_h_in). Estimates wrapped-row count at each size and
+        scales down until the stacked height fits or the floor is hit. This is
+        what keeps long node text from spilling out of a diagram box."""
+        if inner_w_in <= 0 or inner_h_in <= 0:
+            return title_pt, sub_pt
+        lines = [str(l) for l in (lines or [])]
+
+        def rows_at(t_pt, s_pt):
+            # chars-per-row is width-driven; a row holds inner_w worth of units
+            def rows(text, pt):
+                if not text:
+                    return 1
+                cap = max(1.0, inner_w_in * 72.0 / pt)      # units per row
+                import math
+                return max(1, math.ceil(cls._text_units(text) / cap))
+            total = rows(title, t_pt)
+            for ln in lines:
+                total_rows_ln = rows(ln, s_pt)
+                total += total_rows_ln
+            return total
+
+        def height_at(t_pt, s_pt):
+            # first row uses title line-height, remaining rows use body height
+            r_title = 1  # title occupies at least one row of title height
+            def rows(text, pt):
+                if not text:
+                    return 1
+                cap = max(1.0, inner_w_in * 72.0 / pt)
+                import math
+                return max(1, math.ceil(cls._text_units(text) / cap))
+            h = rows(title, t_pt) * t_pt * 1.32 / 72.0
+            for ln in lines:
+                h += rows(ln, s_pt) * s_pt * 1.28 / 72.0
+            return h
+
+        t_pt, s_pt = float(title_pt), float(sub_pt)
+        # up to ~14 shrink steps of 7% each
+        for _ in range(14):
+            if height_at(t_pt, s_pt) <= inner_h_in:
+                break
+            if t_pt <= min_title and s_pt <= min_sub:
+                break
+            t_pt = max(min_title, t_pt * 0.93)
+            s_pt = max(min_sub, s_pt * 0.93)
+        return t_pt, s_pt
+
     @classmethod
     def _measure_boxes(cls, nodes, title_pt=12.5, sub_pt=10.5,
                        pad_w=0.28, pad_h=0.24):
@@ -246,14 +336,16 @@ class Deck:
             max_w = max(max_w, tw)
             max_lines = max(max_lines, 1 + len(lines))
         box_w = max_w + pad_w
-        lh_title = title_pt * 1.4 / 72.0
+        lh_title = title_pt * 1.45 / 72.0
         lh_sub = sub_pt * 1.4 / 72.0
         box_h = lh_title + lh_sub * max(0, max_lines - 1) + pad_h
         return (box_w, box_h, title_pt, sub_pt)
 
     def _flowbox(self, slide, l, t, w, h, title, lines, change=False,
                  title_pt=12.5, sub_pt=10.5):
-        """A real drawing box (rounded rectangle) for system diagrams."""
+        """A real drawing box (rounded rectangle) for system diagrams.
+        Title AND sub-lines auto-shrink together so wrapped text stays inside
+        the box (no more text spilling past the border on verbose content)."""
         border = "orange" if change else _BOX_LINE
         fill = _tint("orange") if change else _BOX_FILL
         sp = self._rect(slide, l, t, w, h, fill, line=border,
@@ -261,16 +353,19 @@ class Deck:
                         shape=MSO_SHAPE.ROUNDED_RECTANGLE)
         tf = self._textbox(slide, l + Inches(0.08), t + Inches(0.08),
                            w - Inches(0.16), h - Inches(0.14), MSO_ANCHOR.MIDDLE)
+        inner_w = (w - Inches(0.16)) / 914400.0           # box inner width (in)
+        inner_h = (h - Inches(0.14)) / 914400.0           # box inner height (in)
+        # shrink title+body together to fit the wrapped text into the box
+        tsize, ssize = self._fit_box_fonts(title, lines, inner_w, inner_h,
+                                           title_pt, sub_pt)
         p = tf.paragraphs[0]; p.alignment = PP_ALIGN.CENTER
         r = p.add_run(); r.text = title
-        inner_w = (w - Inches(0.16)) / 914400.0           # box inner width (in)
-        tsize = self._fit_size(title, title_pt, inner_w)   # shrink long titles
         self._run(r, tsize, _color("orange") if change else "dark",
                   bold=True)
         for sub in lines:
             pp = tf.add_paragraph(); pp.alignment = PP_ALIGN.CENTER
-            pp.space_before = Pt(2)
-            r = pp.add_run(); r.text = str(sub); self._run(r, sub_pt, "dark")
+            pp.space_before = Pt(1)
+            r = pp.add_run(); r.text = str(sub); self._run(r, ssize, "dark")
         if change:
             bw, bh = Inches(0.52), Inches(0.23)
             bx = l + w - bw - Inches(0.04)
@@ -358,6 +453,7 @@ class Deck:
 
     def content_slide(self, title, cards, subtitle=None, takeaway=None):
         """Auto-grid of 1–6 cards. Each card: {title, bullets, accent}."""
+        _warn_wrong_builder(title, "content_slide", "value_slide / design_slide")
         s = self._slide()
         self._header(s, title, subtitle, takeaway)
         n = len(cards)
@@ -385,6 +481,7 @@ class Deck:
         label column with a colored accent stripe; points fill the right column.
         Use this instead of content_slide when the brief wants sections shown
         as stacked horizontal frames rather than a card grid."""
+        _warn_wrong_builder(title, "banded_slide", "value_slide / design_slide")
         s = self._slide()
         self._header(s, title, subtitle, takeaway)
         n = len(sections)
@@ -888,6 +985,226 @@ class Deck:
             diagram=diagram, diagram_caption=diagram_caption,
             image_placeholder=["架构图 / 补充示意",
                                "在此粘贴架构图补充展示"])
+
+    # ------------------------------------------------------------------
+    # ONE-STOP requirement-CHANGE-review deck (8 fixed pages).
+    # A weaker model only fills a plain dict; this code owns page order,
+    # which builder each page uses, the fixed 5-row 影响 / 8-row 风险 /
+    # 11-col 交付 structure, and auto-fills 待评估 / TBD for missing fields.
+    # This removes the #1 failure of "model picks the wrong builder".
+    # ------------------------------------------------------------------
+    _TBD = "待评估 / TBD"
+
+    def _rr_lines(self, v):
+        """Normalize a section value to a clean list[str], dropping empties."""
+        if v is None:
+            return []
+        if isinstance(v, str):
+            v = [v]
+        return [str(x) for x in v if str(x).strip()]
+
+    def _rr_cell(self, v):
+        """A table cell string; blank/None → 待评估 / TBD (never fabricate)."""
+        if v is None:
+            return self._TBD
+        s = str(v).strip()
+        return s if s else self._TBD
+
+    def requirement_review_deck(self, spec):
+        """Build the full 8-page OpenHarmony 需求变更评审 deck from ONE dict.
+
+        The page order, the builder used per page, and the fixed table
+        structures (page 5 = 5 影响对象 rows, page 6 = 11-column plan, page 8 =
+        8-row 风险 checklist) are all enforced HERE in code — the caller only
+        supplies content and never chooses a builder or a layout. Every field is
+        optional; anything missing renders as 待评估 / TBD rather than fabricated.
+
+        spec = {
+          # 1 封面
+          "title": "<特性/需求名称> 需求变更评审",
+          "subtitle": "<一句话副标题>",
+          "meta_lines": ["<子系统/SIG>", "需求变更评审稿  2026-06-29"],
+          # 2 需求价值描述 (value_slide, 左文右图)
+          "value": {
+              "background": [...], "features": [...], "scope": [...],
+              "image": None,                 # 右侧场景图路径 (可选)
+              "takeaway": None,              # 可选
+          },
+          # 3 需求设计方案 (design_slide, 左文右图 + 右侧框图). Pass a list to
+          #   emit multiple 设计方案 pages (each dict = one page).
+          "design": {
+              "takeaway": "结论：…",
+              "design": [...], "changes": [...], "extra": [ {...} ],
+              "diagram": [ {"label","nodes":[{"title","lines","change"}]} ],
+              "diagram_caption": [...], "image": None,
+          },
+          # 4 需求变更背景
+          "background": {
+              "takeaway": "结论：…",
+              "requirement": "<原始需求/编号、特性概述与影响、使用场景>",
+              "decision": "<原始被接纳时的 SIG 决策纪要>",
+          },
+          # 5 需求变更影响性分析 — 5 影响对象顺序固定, 只填每行分析文字
+          "impact": {
+              "takeaway": "结论：…",
+              "north": "<北向应用开发者影响>",
+              "south": "<南向开发者影响>",
+              "distributed": "<分布式设备影响>",
+              "system": "<系统开发者/跨子系统依赖影响>",
+              "user": "<设备使用者 性能/功耗/功能/体验 影响>",
+          },
+          # 6 版本交付计划 — 11 列固定. items = 子需求列表, 一行一个; 自动加合计行
+          "delivery": {
+              "takeaway": "结论：…",
+              "items": [
+                {"domain","type","content","version","designer","loc",
+                 "api","effort","pm","pipeline","reviewed"}, ...
+              ],
+          },
+          # 7 兼容性分析
+          "compatibility": {
+              "takeaway": "结论：…",
+              "involved": "<是否涉及应用兼容性>",
+              "includes": "<机制/权限/API行为/其它 四类判定>",
+              "plan": "<兼容性方案>",
+              "adaptation": "<应用适配方案和计划>",
+          },
+          # 8 风险评估 — 8 行 checklist 固定, 只填每行结论
+          "risk": {
+              "takeaway": "结论：…",
+              "perf": "...", "deps": "...", "security": "...", "legal": "...",
+              "commitment": "...", "opensource": "...", "ai": "...",
+              "privacy": "...",
+          },
+        }
+        """
+        spec = spec or {}
+        C, T = self._rr_cell, self._TBD
+
+        # 1 封面 --------------------------------------------------------
+        self.cover(
+            spec.get("title", "需求变更评审"),
+            subtitle=spec.get("subtitle"),
+            meta_lines=spec.get("meta_lines"),
+        )
+
+        # 2 需求价值描述 — value_slide (左文右图) -----------------------
+        val = spec.get("value") or {}
+        self.value_slide(
+            title=val.get("title", "需求价值描述"),
+            background=self._rr_lines(val.get("background")),
+            features=self._rr_lines(val.get("features")),
+            scope=self._rr_lines(val.get("scope")),
+            image=val.get("image"),
+            takeaway=val.get("takeaway"),
+        )
+
+        # 3 需求设计方案 — design_slide (可多页) ------------------------
+        designs = spec.get("design") or {}
+        if isinstance(designs, dict):
+            designs = [designs]
+        if not designs:
+            designs = [{}]
+        for dz in designs:
+            self.design_slide(
+                title=dz.get("title", "需求设计方案"),
+                design=self._rr_lines(dz.get("design")),
+                changes=self._rr_lines(dz.get("changes")),
+                extra=dz.get("extra"),
+                image=dz.get("image"),
+                diagram=dz.get("diagram"),
+                diagram_caption=dz.get("diagram_caption"),
+                takeaway=dz.get("takeaway"),
+            )
+
+        # 4 需求变更背景 — table_slide ---------------------------------
+        bg = spec.get("background") or {}
+        self.table_slide(
+            "四、需求变更背景",
+            ["分项", "说明"],
+            [
+                ["需裁剪/变更的需求说明\n（重点说明 2C/2D 详细价值及产生影响）",
+                 C(bg.get("requirement"))],
+                ["原始被接纳时的决策纪要", C(bg.get("decision"))],
+            ],
+            takeaway=bg.get("takeaway") or "结论：" + T,
+            col_widths=[2.6, 7])
+
+        # 5 需求变更影响性分析 — 固定 5 行 -----------------------------
+        im = spec.get("impact") or {}
+        self.table_slide(
+            "五、需求变更影响性分析",
+            ["影响对象", "影响分析"],
+            [
+                ["北向应用开发者", C(im.get("north"))],
+                ["南向开发者", C(im.get("south"))],
+                ["分布式设备", C(im.get("distributed"))],
+                ["系统开发者\n（跨子系统/部件依赖）", C(im.get("system"))],
+                ["设备使用者\n（性能/功耗/功能/体验）", C(im.get("user"))],
+            ],
+            takeaway=im.get("takeaway") or "结论：" + T,
+            col_widths=[2.4, 7])
+
+        # 6 版本交付计划 — 固定 11 列, 子需求逐行 + 合计行 --------------
+        dl = spec.get("delivery") or {}
+        items = dl.get("items") or []
+        headers = ["承接领域", "承接类型", "主要需求内容", "落地版本", "设计者",
+                   "代码行数", "是否涉及API", "端到端工作量", "领域PM",
+                   "管道是否满足", "工作量是否由领域PM审核OK"]
+        keys = ["domain", "type", "content", "version", "designer", "loc",
+                "api", "effort", "pm", "pipeline", "reviewed"]
+        rows = []
+        sum_loc = 0.0
+        sum_eff = 0.0
+        for it in items:
+            it = it or {}
+            rows.append([C(it.get(k)) for k in keys])
+            sum_loc += _num(it.get("loc"))
+            sum_eff += _num(it.get("effort"))
+        if not rows:                               # never an empty plan table
+            rows.append([C(None) for _ in keys])
+        total_loc = ("%g" % sum_loc) if sum_loc else "—"
+        total_eff = ("%g" % sum_eff) if sum_eff else "—"
+        rows.append(["合计（估算）", "—", "—", "—", "—", total_loc, "—",
+                     total_eff, "—", "—", "—"])
+        self.table_slide(
+            "六、版本交付计划", headers, rows,
+            takeaway=dl.get("takeaway") or "结论：" + T,
+            col_widths=[1.4, 0.9, 2.6, 1.2, 0.9, 1.0, 1.3, 1.3, 0.9, 1.0, 1.4],
+            highlight_last=True)
+
+        # 7 兼容性分析 — table_slide -----------------------------------
+        cp = spec.get("compatibility") or {}
+        self.table_slide(
+            "七、兼容性分析",
+            ["分项", "内容"],
+            [
+                ["是否涉及应用兼容性", C(cp.get("involved"))],
+                ["兼容性包括", C(cp.get("includes"))],
+                ["兼容性方案", C(cp.get("plan"))],
+                ["应用适配方案和计划", C(cp.get("adaptation"))],
+            ],
+            takeaway=cp.get("takeaway") or "结论：" + T,
+            col_widths=[2.2, 7])
+
+        # 8 风险评估 — 固定 2×8 checklist ------------------------------
+        rk = spec.get("risk") or {}
+        self.table_slide(
+            "八、风险评估",
+            ["评估项", "结论 / 说明"],
+            [
+                ["对性能、功耗、RAM/ROM 是否有影响", C(rk.get("perf"))],
+                ["是否存在其他依赖关系？", C(rk.get("deps"))],
+                ["是否有安全风险", C(rk.get("security"))],
+                ["是否涉及合法 / 合规问题？", C(rk.get("legal"))],
+                ["是否涉及外部承诺？", C(rk.get("commitment"))],
+                ["是否开源", C(rk.get("opensource"))],
+                ["是否涉及 AI", C(rk.get("ai"))],
+                ["隐私风险特性识别", C(rk.get("privacy"))],
+            ],
+            takeaway=rk.get("takeaway") or "结论：" + T,
+            col_widths=[3.0, 6])
+        return self
 
     def save(self, path):
         self.prs.save(path)

@@ -28,6 +28,48 @@ Import `deckbuilder.Deck` and call its slide methods. Building raw `python-pptx`
 shapes from scratch is the #1 cause of broken layouts, overlapping boxes,
 text-only "diagrams", and wrong imports. Don't do it.
 
+## Fastest path — 需求评审 in ONE call (start here)
+
+If the task is an OpenHarmony **需求变更评审 / 需求评审** deck (the common case),
+do NOT hand-assemble slides and do NOT choose builders yourself. Fill one plain
+`spec` dict and make a single call — the library owns the page order, which builder
+each page uses, and every fixed table shape (5 影响对象 rows, 8 风险 rows, 11 交付
+columns). This is the most reliable path and removes the top mistake (picking the
+wrong builder, e.g. four cards for the 价值 page).
+
+```python
+from deckbuilder import Deck
+Deck().requirement_review_deck(spec).save("requirement_change_review.pptx")
+```
+
+- **Copy `examples/requirement_review_oneshot.py`**, replace the `<placeholders>`,
+  keep the structure, run it. That's the whole job.
+- Every field is optional — anything you leave out renders as **待评估 / TBD**, never
+  fabricated. List those TBD fields back to the user.
+- `spec["design"]` may be one dict (one 设计方案 page) or a list of dicts (multiple,
+  auto-paged). `spec["delivery"]["items"]` is one row per 子需求; the 合计 row is
+  summed for you.
+- The 8 fixed pages, in order: 封面 · 需求价值描述 · 需求设计方案 · 需求变更背景 ·
+  需求变更影响性分析 · 版本交付计划 · 兼容性分析 · 风险评估.
+
+The full `spec` shape is documented in the `requirement_review_deck` docstring and in
+`examples/requirement_review_oneshot.py`. Everything below is the **manual / advanced
+mode** — the individual builders, for non-review decks or one-off custom pages.
+
+### Page → builder map (do not deviate)
+
+For 需求评审 pages, each page has exactly ONE correct builder. Never use
+`content_slide` / `banded_slide` for the 价值 or 设计 pages — that produces the
+"four boxes" / rainbow-bars result. (The library will `warnings.warn` if you do.)
+
+| Page | Builder | Never use |
+|------|---------|-----------|
+| 需求价值描述 | `value_slide` (左文右图) | ❌ `content_slide` (四格) |
+| 需求设计方案 | `design_slide` + `diagram=` (左文右图+框图) | ❌ `content_slide` / bullet list |
+| 需求变更背景 / 影响性分析 / 兼容性 / 风险 | `table_slide` | ❌ `banded_slide` (彩色横条) |
+| 版本交付计划 | `table_slide` (11 列) | ❌ 手写列宽/字号 |
+
+
 ## When to Use
 
 - Any request to make a `.pptx` / PowerPoint / slide deck
@@ -85,6 +127,11 @@ change points. Every choice below is automatic, you never set colors or coordina
 from deckbuilder import Deck
 
 deck = Deck()                    # 16:9; font defaults to "Microsoft YaHei"
+
+# ── EASIEST: whole 需求评审 deck in one call (see "Fastest path" above) ──
+deck.requirement_review_deck(spec)   # spec = dict; fixed 8-page 需求变更评审
+
+# ── or assemble pages manually (advanced / non-review decks) ──
 # NOTE: every content slide below REQUIRES takeaway="结论：…" (the page's one-line
 # conclusion) — pass it as a keyword. Omitting it raises ValueError. Only cover()
 # takes no takeaway.
@@ -124,6 +171,7 @@ don't vary it per card just to add color.
 
 | Method | Key argument shape |
 |--------|--------------------|
+| `requirement_review_deck` | `spec={...}` — whole 8-page 需求变更评审 in one call. **Preferred for review decks.** Missing fields → 待评估/TBD. See `examples/requirement_review_oneshot.py` |
 | `cover` | strings + `meta_lines=["Team", "2026-06-23"]` |
 | `content_slide` | `cards=[{"title","bullets":[...]}]` (1–6 auto-grid). **Per-card `accent` is ignored — all cards render in one family** (no rainbow). For 需求变更评审 4–7 use `table_slide`, not this |
 | `banded_slide` | same `sections=[{"title","bullets"}]` shape, rendered as full-width horizontal bars stacked top→bottom. **Per-section `accent` is ignored — all bars are one color.** Avoid for 需求变更评审 4–7 (use `table_slide`); the colored 横条 it used to make were the #1 "不纯粹" complaint |
@@ -232,6 +280,12 @@ deck.layered_diagram_slide("System Design — Framework", [
 
 ## Requirement-CHANGE-review decks (需求变更评审) — use the fixed template
 
+**Prefer the one-call path (`deck.requirement_review_deck(spec)` — see "Fastest path"
+at the top).** It builds this exact 8-page structure for you, so you can skip the
+manual builder choices below. The rest of this section documents what each page
+contains — useful for filling the `spec`, or for building pages by hand when you need
+a variation.
+
 When the user asks for a 需求变更评审 / requirement-change-review deck, or gives a
 page-by-page brief (需求价值 → 需求设计方案 → 需求变更背景 → 需求变更影响性分析 →
 版本交付计划 → 兼容性分析 → 风险评估), **follow the 8-page structure** in
@@ -281,7 +335,10 @@ What this page reliably gets wrong (the top two are the most-reported):
 2. If the source is a spec/doc, read it and pull the real content per slide.
    Don't invent technical facts; if a number (e.g. effort) isn't given, label it
    an estimate or use `TBD`.
-3. Write one build script: `Deck()` → one method call per slide → `deck.save()`.
+3. Write the build script:
+   - **需求评审 deck →** copy `examples/requirement_review_oneshot.py`, fill `spec`,
+     `deck.requirement_review_deck(spec)` → `deck.save()`. One call, done.
+   - **Other decks →** `Deck()` → one method call per slide → `deck.save()`.
 4. Run it. Then **verify** (next section). Report the output path + slide count.
 
 ## Verification before claiming done
@@ -314,6 +371,8 @@ rerun — do not work around it.
 
 | Mistake | Fix |
 |---------|-----|
+| Hand-assembling a 需求评审 deck page by page (and picking a wrong builder) | Use `deck.requirement_review_deck(spec)` — one call, fixed 8 pages |
+| 价值/设计页做成 `content_slide` 四格 / bullet 列表 | 用 `value_slide` / `design_slide`（左文右图；设计页右侧传 `diagram=`）— the library warns if you don't |
 | Building shapes with raw `python-pptx` and hand-picked inches | Use `Deck` methods; they place everything for you |
 | `from pptx.dgm...` / guessing import paths | The library already imports correctly — just `from deckbuilder import Deck` |
 | Design slide is a bullet list, not a diagram | Use `flow_slide` or `layered_diagram_slide` |
