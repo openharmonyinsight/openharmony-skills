@@ -20,6 +20,7 @@ Public API is unchanged from the original deckbuilder:
 """
 
 import os
+import math
 import warnings
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
@@ -430,19 +431,40 @@ class Deck:
         # the interior pages (no heavy top band, keeps cover & body coordinated)
         self._rect(s, 0, 0, Inches(0.32), self.H, "accent")
         self._rect(s, 0, 0, self.W, Inches(0.05), "accent")
-        # title
-        tf = self._textbox(s, Inches(1.1), Inches(2.15), Inches(11.2), Inches(1.5),
-                           MSO_ANCHOR.MIDDLE)
+        # title — auto-shrink to keep it to ≤2 lines, then lay the underline,
+        # subtitle and meta BELOW the title's actual height so a long (wrapping)
+        # title never collides with the red underline.
+        title_x = Inches(1.1)
+        title_w_in = 11.2
+        tsize = 40.0
+        units = self._text_units(title)
+        for _ in range(20):                       # shrink until it fits in 2 lines
+            per_line = max(1.0, title_w_in * 72.0 / tsize)
+            nlines = max(1, math.ceil(units / per_line))
+            if nlines <= 2 or tsize <= 26:
+                break
+            tsize = max(26.0, tsize * 0.94)
+        per_line = max(1.0, title_w_in * 72.0 / tsize)
+        nlines = max(1, math.ceil(units / per_line))
+        title_top = 2.15
+        title_h = nlines * tsize * 1.32 / 72.0
+        tf = self._textbox(s, title_x, Inches(title_top), Inches(title_w_in),
+                           Inches(title_h + 0.1), MSO_ANCHOR.TOP)
         r = tf.paragraphs[0].add_run(); r.text = title
-        self._run(r, 40, "primary", bold=True)
-        # accent underline
-        self._rect(s, Inches(1.13), Inches(3.45), Inches(3.4), Inches(0.06), "accent")
+        self._run(r, tsize, "primary", bold=True)
+        # accent underline — placed just under the real title bottom
+        y = title_top + title_h + 0.12
+        self._rect(s, Inches(1.13), Inches(y), Inches(3.4), Inches(0.06), "accent")
+        y += 0.18
         if subtitle:
-            tf = self._textbox(s, Inches(1.13), Inches(3.62), Inches(11), Inches(0.8))
+            tf = self._textbox(s, Inches(1.13), Inches(y), Inches(11), Inches(0.8))
             r = tf.paragraphs[0].add_run(); r.text = subtitle
             self._run(r, 20, "grey")
+            y += 1.0
+        else:
+            y += 0.55
         if meta_lines:
-            tf = self._textbox(s, Inches(1.13), Inches(4.7), Inches(11), Inches(1.4))
+            tf = self._textbox(s, Inches(1.13), Inches(y), Inches(11), Inches(1.4))
             for i, ln in enumerate(meta_lines):
                 p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
                 p.space_after = Pt(6)
@@ -886,6 +908,54 @@ class Deck:
                 r = p.add_run(); r.text = str(ln)
                 self._run(r, 8.5, "grey")
 
+    @staticmethod
+    def _split_label(text):
+        """Split a body line into (label, separator, rest) at the first Chinese
+        or ASCII colon, so the leading 小标题 (e.g. '用户痛点') can be bolded.
+        Only treats it as a label when the colon is reasonably early (≤14 units),
+        otherwise returns ('', '', '') meaning 'no label'."""
+        for sep in ("：", ":"):
+            i = text.find(sep)
+            if 0 < i <= 14:
+                return text[:i], sep, text[i + 1:]
+        return "", "", ""
+
+    @classmethod
+    def _fit_two_col(cls, sections, col_w_in, col_h_in,
+                     head_pt=15.0, body_pt=13.5, min_head=11.0, min_body=9.5):
+        """Shrink the left-column heading+body fonts together until the estimated
+        wrapped height of all sections fits col_h_in. Returns (head_pt, body_pt)."""
+        if col_w_in <= 0 or col_h_in <= 0:
+            return head_pt, body_pt
+
+        def total_height(hp, bp):
+            gap_before = 12.0 * (bp / 13.5)
+            h = 0.0
+            for si, sec in enumerate(sections):
+                if si > 0:
+                    h += gap_before / 72.0
+                # heading (rarely wraps, but count it)
+                head = str(sec.get("heading", ""))
+                hrows = max(1, math.ceil(cls._text_units(head) /
+                                         max(1.0, col_w_in * 72.0 / hp)))
+                h += hrows * hp * 1.3 / 72.0 + 5.0 / 72.0
+                for ln in sec.get("lines", []):
+                    units = cls._text_units("• " + str(ln))
+                    rows = max(1, math.ceil(units /
+                                            max(1.0, col_w_in * 72.0 / bp)))
+                    h += rows * bp * 1.32 / 72.0 + 4.0 / 72.0
+            return h
+
+        hp, bp = head_pt, body_pt
+        for _ in range(24):
+            if total_height(hp, bp) <= col_h_in:
+                break
+            if hp <= min_head and bp <= min_body:
+                break
+            hp = max(min_head, hp * 0.96)
+            bp = max(min_body, bp * 0.96)
+        return hp, bp
+
     def _two_col_sections(self, title, sections, image=None,
                           image_placeholder=None, takeaway=None, title_pt=28,
                           diagram=None, diagram_caption=None):
@@ -906,7 +976,14 @@ class Deck:
         # faint divider between the two columns
         self._rect(s, left_x + left_w + gap / 2, top + Inches(0.05),
                    Inches(0.013), bottom - top - Inches(0.10), _RULE)
-        # left column — one text frame, sections as paragraph groups
+        # left column — one text frame, sections as paragraph groups.
+        # Auto-shrink heading+body fonts TOGETHER so long content never spills
+        # past the page bottom: estimate the wrapped height at the default sizes
+        # and scale down until it fits the available column height.
+        col_h_in = (bottom - top) / 914400.0
+        col_w_in = left_w / 914400.0 - 0.1                # minus bullet indent
+        head_pt, body_pt = self._fit_two_col(sections, col_w_in, col_h_in)
+        gap_before = 12.0 * (body_pt / 13.5)
         tf = self._textbox(s, left_x, top, left_w, bottom - top)
         first = True
         for sec in sections:
@@ -914,15 +991,27 @@ class Deck:
             hc = sec.get("head_color", "dark")
             bc = sec.get("body_color", "dark")
             p = tf.paragraphs[0] if first else tf.add_paragraph()
-            p.space_before = Pt(0 if first else 12)
+            p.space_before = Pt(0 if first else gap_before)
             p.space_after = Pt(5)
             r = p.add_run(); r.text = head
-            self._run(r, 15, hc, bold=True)            # heading 15pt bold
+            self._run(r, head_pt, hc, bold=True)       # heading bold
             first = False
             for ln in sec.get("lines", []):
                 pp = tf.add_paragraph(); pp.space_after = Pt(4)
-                r = pp.add_run(); r.text = "• " + str(ln)
-                self._run(r, 13.5, bc, bold=False)     # body 13.5pt not bold
+                # bold the leading label up to the first ：/: so 小标题
+                # (用户痛点 / 用户场景 …) stands out from its body text.
+                label, sep, rest = self._split_label(str(ln))
+                r = pp.add_run(); r.text = "• "
+                self._run(r, body_pt, bc, bold=False)
+                if sep:
+                    r = pp.add_run(); r.text = label + sep
+                    self._run(r, body_pt, bc, bold=True)
+                    if rest:
+                        r = pp.add_run(); r.text = rest
+                        self._run(r, body_pt, bc, bold=False)
+                else:
+                    r = pp.add_run(); r.text = str(ln)
+                    self._run(r, body_pt, bc, bold=False)
         # right column — framework 框图, scene/architecture image, or placeholder
         if diagram:
             self._mini_layered_diagram(s, right_x + Inches(0.12), top,
