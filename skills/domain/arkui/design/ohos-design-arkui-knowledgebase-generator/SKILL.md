@@ -45,6 +45,7 @@ Use this skill to create, update, repair, or migrate ArkUI ace_engine KB context
 - NEVER add AC/FR/BR matrices to lightweight KBs — these belong in Specs, not routing pages; duplicating them creates two sources of truth that inevitably diverge.
 - NEVER create new KBs in old directories (`docs/pattern/`, `docs/common/`, `docs/layout/`, `docs/sdk/`) — these are legacy locations pending migration; adding new content there increases future migration debt.
 - NEVER bulk-convert old INDEX entries unless explicitly asked — each migration requires individual source verification; bulk conversion carries forward unverified claims at scale.
+- NEVER present deprecated APIs/components as recommended approaches — always check SDK `@deprecated` annotations; deprecated items must be marked with deprecation version and the recommended replacement must be listed as the primary approach.
 
 ## Workflow
 
@@ -57,6 +58,7 @@ Use this skill to create, update, repair, or migrate ArkUI ace_engine KB context
 - **Stability**: Will this path/claim still be true after 10 unrelated PRs land? If not, use a directory or type name instead of a file path or line reference.
 - **Routing value**: Does this help an agent find the right file, or does it duplicate what reading the file would tell them? KB pages are signposts, not copies.
 - **Verification**: Did I confirm this against current source/SDK/test, or am I echoing an old KB or my own assumption?
+- **Deprecation**: Is any referenced API or component deprecated? Check SDK `.d.ts` files for `@deprecated since <version>` annotations. Deprecated items should appear in KB pages only as historical context with explicit deprecation markers, not as recommended approaches. The recommended replacement must always be listed as the primary method.
 
 ### Quick Routing
 

@@ -57,6 +57,66 @@ API declarations are facts for public APIs:
 
 Dynamic filenames usually use snake_case; Static filenames usually use camelCase. If SDK-JS is not cloned, warn and skip API declaration coverage.
 
+### Deprecated API / Component / Capability Detection
+
+**MANDATORY — this check must be executed for EVERY KB (component, capability, API/SDK topic, or architecture/internal mechanism), not just ones you suspect might be deprecated.** Skipping this step means you may miss deprecation annotations and produce a KB that incorrectly recommends a deprecated entity as the primary approach.
+
+Deprecation annotations live in SDK `.d.ts` / `.d.ets` / `.static.d.ets` files under `<OH_ROOT>/interface/sdk-js/api/`. These files are outside the ace_engine repo but are accessible in the local OpenHarmony source tree. **Never assume "I didn't find it" means "it's not deprecated"** — you must explicitly verify by reading the files.
+
+**Verification procedure (for every KB target):**
+
+1. **Locate all SDK declaration files** relevant to the target:
+   ```bash
+   find <OH_ROOT>/interface/sdk-js/api -name "*<target>*" -type f
+   ```
+   This returns the dynamic `.d.ts`, static `.static.d.ets`, and Modifier `.d.ts` / `.static.d.ets` files. For non-component targets (capabilities, API topics, architecture), check the relevant `.d.ts` or interface files where the entity is declared.
+
+2. **Read each file and search for `@deprecated`**: Do not just grep — read the file content to capture the full annotation including `@useinstead`:
+   ```bash
+   grep -n "@deprecated" <OH_ROOT>/interface/sdk-js/api/@internal/component/ets/<target>.d.ts
+   grep -n "@deprecated" <OH_ROOT>/interface/sdk-js/api/arkui/<Target>Modifier.d.ts
+   grep -n "@deprecated" <OH_ROOT>/interface/sdk-js/api/arkui/<Target>Modifier.static.d.ets
+   grep -n "@deprecated" <OH_ROOT>/interface/sdk-js/api/arkui/component/<target>.static.d.ets
+   ```
+   If any of these files do not exist, note that and skip — but do NOT assume deprecation status from absence of a file.
+
+   For non-component targets, search in the appropriate SDK subdirectory:
+   ```bash
+   find <OH_ROOT>/interface/sdk-js/api -name "*.d.ts" -exec grep -l "@deprecated" {} + | grep -i "<target>"
+   ```
+   Also check for deprecation in NAPI kit `.d.ts` files:
+   ```bash
+   grep -rn "@deprecated" <OH_ROOT>/interface/sdk-js/api/@internal/component/ets/  # broad scan for cross-component deprecation
+   grep -rn "@deprecated" <OH_ROOT>/interface/sdk-js/api/arkui/                    # modifier-level deprecation
+   ```
+
+3. **If ANY `@deprecated since <version>` annotation is found** on the target's interface, class, const, enum, or top-level declaration (not just individual methods/properties), the ENTIRE target entity is deprecated. Record:
+   - Deprecation version (e.g. `@deprecated since 13`, `@deprecated since 22`)
+   - Recommended replacement from `@useinstead` annotation (e.g. `@useinstead Swiper`, `@useinstead NavDestinationAttribute`)
+   - Whether the deprecation applies only to specific paradigms (e.g. `dynamiconly`)
+   - Scope of deprecation: entire entity (component/interface/capability) deprecated vs. only specific members deprecated
+
+4. **If NO `@deprecated` annotations are found at interface/class/const/enum level**, the target is NOT deprecated. State this explicitly in the KB 定位 section.
+
+**Anti-pattern — DO NOT:**
+- ❌ Skip the `@deprecated` check because "the target seems active" or "no one mentioned deprecation"
+- ❌ Assume a target is not deprecated just because the Explore agent didn't flag it
+- ❌ Only check one `.d.ts` file when multiple paradigm files exist (dynamic, static, modifier)
+- ❌ Treat method-level deprecation as equivalent to entity-level deprecation — a single deprecated method does not make the whole component/interface deprecated, but entity-level `@deprecated` on the interface/class/const/enum does
+- ❌ Limit this check to component KBs only — it applies equally to capability, API/SDK, and architecture KBs
+
+When a deprecated item is found:
+
+1. **Record the deprecation version**: Note the `@deprecated since <version>` annotation (e.g. `@deprecated since 13`).
+2. **Identify the recommended replacement**: Search SDK and source for the modern equivalent (e.g. NavPathStack replaces NavRouter, Swiper replaces Stepper).
+3. **In KB pages**, handle deprecated items as follows:
+   - **定位**: Mention the recommended approach first. State the deprecated item only as historical context, with explicit version marker: "自 API version X 起已废弃，推荐使用 Y 替代"。
+   - **源码入口 / API 解析实现路径**: If a deprecated item's source file still exists and is maintained, include it in route tables but clearly mark the row with "(已废弃，API X)" in the 说明 column. Never list a deprecated path as the primary or recommended entry.
+   - **常见问题定位 / 调试入口 / 相关主题**: Never suggest a deprecated API as the solution to a problem. Always point to the recommended replacement.
+   - **Do not omit deprecated source paths entirely**: They still exist in the codebase and may be relevant for backward-compatibility debugging, but they must always carry the deprecation marker and must never be the first or recommended entry.
+
+**In `docs/context_registry.json`**, set `"status": "deprecated"` for deprecated targets (any `kind`). Include the deprecation version and recommended replacement in the `keywords` array.
+
 ### Frameworks / Capabilities
 
 Locate interfaces, implementations, adapters, tests, and build files with `rg`/`find`. Prefer stable directories and type names over line-numbered details.
@@ -89,6 +149,7 @@ Do not include:
 - stale behavior/default-value claims
 - complete API behavior matrices
 - old/new difference narration unless the user explicitly asks for migration history
+- deprecated APIs/components as recommended or primary approaches — always mark deprecated items with version and recommended replacement
 
 ### Suggested Component Page
 
@@ -113,6 +174,10 @@ Do not include:
 
 ### API 解析实现路径
 | 路径 | 入口文件 | 说明 |
+
+> **废弃标注规则**：如果某条路径对应的组件/API 已被标记 `@deprecated since <version>`，
+> 在 说明 列标注 "(已废弃，API <version>)"，并紧跟一条推荐替代路径。
+> 废弃条目不应作为首行或推荐条目出现。
 
 ### 外部依赖入口
 | 依赖方向 | 本仓入口 | 外部仓路径 | 相对外部仓的头文件 / 目标路径 | 说明 |
