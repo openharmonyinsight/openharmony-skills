@@ -1,0 +1,134 @@
+{
+  "skill_name": "ohos-dev-arkui-v1-v2-migration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "请把以下 V1 组件迁移到 V2（状态管理迁移）。工程路径为当前示例目录。",
+      "files": ["examples/simple-component/before.ets"],
+      "expected_output": "将 @Component 改为 @ComponentV2，@State 改为 @Local，@Prop 改为 @Param，得到与 examples/simple-component/after.ets 等价的 V2 实现。",
+      "expectations": [
+        "容器装饰器由 @Component 替换为 @ComponentV2",
+        "内部状态 @State 替换为 @Local（且未对外部初始化 @Local）",
+        "父传子的 @Prop 替换为只读的 @Param",
+        "未在组件内混用 V1/V2 状态装饰器"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "请迁移以下含父子交互的 V1 组件到 V2，注意 @Link 双向绑定和 @Provide/@Consume。",
+      "files": ["examples/component-with-props/before.ets"],
+      "expected_output": "@Link 改为 @Param + @Event 回调模式，@Provide/@Consume 改为 @Provider/@Consumer，@Watch 改为 @Monitor，$$ 改为 !!，结果等价于 examples/component-with-props/after.ets。",
+      "expectations": [
+        "@Link 双向绑定改写为 @Param 接收 + @Event 回写父组件",
+        "调用方式由 $fontSize 改为传入值与回调：FontSizeAdjuster({ size: this.fontSize, onSizeChange: (v) => this.fontSize = v })",
+        "@Provide('themeColor') 替换为 @Provider('themeColor')，@Consume 替换为 @Consumer",
+        "@Watch('onSizeChange') 替换为 @Monitor('size')",
+        "$$this.username 替换为 this.username!!"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "请把以下使用 @Observed/@ObjectLink 数据对象的 V1 代码迁移到 V2。",
+      "files": ["examples/observed-class/before.ets"],
+      "expected_output": "@Observed class 改为 @ObservedV2，被观测属性加 @Trace，@ObjectLink 不再需要，结果等价于 examples/observed-class/after.ets。",
+      "expectations": [
+        "数据对象类由 @Observed 替换为 @ObservedV2",
+        "需要深度观测的属性加上 @Trace",
+        "未出现 @Observed 与 @ObservedV2 装饰同一个类的情况",
+        "子组件不再依赖 @ObjectLink 分解即可观测嵌套属性"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "请迁移以下使用 LocalStorage/AppStorage/PersistentStorage 的 V1 应用级状态到 V2，采用渐进迁移策略。",
+      "files": ["examples/localstorage/before.ets"],
+      "expected_output": "新增 AppStorageV2.connect()/PersistenceV2.globalConnect() 等 V2 API，LocalStorage 改为 @ObservedV2/@Trace 单例，结果等价于 examples/localstorage/after.ets；不得删除仍有其他 V1 组件使用的 V1 API 调用。",
+      "expectations": [
+        "AppStorage 相关用法新增 AppStorageV2.connect() 对应实现",
+        "PersistentStorage 相关用法新增 PersistenceV2.globalConnect() 对应实现",
+        "LocalStorage 改造为 @ObservedV2/@Trace 单例或等价方案",
+        "未删除仍有 V1 组件通过装饰器引用的 key 对应的 V1 API 调用"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "以下工程需要部分迁移（V1 与 V2 共存），请分析 API 版本并给出桥接模式或兼容性 API 的迁移方案。",
+      "files": ["examples/partial-migration/before.ets"],
+      "expected_output": "检测 compatibleSdkVersion 判定 strict(API<19)/relaxed(API>=19)，对 V1 传 @Observed class 给 V2 的场景给出桥接模式或 enableV2Compatibility/makeV1Observed 方案，结果等价于 examples/partial-migration/after.ets。",
+      "expectations": [
+        "正确判定 API 版本对应的 strict/relaxed 混用规则",
+        "对跨 V1/V2 边界的复杂类型传递给出桥接组件或兼容性 API 方案",
+        "桥接组件使用 @Watch 同步 V1 数据到 V2 的 @ObservedV2/@Trace 单例",
+        "迁移后混用校验无 violation"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "用户说“V1V2迁移”但未指定组件，且给出了工程路径。请按 skill 流程先扫描 V1 组件并向用户确认迁移目标，不要直接改代码。",
+      "files": ["examples/simple-component/before.ets"],
+      "expected_output": "调用 component_analyzer.py --scan-v1 列出 V1 组件，将列表展示给用户并询问要迁移哪个组件；在用户确认前不执行代码改写。",
+      "expectations": [
+        "先运行扫描脚本而非直接改写代码",
+        "向用户展示 V1 组件列表并请求确认迁移目标",
+        "未在用户确认目标组件前修改任何源文件"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "用户给了工程路径 evals/fixtures/scope-demo，说要做 V1V2 迁移，但没指定要迁移哪个组件。按 skill 流程处理这个请求。",
+      "files": ["evals/fixtures/scope-demo"],
+      "expected_output": "按 skill 第零步情况二：运行 component_analyzer.py --scan-v1 扫描出 V1 组件（Root/Profile/Settings/Badge），将列表展示给用户并询问要迁移哪个；在用户确认前不修改源文件。",
+      "expectations": [
+        "先运行 component_analyzer 的 --scan-v1 扫描 V1 组件，而非直接进入迁移或改代码",
+        "向用户展示扫描到的 V1 组件列表（至少含 Root/Profile/Settings/Badge）",
+        "明确询问用户要迁移哪个组件，在用户确认目标前不修改源文件"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "在 evals/fixtures/scope-demo 工程里，把 Profile 组件迁移到 V2。",
+      "files": ["evals/fixtures/scope-demo"],
+      "expected_output": "运行 dependency_tracer 分析 Profile 依赖，发现它通过 @Consume pageStack/user 与 Root(@Provide) 耦合，mustMigrate 不止 Profile 自身；向用户报告需联合迁移（至少含 Root），不把 Profile 单独迁成 V2。",
+      "expectations": [
+        "运行 dependency_tracer 分析 Profile 的依赖链，得到 mustMigrate 列表",
+        "识别 mustMigrate 不止 Profile 自身（至少还含 Root，因 @Provide/@Consume 耦合）",
+        "向用户报告需联合迁移相关组件，而非只改 Profile 一个",
+        "未在未处理 Root 的情况下把 Profile 单独迁成 V2（避免 V1 @Provide 与 V2 @Consumer 不互通）"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "在 evals/fixtures/scope-demo 工程里，把 Badge 组件迁移到 V2。",
+      "files": ["evals/fixtures/scope-demo"],
+      "expected_output": "运行 dependency_tracer，识别 Badge 仅 @State/@Prop、无 @Provide/@Consume/@StorageLink 耦合，mustMigrate 只含自身，判定可独立迁移；完成 @Component→@ComponentV2、@State→@Local、@Prop→@Param。",
+      "expectations": [
+        "运行 dependency_tracer 并识别 Badge 是叶子组件（mustMigrate 只含 Badge 自身）",
+        "明确判定 Badge 可独立迁移（无 @Provide/@Consume/@StorageLink 耦合）",
+        "完成 Badge 迁移：@Component→@ComponentV2、@State→@Local、@Prop→@Param"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "在 evals/fixtures/scope-demo 工程里迁移 Settings 组件。Settings 用了 @StorageLink('theme')。请按 skill 处理 'theme' 这个 AppStorage key。",
+      "files": ["evals/fixtures/scope-demo"],
+      "expected_output": "通过 stateApiByKey 识别 'theme' 同时被 Settings 和 Root 的 @StorageLink 引用；迁移 Settings 时为 'theme' 新增 V2 等价，但保留 store.ts 里的 AppStorage.setOrCreate('theme')，因 Root 仍在用；说明待 'theme' 所有 decoratorUsage 迁完方可移除。",
+      "expectations": [
+        "识别 'theme' key 同时被多个组件（Settings 和 Root）通过 @StorageLink 引用",
+        "迁移 Settings 时为 'theme' 新增 V2 等价方案（@ObservedV2/@Trace 单例 或 AppStorageV2.connect）",
+        "保留 store.ts 中的 AppStorage.setOrCreate('theme') V1 调用，未删除",
+        "说明因仍有其他 V1 组件（Root）引用 'theme'，暂不能移除该 V1 调用"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "在 evals/fixtures/scope-demo 工程里，把 Settings 和 Root（即所有引用 'theme' key 的组件）一起迁移到 V2。请处理 'theme' 这个 AppStorage key 的 V1 调用。",
+      "files": ["evals/fixtures/scope-demo"],
+      "expected_output": "识别 'theme' 的所有 decoratorUsage（Root + Settings）都在本次迁移范围内；判定 store.ts 里的 AppStorage.setOrCreate('theme') 现已无 V1 组件依赖、可以移除；迁移后 mixing_validator 无 violation。",
+      "expectations": [
+        "识别 'theme' 的所有 decoratorUsage（Root 与 Settings）都在本次迁移范围内",
+        "判定 store.ts 中的 AppStorage.setOrCreate('theme') V1 调用现在可以移除（无其他 V1 组件再依赖该 key）",
+        "迁移后通过 mixing_validator 校验无 violation"
+      ]
+    }
+  ]
+}
