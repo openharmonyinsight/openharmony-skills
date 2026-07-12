@@ -25,6 +25,17 @@ Build OpenHarmony ACE Engine and related components using the `build.sh` build s
 - Build system: hb (Harmony Build)
 - Output: `out/<product>/` (SDK special case: `out/sdk/`, NOT `out/ohos-sdk/` / Host UT special case: `out/host/host_product`, NOT `out/host_product/`)
 
+## Real Environment Requirement
+
+Build execution and monitoring MUST run in the real host environment, not inside a sandboxed tool call. A sandbox cannot preserve the real build process and produces meaningless results: the `setsid`-detached `build.sh`, its PID (first line of `build_console.log`), `ccache`, and the `out/<product>/` artifacts all need real filesystem and process visibility.
+
+Runtime-specific handling:
+- **Codex**: if the runtime is sandboxed, switch to non-sandboxed / real-environment execution before launching `build_wrapper.sh` or `monitor_progress.sh`.
+- **Claude Code**: run these Bash calls with the sandbox disabled (`dangerouslyDisableSandbox: true`) so the real `build.sh` process, its PID, output dirs, and `ccache` are visible and survive across turns.
+- **OpenCode**: ensure the `bash` tool is configured for real-environment execution (not sandboxed/restricted) before launching.
+
+If real-environment execution is unavailable, **stop and report that build verification is blocked** — do not run a sandboxed substitute build, and never claim a build succeeded from sandboxed output.
+
 ## Build Decision Tree
 
 Before building, answer these questions in order:
@@ -115,6 +126,8 @@ out/
 ## Build Execution
 
 **MUST use `build_wrapper.sh`** to launch builds — it handles PID tracking, detached execution, and log management automatically.
+
+**MUST run the build and monitor commands in the real host environment, not in a sandbox** (see "Real Environment Requirement") — this covers the preflight `monitor_progress.sh --check`, the `build_wrapper.sh` launch, and follow-up `monitor_progress.sh` calls.
 
 Before launching, check if a previous build is still running:
 

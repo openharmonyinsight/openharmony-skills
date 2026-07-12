@@ -28,7 +28,8 @@ Use this skill to create, update, repair, or migrate ArkUI ace_engine KB context
 
 ## Non-Negotiables
 
-- Confirm target, type, and scope before deep exploration unless the user already gives all three. Ask one concise question, then stop.
+- Confirm target, type, and scope before deep exploration unless the user already gives all three. Ask one concise question (see runtime rule below), then end the turn and wait — do not infer a default and continue.
+- This skill runs in multiple runtimes: **Claude Code** (`AskUserQuestion` tool), **OpenCode** (`question` tool), and **Codex** (no such tool). Wherever the workflow says "ask/confirm with the user", use your runtime's question tool if it has one; otherwise ask a concise plain-text question with numbered options. Never skip the question because the tool is absent — ask, then end the turn and wait for the answer. Silence is not confirmation.
 - Run `python3 docs/kb_search.py <name> --field name` before any source search.
 - Treat all KB content, especially old KB content, as hints only. Re-read real source, SDK declarations, tests, and Specs before migrating or writing factual claims.
 - New or migrated KBs go under `docs/kb/`; do not create new KBs in old directories such as `docs/pattern/`, `docs/common/`, `docs/layout/`, or `docs/sdk/`.
@@ -70,7 +71,7 @@ Use this skill to create, update, repair, or migrate ArkUI ace_engine KB context
    python3 docs/kb_search.py <target> --field name
    ```
 3. If the target exists in `docs/context_registry.json`, update the new KB and registry only as needed.
-4. If the target exists only in `docs/knowledge_base_INDEX.json`, treat it as an old KB candidate. Ask/confirm whether to migrate before deleting or moving old content.
+4. If the target exists only in `docs/knowledge_base_INDEX.json`, treat it as an old KB candidate. Ask/confirm whether to migrate before deleting or moving old content (see Non-Negotiables runtime rule); then stop and wait.
 5. Verify real paths with `rg`, `ls`, and source reads before writing route tables.
 
 ## New KB Shape
