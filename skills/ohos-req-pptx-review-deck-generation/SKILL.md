@@ -1,12 +1,12 @@
 ---
-name: ohos-req-spec-to-review-ppt
-description: Use when asked to generate, build, or create a PowerPoint / PPT / .pptx slide deck — especially polished multi-slide decks for requirement reviews, design reviews, or feature proposals, including ones with architecture/flow diagrams (boxes connected by arrows) and tables. Triggers on "生成PPT", "做个PPT", "make slides", "build a deck".
+name: ohos-req-pptx-review-deck-generation
+description: Use when converting an OpenHarmony requirement document, spec, or design proposal into an OpenHarmony review slide deck (需求评审 / 需求变更评审 / 设计评审 PPTX) — produces the fixed OpenHarmony-branded review-deck structure (OH logo on every page) with architecture/flow diagrams and field tables. Triggers on "需求评审PPT", "需求变更评审", "把需求文档转成评审PPT", "spec转评审PPT", "requirement/spec to review deck". NOT for arbitrary or generic slide decks unrelated to OpenHarmony requirement/design review.
 metadata:
   author: openharmony
   scope: common
   stage: requirements
   domain: pptx
-  capability: spec-to-review-ppt
+  capability: review-deck-generation
   version: 0.1.0
   status: trial
   tags:
@@ -72,13 +72,17 @@ For 需求评审 pages, each page has exactly ONE correct builder. Never use
 
 ## When to Use
 
-- Any request to make a `.pptx` / PowerPoint / slide deck
-- Requirement-review, design-review, or feature-proposal decks
-- Decks needing an **architecture / data-flow diagram** (real boxes + arrows)
-- Decks with comparison or breakdown **tables**
+- Converting an OpenHarmony **requirement document / spec / design proposal** into a
+  review deck — this is the primary trigger
+- **需求评审 / 需求变更评审 / 设计评审** decks (OH-branded, fixed structure)
+- Feature-proposal decks that follow the OH review flow
+- Such decks needing an **architecture / data-flow diagram** (real boxes + arrows)
+  or comparison / breakdown **tables**
 
-When NOT to use: editing an existing `.pptx` the user already has (open it with
-`python-pptx` directly), or when the user wants Markdown/PDF instead.
+When NOT to use: **generic or non-OpenHarmony slide decks** (this skill always
+stamps the OpenHarmony logo and imposes the OH review structure — it is not a
+general-purpose PPT maker); editing an existing `.pptx` the user already has (open it
+with `python-pptx` directly); or when the user wants Markdown/PDF instead.
 
 ## Setup (do this first)
 

@@ -1,7 +1,8 @@
-# ohos-req-spec-to-review-ppt
+# ohos-req-pptx-review-deck-generation
 
-OpenHarmony 需求评审 PPT 生成 Skill。面向维护者的说明文档（Agent 加载入口是
-[`SKILL.md`](SKILL.md)）。
+OpenHarmony 需求评审 PPT 生成 Skill。**生成的是 OpenHarmony 专用评审稿**（每页固定打
+OpenHarmony logo、套用 OH 评审结构），不面向通用/非 OH 的 PPT 场景。面向维护者的说明
+文档（Agent 加载入口是 [`SKILL.md`](SKILL.md)）。
 
 ## 这个 Skill 做什么
 
@@ -41,9 +42,9 @@ python3 examples/requirement_review_example.py   # 产出一份示例 deck
 
 | 字段 | 值 |
 | --- | --- |
-| `name` | `ohos-req-spec-to-review-ppt` |
+| `name` | `ohos-req-pptx-review-deck-generation` |
 | `scope` / `stage` | `common` / `requirements` |
-| `domain` / `capability` | `pptx` / `spec-to-review-ppt` |
+| `domain` / `capability` | `pptx` / `review-deck-generation` |
 | `status` | `trial` |
 
 命名与放置遵循 OpenHarmony Skills 命名空间与目录放置规范
