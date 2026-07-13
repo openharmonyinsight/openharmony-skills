@@ -90,10 +90,18 @@ with `python-pptx` directly); or when the user wants Markdown/PDF instead.
 python3 -c "import pptx" 2>/dev/null || pip install python-pptx
 ```
 
-The library file `deckbuilder.py` lives in this skill's directory, alongside
-`oh_logo.png` (the OpenHarmony logo). Copy **both** next to your build script (or
-add the skill dir to `sys.path` — `deckbuilder.py` auto-finds the logo in its own
-directory). Then write ONE script that imports it and calls slide methods in order.
+The library file `deckbuilder.py` lives in this skill's **`scripts/`** directory,
+alongside `oh_logo.png` (the OpenHarmony logo). Copy **both** (keep them together)
+next to your build script, or add the `scripts/` dir to `sys.path` —
+`deckbuilder.py` auto-finds the logo in its own directory, so the two files must
+stay side by side. Then write ONE script that imports it and calls slide methods in
+order, e.g.:
+
+```python
+import os, sys
+sys.path.insert(0, os.path.join("<skill-dir>", "scripts"))
+from deckbuilder import Deck
+```
 
 ### Visual style (built in — do not re-implement)
 
@@ -335,7 +343,8 @@ What this page reliably gets wrong (the top two are the most-reported):
 
 ## Workflow
 
-1. Install python-pptx if missing; make `deckbuilder.py` importable.
+1. Install python-pptx if missing; make `scripts/deckbuilder.py` importable (add the
+   `scripts/` dir to `sys.path`, keeping `oh_logo.png` alongside it).
 2. If the source is a spec/doc, read it and pull the real content per slide.
    Don't invent technical facts; if a number (e.g. effort) isn't given, label it
    an estimate or use `TBD`.

@@ -21,8 +21,8 @@ OpenHarmony logo、套用 OH 评审结构），不面向通用/非 OH 的 PPT �
 | --- | --- |
 | `SKILL.md` | Skill 主文件，Agent 加载入口，含 YAML Front Matter 元数据 |
 | `README.md` | 本文件，面向维护者 |
-| `deckbuilder.py` | 核心库；调用方 `from deckbuilder import Deck` |
-| `oh_logo.png` | OpenHarmony logo，自动放置在每页左下角 |
+| `scripts/deckbuilder.py` | 核心库；调用方 `from deckbuilder import Deck`（需把 `scripts/` 加入 `sys.path`）|
+| `scripts/oh_logo.png` | OpenHarmony logo，自动放置在每页左下角（须与 `deckbuilder.py` 同目录）|
 | `references/requirement-review-template.md` | 需求变更评审固定 8 页模板（生成时以此为准） |
 | `examples/requirement_review_example.py` | 完整可运行的填充示例脚本 |
 | `evals/cases.yaml` | 评测用例索引 |
@@ -52,7 +52,7 @@ python3 examples/requirement_review_example.py   # 产出一份示例 deck
 
 ## 维护要点
 
-- 改样式只动 `deckbuilder.py`（`PALETTE` / `_style_table` / `_header` / `cover`），
+- 改样式只动 `scripts/deckbuilder.py`（`PALETTE` / `_style_table` / `_header` / `cover`），
   不要在调用脚本里手算坐标或传 `RGBColor`。
 - 配色为浅色主题 + 红色主色：标题用近黑墨色（克制），结论/标题下划线/主箭头用红色（accent）；结构统一柔灰；价值页正文与表格表头用蓝色；`★变更` 框用浅琥珀色高亮，风险用柔砖红。
 - 改动后必须跑 `evals/` 用例与 overflow 检查再提交。

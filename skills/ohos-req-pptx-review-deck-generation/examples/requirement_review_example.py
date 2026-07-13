@@ -8,7 +8,7 @@
 文档缺失字段一律标 待评估/TBD，不要编造。"""
 import os
 import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"))
 from deckbuilder import Deck
 
 TBD = "待评估 / TBD"
