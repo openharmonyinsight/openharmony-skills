@@ -52,6 +52,14 @@ If the target feature is **not yet registered** in the registry, add entries to 
 
 ## Workflow (execute in order)
 
+### Questioning discipline (applies in every step — all runtimes)
+
+This skill runs in multiple runtimes, each with a different way to ask the user: **Claude Code** → the `AskUserQuestion` tool; **OpenCode** → the `question` tool; **Codex** → no structured question tool. The questioning steps below **MUST NOT be skipped in any runtime** — when a runtime has no such tool (Codex), ask via **plain text** instead. A skipped question is a defect, not an optimization.
+
+1. **Ask; do not infer.** Whenever a step says "ask the user", use your runtime's question tool if it has one (see mapping above); otherwise emit a concise plain-text question (numbered options the user can pick from). Never silently assume `All`, full coverage, latest API range, or a design-doc strategy. If the user did not answer, ask the next scope question.
+2. **One wave per turn, then stop.** After asking each wave of questions (Step 0.5 decomposition, Step 1 scope, Step 3 highlights), **end the turn and wait** for the response. Do NOT proceed to source exploration, spec writing, or design writing in the same turn.
+3. **The only pre-confirmation edits allowed** are the reversible registry bookkeeping in Step 0 (adding YAML entries, creating directories, regenerating index). If the FuncID mapping or feature split is ambiguous, ask before editing anything.
+
 ### Step 0: Registry registration (**mandatory pre-step**)
 
 1. **Read** `specs/registry/functions.yaml` and `specs/registry/features.yaml` — these are the single source of truth for FuncID functional domains and FeatID feature specs respectively. **Do NOT read or edit `specs/index.md`** — it is generated output.
@@ -72,7 +80,7 @@ If the target feature is **not yet registered** in the registry, add entries to 
 
 **Trigger**: the user provides only a component or functional-domain name without specifying a concrete FeatID. Skip if the user named a specific Feat or the component has ≤ 5 public APIs.
 
-**MANDATORY — READ ENTIRE FILE**: Read [`references/feat-decomposition.md`](references/feat-decomposition.md) completely before proceeding. It defines the API scan method, 5 decomposition heuristics, sizing guidelines, and AskUserQuestion format.
+**MANDATORY — READ ENTIRE FILE**: Read [`references/feat-decomposition.md`](references/feat-decomposition.md) completely before proceeding. It defines the API scan method, 5 decomposition heuristics, sizing guidelines, and the question format (tool or plain text).
 **Do NOT load** other reference files at this step.
 
 ### Step 1: Locate target and clarify scope (multi-round Q&A)
@@ -84,12 +92,12 @@ If the target feature is **not yet registered** in the registry, add entries to 
    - `design.md` missing → take the **initial design + spec** path
 4. **MANDATORY — READ ENTIRE FILE**: Before asking any scope questions, read [`references/qa-checklist.md`](references/qa-checklist.md) completely. It defines the question waves and option structures.
    **Do NOT load** `spec-template.md`, `design-doc-init.md`, or `design-doc-merge.md` at this step.
-5. Use `AskUserQuestion` to clarify the following dimensions (**never ask everything at once — batch by dimension**):
+5. Ask the user to clarify the following dimensions (per "Questioning discipline"; **never ask everything at once — batch by dimension**):
    - **Sub-capability scope**: which sub-properties/APIs does this feature cover? (list candidates for the user to multi-select)
    - **Coverage breadth**: cover all setting forms (e.g. x/y, edges, localizedEdges)?
    - **API version range**: do API version differences need to be annotated?
    - **Design-doc strategy** (only when `design.md` already exists): incremental merge into existing chapters vs. new standalone chapters (**strongly prefer the former**)
-6. Proceed to Step 2 only after scope is confirmed
+6. **Stop after each wave and wait** for the response. Proceed to Step 2 only after scope is confirmed explicitly (per "Questioning discipline" — silence is not confirmation).
 
 ### Step 2: Source-code exploration (parallel agents)
 
@@ -126,7 +134,7 @@ Present **3-7 non-obvious design decisions** to the user using this format:
 |---|---------|----------------|------------------------|
 | 1 | e.g. padding stores in SafeAreaPadding, not PaddingProperty | layout_property.cpp:123 | Affects AC scope: must test SafeArea path |
 
-Ask which findings should be emphasized in the spec. Selected items become inputs for ADRs, risks, and compatibility entries.
+Ask which findings should be emphasized in the spec (per "Questioning discipline"). **Stop after asking and wait** for the response before writing Step 4/5 documents. Selected items become inputs for ADRs, risks, and compatibility entries.
 
 ### Step 4: Generate the spec document
 
@@ -198,8 +206,11 @@ Merge checklist:
   python3 tools/generate_index.py
   python3 tools/generate_index.py --check
   python3 tools/generate_site.py
+  python3 tools/validate_specs.py
   ```
   If `--check` fails after status update, the most likely cause is a `spec:` path in `features.yaml` that doesn't match the actual filename on disk — fix and re-run.
+  If `validate_specs.py` fails, read the reported file/path and repair the spec content, registry metadata, or generated index/source mismatch it identifies; then re-run `python3 tools/validate_specs.py` until it passes. Do not declare the spec workflow complete while validation errors remain.
+
 - Verify every `design.md` on disk is registered in `functions.yaml` and every `Feat-*.md` on disk is registered in `features.yaml`
 
 ## Diagram rules
@@ -215,7 +226,7 @@ Merge checklist:
 ❌ Naming first-Feat decisions `ADR-F1-N` — first Feat uses baseline `ADR-1, ADR-2, ...`; only subsequent Feats use `ADR-FX-N`
 ❌ Proposing fixes or improvements when source behavior is questionable — annotate as risk/note only ("the current implementation IS the spec")
 ❌ Skipping Feat decomposition when user provides only a component name — a monolithic spec for 10+ APIs becomes unmaintainable and blocks incremental SDD; always run Step 0.5 to propose a breakdown first
-❌ Asking all scope questions in a single `AskUserQuestion` call — batch by dimension across 2-4 waves
+❌ Asking all scope questions in a single question-tool call — batch by dimension across 2-4 waves
 ❌ Writing spec content without reading the template — the chapter skeleton is non-negotiable
 ❌ Creating one design.md per Feat — one functional domain owns exactly one design.md shared by all Feats
 ❌ Inventing custom Design ID formats — must be `DESIGN-Func-XX-XX-XX`
@@ -225,6 +236,7 @@ Merge checklist:
 ❌ Inferring API signatures from internal C++ source, JS bridge files, or knowledge-base markdown instead of reading the canonical `.d.ts` / `.d.ets` / `.static.d.ets` files under `interface/sdk-js/api/` — internal representations often diverge from the public contract (different parameter names, extra overloads, missing deprecation marks), producing specs that mislead downstream consumers
 ❌ Hand-editing `specs/index.md` — it is generated output; edit `registry/functions.yaml` and `registry/features.yaml` instead, then run `python3 tools/generate_index.py`
 ❌ Skipping `python3 tools/generate_index.py --check` before declaring Step 6 complete
+❌ Skipping `python3 tools/validate_specs.py` before declaring Step 6 complete, or reporting completion without fixing validation errors
 
 ## Conflict resolution
 
@@ -248,7 +260,7 @@ When source code behavior and SDK type definitions disagree:
 - **APIs must be SDK-verified**: for external APIs, read the canonical `.d.ts` / `.d.ets` / `.static.d.ets` files — see "Conflict resolution" for the full authority hierarchy. Framework-internal capabilities don't need SDK cross-check.
 - **Incremental first**: when design.md exists, never open a new `## Feat-XX` top-level chapter
 - **No fabricated ACs**: every AC must map to existing source behavior or tests
-- **Don't over-batch AskUserQuestion**: ask in waves — scope first, then strategy, then highlight confirmation
+- **Don't over-batch questions**: ask in waves — scope first, then strategy, then highlight confirmation
 - **Cover every external input**: parent state, system locale, density/scale, theme, API version, lifecycle stage — anything that can change behavior must be enumerated, especially anything that could become a future **compatibility risk**
 - **Split large features into sub-tasks**: if scope grows beyond a single coherent spec, generate multiple Feat-XX specs sharing one design.md
 - **Feat decomposition before registration**: when the user doesn't specify a concrete Feat, always run Step 0.5 to scan the API surface and propose a breakdown — never default to a single monolithic Feat for components with > 5 APIs

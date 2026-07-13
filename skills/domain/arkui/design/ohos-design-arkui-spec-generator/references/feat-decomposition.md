@@ -32,7 +32,7 @@ Select the most appropriate heuristic(s) based on what the scan reveals. Common 
 
 ## 0.5.3 Propose breakdown to user
 
-Present the proposed Feat breakdown using `AskUserQuestion`:
+Present the proposed Feat breakdown via your runtime's structured question tool when available; otherwise emit the same content as a plain-text message with the preview table and numbered options (plain text is the fallback, not a reason to skip). **End the turn and wait** for the user's choice before registering anything.
 
 - **Question header**: "Feat 拆分方案"
 - **Question body**: include a preview table showing each proposed Feat with ID, title, scope summary, and estimated complexity

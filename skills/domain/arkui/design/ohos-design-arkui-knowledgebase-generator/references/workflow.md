@@ -10,7 +10,7 @@ Confirm these before deep exploration:
 2. Type: public component, component family, common capability, API/SDK topic, or framework/internal mechanism.
 3. Work mode: create new `docs/kb/` page, update existing new KB, migrate old KB, or repair registry/index routing.
 
-If any item is missing, ask one concise question and wait. A quick metadata scan is allowed to identify candidate targets.
+If any item is missing, ask one concise question (structured question tool, or plain text if your runtime has none) and wait — do not infer a default. Never skip the question because the tool is absent. A quick metadata scan is allowed to identify candidate targets.
 
 ## Phase 2: KB-First Routing
 
