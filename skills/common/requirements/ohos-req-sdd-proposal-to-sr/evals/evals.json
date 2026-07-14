@@ -1,0 +1,27 @@
+{
+  "skill_name": "ohos-req-sdd-proposal-to-sr",
+  "evals": [
+    {
+      "id": 1,
+      "name": "ga-approved-sr-generation",
+      "prompt": "IR.md 和 05-proposal.md(status: GA-Approved, gate_a 有GA记录)均已就绪。IR的rr_id是RR-2026-0512-003。proposal_id是PROP-001。请生成 SR.md。",
+      "expected_output": "生成 proposals/PROP-001/SR.md，frontmatter rr_id 从IR继承。含GA通过证据表、系统需求基线表(含RR单号行)、接口责任表、追溯矩阵。status: GA-Approved。",
+      "assertions": [
+        {"text": "frontmatter rr_id: RR-2026-0512-003", "type": "contains"},
+        {"text": "status: GA-Approved", "type": "contains"},
+        {"text": "包含 GA 通过证据表", "type": "contains"},
+        {"text": "包含 IR -> Proposal -> SR -> AC 追溯矩阵", "type": "contains"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "ga-not-approved-rejection",
+      "prompt": "IR.md 和 05-proposal.md(status: Draft, gate_a 为空)均已就绪。请生成 SR.md。",
+      "expected_output": "拒绝生成SR，因为proposal状态不是GA-Approved。回传中说明拒绝原因。",
+      "assertions": [
+        {"text": "未生成 SR.md", "type": "llm_judge"},
+        {"text": "回传说明拒绝原因(proposal未通过GA)", "type": "llm_judge"}
+      ]
+    }
+  ]
+}
