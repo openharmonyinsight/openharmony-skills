@@ -1,6 +1,7 @@
 ---
 target_release: ""
 feature_id: ""        # 关联 platform_issues 的 FEAT-NNNNN
+rr_id: ""             # RR单号：从 IR.md 继承
 issue: ""
 author: ""
 date: ""
@@ -12,6 +13,13 @@ gate_a: ""           # GA 审视记录链接
 > 模板定位：SDD 入口 proposal，归档到对应代码仓，过 GATE A(GA: Proposal Gate)。
 > 以 ODK `core/templates/ai/proposal.md` 为基，融合 OpenSpec(Why) + MatrixSpec(User Stories/DFX)。
 > 对应 ohos-delivery-kit `docs/review-gates.md` 的 GA 输入交付件。
+
+## 基本信息
+
+| 字段 | 内容 |
+|------|------|
+| 需求ID | [FEAT-NNNNN] |
+| RR单号 | {从 IR.md 继承} |
 
 ## 1. 背景与问题（Why）
 <!-- 动机、问题陈述、当前痛点（OpenSpec Why 风格） -->

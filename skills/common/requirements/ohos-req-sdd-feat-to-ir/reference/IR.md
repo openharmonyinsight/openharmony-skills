@@ -1,5 +1,6 @@
 ---
 feature_id: "FEAT-NNNNN"
+rr_id: ""          # RR单号：从 04-feature.md 继承
 ir_id: ""
 generated_by: skill-feat-to-ir
 date: ""
@@ -9,6 +10,16 @@ status: Draft
 
 > 模板定位：Initial Requirement，由 skill-A（feat-to-ir）从 feature.md 生成。
 > 本轮内容留空，待 skill 实现时填充。
+
+> RR单号从 04-feature.md frontmatter `rr_id` 继承，不得为空（若 feature 无 RR单号则标注"未立项"）。
+
+## 0. 需求追踪
+
+| 字段 | 内容 |
+|------|------|
+| RR单号 | <!-- 从 04-feature.md 继承 --> |
+| Feature ID | <!-- FEAT-NNNNN --> |
+| IR ID | <!-- 本 IR 的编号 --> |
 
 ## 1. 需求价值
 <!-- 待 skill-A 填充 -->

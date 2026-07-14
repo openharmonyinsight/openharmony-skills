@@ -46,13 +46,14 @@ SR 是 GA 后锁定的系统需求基线。它定义系统需求、接口责任�
 ## 流程
 
 1. 读取 `reference/SR.md`、IR、proposal 和 GA 证据。
-2. **按 proposal 逐个生成 SR**：每个 GA-Approved 的 proposal 对应一个独立的 SR 文件。
-3. 记录该 proposal 的 GA 日期、结论、参与人和证据链接（§一）。
-4. 从该 proposal 和 IR 的需求陈述中提取系统需求基线（§二），不添加 proposal 未批准的新范围。填写「关联 SR」表引用其他 proposal 对应的 SR。
-5. 定义接口责任、提供方、消费方和语义约束（§三），不写实现签名。
-6. 填写验收标准、系统约束和维度涉及确认（§四）。
-7. 建立 `IR -> Proposal -> SR -> AC` 追溯矩阵（§五）。
-8. 保存到 `{docs_dir}/SR-{NN}.md`（编号与 proposal 对应，如 `SR-01.md` 对应 `05-proposal-01.md`），状态设为 `GA-Approved`。
+2. 从 `IR.md` frontmatter 继承 `rr_id` 到 SR.md frontmatter，并在 §二 需求概要表中填写 RR单号行。
+3. **按 proposal 逐个生成 SR**：每个 GA-Approved 的 proposal 对应一个独立的 SR 文件。
+4. 记录该 proposal 的 GA 日期、结论、参与人和证据链接（§一）。
+5. 从该 proposal 和 IR 的需求陈述中提取系统需求基线（§二），不添加 proposal 未批准的新范围。填写「关联 SR」表引用其他 proposal 对应的 SR。
+6. 定义接口责任、提供方、消费方和语义约束（§三），不写实现签名。
+7. 填写验收标准、系统约束和维度涉及确认（§四）。
+8. 建立 `IR -> Proposal -> SR -> AC` 追溯矩阵（§五）。
+9. 保存到 `{docs_dir}/SR-{NN}.md`（编号与 proposal 对应，如 `SR-01.md` 对应 `05-proposal-01.md`），状态设为 `GA-Approved`。
 
 ## 文件命名规则
 
@@ -65,6 +66,7 @@ SR 是 GA 后锁定的系统需求基线。它定义系统需求、接口责任�
 ## 自检
 
 - [ ] 所有关联 proposal 均有 GA 通过证据
+- [ ] RR单号已从 IR.md 继承（frontmatter `rr_id` + §二 需求概要表）
 - [ ] 每个 proposal 对应一个独立 SR 文件
 - [ ] 系统需求没有扩大已批准范围
 - [ ] 接口责任不依赖尚未生成的 spec/design
@@ -76,4 +78,4 @@ SR 是 GA 后锁定的系统需求基线。它定义系统需求、接口责任�
 ## 输出
 
 - 路径：`{docs_dir}/SR-{NN}.md`（每个 proposal 一个）或 `{docs_dir}/SR.md`（单一 proposal 时）
-- 回传：SR 文件列表、各 SR ID、GA proposal 数量、系统需求数量和追溯覆盖率
+- 回传：SR 文件列表、各 SR ID、RR单号、GA proposal 数量、系统需求数量和追溯覆盖率

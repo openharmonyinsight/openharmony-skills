@@ -1,5 +1,6 @@
 ---
 feature_id: ""
+rr_id: ""          # RR单号：从 IR.md 继承
 sr_id: ""
 generated_by: ""
 date: ""
@@ -33,6 +34,7 @@ source_revision: ""
 | 字段 | 内容 |
 |------|------|
 | 系统需求名称 | [需求名称] |
+| RR单号 | <!-- 从 IR.md 继承 --> |
 | 关联 Feature | [FEAT-NNNNN] |
 | 关联 IR | [IR ID] |
 | 优先级 | P0/P1/P2 |

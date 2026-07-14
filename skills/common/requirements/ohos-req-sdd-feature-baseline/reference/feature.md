@@ -1,5 +1,6 @@
 ---
 feature_id: "FEAT-NNNNN"
+rr_id: ""          # RR单号：从 01-requirement.md 继承
 title: ""
 date: ""
 status: Draft
@@ -11,6 +12,10 @@ status: Draft
 
 ## 1. 概述与价值
 <!-- 一句话核心诉求 + 业务价值 -->
+
+| 字段 | 内容 |
+|------|------|
+| RR单号 | <!-- 从 01-requirement.md 继承 --> |
 
 ## 2. 范围
 ### 目标

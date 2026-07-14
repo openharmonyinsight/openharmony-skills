@@ -69,7 +69,7 @@ metadata:
 
 ### Step 0.1: requirement.md — 需求导入
 
-调用 `ohos-requirement` 将原始诉求归一化为事实基线。
+调用 `ohos-requirement` 将原始诉求归一化为事实基线。必含 RR单号（如有），归入模板既有章节（frontmatter `rr_id` + §1 表格）；RR单号无值时在澄清环节向用户确认是否已立项。回传 RR单号。
 
 ### Step 0.1.5: 澄清门禁 ⭐ 强制
 
@@ -78,6 +78,7 @@ metadata:
 **定稿检查清单（全部 ✅ 才可进入 feasibility）：**
 
 - [ ] 每个章节所有字段有确认事实，无占位符
+- [ ] RR单号已回填（frontmatter `rr_id` + §1 表格；无 RR单号时标注"未立项"并附依据）
 - [ ] 所有 FR 有来源依据
 - [ ] 所有 NFR 有量化口径（"提升XX%"不算，必须有基线和目标值）
 - [ ] 优先级(P0/P1/P2)每项有判定依据
@@ -128,7 +129,7 @@ metadata:
 
 ### Step 0.4: feature.md — Feature 评审基线
 
-调用 `ohos-feature`，含拆分策略（三级优先+≤5人月约束）、影响性分析、遗留问题闭环校验。
+调用 `ohos-feature`，含拆分策略（三级优先+≤5人月约束）、影响性分析、遗留问题闭环校验。RR单号从 01-requirement.md frontmatter `rr_id` 继承。回传 RR单号。
 
 ### Step 0.4.1: 拆分结果确认 ⭐ 强制交互
 
@@ -183,15 +184,15 @@ Gate 决策后，主 Session 必须执行 FR→AC 追溯校验：
 
 ### Step 0.6: IR.md — Phase 0 正式出口
 
-调用 `ohos-feat-to-ir`。Gate 非 Ready 时拒绝生成。
+调用 `ohos-feat-to-ir`。Gate 非 Ready 时拒绝生成。RR单号从 04-feature.md frontmatter `rr_id` 继承。回传 RR单号。
 
 ### Step 0.8: Proposal 创建与 GATE A
 
-按 IR 拆解矩阵生成 proposal，每个独立完成澄清和 GATE A。
+按 IR 拆解矩阵生成 proposal，每个独立完成澄清和 GATE A。proposal 从 IR.md frontmatter `rr_id` 继承 RR单号。
 
 ### Step 0.9: SR 生成（Phase 0 收尾）
 
-每个 GA-Approved 的 proposal 对应一个独立的 SR 文件（`SR-01.md`、`SR-02.md`...），调用 `ohos-proposal-to-sr` 逐个生成。SR 是 Phase 0 的最终收尾产物。任一 proposal 未通过 GA 时，禁止生成对应 SR。
+每个 GA-Approved 的 proposal 对应一个独立的 SR 文件（`SR-01.md`、`SR-02.md`...），调用 `ohos-proposal-to-sr` 逐个生成。SR 从 IR.md frontmatter `rr_id` 继承 RR单号。SR 是 Phase 0 的最终收尾产物。任一 proposal 未通过 GA 时，禁止生成对应 SR。
 
 ### Step 0.9.1: 生成 handoff.md ⭐ 强制
 
@@ -299,4 +300,4 @@ spawn 时遵循下节「Token 经济性 & Context 工程」的绑定契约：tas
 
 ## 回传
 
-≤15 行：Phase 0 产物路径清单 + IR 状态 + proposal 数量 + SR 数量 + Gate 结论 + handoff.md 路径 + 下一步建议（"可启动 ohos-delivery 进入 Phase 1-9"）。不回传正式文档全文。
+≤15 行：Phase 0 产物路径清单 + RR单号 + IR 状态 + proposal 数量 + SR 数量 + Gate 结论 + handoff.md 路径 + 下一步建议（"可启动 ohos-delivery 进入 Phase 1-9"）。不回传正式文档全文。

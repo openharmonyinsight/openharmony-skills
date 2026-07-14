@@ -1,5 +1,6 @@
 ---
 feature_id: ""
+rr_id: ""          # RR单号：从 01-requirement.md 继承，全链路追踪
 generated_by: ""
 date: ""
 status: Draft
@@ -47,6 +48,7 @@ status: Draft
 
 | 决策 | 结论 | 来源 |
 |------|------|------|
+| RR单号 | [RR单号，全链路追踪] | 01-requirement.md |
 | 选定方案 | [方案名称一句话] | 03-decision.md §五 |
 | Gate 结论 | [Ready/Conditional/Not Ready] | 04-feature.md §八 |
 | 拆分方式 | [按仓+领域/按功能点/单一] | 04-feature.md §五 |
