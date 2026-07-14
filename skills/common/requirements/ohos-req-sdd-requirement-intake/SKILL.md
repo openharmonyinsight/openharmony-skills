@@ -1,6 +1,6 @@
 ---
 name: ohos-req-sdd-requirement-intake
-description: Use when importing an OHOS requirement into Phase 0.1, especially for 01-requirement.md, requirement intake, background, user value, scenarios, scope, FR/NFR, affected modules, or priority.
+description: Use when importing an OHOS requirement into Phase 0.1, especially for 01-requirement.md, requirement intake, background, user value, scenarios, scope, FR/NFR, affected modules, or priority. Triggers: 需求导入, 01-requirement, 需求基线, RR单号.
 metadata:
   author: openharmony
   scope: common
@@ -67,6 +67,11 @@ metadata:
 6. 检查功能点与 FR、场景与价值、NFR 与量化口径之间是否可追溯。
 7. 输出草稿到 `{docs_dir}/01-requirement.md`（frontmatter `status: Draft-NeedsClarification`）。
 8. 同时输出澄清问题清单到 `{docs_dir}/_draft/clarification-questions.md`。
+
+   澄清问题清单格式：
+   - 每个问题编号 Q-1, Q-2, ...
+   - 每条包含：问题描述、优先级(P0/P1/P2)
+   - 澄清后在对应问题下方追加 `**澄清结论**` 段，标注 ✅(已关闭) 或 ⚠️(条件待验证)，附结论摘要
 
 **模板保真门禁（生成后必须自检）：**
 

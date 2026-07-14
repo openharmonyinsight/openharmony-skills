@@ -179,7 +179,11 @@ docs_dir: {docs_dir}
    - "Not Ready"       → 阻塞；如 block_reasons 非空，用其内容生成 AskUserQuestion
 ```
 
-**禁止**：主 session 自己再读 01-04 推算 Gate——本 skill 的判定是唯一 Gate 结论。
+## NEVER
+
+- **禁止主 session 自行读 01-04 推算 Gate**: 必须通过 spawn 独立 subagent 执行，本 skill 的 JSON 输出是唯一 Gate 结论
+- **禁止在 Gate 输出 JSON 中添加 schema 外字段**: schema_version 1.0 固定字段不可增删，主 session 仅消费 gate/conditions/block_reasons 字段
+- **禁止在 04-feature.md 不存在时尝试从 01-03 推断 Gate 结论**: 必须直接判定 Not Ready 并返回错误说明
 
 ## 错误处理
 
