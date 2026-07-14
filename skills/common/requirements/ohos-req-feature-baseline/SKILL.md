@@ -5,7 +5,6 @@ metadata:
   author: openharmony
   scope: common
   stage: requirements
-  domain: sdd
   capability: feature-baseline
   version: 0.1.0
   status: draft
@@ -16,7 +15,7 @@ metadata:
 
 # OHOS Feature 评审基线
 
-**Announce at start:** "我正在使用 ohos-feature skill 生成 04-feature.md。"
+**Announce at start:** "我正在使用 ohos-req-feature-baseline skill 生成 04-feature.md。"
 
 ## 定位
 
@@ -26,7 +25,7 @@ metadata:
 
 - `{docs_dir}/01-requirement.md`
 - `{docs_dir}/02-feasibility.md`
-- `{docs_dir}/03-decision.md`
+- `{docs_dir}/03-arch-decision-record.md`
 
 ## 流程
 
@@ -55,12 +54,12 @@ metadata:
 
 ## 遗留问题闭环校验
 
-在生成 04-feature.md 之前，必须校验 03-decision.md §6 遗留问题闭环状态：
+在生成 04-feature.md 之前，必须校验 03-arch-decision-record.md §6 遗留问题闭环状态：
 
-1. 读取 03-decision.md §6 全部遗留项。
+1. 读取 03-arch-decision-record.md §6 全部遗留项。
 2. 对每条遗留项检查：负责人、解决动作、计划关闭时间 三字段是否齐全。
 3. 任一遗留项缺少三字段 → Gate 降级为 Not Ready，block_reasons 记录缺失项。
-4. §6 为占位（`[待用户评审会议后填写]`）且无实际遗留项 → Gate 降级为 Not Ready，block_reasons 记录"03-decision.md §6 遗留问题未由用户评审会议输入"。
+4. §6 为占位（`[待用户评审会议后填写]`）且无实际遗留项 → Gate 降级为 Not Ready，block_reasons 记录"03-arch-decision-record.md §6 遗留问题未由用户评审会议输入"。
 5. §6 无遗留项（用户评审会议认定无需遗留）→ 视为通过，无需阻断。
 
 ## Review Ready Gate
@@ -94,8 +93,8 @@ metadata:
 - [ ] 拆分结论包含事实依据
 - [ ] 拆分表每个 proposal 有估算工作量（人月，≤5）
 - [ ] 拆分结果已经用户确认（非 AI 自行定稿）
-- [ ] 03-decision.md §6 遗留问题由用户评审会议输入（非 AI 生成）
-- [ ] 03-decision.md §6 每条遗留项负责人/解决动作/计划关闭时间齐全
+- [ ] 03-arch-decision-record.md §6 遗留问题由用户评审会议输入（非 AI 生成）
+- [ ] 03-arch-decision-record.md §6 每条遗留项负责人/解决动作/计划关闭时间齐全
 
 ## NEVER
 
@@ -107,5 +106,5 @@ metadata:
 ## 输出
 
 - 路径：`{docs_dir}/04-feature.md`
-- 方案摘要章节：改为一句话引用 03-decision.md 选定方案，格式为 "选定方案: PATH-XX（参见 03-decision.md）"，不重复决策细节
+- 方案摘要章节：改为一句话引用 03-arch-decision-record.md 选定方案，格式为 "选定方案: PATH-XX（参见 03-arch-decision-record.md）"，不重复决策细节
 - 回传：路径、RR单号、Gate 结论、评审建议、拆分结论、影响性分析结论和阻塞项

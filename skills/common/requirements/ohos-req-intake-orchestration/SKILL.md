@@ -5,7 +5,6 @@ metadata:
   author: openharmony
   scope: common
   stage: requirements
-  domain: sdd
   capability: intake-orchestration
   version: 0.1.0
   status: draft
@@ -28,7 +27,7 @@ metadata:
 
 ## 输出
 
-- `01-requirement.md` → `02-feasibility.md` → `03-decision.md` → `04-feature.md`
+- `01-requirement.md` → `02-feasibility.md` → `03-arch-decision-record.md` → `04-feature.md`
 - `IR.md`（Phase 0 正式出口）
 - `05-proposal*.md`（拆分后）
 - `SR-*.md`（每个 GA-Approved proposal 对应一个 SR）
@@ -126,17 +125,17 @@ metadata:
 3. 校验 `02-feasibility.md` frontmatter `status: Clarified` 后才允许进入 Step 0.3.1。
 4. **模式 B 的强制暂停点增加此步骤**：模式 B 下不自动连续执行，必须等待用户逐轮澄清完成。
 
-### Step 0.3.1: decision.md 候选方案分析（阶段A）
+### Step 0.3.1: 03-arch-decision-record.md 候选方案分析（阶段A）
 
-调用 `ohos-req-solution-evaluation` 阶段A，输出 status=PendingDecision，§5-§6占位。
+调用 `ohos-req-arch-decision` 阶段A，输出 status=PendingDecision，§5-§6占位。
 
 ### Step 0.3.2: 决策结论收集 ⭐ 强制交互
 
 向用户收集：选定方案、决策理由、决策者、遗留问题清单（用户评审会议认定）。AI 不代行。
 
-### Step 0.3.3: decision.md 定稿（阶段B）
+### Step 0.3.3: 03-arch-decision-record.md 定稿（阶段B）
 
-调用 `ohos-req-solution-evaluation` 阶段B，基于用户结论定稿，status=Accepted。
+调用 `ohos-req-arch-decision` 阶段B，基于用户结论定稿，status=Accepted。
 
 ### Step 0.4: feature.md — Feature 评审基线
 
@@ -162,7 +161,7 @@ metadata:
 Feature 评审基线已生成。如需生成需求评审 PPT，请主动请求。
 ```
 
-模式 B 下不等待回复，继续后续步骤。用户后续可随时调用 `ohos-req-review-deck-generation` 单独生成 PPT。
+模式 B 下不等待回复，继续后续步骤。用户后续可随时调用 `ohos-req-value-ppt-gen` 单独生成 PPT。
 
 ### Step 0.5: Review Ready Gate 与拆分判断
 
@@ -177,7 +176,7 @@ Feature 评审基线已生成。如需生成需求评审 PPT，请主动请求�
 ```
 | 维度 | 结论 | 来源 |
 |------|------|------|
-| 选定方案 | {一句话} | 03-decision.md |
+| 选定方案 | {一句话} | 03-arch-decision-record.md |
 | Gate | {Ready/Conditional/Not Ready} | 04-feature.md |
 | 复杂度 | {L0/L1/L2/L3} | 04-feature.md |
 | 关键阻塞 | {BLK-XX} | 02-feasibility.md |
@@ -193,9 +192,22 @@ Gate 决策后，主 Session 必须执行 FR→AC 追溯校验：
 3. 编号不一致时标注并要求修正
 4. 校验结果写入 `04-feature.md` §5 备注（Gate 结论见 ohos-req-review-gate 产出的 `tmp/decision_gate_*.json`）
 
-### Step 0.6: IR.md — Phase 0 正式出口
+### Step 0.6: 评审决策纪要回流 ⭐ 强制交互
 
-调用 `ohos-req-feat-to-ir`。仅在 Gate=Not Ready 时拒绝生成；Gate=Conditional Ready 时允许生成，但必须把条件项、Owner、关闭动作和关闭时点写入 IR，IR status=Conditional。RR单号从 04-feature.md frontmatter `rr_id` 继承。回传 RR单号。
+评审会议结束后，调用 `ohos-req-value-decision` 记录决策纪要。
+
+1. 用户提供评审会议纪要
+2. skill 提取决策结论：接纳 / 不接纳 / 下次重新上会
+3. 路由：
+   - **接纳** → 放行进入 Step 0.7 feature-to-ir
+   - **不接纳** → 关闭/归档，Phase 0 结束
+   - **下次重新上会** → 退回对应 Step（标注需修改的文档和修改要求）
+
+**不允许跳过此步骤。** 用户必须提供评审决策结论。
+
+### Step 0.7: IR.md — Phase 0 正式出口
+
+调用 `ohos-req-feature-to-ir`。仅在 Gate=Not Ready 时拒绝生成；Gate=Conditional Ready 时允许生成，但必须把条件项、Owner、关闭动作和关闭时点写入 IR，IR status=Conditional。RR单号从 04-feature.md frontmatter `rr_id` 继承。回传 RR单号。
 
 ### Step 0.8: Proposal 创建与 GATE A
 
@@ -218,7 +230,7 @@ handoff.md 是 Phase 0 到 Phase 1-9 的唯一交接点，包含：
 **handoff.md 完整性校验（生成后必须执行）：**
 1. 代码路径完整性：提取 02-feasibility.md §2.1 所有 `文件:行号` 引用，验证在 handoff.md 出现
 2. 条件项完整性：提取 04-feature.md §5 所有 proposal 依赖和前置条件，验证在 handoff.md 出现
-3. 决策完整性：提取 03-decision.md §5决策结论，验证在 handoff.md 出现
+3. 决策完整性：提取 03-arch-decision-record.md §5决策结论，验证在 handoff.md 出现
 4. Proposal 拆解完整性：提取 IR.md 末尾「Proposal 拆解」补充章节所有行，验证在 handoff.md 出现
 
 ## 产物分类与目录规范
@@ -252,6 +264,7 @@ spawn 时遵循下节「Token 经济性 & Context 工程」的绑定契约：tas
 - **Step 0.2.5** feasibility 澄清门禁
 - **Step 0.3.2** 决策结论收集
 - **Step 0.4.1** 拆分结果确认
+- **Step 0.6** 评审决策纪要回流
 
 可选步骤（PPT 生成）在用户未请求时自动跳过。
 

@@ -5,7 +5,6 @@ metadata:
   author: openharmony
   scope: common
   stage: requirements
-  domain: sdd
   capability: review-gate
   version: 0.1.0
   status: draft
@@ -16,7 +15,7 @@ metadata:
 
 # OHOS Review Ready Gate (结构化判定)
 
-**Announce at start:** "我正在使用 ohos-review-gate skill 对 04-feature.md 执行 Review Ready Gate。"
+**Announce at start:** "我正在使用 ohos-req-review-gate skill 对 04-feature.md 执行 Review Ready Gate。"
 
 ## 定位
 
@@ -34,7 +33,7 @@ metadata:
 
 - `{docs_dir}/01-requirement.md`
 - `{docs_dir}/02-feasibility.md`
-- `{docs_dir}/03-decision.md`
+- `{docs_dir}/03-arch-decision-record.md`
 - `{docs_dir}/04-feature.md`
 - `reference/feature-checklist.md`（检查项定义来源）
 
@@ -42,7 +41,7 @@ metadata:
 
 ## Gate 检查项（8 项固定 + 3 项结构一致性 + 1 项遗留问题闭环 = 12 项；条件项为独立字段）
 
-8 项固定检查对应 `feature.md` §1-§5（拆分决策与工作量约束同属 §5）+ 技术方向（引用 03-decision.md）+ 影响性分析（模板外补充章节），避免规则两套。3 项结构一致性检查为本 skill 新增，确保跨文档数据传播完整。1 项遗留问题闭环检查确保 03-decision.md §6 由用户评审会议输入且闭环可追溯。逐项读取 `04-feature.md` 对应章节，按以下规则判定：
+8 项固定检查对应 `feature.md` §1-§5（拆分决策与工作量约束同属 §5）+ 技术方向（引用 03-arch-decision-record.md）+ 影响性分析（模板外补充章节），避免规则两套。3 项结构一致性检查为本 skill 新增，确保跨文档数据传播完整。1 项遗留问题闭环检查确保 03-arch-decision-record.md §6 由用户评审会议输入且闭环可追溯。逐项读取 `04-feature.md` 对应章节，按以下规则判定：
 
 **固定检查项（8 项）**：
 
@@ -54,7 +53,7 @@ metadata:
 | 受影响范围 | 明确跨仓模块、Owner/SIG | §4 至少 1 条影响范围行非占位符 |
 | 拆分决策 | 有拆分结论和 proposal 边界 | §5 章节存在且非占位符 |
 | 工作量约束 | 每个 proposal ≤5 人月（如已拆分） | §5 每个 proposal 工作量 ≤5 |
-| 技术方向 | 有选定方案（引用 decision.md） | 选定方案引用 03-decision.md（feature 模板无对应章节） |
+| 技术方向 | 有选定方案（引用 03-arch-decision-record.md） | 选定方案引用 03-arch-decision-record.md（feature 模板无对应章节） |
 | 影响性分析 | 5方影响类型已分析 | 影响性分析章节（模板外补充）5 行均非占位符 |
 
 **结构一致性检查项（3 项新增，仅做 Ready/Conditional/Not Ready 决策判定，不重复校验内容）**：
@@ -71,7 +70,7 @@ metadata:
 
 | 检查项 | 要求 | 判定方法 |
 |--------|------|----------|
-| 遗留问题闭环 | 03-decision.md §6 遗留问题由用户评审会议输入且每条负责人/解决动作/计划关闭时间齐全 | 读取03 §6：①含占位标注`[待用户评审会议后填写]`→fail（block_reasons:"03-decision.md §6遗留问题未由用户评审会议输入"）；②任一遗留项缺少负责人/解决动作/计划关闭时间→fail（block_reasons:"遗留项三字段不全"）；③无遗留项（用户认定无需遗留）或全部齐全→pass |
+| 遗留问题闭环 | 03-arch-decision-record.md §6 遗留问题由用户评审会议输入且每条负责人/解决动作/计划关闭时间齐全 | 读取03 §6：①含占位标注`[待用户评审会议后填写]`→fail（block_reasons:"03-arch-decision-record.md §6遗留问题未由用户评审会议输入"）；②任一遗留项缺少负责人/解决动作/计划关闭时间→fail（block_reasons:"遗留项三字段不全"）；③无遗留项（用户认定无需遗留）或全部齐全→pass |
 
 **条件项检查（独立字段）**：
 - `04-feature.md` 中所有标记为"⚠️"或"未通过/未知"的项必须都有 Owner 和关闭时点，否则提升为失败项
@@ -110,7 +109,7 @@ metadata:
     {"id": "affected_scope", "name": "受影响范围", "status": "pass", "evidence": "...", "section_ref": "§4"},
     {"id": "split_decision", "name": "拆分决策", "status": "pass", "evidence": "...", "section_ref": "§5"},
     {"id": "effort_constraint", "name": "工作量约束", "status": "pass", "evidence": "每个 proposal ≤5 人月", "section_ref": "§5"},
-    {"id": "tech_direction", "name": "技术方向", "status": "pass", "evidence": "...", "section_ref": "技术方向(03-decision.md)"},
+    {"id": "tech_direction", "name": "技术方向", "status": "pass", "evidence": "...", "section_ref": "技术方向(03-arch-decision-record.md)"},
     {"id": "impact_analysis", "name": "影响性分析", "status": "pass", "evidence": "5方影响类型已分析", "section_ref": "影响性分析(模板外补充)"},
      {"id": "module_coverage", "name": "模块覆盖完整性", "status": "pass", "evidence": "04§4覆盖02§2.1全部仓库", "section_ref": "02§2.1→04§4"},
      {"id": "term_consistency", "name": "影响类型术语一致性", "status": "pass", "evidence": "影响类型标签一致", "section_ref": "02§2.1→04§4"},
@@ -191,7 +190,7 @@ docs_dir: {docs_dir}
 |------|------|
 | 04-feature.md 不存在 | 返回 `feature_md_exists: false`、`gate: "Not Ready"`、`block_reasons: ["04-feature.md 不存在，请先执行 ohos-feature"]` |
 | 04-feature.md 存在但 8 项表格完全空白 | 视为 Not Ready，所有 8 项均记 fail |
-| 02/03 缺失但 04 存在 | 仅依据 04 判定 8 项固定检查；3 项结构一致性检查退化规则：02缺失时 module_coverage / term_consistency / condition_propagation 均判 `warn`；03缺失时 condition_propagation 判 `warn` + followup_closure 判 `fail`（block_reasons: "03-decision.md 缺失，遗留问题闭环无法验证"）；02+03同时缺失时 4 项均判 `warn`/`fail` |
+| 02/03 缺失但 04 存在 | 仅依据 04 判定 8 项固定检查；3 项结构一致性检查退化规则：02缺失时 module_coverage / term_consistency / condition_propagation 均判 `warn`；03缺失时 condition_propagation 判 `warn` + followup_closure 判 `fail`（block_reasons: "03-arch-decision-record.md 缺失，遗留问题闭环无法验证"）；02+03同时缺失时 4 项均判 `warn`/`fail` |
 | JSON 写入失败 | 回传错误，主 session 退化为人工 Gate |
 
 ## 自检

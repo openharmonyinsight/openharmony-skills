@@ -17,7 +17,7 @@ status: Draft
 |--------|------|------|
 | 01-requirement.md status=Clarified | ✅/⚠️/❌ | `{docs_dir}/01-requirement.md` |
 | 02-feasibility.md 存在 | ✅/⚠️/❌ | `{docs_dir}/02-feasibility.md` |
-| 03-decision.md status=Accepted | ✅/⚠️/❌ | `{docs_dir}/03-decision.md` |
+| 03-arch-decision-record.md status=Accepted | ✅/⚠️/❌ | `{docs_dir}/03-arch-decision-record.md` |
 | 04-feature.md Gate=Ready/Conditional Ready | ✅/⚠️/❌ | `{docs_dir}/04-feature.md` |
 | 拆分结果已用户确认 | ✅/⚠️/❌ | 04-feature.md §五 |
 | IR.md 存在 | ✅/⚠️/❌ | `{docs_dir}/IR.md` |
@@ -39,7 +39,7 @@ status: Draft
 |------|------|
 | requirement | `{docs_dir}/01-requirement.md` |
 | feasibility | `{docs_dir}/02-feasibility.md` |
-| decision | `{docs_dir}/03-decision.md` |
+| decision | `{docs_dir}/03-arch-decision-record.md` |
 | feature | `{docs_dir}/04-feature.md` |
 | IR | `{docs_dir}/IR.md` |
 | SR | `{docs_dir}/SR.md`（单一 proposal）或 `{docs_dir}/SR-*.md`（多 proposal，每个一个） |
@@ -49,7 +49,7 @@ status: Draft
 | 决策 | 结论 | 来源 |
 |------|------|------|
 | RR单号 | [RR单号，全链路追踪] | 01-requirement.md |
-| 选定方案 | [方案名称一句话] | 03-decision.md §五 |
+| 选定方案 | [方案名称一句话] | 03-arch-decision-record.md §五 |
 | Gate 结论 | [Ready/Conditional/Not Ready] | `tmp/decision_gate_*.json`（ohos-req-review-gate 产出） |
 | 拆分方式 | [按仓+领域/按功能点/单一] | 04-feature.md §五 |
 
@@ -68,9 +68,9 @@ status: Draft
 - [ ] IR.md 文件存在
 - [ ] 04-feature.md 存在且 Gate ≠ Not Ready
 - [ ] 04-feature.md 拆分结果已经用户确认
-- [ ] 03-decision.md 存在且 status=Accepted
-- [ ] 03-decision.md §6 遗留问题由用户评审会议输入（非占位）（旧版文档可能标注为 §四，需兼容）
-- [ ] 03-decision.md §6 每条遗留项负责人/解决动作/计划关闭时间齐全（任一缺失→阻断交接）
+- [ ] 03-arch-decision-record.md 存在且 status=Accepted
+- [ ] 03-arch-decision-record.md §6 遗留问题由用户评审会议输入（非占位）（旧版文档可能标注为 §四，需兼容）
+- [ ] 03-arch-decision-record.md §6 每条遗留项负责人/解决动作/计划关闭时间齐全（任一缺失→阻断交接）
 - [ ] 每个 proposal 估算工作量 ≤5 人月
 - [ ] 至少一个 proposal 文件存在
 - [ ] GA-Approved 的 proposal 均有对应 SR 文件

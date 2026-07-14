@@ -1,11 +1,10 @@
 ---
-name: ohos-req-feat-to-ir
+name: ohos-req-feature-to-ir
 description: Use when an OHOS Feature has completed the Phase 0 Review Ready Gate and an Initial Requirement baseline is needed before proposal creation or cross-repository requirement splitting.
 metadata:
   author: openharmony
   scope: common
   stage: requirements
-  domain: sdd
   capability: feat-to-ir
   version: 0.1.0
   status: draft
@@ -16,7 +15,7 @@ metadata:
 
 # OHOS Feature 转 IR
 
-**Announce at start:** "我正在使用 ohos-feat-to-ir skill 生成 IR.md。"
+**Announce at start:** "我正在使用 ohos-req-feature-to-ir skill 生成 IR.md。"
 
 ## 定位
 
@@ -26,7 +25,7 @@ IR 是 Phase 0 的正式出口。一个 Feature 只生成一个平台级 `IR.md`
 
 - `01-requirement.md`
 - `02-feasibility.md`
-- `03-decision.md`
+- `03-arch-decision-record.md`
 - `04-feature.md`
 - Feature Gate 必须是 `Ready` 或 `Conditional Ready`
 

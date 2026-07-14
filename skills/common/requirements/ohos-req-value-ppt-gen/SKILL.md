@@ -1,11 +1,10 @@
 ---
-name: ohos-req-review-deck-generation
+name: ohos-req-value-ppt-gen
 description: Use when converting an OpenHarmony requirement document, spec, or design proposal into an OpenHarmony review slide deck (需求评审 / 需求变更评审 / 设计评审 PPTX) — produces the fixed OpenHarmony-branded review-deck structure (OH logo on every page) with architecture/flow diagrams and field tables. Triggers on "需求评审PPT", "需求变更评审", "把需求文档转成评审PPT", "spec转评审PPT", "requirement/spec to review deck". NOT for arbitrary or generic slide decks unrelated to OpenHarmony requirement/design review.
 metadata:
   author: openharmony
   scope: common
   stage: requirements
-  domain: sdd
   capability: review-deck-generation
   version: 0.1.0
   status: draft
@@ -15,6 +14,8 @@ metadata:
 ---
 
 # OpenHarmony Requirement-Review PPTX Deck Generation
+
+**Announce at start:** "我正在使用 ohos-req-value-ppt-gen skill 生成需求评审 PPT。"
 
 ## Overview
 

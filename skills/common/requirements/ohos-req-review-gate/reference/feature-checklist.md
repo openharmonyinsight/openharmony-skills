@@ -13,7 +13,7 @@
 | 受影响范围 | §4 受影响模块（跨仓） | 检查 §4 表格是否有跨仓模块和 Owner/SIG | ≥1 行影响范围行完整（仓库+模块+影响类型非占位符） | 有行但缺 Owner/SIG | §4 缺失或全部占位符 |
 | 拆分决策 | §5 拆解指引 | 检查 §5 是否有拆分结论和 proposal 边界 | 有拆分结论 + 每个 proposal 边界描述 | 有拆分结论但 proposal 边界模糊 | §5 缺失或无拆分结论 |
 | 工作量约束 | §5 拆解指引 | 检查 §5 每个 proposal 工作量是否 ≤5 人月 | 所有 proposal ≤5 人月 | —（无 warn 态） | 任一 proposal >5 人月（block_reasons: "proposal 工作量超限"） |
-| 技术方向 | 技术方向（引用 03-decision.md） | 检查是否引用 03-decision.md 的选定方案 | 明确引用 03-decision.md 选定方案编号 | 引用但方案编号不匹配 03 §5 | 无引用或 03-decision.md 不存在 |
+| 技术方向 | 技术方向（引用 03-arch-decision-record.md） | 检查是否引用 03-arch-decision-record.md 的选定方案 | 明确引用 03-arch-decision-record.md 选定方案编号 | 引用但方案编号不匹配 03 §5 | 无引用或 03-arch-decision-record.md 不存在 |
 | 影响性分析 | 影响性分析（模板外补充章节） | 检查 5 方影响类型是否均已分析 | 5 行均非占位符 | 3-4 行非占位符 | ≤2 行非占位符或章节缺失 |
 
 **边缘情况处理规则：**
@@ -40,16 +40,16 @@
 
 ## 遗留问题闭环检查项（1 项）
 
-| 检查项 | 03-decision.md 章节 | 判定方法 | Pass | Warn | Fail |
+| 检查项 | 03-arch-decision-record.md 章节 | 判定方法 | Pass | Warn | Fail |
 |--------|----------------------|----------|------|------|------|
 | 遗留问题闭环 | §6 | 检查遗留问题是否由用户评审会议输入且每条三字段齐全 | 无遗留项（用户认定无需遗留）或全部齐全 | —（无 warn 态） | 含占位标注 `[待用户评审会议后填写]` 或任一遗留项缺负责人/解决动作/计划关闭时间 |
 
 **边缘情况处理规则：**
 
 - **遗留问题闭环无 warn 态**：要么闭环（pass）要么未闭环（fail），不存在中间态
-- **03 §6 含占位标注**：直接 fail，block_reasons: "03-decision.md §6 遗留问题未由用户评审会议输入"
+- **03 §6 含占位标注**：直接 fail，block_reasons: "03-arch-decision-record.md §6 遗留问题未由用户评审会议输入"
 - **遗留项三字段不全**：fail，block_reasons: "遗留项三字段不全"
-- **03-decision.md 缺失**：fail，block_reasons: "03-decision.md 缺失，遗留问题闭环无法验证"
+- **03-arch-decision-record.md 缺失**：fail，block_reasons: "03-arch-decision-record.md 缺失，遗留问题闭环无法验证"
 
 ## 条件项检查（独立字段）
 

@@ -5,7 +5,6 @@ metadata:
   author: openharmony
   scope: common
   stage: requirements
-  domain: sdd
   capability: proposal-to-sr
   version: 0.1.0
   status: draft
@@ -16,7 +15,7 @@ metadata:
 
 # OHOS Proposal 转 SR
 
-**Announce at start:** "我正在使用 ohos-proposal-to-sr skill 生成 SR.md。"
+**Announce at start:** "我正在使用 ohos-req-proposal-to-sr skill 生成 SR.md。"
 
 ## 定位
 

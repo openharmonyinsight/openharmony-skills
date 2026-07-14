@@ -5,7 +5,6 @@ metadata:
   author: openharmony
   scope: common
   stage: requirements
-  domain: sdd
   capability: requirement-intake
   version: 0.1.0
   status: draft
@@ -16,7 +15,7 @@ metadata:
 
 # OHOS 需求导入
 
-**Announce at start:** "我正在使用 ohos-requirement skill 生成 01-requirement.md。"
+**Announce at start:** "我正在使用 ohos-req-requirement-intake skill 生成 01-requirement.md。"
 
 ## 定位
 

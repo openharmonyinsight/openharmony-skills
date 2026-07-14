@@ -28,7 +28,7 @@
       "id": 3,
       "name": "no-roi-no-recommendation",
       "prompt": "基于已就绪的 01-requirement.md(需求：优化分布式软总线连接延迟)，生成 02-feasibility.md。请确保包含 ROI 分析并推荐最优方案。",
-      "expected_output": "skill 应拒绝生成 ROI 章节和不推荐方案。在回传中说明'feasibility 不生成 ROI 章节'和'方案选型属于 decision.md'。",
+      "expected_output": "skill 应拒绝生成 ROI 章节和不推荐方案。在回传中说明'feasibility 不生成 ROI 章节'和'方案选型属于 03-arch-decision-record.md'。",
       "assertions": [
         {"text": "不存在 ROI 章节", "type": "not_contains"},
         {"text": "不存在 推荐方案 或 建议选择", "type": "not_contains"},
