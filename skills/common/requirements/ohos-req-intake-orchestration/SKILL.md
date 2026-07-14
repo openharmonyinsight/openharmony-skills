@@ -11,6 +11,34 @@ metadata:
   tags:
     - sdd
     - requirements
+  related-skills:
+    - name: ohos-req-requirement-intake
+      required: true
+      min_version: 0.1.0
+    - name: ohos-req-feasibility-analysis
+      required: true
+      min_version: 0.1.0
+    - name: ohos-req-arch-decision
+      required: true
+      min_version: 0.1.0
+    - name: ohos-req-feature-baseline
+      required: true
+      min_version: 0.1.0
+    - name: ohos-req-review-gate
+      required: true
+      min_version: 0.1.0
+    - name: ohos-req-value-decision
+      required: true
+      min_version: 0.1.0
+    - name: ohos-req-value-ppt-gen
+      required: false
+      min_version: 0.1.0
+    - name: ohos-req-feature-to-ir
+      required: true
+      min_version: 0.1.0
+    - name: ohos-req-proposal-to-sr
+      required: true
+      min_version: 0.1.0
 ---
 
 **Announce at start:** "我正在使用 ohos-req-intake-orchestration skill 编排 Phase 0 需求导入流程。"
@@ -67,6 +95,31 @@ metadata:
 **Phase 0 串行无环，不可跳步。**
 
 ## 流程
+
+### Step 0: 启动预检 ⭐ 强制
+
+Phase 0 工作流启动前，必须执行依赖完整性预检：
+
+```bash
+bash {SKILL_HOME}/skills/common/requirements/ohos-req-intake-orchestration/scripts/install_related_skills.sh --check
+```
+
+预期输出：
+```
+Bundle: ohos-phase0-intake
+Installed: 10/10
+Required missing: 0
+Version mismatch: 0
+Result: READY
+```
+
+**任何必选 Skill 缺失或版本不匹配 → 阻断 Phase 0 启动**，返回缺失列表和安装命令：
+
+```bash
+bash {SKILL_HOME}/skills/common/requirements/ohos-req-intake-orchestration/scripts/install_related_skills.sh --install
+```
+
+安装脚本从同一仓库、同一 commit 安装所有依赖 Skill，确保版本一致。安装后重新执行预检，通过后才允许进入 Step 0.1。
 
 ### Step 0.1: requirement.md — 需求导入
 
