@@ -269,7 +269,8 @@ deck.flow_slide("System Design — Data Flow", [
     {"title": "normalize",    "lines": ["resolve binding"], "change": True},
     {"title": "windows mgr",  "lines": ["hit test, isolate state"], "change": True},
     {"title": "UDS dispatch",  "lines": ["consistent ids"]},
-], note=["normalize resolves the binding before coordinate calc.",
+], takeaway="结论：变更集中在 normalize 与窗口命中两处",
+   note=["normalize resolves the binding before coordinate calc.",
          "Light-amber ★变更 boxes are the change points."])
 ```
 
@@ -287,6 +288,7 @@ deck.layered_diagram_slide("System Design — Framework", [
         {"title": "normalize", "lines": ["resolve"], "change": True},
         {"title": "dispatch",  "lines": ["consistent"]}]},
 ], connect=[[[0, 1], [1, 1]]],   # BindHelper → normalize (down arrow)
+   takeaway="结论：BindHelper 变更下沉到 normalize 阶段",
    note="Helper feeds the normalize stage.")
 ```
 
@@ -352,16 +354,24 @@ What this page reliably gets wrong (the top two are the most-reported):
    - **需求评审 deck →** copy `examples/requirement_review_oneshot.py`, fill `spec`,
      `deck.requirement_review_deck(spec)` → `deck.save()`. One call, done.
    - **Other decks →** `Deck()` → one method call per slide → `deck.save()`.
-4. Run it. Then **verify** (next section). Report the output path + slide count.
+4. Wrap the build in `warnings.catch_warnings(record=True)` so any
+   `table_slide` content-overflow warning is captured, not just printed and
+   lost — see **Verification** below.
+5. Run it. Then **verify** (next section). Report the output path + slide count.
 
 ## Verification before claiming done
 
-Always run this after building — it confirms the file opens and nothing
-overflows the canvas:
+Always run this after building — it confirms the file opens, no
+`table_slide` overflowed its content, and nothing overflows the canvas:
 
 ```python
+import warnings
+with warnings.catch_warnings(record=True) as w:
+    warnings.simplefilter("always")
+    # ... build the deck here (or re-import/re-run the build script) ...
+    table_warnings = [str(x.message) for x in w if "table" in str(x.message)]
+
 from pptx import Presentation
-from pptx.util import Emu
 p = Presentation("output.pptx"); W, H = p.slide_width, p.slide_height
 bad = 0
 for i, s in enumerate(p.slides):
@@ -369,10 +379,23 @@ for i, s in enumerate(p.slides):
         if sh.left is None: continue
         if sh.left < 0 or sh.top < 0 or sh.left+sh.width > W+2000 or sh.top+sh.height > H+2000:
             bad += 1; print("overflow on slide", i+1)
-print("slides:", len(p.slides._sldIdLst), "overflow:", bad)   # overflow must be 0
+print("slides:", len(p.slides._sldIdLst), "overflow:", bad,
+      "table warnings:", len(table_warnings))
+# both overflow == 0 AND table_warnings == [] must hold
 ```
 
-No renderer (LibreOffice) is needed; the bounds check is the smoke test.
+No renderer (LibreOffice) is needed; the bounds check is the smoke test. It
+catches SHAPE-level overflow (a table/box positioned or sized past the
+canvas edge). `table_slide()` now sizes each row to the actual measured
+wrapped-text height of its cells (not a flat row-count average), and leaves
+the table at its true (taller) height instead of force-compressing it when
+content doesn't fit — so a table with genuinely too much text pushes its
+shape past `BODY_BOTTOM` and IS caught by the check above, rather than
+silently shrinking rows until text is visually clipped. If `table_slide()`
+cannot fit the content even at its minimum font size, it also raises a
+Python `UserWarning` naming the table — treat that warning as a build
+failure and split the rows across multiple `table_slide()` calls or shorten
+the cell text.
 
 **`takeaway` is enforced — the build fails without it.** A content slide built
 without `takeaway="结论：…"` raises `ValueError` naming the slide, so a deck that saves

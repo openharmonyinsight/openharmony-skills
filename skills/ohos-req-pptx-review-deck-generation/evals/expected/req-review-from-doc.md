@@ -2,8 +2,11 @@
 
 ## must（必须满足）
 
-- 使用 `from deckbuilder import Deck`，逐页调用 slide 方法后 `deck.save(...)`；
-  不手搓 `python-pptx` 形状、不手算英寸坐标、不传 `RGBColor(...)`。
+- 使用 `from deckbuilder import Deck`；不手搓 `python-pptx` 形状、不手算英寸坐标、
+  不传 `RGBColor(...)`。**首选** `deck.requirement_review_deck(spec)` 一次调用生成
+  全部 8 页（`SKILL.md` 的 Fastest path）；也接受逐页调用 `value_slide` /
+  `design_slide` / `table_slide` 等 builder 手动拼出同样的 8 页结构 —— 两种路径
+  等价，均判定通过，只要最终页序、builder 选择、固定行/列结构一致。
 - 严格遵循 `references/requirement-review-template.md` 的固定 8 页结构（按此顺序）：
   1. 封面
   2. 需求价值描述（`value_slide`，左文右图）
@@ -22,10 +25,12 @@
   是否有安全风险；是否涉及合法/合规问题；是否涉及外部承诺；是否开源；是否涉及 AI；
   隐私风险特性识别。
 - 第 3 页右侧为真实**框图**（`diagram=` layers 或 `image=`），不是要点列表。
-- 第 4–8 页均传 `takeaway="结论：…"`（结论先行）。
+- 第 4–8 页均传 `takeaway="结论：…"`（结论先行）——用一键路径时由 `spec` 里各节的
+  `takeaway` 字段提供，缺省则退回 `requirement_review_deck` 的默认结论文案。
 - 文档中缺失的字段（需求编号、SIG 决策纪要、落地版本、设计者、代码行数、端到端工作量、
   领域PM、适用地区/产品、外部承诺、合规/安全结论）标注 `待评估 / TBD`，并在回复里列回给用户。
-- 构建后跑 overflow 边界检查，结果为 0；回复给出输出路径 + 页数。
+- 构建后跑 overflow 边界检查，结果为 0，且没有 `table_slide` 内容溢出警告；回复给出
+  输出路径 + 页数。
 
 ## must_not（不允许出现）
 
@@ -33,3 +38,4 @@
 - 把第 3 页设计方案右侧做成纯要点列表（bullet list）而非框图。
 - 凭空编造文档没有的事实（需求编号、SIG 评审结论、落地版本、设计者、工作量、产品名、地区）当作确定值。
 - 自创大纲、偏离 8 页模板；增删第 5 页影响对象、第 6 页计划表列或第 8 页风险评估的固定行。
+
