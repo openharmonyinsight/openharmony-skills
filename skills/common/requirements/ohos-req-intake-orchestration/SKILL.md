@@ -71,7 +71,7 @@ metadata:
 
 ### Step 0.1: requirement.md — 需求导入
 
-调用 `ohos-requirement` 将原始诉求归一化为事实基线。必含 RR单号（如有），归入模板既有章节（frontmatter `rr_id` + §1 表格）；RR单号无值时在澄清环节向用户确认是否已立项。回传 RR单号。
+调用 `ohos-req-requirement-intake` 将原始诉求归一化为事实基线。必含 RR单号（如有），归入模板既有章节（frontmatter `rr_id` + §1 表格）；RR单号无值时在澄清环节向用户确认是否已立项。回传 RR单号。
 
 ### Step 0.1.5: 澄清门禁 ⭐ 强制
 
@@ -95,14 +95,14 @@ metadata:
 启动 `02-feasibility.md` 前，主 Session 基于 `{docs_dir}/01-requirement.md` 推导建议补充资料清单，提醒用户可提供本地关键代码仓路径、接口文档、Owner 结论或前置依赖资料。
 
 提醒后等待用户二选一：
-- 用户提供资料：记录到 `{docs_dir}/_draft/feasibility-inputs.md`，再调用 `ohos-feasibility`。
-- 用户确认不提供额外资料：记录"用户确认不额外提供"，再调用 `ohos-feasibility`，按证据受限口径标注。
+- 用户提供资料：记录到 `{docs_dir}/_draft/feasibility-inputs.md`，再调用 `ohos-req-feasibility-analysis`。
+- 用户确认不提供额外资料：记录"用户确认不额外提供"，再调用 `ohos-req-feasibility-analysis`，按证据受限口径标注。
 
 记录格式参考 `reference/feasibility-inputs.md`。
 
 ### Step 0.1.9: 轻量代码预检（主 Session 执行）
 
-`ohos-feasibility` subagent 在隔离上下文中运行，无法直接访问代码仓。spawn 前主 Session 必须先执行轻量代码预检，产出代码证据包供 subagent 使用。
+`ohos-req-feasibility-analysis` subagent 在隔离上下文中运行，无法直接访问代码仓。spawn 前主 Session 必须先执行轻量代码预检，产出代码证据包供 subagent 使用。
 
 1. 从 `{docs_dir}/01-requirement.md` 提取技术关键词
 2. 查询知识库咨询路径表（若有），补充可能涉及的源码仓、模块或检索方向
@@ -111,15 +111,24 @@ metadata:
 
 **预检范围限定：≤3 个关键词，≤2 个仓库，每仓库 ≤10 条命中。** 目标是让 feasibility 有代码级证据，不是做全面分析（那是 Phase 2.0 的职责）。
 
-> 若无可访问的代码仓或知识库，预检可跳过；`ohos-feasibility` 按其 Fallback 规则（Read 工具读取实际代码 / 降级为 `warn`）处理，不硬 fail。
+> 若无可访问的代码仓或知识库，预检可跳过；`ohos-req-feasibility-analysis` 按其 Fallback 规则（Read 工具读取实际代码 / 降级为 `warn`）处理，不硬 fail。
 
 ### Step 0.2: feasibility.md — 可行性分析
 
-前置：requirement.md status=Clarified，且 Step 0.1.8 已完成、Step 0.1.9 代码证据包已落盘（或确认无可预检内容）。调用 `ohos-feasibility`，spawn 时传入 `{kb_precheck_path}`。
+前置：requirement.md status=Clarified，且 Step 0.1.8 已完成、Step 0.1.9 代码证据包已落盘（或确认无可预检内容）。调用 `ohos-req-feasibility-analysis`，spawn 时传入 `{kb_precheck_path}`。
+
+### Step 0.2.5: feasibility 澄清门禁 ⭐ 强制
+
+`ohos-req-feasibility-analysis` 规定草稿生成后必须暂停、逐轮澄清、定稿检查全部通过后才允许进入 decision。本步骤为强制门禁：
+
+1. feasibility 草稿生成后（frontmatter `status: Draft-NeedsClarification`），主 Session 必须暂停展示澄清问题并逐轮回填，不允许直接进入 Step 0.3.1。
+2. 逐轮澄清规则参见 `ohos-req-feasibility-analysis` SKILL.md「第二阶段：逐轮人工澄清」。
+3. 校验 `02-feasibility.md` frontmatter `status: Clarified` 后才允许进入 Step 0.3.1。
+4. **模式 B 的强制暂停点增加此步骤**：模式 B 下不自动连续执行，必须等待用户逐轮澄清完成。
 
 ### Step 0.3.1: decision.md 候选方案分析（阶段A）
 
-调用 `ohos-decision` 阶段A，输出 status=PendingDecision，§5-§6占位。
+调用 `ohos-req-solution-evaluation` 阶段A，输出 status=PendingDecision，§5-§6占位。
 
 ### Step 0.3.2: 决策结论收集 ⭐ 强制交互
 
@@ -127,11 +136,11 @@ metadata:
 
 ### Step 0.3.3: decision.md 定稿（阶段B）
 
-调用 `ohos-decision` 阶段B，基于用户结论定稿，status=Accepted。
+调用 `ohos-req-solution-evaluation` 阶段B，基于用户结论定稿，status=Accepted。
 
 ### Step 0.4: feature.md — Feature 评审基线
 
-调用 `ohos-feature`，含拆分策略（三级优先+≤5人月约束）、影响性分析、遗留问题闭环校验。RR单号从 01-requirement.md frontmatter `rr_id` 继承。回传 RR单号。
+调用 `ohos-req-feature-baseline`，含拆分策略（三级优先+≤5人月约束）、影响性分析、遗留问题闭环校验。RR单号从 01-requirement.md frontmatter `rr_id` 继承。回传 RR单号。
 
 ### Step 0.4.1: 拆分结果确认 ⭐ 强制交互
 
@@ -143,7 +152,7 @@ metadata:
 - 每个 proposal 的 Owner 和依赖关系
 - 拆分方式（按仓/按功能点/单一）
 
-用户确认后才允许进入 Step 0.5。用户要求调整时，回退到 ohos-feature 重新生成拆分方案。
+用户确认后才允许进入 Step 0.5。用户要求调整时，回退到 ohos-req-feature-baseline 重新生成拆分方案。
 
 ### Step 0.4.2: PPT 提醒（可选）
 
@@ -153,11 +162,11 @@ metadata:
 Feature 评审基线已生成。如需生成需求评审 PPT，请主动请求。
 ```
 
-模式 B 下不等待回复，继续后续步骤。用户后续可随时调用 `ohos-req-spec-to-review-ppt` 单独生成 PPT。
+模式 B 下不等待回复，继续后续步骤。用户后续可随时调用 `ohos-req-review-deck-generation` 单独生成 PPT。
 
 ### Step 0.5: Review Ready Gate 与拆分判断
 
-主 Session 调用 `ohos-review-gate` subagent 执行结构化 Gate 判定（task 仅含 `docs_dir` 绝对路径，不嵌 01-04 全文），读取其 JSON 输出按 `Ready` / `Conditional Ready` / `Not Ready` 路由，**不自行推算 Gate 结论**（详见 ohos-review-gate SKILL.md）。Not Ready 时阻塞回 Step 0.4。
+主 Session 调用 `ohos-req-review-gate` subagent 执行结构化 Gate 判定（task 仅含 `docs_dir` 绝对路径，不嵌 01-04 全文），读取其 JSON 输出按 `Ready` / `Conditional Ready` / `Not Ready` 路由，**不自行推算 Gate 结论**（详见 ohos-req-review-gate SKILL.md）。Not Ready 时阻塞回 Step 0.4。
 
 三级优先拆分策略：
 1. 优先按仓+领域拆分
@@ -182,11 +191,11 @@ Gate 决策后，主 Session 必须执行 FR→AC 追溯校验：
 1. 从 `01-requirement.md` 提取所有 FR 编号
 2. 从 `04-feature.md` 提取所有 AC 编号，生成 FR→AC 追溯表
 3. 编号不一致时标注并要求修正
-4. 校验结果写入 `04-feature.md` §5 备注（Gate 结论见 ohos-review-gate 产出的 `tmp/decision_gate_*.json`）
+4. 校验结果写入 `04-feature.md` §5 备注（Gate 结论见 ohos-req-review-gate 产出的 `tmp/decision_gate_*.json`）
 
 ### Step 0.6: IR.md — Phase 0 正式出口
 
-调用 `ohos-feat-to-ir`。Gate 非 Ready 时拒绝生成。RR单号从 04-feature.md frontmatter `rr_id` 继承。回传 RR单号。
+调用 `ohos-req-feat-to-ir`。仅在 Gate=Not Ready 时拒绝生成；Gate=Conditional Ready 时允许生成，但必须把条件项、Owner、关闭动作和关闭时点写入 IR，IR status=Conditional。RR单号从 04-feature.md frontmatter `rr_id` 继承。回传 RR单号。
 
 ### Step 0.8: Proposal 创建与 GATE A
 
@@ -194,7 +203,7 @@ Gate 决策后，主 Session 必须执行 FR→AC 追溯校验：
 
 ### Step 0.9: SR 生成（Phase 0 收尾）
 
-每个 GA-Approved 的 proposal 对应一个独立的 SR 文件（`SR-01.md`、`SR-02.md`...），调用 `ohos-proposal-to-sr` 逐个生成。SR 从 IR.md frontmatter `rr_id` 继承 RR单号。SR 是 Phase 0 的最终收尾产物。任一 proposal 未通过 GA 时，禁止生成对应 SR。
+每个 GA-Approved 的 proposal 对应一个独立的 SR 文件（`SR-01.md`、`SR-02.md`...），调用 `ohos-req-proposal-to-sr` 逐个生成。SR 从 IR.md frontmatter `rr_id` 继承 RR单号。SR 是 Phase 0 的最终收尾产物。任一 proposal 未通过 GA 时，禁止生成对应 SR。
 
 ### Step 0.9.1: 生成 handoff.md ⭐ 强制
 
@@ -240,6 +249,7 @@ spawn 时遵循下节「Token 经济性 & Context 工程」的绑定契约：tas
 | 当前会话完全没有可隔离上下文的 subagent 能力 | 模式 B（主 session 串行） |
 
 模式 B 下自动连续执行，强制暂停点为：
+- **Step 0.2.5** feasibility 澄清门禁
 - **Step 0.3.2** 决策结论收集
 - **Step 0.4.1** 拆分结果确认
 

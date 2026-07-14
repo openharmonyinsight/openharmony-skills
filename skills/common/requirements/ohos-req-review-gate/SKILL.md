@@ -120,7 +120,7 @@ metadata:
   "conditions": [
     {"check_id": "ac_complete", "desc": "AC-04 缺验证方式", "owner": "<TBD or name>", "close_action": "<动作>", "close_at": "<时间点 or TBD>"}
   ],
-  "summary": {"pass": 11, "warn": 0, "fail": 0},
+  "summary": {"pass": 11, "warn": 1, "fail": 0},
   "gate": "Conditional Ready",
   "next_action": "生成 IR（Conditional Ready 允许），但 IR 必须引用条件项清单",
   "block_reasons": []

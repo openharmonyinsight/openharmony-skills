@@ -1,4 +1,4 @@
-# Evaluation cases for ohos-req-pptx-review-deck-generation
+# Evaluation cases for ohos-req-review-deck-generation
 #
 # Each case pairs an input prompt (prompts/) with the criteria a correct
 # response must satisfy (expected/). These are rubric-style checks, scored by
@@ -8,23 +8,23 @@
 # the deck, then verify every `must` item holds and no `must_not` item appears.
 
 version: 1
-skill: ohos-req-pptx-review-deck-generation
+skill: ohos-req-review-deck-generation
 
 cases:
-  - id: ohos-req-pptx-review-deck-generation-001-template-structure
+  - id: ohos-req-review-deck-generation-001-template-structure
     title: 需求文档 → 变更评审 deck 遵循固定 8 页模板
     prompt: prompts/req-review-from-doc.md
     fixtures: [fixtures/04-feature.md]
     expected: expected/req-review-from-doc.md
     tags: [template, requirements, structure]
 
-  - id: ohos-req-pptx-review-deck-generation-002-architecture-diagram
+  - id: ohos-req-review-deck-generation-002-architecture-diagram
     title: 系统设计页必须是框图（框+箭头）而非要点列表
     prompt: prompts/architecture-diagram.md
     expected: expected/architecture-diagram.md
     tags: [diagram, architecture]
 
-  - id: ohos-req-pptx-review-deck-generation-003-no-overflow-tables
+  - id: ohos-req-review-deck-generation-003-no-overflow-tables
     title: 多列表格自适应列宽、不溢出画布
     prompt: prompts/wide-table.md
     expected: expected/wide-table.md
