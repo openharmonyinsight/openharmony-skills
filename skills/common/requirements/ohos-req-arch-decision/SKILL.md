@@ -5,7 +5,7 @@ metadata:
   author: openharmony
   scope: common
   stage: requirements
-  capability: solution-evaluation
+  capability: arch-decision
   version: 0.1.0
   status: draft
   tags:

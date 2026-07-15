@@ -206,15 +206,15 @@ bash {SKILL_HOME}/skills/common/requirements/ohos-req-intake-orchestration/scrip
 
 用户确认后才允许进入 Step 0.5。用户要求调整时，回退到 ohos-req-feature-baseline 重新生成拆分方案。
 
-### Step 0.4.2: PPT 提醒（可选）
+### Step 0.4.2: feature 基线就绪提示（可选）
 
-**feature.md 确认后，主 Session 输出一行提醒告知用户可生成 PPT（不阻塞流程）。**
+feature.md 经用户确认后，主 Session 输出一行就绪提示（不阻塞流程）。PPT 生成不再在此步骤触发，已后移至 Step 0.5.2（Gate 通过后、评审会议前）。
 
 ```text
-Feature 评审基线已生成。如需生成需求评审 PPT，请主动请求。
+Feature 评审基线已生成，进入 Review Ready Gate。
 ```
 
-模式 B 下不等待回复，继续后续步骤。用户后续可随时调用 `ohos-req-value-ppt-gen` 单独生成 PPT。
+模式 B 下不等待回复，继续 Step 0.5。
 
 ### Step 0.5: Review Ready Gate 与拆分判断
 
@@ -244,6 +244,17 @@ Gate 决策后，主 Session 必须执行 FR→AC 追溯校验：
 2. 从 `04-feature.md` 提取所有 AC 编号，生成 FR→AC 追溯表
 3. 编号不一致时标注并要求修正
 4. 校验结果写入 `04-feature.md` §5 备注（Gate 结论见 ohos-req-review-gate 产出的 `tmp/decision_gate_*.json`）
+
+### Step 0.5.2: PPT 生成（0.5 衍生，可选）
+
+Gate 通过后、评审会议前，主 Session 可应请求调用 `ohos-req-value-ppt-gen` 生成需求评审 PPT，供评审会议使用。
+
+```text
+Feature 已通过 Review Ready Gate。如需生成需求评审 PPT 供评审会议使用，请主动请求。
+```
+
+**前置条件：** Gate 结果为 `Ready` 或 `Conditional Ready`；Gate=Not Ready 时不生成 PPT，回退 Step 0.4。
+模式 B 下不阻塞，置于 Gate 通过之后；用户未请求时自动跳过。
 
 ### Step 0.6: 评审决策纪要回流 ⭐ 强制交互
 
@@ -319,7 +330,7 @@ spawn 时遵循下节「Token 经济性 & Context 工程」的绑定契约：tas
 - **Step 0.4.1** 拆分结果确认
 - **Step 0.6** 评审决策纪要回流
 
-可选步骤（PPT 生成）在用户未请求时自动跳过。
+可选步骤（Step 0.5.2 PPT 生成）仅在 Review Ready Gate 通过后触发，用户未请求时自动跳过。
 
 ## 回传
 

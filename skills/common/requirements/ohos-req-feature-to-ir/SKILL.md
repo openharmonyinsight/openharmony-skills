@@ -5,7 +5,7 @@ metadata:
   author: openharmony
   scope: common
   stage: requirements
-  capability: feat-to-ir
+  capability: feature-to-ir
   version: 0.1.0
   status: draft
   tags:

@@ -2,11 +2,11 @@
 
 OpenHarmony Skills 仓库用于集中管理面向 OpenHarmony / HarmonyOS 开发、审查、构建、测试、问题分析和提交流程的可复用 Skill 定义，供 AI 助手按场景调用。
 
-本仓库主分支当前采用扁平目录结构：每个可安装 Skill 放在 `skills/<skill-name>/` 下。Skill 的目录分层不强制与 `release` 分支一致，但上库命名、目录名和文件命名要求必须与 `release` 分支规范保持一致。历史存量 Skill 在迁移完成前可能保留旧名，新上库或重构改造时按新规范执行。
+本仓库主分支采用扁平为主、分层兼容的目录结构：每个可安装 Skill 默认放在 `skills/<skill-name>/` 下；`release` 分支的分层布局 `skills/common/<stage>/<skill-name>/` 与 `skills/domain/<namespace-domain>/<stage>/<skill-name>/` 同样作为可发现、可安装的 Skill 入库位置。Skill 的目录分层不强制与 `release` 分支一致，但上库命名、目录名和文件命名要求必须与 `release` 分支规范保持一致。历史存量 Skill 在迁移完成前可能保留旧名，新上库或重构改造时按新规范执行。
 
 ## 当前 Skill 列表
 
-以下列表来自 `skills/*/SKILL.md` 顶层 Skill 目录。嵌套在 `rules/`、`references/` 等目录中的辅助 Skill 不作为主列表项统计。
+以下列表来自递归扫描 `skills/**/SKILL.md`（含顶层 `skills/<skill-name>/` 与分层 `skills/common/<stage>/<skill-name>/`、`skills/domain/<namespace-domain>/<stage>/<skill-name>/`）。仅嵌套在 `rules/`、`references/` 等目录中的辅助 Skill 不作为主列表项统计。
 
 ```text
 afwk-hb-build
@@ -72,6 +72,16 @@ ohos-dev-graphics-stability-code-review
 ohos-dev-graphics3d-combined-postprocess
 ohos-issue-graphics-cppcrash-analysis
 ohos-issue-graphics-sysfreeze-analysis
+ohos-req-arch-decision
+ohos-req-feasibility-analysis
+ohos-req-feature-baseline
+ohos-req-feature-to-ir
+ohos-req-intake-orchestration
+ohos-req-proposal-to-sr
+ohos-req-requirement-intake
+ohos-req-review-gate
+ohos-req-value-decision
+ohos-req-value-ppt-gen
 ohos-test-arkruntime-interop-testing
 ohos-test-fuzz-generation
 ohos-test-graphics3d-static-api-unit-test
@@ -112,7 +122,7 @@ npx skills add openharmonyinsight/openharmony-skills
 npx skills add openharmonyinsight/openharmony-skills --skill <skill_name>
 ```
 
-其中 `<skill_name>` 替换为 `skills/` 目录下的具体技能名，例如 `openharmony-security-review`。
+其中 `<skill_name>` 为递归扫描得到的技能目录名（顶层 `skills/<name>/` 或分层 `skills/common/<stage>/<name>/`、`skills/domain/<domain>/<stage>/<name>/` 均可），例如 `openharmony-security-review` 或 `ohos-req-arch-decision`。
 
 ## 仓库结构
 
@@ -121,13 +131,14 @@ npx skills add openharmonyinsight/openharmony-skills --skill <skill_name>
 ```text
 openharmony-skills/
 ├── skills/
-│   ├── <skill-name>/
+│   ├── <skill-name>/                 # 扁平布局（默认）
 │   │   ├── SKILL.md
-│   │   ├── README.md        # 可选
-│   │   ├── references/      # 可选
-│   │   ├── examples/        # 可选
-│   │   └── evals/           # 入库要求
-│   └── ...
+│   │   ├── README.md                 # 可选
+│   │   ├── references/               # 可选
+│   │   ├── examples/                 # 可选
+│   │   └── evals/                    # 入库要求
+│   ├── common/<stage>/<skill-name>/  # 分层布局（与 release 对齐，同样可发现/可安装）
+│   └── domain/<domain>/<stage>/<skill-name>/
 └── README.md
 ```
 
