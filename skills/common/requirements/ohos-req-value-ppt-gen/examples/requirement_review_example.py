@@ -153,4 +153,3 @@ deck.table_slide("八、风险评估",
 
 out = deck.save("requirement_change_review.pptx")
 print("saved:", out, "slides:", len(deck.prs.slides._sldIdLst))
-

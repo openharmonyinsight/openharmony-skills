@@ -29,4 +29,3 @@ cases:
     prompt: prompts/wide-table.md
     expected: expected/wide-table.md
     tags: [table, layout, overflow]
-

@@ -74,15 +74,26 @@ def _tint(name):
 
 
 def _num(v):
-    """Parse the leading number out of a value like '1200 行' / '2.5 人月'.
-    Returns 0.0 when nothing numeric is present (so 合计 stays honest)."""
+    """Parse the leading number out of a value like '1200 行' / '2.5 人月' /
+    '1,200 行' (thousands separator). Returns None when nothing numeric is
+    present, so callers can distinguish a genuine 0 from 'unknown' instead of
+    silently folding missing data into the total."""
     if v is None:
-        return 0.0
+        return None
     if isinstance(v, (int, float)):
         return float(v)
     import re
-    m = re.search(r"-?\d+(?:\.\d+)?", str(v))
-    return float(m.group()) if m else 0.0
+    s = str(v).strip()
+    if not s or s == Deck._TBD:
+        return None
+    m = re.search(r"-?[\d,]*\.?\d+", s)
+    if not m:
+        return None
+    digits = m.group().replace(",", "")
+    try:
+        return float(digits)
+    except ValueError:
+        return None
 
 
 # Titles that MUST use the dedicated two-column builders, never the generic
@@ -270,6 +281,24 @@ class Deck:
     def _text_units(text):
         """Approx glyph-width units for a line (CJK=1.0, latin/space=0.55)."""
         return sum(1.0 if ord(c) > 0x2E80 else 0.55 for c in str(text))
+
+    @classmethod
+    def _wrapped_rows(cls, text, pt, w_in):
+        """Estimate how many wrapped rows `text` occupies at `pt` size within
+        `w_in` inches of column width, honoring explicit newlines. This is
+        what table_slide uses to size rows to REAL cell content instead of a
+        flat row/column-count guess."""
+        text = str(text)
+        if not text:
+            return 1
+        cap = max(1.0, w_in * 72.0 / pt)
+        total = 0
+        for line in text.split("\n"):
+            if not line:
+                total += 1
+                continue
+            total += max(1, math.ceil(cls._text_units(line) / cap))
+        return total
 
     @classmethod
     def _fit_box_fonts(cls, title, lines, inner_w_in, inner_h_in,
@@ -566,7 +595,14 @@ class Deck:
 
     def table_slide(self, title, headers, rows, subtitle=None, takeaway=None,
                     col_widths=None, highlight_last=False):
-        """headers: list[str]. rows: list[list[str]]. col_widths in inches."""
+        """headers: list[str]. rows: list[list[str]]. col_widths in inches.
+        Row heights are sized to the REAL wrapped-text height of each cell
+        (measured per column width), not a flat row/column-count average —
+        so a row with a long cell gets the room it needs instead of being
+        squeezed to the same height as a short row. If the measured content
+        still doesn't fit the page at minimum font size, the table is left
+        at its true (taller) height rather than force-compressed, so the
+        Verification overflow check below can actually catch it."""
         s = self._slide()
         self._header(s, title, subtitle, takeaway)
         ncol = len(headers)
@@ -576,8 +612,11 @@ class Deck:
                                  total_w, Inches(0.4)).table
         if col_widths:
             scale = float(total_w) / sum(Inches(w) for w in col_widths)
-            for ci, wv in enumerate(col_widths):
-                tbl.columns[ci].width = Emu(int(Inches(wv) * scale))
+            col_w_emu = [int(Inches(w) * scale) for w in col_widths]
+        else:
+            col_w_emu = [int(total_w / ncol)] * ncol
+        for ci, wv in enumerate(col_w_emu):
+            tbl.columns[ci].width = Emu(wv)
         for ci, htext in enumerate(headers):
             tbl.cell(0, ci).text = str(htext)
         for ri, row in enumerate(rows, start=1):
@@ -586,19 +625,53 @@ class Deck:
         # Fonts follow the value/design page standard: header 15pt bold, body 13.5pt.
         # Dense tables shrink: many rows shrink the body; many columns (wide tables)
         # shrink both header and body so 11-column plans still fit horizontally.
+        # The loop below refines this further using MEASURED cell content.
         body = 13.5 if nrow <= 9 else (12 if nrow <= 12 else 10.5)
         header = 15
         if ncol >= 9:
             body = min(body, 9.0); header = min(header, 11.0)
         elif ncol >= 7:
             body = min(body, 10.5); header = min(header, 12.5)
-        self._style_table(tbl, header, body, highlight_last=highlight_last)
-        body_h = int(self.BODY_BOTTOM - self.BODY_TOP)
-        header_h = int(body_h * 0.9 / nrow)
-        data_h = int((body_h - header_h) / (nrow - 1)) if nrow > 1 else body_h
-        tbl.rows[0].height = Emu(header_h)
-        for ri in range(1, nrow):
-            tbl.rows[ri].height = Emu(data_h)
+
+        # cell inner width in inches (minus ~0.1" left/right text-frame margins)
+        col_w_in = [emu / 914400.0 - 0.2 for emu in col_w_emu]
+        body_h_in = (self.BODY_BOTTOM - self.BODY_TOP) / 914400.0
+
+        def row_heights_at(h_pt, b_pt):
+            heights = [max(self._wrapped_rows(headers[ci], h_pt, col_w_in[ci])
+                          for ci in range(ncol)) * h_pt * 1.35 / 72.0 + 0.12]
+            for row in rows:
+                heights.append(
+                    max(self._wrapped_rows(row[ci], b_pt, col_w_in[ci])
+                       for ci in range(ncol)) * b_pt * 1.30 / 72.0 + 0.10)
+            return heights
+
+        min_header, min_body = 8.0, 7.5
+        h_pt, b_pt = float(header), float(body)
+        heights = row_heights_at(h_pt, b_pt)
+        for _ in range(14):
+            if sum(heights) <= body_h_in or (h_pt <= min_header and b_pt <= min_body):
+                break
+            h_pt = max(min_header, h_pt * 0.93)
+            b_pt = max(min_body, b_pt * 0.93)
+            heights = row_heights_at(h_pt, b_pt)
+        self._style_table(tbl, h_pt, b_pt, highlight_last=highlight_last)
+        if sum(heights) > body_h_in:
+            warnings.warn(
+                "deckbuilder: table %r content does not fit the page even at "
+                "minimum font size (%.1fpt/%.1fpt) — the table will overflow "
+                "the canvas. Split the rows across multiple table_slide() "
+                "calls or shorten cell text." % (title or "", h_pt, b_pt),
+                stacklevel=2)
+        else:
+            # distribute leftover room proportionally so rows still fill the
+            # page instead of leaving a gap at the bottom
+            total_needed = sum(heights)
+            slack = body_h_in - total_needed
+            if slack > 0 and total_needed > 0:
+                heights = [hh + slack * (hh / total_needed) for hh in heights]
+        for ri, hh in enumerate(heights):
+            tbl.rows[ri].height = Emu(int(hh * 914400))
         return s
 
     def flow_slide(self, title, stages, subtitle=None, takeaway=None, note=None,
@@ -1085,12 +1158,15 @@ class Deck:
     _TBD = "待评估 / TBD"
 
     def _rr_lines(self, v):
-        """Normalize a section value to a clean list[str], dropping empties."""
+        """Normalize a section value to a clean list[str], dropping empties.
+        Falls back to [待评估 / TBD] when nothing usable remains, so a missing
+        field renders as an explicit placeholder rather than a blank section."""
         if v is None:
-            return []
-        if isinstance(v, str):
+            v = []
+        elif isinstance(v, str):
             v = [v]
-        return [str(x) for x in v if str(x).strip()]
+        lines = [str(x) for x in v if str(x).strip()]
+        return lines if lines else [self._TBD]
 
     def _rr_cell(self, v):
         """A table cell string; blank/None → 待评估 / TBD (never fabricate)."""
@@ -1245,15 +1321,33 @@ class Deck:
         rows = []
         sum_loc = 0.0
         sum_eff = 0.0
+        unknown_loc = 0
+        unknown_eff = 0
         for it in items:
             it = it or {}
             rows.append([C(it.get(k)) for k in keys])
-            sum_loc += _num(it.get("loc"))
-            sum_eff += _num(it.get("effort"))
+            n_loc = _num(it.get("loc"))
+            if n_loc is None:
+                unknown_loc += 1
+            else:
+                sum_loc += n_loc
+            n_eff = _num(it.get("effort"))
+            if n_eff is None:
+                unknown_eff += 1
+            else:
+                sum_eff += n_eff
         if not rows:                               # never an empty plan table
             rows.append([C(None) for _ in keys])
-        total_loc = ("%g" % sum_loc) if sum_loc else "—"
-        total_eff = ("%g" % sum_eff) if sum_eff else "—"
+            unknown_loc = unknown_eff = 1
+
+        def _total_label(total, unknown, n_items):
+            if n_items == 0 or unknown >= n_items:
+                return T
+            known = "%g" % total
+            return known if unknown == 0 else "%s（另有 %d 项待评估）" % (known, unknown)
+
+        total_loc = _total_label(sum_loc, unknown_loc, len(items) or 1)
+        total_eff = _total_label(sum_eff, unknown_eff, len(items) or 1)
         rows.append(["合计（估算）", "—", "—", "—", "—", total_loc, "—",
                      total_eff, "—", "—", "—"])
         self.table_slide(
@@ -1325,4 +1419,3 @@ if __name__ == "__main__":
        note="Amber ★变更 badges mark components that change.")
     out = d.save("deckbuilder_demo.pptx")
     print("saved:", out, "slides:", len(d.prs.slides._sldIdLst))
-

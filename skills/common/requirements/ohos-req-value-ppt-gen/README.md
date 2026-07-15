@@ -44,7 +44,7 @@ python3 examples/requirement_review_example.py   # 产出一份示例 deck
 | --- | --- |
 | `name` | `ohos-req-value-ppt-gen` |
 | `scope` / `stage` | `common` / `requirements` |
-| `domain` / `capability` | `pptx` / `review-deck-generation` |
+| `domain` / `capability` | `review` / `ppt-gen` |
 | `status` | `trial` |
 
 命名与放置遵循 OpenHarmony Skills 命名空间与目录放置规范
@@ -56,4 +56,3 @@ python3 examples/requirement_review_example.py   # 产出一份示例 deck
   不要在调用脚本里手算坐标或传 `RGBColor`。
 - 配色为浅色主题 + 红色主色：标题用近黑墨色（克制），结论/标题下划线/主箭头用红色（accent）；结构统一柔灰；价值页正文与表格表头用蓝色；`★变更` 框用浅琥珀色高亮，风险用柔砖红。
 - 改动后必须跑 `evals/` 用例与 overflow 检查再提交。
-

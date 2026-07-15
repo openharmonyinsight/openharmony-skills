@@ -222,4 +222,3 @@ Each answer is a verdict (是/否/待评估) + one-line reason.
 **generic fill-in template** — every string is a `<placeholder>`. Copy it, replace the
 placeholders, keep the structure. It passes the overflow smoke test and every page
 fills the canvas.
-
