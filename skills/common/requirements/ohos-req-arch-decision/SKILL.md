@@ -6,7 +6,7 @@ metadata:
   scope: common
   stage: requirements
   capability: arch-decision
-  version: 0.2.0
+  version: 0.3.0
   status: draft
   tags:
     - sdd
@@ -43,6 +43,7 @@ metadata:
 
 - **Before writing §5 (方案比较), ask yourself:** 候选方案是由用户提供的，还是我在自行推断？
 - **Before writing §6 (遗留问题), ask yourself:** 这份清单是评审会议提供的，还是我在推演？
+- **Before writing §1 (背景与问题), ask yourself:** am I reading constraints from 01-requirement.md, or inferring them?
 
 ## 阶段 A：候选方案分析（subagent 执行）
 
@@ -104,6 +105,24 @@ metadata:
 - **禁止 AI 生成遗留问题**：§6 遗留问题由用户评审会议输入，不得从 feasibility 条件项或风险自动推演（原因：遗留问题反映用户认定的开放风险，AI 推演会引入虚构风险项）
 - **禁止阶段 A 直接定稿**：不允许在阶段 A 输出 `status: Accepted` 或自行填写 §5（原因：跳过用户决策会导致未评审的方案进入下游）
 - **禁止用户未提供遗留问题时填充 §6**：阶段 B 时如用户未提供，§6 保留占位，status 保持 `PendingDecision`（原因：遗留问题未经评审会议认定则不构成闭环）
+
+## 自检
+
+- [ ] status 字段由 skill 注入（PendingDecision→Accepted），非模板填写
+- [ ] §5 方案比较来自用户提供，非 AI 推断
+- [ ] §6 遗留问题来自评审会议，非 AI 推演
+- [ ] 阶段A完成后已暂停等待用户决策
+- [ ] 单方案例外仍执行了两阶段流程
+- [ ] 每条遗留问题含负责人/解决动作/计划关闭时间
+
+## 错误处理
+
+| 场景 | 行为 |
+|------|------|
+| 01-02 未就绪 | 提示用户先完成上游 Step 0.1-0.2，列出缺失文档 |
+| 用户未提供候选方案 | 追问用户："请提供至少 2 个候选方案用于比较" |
+| 用户未做决策（阶段A后） | 保持 status: PendingDecision，追问："请提供评审会议决策结论" |
+| 遗留问题未提供 | §6 保留占位符 [待用户评审会议后填写]，不自行填充 |
 
 ## 输出
 

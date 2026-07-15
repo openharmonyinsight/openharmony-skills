@@ -34,6 +34,26 @@
         {"text": "关联SR表", "type": "llm_judge"},
         {"text": "1:1映射", "type": "llm_judge"}
       ]
+    },
+    {
+      "id": 4,
+      "name": "scope-expansion-rejection",
+      "prompt": "05-proposal.md 已 GA 批准，但用户要求在 SR 中新增 proposal 未提及的 API 接口。请生成 SR。",
+      "expected_output": "拒绝新增，提示 SR 只能提取 proposal 已批准的范围，不可扩展。",
+      "assertions": [
+        {"text": "不可扩展", "type": "contains"},
+        {"text": "拒绝新增未批准范围", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "traceability-gap-detection",
+      "prompt": "05-proposal.md GA 批准，但 IR 矩阵中有 1 条 P0 AC 在 proposal 中无对应需求。请生成 SR。",
+      "expected_output": "拒绝生成 SR，提示 P0 AC 不可追溯，需先补全 proposal 或修正 IR。",
+      "assertions": [
+        {"text": "不可追溯", "type": "contains"},
+        {"text": "拒绝生成SR", "type": "llm_judge"}
+      ]
     }
   ]
 }

@@ -1,16 +1,20 @@
 ---
 name: ohos-req-proposal-to-sr
-description: Use when every proposal associated with an OHOS IR has passed GATE A and a System Requirement baseline is needed before spec and design work begins. Do NOT use for IR generation (ohos-req-feature-to-ir), feature baseline (ohos-req-feature-baseline), or feasibility analysis (ohos-req-feasibility-analysis).
+description: Use when every proposal associated with an OHOS IR has passed GATE A and a System Requirement baseline is needed before spec and design work begins. Triggers: 生成SR, proposal转SR, SR基线, 系统需求基线, GATE A通过, 05-proposal to SR. Do NOT use for IR generation (ohos-req-feature-to-ir), feature baseline (ohos-req-feature-baseline), or feasibility analysis (ohos-req-feasibility-analysis).
 metadata:
   author: openharmony
   scope: common
   stage: requirements
   capability: proposal-to-sr
-  version: 0.2.0
+  version: 0.3.0
   status: draft
   tags:
     - sdd
     - requirements
+  related-skills:
+    - name: ohos-req-feature-to-ir
+      min_version: 0.2.0
+      required: true
 ---
 
 # OHOS Proposal 转 SR
@@ -57,6 +61,8 @@ SR 是 GA 后锁定的系统需求基线。它定义系统需求、接口责任�
 
 > **Before writing an interface responsibility, ask yourself:** am I adding implementation signatures (methods, classes) or just defining responsibility boundaries (direction, type)?
 
+> Before writing a traceability matrix row, ask yourself: does this AC trace back to a proposal requirement, or am I creating an untraceable link?
+
 6. 定义接口责任、提供方、消费方和语义约束（§三），不写实现签名。定义方法：
    - **提取涉及接口**：从 proposal 影响范围表提取涉及的接口清单
    - **标注方向**：上游->下游 / 下游->上游 / 双向
@@ -91,6 +97,8 @@ SR 是 GA 后锁定的系统需求基线。它定义系统需求、接口责任�
 - **NEVER 在 SR 中新增 proposal 未批准的需求范围**：SR 是 GA 后的基线，只能从已批准 proposal 提取，不可自行扩大范围
 - **NEVER 在 SR 中写实现签名**：SR 定义接口责任和语义约束，不包含方法签名、类设计、时序设计（这些属于 spec/design 阶段）
 - **NEVER 合并多个 proposal 的 SR**：一个 proposal 对应一个 SR（1:1 关系），跨 proposal 依赖仅记录依赖关系，不合并文件
+- **禁止在 proposal 中新增未批准的需求范围到 SR**：SR 是 GA 后锁定的基线，只能提取不能扩展
+- **禁止忽略 P0/P1 AC 到 IR 的可追溯性**：每条 P0/P1 AC 必须能在 IR 矩阵中找到对应行，缺失时拒绝生成 SR
 
 ## 输出
 

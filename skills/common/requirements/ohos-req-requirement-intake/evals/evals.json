@@ -34,6 +34,26 @@
         {"text": "回传摘要包含 澄清状态: 已完成", "type": "llm_judge"},
         {"text": "未发起逐轮澄清提问", "type": "llm_judge"}
       ]
+    },
+    {
+      "id": 4,
+      "name": "template-fidelity-gate-failure",
+      "prompt": "用户提供的原始需求中包含技术方案选型建议。请生成 01-requirement.md 草稿。",
+      "expected_output": "草稿中不应包含技术方案选型内容，应在禁止包含检查中标记。status: Draft-NeedsClarification。",
+      "assertions": [
+        {"text": "Draft-NeedsClarification", "type": "contains"},
+        {"text": "技术方案选型不应出现在01-requirement.md", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "user-suspend-exception",
+      "prompt": "用户在澄清环节对某个问题回复'暂缓'。请处理该暂缓项并继续定稿流程。",
+      "expected_output": "暂缓项以 ⚠️ 用户暂缓:{用户原话} 格式保留在文档中，不阻塞定稿。status: Clarified。",
+      "assertions": [
+        {"text": "用户暂缓", "type": "contains"},
+        {"text": "Clarified", "type": "contains"}
+      ]
     }
   ]
 }

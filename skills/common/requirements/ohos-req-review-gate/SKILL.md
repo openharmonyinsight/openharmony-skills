@@ -6,7 +6,7 @@ metadata:
   scope: common
   stage: requirements
   capability: review-gate
-  version: 0.2.0
+  version: 0.3.0
   status: draft
   tags:
     - sdd
@@ -89,6 +89,14 @@ metadata:
    - `tmp/decision_gate_{feature_id}_{timestamp}.json`（机读）
    - `tmp/decision_gate_{feature_id}_{timestamp}.md`（人读摘要）
 7. 回传主 session：路径 + 结论 + 失败/条件项计数。**不复读 01-04 内容。**
+
+## ⭐ 思维准则
+
+在执行 Gate 检查前，自问以下问题：
+
+- Before evaluating each check item, ask yourself: am I reading the actual § content from 04-feature.md, or inferring from the section title?
+- Before upgrading a warn to fail, ask yourself: does the warn item genuinely lack Owner/close_action/close_at, or did I fail to extract them?
+- Before returning Not Ready, ask yourself: have I checked the degradation rules for missing 02/03, or am I blanket-failing all structural checks?
 
 ## 输出契约
 

@@ -33,6 +33,17 @@
         {"text": "每个proposal<=5人月", "type": "llm_judge"},
         {"text": "确认后才进入Step 0.6", "type": "llm_judge"}
       ]
+    },
+    {
+      "id": 4,
+      "name": "mode-b-serial-execution",
+      "prompt": "环境不支持 subagent 并行隔离，需使用 Mode B 串行执行 Phase 0 流程。01-04 文档均已就绪，请编排串行执行路径。",
+      "expected_output": "输出串行执行路径，每步含 skill 名和回传摘要格式，无并行 spawn。",
+      "assertions": [
+        {"text": "串行", "type": "contains"},
+        {"text": "Mode B", "type": "contains"},
+        {"text": "无并行 spawn", "type": "llm_judge"}
+      ]
     }
   ]
 }

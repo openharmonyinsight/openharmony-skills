@@ -1,12 +1,12 @@
 ---
 name: ohos-req-feasibility-analysis
-description: Use when evaluating an OHOS requirement in Phase 0.2, especially for 02-feasibility.md, capability gaps, candidate technical paths, compatibility, security, dependencies, effort, risk, or validation planning. Do NOT use for requirement intake (ohos-req-requirement-intake), architecture decision (ohos-req-arch-decision), or feature baseline (ohos-req-feature-baseline).
+description: Use when evaluating an OHOS requirement in Phase 0.2, especially for 02-feasibility.md, capability gaps, candidate technical paths, compatibility, security, dependencies, effort, risk, or validation planning. Triggers: 02-feasibility.md, 可行性分析, capability gap, 候选技术路径, 兼容性分析, 工作量估算, 500行人月. Do NOT use for requirement intake (ohos-req-requirement-intake), architecture decision (ohos-req-arch-decision), or feature baseline (ohos-req-feature-baseline).
 metadata:
   author: openharmony
   scope: common
   stage: requirements
   capability: feasibility-analysis
-  version: 0.2.0
+  version: 0.3.0
   status: draft
   tags:
     - sdd
@@ -68,7 +68,7 @@ metadata:
      - **必须输出"各方案工作量对比汇总"表**，供 03-arch-decision-record.md 方案对比使用
 5. 为风险和未知项指定验证动作、Owner、关闭时点和阻塞性。
 6. 给出每个方案的可行、有条件可行、待证据或不可行判断（见强制规则"禁止选型推荐"）。
-7. 不生成 ROI 章节（见强制规则"不生成 ROI 章节"）。
+7. 不生成 ROI 章节（详见 NEVER §禁止生成ROI）。
 8. 输出草稿到 `{docs_dir}/02-feasibility.md`（frontmatter `status: Draft-NeedsClarification`）。
 9. 同时输出澄清问题清单到 `{docs_dir}/_draft/feasibility-clarification-questions.md`。
 
@@ -101,10 +101,10 @@ metadata:
 - [ ] 收益量化优先
 - [ ] 风险矩阵覆盖关键风险
 - [ ] 结论与数据一致
-- [ ] 无 ROI 章节（见强制规则）
+- [ ] 无 ROI 章节（详见 NEVER §禁止生成ROI）
 - [ ] 未包含选型推荐内容（详见 NEVER §1）
 - [ ] 结论章节为各方案可行性判断表，不含选定方案
-- [ ] 不含自审清单（自审结果输出到控制台，不写入文档）
+- [ ] 不含自审清单（详见 NEVER §禁止自审清单写入文档）
 
 **任何一项不通过 → 继续澄清，不允许进入 decision。**
 
@@ -137,8 +137,8 @@ metadata:
 - **每个候选路径必须有 Mermaid 可视化图**：至少包含 1 个流程图 + 1 个时序图（跨进程 IPC 场景）；类图为可选但推荐。纯文字描述的"改动链路"不足以支撑决策。
 - **GAP 分析必须包含关键接口签名和调用链路**：不能只列文件名和行号，要展示接口参数、返回值、调用方向（谁调谁）。
 - **工作量估算必须按统一标准**：见 Step 4d 定义（500行≈1人月；测试=开发×0.3；设计=开发×0.1；UX=开发×0.1）。不使用其他估算标准。
-- **不生成 ROI 章节**：模板已去除 ROI 分析章节，只保留收益量化。
-- **自审清单不写入文档**：自审结果输出到控制台回传摘要中，不作为文档章节。
+- **不生成 ROI 章节**：（详见 NEVER §禁止生成ROI）。
+- **自审清单不写入文档**：（详见 NEVER §禁止自审清单写入文档）。
 - **代码事实验证**：§2.1 优先基于主 Session 提供的 `{kb_precheck_path}` 证据包。证据包未覆盖的引用标记"待 Phase 2 验证"，不得虚构。**Fallback**：如需补充验证，使用 Read 工具读取实际代码；Read 不可用时降级为 `warn`（标注"未实地验证，引用来源：预检证据包"），不硬 fail。
 
 ## NEVER

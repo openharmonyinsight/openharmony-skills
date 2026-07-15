@@ -32,6 +32,26 @@
         {"text": "修改要求2条", "type": "llm_judge"},
         {"text": "路由结论包含 退回", "type": "contains"}
       ]
+    },
+    {
+      "id": 4,
+      "name": "ambiguous-conclusion-clarify",
+      "prompt": "评审会议结束，结论是'原则上同意'。请生成决策纪要。",
+      "expected_output": "不直接映射为 Accepted，追问用户明确是接纳还是下次重新上会。",
+      "assertions": [
+        {"text": "追问", "type": "contains"},
+        {"text": "原则上同意是歧义表述", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "missing-meeting-minutes",
+      "prompt": "请生成决策纪要。",
+      "expected_output": "追问用户：请提供评审会议纪要，需要从中提取决策结论和评审意见。不凭空生成。",
+      "assertions": [
+        {"text": "请提供评审会议纪要", "type": "contains"},
+        {"text": "不凭空生成", "type": "llm_judge"}
+      ]
     }
   ]
 }

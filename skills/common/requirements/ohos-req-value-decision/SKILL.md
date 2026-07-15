@@ -6,7 +6,7 @@ metadata:
   scope: common
   stage: requirements
   capability: value-decision
-  version: 0.2.0
+  version: 0.3.0
   status: draft
   tags:
     - sdd
@@ -14,6 +14,13 @@ metadata:
     - review
     - decision
     - gate
+  related-skills:
+    - name: ohos-req-review-gate
+      min_version: 0.2.0
+      required: true
+    - name: ohos-req-feature-to-ir
+      min_version: 0.2.0
+      required: false
 ---
 
 # 评审决策纪要回流
@@ -54,6 +61,10 @@ review-gate(0.5) → value-ppt-gen → [评审会议] → value-decision(0.6) �
 | 无法判断结论 | **要求用户明确** | 不可凭模糊表述自行决策路由方向 |
 
 > Before mapping a conclusion, ask yourself: "Did the user explicitly state one of the three outcomes, or am I inferring it?" If inferring, ask the user to clarify.
+
+> Before choosing the rollback Step, ask yourself: which is the lowest-numbered doc requiring modification? Am I tracing each modification requirement to its source document?
+
+> Before extracting review opinions, ask yourself: does each opinion have both a handling method and an owner? If not, mark [待补充] rather than leaving blank.
 
 ## 流程
 
@@ -113,36 +124,9 @@ PendingRe-review 时需标注退回哪个 Step。判定依据：
 - `routing.target_step`：仅 rollback 时有值，取最低编号 Step
 - `review_opinions[].handling` + `review_opinions[].owner`：每条意见必须两个字段同时存在，缺失时填 `[待补充]`
 
-### Markdown 模板（人读）
+## 决策纪要格式
 
-```markdown
-# 评审决策纪要
-
-| 字段 | 内容 |
-|------|------|
-| 评审日期 | YYYY-MM-DD |
-| 参与人 | [列表] |
-| 结论 | 接纳 / 不接纳 / 下次重新上会 |
-| Feature ID | FEAT-XXXXX |
-| RR单号 | [从 01-requirement.md 继承] |
-
-## 评审意见
-
-| 编号 | 意见 | 处理方式 | 负责人 |
-|------|------|---------|--------|
-| R-1 | [意见] | [处理] | [负责人] |
-
-## 修改要求（下次重新上会时）
-
-- [修改项1]
-- [修改项2]
-
-## 路由结论
-
-- 接纳 → 可进入 feature-to-ir (Step 0.7)
-- 不接纳 → 关闭/归档
-- 下次重新上会 → 退回 [Step X]
-```
+按 JSON Schema 输出。Markdown 人读版仅含：评审日期、参与人、结论(status)、Feature ID、RR单号、评审意见表(编号/意见/处理方式/负责人)、修改要求(如有)、路由结论。
 
 ## NEVER
 

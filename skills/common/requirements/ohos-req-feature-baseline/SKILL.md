@@ -6,7 +6,7 @@ metadata:
   scope: common
   stage: requirements
   capability: feature-baseline
-  version: 0.2.0
+  version: 0.3.0
   status: draft
   tags:
     - sdd
@@ -24,6 +24,8 @@ metadata:
 ## ⭐ 思维准则
 
 在给出拆分建议前，自问：是否按 R1→R2→R3→R4 顺序逐条评估？是否在首个触发处即停止，还是跳过了某些检查？
+- Before checking module coverage, ask yourself: am I cross-checking 02 §2.1 against 04 §4 line-by-line, or eyeballing from memory?
+- Before detecting terminology drift, ask yourself: am I comparing every 影响类型 label between 02 and 04, or skipping reusable ones?
 
 ## 输入
 

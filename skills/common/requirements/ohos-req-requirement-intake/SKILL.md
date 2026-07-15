@@ -6,7 +6,7 @@ metadata:
   scope: common
   stage: requirements
   capability: requirement-intake
-  version: 0.2.0
+  version: 0.3.0
   status: draft
   tags:
     - sdd
@@ -22,6 +22,16 @@ metadata:
 `01-requirement.md` 是需求事实输入，不是技术方案或可行性报告。它回答谁提出、为何提出、谁受益、需要什么、适用于哪里以及优先级是什么。
 
 不得在本阶段选择技术方案、估算 ROI、下可行性结论或补造指标。
+
+## Do NOT Load
+
+本 skill 仅在 Phase 0.1（01-requirement.md 生成）时激活。以下场景不应加载：
+
+- 可行性分析（02-feasibility.md）→ ohos-req-feasibility-analysis
+- 方案架构决策（03-arch-decision-record.md）→ ohos-req-arch-decision
+- Feature 评审基线（04-feature.md）→ ohos-req-feature-baseline
+- Review Ready Gate → ohos-req-review-gate
+- IR 生成 → ohos-req-feature-to-ir
 
 ## ⭐ 硬规则：禁止不确定项输出
 
