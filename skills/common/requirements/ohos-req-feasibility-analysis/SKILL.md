@@ -1,12 +1,12 @@
 ---
 name: ohos-req-feasibility-analysis
-description: Use when evaluating an OHOS requirement in Phase 0.2, especially for 02-feasibility.md, capability gaps, candidate technical paths, compatibility, security, dependencies, effort, risk, or validation planning.
+description: Use when evaluating an OHOS requirement in Phase 0.2, especially for 02-feasibility.md, capability gaps, candidate technical paths, compatibility, security, dependencies, effort, risk, or validation planning. Do NOT use for requirement intake (ohos-req-requirement-intake), architecture decision (ohos-req-arch-decision), or feature baseline (ohos-req-feature-baseline).
 metadata:
   author: openharmony
   scope: common
   stage: requirements
   capability: feasibility-analysis
-  version: 0.1.0
+  version: 0.2.0
   status: draft
   tags:
     - sdd
@@ -36,6 +36,14 @@ metadata:
 - `{docs_dir}/_draft/feasibility-inputs.md` 已存在。
 - 文件中记录了用户提供资料，或用户明确确认不额外提供本地关键代码仓/接口文档/Owner 结论/前置依赖资料。
 - 如用户确认不额外提供或资料不可访问，`02-feasibility.md` 必须按证据受限口径标注，不得写成源码已验证或接口已确认。
+
+## 自省提示（Mindset Prompts）
+
+在执行关键步骤前，自问以下问题：
+
+- **Before estimating effort, ask yourself:** 我是否已为每个候选方案独立估算工作量，还是只给了一个总量？
+- **Before marking evidence as '待Phase2验证', ask yourself:** 我是否真的尝试过用 Read 工具查找证据，还是过早放弃了？
+- **Before writing a GAP analysis, ask yourself:** 我是否包含了接口签名和调用链路，还是只列了 file:line 引用？
 
 ## 流程（两阶段：草稿 → 澄清 → 定稿）
 
@@ -94,7 +102,7 @@ metadata:
 - [ ] 风险矩阵覆盖关键风险
 - [ ] 结论与数据一致
 - [ ] 无 ROI 章节（见强制规则）
-- [ ] 无选型推荐（见强制规则"禁止选型推荐"）
+- [ ] 未包含选型推荐内容（详见 NEVER §1）
 - [ ] 结论章节为各方案可行性判断表，不含选定方案
 - [ ] 不含自审清单（自审结果输出到控制台，不写入文档）
 
@@ -116,7 +124,7 @@ metadata:
 - **启动前必须完成软前置确认**：必须存在 `{docs_dir}/_draft/feasibility-inputs.md`，且其中记录了用户提供的实际资料，或用户明确确认不额外提供资料。未完成确认时不得生成 `02-feasibility.md`。
 - **证据受限要显式标注**：当用户确认不额外提供本地关键代码仓路径或前置依赖资料时，`02-feasibility.md` 必须在「输入证据状态」和相关代码/接口章节标注证据受限，不得写成源码已验证或接口已确认。
 - **至少识别2个可验证技术路径**；有多个路径时保持中立描述。单方案降级规则：仅当客观上只有一条可行路径时允许单方案，但必须标注 `warn`（条件项："仅单方案，需写明不可行证据"）并写明其他路径不可行的证据、以及条件变化后的重新决策规则。**禁止硬 fail 单方案**——避免迫使 AI 虚构垃圾方案凑数。
-- **⚠️ 禁止选型推荐**：feasibility 不允许出现"推荐"列、"建议选择XX方案"、"XX方案最优"等决策倾向性表述。方案选型决策 exclusively 属于 03-arch-decision-record.md，由用户提供。每个方案只给出可行性判断（✅可行/⚠️有条件可行/❌不可行）和事实依据，不做推荐排序。
+- **⚠️ 禁止选型推荐（详见 NEVER §1）**
 - **⚠️ 按方案独立估算工作量**：每个候选方案必须独立给出代码行数估算和人月折算，不允许只给单一总量。必须输出"各方案工作量对比汇总"表。03-arch-decision-record.md 的方案成本对比依赖此数据。
 - **⚠️ 多子能力必须分开分析**：当需求包含多个独立子能力时，`02-feasibility.md` 必须先按子能力分别输出候选路径、依赖、工作量、风险和可行性结论，再输出组合路径判断。工作量表和风险表必须带子能力归属。
 - **⚠️ 结论章节填写约束**（§6可行性结论）：
@@ -135,12 +143,12 @@ metadata:
 
 ## NEVER
 
-- **禁止选型推荐**：feasibility 不允许出现"推荐"列、"建议选择XX方案"、"XX方案最优"等决策倾向性表述（见强制规则）
-- **禁止生成 ROI 章节**：模板已去除 ROI 分析章节，只保留收益量化（见强制规则）
-- **禁止虚构代码证据**：证据包和用户资料未覆盖的接口/路径必须标注"证据受限，待 Phase 2 验证"
-- **禁止硬 fail 单方案**：客观上只有一条可行路径时允许单方案，标注 warn 并写明不可行证据
-- **禁止自审清单写入文档**：自审结果输出到控制台回传摘要
-- **禁止无出处竞品引用**：无来源链接的竞品记录视为不可信证据，不得作为可行性判断依据
+1. **禁止选型推荐**：feasibility 不允许出现"推荐"列、"建议选择XX方案"、"XX方案最优"等决策倾向性表述。方案选型决策 exclusively 属于 03-arch-decision-record.md，由用户提供。每个方案只给出可行性判断（✅可行/⚠️有条件可行/❌不可行）和事实依据，不做推荐排序。
+2. **禁止生成 ROI 章节**：模板已去除 ROI 分析章节，只保留收益量化
+3. **禁止虚构代码证据**：证据包和用户资料未覆盖的接口/路径必须标注"证据受限，待 Phase 2 验证"
+4. **禁止硬 fail 单方案**：客观上只有一条可行路径时允许单方案，标注 warn 并写明不可行证据
+5. **禁止自审清单写入文档**：自审结果输出到控制台回传摘要
+6. **禁止无出处竞品引用**：无来源链接的竞品记录视为不可信证据，不得作为可行性判断依据
 
 ## 输出
 

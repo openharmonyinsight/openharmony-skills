@@ -1,13 +1,13 @@
 ---
 name: ohos-req-value-ppt-gen
-description: Use when converting an OpenHarmony requirement document, spec, or design proposal into an OpenHarmony review slide deck (需求评审 / 需求变更评审 / 设计评审 PPTX) — produces the fixed OpenHarmony-branded review-deck structure (OH logo on every page) with architecture/flow diagrams and field tables. Triggers on "需求评审PPT", "需求变更评审", "把需求文档转成评审PPT", "spec转评审PPT", "requirement/spec to review deck". NOT for arbitrary or generic slide decks unrelated to OpenHarmony requirement/design review.
+description: Use when converting an OpenHarmony requirement document, spec, or design proposal into an OpenHarmony review slide deck (需求评审 / 需求变更评审 / 设计评审 PPTX) — produces the fixed OpenHarmony-branded review-deck structure (OH logo on every page) with architecture/flow diagrams and field tables. Triggers on "需求评审PPT", "需求变更评审", "把需求文档转成评审PPT", "spec转评审PPT", "requirement/spec to review deck". NOT for arbitrary or generic slide decks unrelated to OpenHarmony requirement/design review. Do NOT use when: generic non-OHOS slide decks, editing an existing .pptx file, or generating Markdown/PDF output.
 metadata:
   author: openharmony
   scope: common
   stage: requirements
   domain: review
   capability: ppt-gen
-  version: 0.1.0
+  version: 0.2.0
   status: trial
   tags:
     - pptx
@@ -105,35 +105,51 @@ sys.path.insert(0, os.path.join("<skill-dir>", "scripts"))
 from deckbuilder import Deck
 ```
 
-### Visual style (built in — do not re-implement)
+### Visual structure (built in — do not re-implement)
 
-The library renders a **light theme with a red accent** ("red ink"): titles are
-**near-black ink** (subdued, not a loud color), a single **red** accent carries each
-page's **conclusion** and primary path, structure is **soft neutral grey**, **blue**
-is used for value-page body text and table headers, and **amber** is reserved for
-change points. Every choice below is automatic, you never set colors or coordinates:
+The library renders a **light theme with a red accent** ("red ink") — see
+**色彩不变量** below for the full palette and color rules; they are automatic
+and you never set colors or coordinates.
 
-- **The conclusion is the highlight, not the title.** Each page's 32pt title is calm
-  near-black ink (`primary`); the eye is drawn instead to the `takeaway` conclusion
-  line, rendered in **red** (`accent`) right under the title. The red accent also draws
-  the title underline and primary data-flow arrows.
-  **Everything else — secondary arrows, grid, connector bars, box borders — is soft
-  grey** (`grey`). **Do NOT give cards/sections different accent colors** — that
-  produces a rainbow ("不纯粹") deck. Leave `accent` unset (defaults to red).
-- **Reserve hue changes for real meaning only:** `red` (a muted brick-red) for an
-  actual risk/blocker; the built-in `★变更` change box (a light-amber fill with an
-  amber badge, drawn for you when you pass `"change": True`). `green` (the logo
-  green) exists but is rarely needed — don't sprinkle colors to "add color".
 - **Cover & headers.** Cover has a thin red spine; each content page is a 32pt
   Microsoft YaHei **ink** title on white with a thin red underline and the page
-  number top-right.
+  number top-right (见 色彩不变量).
 - **OpenHarmony logo, bottom-left of every page** (cover included) — added
   automatically from `oh_logo.png`. If the file is missing it's silently skipped.
 - **Diagrams are real drawing boxes** — rounded rectangles joined by arrows.
-- **Tables** — **slate-blue header** (`C6D7EC`) with black bold text, white body, and
-  **black solid grid lines**; fonts follow the value/design page standard (header
-  **15pt bold**, body **13.5pt**). Light-red total row when `highlight_last=True`.
+- **Tables** — fonts follow the value/design page standard (header **15pt
+  bold**, body **13.5pt**); colors and grid lines are built in (见 色彩不变量).
   All drawn for you.
+
+## 色彩不变量 (Palette Invariants)
+
+The library renders a **light theme with a red accent** ("red ink"). Every color
+choice below is automatic — you never set colors or coordinates, and you should
+not vary them per card/section. These invariants are enforced by the builders;
+do not re-implement them.
+
+- **Titles are near-black ink (`primary`), not a loud color.** Each page's 32pt
+  title is calm ink; the eye is drawn instead to the `takeaway` conclusion line,
+  rendered in **red** (`accent`) right under the title. The red accent also draws
+  the title underline and the primary data-flow arrows. **Everything else —
+  secondary arrows, grid, connector bars, box borders — is soft grey (`grey`).**
+- **Blue** is used for the value-page body text and the table headers
+  (`C6D7EC` slate-blue header, black bold text, white body, black solid grid
+  lines). A light-red total row is drawn when `highlight_last=True`.
+- **Amber is reserved for change points** — the built-in `★变更` change box (a
+  light-amber fill with an amber `★变更` badge + border), drawn for you when you
+  pass `"change": True`. Mark changed components this way; do not hand-color
+  them.
+- **Reserve hue changes for real meaning only:** `red` (a muted brick-red) for an
+  actual risk/blocker; `green` (the logo green) exists but is rarely needed —
+  don't sprinkle colors to "add color".
+- **Do NOT give cards/sections different accent colors** — that produces a
+  rainbow ("不纯粹") deck. Per-card/section `accent` is ignored by design; leave
+  `accent` unset (defaults to red) so the deck stays one coordinated family.
+- **Colors are passed by name string** — `"accent"` (red) and `"grey"` (soft
+  grey) cover almost everything; `"red"` for a genuine risk; `"green"`,
+  `"orange"`, `"primary"` exist but are rarely the right call. Do not pass
+  `RGBColor(...)`.
 
 ## The Only API You Need
 
@@ -175,11 +191,8 @@ without it raises `ValueError` and the deck will not save.** There is no way to 
 page without its 突出重点 — write the one-line verdict for every slide.
 
 Page numbers auto-increment (cover is excluded). Header band, accent colors, and
-spacing are automatic. **Colors are passed by name string** — `"accent"` (red)
-and `"grey"` (soft grey) cover almost everything; `"red"` for a genuine risk;
-`"green"`, `"orange"`, `"primary"` exist but are rarely the right call. **Default to
-omitting `accent` (or using `"accent"`)** so the deck stays one coordinated family —
-don't vary it per card just to add color.
+spacing are automatic — colors are passed by name string and the deck stays one
+coordinated family (见 色彩不变量).
 
 ### Quick reference — what each method takes
 
@@ -323,9 +336,9 @@ What this page reliably gets wrong (the top two are the most-reported):
 
 - **Pages 4–8 must be `table_slide`, never `banded_slide` / `content_slide`.** The
   bar/card builders tempt you to color each section differently → multi-colored 横条
-  ("不纯粹"). Build them as field tables (页 4/5/7/8 两列 分项｜内容；页 6 为 11 列宽表).
-  (The engine also forces those builders to one color now, but tables are the right
-  layout here.)
+  ("不纯粹", 见 色彩不变量). Build them as field tables (页 4/5/7/8 两列 分项｜内容；页 6
+  为 11 列宽表). (The engine also forces those builders to one color now, but tables
+  are the right layout here.)
 - **Every `table_slide` page must pass `takeaway="结论：…"`** — a topic title over a
   table with no conclusion has no 突出重点. This is enforced: a slide without
   `takeaway` raises `ValueError`, so the deck will not build until every page has its
@@ -407,25 +420,13 @@ rerun — do not work around it.
 
 ## Common Mistakes
 
-| Mistake | Fix |
-|---------|-----|
-| Hand-assembling a 需求评审 deck page by page (and picking a wrong builder) | Use `deck.requirement_review_deck(spec)` — one call, fixed 8 pages |
-| 价值/设计页做成 `content_slide` 四格 / bullet 列表 | 用 `value_slide` / `design_slide`（左文右图；设计页右侧传 `diagram=`）— the library warns if you don't |
-| Building shapes with raw `python-pptx` and hand-picked inches | Use `Deck` methods; they place everything for you |
-| `from pptx.dgm...` / guessing import paths | The library already imports correctly — just `from deckbuilder import Deck` |
-| Design slide is a bullet list, not a diagram | Use `flow_slide` or `layered_diagram_slide` |
-| Passing `RGBColor(...)` everywhere | Pass color **names**; default to `"accent"`/`"grey"`, names map to the palette |
-| Giving every card/section a different `accent` (rainbow 横条) | Don't — per-card/section colors are ignored by design; for 需求变更评审 4–7 use `table_slide` |
-| Pages 4–8 as colored `banded_slide` bars | Use `table_slide` (分项｜内容 / 计划宽表) — the bars invite the "不纯粹" rainbow |
-| Pages with no point — just a topic title over a table | Give every content slide a `takeaway="结论：…"` one-liner; it's required — a slide without it raises `ValueError` |
-| Cramming 8+ cards on one slide | Max 6 per `content_slide`; split across slides |
-| Putting >8 rows in one table at full font | The library auto-shrinks; still split very long tables |
-| Claiming done without running it | Run the script + the overflow check, report path & slide count |
+See `references/common-mistakes.md` for the full list of common mistakes and
+their fixes.
 
 ## Real-World Impact
 
 This skill was distilled from building OpenHarmony 需求变更评审 decks (cover, 需求价值
 描述, 需求设计方案, 需求变更背景, 需求变更影响性分析, 兼容性分析, 风险评估). The
 两-column 价值/设计 pages carry a real 框图 on the right, and the change-review pages
-(4–7) are clean 分项｜内容 field tables — both reproducible in a few lines via
-`value_slide` / `design_slide` / `table_slide`.
+(4–7) are clean 分项｜内容 field tables in one coordinated palette (见 色彩不变量) —
+both reproducible in a few lines via `value_slide` / `design_slide` / `table_slide`.

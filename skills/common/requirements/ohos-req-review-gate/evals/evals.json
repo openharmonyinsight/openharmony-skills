@@ -33,6 +33,17 @@
         {"text": "summary pass: 11 warn: 1", "type": "contains"},
         {"text": "conditions 数组含1条warn项", "type": "llm_judge"}
       ]
+    },
+    {
+      "id": 4,
+      "name": "missing-02-03-degradation",
+      "prompt": "docs_dir 路径下只有 01 和 04-feature.md，02-feasibility.md 和 03-arch-decision-record.md 均缺失。04-feature.md内容完整。请执行 Review Ready Gate。",
+      "expected_output": "依据退化规则：02+03同时缺失时，8项固定检查仅依据04判定；3项结构一致性检查(module_coverage/term_consistency/condition_propagation)均判warn；followup_closure判fail。gate为Not Ready。",
+      "assertions": [
+        {"text": "warn", "type": "contains"},
+        {"text": "退化规则", "type": "llm_judge"},
+        {"text": "followup_closure判fail", "type": "llm_judge"}
+      ]
     }
   ]
 }

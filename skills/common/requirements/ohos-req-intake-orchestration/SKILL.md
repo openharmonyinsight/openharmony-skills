@@ -1,12 +1,12 @@
 ---
 name: ohos-req-intake-orchestration
-description: Use when orchestrating OHOS Phase 0 intake workflow, from raw requirement to IR + proposal splitting + handoff contract. Triggers: requirement intake, Phase 0, requirement review, generate IR, 需求导入, 需求评审, 生成IR.
+description: Use when orchestrating OHOS Phase 0 intake workflow, from raw requirement to IR + proposal splitting + handoff contract. Triggers: requirement intake, Phase 0, requirement review, generate IR, 需求导入, 需求评审, 生成IR. Do NOT use for single-feature design work, Phase 1-9 delivery, ad-hoc document generation, or any task outside the Phase 0 requirement intake workflow.
 metadata:
   author: openharmony
   scope: common
   stage: requirements
   capability: intake-orchestration
-  version: 0.1.0
+  version: 0.2.0
   status: draft
   tags:
     - sdd
@@ -48,6 +48,17 @@ metadata:
 ## 定位
 
 独立工作流，覆盖 Phase 0 全流程（0.1→0.9），输出 IR、proposal 拆分、SR 和 **handoff.md 交接契约**。完成后可独立结束，也可由 `ohos-delivery` 接续进入 Phase 1-9。
+
+## NEVER
+
+以下禁止行为贯穿整个 Phase 0 工作流，违反任一条属于流程违规：
+
+1. **禁止嵌入文件内容到 task 描述**——spawn subagent 时 task 只传文件绝对路径，不得嵌入产物/证据全文（reason: context fork, token bloat；详见 `reference/token-economy.md` §1）
+2. **禁止把证据包内容嵌入 task 字符串**——Step 0.1.9 落盘的证据包后续只传路径，subagent 按需读取（reason: token bloat；详见 `reference/token-economy.md` §2）
+3. **禁止跳过预检步骤**——Step 0 依赖完整性预检不通过时阻断启动，不得绕过（reason: gate integrity）
+4. **禁止在 proposal 未通过 GA 时生成对应 SR**——Step 0.9 要求每个 proposal 必须 GA-Approved 才生成 SR（reason: unapproved scope）
+5. **禁止自行推算 Gate 结论**——Step 0.5 必须调用 `ohos-req-review-gate` subagent 执行独立判定，主 Session 不自行推算（reason: must use independent subagent）
+6. **禁止自行定稿拆分方案**——Step 0.4.1 必须向用户展示拆分方案并等待确认，AI 不代行（reason: resource allocation is human decision）
 
 ## 输入
 
@@ -196,7 +207,7 @@ bash {SKILL_HOME}/skills/common/requirements/ohos-req-intake-orchestration/scrip
 
 ### Step 0.4.1: 拆分结果确认 ⭐ 强制交互
 
-**feature.md 生成后，必须向用户展示拆分方案并等待确认。AI 不自行定稿拆分方案。**
+**feature.md 生成后，必须向用户展示拆分方案并等待确认（见 NEVER §6）。**
 
 向用户呈现：
 - 每个 proposal 的边界/职责
@@ -218,7 +229,7 @@ Feature 评审基线已生成，进入 Review Ready Gate。
 
 ### Step 0.5: Review Ready Gate 与拆分判断
 
-主 Session 调用 `ohos-req-review-gate` subagent 执行结构化 Gate 判定（task 仅含 `docs_dir` 绝对路径，不嵌 01-04 全文），读取其 JSON 输出按 `Ready` / `Conditional Ready` / `Not Ready` 路由，**不自行推算 Gate 结论**（详见 ohos-req-review-gate SKILL.md）。Not Ready 时阻塞回 Step 0.4。
+主 Session 调用 `ohos-req-review-gate` subagent 执行结构化 Gate 判定（task 仅含 `docs_dir` 绝对路径，不嵌 01-04 全文），读取其 JSON 输出按 `Ready` / `Conditional Ready` / `Not Ready` 路由，**不自行推算 Gate 结论**（见 NEVER §5；详见 ohos-req-review-gate SKILL.md）。Not Ready 时阻塞回 Step 0.4。
 
 三级优先拆分策略：
 1. 优先按仓+领域拆分
@@ -279,7 +290,7 @@ Feature 已通过 Review Ready Gate。如需生成需求评审 PPT 供评审会�
 
 ### Step 0.9: SR 生成（Phase 0 收尾）
 
-每个 GA-Approved 的 proposal 对应一个独立的 SR 文件（`SR-01.md`、`SR-02.md`...），调用 `ohos-req-proposal-to-sr` 逐个生成。SR 从 IR.md frontmatter `rr_id` 继承 RR单号。SR 是 Phase 0 的最终收尾产物。任一 proposal 未通过 GA 时，禁止生成对应 SR。
+每个 GA-Approved 的 proposal 对应一个独立的 SR 文件（`SR-01.md`、`SR-02.md`...），调用 `ohos-req-proposal-to-sr` 逐个生成。SR 从 IR.md frontmatter `rr_id` 继承 RR单号。SR 是 Phase 0 的最终收尾产物。任一 proposal 未通过 GA 时，禁止生成对应 SR（见 NEVER §4）。
 
 ### Step 0.9.1: 生成 handoff.md ⭐ 强制
 
@@ -309,13 +320,15 @@ handoff.md 是 Phase 0 到 Phase 1-9 的唯一交接点，包含：
 
 本 SKILL.md 的 Step 0.1→0.9.1 即 Phase 0 完整 spawn 编排规范。主 Session 按本文步骤执行，**不进入 Phase 1-9**（Phase 1-9 由 `ohos-delivery` 承接，以 handoff.md 为入口）。
 
-spawn 时遵循下节「Token 经济性 & Context 工程」的绑定契约：task 描述只含四要素（角色 / 输入路径 / 输出路径 / 任务简述），证据传路径不传内容，回传 ≤15 行。
+spawn 时遵循下节「Token 经济性 & Context 工程」的绑定契约：task 描述只含四要素（角色 / 输入路径 / 输出路径 / 任务简述），证据传路径不传内容（见 NEVER §1-§2），回传 ≤15 行。
+
+> **Before spawning a subagent task, ask yourself:** does the task contain only the 4 required elements (skill path, task, input files, output path)? Am I embedding file content instead of a path?
 
 流程结束条件：handoff.md 生成完毕。
 
 ## Token 经济性 & Context 隔离
 
-详见 [`reference/token-economy.md`](reference/token-economy.md)。核心要点：隔离上下文 spawn、证据传路径不传内容、摘要回传<=15行、扇出上限<=4。
+详见 [`reference/token-economy.md`](reference/token-economy.md)。核心要点（禁止项见 NEVER §1-§2）：隔离上下文 spawn、证据传路径不传内容、摘要回传<=15行、扇出上限<=4。
 
 ## 模式切换
 

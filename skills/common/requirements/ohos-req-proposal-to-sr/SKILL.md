@@ -1,12 +1,12 @@
 ---
 name: ohos-req-proposal-to-sr
-description: Use when every proposal associated with an OHOS IR has passed GATE A and a System Requirement baseline is needed before spec and design work begins.
+description: Use when every proposal associated with an OHOS IR has passed GATE A and a System Requirement baseline is needed before spec and design work begins. Do NOT use for IR generation (ohos-req-feature-to-ir), feature baseline (ohos-req-feature-baseline), or feasibility analysis (ohos-req-feasibility-analysis).
 metadata:
   author: openharmony
   scope: common
   stage: requirements
   capability: proposal-to-sr
-  version: 0.1.0
+  version: 0.2.0
   status: draft
   tags:
     - sdd
@@ -44,7 +44,7 @@ SR 是 GA 后锁定的系统需求基线。它定义系统需求、接口责任�
 
 ## 流程
 
-1. 读取 `reference/SR.md`、IR、proposal 和 GA 证据。
+1. 读取 `reference/SR.md`、`reference/proposal.md`（了解 proposal 产物结构）、IR、proposal 和 GA 证据。
 2. 从 `IR.md` frontmatter 继承 `rr_id` 到 SR.md frontmatter，并在 §二 需求概要表中填写 RR单号行。
 3. **按 proposal 逐个生成 SR**：每个 GA-Approved 的 proposal 对应一个独立的 SR 文件。
 4. 记录该 proposal 的 GA 日期、结论、参与人和证据链接（§一）。
@@ -53,7 +53,10 @@ SR 是 GA 后锁定的系统需求基线。它定义系统需求、接口责任�
    - **合并重叠需求**：同一能力在多个用户故事中出现时，合并为一条系统需求，保留各来源引用
    - **识别跨 proposal 依赖**：仅记录依赖关系（如"SR-01 依赖 SR-02 的 XX 接口"），不合并多个 proposal 的需求
    - **标注来源**：每条系统需求标注来源（proposal §X），确保可追溯
-   - 填写「关联 SR」表引用其他 proposal 对应的 SR
+    - 填写「关联 SR」表引用其他 proposal 对应的 SR
+
+> **Before writing an interface responsibility, ask yourself:** am I adding implementation signatures (methods, classes) or just defining responsibility boundaries (direction, type)?
+
 6. 定义接口责任、提供方、消费方和语义约束（§三），不写实现签名。定义方法：
    - **提取涉及接口**：从 proposal 影响范围表提取涉及的接口清单
    - **标注方向**：上游->下游 / 下游->上游 / 双向

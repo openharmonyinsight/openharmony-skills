@@ -1,12 +1,12 @@
 ---
 name: ohos-req-feature-baseline
-description: Use when preparing an OHOS Feature for Phase 0.4 review, especially for 04-feature.md, SIG review readiness, proposal splitting, feature scope, acceptance criteria, or delivery impact.
+description: Use when preparing an OHOS Feature for Phase 0.4 review, especially for 04-feature.md, SIG review readiness, proposal splitting, feature scope, acceptance criteria, or delivery impact. Do NOT use for requirement intake (ohos-req-requirement-intake), feasibility analysis (ohos-req-feasibility-analysis), or review gate (ohos-req-review-gate).
 metadata:
   author: openharmony
   scope: common
   stage: requirements
   capability: feature-baseline
-  version: 0.1.0
+  version: 0.2.0
   status: draft
   tags:
     - sdd
@@ -20,6 +20,10 @@ metadata:
 ## 定位
 
 `04-feature.md` 是 SIG 主评审和 IR 的共同输入。它收敛 01-03 的结论，不复制详细论证，也不替代后续 proposal/spec/design。
+
+## ⭐ 思维准则
+
+在给出拆分建议前，自问：是否按 R1→R2→R3→R4 顺序逐条评估？是否在首个触发处即停止，还是跳过了某些检查？
 
 ## 输入
 
@@ -71,6 +75,15 @@ metadata:
 ### AC一致性校验
 
 主 Session 在 Gate 后生成 FR→AC 追溯表，检查编号一致性：每条 FR 必须映射到至少一条 AC，AC 编号在 04-feature.md 内唯一且无遗漏。
+
+## 错误处理
+
+| 场景 | 恢复指导 |
+|------|---------|
+| Not Ready (04-feature.md 内容不完整) | 告知用户缺失的具体章节，引导回 Step 0.4 对应子步骤补全 |
+| Not Ready (01-03 未完成) | 告知用户需先完成上游 Step 0.1-0.3，列出缺失文档 |
+| Conditional Ready | 列出条件项，引导用户确认是否接受条件放行或退回修改 |
+| 拆分未确认 (Step 10 gate) | 提示用户确认拆分方案，不可自行定稿 |
 
 ## 拆分规则
 

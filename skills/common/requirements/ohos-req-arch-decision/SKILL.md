@@ -1,12 +1,12 @@
 ---
 name: ohos-req-arch-decision
-description: Use when selecting an OHOS solution direction in Phase 0.3, especially for 03-arch-decision-record.md, candidate options comparison, or when the main session needs structured ADR output with user-provided decision.
+description: Use when selecting an OHOS solution direction in Phase 0.3, especially for 03-arch-decision-record.md, candidate options comparison, or when the main session needs structured ADR output with user-provided decision. Do NOT use for feasibility analysis (ohos-req-feasibility-analysis), feature baseline (ohos-req-feature-baseline), or review gate (ohos-req-review-gate).
 metadata:
   author: openharmony
   scope: common
   stage: requirements
   capability: arch-decision
-  version: 0.1.0
+  version: 0.2.0
   status: draft
   tags:
     - sdd
@@ -36,6 +36,13 @@ metadata:
 - `{docs_dir}/01-requirement.md`
 - `{docs_dir}/02-feasibility.md`
 - 阶段 B 额外输入：用户决策结论（选定方案、理由、决策者）+ 用户评审会议认定的遗留问题清单
+
+## 自省提示（Mindset Prompts）
+
+在执行关键步骤前，自问以下问题：
+
+- **Before writing §5 (方案比较), ask yourself:** 候选方案是由用户提供的，还是我在自行推断？
+- **Before writing §6 (遗留问题), ask yourself:** 这份清单是评审会议提供的，还是我在推演？
 
 ## 阶段 A：候选方案分析（subagent 执行）
 
@@ -80,12 +87,8 @@ metadata:
 
 ## 强制规则
 
-- **决策结论必须由用户提供**：§5 选定方案、决策理由和决策者由用户给出，AI 不代行。
-- **遗留问题必须由用户提供**：§6 遗留问题清单由用户评审会议决策后输入，AI 不代行生成（不得从 feasibility 条件项或风险自动推演）。
 - **遗留问题闭环门禁**：§6 每条遗留项必须有负责人、解决动作、计划关闭时间。任一遗留项缺少这三字段 → 阻断 Phase 0→1-9 交接。
 - **AI 推荐倾向仅为参考**：§3候选方案对比表的"AI 推荐倾向"列仅供用户决策参考，不是最终结论。
-- **不允许在阶段 A 直接输出 `status: Accepted` 或自行填写 §5 决策结论。**
-- **不允许 AI 自行填充 §6 遗留问题**：阶段 B 时如用户未提供遗留问题清单，§6 保留占位，status 保持 `PendingDecision`。
 
 ## 单方案例外
 

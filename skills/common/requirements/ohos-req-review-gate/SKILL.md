@@ -1,12 +1,12 @@
 ---
 name: ohos-req-review-gate
-description: Use when performing the Phase 0 Step 0.5 Review Ready Gate on a 04-feature.md, especially when the user says "evaluate gate", "review readiness", "feature ready?", "should we generate IR", or when the ohos-intake main session needs a structured Ready / Conditional Ready / Not Ready judgment instead of doing the check inline. Reads 01-04, runs seven fixed checks plus a conditional-items check, and returns a machine-readable JSON summary plus a human-readable table that the main session can route on.
+description: Use when performing the Phase 0 Step 0.5 Review Ready Gate on a 04-feature.md, especially when the user says "evaluate gate", "review readiness", "feature ready?", "should we generate IR", or when the ohos-intake main session needs a structured Ready / Conditional Ready / Not Ready judgment instead of doing the check inline. Reads 01-04, runs seven fixed checks plus a conditional-items check, and returns a machine-readable JSON summary plus a human-readable table that the main session can route on. Do NOT use for feature baseline generation (ohos-req-feature-baseline), value decision recording (ohos-req-value-decision), or IR generation (ohos-req-feature-to-ir).
 metadata:
   author: openharmony
   scope: common
   stage: requirements
   capability: review-gate
-  version: 0.1.0
+  version: 0.2.0
   status: draft
   tags:
     - sdd
@@ -35,7 +35,7 @@ metadata:
 - `{docs_dir}/02-feasibility.md`
 - `{docs_dir}/03-arch-decision-record.md`
 - `{docs_dir}/04-feature.md`
-- `reference/feature-checklist.md`（检查项定义来源）
+- `reference/feature-checklist.md`（检查项判定规则与边缘情况处理的详细定义，**必须在流程第1步加载读取**）
 
 `04-feature.md` 不存在时**直接判定为 Not Ready**，并返回错误说明（不试图推断）。
 
@@ -77,7 +77,7 @@ metadata:
 
 ## 流程
 
-1. 读取 `04-feature.md`（不存在 → 直接 `Not Ready` + 错误原因）。
+1. 读取 `reference/feature-checklist.md` 获取各检查项的 Pass/Warn/Fail 判定规则与边缘情况处理规则；读取 `04-feature.md`（不存在 → 直接 `Not Ready` + 错误原因）。
 2. 读取 §1-§5 及影响性分析补充章节的内容，**只引用必要的摘要**（不嵌入 01-04 全文）。
 3. 对每项检查按上表规则判定 `pass` / `warn` / `fail`。
 4. 收集所有 `warn` 项作为条件项（必须含 Owner、关闭动作、关闭时点，否则升级为 `fail`）。

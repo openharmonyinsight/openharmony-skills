@@ -1,12 +1,12 @@
 ---
 name: ohos-req-requirement-intake
-description: Use when importing an OHOS requirement into Phase 0.1, especially for 01-requirement.md, requirement intake, background, user value, scenarios, scope, FR/NFR, affected modules, or priority. Triggers: 需求导入, 01-requirement, 需求基线, RR单号.
+description: Use when importing an OHOS requirement into Phase 0.1, especially for 01-requirement.md, requirement intake, background, user value, scenarios, scope, FR/NFR, affected modules, or priority. Triggers: 需求导入, 01-requirement, 需求基线, RR单号. Do NOT use for feasibility analysis (ohos-req-feasibility-analysis), architecture decision (ohos-req-arch-decision), or feature baseline (ohos-req-feature-baseline).
 metadata:
   author: openharmony
   scope: common
   stage: requirements
   capability: requirement-intake
-  version: 0.1.0
+  version: 0.2.0
   status: draft
   tags:
     - sdd
@@ -42,6 +42,10 @@ metadata:
 
 唯一例外：用户明确说"这个我不确定，先放一下"时，可标记为 `⚠️ 用户暂缓:{用户原话}`，但必须在回传摘要中单独列出，并计入未关闭澄清项。
 
+## ⭐ 思维准则
+
+在 `01-requirement.md` 中写入任何字段前，自问：这是来自用户的已确认事实，还是假设？若是假设 → 写入 `clarification-questions.md`，而非正文。
+
 ## 输入
 
 - 用户原始描述、Issue、PRD、会议纪要或用户反馈
@@ -55,7 +59,7 @@ metadata:
 1. 读取 `reference/requirement.md`。
 2. 保留需求方原意，将内容归入模板对应章节。
 3. **模板保真：必须沿用模板中的 frontmatter、H1、H2 标题，参考模板的表格结构；不得新增模板外的 H1/H2 章节。**
-4. `必须包含` 中的 FR/NFR、受影响模块、优先级等信息，只能归入模板已有章节：
+4. `必须包含字段` 表中的 FR/NFR、受影响模块、优先级等信息，只能归入模板已有章节：
    - 功能点、用户场景、价值 → `## 4. 期望`
    - 产品、地区、设备、开发者范围 → `## 5. 适用设备/产品形态`
    - NFR、约束、版本、性能/功耗 → `## 6. 约束与期望`
@@ -95,16 +99,16 @@ metadata:
    - 是否所有字段都有确认事实？→ 进入定稿检查
 6. 澄清完成后执行定稿检查：
 
-**定稿检查清单（全部 ✅ 才可进入 feasibility）：**
+**定稿出口门禁（全部 ✅ 才可进入 feasibility）：**
 
-- [ ] 每个章节所有字段有确认事实，无占位符
-- [ ] RR单号已回填（frontmatter `rr_id` + §1 表格；无 RR单号时标注"未立项"并附依据）
-- [ ] 所有 FR 有来源依据
-- [ ] 所有 NFR 有量化口径（"提升XX%"不算量化，必须有基线和目标值）
-- [ ] 优先级(P0/P1/P2)每项有判定依据
-- [ ] 受影响模块有具体仓/路径（不是"待确定"）
-- [ ] 用户痛点有影响描述和严重程度（不是笼统"体验差"）
-- [ ] 无模糊表述（"快速""稳定""尽可能"等）
+- [ ] 「必须包含字段」表中所有"定稿必填"字段均有确认事实（逐项对照表格自检）
+- [ ] 正文中无任何占位符（"待确认""待分析""TBD""FIXME"等任何形式）
+- [ ] 正文中无模糊表述（"快速""稳定""尽可能""优化""提升"等无量化锚点）
+- [ ] RR单号已回填或合规标注"未立项"并附依据
+- [ ] clarification-questions.md 所有问题已回填 `**澄清结论**`，无未关闭项
+- [ ] frontmatter `status` 已更新为 `Clarified`
+- [ ] 模板保真：H1/H2 仅来自模板，无模板外章节，表格结构未改名
+- [ ] 功能点↔FR、场景↔价值、NFR↔量化口径 之间可追溯
 
 **任何一项不通过 → 继续澄清，不允许进入 feasibility。**
 
@@ -120,15 +124,22 @@ metadata:
 4. 若定稿检查不通过（仍有不确定项），仍需逐轮澄清
 5. 在回传摘要中标注"澄清状态: 已完成/需补充/无标记"
 
-## 必须包含
+## 必须包含字段（草稿/定稿对照）
 
-- 需求方、提出时间、来源、触发场景、现状和问题
-- RR单号（frontmatter `rr_id` + §1 来源与背景表格）
-- 用户痛点（有影响描述和严重程度）
-- 功能点、用户场景、价值和可量化目标（有基线和目标值）
-- 产品、地区、设备、开发者范围和期望版本
-- FR（有来源依据）、NFR（有量化口径）、受影响模块（有仓/路径）
-- 约束、优先级（有判定依据）和证据
+| 字段 | 草稿必填 | 定稿必填 | 说明 |
+|------|---------|---------|------|
+| 需求方/提出时间/来源/触发场景/现状和问题 | ✅ | ✅ | 归入 §1 来源与背景 |
+| RR单号 | ✅ | ✅ | frontmatter `rr_id` + §1 表格；无 RR单号时标注"未立项"并附依据 |
+| 用户痛点 | ✅ | ✅ | 必须有影响描述和严重程度（不是笼统"体验差"） |
+| 功能点/用户场景/价值 | ✅ | ✅ | 归入 §4 期望 |
+| 可量化目标 | ✅ | ✅ | 必须有基线和目标值（"提升XX%"不算量化） |
+| 产品/地区/设备/开发者范围/期望版本 | ✅ | ✅ | 归入 §5 适用设备/产品形态 |
+| FR | ✅ | ✅ | 必须有来源依据 |
+| NFR | ✅ | ✅ | 必须有量化口径（基线+目标值） |
+| 受影响模块 | ✅ | ✅ | 必须有具体仓/路径（不是"待确定"） |
+| 约束 | ✅ | ✅ | 归入 §6 约束与期望 |
+| 优先级 | ✅ | ✅ | P0/P1/P2 每项有判定依据 |
+| 证据 | ✅ | ✅ | 归入 §9 附件与证据 |
 
 ## 禁止包含
 

@@ -1,12 +1,12 @@
 ---
 name: ohos-req-feature-to-ir
-description: Use when an OHOS Feature has completed the Phase 0 Review Ready Gate and an Initial Requirement baseline is needed before proposal creation or cross-repository requirement splitting.
+description: Use when an OHOS Feature has completed the Phase 0 Review Ready Gate and an Initial Requirement baseline is needed before proposal creation or cross-repository requirement splitting. Activation keywords: "IR.md baseline", "AC reference inheritance", "rr_id", "extension dimension confirmation". Do NOT use for requirement intake (ohos-req-requirement-intake), feasibility analysis (ohos-req-feasibility-analysis), or SR generation (ohos-req-proposal-to-sr).
 metadata:
   author: openharmony
   scope: common
   stage: requirements
   capability: feature-to-ir
-  version: 0.1.0
+  version: 0.2.0
   status: draft
   tags:
     - sdd
@@ -20,6 +20,13 @@ metadata:
 ## 定位
 
 IR 是 Phase 0 的正式出口。一个 Feature 只生成一个平台级 `IR.md`，随后按仓库或独立交付单元拆成一个或多个 proposal。
+
+## 适用边界
+
+- ✅ 适用：Phase 0 Step 0.5 Gate 通过后生成平台级 IR.md
+- ✅ 适用：Feature Gate 为 Ready 或 Conditional Ready 时生成 IR（Conditional Ready 时条件项写入 IR 并标注 status=Conditional）
+- ❌ 不适用：需求导入（ohos-req-requirement-intake）、可行性分析（ohos-req-feasibility-analysis）、SR 生成（ohos-req-proposal-to-sr）
+- ❌ 不适用：Feature 评审就绪检查（ohos-req-review-gate）、Feature 基线生成（ohos-req-feature-baseline）
 
 ## 输入与前置
 
@@ -42,6 +49,15 @@ IR.md 的 AC 清单直接引用 04-feature.md 的 AC 编号（如 AC-01~AC-10）
 - 模板路径：`reference/IR.md`
 - 模板与 sdd-pilot IR.md 完全一致：13节扁平结构 + HTML注释占位，skill 生成时按需填充各章节内容
 - 流程规则（扩展维度确认交互、AC引用规则、评估8项填写要求、Proposal拆解等）由本 skill 控制
+
+## Before generating IR, ask yourself...
+
+- Before writing an AC reference, ask: am I re-numbering or referencing 04-feature.md's original numbers?
+- Before inheriting rr_id, ask: did I copy it exactly from 04-feature.md frontmatter, including format?
+- Before marking status, ask: is the Gate Ready (→ Baseline) or Conditional Ready (→ Conditional with conditions written to IR)?
+- Before confirming extension dimensions, ask: am I pausing for user confirmation on all 6 dimensions, or skipping/synthesizing answers?
+- Before filling metrics, ask: do I have a reliable baseline for this number, or should I mark "待采集"/"暂不设指标"?
+- Before splitting proposals, ask: am I keeping cross-repo dependencies in one IR appendix, not duplicating IR per repo?
 
 ## 流程
 

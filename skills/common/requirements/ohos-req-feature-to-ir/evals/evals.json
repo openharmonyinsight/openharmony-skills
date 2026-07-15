@@ -22,6 +22,28 @@
         {"text": "未生成 IR.md", "type": "llm_judge"},
         {"text": "回传说明拒绝原因(Gate=Not Ready)", "type": "llm_judge"}
       ]
+    },
+    {
+      "id": 3,
+      "name": "conditional-ready-ir",
+      "prompt": "01-04均已就绪。review-gate返回Conditional Ready，conditions含2条warn项(AC-04缺验证方式、影响性分析缺1行)，每条有Owner和关闭时点。请生成 IR.md。",
+      "expected_output": "生成IR.md，status标注为Conditional。conditions条件项写入IR（含Owner、关闭动作、关闭时点）。不拒绝生成。",
+      "assertions": [
+        {"text": "Conditional", "type": "contains"},
+        {"text": "条件项写入IR", "type": "llm_judge"},
+        {"text": "conditions", "type": "contains"}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "extension-dimension-confirm",
+      "prompt": "01-04均已就绪，Feature Gate=Ready。生成IR时6个扩展维度(安全与权限/性能与功耗/兼容性/API/IPC/构建组件)中，L0级别批量确认，L1+级别逐维度确认。请执行扩展维度确认流程。",
+      "expected_output": "L0级别一次性呈现全部6个维度批量确认；L1+级别每维度独立呈现、独立回答。包含安全与权限维度。以用户判断为准。",
+      "assertions": [
+        {"text": "L0批量确认", "type": "llm_judge"},
+        {"text": "L1+逐项确认", "type": "llm_judge"},
+        {"text": "安全与权限", "type": "contains"}
+      ]
     }
   ]
 }
