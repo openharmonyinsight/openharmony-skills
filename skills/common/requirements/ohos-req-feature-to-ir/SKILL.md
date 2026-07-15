@@ -11,6 +11,13 @@ metadata:
   tags:
     - sdd
     - requirements
+  related-skills:
+    - name: ohos-req-review-gate
+      min_version: 0.2.0
+      required: true
+    - name: ohos-req-proposal-to-sr
+      min_version: 0.2.0
+      required: false
 ---
 
 # OHOS Feature 转 IR
@@ -39,10 +46,6 @@ IR 是 Phase 0 的正式出口。一个 Feature 只生成一个平台级 `IR.md`
 仅在 Gate=Not Ready 时拒绝生成。Gate=Conditional Ready 时允许生成，但必须把条件项（conditions）、Owner、关闭动作和关闭时点写入 IR，生成 `status: Conditional` 的 IR。`Conditional Ready` 不是失败状态，不得误判为拒绝。
 
 IR.md 引用 01-04 的结论而非重复内容，AC 直接引用 04-feature.md 的编号（见 NEVER §1）。
-
-## 引用式而非重复
-
-IR.md 的 AC 清单直接引用 04-feature.md 的 AC 编号（见 NEVER §1）。
 
 ## 模板说明
 

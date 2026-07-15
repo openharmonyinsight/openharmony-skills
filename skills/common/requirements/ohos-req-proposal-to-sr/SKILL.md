@@ -25,6 +25,11 @@ metadata:
 
 SR 是 GA 后锁定的系统需求基线。它定义系统需求、接口责任和约束，但不包含详细方法签名、类设计或时序设计。
 
+## 适用边界
+
+- ✅ 适用：Phase 0 GA 后每个 proposal 对应生成 SR 基线
+- ❌ 不适用：IR 生成（ohos-req-feature-to-ir）、Feature 基线（ohos-req-feature-baseline）、可行性分析（ohos-req-feasibility-analysis）
+
 ## 输入与硬门禁
 
 - `IR.md`
@@ -97,8 +102,7 @@ SR 是 GA 后锁定的系统需求基线。它定义系统需求、接口责任�
 - **NEVER 在 SR 中新增 proposal 未批准的需求范围**：SR 是 GA 后的基线，只能从已批准 proposal 提取，不可自行扩大范围
 - **NEVER 在 SR 中写实现签名**：SR 定义接口责任和语义约束，不包含方法签名、类设计、时序设计（这些属于 spec/design 阶段）
 - **NEVER 合并多个 proposal 的 SR**：一个 proposal 对应一个 SR（1:1 关系），跨 proposal 依赖仅记录依赖关系，不合并文件
-- **禁止在 proposal 中新增未批准的需求范围到 SR**：SR 是 GA 后锁定的基线，只能提取不能扩展
-- **禁止忽略 P0/P1 AC 到 IR 的可追溯性**：每条 P0/P1 AC 必须能在 IR 矩阵中找到对应行，缺失时拒绝生成 SR
+- **NEVER 忽略 P0/P1 AC 到 IR 的可追溯性**：每条 P0/P1 AC 必须能在 IR 矩阵中找到对应行，缺失时拒绝生成 SR
 
 ## 输出
 
