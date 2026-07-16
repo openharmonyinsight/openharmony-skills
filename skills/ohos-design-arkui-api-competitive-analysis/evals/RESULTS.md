@@ -46,7 +46,7 @@
 ## 原始产物 / Artifacts
 
 - with skill onTouch：`examples/onTouch-analysis.md`
-- with skill 应用级快捷键：`evals/runs/with-skill-app-level-shortcut.md`
+- with skill 应用级快捷键：关键产出见上方「用例 2」（不单独存档，保持 `evals/` 精简、贴合仓库惯例）。
 - without skill 原始记录：隔离 subagent 产出，本报告摘录其关键错误作为证据；完整记录随 MR 附上。
 
 ## skills-judge 评分 / Scoring
