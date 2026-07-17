@@ -1,0 +1,66 @@
+name: Skill Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+    
+    - name: Run unit tests
+      run: |
+        cd scripts
+        python3 ../tests/run_tests.py
+    
+    - name: Test extract_imports.py
+      run: |
+        echo "Testing extract_imports.py..."
+        python3 scripts/extract_imports.py --help
+    
+    - name: Test map_domain.py
+      run: |
+        echo "Testing map_domain.py..."
+        python3 scripts/map_domain.py "@ohos.util.stream"
+        python3 scripts/map_domain.py "@kit.ArkTS"
+    
+    - name: Test explore_import_chain.py
+      run: |
+        echo "Testing explore_import_chain.py..."
+        python3 scripts/explore_import_chain.py --help
+    
+    - name: Test generate_evidence_chain.py
+      run: |
+        echo "Testing generate_evidence_chain.py..."
+        python3 scripts/generate_evidence_chain.py --help
+    
+    - name: Verify database
+      run: |
+        echo "Verifying database..."
+        test -f data/xts_rules.db && echo "✅ Database exists" || echo "❌ Database missing"
+    
+    - name: Test database queries
+      run: |
+        echo "Testing database queries..."
+        python3 scripts/query_db.py list-tables
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results
+        path: tests/

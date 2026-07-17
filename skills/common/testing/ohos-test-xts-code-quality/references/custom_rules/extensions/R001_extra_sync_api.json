@@ -1,0 +1,30 @@
+{
+  "type": "extension",
+  "base_rule": "R001",
+  "id": "R001_EXT_EXTRA_SYNC_API",
+  "name": "扩展-禁止使用额外同步阻塞API",
+  "severity": "Critical",
+  "category": "编码规范合规",
+  "description": "在R001（禁止getSync）基础上，额外检测其他同步阻塞API调用",
+  "scope": {
+    "file_types": [".ets", ".ts", ".js"],
+    "target_dirs": []
+  },
+  "patterns": [
+    {
+      "name": "禁止同步文件写入",
+      "pattern": "\\b(?:fs|fileIO)\\.write(?:Sync|TextSync|ArrayBufferSync)\\s*\\(",
+      "suggestion": "请使用异步文件写入方法 write()/writeText()/writeArrayBuffer()"
+    },
+    {
+      "name": "禁止同步读取偏好设置",
+      "pattern": "\\bdataPreferences\\.getPreferencesSync\\s*\\(",
+      "suggestion": "请使用异步方法 getPreferences()"
+    }
+  ],
+  "traps": [
+    "排除注释中的匹配（行首有//或在/* */块内）",
+    "排除字符串字面量中的匹配（单引号、双引号、反引号内）",
+    "排除类型声明中的匹配（interface/type/class体内）"
+  ]
+}

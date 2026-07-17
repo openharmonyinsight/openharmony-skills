@@ -1,0 +1,25 @@
+{
+  "type": "custom",
+  "id": "C001",
+  "name": "测试文件必须包含@tc.number注释",
+  "severity": "Warning",
+  "category": "团队规范",
+  "description": "每个it()测试用例上方必须包含@tc.number注释块",
+  "scope": {
+    "file_types": [".test.ets", ".test.ts", ".test.js"],
+    "target_dirs": []
+  },
+  "patterns": [
+    {
+      "name": "it()上方缺少@tc.number",
+      "check_type": "content",
+      "pattern": null,
+      "check_fn": "it_missing_tc_number",
+      "suggestion": "请在it()函数声明上方添加@tc.number注释块"
+    }
+  ],
+  "traps": [
+    "仅检查it()声明上方5行范围内",
+    "排除嵌套在describe.only内的it()"
+  ]
+}
