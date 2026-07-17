@@ -47,7 +47,7 @@ metadata:
 
 ## 定位
 
-独立工作流，覆盖 Phase 0 全流程（0.1→0.9），输出 IR、proposal 拆分、SR 和 **handoff.md 交接契约**。完成后可独立结束，也可由 `ohos-delivery` 接续进入 Phase 1-9。
+OHOS Phase 0 需求导入全流程编排入口，串联 9 个 subagent skill（requirement→feasibility→decision→feature→gate→IR→proposal→SR→handoff）。RR单号（rr_id）从 01-requirement.md frontmatter 继承到 IR/SR/handoff 全链路，是电子流系统的唯一追溯键。Token 经济性规则（spawn 四要素+隔离上下文+摘要≤15行+扇出≤4）是所有 subagent 调用的绑定契约。模式 A（subagent 编排）和模式 B（主 session 串行）根据运行时 subagent 能力自动切换。
 
 ## NEVER
 
@@ -80,7 +80,7 @@ metadata:
 
 **决策结论由用户提供，AI 不代行。** Step 0.3.2 为强制交互点。
 **拆分结果由用户确认，AI 不自行定稿。** Step 0.4.1 为强制交互点。
-**每个 proposal ≤5 人月。** 超过时必须进一步细分。
+**工作量按复杂度分级约束。** 超过复杂度上限时必须进一步细分（简单≤5/标准≤8/复杂≤15 人月，详见 README 拆分规则）。
 **Phase 0 串行无环，不可跳步。**
 
 ## 流程
@@ -117,6 +117,8 @@ bash {SKILL_HOME}/skills/common/requirements/ohos-req-intake-orchestration/scrip
 ### Step 0.1.5: 澄清门禁 ⭐ 强制
 
 逐轮澄清，定稿检查全部通过后 status=Clarified，才允许进入 feasibility。
+
+> **批量确认**：对输入材料中已有明确答案的问题（如 RR 单号、交付版本、提出人等），一次性呈现全部已知答案让用户批量确认（✅确认/✏️修正），不逐条单独交互。仅真正不确定的问题才逐条澄清。
 
 **定稿检查清单（全部 ✅ 才可进入 feasibility）：**
 
@@ -171,9 +173,13 @@ bash {SKILL_HOME}/skills/common/requirements/ohos-req-intake-orchestration/scrip
 
 调用 `ohos-req-arch-decision` 阶段A，输出 status=PendingDecision，§5-§6占位。
 
+> **单方案快速路径**：当 02-feasibility.md §6 结论中仅有一个可行方案时，可触发 ohos-req-arch-decision 单方案快速路径——跳过候选方案对比表，一次确认即定稿，无需两阶段暂停（详见 ohos-req-arch-decision SKILL.md「单方案例外」）。
+
 ### Step 0.3.2: 决策结论收集 ⭐ 强制交互
 
 向用户收集：选定方案、决策理由、决策者、遗留问题清单（用户评审会议认定）。AI 不代行。
+
+> **单方案快速路径**下，本步简化为一次性确认：向用户呈现唯一方案 + 不可行证据，用户一次确认即可。
 
 ### Step 0.3.3: 03-arch-decision-record.md 定稿（阶段B）
 
@@ -181,7 +187,7 @@ bash {SKILL_HOME}/skills/common/requirements/ohos-req-intake-orchestration/scrip
 
 ### Step 0.4: feature.md — Feature 评审基线
 
-调用 `ohos-req-feature-baseline`，含拆分策略（三级优先+≤5人月约束）、影响性分析、遗留问题闭环校验。RR单号从 01-requirement.md frontmatter `rr_id` 继承。回传 RR单号。
+调用 `ohos-req-feature-baseline`，含拆分策略（三级优先+复杂度分级工作量约束）、影响性分析、遗留问题闭环校验。RR单号从 01-requirement.md frontmatter `rr_id` 继承。回传 RR单号。
 
 ### Step 0.4.1: 拆分结果确认 ⭐ 强制交互
 
@@ -189,7 +195,7 @@ bash {SKILL_HOME}/skills/common/requirements/ohos-req-intake-orchestration/scrip
 
 向用户呈现：
 - 每个 proposal 的边界/职责
-- 每个 proposal 的估算工作量（人月，≤5）
+- 每个 proposal 的估算工作量（人月，不超过复杂度上限）
 - 每个 proposal 的 Owner 和依赖关系
 - 拆分方式（按仓/按功能点/单一）
 
@@ -212,7 +218,7 @@ Feature 评审基线已生成，进入 Review Ready Gate。
 三级优先拆分策略：
 1. 优先按仓+领域拆分
 2. 跨仓不能独立验证时按功能点拆分
-3. 每个 proposal ≤5 人月
+3. 每个 proposal 不超过复杂度上限（简单≤5/标准≤8/复杂≤15 人月）
 
 **Gate 摘要模板（向用户呈现）：**
 ```
@@ -285,6 +291,7 @@ handoff.md 是 Phase 0 到 Phase 1-9 的唯一交接点，包含：
 2. 条件项完整性：提取 04-feature.md §5 所有 proposal 依赖和前置条件，验证在 handoff.md 出现
 3. 决策完整性：提取 03-arch-decision-record.md §5决策结论，验证在 handoff.md 出现
 4. Proposal 拆解完整性：提取 IR.md 末尾「Proposal 拆解」补充章节所有行，验证在 handoff.md 出现
+5. SR 角色完整性：提取每个 SR-*.md §二「责任人」表，验证分析责任人/SE/TSE/测试责任人均已指定（非"待确定"/空值）。任一角色缺失 → 阻断交接，提示用户回填
 
 ## 产物分类与目录规范
 
@@ -301,6 +308,10 @@ handoff.md 是 Phase 0 到 Phase 1-9 的唯一交接点，包含：
 spawn 时遵循下节「Token 经济性 & Context 工程」的绑定契约：task 描述只含四要素（角色 / 输入路径 / 输出路径 / 任务简述），证据传路径不传内容（见 NEVER §1-§2），回传 ≤15 行。
 
 > **Before spawning a subagent task, ask yourself:** does the task contain only the 4 required elements (skill path, task, input files, output path)? Am I embedding file content instead of a path?
+
+> **Before handoff 生成, ask yourself:** 每个 SR-*.md §二责任人表的分析责任人/SE/TSE/测试责任人是否已指定？任一缺失 → 阻断交接。
+
+> **Before Step 0.6 评审决策纪要, ask yourself:** 用户是否已提供评审会议纪要？接纳/不接纳/下次重新上会的结论是否由用户给出而非 AI 推断？
 
 流程结束条件：handoff.md 生成完毕。
 

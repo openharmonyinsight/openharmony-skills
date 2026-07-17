@@ -54,6 +54,16 @@
         {"text": "不可追溯", "type": "contains"},
         {"text": "拒绝生成SR", "type": "llm_judge"}
       ]
+    },
+    {
+      "id": 6,
+      "name": "dimension-inheritance-from-ir",
+      "prompt": "IR.md 已完成6维扩展维度确认(安全=yes/性能=条件/兼容=yes/API=yes/IPC=no/构建=no)。proposal GA批准后生成SR。请执行SR维度确认流程。",
+      "expected_output": "SR §四维度确认直接继承IR结论，标注'继承自IR.md'，不向用户逐条重新确认。仅在proposal范围超出IR覆盖时才补充确认新维度。",
+      "assertions": [
+        {"text": "继承自IR", "type": "llm_judge"},
+        {"text": "不逐条重新确认", "type": "llm_judge"}
+      ]
     }
   ]
 }

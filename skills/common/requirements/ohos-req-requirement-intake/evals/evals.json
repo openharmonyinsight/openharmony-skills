@@ -54,6 +54,16 @@
         {"text": "用户暂缓", "type": "contains"},
         {"text": "Clarified", "type": "contains"}
       ]
+    },
+    {
+      "id": 6,
+      "name": "batch-confirmation-known-answers",
+      "prompt": "用户提供的原始需求文档中已包含RR单号(RR-2026-0512-003)、交付版本(OH7.1)、提出人(张三)。草稿生成后待澄清问题清单中有8条，其中3条(RR单号/交付版本/提出人)的答案已在输入材料中。请执行澄清流程。",
+      "expected_output": "对3条已有答案的问题一次性批量呈现给用户确认(✅确认/✏️修正)，不逐条单独交互。仅剩余5条真正不确定的问题才逐条澄清。",
+      "assertions": [
+        {"text": "批量确认", "type": "llm_judge"},
+        {"text": "已有答案的问题不逐条交互", "type": "llm_judge"}
+      ]
     }
   ]
 }

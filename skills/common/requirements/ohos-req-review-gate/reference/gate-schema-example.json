@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "skill": "ohos-review-gate",
+  "feature_id": "<FEAT-YYYYMMDD-NNN>",
+  "docs_dir": "<绝对路径>",
+  "timestamp": "2026-07-01T23:30:00+08:00",
+  "feature_md_exists": true,
+  "checks": [
+    {"id": "overview_value", "name": "概述与价值", "status": "pass", "evidence": "§1章节存在，含一句话核心诉求", "section_ref": "§1"},
+    {"id": "scope", "name": "范围明确", "status": "pass", "evidence": "...", "section_ref": "§2"},
+    {"id": "ac_complete", "name": "AC 完整", "status": "warn", "evidence": "§3有 5 条 AC，其中 AC-04 缺验证方式", "section_ref": "§3"},
+    {"id": "affected_scope", "name": "受影响范围", "status": "pass", "evidence": "...", "section_ref": "§4"},
+    {"id": "split_decision", "name": "拆分决策", "status": "pass", "evidence": "...", "section_ref": "§5"},
+    {"id": "effort_constraint", "name": "工作量约束", "status": "pass", "evidence": "每个 proposal 不超过复杂度上限", "section_ref": "§5"},
+    {"id": "tech_direction", "name": "技术方向", "status": "pass", "evidence": "...", "section_ref": "技术方向(03-arch-decision-record.md)"},
+    {"id": "impact_analysis", "name": "影响性分析", "status": "pass", "evidence": "5方影响类型已分析", "section_ref": "影响性分析(模板外补充)"},
+     {"id": "module_coverage", "name": "模块覆盖完整性", "status": "pass", "evidence": "04§4覆盖02§2.1全部仓库", "section_ref": "02§2.1→04§4"},
+     {"id": "term_consistency", "name": "影响类型术语一致性", "status": "pass", "evidence": "影响类型标签一致", "section_ref": "02§2.1→04§4"},
+     {"id": "condition_propagation", "name": "条件项传播完整性", "status": "pass", "evidence": "04§5覆盖02/03全部条件项", "section_ref": "02§6+03§6→04§5"},
+     {"id": "followup_closure", "name": "遗留问题闭环", "status": "pass", "evidence": "03§6遗留项由用户输入且三字段齐全", "section_ref": "03§6"}
+  ],
+  "conditions": [
+    {"check_id": "ac_complete", "desc": "AC-04 缺验证方式", "owner": "<TBD or name>", "close_action": "<动作>", "close_at": "<时间点 or TBD>"}
+  ],
+  "observations": [
+    {"check_id": "performance_metric", "desc": "性能基准待 Phase 5 实测", "owner": "<name>", "target_phase": "Phase 5", "close_at": "<Phase 5-7 时点>"}
+  ],
+  "summary": {"pass": 11, "warn": 0, "fail": 0},
+  "gate": "Conditional Ready",
+  "next_action": "生成 IR（Conditional Ready 允许），但 IR 必须引用条件项清单",
+  "block_reasons": []
+}

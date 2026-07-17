@@ -26,13 +26,14 @@
     },
     {
       "id": 3,
-      "name": "single-solution-exception",
+      "name": "single-solution-fast-path",
       "prompt": "02-feasibility.md 只有一个客观可行方案(方案A)，其他路径均有不可行证据。请生成 03-arch-decision-record.md。",
-      "expected_output": "允许单方案，但必须写明其他路径不可行的证据。仍走两阶段流程，不构造虚假备选方案。",
+      "expected_output": "触发单方案快速路径：跳过候选方案对比表，直接呈现唯一方案分析+不可行证据。用户一次确认即定稿，无需两阶段暂停。§3标注'单方案场景，无可行备选'。status直接设为Accepted（用户确认后）。",
       "assertions": [
+        {"text": "§3 标注 单方案场景，无可行备选", "type": "contains"},
         {"text": "包含其他路径不可行的证据说明", "type": "llm_judge"},
-        {"text": "不构造虚假备选方案", "type": "llm_judge"},
-        {"text": "status: PendingDecision", "type": "contains"}
+        {"text": "不构造虚假备选方案（无方案B/方案C对比表）", "type": "llm_judge"},
+        {"text": "用户一次确认即定稿，status 设为 Accepted", "type": "contains"}
       ]
     }
   ]

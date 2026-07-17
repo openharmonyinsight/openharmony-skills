@@ -39,11 +39,15 @@ metadata:
 
 ## 自省提示（Mindset Prompts）
 
-在执行关键步骤前，自问以下问题：
+在执行关键步骤前，自问以下问题。这些问题把 SIG 评审会议的真实约束传递给 AI——方案选型权归属评审会议，AI 只负责候选对比与推荐倾向参考，任何一步替用户决策都会让未评审的方案进入下游。
 
-- **Before writing §5 (方案比较), ask yourself:** 候选方案是由用户提供的，还是我在自行推断？
-- **Before writing §6 (遗留问题), ask yourself:** 这份清单是评审会议提供的，还是我在推演？
-- **Before writing §1 (背景与问题), ask yourself:** am I reading constraints from 01-requirement.md, or inferring them?
+- **Before writing §1 (背景与问题), ask yourself:** am I reading constraints from 01-requirement.md，还是在自行推断硬约束？硬约束应一行简述，不展开为表格。
+- **Before constructing §3 (候选方案对比表), ask yourself:** 候选方案是 feasibility 给出的客观路径，还是我在自行扩充/裁剪？每个方案是否都有一句话描述 + 工作量 + 优势 + 劣势 + 风险 + AI 推荐倾向？对比表是否中立呈现，未夹带选型结论？
+- **Before writing §5 (决策结论), ask yourself:** 这份结论来自用户（代表 SIG 评审），还是我在替用户拍板？§5 是否仍为占位？
+- **Before writing §6 (遗留问题), ask yourself:** 这份清单是评审会议提供的，还是我在从 feasibility 条件项/风险自动推演？AI 推演会引入虚构风险项。
+- **Before pausing after 阶段 A, ask yourself:** 我是否真的暂停等待用户决策了，还是直接推进到了阶段 B？status 是否保持 `PendingDecision`？
+- **Before triggering 单方案快速路径, ask yourself:** feasibility §6 是否明确标注其他路径 ❌不可行 且有证据支撑？还是只有一个方案被标 ✅ 而其余未排除？触发条件不满足时必须回到标准两阶段流程。
+- **Before writing §6 占位 in 阶段 B（用户未提供遗留问题）, ask yourself:** 我是否保留了 `[待用户评审会议后填写]` 并保持 status=`PendingDecision`，而不是自行补全 §6 凑闭环？
 
 ## 阶段 A：候选方案分析（subagent 执行）
 
@@ -93,7 +97,19 @@ metadata:
 
 ## 单方案例外
 
-只有一个客观可行方案时允许不构造虚假备选，但必须写明其他路径不可行的证据。即使只有一个方案，也必须走两阶段流程：阶段 A 呈现唯一方案分析 → 用户确认采纳 → 阶段 B 定稿。
+只有一个客观可行方案时允许不构造虚假备选，但必须写明其他路径不可行的证据。
+
+**单方案快速路径（简化两阶段为一阶段）**：
+
+当 feasibility 阶段已明确排除其他方案（客观上只有一条可行路径）时，可跳过候选方案对比表，采用简化流程：
+
+1. **阶段 A 简化**：直接呈现唯一方案分析（方案描述 + 工作量 + 优势 + 不可行证据），**不生成候选方案对比表**（§3 标注"单方案场景，无可行备选"）
+2. **单次确认**：向用户一次性呈现唯一方案 + 其他路径不可行证据，用户一次确认采纳即可，**无需两阶段暂停**
+3. 用户确认采纳后直接定稿 §5（选定方案 + 理由："唯一可行方案，无备选" + 决策者），status 直接设为 `Accepted`
+
+**触发条件**：feasibility.md §6 结论中仅有一个方案标记为 ✅可行 或 ⚠️有条件可行，其余方案均标记为 ❌不可行，且不可行有证据支撑。
+
+**不满足触发条件时**（≥2 个可行方案），仍执行标准两阶段流程。
 
 ## 职责边界
 

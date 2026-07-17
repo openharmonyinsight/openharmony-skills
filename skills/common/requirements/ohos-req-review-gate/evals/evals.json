@@ -44,6 +44,17 @@
         {"text": "退化规则", "type": "llm_judge"},
         {"text": "followup_closure判fail", "type": "llm_judge"}
       ]
+    },
+    {
+      "id": 5,
+      "name": "observation-item-not-blocking",
+      "prompt": "01-04已就绪。04-feature.md中1个条件项为性能基准待Phase 5实测(标记warn，有Owner和目标关闭时点Phase 5)。其余11项全部pass。请执行 Review Ready Gate。",
+      "expected_output": "性能基准类条件项归类为Phase 0观测项，不阻塞Gate判定。JSON输出observations数组含1条观测项(含owner和target_phase)。gate为Ready(无可关闭warn项)，summary pass:12 warn:0 fail:0。",
+      "assertions": [
+        {"text": "observations", "type": "contains"},
+        {"text": "gate: Ready", "type": "contains"},
+        {"text": "观测项不阻塞Gate", "type": "llm_judge"}
+      ]
     }
   ]
 }

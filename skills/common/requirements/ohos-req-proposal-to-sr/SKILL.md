@@ -23,7 +23,7 @@ metadata:
 
 ## 定位
 
-SR 是 GA 后锁定的系统需求基线。它定义系统需求、接口责任和约束，但不包含详细方法签名、类设计或时序设计。
+SR.md 作为 OHOS 电子流 GA 后基线附件提交，SR 的 status=GA-Approved 是 ohos-delivery 启动 Phase 1-9 的前置条件。SR 的维度确认继承自 IR（PIR #152 P0），不重新逐条交互。SR §二责任人表的分析责任人/SE/TSE/测试责任人必须在 handoff 前指定（PIR #152 P2），缺失则阻断 Phase 1-9 启动。
 
 ## 适用边界
 
@@ -61,19 +61,24 @@ SR 是 GA 后锁定的系统需求基线。它定义系统需求、接口责任�
    - **按 FR/NFR 分类**：从 proposal §3 需求基线逐条提取，分别归入功能需求和非功能需求
    - **合并重叠需求**：同一能力在多个用户故事中出现时，合并为一条系统需求，保留各来源引用
    - **识别跨 proposal 依赖**：仅记录依赖关系（如"SR-01 依赖 SR-02 的 XX 接口"），不合并多个 proposal 的需求
-   - **标注来源**：每条系统需求标注来源（proposal §X），确保可追溯
-    - 填写「关联 SR」表引用其他 proposal 对应的 SR
+    - **标注来源**：每条系统需求标注来源（proposal §X），确保可追溯
+     - 填写「关联 SR」表引用其他 proposal 对应的 SR
+     - **§二「责任人」表的分析责任人/SE/TSE/测试责任人必须填写**，不得留空或标"待确定"——如暂未确定，标注"⚠️ 待指定"并在 handoff 前置检查中阻断
 
 > **Before writing an interface responsibility, ask yourself:** am I adding implementation signatures (methods, classes) or just defining responsibility boundaries (direction, type)?
 
 > Before writing a traceability matrix row, ask yourself: does this AC trace back to a proposal requirement, or am I creating an untraceable link?
+
+> Before writing SR §二 需求基线, ask yourself: 每条系统需求是否可追溯到 proposal §X？是否新增了 proposal 未批准的范围？
+
+> Before 维度确认, ask yourself: IR 是否已确认此维度？是否只需继承结论而非重新逐条交互？
 
 6. 定义接口责任、提供方、消费方和语义约束（§三），不写实现签名。定义方法：
    - **提取涉及接口**：从 proposal 影响范围表提取涉及的接口清单
    - **标注方向**：上游->下游 / 下游->上游 / 双向
    - **标注类型**：Public（对外公开）/ System（系统级）/ Internal（仓内内部）
    - **定义责任与语义约束**：明确每个接口的职责边界和语义约束，不写方法签名、类设计或时序设计
-7. 填写验收标准、系统约束和维度涉及确认（§四）。
+7. 填写验收标准、系统约束和维度涉及确认（§四）。**维度确认继承自 IR.md**——直接引用 IR 已确认的维度结论，不再向用户逐条重新确认。仅当 proposal 范围超出 IR 覆盖的新增维度时才补充确认。
 8. 建立 `IR -> Proposal -> SR -> AC` 追溯矩阵（§五）。
 9. 保存到 `{docs_dir}/SR-{NN}.md`（编号与 proposal 对应，如 `SR-01.md` 对应 `05-proposal-01.md`），状态设为 `GA-Approved`。
 
@@ -87,22 +92,14 @@ SR 是 GA 后锁定的系统需求基线。它定义系统需求、接口责任�
 
 ## 自检
 
-- [ ] 所有关联 proposal 均有 GA 通过证据
-- [ ] RR单号已从 IR.md 继承（frontmatter `rr_id` + §二 需求概要表）
-- [ ] 每个 proposal 对应一个独立 SR 文件
-- [ ] 系统需求没有扩大已批准范围（判定方法：逐条对比 proposal §3 用户故事与 AC，与 SR §二需求基线，确认无新增范围）
-- [ ] 接口责任不依赖尚未生成的 spec/design
-- [ ] P0/P1 AC 和系统约束完整
-- [ ] 维度涉及确认 10 项已填写
-- [ ] 关联 SR 引用表已填写（多 SR 时）
-- [ ] 追溯矩阵无断链
+自检清单详见 [reference/sr-checklist.md](reference/sr-checklist.md)。核心：GA通过证据齐全、1:1 proposal→SR映射、维度继承自IR、责任人表无空值。
 
 ## NEVER
 
-- **NEVER 在 SR 中新增 proposal 未批准的需求范围**：SR 是 GA 后的基线，只能从已批准 proposal 提取，不可自行扩大范围
-- **NEVER 在 SR 中写实现签名**：SR 定义接口责任和语义约束，不包含方法签名、类设计、时序设计（这些属于 spec/design 阶段）
-- **NEVER 合并多个 proposal 的 SR**：一个 proposal 对应一个 SR（1:1 关系），跨 proposal 依赖仅记录依赖关系，不合并文件
-- **NEVER 忽略 P0/P1 AC 到 IR 的可追溯性**：每条 P0/P1 AC 必须能在 IR 矩阵中找到对应行，缺失时拒绝生成 SR
+- **NEVER 在 SR 中新增 proposal 未批准的需求范围**：SR 是 GA 后的基线，只能从已批准 proposal 提取，不可自行扩大范围（原因：SR 是 GA 后锁定的基线，新增范围绕过了 GA 审批，未批准的需求会进入 Phase 1-9 实现阶段导致返工）
+- **NEVER 在 SR 中写实现签名**：SR 定义接口责任和语义约束，不包含方法签名、类设计、时序设计（这些属于 spec/design 阶段）（原因：SR 是系统需求基线附件，方法签名/类设计属于 spec/design 阶段产物，提前写入会与后续设计产生冲突）
+- **NEVER 合并多个 proposal 的 SR**：一个 proposal 对应一个 SR（1:1 关系），跨 proposal 依赖仅记录依赖关系，不合并文件（原因：合并会模糊 GA 审批边界，导致部分 proposal 未批准的需求混入 SR 基线，电子流无法追溯单个 proposal 的验收状态）
+- **NEVER 忽略 P0/P1 AC 到 IR 的可追溯性**：每条 P0/P1 AC 必须能在 IR 矩阵中找到对应行，缺失时拒绝生成 SR（原因：断链的 AC 在 Phase 5 测试阶段无法验证，导致 SR 验收无法闭环）
 
 ## 输出
 

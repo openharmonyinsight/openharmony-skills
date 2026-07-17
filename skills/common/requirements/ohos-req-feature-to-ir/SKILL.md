@@ -26,7 +26,7 @@ metadata:
 
 ## 定位
 
-IR 是 Phase 0 的正式出口。一个 Feature 只生成一个平台级 `IR.md`，随后按仓库或独立交付单元拆成一个或多个 proposal。
+IR.md 通过 RR_MCP 写入 OHOS 电子流系统需求描述字段，是 Phase 0 唯一推送到电子流的产物。AC 编号跨 04-feature.md → IR.md → proposal → SR 全链路引用，重编号会断链追溯矩阵。维度确认在 IR 阶段统一完成后，下游 proposal/SR 继承结论（PIR #152 P0），不再逐条交互。
 
 ## 适用边界
 
@@ -92,6 +92,8 @@ Before writing an IR section, ask yourself: "Is this a platform-level system req
    - 用户回答后，将确认结果回填到 IR.md 对应章节（§8-§13）
    - L1+ 需逐维度确认（每维度独立呈现、独立回答）；L0 可简化为批量确认（一次性呈现全部 6 个维度）
    - 以用户判断为准，AI 不代行决策
+
+> **维度确认唯一交互点**：IR 是 Phase 0 全流程中维度确认的**唯一逐条交互点**。安全/性能/兼容/API/IPC/构建等维度在 feasibility、feature 阶段如有初步判断，可在 IR 确认时引用但不重新交互。下游产物（proposal、SR）**继承 IR 的维度确认结论**，不再向用户逐条重新确认。仅当 proposal 范围超出 IR 覆盖范围时，才对新增维度补充确认。
 9. Proposal拆解和跨仓依赖作为附件或 IR 末尾补充章节，不按仓复制多份 IR。
 10. 对没有可靠基线的指标标记"待采集"或"暂不设指标"，禁止补造数值。
 11. 保存到 `{docs_dir}/IR.md`。
@@ -129,10 +131,10 @@ Before writing an IR section, ask yourself: "Is this a platform-level system req
 
 ## NEVER
 
-- **NEVER 重新编号 AC（AC 引用规则，唯一权威定义）**：IR.md 的 AC 清单必须直接引用 04-feature.md 的 AC 编号（如 AC-01~AC-10），保持原编号不变，不重新编号、不重复描述、不新增编号。本文档其他章节的 AC 引用规则均以本条为准。
-- **NEVER 在 IR 中包含 proposal 级别的设计细节**：IR 是平台级需求基线，不包含单个 proposal 的设计级细节（接口签名、类设计等）
-- **NEVER 虚构指标数值**：无可靠基线时标注"待采集"或"暂不设指标"，禁止编造性能/功耗等量化数值
-- **NEVER 按仓生成多份 IR**：一个 Feature 只生成一个平台级 IR，跨仓需求拆分在 proposal 层完成
+- **NEVER 重新编号 AC（AC 引用规则，唯一权威定义）**：IR.md 的 AC 清单必须直接引用 04-feature.md 的 AC 编号（如 AC-01~AC-10），保持原编号不变，不重新编号、不重复描述、不新增编号。本文档其他章节的 AC 引用规则均以本条为准。（原因：AC 编号是跨文档追溯键，重编号会断链 IR→feature→proposal→SR 的追溯矩阵，电子流系统无法定位验收标准）
+- **NEVER 在 IR 中包含 proposal 级别的设计细节**：IR 是平台级需求基线，不包含单个 proposal 的设计级细节（接口签名、类设计等）（原因：IR 是平台级基线写入电子流，混入 proposal 级设计会导致电子流需求描述超出系统需求粒度，评审时被退回）
+- **NEVER 虚构指标数值**：无可靠基线时标注"待采集"或"暂不设指标"，禁止编造性能/功耗等量化数值（原因：虚构的性能数值会传播到 SR 系统约束，在 Phase 5 测试阶段被证伪，导致 SR 基线失效需返工）
+- **NEVER 按仓生成多份 IR**：一个 Feature 只生成一个平台级 IR，跨仓需求拆分在 proposal 层完成（原因：一个 Feature 对应一个电子流 RR单号，多份 IR 会破坏电子流的需求追溯唯一性）
 
 ## 输出
 

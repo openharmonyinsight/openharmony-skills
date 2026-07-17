@@ -19,9 +19,7 @@ metadata:
 
 ## 定位
 
-`ohos-feature` skill 在生成 `04-feature.md` 时已嵌入 8 项"评审就绪检查"清单（检查项定义见本 skill 下文「Gate 检查项」）。本 skill 把这套检查从"主 session 凭印象判断"升级为**独立 subagent 结构化判定**，输出**机器可读的 JSON 决策结果**和**人类可读的表格**。
-
-主 session 不再自己读 01-04 推算 Gate 结论，而是**只读取本 skill 的 JSON 输出**做路由。
+OHOS Review Ready Gate 是 Phase 0 唯一的独立 subagent 结构化判定——主 session 已持有 01-04 全文上下文，自行推算 Gate 会产生确认偏差，必须由隔离上下文的 subagent 执行判定。Gate JSON 输出的 observations 字段（PIR #152 P1）将性能/功耗/内存等需 Phase 5-7 实测的指标归类为观测项，不阻塞 Ready 判定，在 Phase 1-9 跟踪闭环。
 
 ## 适用边界
 
@@ -52,7 +50,7 @@ metadata:
 | AC 完整 | 有可观察指标和验证方式 | §3 至少 1 条 AC 行非占位符 |
 | 受影响范围 | 明确跨仓模块、Owner/SIG | §4 至少 1 条影响范围行非占位符 |
 | 拆分决策 | 有拆分结论和 proposal 边界 | §5 章节存在且非占位符 |
-| 工作量约束 | 每个 proposal ≤5 人月（如已拆分） | §5 每个 proposal 工作量 ≤5 |
+| 工作量约束 | 每个 proposal 不超过复杂度上限（简单≤5/标准≤8/复杂≤15 人月） | §5 每个 proposal 工作量不超过对应复杂度上限 |
 | 技术方向 | 有选定方案（引用 03-arch-decision-record.md） | 选定方案引用 03-arch-decision-record.md（feature 模板无对应章节） |
 | 影响性分析 | 5方影响类型已分析 | 影响性分析章节（模板外补充）5 行均非占位符 |
 
@@ -75,16 +73,36 @@ metadata:
 **条件项检查（独立字段）**：
 - `04-feature.md` 中所有标记为"⚠️"或"未通过/未知"的项必须都有 Owner 和关闭时点，否则提升为失败项
 
+**Phase 0 观测项（不阻塞 Gate 判定）**：
+
+部分条件项的关闭依赖于 Phase 5-7（实现+测试阶段）才能获取的量化数据（如性能基准测试结果、功耗实测数据、内存占用基线等）。这类条件项在 Phase 0 阶段客观上无法关闭，若将其作为 Gate 阻塞项，会导致 Gate 永远停留在 Conditional Ready、IR 永远 Conditional、handoff 永远 ConditionalReady。
+
+**分类规则**：
+
+| 条件项类型 | 判定依据 | Gate 影响 | 跟踪方式 |
+|-----------|---------|----------|---------|
+| **Phase 0 可关闭条件项** | 所需信息在 Phase 0 范围内可获取（如 AC 缺验证方式、模块覆盖有排除理由等） | 缺 Owner/动作/时点 → 升级为 fail，阻塞 Gate | 条件项清单 |
+| **Phase 0 观测项** | 关闭依赖 Phase 5-7 实测数据（性能基准、功耗实测、内存基线、稳定性测试等） | **不阻塞 Gate Ready/Not Ready 判定**；Gate 结论按其他检查项判定 | 独立「Phase 0 观测项」字段，在 Phase 1-9 跟踪闭环 |
+
+**观测项识别规则**：条件项描述中含"性能基准""功耗实测""内存占用基线""稳定性测试""压力测试"等需实际运行才能获取的量化指标时，自动归类为观测项。观测项仍需记录 Owner 和目标关闭时点（指向 Phase 5-7 对应阶段），但不影响 Gate 结论。
+
+**Gate 结论修订规则**：
+- `Ready`：无 `fail`，无可关闭 `warn` 项（观测项不计入 warn 统计）
+- `Conditional Ready`：无 `fail`，有可关闭 `warn` 项且每条都有 Owner/动作/时点（观测项单独列出，不影响升级判定）
+- `Not Ready`：有 `fail`，**或**有可关闭 `warn` 项但缺少 Owner/动作/时点
+
 ## 流程
 
 1. 读取 `reference/feature-checklist.md` 获取各检查项的 Pass/Warn/Fail 判定规则与边缘情况处理规则；读取 `04-feature.md`（不存在 → 直接 `Not Ready` + 错误原因）。
 2. 读取 §1-§5 及影响性分析补充章节的内容，**只引用必要的摘要**（不嵌入 01-04 全文）。
 3. 对每项检查按上表规则判定 `pass` / `warn` / `fail`。
-4. 收集所有 `warn` 项作为条件项（必须含 Owner、关闭动作、关闭时点，否则升级为 `fail`）。
-5. 汇总得到 Gate 结论：
-   - `Ready`：无 `fail`，无 `warn`
-   - `Conditional Ready`：无 `fail`，有 `warn` 且每条都有 Owner/动作/时点
-   - `Not Ready`：有 `fail`，**或**有 `warn` 但缺少 Owner/动作/时点
+4. 收集所有 `warn` 项，按**分类规则**区分为「Phase 0 可关闭条件项」和「Phase 0 观测项」：
+   - 可关闭条件项必须含 Owner、关闭动作、关闭时点，否则升级为 `fail`
+   - 观测项记录 Owner 和目标关闭时点（指向 Phase 5-7），但不影响 Gate 判定
+5. 汇总得到 Gate 结论（观测项不计入 warn 统计）：
+   - `Ready`：无 `fail`，无可关闭 `warn` 项
+   - `Conditional Ready`：无 `fail`，有可关闭 `warn` 项且每条都有 Owner/动作/时点
+   - `Not Ready`：有 `fail`，**或**有可关闭 `warn` 项但缺少 Owner/动作/时点
 6. 同时写两份产物：
    - `tmp/decision_gate_{feature_id}_{timestamp}.json`（机读）
    - `tmp/decision_gate_{feature_id}_{timestamp}.md`（人读摘要）
@@ -104,73 +122,28 @@ metadata:
 
 ```json
 {
-  "schema_version": "1.0",
-  "skill": "ohos-review-gate",
   "feature_id": "<FEAT-YYYYMMDD-NNN>",
-  "docs_dir": "<绝对路径>",
-  "timestamp": "2026-07-01T23:30:00+08:00",
-  "feature_md_exists": true,
-  "checks": [
-    {"id": "overview_value", "name": "概述与价值", "status": "pass", "evidence": "§1章节存在，含一句话核心诉求", "section_ref": "§1"},
-    {"id": "scope", "name": "范围明确", "status": "pass", "evidence": "...", "section_ref": "§2"},
-    {"id": "ac_complete", "name": "AC 完整", "status": "warn", "evidence": "§3有 5 条 AC，其中 AC-04 缺验证方式", "section_ref": "§3"},
-    {"id": "affected_scope", "name": "受影响范围", "status": "pass", "evidence": "...", "section_ref": "§4"},
-    {"id": "split_decision", "name": "拆分决策", "status": "pass", "evidence": "...", "section_ref": "§5"},
-    {"id": "effort_constraint", "name": "工作量约束", "status": "pass", "evidence": "每个 proposal ≤5 人月", "section_ref": "§5"},
-    {"id": "tech_direction", "name": "技术方向", "status": "pass", "evidence": "...", "section_ref": "技术方向(03-arch-decision-record.md)"},
-    {"id": "impact_analysis", "name": "影响性分析", "status": "pass", "evidence": "5方影响类型已分析", "section_ref": "影响性分析(模板外补充)"},
-     {"id": "module_coverage", "name": "模块覆盖完整性", "status": "pass", "evidence": "04§4覆盖02§2.1全部仓库", "section_ref": "02§2.1→04§4"},
-     {"id": "term_consistency", "name": "影响类型术语一致性", "status": "pass", "evidence": "影响类型标签一致", "section_ref": "02§2.1→04§4"},
-     {"id": "condition_propagation", "name": "条件项传播完整性", "status": "pass", "evidence": "04§5覆盖02/03全部条件项", "section_ref": "02§6+03§6→04§5"},
-     {"id": "followup_closure", "name": "遗留问题闭环", "status": "pass", "evidence": "03§6遗留项由用户输入且三字段齐全", "section_ref": "03§6"}
-  ],
-  "conditions": [
-    {"check_id": "ac_complete", "desc": "AC-04 缺验证方式", "owner": "<TBD or name>", "close_action": "<动作>", "close_at": "<时间点 or TBD>"}
-  ],
-  "summary": {"pass": 11, "warn": 1, "fail": 0},
+  "checks": [ /* 12 项检查结果，含 8 固定 + 3 结构一致性 + 1 遗留问题闭环 */ ],
+  "summary": {"pass": 11, "warn": 0, "fail": 0},
   "gate": "Conditional Ready",
-  "next_action": "生成 IR（Conditional Ready 允许），但 IR 必须引用条件项清单",
   "block_reasons": []
 }
 ```
+
+（完整 JSON Schema 示例见 [reference/gate-schema-example.json](reference/gate-schema-example.json)）
 
 ### 字段语义
 
 - `gate`：仅取 `"Ready" | "Conditional Ready" | "Not Ready"`
 - `summary.pass` / `summary.warn` / `summary.fail`：12 项检查的统计
-- `conditions`：所有 `warn` 项 + 关闭信息（Owner/动作/时点），如 Owner/动作/时点缺失，由本 skill 自动从 warn 升级为 fail
+- `conditions`：所有可关闭 `warn` 项 + 关闭信息（Owner/动作/时点），如 Owner/动作/时点缺失，由本 skill 自动从 warn 升级为 fail
+- `observations`：Phase 0 观测项（性能/功耗/内存等需 Phase 5-7 实测的指标），记录 Owner 和目标关闭阶段，不阻塞 Gate 判定
 - `next_action`：主 session 路由提示（如"生成 IR"、"阻塞回 Step 0.4 补全"、"阻塞：feature.md 不存在"）
 - `block_reasons`：升级为 fail 的条件项描述（仅在 gate=Not Ready 时非空）
 
 ### Markdown 摘要（人读）
 
-```
-# Review Ready Gate 判定 — {feature_id}
-
-时间: {timestamp}
-docs_dir: {docs_dir}
-
-## Gate 结论: {Ready | Conditional Ready | Not Ready}
-
-## 检查项汇总
-
-| # | 检查项 | 状态 | 证据 |
-|---|--------|------|------|
-| 1 | 概述与价值 | ✅/⚠️/❌ | ... |
-| 2 | 范围明确 | ✅/⚠️/❌ | ... |
-| ... | ... | ... | ... |
-
-## 条件项（Conditional Ready 时列出）
-
-| 来源 | 描述 | Owner | 关闭动作 | 关闭时点 |
-|------|------|-------|---------|---------|
-| §3 | AC-04 缺验证方式 | <name> | 补 AC 验证列 | Phase 2 启动前 |
-
-## 下一步
-- Ready → 执行 ohos-feat-to-ir 生成 IR
-- Conditional Ready → 执行 ohos-feat-to-ir，但 IR.md 末尾「条件项清单」补充章节必须填写
-- Not Ready → 回 Step 0.4 补全；feature.md 不存在时直接到 Step 0.4
-```
+（人读 Markdown 摘要模板见 [reference/gate-summary-template.md](reference/gate-summary-template.md)）
 
 ## 与主 Session 的契约
 
@@ -188,7 +161,9 @@ docs_dir: {docs_dir}
 
 ## NEVER
 
-- **禁止主 session 自行读 01-04 推算 Gate**: 必须通过 spawn 独立 subagent 执行，本 skill 的 JSON 输出是唯一 Gate 结论
+- **禁止主 session 自行读 01-04 推算 Gate**: 必须通过 spawn 独立 subagent 执行，本 skill 的 JSON 输出是唯一 Gate 结论（原因：主 session 已持有 01-04 全文上下文，自行推算会产生确认偏差，独立 subagent 判定是唯一可信结论）
+- **禁止嵌入 01-04 全文到 task**: task 仅含 docs_dir 绝对路径，不嵌入 01-04 全文（原因：嵌入全文会 fork 上下文，导致 subagent token 爆炸且无法隔离判断）
+- **禁止复读产物全文到会话**: 正式产物落盘+路径回传，不复读全文（原因：复读全文违背 Token 经济性规则，正式产物只需落盘+路径回传）
 - **禁止在 Gate 输出 JSON 中添加 schema 外字段**: schema_version 1.0 固定字段不可增删，主 session 仅消费 gate/conditions/block_reasons 字段
 - **禁止在 04-feature.md 不存在时尝试从 01-03 推断 Gate 结论**: 必须直接判定 Not Ready 并返回错误说明
 
@@ -207,6 +182,7 @@ docs_dir: {docs_dir}
 - [ ] 3 项结构一致性检查已执行（模块覆盖/术语一致性/条件项传播）
 - [ ] 1 项遗留问题闭环检查已执行（03 §6 用户输入+三字段齐全）
 - [ ] 条件项 Owner/动作/时点缺失时自动升级为 fail
+- [ ] 性能/功耗/内存等需 Phase 5-7 实测的条件项已归类为「观测项」，不阻塞 Gate 判定
 - [ ] JSON 字段与 schema_version 一致
 - [ ] Markdown 摘要表行数 = 12（8固定+3结构+1遗留）
 - [ ] 不嵌入 01-04 全文到 task
