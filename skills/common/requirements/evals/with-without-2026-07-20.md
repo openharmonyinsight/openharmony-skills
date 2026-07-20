@@ -2,7 +2,7 @@
 
 Date: 2026-07-20
 
-Head commit: `78d46457f826d3bc66c3e0f8f54728cbd577f77c`
+Validated source commit: `78d46457f826d3bc66c3e0f8f54728cbd577f77c`
 
 ## Scope
 

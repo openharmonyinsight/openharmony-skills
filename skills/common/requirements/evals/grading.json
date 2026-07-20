@@ -1,7 +1,7 @@
 {
   "bundle": "ohos-phase0-intake",
   "date": "2026-07-20",
-  "head_commit": "78d46457f826d3bc66c3e0f8f54728cbd577f77c",
+  "validated_source_commit": "78d46457f826d3bc66c3e0f8f54728cbd577f77c",
   "method": "structured eval review plus executable smoke tests",
   "summary": {
     "skills": 10,
