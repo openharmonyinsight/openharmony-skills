@@ -90,7 +90,7 @@ OHOS Phase 0 需求导入全流程编排入口，串联 9 个 subagent skill（r
 Phase 0 工作流启动前，必须执行依赖完整性预检：
 
 ```bash
-bash {SKILL_HOME}/skills/common/requirements/ohos-req-intake-orchestration/scripts/install_related_skills.sh --check
+python3 {SKILL_HOME}/skills/common/requirements/ohos-req-intake-orchestration/scripts/install_related_skills.py --check
 ```
 
 预期输出：
@@ -105,10 +105,10 @@ Result: READY
 **任何必选 Skill 缺失或版本不匹配 → 阻断 Phase 0 启动**，返回缺失列表和安装命令：
 
 ```bash
-bash {SKILL_HOME}/skills/common/requirements/ohos-req-intake-orchestration/scripts/install_related_skills.sh --install
+python3 {SKILL_HOME}/skills/common/requirements/ohos-req-intake-orchestration/scripts/install_related_skills.py --install
 ```
 
-安装脚本从同一仓库、同一 commit 安装所有依赖 Skill，确保版本一致。安装后重新执行预检，通过后才允许进入 Step 0.1。
+安装脚本从同一仓库、同一 commit 安装所有依赖 Skill，确保版本一致。脚本使用 Python 标准库实现，支持 Windows / Linux / macOS；`.sh` 文件仅作为 Linux/macOS 包装器。安装后重新执行预检，通过后才允许进入 Step 0.1。
 
 ### Step 0.1: requirement.md — 需求导入
 

@@ -1,6 +1,6 @@
 ---
 name: ohos-req-review-gate
-description: Use when performing the Phase 0 Step 0.5 Review Ready Gate on a 04-feature.md, especially when the user says "evaluate gate", "review readiness", "feature ready?", "should we generate IR", or when the ohos-intake main session needs a structured Ready / Conditional Ready / Not Ready judgment instead of doing the check inline. Reads 01-04, runs seven fixed checks plus a conditional-items check, and returns a machine-readable JSON summary plus a human-readable table that the main session can route on. Do NOT use for feature baseline generation (ohos-req-feature-baseline), value decision recording (ohos-req-value-decision), or IR generation (ohos-req-feature-to-ir).
+description: Use when performing the Phase 0 Step 0.5 Review Ready Gate on a 04-feature.md, especially when the user says "evaluate gate", "review readiness", "feature ready?", "should we generate IR", or when the ohos-req-intake-orchestration main session needs a structured Ready / Conditional Ready / Not Ready judgment instead of doing the check inline. Reads 01-04, runs seven fixed checks plus a conditional-items check, and returns a machine-readable JSON summary plus a human-readable table that the main session can route on. Do NOT use for feature baseline generation (ohos-req-feature-baseline), value decision recording (ohos-req-value-decision), or IR generation (ohos-req-feature-to-ir).
 metadata:
   author: openharmony
   scope: common
@@ -56,7 +56,7 @@ OHOS Review Ready Gate 是 Phase 0 唯一的独立 subagent 结构化判定—�
 
 **结构一致性检查项（3 项新增，仅做 Ready/Conditional/Not Ready 决策判定，不重复校验内容）**：
 
-> **职责边界：** `ohos-feature` skill 在生成期做模块覆盖完整性/术语一致性的逐项校验和修复；本 skill 只做最终的 Ready/Conditional/Not Ready 决策判定，引用 feature skill 的校验结果（不重复执行校验逻辑）。条件项传播完整性为本 skill 独有（feature skill 不涉及 02/03 的条件项跨文档追溯）。
+> **职责边界：** `ohos-req-feature-baseline` skill 在生成期做模块覆盖完整性/术语一致性的逐项校验和修复；本 skill 只做最终的 Ready/Conditional/Not Ready 决策判定，引用 feature skill 的校验结果（不重复执行校验逻辑）。条件项传播完整性为本 skill 独有（feature skill 不涉及 02/03 的条件项跨文档追溯）。
 
 | 检查项 | 要求 | 判定方法 |
 |--------|------|----------|
@@ -171,7 +171,7 @@ OHOS Review Ready Gate 是 Phase 0 唯一的独立 subagent 结构化判定—�
 
 | 场景 | 行为 |
 |------|------|
-| 04-feature.md 不存在 | 返回 `feature_md_exists: false`、`gate: "Not Ready"`、`block_reasons: ["04-feature.md 不存在，请先执行 ohos-feature"]` |
+| 04-feature.md 不存在 | 返回 `feature_md_exists: false`、`gate: "Not Ready"`、`block_reasons: ["04-feature.md 不存在，请先执行 ohos-req-feature-baseline"]` |
 | 04-feature.md 存在但 8 项表格完全空白 | 视为 Not Ready，所有 8 项均记 fail |
 | 02/03 缺失但 04 存在 | 仅依据 04 判定 8 项固定检查；3 项结构一致性检查退化规则：02缺失时 module_coverage / term_consistency / condition_propagation 均判 `warn`；03缺失时 condition_propagation 判 `warn` + followup_closure 判 `fail`（block_reasons: "03-arch-decision-record.md 缺失，遗留问题闭环无法验证"）；02+03同时缺失时 4 项均判 `warn`/`fail` |
 | JSON 写入失败 | 回传错误，主 session 退化为人工 Gate |

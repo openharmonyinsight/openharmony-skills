@@ -36,7 +36,7 @@
 - **02 缺失时**：module_coverage / term_consistency / condition_propagation 均判 `warn`（02 §6 无条件项可提取时不产生 warn）
 - **03 缺失时**：condition_propagation 判 `warn`，followup_closure 判 `fail`
 - **结构一致性检查不产生 fail**：这三项只做 Ready/Conditional 决策判定，fail 来自遗留问题闭环检查
-- **职责边界**：模块覆盖和术语一致性的逐项校验由 `ohos-feature` skill 在生成期完成，本 skill 只读取结论字段
+- **职责边界**：模块覆盖和术语一致性的逐项校验由 `ohos-req-feature-baseline` skill 在生成期完成，本 skill 只读取结论字段
 
 ## 遗留问题闭环检查项（1 项）
 

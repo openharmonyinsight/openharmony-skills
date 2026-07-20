@@ -11,7 +11,7 @@ source_revision: ""
 
 # System Requirement（SR）基线
 
-> 本文档由 `ohos-proposal-to-sr` 在所有关联 proposal 通过 GATE A 后生成。
+> 本文档由 `ohos-req-proposal-to-sr` 在所有关联 proposal 通过 GATE A 后生成。
 > 硬前置：IR 拆解矩阵中的每个 proposal 都有 GA 通过证据。
 > SR 是系统需求基线，是后续设计/规格/实施阶段的正式输入。
 

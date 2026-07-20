@@ -9,7 +9,7 @@ status: Draft
 # Handoff 契约 — Phase 0 → Phase 1-9 交接
 
 > 本文档是 Phase 0（需求导入）到 Phase 1-9（需求实现）的唯一交接点。
-> 由 `ohos-intake` 流程结束时自动生成，由 `ohos-delivery` 启动时读取验证。
+> 由 `ohos-req-intake-orchestration` 流程结束时自动生成，由 `ohos-delivery` 启动时读取验证。
 
 ## Phase 0 完成状态
 
@@ -88,7 +88,7 @@ status: Draft
 
 | handoff.md status | 含义 | 允许动作 |
 |-------------------|------|----------|
-| Draft | Phase 0 流程进行中 | 仅 ohos-intake 可更新 |
+| Draft | Phase 0 流程进行中 | 仅 ohos-req-intake-orchestration 可更新 |
 | Ready | Phase 0 完成，所有前置检查通过 | ohos-delivery 可启动 |
 | ConditionalReady | Phase 0 有条件完成 | ohos-delivery 可启动，但需标注条件项 |
 | Blocked | Phase 0 前置检查不通过 | 禁止启动 ohos-delivery |

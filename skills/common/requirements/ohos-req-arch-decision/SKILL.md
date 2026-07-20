@@ -113,7 +113,7 @@ metadata:
 
 ## 职责边界
 
-本 skill 只产出方案选型决策，不产出 Feature 评审基线（目标/非目标/AC/交付影响），这些由 ohos-feature skill 负责。
+本 skill 只产出方案选型决策，不产出 Feature 评审基线（目标/非目标/AC/交付影响），这些由 `ohos-req-feature-baseline` skill 负责。
 
 ## NEVER
 
