@@ -47,6 +47,11 @@ OHOS 代码证据包（kb_precheck_path）是 feasibility 的独立于用户设�
 
 ## 流程（两阶段：草稿 → 澄清 → 定稿）
 
+## 模板与产物命名
+
+- 模板路径：`reference/feasibility.md`（模板文件不带 `02-` 阶段编号前缀）
+- 产物路径：`{docs_dir}/02-feasibility.md`
+
 ### 第一阶段：草稿生成
 
 1. 读取 `reference/feasibility.md` 和需求事实。

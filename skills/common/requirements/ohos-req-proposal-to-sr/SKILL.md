@@ -46,6 +46,7 @@ SR.md 作为 OHOS 电子流 GA 后基线附件提交，SR 的 status=GA-Approved
 ## 模板说明
 
 - 模板路径：`reference/SR.md`
+- proposal 结构参考模板：`reference/proposal.md`（模板文件不带 `05-` 阶段编号前缀；`05-proposal*.md` 仅作为 `{docs_dir}` 下的产物文件名）
 - 模板含 5 个章节：GA 通过证据 / 系统需求基线 / 接口责任与跨仓契约 / 验收与约束 / 来源追溯
 - **一份 SR.md 只定义一个 SR；一个 proposal 对应一个 SR**
 - 多个 SR 时各自独立文件（`SR-01.md`、`SR-02.md`...），以模板内「关联 SR」表相互引用

@@ -150,7 +150,7 @@ OHOS Review Ready Gate 是 Phase 0 唯一的独立 subagent 结构化判定—�
 主 session 在 Phase 0 Step 0.5 时：
 
 ```
-1. spawn ohos-review-gate subagent，task 仅含 docs_dir 绝对路径（不嵌 01-04 全文）
+1. spawn ohos-req-review-gate subagent，task 仅含 docs_dir 绝对路径（不嵌 01-04 全文）
 2. 等待 subagent 回传路径
 3. 读 tmp/decision_gate_*.json（≤100 行结构化数据，符合 Token 经济性规则）
 4. 根据 gate 字段路由：

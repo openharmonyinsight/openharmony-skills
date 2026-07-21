@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "skill": "ohos-review-gate",
+  "skill": "ohos-req-review-gate",
   "feature_id": "<FEAT-YYYYMMDD-NNN>",
   "docs_dir": "<绝对路径>",
   "timestamp": "2026-07-01T23:30:00+08:00",

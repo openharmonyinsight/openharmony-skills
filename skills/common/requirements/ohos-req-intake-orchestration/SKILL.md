@@ -72,6 +72,10 @@ OHOS Phase 0 需求导入全流程编排入口，串联 9 个 subagent skill（r
 - `SR-*.md`（每个 GA-Approved proposal 对应一个 SR）
 - `handoff.md`（交接契约，Phase 1-9 入口验证依据）
 
+## 模板与产物命名约定
+
+`reference/` 下的模板文件不带阶段编号前缀，例如 `requirement.md`、`feasibility.md`、`arch-decision-record.md`、`feature.md`、`proposal.md`、`SR.md`。`01-`、`02-`、`03-`、`04-`、`05-` 仅用于 `{docs_dir}` 下的正式产物文件名，不用于模板引用路径。
+
 ## 环境变量
 
 环境变量解析逻辑见 `reference/env-vars.md`。SKILL_HOME > WORK_HOME > DOCS_REPO 三级优先，详见参考文件。

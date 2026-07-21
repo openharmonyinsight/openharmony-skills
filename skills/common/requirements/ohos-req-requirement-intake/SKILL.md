@@ -66,6 +66,11 @@ Before 定稿, ask yourself: 每条 NFR 是否有基线值+目标值（而非"�
 
 ## 流程（两阶段：草稿 → 澄清 → 定稿）
 
+## 模板与产物命名
+
+- 模板路径：`reference/requirement.md`（模板文件不带 `01-` 阶段编号前缀）
+- 产物路径：`{docs_dir}/01-requirement.md`
+
 ### 第一阶段：草稿生成
 
 1. 读取 `reference/requirement.md`。
