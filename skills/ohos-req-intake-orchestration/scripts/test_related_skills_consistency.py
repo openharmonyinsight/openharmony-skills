@@ -144,6 +144,23 @@ def main() -> int:
     else:
         bad("S5 期望 INCONSISTENT", cout)
 
+    root4 = setup_sandbox()
+    summary_template = (
+        sbx_skill(root4, "ohos-req-review-gate")
+        / "reference"
+        / "gate-summary-template.md"
+    )
+    summary_template.write_text(
+        summary_template.read_text(encoding="utf-8")
+        + "\n- Ready → 执行 ohos-feat-to-ir 生成 IR\n",
+        encoding="utf-8",
+    )
+    cout = run_script(sbx_script(root4, "check_related_skills_consistency.py"))
+    if "Result: INCONSISTENT" in cout and "ohos-feat-to-ir" in cout:
+        ok("S6 旧别名 ohos-feat-to-ir 被检出")
+    else:
+        bad("S6 期望旧别名 INCONSISTENT", cout)
+
     print()
     print(f"Summary: {PASS} passed, {FAIL} failed")
     return 0 if FAIL == 0 else 1

@@ -154,8 +154,8 @@ OHOS Review Ready Gate 是 Phase 0 唯一的独立 subagent 结构化判定—�
 2. 等待 subagent 回传路径
 3. 读 tmp/decision_gate_*.json（≤100 行结构化数据，符合 Token 经济性规则）
 4. 根据 gate 字段路由：
-   - "Ready"           → spawn ohos-feat-to-ir
-   - "Conditional Ready" → spawn ohos-feat-to-ir（task 中追加 conditions 摘要）
+   - "Ready"           → spawn ohos-req-feature-to-ir
+   - "Conditional Ready" → spawn ohos-req-feature-to-ir（task 中追加 conditions 摘要）
    - "Not Ready"       → 阻塞；如 block_reasons 非空，用其内容生成 AskUserQuestion
 ```
 

@@ -26,6 +26,6 @@ docs_dir: {docs_dir}
 | §6 | 性能基准待实测 | <name> | Phase 5 | Phase 5 测试阶段 |
 
 ## 下一步
-- Ready → 执行 ohos-feat-to-ir 生成 IR
-- Conditional Ready → 执行 ohos-feat-to-ir，但 IR.md 末尾「条件项清单」补充章节必须填写
+- Ready → 执行 ohos-req-feature-to-ir 生成 IR
+- Conditional Ready → 执行 ohos-req-feature-to-ir，但 IR.md 末尾「条件项清单」补充章节必须填写
 - Not Ready → 回 Step 0.4 补全；feature.md 不存在时直接到 Step 0.4
