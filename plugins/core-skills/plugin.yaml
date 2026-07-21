@@ -1,0 +1,30 @@
+schemaVersion: 1
+kind: Plugin
+id: core-skills
+name: core-skills
+version: 0.1.0
+description: Existing OpenHarmony skills in this repository, packaged as a skills-only plugin.
+license: Apache-2.0
+
+components:
+  skills:
+    - id: openharmony-skills
+      include: ../../skills/**/SKILL.md
+      sourceRoot: ../../skills
+
+  prompts: []
+  hooks: []
+  agents: []
+  tools: []
+  mcpServers: []
+  assets: []
+  executables: []
+
+compatibility:
+  targets:
+    claude-code:
+      strategy: generate-native-plugin
+    codex:
+      strategy: generate-native-plugin
+    opencode:
+      strategy: generate-install-payload

@@ -1,0 +1,37 @@
+schemaVersion: 1
+kind: Workspace
+name: openharmony-skills
+description: Neutral source workspace for OpenHarmony agent plugins.
+
+plugins:
+  - id: core-skills
+    path: plugins/core-skills/plugin.yaml
+  - id: ohos-delivery-kit
+    path: workflows/ohos-delivery-kit/plugin.yaml
+
+constraints:
+  sourceOfTruth: current-repository
+  pathPolicy:
+    allowWorkspaceRelativePaths: true
+    denyPathEscape: true
+  generatedArtifacts:
+    directories:
+      - dist/
+    policy: do-not-maintain-by-hand
+  hostArtifacts:
+    policy: generated-by-ohos-agent
+    includes:
+      - claude-code manifests
+      - codex plugin manifests
+      - opencode plugin wrappers
+      - command aliases
+      - hook shell wrappers
+      - marketplace metadata
+
+targets:
+  claude-code:
+    lifecycle: native
+  codex:
+    lifecycle: native
+  opencode:
+    lifecycle: managed-by-ohos-agent

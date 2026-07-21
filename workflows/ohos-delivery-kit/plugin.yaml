@@ -1,0 +1,184 @@
+schemaVersion: 1
+kind: Plugin
+id: ohos-delivery-kit
+name: ohos-delivery-kit
+version: 0.6.5
+description: OpenHarmony delivery artifact specification layer with ODK skills, session routing, validator executable, and passive runtime assets.
+license: MIT
+provenance: provenance.yaml
+
+variables:
+  ODK_ASSET_ROOT: runtime/assets
+  ODK_EXECUTABLE_ROOT: runtime/executables
+  CMD_PREFIX:
+    claude-code: /odk-
+    codex: odk-
+    opencode: odk-
+
+components:
+  skills:
+    - id: using-odk
+      path: skills/using-odk/SKILL.md
+      role: router
+    - id: using-odk-bridge
+      path: skills/using-odk-bridge/SKILL.md
+      role: bridge-router
+      internal: true
+    - id: odk-base
+      include:
+        - skills/odk-init/SKILL.md
+        - skills/odk-propose/SKILL.md
+        - skills/odk-spec/SKILL.md
+        - skills/odk-design/SKILL.md
+        - skills/odk-plan/SKILL.md
+        - skills/odk-implement/SKILL.md
+        - skills/odk-review/SKILL.md
+        - skills/odk-validate/SKILL.md
+        - skills/odk-spec-for-validation/SKILL.md
+        - skills/odk-security-threat-model/SKILL.md
+        - skills/odk-link-issue/SKILL.md
+      role: delivery-workflow
+    - id: odk-superpowers-bridge
+      include:
+        - skills/odk-sp-brainstorm/SKILL.md
+        - skills/odk-sp-plan/SKILL.md
+        - skills/odk-sp-implement/SKILL.md
+        - skills/odk-sp-review/SKILL.md
+      role: bridge
+      optionalDependencies:
+        - superpowers
+      fallback:
+        - odk-propose
+        - odk-plan
+        - odk-implement
+        - odk-review
+    - id: odk-openspec-bridge
+      include:
+        - skills/odk-ops-propose/SKILL.md
+        - skills/odk-ops-apply/SKILL.md
+      role: bridge
+      optionalDependencies:
+        - openspec
+      fallback:
+        - odk-propose
+        - odk-implement
+    - id: odk-matrixspec-bridge
+      include:
+        - skills/odk-ms-proposal/SKILL.md
+        - skills/odk-ms-delta-spec/SKILL.md
+        - skills/odk-ms-delta-design/SKILL.md
+        - skills/odk-ms-tasks/SKILL.md
+        - skills/odk-ms-validation/SKILL.md
+      role: bridge
+      optionalDependencies:
+        - matrixspec
+      fallback:
+        - odk-propose
+        - odk-spec
+        - odk-design
+        - odk-plan
+        - odk-spec-for-validation
+
+  prompts:
+    - id: session-router
+      path: prompts/session-router.md
+
+  hooks:
+    - id: session-router
+      path: hooks/session-router.yaml
+
+  assets:
+    - id: templates
+      path: runtime/assets/templates
+      usedBy:
+        - skills
+        - validator
+    - id: profiles
+      path: runtime/assets/profiles
+      usedBy:
+        - skills
+    - id: contracts
+      path: runtime/assets/contracts
+      usedBy:
+        - skills
+        - validator
+    - id: rules
+      path: runtime/assets/rules
+      usedBy:
+        - skills
+    - id: adapters
+      path: runtime/assets/adapters
+      usedBy:
+        - bridge-skills
+    - id: docs
+      path: runtime/assets/docs
+      usedBy:
+        - skills
+    - id: examples
+      path: runtime/assets/examples
+      usedBy:
+        - docs
+    - id: codespec-examples
+      path: runtime/assets/codespec-examples
+      usedBy:
+        - docs
+
+  executables:
+    - id: validator
+      path: runtime/executables/validator/validate-artifacts-contract.py
+      runtime: python3
+      entrypoint: validate-artifacts-contract.py
+      usedBy:
+        - odk-validate
+
+  agents: []
+  tools: []
+  mcpServers: []
+
+commandProjection:
+  source: skill
+  generatedByHostAdapter: true
+  commands:
+    - skill: odk-init
+    - skill: odk-propose
+    - skill: odk-spec
+    - skill: odk-design
+    - skill: odk-plan
+    - skill: odk-implement
+    - skill: odk-review
+    - skill: odk-validate
+    - skill: odk-spec-for-validation
+    - skill: odk-security-threat-model
+    - skill: odk-link-issue
+    - skill: odk-sp-brainstorm
+    - skill: odk-sp-plan
+    - skill: odk-sp-implement
+    - skill: odk-sp-review
+    - skill: odk-ops-propose
+    - skill: odk-ops-apply
+    - skill: odk-ms-proposal
+    - skill: odk-ms-delta-spec
+    - skill: odk-ms-delta-design
+    - skill: odk-ms-tasks
+    - skill: odk-ms-validation
+
+compatibility:
+  targets:
+    claude-code:
+      strategy: generate-native-plugin
+      lifecycle: native
+    codex:
+      strategy: generate-native-plugin
+      lifecycle: native
+    opencode:
+      strategy: generate-install-payload
+      lifecycle: managed-by-ohos-agent
+  missingCapabilityPolicy: fail-or-report-declared-fallback
+
+build:
+  generatedArtifactsOnly: true
+  reproducible: true
+  outputs:
+    includeLockfile: true
+    includeFileDigests: true
+    includeCompatibilityReport: true

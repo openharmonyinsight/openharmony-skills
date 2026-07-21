@@ -1,0 +1,49 @@
+schema_version: "0.1.0"
+
+profile:
+  id: "arkgraphic"
+  name: "ArkGraphic 图形"
+  version: "0.1.0"
+  description: "图形渲染模块（render_service、surface 等）。GPU 兼容、渲染管线性能。"
+
+
+activation:
+  module_keywords:
+    - "graphic"
+    - "render"
+    - "gpu"
+    - "display"
+    - "surface"
+    - "vsync"
+    - "texture"
+
+template_overrides:
+  proposal:
+    required_dimensions: [perf, compatibility, api-sdk]
+  design:
+    additional_sections:
+      - "GPU 管线设计"
+      - "合成策略"
+      - "图形内存管理"
+    fragments:
+      - file: "fragments/arkgraphic/design-prepend.md"
+        strategy: "prepend"
+  spec:
+    additional_ac_categories:
+      - "渲染正确性"
+      - "性能退化检测"
+    fragments:
+      - file: "fragments/arkgraphic/spec-append.md"
+        strategy: "append"
+
+agent_instructions:
+  define: >
+    ArkGraphic 关注：Mali/Adreno/IMG GPU 异构兼容、60fps/120fps 帧预算、HDR/色彩空间、图形内存带宽。
+  specify: >
+    渲染结果多 GPU 一致性；帧率/延迟退化需有精确阈值和基准；纹理/Buffer 生命周期需明确定义。
+  design: >
+    设计需明确 GPU 管线、合成策略、Buffer/纹理所有权、VSync 调度和图形内存生命周期；多 GPU 兼容与帧预算需进入设计约束。
+  plan: >
+    计划需覆盖 Mali/Adreno/IMG 兼容验证、帧率/延迟基准、HDR/色彩空间回归、图形内存带宽和 Buffer 生命周期验证。
+
+priority: 25

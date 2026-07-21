@@ -1,0 +1,182 @@
+version: 1
+archive_root: ".codespec/changes/<change-id>/"
+minimum_contract:
+  required_artifacts:
+    - proposal
+    - spec
+    - design
+    - execution-plan
+  optional_artifacts:
+    - spec-for-validation
+    - threat-model
+    - evidence/reviews
+    - evidence/gates
+  traceability_chain:
+    - proposal
+    - spec.ac
+    - execution-plan.task
+    - code
+    - review
+
+artifacts:
+  proposal:
+    file: "proposal.md"
+    template: "core/templates/ai/proposal.md"
+    phase: "define"
+    required: true
+    owns:
+      - target_release
+      - change_type
+      - triage
+      - eight_dimension_na_confirmation
+    requires: []
+    required_sections:
+      - "背景与问题"
+      - "初始分级判断"
+      - "目标"
+      - "非目标"
+      - "Agent Scope Guard"
+      - "成功标准"
+      - "影响范围"
+      - "假设与开放问题"
+      - "不涉及项确认"
+    conditional_sections:
+      - section: "用户场景与业务触发"
+        required_when: "The change has end-user-facing behavior or upstream business-trigger scenarios that downstream test design relies on."
+
+  spec:
+    file: "spec.md"
+    template: "core/templates/ai/spec.md"
+    phase: "specify"
+    required: true
+    owns:
+      - acceptance_criteria
+      - business_rules
+      - error_codes
+      - compatibility_statement
+      - verification_mapping
+    requires:
+      - proposal
+    required_sections:
+      - "概述"
+      - "用户故事或场景"
+      - "业务规则"
+      - "异常与边界规则"
+      - "错误码定义"
+      - "接口变更分析"
+      - "兼容性声明"
+      - "验证映射"
+      - "测试设计提示"
+
+  design:
+    file: "design.md"
+    template: "core/templates/ai/design.md"
+    phase: "design"
+    required: true
+    owns:
+      - code_fact_baseline
+      - architecture_decisions
+      - module_impact
+      - state_ownership
+      - verification_approach
+    requires:
+      - proposal
+      - spec
+    required_sections:
+      - "需求基线摘要"
+      - "设计约束"
+      - "非目标"
+      - "方案概述"
+      - "架构图"
+      - "模块影响"
+      - "实现入口"
+      - "关键设计决策"
+      - "时序设计"
+      - "风险与缓解"
+      - "验证思路"
+    conditional_sections:
+      - section: "代码事实基线"
+        required_when: "The change touches existing modules, APIs, data structures, or runtime behavior."
+      - section: "状态归属与不变量"
+        required_when: "The change introduces or modifies complex state, ownership, lifecycle, concurrency, compatibility, performance, capacity, or migration behavior."
+      - section: "既有模式复用"
+        required_when: "The change should follow existing project conventions or reuse established patterns (naming, call chain, error handling, test style)."
+      - section: "类图"
+        required_when: "The change involves class inheritance hierarchies, interface implementation layers (e.g. IPC interface/proxy/stub/impl), or cross-module composition relationships."
+      - section: "安全基础检查"
+        required_when: "The proposal 8-dimension eval marks 安全/权限 as 是 — the single trigger source. propose sets 安全/权限=是 when the change crosses trust boundaries (IPC/Binder/shared-mem/socket), crosses security layers (user↔kernel, sandbox, SELinux domains), handles sensitive data, or uses crypto/auth/authorization; those are the judgment basis at propose, not separate triggers (see odk-propose)."
+
+  execution-plan:
+    file: "execution-plan.md"
+    template: "core/templates/ai/execution-plan.md"
+    phase: "plan"
+    required: true
+    owns:
+      - ac_task_traceability
+      - file_scope
+      - task_dependencies
+      - verification_commands
+      - actual_results
+      - code_mapping
+    requires:
+      - proposal
+      - spec
+      - design
+    required_sections:
+      - "输入状态"
+      - "执行原则"
+      - "AC 到 Task 追溯"
+      - "实现边界"
+      - "禁止项"
+      - "Task 依赖"
+      - "Task 列表"
+      - "Task 详情"
+      - "Review Gates"
+      - "代码范围映射"
+
+  spec-for-validation:
+    file: "spec-for-validation.md"
+    template: "core/templates/ai/spec-for-validation.md"
+    phase: "validation"
+    required: false
+    bypass: true
+    owns:
+      - integration_scenarios
+      - system_scenarios
+    requires:
+      - proposal
+      - spec
+    required_sections:
+      - "概述"
+      - "场景"
+
+  threat-model:
+    file: "threat-model.md"
+    template: "core/templates/ai/threat-model.md"
+    phase: "security"
+    required: false
+    bypass: true
+    owns:
+      - data_flow_diagram
+      - stride_threats
+      - compliance_checks
+      - risk_mitigations
+    requires:
+      - proposal
+      - spec
+      - design
+    required_sections:
+      - "变更范围概述"
+      - "数据流图"
+      - "STRIDE 威胁分析"
+      - "威胁汇总"
+      - "法规合规检查"
+      - "风险与缓解"
+
+evidence_policy:
+  minimum_archive_required: false
+  recommended_root: "evidence/"
+  review_templates:
+    - "core/templates/review/review-spec-compliance.md"
+    - "core/templates/review/review-code-quality.md"
+    - "core/templates/review/review-verification.md"
