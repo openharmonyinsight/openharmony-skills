@@ -1,0 +1,69 @@
+{
+  "skill_name": "ohos-req-proposal-to-sr",
+  "evals": [
+    {
+      "id": 1,
+      "name": "ga-approved-sr-generation",
+      "prompt": "IR.md 和 05-proposal.md(status: GA-Approved, gate_a 有GA记录)均已就绪。IR的rr_id是RR-2026-0512-003。proposal_id是PROP-001。请生成 SR.md。",
+      "expected_output": "生成 proposals/PROP-001/SR.md，frontmatter rr_id 从IR继承。含GA通过证据表、系统需求基线表(含RR单号行)、接口责任表、追溯矩阵。status: GA-Approved。",
+      "assertions": [
+        {"text": "frontmatter rr_id: RR-2026-0512-003", "type": "contains"},
+        {"text": "status: GA-Approved", "type": "contains"},
+        {"text": "包含 GA 通过证据表", "type": "contains"},
+        {"text": "包含 IR -> Proposal -> SR -> AC 追溯矩阵", "type": "contains"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "ga-not-approved-rejection",
+      "prompt": "IR.md 和 05-proposal.md(status: Draft, gate_a 为空)均已就绪。请生成 SR.md。",
+      "expected_output": "拒绝生成SR，因为proposal状态不是GA-Approved。回传中说明拒绝原因。",
+      "assertions": [
+        {"text": "未生成 SR.md", "type": "llm_judge"},
+        {"text": "回传说明拒绝原因(proposal未通过GA)", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "multi-proposal-sr",
+      "prompt": "IR.md 和两个 proposal 均已就绪：05-proposal-01.md(status: GA-Approved, gate_a 有GA记录)、05-proposal-02.md(status: GA-Approved, gate_a 有GA记录)。IR的rr_id是RR-2026-0512-003。proposal_id 分别是PROP-001和PROP-002。请生成对应的 SR。",
+      "expected_output": "生成 SR-01.md 和 SR-02.md 两个独立文件，frontmatter rr_id 从IR继承。每个SR含GA通过证据表、系统需求基线、接口责任、追溯矩阵。两个SR之间通过「关联SR」表相互引用。",
+      "assertions": [
+        {"text": "SR-01", "type": "contains"},
+        {"text": "SR-02", "type": "contains"},
+        {"text": "关联SR表", "type": "llm_judge"},
+        {"text": "1:1映射", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "scope-expansion-rejection",
+      "prompt": "05-proposal.md 已 GA 批准，但用户要求在 SR 中新增 proposal 未提及的 API 接口。请生成 SR。",
+      "expected_output": "拒绝新增，提示 SR 只能提取 proposal 已批准的范围，不可扩展。",
+      "assertions": [
+        {"text": "不可扩展", "type": "contains"},
+        {"text": "拒绝新增未批准范围", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "traceability-gap-detection",
+      "prompt": "05-proposal.md GA 批准，但 IR 矩阵中有 1 条 P0 AC 在 proposal 中无对应需求。请生成 SR。",
+      "expected_output": "拒绝生成 SR，提示 P0 AC 不可追溯，需先补全 proposal 或修正 IR。",
+      "assertions": [
+        {"text": "不可追溯", "type": "contains"},
+        {"text": "拒绝生成SR", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 6,
+      "name": "dimension-inheritance-from-ir",
+      "prompt": "IR.md 已完成6维扩展维度确认(安全=yes/性能=条件/兼容=yes/API=yes/IPC=no/构建=no)。proposal GA批准后生成SR。请执行SR维度确认流程。",
+      "expected_output": "SR §四维度确认直接继承IR结论，标注'继承自IR.md'，不向用户逐条重新确认。仅在proposal范围超出IR覆盖时才补充确认新维度。",
+      "assertions": [
+        {"text": "继承自IR", "type": "llm_judge"},
+        {"text": "不逐条重新确认", "type": "llm_judge"}
+      ]
+    }
+  ]
+}

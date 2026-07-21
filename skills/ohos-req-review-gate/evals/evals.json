@@ -1,0 +1,60 @@
+{
+  "skill_name": "ohos-req-review-gate",
+  "evals": [
+    {
+      "id": 1,
+      "name": "all-pass-ready",
+      "prompt": "01-04均已就绪且内容完整：所有检查项通过。请执行 Review Ready Gate。",
+      "expected_output": "JSON输出 gate: Ready，summary pass:12 warn:0 fail:0。block_reasons为空数组。",
+      "assertions": [
+        {"text": "gate: Ready", "type": "contains"},
+        {"text": "summary pass: 12", "type": "contains"},
+        {"text": "block_reasons 为空数组", "type": "contains"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "missing-feature-md",
+      "prompt": "docs_dir 路径下只有 01-03，04-feature.md 不存在。请执行 Review Ready Gate。",
+      "expected_output": "直接判定 Not Ready，feature_md_exists: false，block_reasons含'04-feature.md 不存在'。不试图推断。",
+      "assertions": [
+        {"text": "gate: Not Ready", "type": "contains"},
+        {"text": "feature_md_exists: false", "type": "contains"},
+        {"text": "block_reasons 包含 04-feature.md 不存在", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "conditional-ready-with-warn",
+      "prompt": "01-04已就绪。04-feature.md 有1条AC缺验证方式(标记warn)，该AC有Owner和关闭时点。其余11项全部pass。请执行 Review Ready Gate。",
+      "expected_output": "JSON输出 gate: Conditional Ready，summary pass:11 warn:1 fail:0。conditions数组含1条warn项(含Owner/关闭动作/时点)。",
+      "assertions": [
+        {"text": "gate: Conditional Ready", "type": "contains"},
+        {"text": "summary pass: 11 warn: 1", "type": "contains"},
+        {"text": "conditions 数组含1条warn项", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "missing-02-03-degradation",
+      "prompt": "docs_dir 路径下只有 01 和 04-feature.md，02-feasibility.md 和 03-arch-decision-record.md 均缺失。04-feature.md内容完整。请执行 Review Ready Gate。",
+      "expected_output": "依据退化规则：02+03同时缺失时，8项固定检查仅依据04判定；3项结构一致性检查(module_coverage/term_consistency/condition_propagation)均判warn；followup_closure判fail。gate为Not Ready。",
+      "assertions": [
+        {"text": "warn", "type": "contains"},
+        {"text": "退化规则", "type": "llm_judge"},
+        {"text": "followup_closure判fail", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "observation-item-not-blocking",
+      "prompt": "01-04已就绪。04-feature.md中1个条件项为性能基准待Phase 5实测(标记warn，有Owner和目标关闭时点Phase 5)。其余11项全部pass。请执行 Review Ready Gate。",
+      "expected_output": "性能基准类条件项归类为Phase 0观测项，不阻塞Gate判定。JSON输出observations数组含1条观测项(含owner和target_phase)。gate为Ready(无可关闭warn项)，summary pass:12 warn:0 fail:0。",
+      "assertions": [
+        {"text": "observations", "type": "contains"},
+        {"text": "gate: Ready", "type": "contains"},
+        {"text": "观测项不阻塞Gate", "type": "llm_judge"}
+      ]
+    }
+  ]
+}

@@ -72,6 +72,16 @@ ohos-dev-graphics-stability-code-review
 ohos-dev-graphics3d-combined-postprocess
 ohos-issue-graphics-cppcrash-analysis
 ohos-issue-graphics-sysfreeze-analysis
+ohos-req-arch-decision
+ohos-req-feasibility-analysis
+ohos-req-feature-baseline
+ohos-req-feature-to-ir
+ohos-req-intake-orchestration
+ohos-req-proposal-to-sr
+ohos-req-requirement-intake
+ohos-req-review-gate
+ohos-req-review-ppt-gen
+ohos-req-value-decision
 ohos-test-arkruntime-interop-testing
 ohos-test-fuzz-generation
 ohos-test-graphics3d-static-api-unit-test
@@ -112,7 +122,7 @@ npx skills add openharmonyinsight/openharmony-skills
 npx skills add openharmonyinsight/openharmony-skills --skill <skill_name>
 ```
 
-其中 `<skill_name>` 替换为 `skills/` 目录下的具体技能名，例如 `openharmony-security-review`。
+其中 `<skill_name>` 替换为 `skills/` 目录下的具体技能名，例如 `openharmony-security-review` 或 `ohos-req-arch-decision`。
 
 ## 仓库结构
 
