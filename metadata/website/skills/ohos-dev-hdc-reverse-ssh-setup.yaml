@@ -1,0 +1,77 @@
+schemaVersion: 1
+
+id: ohos-dev-hdc-reverse-ssh-setup
+title: HDC 反向 SSH 通道配置
+summary: 通过 loopback 反向 SSH 让 Linux 安全访问 Windows USB 主机，并在 Windows 侧执行 HDC 命令验证设备连接。
+
+category:
+  scope: common
+  namespace: development
+  stage: development
+  domain: hdc
+  capability: reverse-ssh-setup
+
+status:
+  maturity: trial
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - hdc
+  - reverse-ssh
+  - windows
+  - device-verification
+
+audience:
+  - OpenHarmony 设备验证人员
+  - 远程构建与自验证维护者
+  - 需要通过 Windows USB 主机访问设备的开发者
+
+useCases:
+  - title: 建立 Linux 到 Windows 的设备访问链路
+    description: 通过 loopback 反向 SSH 让 Linux 登录 Windows，并在 Windows 侧调用 USB HDC。
+  - title: 验证远程 HDC 设备可见
+    description: 分别验证 Linux reverse listener、Windows SSH 登录和 Windows 侧 hdc list targets 输出。
+  - title: 为设备端验证做准备
+    description: 在安装、文件替换或采证前建立安全、可审计的远程 HDC 通道。
+  - title: 恢复中断的 SSH/HDC 链路
+    description: 按脚本配置、SSH、HDC 服务、USB 硬件和设备镜像分层定位断联或设备不可见问题。
+
+whenToUse:
+  - Linux 主机无法直接连接 OpenHarmony 设备，需要借助 Windows USB 主机。
+  - 需要建立或排查 Linux 到 Windows 的 loopback reverse SSH 链路。
+  - 需要在设备端操作前确认 Windows SSH 和 Windows-side HDC 均可用。
+
+whenNotToUse:
+  - Linux 已经能通过本地 HDC 看到唯一目标设备。
+  - 需求只涉及具体 HAP、native 库或 UI 行为验证。
+  - 用户要求把 HDC 或反向端口暴露到非 loopback 网络。
+
+inputs:
+  required:
+    - Linux SSH 登录信息和 Windows 可访问地址。
+    - Windows SSH 用户和 HDC 工具路径。
+    - reverse SSH 端口和设备连接状态。
+  optional:
+    - 设备 connect-key。
+    - Windows SSH 端口。
+
+outputs:
+  - Linux SSH 前置条件与 loopback reverse listener 结果。
+  - Windows SSH 登录和 hdc list targets -v 摘要。
+  - 失败命令、阻塞层级，以及脚本、硬件或镜像恢复动作。
+
+quickStart:
+  steps:
+    - 在 Linux 端运行 bundled script 检查 sshd 和 AllowTcpForwarding。
+    - 在 Windows 端先填写并校验参数，再运行 bundled script 建立单一 SSH reverse forward。
+    - 从 Linux 验证 Windows SSH，再通过该会话执行 Windows-side HDC。
+  examplePrompt: |
+    请使用 ohos-dev-hdc-reverse-ssh-setup 配置 Linux 到 Windows 的 HDC 通道，
+    Windows 通过 USB 连接 OpenHarmony 设备，reverse SSH 只允许绑定 127.0.0.1。
+
+related:
+  skills:
+    - ohos-dev-hdc-command-usage
+    - ohos-dev-arkui-hdc-demo-device-self-verify
+  docs: []
