@@ -20,7 +20,7 @@ REQUIRED_SKILLS = [
     ("ohos-req-feature-baseline", "0.1.0", True),
     ("ohos-req-review-gate", "0.1.0", True),
     ("ohos-req-value-decision", "0.1.0", True),
-    ("ohos-req-value-ppt-gen", "0.1.0", False),
+    ("ohos-req-review-ppt-gen", "0.1.0", False),
     ("ohos-req-feature-to-ir", "0.1.0", True),
     ("ohos-req-proposal-to-sr", "0.1.0", True),
 ]
@@ -154,7 +154,7 @@ def main() -> int:
         print()
         print("Install missing skills:")
         print(
-            "  OHOS_REQ_SKILLS_SOURCE_DIR=/path/to/skills/common/requirements "
+            "  OHOS_REQ_SKILLS_SOURCE_DIR=/path/to/skills "
             f"python3 {script_dir() / 'install_related_skills.py'} --install"
         )
         return 1

@@ -29,10 +29,10 @@ metadata:
 
 ## 定位
 
-Phase 0 Step 0.6 — 评审会议后的决策纪要回流。在 review-gate（0.5）和 value-ppt-gen 之后、feature-to-ir（0.7）之前。
+Phase 0 Step 0.6 — 评审会议后的决策纪要回流。在 review-gate（0.5）和 review-ppt-gen 之后、feature-to-ir（0.7）之前。
 
 ```
-review-gate(0.5) → value-ppt-gen → [评审会议] → value-decision(0.6) → (接纳) → feature-to-ir(0.7)
+review-gate(0.5) → review-ppt-gen → [评审会议] → value-decision(0.6) → (接纳) → feature-to-ir(0.7)
                                                 ├─ 不接纳 → 关闭/归档
                                                 └─ 下次重新上会 → 退回对应 Step
 ```

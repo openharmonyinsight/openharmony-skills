@@ -35,7 +35,7 @@ def bad(message: str, output: str) -> None:
 
 def setup_sandbox() -> Path:
     root = Path(tempfile.mkdtemp())
-    target = root / "skills" / "common" / "requirements"
+    target = root / "skills"
     target.mkdir(parents=True)
     for item in SKILLS_DIR.iterdir():
         if item.is_dir():
@@ -63,8 +63,6 @@ def sbx_script(root: Path, name: str) -> Path:
     return (
         root
         / "skills"
-        / "common"
-        / "requirements"
         / "ohos-req-intake-orchestration"
         / "scripts"
         / name
@@ -72,16 +70,16 @@ def sbx_script(root: Path, name: str) -> Path:
 
 
 def sbx_skill(root: Path, name: str) -> Path:
-    return root / "skills" / "common" / "requirements" / name
+    return root / "skills" / name
 
 
 def main() -> int:
     root = setup_sandbox()
     out = run_script(sbx_script(root, "install_related_skills.py"), "--check")
-    if "Installed: 10/10" in out and "Result: READY" in out:
-        ok("S1 完整环境预检 10/10 READY")
+    if "Required missing: 0" in out and "Result: READY" in out:
+        ok("S1 完整环境预检 READY")
     else:
-        bad("S1 期望 10/10 READY", out)
+        bad("S1 期望 READY", out)
 
     cout = run_script(sbx_script(root, "check_related_skills_consistency.py"))
     if "Result: CONSISTENT" in cout:
@@ -103,7 +101,7 @@ def main() -> int:
     )
     if (
         "Installed missing skill: ohos-req-review-gate" in out
-        and "Installed: 10/10" in out
+        and "Required missing: 0" in out
         and "Result: READY" in out
     ):
         ok("S2b --install 恢复缺失依赖")

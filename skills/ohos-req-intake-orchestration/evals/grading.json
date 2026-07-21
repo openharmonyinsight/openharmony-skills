@@ -22,13 +22,13 @@
     {"name": "ohos-req-feature-to-ir", "cases": 4, "with_skill": "4/4", "without_skill": "1/4"},
     {"name": "ohos-req-intake-orchestration", "cases": 5, "with_skill": "5/5", "without_skill": "1/5"},
     {"name": "ohos-req-proposal-to-sr", "cases": 6, "with_skill": "6/6", "without_skill": "2/6"},
-    {"name": "ohos-req-value-ppt-gen", "cases": 3, "with_skill": "3/3", "without_skill": "0/3"}
+    {"name": "ohos-req-review-ppt-gen", "cases": 3, "with_skill": "3/3", "without_skill": "0/3"}
   ],
   "verification": [
-    "python3 skills/common/requirements/ohos-req-intake-orchestration/scripts/test_related_skills_consistency.py",
-    "bash skills/common/requirements/ohos-req-intake-orchestration/scripts/test_related_skills_consistency.sh",
-    "python3 skills/common/requirements/ohos-req-intake-orchestration/scripts/install_related_skills.py --check",
-    "python3 skills/common/requirements/ohos-req-intake-orchestration/scripts/install_related_skills.py --check-probes",
+    "python3 skills/ohos-req-intake-orchestration/scripts/test_related_skills_consistency.py",
+    "bash skills/ohos-req-intake-orchestration/scripts/test_related_skills_consistency.sh",
+    "python3 skills/ohos-req-intake-orchestration/scripts/install_related_skills.py --check",
+    "python3 skills/ohos-req-intake-orchestration/scripts/install_related_skills.py --check-probes",
     "python3 examples/requirement_review_example.py",
     "python3 examples/requirement_review_oneshot.py",
     "python3 scripts/deckbuilder.py"
