@@ -1,31 +1,32 @@
-# Eval: 应用级快捷键 / App-level shortcut keys
+# Eval: 应用级键盘快捷键 / App-level keyboard shortcut
+
+> ArkUI 锚点是 `keyboardShortcut`（声明式组件绑定），**不是**菜单 accelerator、**不是**窗口 `onKeyEvent`。
 
 ## Prompt（测试输入）
 
-> 分析 ArkUI **应用级快捷键**的实现，对标 Android 和 iOS 的应用级快捷键能力。
+> 分析 ArkUI **应用级键盘快捷键**的实现，对标 Android 和 iOS 的应用级键盘快捷键能力。
 
-跑两遍：**with skill**（加载本 skill）与 **without skill**（不加载），对比产出。
+跑两遍：**with skill** 与 **without skill**，对比产出。
 
 ## 预期关键发现 / Expected findings（with skill 必须命中）
 
-- [ ] **锁定作用域 = 应用级**：报告标题、规格、结论显式围绕"应用级 / app-scope 全局热键"，**未降级**为通用或组件级快捷键。
-- [ ] **应用级实现三平台都覆盖**：
-  - ArkUI：窗口级 / 菜单级（`MenuItem.labelInfo` 仅提示）；**不是**只讲组件 `onKeyEvent`。
-  - Android（**键盘**快捷键）：`Activity.onKeyShortcut` / `onProvideKeyboardShortcuts` / Menu keyboard shortcuts（`alphabeticShortcut`+modifier）/ `dispatchKeyShortcutEvent` / Compose key input。
-  - iOS：**`UIKeyCommand`**（responder/command chain 注册，app 级生效）。
+ArkUI 侧以 `interface_sdk-js` / 官方文档为准，不确定标 `待核`。
+
+- [ ] **锁定到键盘快捷键**：以 ArkUI `keyboardShortcut` 为锚点，**不**混入菜单 accelerator / 窗口 `onKeyEvent`。
+- [ ] **ArkUI**：`keyboardShortcut(value: string | FunctionKey, keys: Array<ModifierKey>, action?: () => void): T`（API 10+，原子化 11+）；**声明式组件绑定**；组件未获焦/未展示时，只要挂在获焦窗口组件树上就响应（window/app-scope）。
+- [ ] **Android（键盘快捷键）**：`Activity.onKeyShortcut` / `onProvideKeyboardShortcuts` / Menu keyboard shortcuts（`MenuItem` `alphabeticShortcut`+modifier）/ `dispatchKeyShortcutEvent` / Compose key input；**无** ArkUI 那种"声明式组件绑定·未获焦也响应"的直接等价。
+- [ ] **iOS**：**`UIKeyCommand`**（声明式·responder/command chain·app 级生效）——与 `keyboardShortcut` 心智最接近。
 - [ ] **勿混淆**：`ShortcutManager` 是 launcher **启动快捷方式**（长按图标），**不是**键盘 accelerator，不作为键盘快捷键对标。
-- [ ] **区分层级**：明确区分应用级 vs 组件级（`onKeyEvent`/`onKeyDown`/`pressesBegan`）vs 系统级（OS 全局热键），并说明本次只分析应用级。
-- [ ] **规格精度**：修饰键（Ctrl/Alt/Shift/Cmd）与键码表达、`@since` 版本、各平台差异。
-- [ ] **格式**：每平台规格用结构化列表（不压单行）；附每平台 1 段最小用法示例代码。
-- [ ] **来源**：ArkUI 侧以 `interface_sdk-js` 为准；具体 API 名若不确定标注"待核"，不臆造。
-- [ ] **迁移/结论**：给出从 Android/iOS 应用级快捷键迁到 ArkUI（或反向）的路径与缺口。
+- [ ] **区分层级**：应用级（`keyboardShortcut`/`UIKeyCommand`/`onKeyShortcut`）vs 组件级（`onKeyEvent`/`onKeyDown`/`pressesBegan`）vs 系统级（`inputConsumer`/Carbon）。
+- [ ] **规格精度**：修饰键（Ctrl/Shift/Alt/Cmd）+ 键码表达、`@since`/availability、各平台差异。
+- [ ] **格式**：每平台规格结构化列表 + 每平台 1 段用法代码；断言带来源编号；锁定版本基线。
+- [ ] **结论**：`keyboardShortcut`（声明式·window-scope）≈ iOS `UIKeyCommand`；Android 缺直接等价（用 menu shortcut/Activity 监听近似）。
 
 ## 通过标准 / Pass criteria
 
-- with skill：上述清单全部命中，**尤其"未降级 + 三平台应用级实现都覆盖"两条**。
-- without skill 对比：典型会降级成"组件级 key event / 普通快捷键"，漏掉 `UIKeyCommand` / `ShortcutManager` / ArkUI 窗口级，证明 skill 的价值。
+- with skill：上述清单全中，**尤其"以 keyboardShortcut 为锚 + 三平台键盘快捷键覆盖 + ShortcutManager 排除"**。
+- without skill 对比：典型会把 ArkUI 侧错写成"窗口 onKeyEvent / 菜单 accelerator"，或把 `ShortcutManager` 当键盘快捷键；证明 skill 价值。
 
-## 备注 / Notes
+## 备注
 
-- 与 `onTouch.md`（触摸事件类）互补，验证 skill 在**带作用域层级**能力上的可靠性。
-- 若需进一步验证层级纪律，可改 Prompt 为"**组件级**快捷键"，确认报告转而只覆盖组件级、不混入应用级。
+- 与 `onTouch.md`（触摸）互补，验证 skill 在**带作用域层级 + 声明式 vs 命令式**能力上的可靠性。

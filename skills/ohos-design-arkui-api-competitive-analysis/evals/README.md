@@ -4,9 +4,16 @@
 
 ## 用例 / Cases
 
-| 文件 | 主题 | 何时跑 |
+| 文件 | 类别 | 主题 |
 |---|---|---|
-| `onTouch.md` | ArkUI onTouch ↔ Android/iOS 竞品分析 | 触摸事件类自检；首次验证 skill |
+| `onTouch.md` | 事件·触摸 | ArkUI onTouch ↔ Android/iOS |
+| `app-level-shortcut.md` | 事件·键盘快捷键 | ArkUI `keyboardShortcut` ↔ Android/iOS |
+| `gesture-PanGesture.md` | 手势 | ArkUI PanGesture ↔ Android/iOS |
+| `component-List.md` | 组件 | ArkUI List ↔ RecyclerView/Compose/UITableView |
+| `layout-Flex.md` | 布局 | ArkUI Flex ↔ FlexboxLayout/Compose/UIStackView |
+| `animation-animateTo.md` | 状态/动画 | ArkUI animateTo ↔ ObjectAnimator/UIView.animate/Core Animation |
+
+覆盖 6 类，验证框架泛化（C1）。每用例 with/without 对比见 `RESULTS.md`。
 
 ## 跑法 / How to run
 
