@@ -1,4 +1,4 @@
-﻿---
+---
 name: ohos-req-value-decision
 description: Use after review meeting to record decision and route to next step. Triggers: 评审决策纪要, 评审结论回流, value decision, 评审接纳, 评审不接纳, 评审退回, 下次重新上会. Do NOT use for feature baseline (ohos-req-feature-baseline), review gate checks (ohos-req-review-gate), or IR generation (ohos-req-feature-to-ir).
 metadata:

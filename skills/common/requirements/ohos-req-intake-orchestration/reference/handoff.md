@@ -29,7 +29,8 @@ status: Draft
 | 字段 | 值 |
 |------|-----|
 | Gate 结论 | Ready / Conditional Ready / Not Ready |
-| 决策状态 | Accepted / PendingDecision |
+| 评审决策状态 | Accepted / Rejected / PendingRe-review |
+| ADR 状态 | Accepted |
 | IR 状态 | Baseline / Conditional |
 | 条件项（Conditional Ready 时） | [列出条件项、Owner、关闭时点] |
 
@@ -50,7 +51,7 @@ status: Draft
 |------|------|------|
 | RR单号 | [RR单号，全链路追踪] | 01-requirement.md |
 | 选定方案 | [方案名称一句话] | 03-arch-decision-record.md §五 |
-| Gate 结论 | [Ready/Conditional/Not Ready] | `tmp/decision_gate_*.json`（ohos-req-review-gate 产出） |
+| Gate 结论 | [Ready/Conditional Ready/Not Ready] | `tmp/decision_gate_*.json`（ohos-req-review-gate 产出） |
 | 拆分方式 | [按仓+领域/按功能点/单一] | 04-feature.md §五 |
 
 ## Proposal 清单

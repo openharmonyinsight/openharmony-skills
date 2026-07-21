@@ -26,12 +26,12 @@
     {
       "id": 3,
       "name": "split-confirmation-gate",
-      "prompt": "Step 0.5 Gate判定完成后，feature需要拆分为3个proposal。请继续执行。",
-      "expected_output": "拆分结果必须向用户展示并等待确认(拆分确认门禁)，不自行定稿拆分方案。每个proposal不超过复杂度上限(简单≤5/标准≤8/复杂≤15人月)。确认后才进入Step 0.7 IR生成。",
+      "prompt": "Step 0.4 feature生成后，拆分方案包含3个proposal。请继续执行。",
+      "expected_output": "拆分结果必须向用户展示并等待确认(拆分确认门禁)，不自行定稿拆分方案。每个proposal不超过复杂度上限(简单≤5/标准≤8/复杂≤15人月)。确认后才进入Step 0.5 Review Ready Gate。",
       "assertions": [
         {"text": "触发拆分确认门禁(向用户展示等待确认)", "type": "llm_judge"},
         {"text": "每个proposal不超过复杂度上限", "type": "llm_judge"},
-        {"text": "确认后才进入Step 0.7", "type": "llm_judge"}
+        {"text": "确认后才进入Step 0.5", "type": "llm_judge"}
       ]
     },
     {
