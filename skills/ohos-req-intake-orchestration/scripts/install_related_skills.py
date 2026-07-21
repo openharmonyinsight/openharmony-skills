@@ -132,6 +132,7 @@ def main() -> int:
         mode = "--check-probes"
 
     target = skills_dir()
+    source_override = os.environ.get("OHOS_REQ_SKILLS_SOURCE_DIR")
     source = source_skills_dir(target)
 
     installed, missing, mismatches = check_bundle(target)
@@ -139,6 +140,18 @@ def main() -> int:
 
     if mode == "--install" and missing:
         print()
+        if not source_override:
+            print(
+                "ERROR: --install requires OHOS_REQ_SKILLS_SOURCE_DIR when required "
+                "skills are missing.",
+                file=sys.stderr,
+            )
+            print(
+                "Set OHOS_REQ_SKILLS_SOURCE_DIR to a local openharmony-skills/skills "
+                "directory that contains the complete bundle.",
+                file=sys.stderr,
+            )
+            return 1
         if not install_missing(target, source, missing):
             return 1
         print()

@@ -43,6 +43,14 @@ def setup_sandbox() -> Path:
     return root
 
 
+def setup_orchestrator_only_sandbox() -> Path:
+    root = Path(tempfile.mkdtemp())
+    target = root / "skills"
+    target.mkdir(parents=True)
+    shutil.copytree(ORCH_DIR, target / ORCH_DIR.name)
+    return root
+
+
 def run_script(path: Path, *args: str, env: dict[str, str] | None = None) -> str:
     proc_env = os.environ.copy()
     if env:
@@ -93,6 +101,18 @@ def main() -> int:
         ok("S2 缺失依赖预检失败 (missing 1)")
     else:
         bad("S2 期望 missing 1 NOT READY", out)
+
+    root_orch_only = setup_orchestrator_only_sandbox()
+    out = run_script(sbx_script(root_orch_only, "install_related_skills.py"), "--install")
+    if (
+        "OHOS_REQ_SKILLS_SOURCE_DIR" in out
+        and "Installed: 1/10" in out
+        and "Required missing: 8" in out
+        and "Result: READY" not in out
+    ):
+        ok("S2a 单独编排 skill 无 source 的 --install 被显式拒绝")
+    else:
+        bad("S2a 期望单独编排 skill 提示 OHOS_REQ_SKILLS_SOURCE_DIR", out)
 
     out = run_script(
         sbx_script(root, "install_related_skills.py"),
