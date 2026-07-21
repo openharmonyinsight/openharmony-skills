@@ -10,9 +10,10 @@
 
 - [ ] **锁定作用域 = 应用级**：报告标题、规格、结论显式围绕"应用级 / app-scope 全局热键"，**未降级**为通用或组件级快捷键。
 - [ ] **应用级实现三平台都覆盖**：
-  - ArkUI：窗口级 / 菜单级快捷键、菜单 accelerator（**不是**只讲组件 `onKeyEvent`）。
-  - Android：`ShortcutManager` / 菜单 `Ctrl+` accelerator / app-scope 命令。
-  - iOS：**`UIKeyCommand`**（responder / command chain 注册的按键命令，app 级生效）。
+  - ArkUI：窗口级 / 菜单级（`MenuItem.labelInfo` 仅提示）；**不是**只讲组件 `onKeyEvent`。
+  - Android（**键盘**快捷键）：`Activity.onKeyShortcut` / `onProvideKeyboardShortcuts` / Menu keyboard shortcuts（`alphabeticShortcut`+modifier）/ `dispatchKeyShortcutEvent` / Compose key input。
+  - iOS：**`UIKeyCommand`**（responder/command chain 注册，app 级生效）。
+- [ ] **勿混淆**：`ShortcutManager` 是 launcher **启动快捷方式**（长按图标），**不是**键盘 accelerator，不作为键盘快捷键对标。
 - [ ] **区分层级**：明确区分应用级 vs 组件级（`onKeyEvent`/`onKeyDown`/`pressesBegan`）vs 系统级（OS 全局热键），并说明本次只分析应用级。
 - [ ] **规格精度**：修饰键（Ctrl/Alt/Shift/Cmd）与键码表达、`@since` 版本、各平台差异。
 - [ ] **格式**：每平台规格用结构化列表（不压单行）；附每平台 1 段最小用法示例代码。

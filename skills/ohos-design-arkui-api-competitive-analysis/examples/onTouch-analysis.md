@@ -115,7 +115,7 @@ override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
 | 触点面积 | `width/height`(15+, vp) | `getSize()` | `majorRadius` + tolerance |
 | 输入源/工具 | 事件级 `source`(SourceType,8+) + `sourceTool`(9+) | `toolType` + `source` | `type`(direct/indirect/stylus) |
 | 笔姿态 | 事件级 `tiltX/tiltY`(9+) + `rollAngle`(17+) | `AXIS_TILT` + `AXIS_ORIENTATION` | `altitudeAngle` + `azimuthAngle` |
-| 历史点/批处理 | `getHistoricalPoints()`(10+) → `HistoricalPoint[]`(force/size/timestamp ns) | `getHistorySize` + `getHistoricalX/Y/P` | **无原生批量**（需自行用 timestamp 拼） |
+| 历史点/批量采样（historical/coalesced/predicted） | `getHistoricalPoints()`(10+)→`HistoricalPoint[]`(historical)[1] | `getHistorySize`+`getHistoricalX/Y/P`(historical)[2] | `coalescedTouches`(coalesced)+`predictedTouches`(predicted)[3] |
 | 分发/拦截 | `stopPropagation`(7+) + `preventDefault`(12+，仅 Hyperlink) + `onTouchIntercept` | `onInterceptTouchEvent` 父拦截 + `requestDisallowIntercept` | Responder Chain + hit-testing |
 | 时间戳 | `timestamp`(8+, ns) + `pressedTime`(15+, ns) | `eventTime`/`downTime`（ms） | `timestamp`（秒） |
 | 多屏/设备 | `targetDisplayId`(15+) + `deviceId`(12+) + `globalDisplayX/Y`(20+) | `getDeviceId` + display API | 多 scene/display |
@@ -127,7 +127,7 @@ override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
 **ArkUI 独有 / 更细（advantage）**
 - 坐标单位 vp + 多套坐标空间（含全局 `globalDisplayX/Y` 20+），跨屏取值省心；Android 仅 2 套、iOS 需逐次 `location(in:)`。
 - `changedTouches`/`touches` 重采样口径差异是 ArkUI **独有行为**，迁移与一致性测试要注意。
-- 历史点批处理 `getHistoricalPoints`(10+)，**优于 iOS**（iOS 无原生批量）。
+- 采样模型：ArkUI `getHistoricalPoints`(10+) 提供 **historical**；Android `getHistorical*`(historical)[2]；iOS `coalescedTouches`(coalesced)+`predictedTouches`(predicted)[3]。三平台 historical/coalesced/predicted 模型不同，**并非"iOS 无原生批量"**（前版结论有误，已纠正）。
 - 触点级 `width/height` + 左右手 `hand`(15+) + 事件注入 `eventHandleId`(24+)。
 
 **ArkUI 需对齐 / 注意（gap & risk）**
@@ -149,9 +149,17 @@ override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
 - **对齐优先级**：① 文档明确坐标单位 vp 及与 px/pt 的换算；② 压力双口径在事件级/触点级分别标注；③ 迁移文档强调 `screenX/Y` 已废弃。
 - **迁移路径**：Android → pointer `id` 直接对应、坐标取 `x/y`(注意 vp↔px)、历史点用 `getHistoricalPoints()`；iOS → 把 Responder Chain 的分发逻辑改写为 `stopPropagation`/`onTouchIntercept`，触点对象由逐个 `UITouch` 查改为遍历 `touches[]`。
 
-## 5. 附录 / Appendix（来源）
+## 5. 附录 / Appendix（来源，每项断言关联编号）
 
-- **ArkUI 权威**：`interface_sdk-js` https://gitcode.com/openharmony/interface_sdk-js ；渲染文档 `ts-universal-events-touch.md`(onTouch/TouchEvent/TouchObject/HistoricalPoint) · `ts-gesture-customize-judge.md#baseevent8`(事件级字段) · `ts-appendix-enums.md`(TouchType/SourceTool/SourceType/InteractionHand)
-- **Android**：`android.view.MotionEvent` https://developer.android.com/reference/android/view/MotionEvent
-- **iOS**：`UITouch`/`UIResponder` https://developer.apple.com/documentation/uikit/uitouch 、/uiresponder
-- **内部对照（非公共结论）**：ace_engine `frameworks/bridge/declarative_frontend/ark_component/types/index.d.ts`、`interfaces/inner_api/ace_kit/include/ui/event/touch_event.h`
+平台版本基线：ArkUI API 12（master 查询）/ Android API 34 + Compose / iOS 17；查询日期 2026-07-21。
+
+| # | 平台 | API/符号 | 证据 | 来源 | 版本/availability | 章节 |
+|---|---|---|---|---|---|---|
+| [1] | ArkUI | `getHistoricalPoints`/`HistoricalPoint` | 官方 | `ts-universal-events-touch.md`（interface_sdk-js 生成） | 10+ | HistoricalPoint 对象说明 |
+| [2] | Android | `MotionEvent.getHistoricalX/Y/P` | 官方 | developer.android.com/reference/android/view/MotionEvent | API 1+ | Batched input |
+| [3] | iOS | `UIEvent.coalescedTouches(for:)`/`predictedTouches(for:)` | 官方 | developer.apple.com/documentation/uikit/uievent | iOS | Touch events |
+| [4] | ArkUI | `onTouch`/`TouchEvent`/`TouchObject`（vp / `screenX/Y` 废弃 / `pressure` / `hand`） | 官方 | `ts-universal-events-touch.md`+`ts-gesture-customize-judge.md#baseevent8`+`ts-appendix-enums.md`（interface_sdk-js） | 7+/10+/15+/20+ | onTouch / BaseEvent / TouchObject |
+| [5] | Android | `MotionEvent`（`getActionMasked`/`getPointerId`/`getPressure`/`getToolType`） | 官方 | developer.android.com/reference/android/view/MotionEvent | API 5+ | Motion Events |
+| [6] | iOS | `UITouch`/`UIResponder` | 官方 | developer.apple.com/documentation/uikit/uitouch、/uiresponder | iOS | Touches |
+
+> "缺失/独有"结论（iOS `stationary`[6]、Android pointer id/index 双重[5]）已双向检索。内部对照（非公共结论）：ace_engine `frameworks/.../index.d.ts`、`interfaces/inner_api/ace_kit/include/ui/event/touch_event.h`。

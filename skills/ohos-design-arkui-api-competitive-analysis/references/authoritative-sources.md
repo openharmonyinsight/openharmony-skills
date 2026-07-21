@@ -1,45 +1,45 @@
-# Authoritative Source Rule / 权威数据源铁律
+# Authoritative Source Rule / 权威数据源与来源引用
 
 ## 1. 唯一权威：interface_sdk-js
 
-**公共接口定义一律以 `interface_sdk-js` 仓库为唯一权威**：
+**公共接口定义以 `interface_sdk-js` 为唯一权威**：https://gitcode.com/openharmony/interface_sdk-js （`api/` 下 `.d.ts` / `.static.d.ets`）。渲染文档（含 `@since`/单位/废弃）：`docs.openharmony.cn` 与 gitee `openharmony/docs` 的 `zh-cn/application-dev/reference/apis-arkui/arkui-ts/*.md`。
 
-- 仓库：https://gitcode.com/openharmony/interface_sdk-js （`api/` 下的 `.d.ts` / `.static.d.ets`）。
-- 渲染文档（由该仓库生成，可读性最好、含 `@since`/单位/废弃）：`docs.openharmony.cn` 与 gitee `openharmony/docs` 的 `zh-cn/application-dev/reference/apis-arkui/arkui-ts/*.md`。
+> ace_engine 内部 `.d.ts` / C++（`frameworks/.../index.d.ts`、`interfaces/inner_api/ace_kit/...`）是前端桥接/实现内部，**仅作实现对照，不得作公共能力结论**。实测反例：触摸坐标单位是 **vp**（非内部常见的 px）；`screenX/Y` 自 API 10 **废弃**；公共压力字段叫 **`pressure`**（非内部 `force`）；`sourceTool`/`tiltX` 在**事件级** BaseEvent（非触点级）；左右手是 **`hand`**（非 `operatingHand`）。
 
-> **ace_engine 内部 `.d.ts` / C++ 不是公共面**：如 `frameworks/bridge/declarative_frontend/.../index.d.ts`、`interfaces/inner_api/ace_kit/include/ui/event/touch_event.h`。它们是前端桥接/实现内部，字段名、单位、`@since`、废弃状态都与公共 SDK **可能不一致**，**仅作实现对照，不得作公共能力结论**。
+## 2. 取数命令（按可用性）
+1. `oh-gc search code "<符号>"`（gitcode 仓库内检索；端点偶尔不可用→兜底）。
+2. gitcode / gitee raw `.d.ts`。
+3. 兜底：`docs.openharmony.cn` / gitee docs raw（含 `@since`/单位/废弃）。
 
-## 2. 实测反例（为什么必须以 interface_sdk-js 为准）
+## 3. 平台版本基线（必须锁定并记录）
 
-用 ace_engine 内部定义做 onTouch 对标会得到**错误结论**（已在 skill 设计阶段用权威源校准）：
+每次分析在 Initial Checks 锁定并**显式记录**以下基线，禁止混用未发布 ArkUI API 与不同平台版本：
 
-| 内部定义（错误） | interface_sdk-js 公共面（正确） |
+| 平台 | 记录项 |
 |---|---|
-| 触摸坐标单位 px | **vp** |
-| `screenX/Y` 现役字段 | **`screenX/Y` 自 API 10 废弃**，用 `windowX/Y` |
-| TouchObject 有 `force` | 公共面是 **`pressure`**（触点级 15+，`[0,65535)`）；`force` 仅在 HistoricalPoint |
-| `sourceTool`/`tiltX` 在 TouchObject | 它们在 **TouchEvent（继承 BaseEvent）事件级** |
-| `operatingHand` | 公共名是 **`hand`（InteractionHand，15+）** |
-| 单一压力口径 | **两套**：事件级 `pressure`(9+,[0,1]) vs 触点级 `pressure`(15+,[0,65535)) |
+| ArkUI | API/SDK Version 或分支（如 API 12 / master）；查询日期 |
+| Android | API Level + Jetpack Compose 版本（如 API 34 / Compose BOM 2024.x） |
+| iOS/iPadOS | 系统版本（如 iOS 17）；查询日期 |
 
-## 3. 取数命令（按可用性优先）
+## 4. 来源引用格式（每项实质性断言必须可追溯）
 
-1. **`oh-gc search code "<符号>"`** —— 在 gitcode 仓库内检索 `.d.ts`（首选；端点偶尔不可用，见兜底）。
-2. **gitcode / gitee raw `.d.ts`** ——
-   `https://gitcode.com/openharmony/interface_sdk-js/raw/master/<path>`（gitcode raw 常被 JS 壳拦截，可试 gitee 镜像 `https://gitee.com/openharmony/interface_sdk-js/raw/master/<path>`）。
-3. **兜底：官方渲染文档** ——
-   `https://gitee.com/openharmony/docs/raw/master/zh-cn/application-dev/reference/apis-arkui/arkui-ts/<topic>.md`，含 `@since`/单位/废弃，对竞品分析信息量最大。
+规格速览 / 能力矩阵 / 关键差异 / 迁移结论中，**每项实质性断言**关联来源编号 `[n]`，并在附录来源表中记录：
 
-## 4. 校准后的 onTouch 公共面权威规格（示范"如何正确读权威源"）
+| 列 | 说明 |
+|---|---|
+| 编号 | `[1]`、`[2]`… |
+| 平台 | ArkUI / Android / iOS |
+| API 或符号 | 如 `TouchEvent`、`MotionEvent.getActionMasked`、`UIEvent.coalescedTouches` |
+| 证据类型 | 官方直接证据 / 分析推论 |
+| 来源 | 官方文档 URL 或仓库文件路径（含 `file:line`） |
+| 目标版本 / availability | `@since` / API Level / iOS availability |
+| 查询日期 | YYYY-MM-DD |
+| 章节 | 文档章节或锚点 |
 
-来源：`ts-universal-events-touch.md` + `ts-gesture-customize-judge.md#baseevent8`。
+规则：
+- **区分官方证据 vs 推论**：推论须注明依据。
+- **缺失 / 独有 / 优于**类结论须列出**完成双向检索**的来源（即在两方平台都查过、确认存在/不存在）。
+- 无充分来源支撑的断言标 **`待核`**，**不得进入确定性结论**。
 
-- **`onTouch(event: (event: TouchEvent) => void): T`** — API 7+（原子化服务 11+）；所有组件通用；默认冒泡；鼠标左键按下也转换为触摸事件。
-- **`TouchEvent` extends `BaseEvent`**
-  - 自身：`type`(TouchType,7+) · `touches[]`(7+) · `changedTouches[]`(7+) · `stopPropagation()`(7+) · `preventDefault()`(12+，**仅 Hyperlink**，其余抛 100017) · `eventHandleId?`(24+) · `getHistoricalPoints(): HistoricalPoint[]`(10+)
-  - 继承 BaseEvent（事件级）：`target`(8+) · `timestamp`(8+,**ns**) · `source`(SourceType,8+) · `pressure`(9+,[0,1] 归一) · `tiltX/tiltY`(9+) · `sourceTool`(9+) · `rollAngle?`(17+) · `deviceId?`(12+) · `targetDisplayId?`(15+) · `getModifierKeyState?()`(12+,Ctrl/Alt/Shift，不支持手写笔)
-  - 行为：非注入场景下 `changedTouches` 按**屏幕刷新率重采样**、`touches` 按**器件刷新率**上报，二者数据可能不同。
-- **`TouchObject`**（触点级）：`type`(7+) · `id`(7+) · `x/y`(7+,**vp**) · `windowX/Y`(10+,vp) · `displayX/Y`(10+,vp) · `globalDisplayX/Y?`(20+,vp) · `screenX/Y`(**deprecated 10+**→用 `windowX/Y`) · `pressedTime?`(15+,ns) · `pressure?`(15+,[0,65535)) · `width?/height?`(15+,vp) · `hand?`(InteractionHand,15+)
-- **`HistoricalPoint`**(10+)：`touchObject` · `size`(默认 0) · `force`([0,65535)) · `timestamp`(ns)
-
-> 单位铁律：ArkUI 触摸坐标一律 **vp**（对比 Android=px、iOS=pt）。时间一律 **ns**（对比 Android=ms、iOS=秒）。压力双口径勿混。
+## 5. 触摸/指针专项规格（按需）
+ArkUI onTouch 的逐字段校准规格已移至 `input-event-spec.md`，**仅在分析触摸/指针输入时按需加载**，避免其固定字段（单位/触点归属）污染通用流程与其它领域。

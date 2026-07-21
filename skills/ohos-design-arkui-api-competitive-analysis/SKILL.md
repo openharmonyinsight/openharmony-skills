@@ -1,68 +1,74 @@
 ---
 name: ohos-design-arkui-api-competitive-analysis
-description: This skill should be used when the user asks to "竞品分析 ArkUI 接口", "对标 ArkUI 与 Android/iOS", "compare ArkUI API with Android/iOS", "做接口对标 / capability gap analysis", or mentions competitive analysis of ArkUI touch/gesture/component/layout/state/animation APIs. Provides a reusable 12-dimension framework, a no-scope-downgrade rule (lock the user-specified tier), an authoritative-source rule (interface_sdk-js), a bilingual report template with usage code, and a gold-standard onTouch example to produce spec-accurate comparison reports against Android (Compose/View) and iOS (SwiftUI/UIKit).
+description: This skill should be used when the user asks to "竞品分析 ArkUI 接口", "对标 ArkUI 与 Android/iOS", "compare ArkUI API with Android/iOS", "做接口对标 / capability gap analysis", or mentions competitive analysis of ArkUI input/interaction event APIs (触摸 touch、按键/快捷键 key·shortcut、指针 pointer). Provides a reusable 12-dimension framework, a no-scope-downgrade rule, a platform-version-baseline rule, an authoritative-source rule (interface_sdk-js) with per-assertion source citations, a bilingual report template with usage code, and a gold-standard onTouch example. Validated domain is input/interaction events; gesture recognizers, components, layout, state, and animation are out of current scope until evals cover them.
 metadata:
-  version: 1.0.2
+  version: 1.1.0
 ---
 
-# ArkUI API Competitive Analysis Skill / ArkUI 接口竞品分析
+# ArkUI Input-Event API Competitive Analysis Skill / ArkUI 输入事件接口竞品分析
 
-对 ArkUI 的 UI 接口（事件 / 手势 / 组件 / 布局 / 状态 / 动画）产出**结构一致、规格准确**的对标报告，对标 **Android（Compose/View）** 与 **iOS（SwiftUI/UIKit）**。本 skill 只做"判断与方法"，不实现代码；核心铁律：**公共接口定义以 `interface_sdk-js` 为唯一权威**，ace_engine 内部定义仅作实现对照。
+对 ArkUI 的**输入/交互事件类 API**（触摸 touch、按键/快捷键 key·shortcut、指针 pointer）产出结构一致、规格准确的对标报告，对标 **Android（Compose/View）** 与 **iOS（SwiftUI/UIKit）**。本 skill 只做"判断与方法"，不实现代码。
+
+**作用域声明（与评测覆盖一致）**：当前已验证领域 = 输入/交互事件（onTouch 触摸、应用级快捷键/按键）。12 维框架与报告模板本身通用，但**手势识别器、组件、布局、状态、动画**等类别尚未纳入评测覆盖，**不在当前声明范围内**（后续补 eval 再扩展）。
+
+核心铁律：**公共接口定义以 `interface_sdk-js` 为唯一权威**，ace_engine 内部定义仅作实现对照。
 
 # Task and Boundaries / 任务与边界
 
-- **Goal / 目标**：对用户指定的 ArkUI 公共 UI 接口，产出一份对标 Android+iOS 的报告——规格速览 + **用法示例代码** + 能力对比矩阵 + 关键差异点（缺失 / 独有 / 行为差异）+ 结论与迁移路径 + 附录（来源）。
-- **Input / 输入**：用户指明的 ArkUI 接口（如 `onTouch`、`List`）；可选对标平台（默认 Android + iOS）；可选是否含声明式（Compose/SwiftUI）与底层（View/UIKit）两层。
-- **In scope / 能力边界**：仅做**公共 API 层**的能力 / 规格对标。
-- **Out of scope / 不做什么**：不实现代码、不跑性能基准、不对标 Flutter/Web、不修改 ace_engine；**不用 ace_engine 内部 `.d.ts` / C++ 作公共能力结论**；不臆造字段或 `@since` 版本。
+- **Goal**：对指定的 ArkUI 输入/交互事件接口，产出对标 Android+iOS 的报告——规格速览 + **用法示例代码** + 能力矩阵 + 关键差异点 + 结论与迁移 + 附录（**带来源编号的来源表**）。
+- **Input**：用户指明的 ArkUI 输入事件接口（如 `onTouch`、应用级快捷键）；对标平台（默认 Android+iOS）；可选层级。
+- **In scope**：输入/交互事件类公共 API 的能力 / 规格对标。
+- **Out of scope**：不实现代码、不跑性能基准、不对标 Flutter/Web、不改 ace_engine；不用内部定义作公共结论；不臆造字段/版本；**手势/组件/布局/状态/动画类暂不在声明范围**（用户坚持时按通用维度展开并提示未验证）。
 
 # Trigger Signals / 触发信号
 
-- "竞品分析 / 对标 ArkUI 接口"、"compare ArkUI API with Android/iOS"、"API 能力差异 / gap analysis"。
-- 设计或评审某个 ArkUI 接口前，需要参考 Android/iOS 同类能力。
-- 迁移评估：从 Android/iOS 迁到 ArkUI（或反向）的能力对齐。
-- 关键词：触摸 / 手势 / 组件 / 布局 / 状态 / 动画 对标、跨平台接口对比、规格口径对齐。
+- "竞品分析 / 对标 ArkUI 输入事件 / 触摸 / 按键 / 快捷键接口"、"compare ArkUI touch/key/pointer API with Android/iOS"、"API 能力差异 / gap analysis"。
+- 设计或评审 ArkUI 输入事件接口前，需要参考 Android/iOS 同类能力。
+- 迁移评估（Android/iOS ↔ ArkUI 输入事件）。
 
-# Initial Checks / 初始检查（收到请求先做，按序）
+# Initial Checks / 初始检查（按序）
 
-1. **明确分析对象**：哪个 ArkUI 接口？对标哪些平台（默认 Android+iOS）？是否需要声明式与底层两层。
-2. **锁定作用域层级（勿降级）**：用户若指明带层级的能力（如"应用级"快捷键、"组件级"触摸），必须按 `references/analysis-dimensions.md` 的「作用域层级」锁定到**用户指定的那一层**，**不得降级**成通用或其它层级。对标接口也只取该层级。
-3. **判定接口类别**：事件 / 手势 / 组件 / 布局 / 状态 / 动画 六类之一 → 用 `references/analysis-dimensions.md` 的「API 类别 → 维度权重」表**裁剪**要展开的维度（不要全量堆 12 维）。
-4. **准备取 ArkUI 公共定义**：进入 Execution Strategy 第 1 步的权威源规则。
+1. **明确分析对象**：哪个 ArkUI 输入事件接口？对标平台？层级？
+2. **锁定作用域层级（勿降级）**：带层级能力（"应用级"快捷键、"组件级"触摸）按 `references/analysis-dimensions.md`「作用域层级」锁定到指定层，对标接口也只取该层。
+3. **锁定平台版本基线**：明确并记录 **ArkUI API/SDK Version（或分支）**、**Android API Level + Compose 版本**、**iOS/iPadOS 版本**、**资料查询日期**。用户未指定时选当前稳定版并显式记录；不得混用未发布 ArkUI API 与不同平台版本。
+4. **判定输入事件子类**（触摸 / 按键 / 指针）→ 用 `references/analysis-dimensions.md` 权重表裁剪维度。
+5. 准备取 ArkUI 公共定义。
 
 # Execution Strategy / 执行策略
 
-1. **取 ArkUI 公共规格（权威源 = `interface_sdk-js`）**。规则与命令见 `references/authoritative-sources.md`。对每个字段记录：字段名、`@since`、单位、取值范围、默认值、是否废弃、归属（事件级 BaseEvent vs 触点级 TouchObject 等）。**禁止用 ace_engine 内部 `.d.ts` / C++ 作为公共能力结论。**
-2. **确定对标接口**：Android 优先 Compose（必要时退到 View / `MotionEvent`），iOS 优先 SwiftUI（必要时退到 UIKit / `UITouch` / Responder）。去各自官方文档取**同口径**字段；若第 2 步锁定了作用域层级，对标接口也只取该层级。
-3. **套维度**：按第 3 步裁剪出的维度逐维对比，写进能力矩阵；每条 ArkUI 断言带 `@since` + 单位。
-4. **出报告**：套 `examples/onTouch-analysis.md` 的结构——Meta / 规格速览 / **用法示例代码** / 能力对比矩阵 / 关键差异点 / 结论与迁移路径 / 附录（来源）。**格式要点**：① 规格速览中**每平台用结构化列表 / 代码块**（不要压成单行难读）；② **附每平台 1 段最小用法示例代码**说明用法；③ 若用户锁定了作用域层级，报告标题、规格、结论都要**显式围绕该层级**；④ "缺失 / 独有"类结论须**双向交叉验证**。
-5. **校验**：过 `evals/` 中相关用例的预期发现清单，并确保未触犯下方 Prohibited Practices。
+1. **取 ArkUI 公共规格（权威源 = `interface_sdk-js`）**。规则见 `references/authoritative-sources.md`。**记录要求**：`@since` **必须**记录；单位 / 取值范围 / 默认值 / 归属 **仅在适用时记录**（避免把触摸的"单位 / 触点归属"硬套到不适用字段）。禁止用 ace_engine 内部定义。
+2. **确定对标接口**：按 `references/platform-source-routing.md` 的官方资料路线，取 Android（优先 Compose，必要时 View）与 iOS（优先 SwiftUI，必要时 UIKit）**同口径、同版本**接口。
+3. **按需加载专项规格**：识别为触摸 / 指针输入时，才读 `references/input-event-spec.md`（ArkUI onTouch 校准规格）；通用流程不预载 Touch 规格，避免领域污染。
+4. **套维度**（裁剪后）逐维对比，写能力矩阵。
+5. **来源引用**：规格速览 / 能力矩阵 / 关键差异 / 迁移结论中**每项实质性断言**关联来源编号 `[n]`；来源表记录 平台、API/符号、官方文档 URL 或仓库文件路径、目标版本 / availability、查询日期、章节。区分"官方直接证据"与"分析推论"；"缺失 / 独有 / 优于"类结论须列出完成**双向检索**的来源；无充分来源支撑的标"待核"，不进确定性结论。
+6. **出报告**：套 `examples/onTouch-analysis.md` 结构。格式要点：① 每平台规格用结构化列表 / 代码块；② 附每平台 1 段最小用法示例代码；③ 锁定层级则显式围绕该层；④ 断言带来源编号。
+7. **校验**：过 `evals/` 预期发现清单 + 下方 Prohibited Practices。
 
-# Prohibited Practices / 禁止做法（反模式）
+# Prohibited Practices / 禁止做法
 
-- 用 **ace_engine 内部 `.d.ts` 或 C++ struct** 的字段名 / 口径作公共能力结论。典型错误（已在 onTouch 校准中发现）：把 `force` / `operatingHand` 当公共字段、把 **px** 当触摸坐标单位、把 `screenX/Y` 当现役字段。
-- **把用户指定的作用域层级降级**成通用或其它层级来分析（如把"应用级快捷键"降级成组件级 key event，导致只描述普通快捷键而漏掉应用级实现）。
-- 不标 `@since` / 单位 / 取值范围就下"支持 / 不支持"结论。
-- 把**事件级**字段（如 `sourceTool` / `tiltX` / `source`）误归到**触点级**对象（如 `TouchObject`）。
-- 机械套满 12 维而不按接口类别裁剪，导致报告冗长无重点。
-- 仅凭 ArkUI 或仅凭一方平台文档就断言"缺失 / 独有"，不做双向交叉验证。
-- 用已废弃字段（如 `screenX/Y`）当现役能力来对比。
+- 用 **ace_engine 内部 `.d.ts` / C++** 作公共能力结论（`force`/`operatingHand`、px 单位、现役 `screenX/Y`）。
+- **把 Android `ShortcutManager` 当键盘快捷键**（它是 launcher 启动快捷方式，非键盘 accelerator）。
+- **称 iOS"无原生批量触摸采样"**（UIKit 有 `UIEvent.coalescedTouches(for:)` / `predictedTouches(for:)`；须区分 historical / coalesced / predicted）。
+- 把用户指定的**作用域层级降级**成通用或其它层级。
+- 不标 `@since` / 来源就下"支持 / 缺失 / 独有 / 优于"结论。
+- 把**事件级**字段误归**触点级**对象。
+- 用**未发布 ArkUI API** 或**混用不同平台版本**作对比。
+- 机械套满 12 维而不按子类裁剪；把触摸的分析模式迁移到不适用领域。
 
 # Exceptions and Fallbacks / 异常与兜底
 
-- gitcode `oh-gc search code` 端点不可用 → 改用 gitcode / gitee **raw `.d.ts`**，再兜底 `docs.openharmony.cn`（由 `interface_sdk-js` 生成，含 `@since` / 单位 / 废弃标记）。
-- 某平台无直接对应接口 → 矩阵列 `N/A`，并给出最接近的等价替代路径与差异说明。
-- 字段公共性或 `@since` 存疑 → 标注"待核（@since?）"，**不臆断**。
-- 用户接口不属于六类 → 先归类；无法归类则说明无法套权重表、按通用维度全展开。
-- 用户只想要一个对标平台 → 尊重选择，矩阵只留该列。
-- 用户指定层级在某平台确无原生支持 → 明确标注"该平台无原生实现"，给出最接近替代，勿伪造成有。
+- gitcode `oh-gc search code` 不可用 → raw `.d.ts` / `docs.openharmony.cn`。
+- 某平台无对应接口 → `N/A` + 等价替代与差异。
+- 字段公共性 / `@since` 存疑 → 标"待核"，不臆断。
+- 用户接口不在输入事件范围 → 说明超出已验证声明范围，按通用维度展开并提示未验证。
 
 # References / 参考文档（何时读取）
 
 | 文档 / Doc | 用途 / Purpose | 何时读取 / When to read |
 |---|---|---|
-| `references/analysis-dimensions.md` | 12 维框架 + 「API 类别 → 维度权重」裁剪表 + **「作用域层级（勿降级）」** | 判定接口类别后、展开维度前；**锁定带层级能力的作用域时必读** |
-| `references/authoritative-sources.md` | `interface_sdk-js` 取数规则 / 命令 / 兜底 + 校准后的 onTouch 公共规格 | 取 ArkUI 公共定义时 |
-| `examples/onTouch-analysis.md` | 金标准样例（格式与深度基准，含用法代码） | 开始写报告时 |
-| `evals/` | 测试用例（onTouch 触摸类、应用级快捷键作用域类等）与预期发现清单 | 报告产出后自检 |
-| 外部 | [Agent Skills Spec](https://agentskills.io/specification) · Android `MotionEvent` · iOS `UITouch`/`UIResponder` | 取对标平台规格时 |
+| `references/analysis-dimensions.md` | 12 维框架 + 维度权重裁剪 + 作用域层级 | 判定子类后、展开维度前；锁定层级时 |
+| `references/authoritative-sources.md` | `interface_sdk-js` 取数规则 + 版本基线 + 来源引用格式 | 取 ArkUI 公共定义时 |
+| `references/platform-source-routing.md` | Android/iOS 官方资料入口 + 证据优先级 + 声明缺失前交叉检索 | 取对标接口时 |
+| `references/input-event-spec.md` | ArkUI onTouch 校准规格（触摸 / 指针专项） | **仅**识别为触摸 / 指针输入时按需加载 |
+| `examples/onTouch-analysis.md` | 金标准样例（格式与深度基准，含用法代码与来源编号） | 开始写报告时 |
+| `evals/` | 用例（onTouch / 应用级快捷键）+ `RESULTS.md` | 报告产出后自检 |

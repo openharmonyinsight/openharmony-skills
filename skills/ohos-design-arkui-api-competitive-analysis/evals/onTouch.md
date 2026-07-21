@@ -17,7 +17,7 @@ ArkUI 侧的每一条都必须以 **`interface_sdk-js` / 官方文档**为来源
 - [ ] **事件级 vs 触点级归属**：`sourceTool`/`tiltX`/`tiltY`/`source` 在 `TouchEvent`（BaseEvent），不在 `TouchObject`。
 - [ ] **`hand`（InteractionHand，15+）** 为左右手字段（不是内部命名 `operatingHand`）。
 - [ ] **`changedTouches`/`touches` 重采样口径差异**：changedTouches 屏幕刷新率重采样、touches 器件刷新率，二者可能不同。
-- [ ] **历史点**：`getHistoricalPoints()`(10+)；指出 iOS 无原生批量。
+- [ ] **采样三类**：`getHistoricalPoints()`(10+) = historical；iOS `coalescedTouches`(coalesced)/`predictedTouches`(predicted)；区分 historical/coalesced/predicted，**不得**称 iOS 无原生批量。
 - [ ] **分发**：默认冒泡 + `stopPropagation`；iOS 走 Responder Chain。
 - [ ] **结构**：按 Meta / 规格速览 / 能力矩阵 / 关键差异 / 结论与迁移 / 附录来源 组织。
 - [ ] **版本与单位标注**：ArkUI 字段带 `@since` + 单位（vp/ns）。
