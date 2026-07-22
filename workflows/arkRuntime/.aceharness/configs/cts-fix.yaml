@@ -1,0 +1,446 @@
+workflow:
+  name: CTS用例修复工作流
+  description: ArkTS前端编译器(ets2panda)CTS测试用例修复，包含Spec分析、问题定位与修复、定向回归、全量回归、格式检查与报告生成
+  mode: state-machine
+  maxTransitions: 30
+  states:
+    - name: Spec分析
+      description: 对失败CTS用例进行Spec规则召回和差异分析，生成CTS缺陷Spec分析报告
+      isInitial: true
+      isFinal: false
+      requireHumanApproval: false
+      position:
+        x: 100
+        y: 200
+      steps:
+        - name: Spec规则召回与差异分析
+          agent: compiler_developer
+          task: >
+            作为CTS修复的Spec分析阶段，请对失败的CTS用例进行spec规则召回和差异分析。
+
+            请按以下顺序执行：
+
+            第一步（优先）：从 spec-test-analyzer 知识库召回相关spec规则 - 搜索
+            /home/tianwenkai/skill/CTS_Skill/spec-test-analyzer/.agent 目录下的索引文件
+            - 根据失败用例涉及的语言特性关键词召回相关spec章节和规则 - 评估召回结果是否完整、清晰
+
+            第二步（补充）：如果召回不全或不够清晰，直接阅读原始spec文档 - 读取
+            runtime_core/static_core/plugins/ets/doc/spec/ 中的相关规范文件 -
+            补充遗漏的spec章节和规则细节 - 确保spec规则召回的完整性和准确性
+
+            第三步：差异分析 1. 分析spec期望行为与编译器实际行为的差异 2. 判定责任模块（parser/checker/lowering）
+            3. 生成《CTS缺陷Spec分析报告》，包含：
+               - Spec章节编号与规则描述（标注来源：.agent索引 或 原始spec文档）
+               - Spec与编译器行为差异分析
+               - 责任模块判定
+               - 建议修复方向
+               - 补充测试场景建议
+
+            输出：CTS缺陷Spec分析报告
+          role: defender
+          constraints:
+            - 不允许在这个阶段进行代码修改，严格禁止在该阶段进行代码修改
+          skills:
+            - spec-test-analyzer
+        - name: Spec分析挑战
+          agent: compiler_code-auditor
+          role: attacker
+          task: >
+            独立审查Spec分析报告，寻找遗漏和错误：
+
+
+            1. Spec规则召回是否完整？
+               - 是否已充分搜索 /home/tianwenkai/skill/CTS_Skill/spec-test-analyzer/.agent 中的索引？
+               - 如有遗漏，是否已回退阅读 runtime_core/static_core/plugins/ets/doc/spec/ 原始文档？
+            2. 行为差异分析是否准确？编译器实际行为是否描述正确？
+
+            3. 责任模块判定是否合理？是否有其他模块也可能涉及？
+
+            4. 建议修复方向是否可行？是否存在更好的修复策略？
+
+            5. 补充测试场景是否覆盖了边界条件？
+
+            6. 尝试构造使分析结论不成立的反例
+
+
+            输出：Spec分析挑战报告
+          skills:
+            - spec-test-analyzer
+        - name: Spec分析评审
+          agent: compiler_fix-judge
+          role: judge
+          task: |
+            综合Spec分析报告和挑战报告，裁定分析结论是否可靠：
+
+            1. Spec规则召回是否完整准确？
+            2. 行为差异分析是否经得起挑战？
+            3. 责任模块判定是否明确？
+            4. 修复方向是否可行？
+
+            输出 JSON：
+            {"verdict":"pass|fail","next_state":"问题定位与修复","summary":"Spec分析结论"}
+      transitions:
+        - to: 问题定位与修复
+          condition:
+            verdict: pass
+          priority: 1
+          label: Spec分析通过
+        - to: Spec分析
+          condition:
+            verdict: fail
+          priority: 2
+          label: Spec分析不充分，重试
+    - name: 问题定位与修复
+      description: 基于Spec分析报告，定位根因并实施代码修复
+      isInitial: false
+      isFinal: false
+      requireHumanApproval: false
+      position:
+        x: 300
+        y: 200
+      steps:
+        - name: 根因定位与代码修复
+          agent: compiler_fix-developer
+          role: defender
+          constraints:
+            - 不允许修改除了目标Issue的ets-cts-7.0-ignored.txt 和 ets-cts-ignored.txt以外的ignore项
+            - 只有非常确定其他受影响的CTS用例的结果需要进行修改时，才允许修改CTS用例的结果，并且必须在代码修改报告中详细说明理由和修改内容
+          task: >
+            基于Spec分析报告，在项目目录中进行CTS用例修复。
+
+            请执行以下步骤： 1. 阅读Spec分析报告，确认责任模块和修复方向 2. 复现问题：使用 cts-dev 技能中的测试脚本运行失败用例
+               - 脚本路径：/home/tianwenkai/.aceharness/.opencode/skills/cts-dev/scripts/
+               - 例如：cts2.sh --test-file <用例路径>
+            3. 结合Spec报告定位根因，映射到具体代码位置：
+               - Parser差异 → ets_frontend/ets2panda/parser/ETSParser*.cpp
+               - Checker差异 → ets_frontend/ets2panda/checker/ETSAnalyzer*.cpp 和 checker/ets/*.cpp
+               - Lowering差异 → ets_frontend/ets2panda/compiler/lowering/ets/*Lowering.cpp
+            4. 确定修改范围，明确需要修改的文件和函数 5. 修改代码，严格遵循代码规范：
+               - 函数圈复杂度≤10，行数≤49行
+               - 不使用魔术数字/字符串
+               - Checker不改AST形状，Parser仅做语法解析，Lowering新建节点后必须re-bind/re-check
+               - 使用TypeRelation API进行类型逻辑判断
+            6. 增量编译：build_diff.sh 7. 确认目标用例通过：反复修改+编译+测试
+
+            注意： - 如果因为本次修改，导致执行CTS用例失败，在十分确定修改是正确的前提下，可以直接修改CTS用例的结果，但必须在代码修改报告中详细说明理由和修改内容 - 其他任何情况下都不允许修改CTS用例
+
+            输出：代码修改diff + 编译结果 + 目标用例测试结果
+          skills:
+            - cts-dev
+        - name: 代码审计
+          agent: compiler_fix-reviewer
+          role: attacker
+          task: |
+            独立审查代码修复，寻找缺陷和遗漏：
+
+            1. 逐行审查修改，确认逻辑正确性
+            2. 验证修复是否符合spec-first原则
+            3. 检查是否引入新的边界条件问题
+            4. 验证代码规范合规性（复杂度、命名、函数长度等）
+            5. 检查模块约束是否被违反（Parser/Checker/Lowering边界）
+            6. 尝试构造使修复失效的边界用例
+            7. 重点验证修改会不会引入新的问题
+
+            输出：代码审计报告
+          skills:
+            - cts-dev
+        - name: 修复评审
+          agent: compiler_fix-judge
+          role: judge
+          task: |
+            综合代码修复和审计结果，裁定修复是否达标：
+
+            1. 目标用例是否全部通过？
+            2. 代码审计发现的问题是否已修正？
+            3. 代码规范是否合规？
+            4. 修复是否符合spec-first原则？
+
+            输出 JSON：
+            {"verdict":"pass|fail","next_state":"定向回归验证","summary":"修复评审结论"}
+      transitions:
+        - to: 定向回归验证
+          condition:
+            verdict: pass
+          priority: 1
+          label: 修复确认
+        - to: 问题定位与修复
+          condition:
+            verdict: fail
+          priority: 2
+          label: 修复不达标，重试
+    - name: 定向回归验证
+      description: 目标CTS子类测试、ets-runtime测试、astchecker测试
+      isInitial: false
+      isFinal: false
+      position:
+        x: 500
+        y: 200
+      steps:
+        - name: 定向回归测试
+          agent: compiler_tester
+          role: defender
+          task: >
+            执行定向回归验证，按顺序确保每步通过后才继续：
+
+            脚本路径：/home/tianwenkai/.aceharness/.opencode/skills/cts-dev/scripts/
+
+            1. 目标CTS子类测试：
+               cts2.sh --filter "*<目标子类>*"
+            2. ets-runtime测试（约8分钟）：
+               runtime.sh
+            3. astchecker测试（约10分钟）：
+               astcheck.sh
+
+            注意： - 回归前需删除 ets-cts-7.0-ignored.txt 和 ets-cts-ignored.txt
+            中对应Issue编号的屏蔽记录 - 每步通过后才继续下一步 - 如有失败需返回修复阶段
+
+            输出：定向回归测试报告
+          skills:
+            - cts-dev
+        - name: 边界攻击测试
+          agent: compiler_stress-tester
+          role: attacker
+          task: |
+            对修复进行边界攻击测试，寻找遗漏的回归风险：
+
+            1. 构造目标CTS子类的边界变体用例
+            2. 测试相关的语法特性组合
+            3. 验证修复没有影响相邻特性的正确性
+            4. 检查是否有隐含的类型系统影响
+            5. 尝试触发修复引入的新边界问题
+
+            输出：边界攻击测试报告
+          skills:
+            - cts-dev
+        - name: 定向验证裁判
+          agent: compiler_fix-judge
+          role: judge
+          task: |
+            综合定向回归测试和边界攻击测试结果：
+
+            1. 目标CTS子类是否全部通过？
+            2. ets-runtime是否无新增失败？
+            3. astchecker是否无新增失败？
+            4. 边界攻击是否发现新问题？
+
+            输出 JSON：
+            {"verdict":"pass|fail","next_state":"全量回归验证","summary":"定向验证结论"}
+      transitions:
+        - to: 全量回归验证
+          condition:
+            verdict: pass
+          priority: 1
+          label: 定向验证通过
+        - to: 问题定位与修复
+          condition:
+            verdict: fail
+          priority: 2
+          label: 定向验证失败，返回修复
+    - name: 全量回归验证
+      description: CTS全量测试、ets-func-tests
+      isInitial: false
+      isFinal: false
+      position:
+        x: 700
+        y: 200
+      steps:
+        - name: 全量回归测试
+          agent: compiler_tester
+          role: defender
+          task: >
+            执行全量回归测试，按顺序执行：
+
+            脚本路径：/home/tianwenkai/.aceharness/.opencode/skills/cts-dev/scripts/
+
+            1. CTS全量测试（约136分钟）：
+               cts2.sh
+            2. ets-func-tests（约30分钟）：
+               在 runtime_core/static_core 下执行：
+               tests/tests-u-runner/runner.sh --ets-func-tests --show-progress --build-dir out --processes=all
+
+            注意： - 与基线对比确认无新增失败 - 每步通过后才继续
+                  - 优先都使用cts-dev/scripts中的脚本进行测试，确保环境一致 - 如有失败需返回修复阶段
+
+            输出：全量回归测试报告
+          skills:
+            - cts-dev
+        - name: 压力测试
+          agent: compiler_performance-breaker
+          role: attacker
+          task: |
+            对修复进行压力测试，验证极端场景下的稳定性：
+
+            1. 构造大量重复/嵌套使用目标特性的用例
+            2. 测试修复对编译性能的影响
+            3. 验证内存使用是否正常（无泄漏）
+            4. 构造复杂类型组合验证类型系统稳定性
+            5. 验证不同编译模式（Debug/Release/ASAN）下的行为一致性
+            6. 尝试构建修改可能引入的问题场景，这是最重要的目的
+
+            输出：压力测试报告
+          skills:
+            - cts-dev
+        - name: 最终回归裁判
+          agent: compiler_fix-judge
+          role: judge
+          task: |
+            综合全量回归和压力测试结果，给出最终裁定：
+
+            1. CTS全量测试是否无回归？
+            2. ets-func-tests是否通过？
+            3. parser测试是否无新增失败？
+            4. 压力测试是否发现新问题？
+            5. 修复是否达到提交标准？
+            6. 修改可能引入的问题场景是否被验证？
+
+            输出 JSON：
+            {"verdict":"pass|fail","next_state":"格式检查与报告","summary":"最终回归结论"}
+      transitions:
+        - to: 格式检查与报告
+          condition:
+            verdict: pass
+          priority: 1
+          label: 全量回归通过
+        - to: 问题定位与修复
+          condition:
+            verdict: fail
+          priority: 2
+          label: 全量回归失败，返回修复
+    - name: 格式检查与报告
+      description: 代码格式检查和代码修改报告生成
+      isInitial: false
+      isFinal: false
+      requireHumanApproval: true
+      position:
+        x: 900
+        y: 200
+      steps:
+        - name: 格式修正与报告生成
+          agent: compiler_documentation-writer
+          role: defender
+          task: |
+            完成代码格式检查和代码修改报告生成。
+            脚本路径：/home/tianwenkai/.aceharness/.opencode/skills/cts-dev/scripts/
+            1. 执行代码格式检查：
+               format.sh
+            2. 根据检查结果修正代码格式，反复执行直到通过 3. 生成代码修改报告，包含：
+               - 问题根因分析（问题描述、根因定位、详细分析）
+               - 架构设计（修改方案、修改文件列表、模块影响分析）
+               - 影响范围（功能影响、测试影响、兼容性影响、回归测试结果）
+               - Spec依据（引用Spec分析报告中的具体spec章节和规则）
+
+            输出：格式检查通过确认 + 代码修改报告
+          skills:
+            - cts-dev
+        - name: 最终文档评审
+          agent: compiler_fix-judge
+          role: judge
+          task: |
+            最终评审代码修改报告和格式检查结果：
+
+            1. 代码格式检查是否通过？
+            2. 代码修改报告是否完整？
+            3. Spec依据是否充分？
+            4. 所有验收标准是否满足？
+
+            输出 JSON：
+            {"verdict":"pass","next_state":"完成","summary":"CTS修复完成"}
+      transitions:
+        - to: 代码上库
+          condition:
+            verdict: pass
+          priority: 1
+          label: 提交代码
+        - to: 问题定位与修复
+          condition:
+            verdict: fail
+          priority: 2
+          label: 格式或报告不达标
+    - name: 代码上库
+      description: 将修复代码提交到远程仓库
+      isInitial: false
+      isFinal: false
+      requireHumanApproval: true
+      position:
+        x: 900
+        y: 200
+      steps:
+        - name: 提交PR和Issue
+          agent: compiler_developer
+          role: defender
+          task: |
+            完成自动提Issue和创建PR流程。
+            1. 给ets_frontend提交Issue：
+                - 标题：CTS修复：<简要描述修复内容>
+                - 内容：详细描述修复内容、涉及的文件和函数、测试结果摘要、Spec分析依据等
+            2. 给ets_frontend提交PR：
+                - 选择当前修改所在的分支，将修改提交保存为一个commit，并创建PR
+                - 标题：CTS修复：<简要描述修复内容>
+                - 内容：详细描述问题、问题原因、修改方案
+                - 关联Issue
+            3. 给runtime_core提交PR：
+                - 选择当前修改所在的分支，将修改提交保存为一个commit，并创建PR
+                - 标题：CTS修复：<简要描述修复内容>
+                - 内容：详细描述问题、问题原因、修改方案
+                - 关联Issue
+
+             注意： - PR必须关联之前提交的Issue - PR描述中必须包含详细的修改内容和测试结果摘要 - 确保PR符合项目贡献规范
+                    - commit模板：
+                      ```
+                      英文标题，不超过30个英文字符
+
+                      Issue:https://gitcode.com/openharmony/arkcompiler_ets_frontend/issues/xxxx
+
+                      Co-Authored-By: Agent
+                      ```
+                    - PR模板：
+                      ```
+                      ### Issue
+                      https://gitcode.com/openharmony/arkcompiler_ets_frontend/issues/9898
+                      ### 描述/Description
+
+                      ### 原因/Reason
+
+                      ### 修改方案/Scheme
+                      ```
+            输出：issue链接 + PR链接的md格式文本
+          skills:
+            - gitcode-cli
+      transitions:
+        - to: 完成
+          condition:
+            verdict: pass
+          priority: 1
+          label: 全部完成
+    - name: 完成
+      description: CTS用例修复完成
+      isInitial: false
+      isFinal: true
+      position:
+        x: 1100
+        y: 200
+      steps:
+        - name: 输出最终总结
+          agent: compiler_documentation-writer
+          role: defender
+          task: >
+            基于完整修复流程输出最终总结： 1. 修复概述（用例、根因、修复方案） 2. 测试结果摘要 3. 代码修改报告路径
+
+            输出 JSON：
+            {"verdict":"pass","next_state":"完成","summary":"CTS修复流程全部完成"}
+      transitions: []
+context:
+  projectRoot: /home/tianwenkai/cts3
+  workspaceMode: in-place
+  requirements: >
+    ArkTS前端编译器(ets2panda)CTS测试用例修复。 基于 spec-test-analyzer
+    输出的CTS缺陷Spec分析报告，进行问题定位、代码修复和回归验证。 验收标准： 1. 修复所有指定的失败CTS用例 2.
+    parser/astchecker/recheck/ets-runtime测试套无新增失败 3. CTS全量测试无回归 4.
+    编译构建无error无warning 5. 代码格式检查通过 6. 代码符合规范（圈复杂度≤10、函数≤49行、缩进≤5层） 7.
+    行为符合最新技术预览规范（spec-first）
+  codebase: ets_frontend/ets2panda
+  timeoutMinutes: 600
+  skills:
+    - cts-dev
+    - spec-test-analyzer
+    - gitcode-cli
