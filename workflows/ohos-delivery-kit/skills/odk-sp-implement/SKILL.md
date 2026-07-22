@@ -1,4 +1,4 @@
-﻿# ODK SP Implement
+# ODK SP Implement
 
 Use when Superpowers is installed AND the user wants TDD + subagent-driven execution of an approved execution-plan.md. ODK keeps traceability; Superpowers runs red/green cycles. Falls back to odk-implement if unavailable.
 

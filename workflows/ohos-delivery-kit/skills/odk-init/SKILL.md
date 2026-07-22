@@ -1,4 +1,4 @@
-﻿
+
 # ODK Init
 
 Use when starting a new ODK change. Creates the `.codespec/changes/<id>/` skeleton. Run first, before any other odk-* command. Zero plugin dependencies.
@@ -35,10 +35,10 @@ If arguments are provided, parse them with backward compatibility:
 
 3. Do **not** create `spec.md`, `design.md`, or `execution-plan.md` here — each is generated on first run by its own command (`{{CMD_PREFIX}}spec` / `{{CMD_PREFIX}}design` / `{{CMD_PREFIX}}plan`), which regenerates fully from its template. Pre-building empty skeletons would only be read back and overwritten (wasted context).
 4. Do not create `reviews/` or `gates/` by default. They are optional process evidence directories, not part of the minimal archive contract.
-5. Ensure the repo `.gitignore` ignores the bridge plugin workspaces ODK redirects output away from (declared in `{{ODK_ASSET_ROOT}}/docs/contracts.md` Git 管理约定, not previously enforced):
+5. Ensure the repo `.gitignore` ignores the bridge plugin workspaces ODK redirects output away from (declared in `docs/contracts.md` Git 管理约定, not previously enforced):
    - Entries to ensure, **idempotently** (append only missing ones; never overwrite or remove existing content): `openspec/`, `docs/superpowers/`, `matspec/`, `.matspec-cli/`
    - If `.gitignore` does not exist, create it with a short `# ODK bridge workspaces` header followed by the entries.
-   - **Do NOT add `.codespec/`** — it is the delivery archive and must be committed alongside code (per `{{ODK_ASSET_ROOT}}/docs/contracts.md`).
+   - **Do NOT add `.codespec/`** — it is the delivery archive and must be committed alongside code (per `docs/contracts.md`).
    - **Do NOT add adapter install dirs** (`.claude/`, `.codex/`, `.opencode/`, `opencode.json`, etc.) — committing those is a team choice, not ODK's to decide.
 
 ## Output

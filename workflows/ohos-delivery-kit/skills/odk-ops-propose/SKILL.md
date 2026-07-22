@@ -1,4 +1,4 @@
-﻿# ODK OPS Propose
+# ODK OPS Propose
 
 Use when OpenSpec is installed AND the user wants /opsx:propose to generate all 4 artifacts (proposal+spec+design+execution-plan) in one pass, split into ODK format. Falls back to base commands if unavailable.
 
@@ -18,7 +18,7 @@ One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta s
 1. Invoke OpenSpec `/opsx:propose` which produces proposal + delta specs + design + tasks in one call.
 2. When OpenSpec tries to write to `openspec/changes/`, apply `using-odk-bridge` Output Redirection Rules instead.
 3. Process output per the active output mode (strict/passthrough/merge, default strict):
-   - **strict**: Transform each artifact to conform to ODK templates at `{{ODK_ASSET_ROOT}}/templates/ai/`.
+   - **strict**: Transform each artifact to conform to ODK templates at `{{PLUGIN_ROOT}}/templates/ai/`.
    - **passthrough**: Copy original format to `.codespec/changes/<id>/` unchanged.
    - **merge**: Use OpenSpec format as base, append ODK-required sections.
 4. In strict mode, ensure ODK-required fields are present:

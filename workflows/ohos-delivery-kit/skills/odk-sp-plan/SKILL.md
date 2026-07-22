@@ -1,4 +1,4 @@
-﻿
+
 # ODK SP Plan
 
 Use when Superpowers is installed AND the user wants writing-plans discipline for execution-plan.md (task decomposition, file-level boundaries, AC-Task trace). Falls back to odk-plan if unavailable.

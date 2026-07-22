@@ -1,4 +1,4 @@
-﻿# ODK MS Validation
+# ODK MS Validation
 
 Use when MatrixSpec is installed AND the user wants /matspec.validation to produce ODK review evidence. Falls back to odk-review if unavailable.
 

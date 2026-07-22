@@ -1,4 +1,4 @@
-﻿
+
 # ODK SP Brainstorm
 
 Use when Superpowers is installed AND the user wants one-session proposal+spec+design via Superpowers brainstorming. Output redirected to ODK archive. Falls back to odk-propose+odk-spec+odk-design if unavailable.

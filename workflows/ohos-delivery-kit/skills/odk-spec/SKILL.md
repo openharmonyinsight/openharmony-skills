@@ -1,4 +1,4 @@
-﻿
+
 # ODK Spec
 
 Use when writing ODK spec.md (WHEN/THEN acceptance criteria, error codes, verification mapping). Default template-driven, zero plugin dependencies. Use after proposal.md is approved.
@@ -19,7 +19,7 @@ Use when writing ODK spec.md (WHEN/THEN acceptance criteria, error codes, verifi
    - Confirm interface details are accurate before writing ACs
    - If code facts contradict assumptions from `proposal.md`, surface and resolve before writing ACs
    - Skip this step for pure new features with no existing code dependencies, pure documentation changes, or config-only changes
-2. Read template from `{{ODK_ASSET_ROOT}}/templates/ai/spec.md`
+2. Read template from `{{PLUGIN_ROOT}}/templates/ai/spec.md`
 3. Generate `spec.md` per the template. Fill in error code values and interface signatures with concrete values where discoverable from the code fact check (Step 1); mark genuinely unknown values as `TBD` with a reason.
 
 ## Key Rules
@@ -34,7 +34,7 @@ Use when writing ODK spec.md (WHEN/THEN acceptance criteria, error codes, verifi
 - This skill owns profile application, code fact checking, contradiction handling, context loading, and output path.
 - `spec.md` template owns required sections, AC format (Given/When/Then) + three-tier observability guidance, verification mapping.
 - Internal implementation (data structures/state machines/flows/algorithms) owned by `design.md`; code mapping (AC→implementation files + verification status) owned by `execution-plan.md`.
-- `{{ODK_EXECUTABLE_ROOT}}/validator/validate-artifacts-contract.py` owns machine-checkable AC coverage, verification mapping, and traceability checks.
+- `scripts/validate-artifacts-contract.py` owns machine-checkable AC coverage, verification mapping, and traceability checks.
 
 ## Output
 

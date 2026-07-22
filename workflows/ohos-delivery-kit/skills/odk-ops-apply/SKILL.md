@@ -1,4 +1,4 @@
-﻿# ODK OPS Apply
+# ODK OPS Apply
 
 Use when OpenSpec is installed AND the user wants /opsx:apply to implement tasks and backfill execution-plan code scope. Falls back to odk-implement if unavailable.
 

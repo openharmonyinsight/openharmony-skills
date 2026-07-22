@@ -1,4 +1,4 @@
-﻿
+
 # ODK Review
 
 Use when generating ODK review evidence (spec-compliance, code-quality, verification) from templates after implementation. Default standalone, zero plugin dependencies.
@@ -13,11 +13,11 @@ Use when generating ODK review evidence (spec-compliance, code-quality, verifica
 
 1. Read `spec.md` AC list
 2. Read `execution-plan.md` Task list and code scope
-3. Read review templates from `{{ODK_ASSET_ROOT}}/templates/review/`
+3. Read review templates from `{{PLUGIN_ROOT}}/templates/review/`
 
 ## Steps
 
-1. Generate review documents from templates in `{{ODK_ASSET_ROOT}}/templates/review/`.
+1. Generate review documents from templates in `{{PLUGIN_ROOT}}/templates/review/`.
 
 2. Backfill `execution-plan.md` 代码范围映射 with actual implementation files and update AC-Task 验证状态.
 

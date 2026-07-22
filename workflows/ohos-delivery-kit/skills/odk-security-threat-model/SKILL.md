@@ -1,4 +1,4 @@
-﻿# ODK Security Threat Model
+# ODK Security Threat Model
 
 Use when a change touches security/privacy/compliance and needs threat-model.md (STRIDE + regulatory checks). Bypass skill, triggered by proposal's security/permission dimension. Zero plugin dependencies.
 
@@ -79,7 +79,7 @@ Run this skill when `proposal` 的 `安全/权限` 维度 = 「是」 **且** �
    - For gaps, document remediation measures
 
 5. **Generate Threat Model Document**:
-   - Read template from `{{ODK_ASSET_ROOT}}/templates/ai/threat-model.md`
+   - Read template from `{{PLUGIN_ROOT}}/templates/ai/threat-model.md`
    - Generate comprehensive threat model document per template
    - Include Mermaid DFD diagrams, STRIDE analysis tables, compliance matrix
 
@@ -99,7 +99,7 @@ Suggest integration:
 
 ## Template Reference
 
-Base template: `{{ODK_ASSET_ROOT}}/templates/ai/threat-model.md`
+Base template: `{{PLUGIN_ROOT}}/templates/ai/threat-model.md`
 
 ## STRIDE Quick Reference
 

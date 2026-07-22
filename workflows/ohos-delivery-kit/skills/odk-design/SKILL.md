@@ -1,4 +1,4 @@
-﻿
+
 # ODK Design
 
 Use when writing ODK design.md (architecture, decisions, Mermaid, spec-AC references, conditional security check). Default template-driven, zero plugin dependencies. Use after spec.md.
@@ -28,7 +28,7 @@ Use when writing ODK design.md (architecture, decisions, Mermaid, spec-AC refere
    - Record findings as a brief code fact baseline: file:line references for key structures, signatures, and flow paths
    - If search results contradict assumptions from `proposal.md` or `spec.md`, surface the discrepancy to the user before proceeding to generate design
    - Skip this step for brand-new modules with no existing code, pure documentation changes, or config-only changes
-2. Read template from `{{ODK_ASSET_ROOT}}/templates/ai/design.md`
+2. Read template from `{{PLUGIN_ROOT}}/templates/ai/design.md`
 3. Generate `design.md` per the template. Conditionally include `代码事实基线`, `类图`, and `状态归属与不变量` when applicable — add `类图` (Mermaid `classDiagram`) when the change involves class/interface inheritance or implementation hierarchies (e.g. IPC interface→proxy→stub→impl) or cross-module composition. Reference specific `spec.md` AC numbers in design decisions.
 4. If Step 1 produced code facts, populate `代码事实基线`; otherwise omit it.
 5. After design is generated, review spec's `错误码定义` and `接口变更分析` — resolve any `TBD` values, and update if design decisions introduce new error codes or change interface signatures.

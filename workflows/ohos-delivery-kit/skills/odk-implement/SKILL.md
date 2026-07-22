@@ -1,4 +1,4 @@
-﻿
+
 # ODK Implement
 
 Use when implementing an approved execution-plan.md Task-by-Task and backfilling code scope. Base layer: AI-assisted, zero plugin dependencies (no TDD/subagent cycles). Use after execution-plan.md approval.

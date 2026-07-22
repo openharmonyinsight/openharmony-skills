@@ -1,4 +1,4 @@
-﻿
+
 # ODK Link Issue
 
 Use when binding a GitCode/issue ID to an existing draft change directory (links to `issue-<number>-<slug>`). Zero plugin dependencies.

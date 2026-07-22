@@ -1,4 +1,4 @@
-﻿# Using ODK Bridge
+# Using ODK Bridge
 
 Loaded automatically by odk-sp-*/odk-ops-*/odk-ms-* bridge commands — not invoked directly. Provides output redirection (strict/passthrough/merge), phase-artifact mapping, and design state-ownership rules.
 
@@ -63,14 +63,14 @@ When triggered, execute these steps **instead of** the plugin's default write:
    - implementation plan → `.codespec/changes/<id>/execution-plan.md`
    - requirements / proposal → `.codespec/changes/<id>/proposal.md`
 3. **TRANSFORM** — Ensure output conforms to the active output mode (strict/passthrough/merge):
-   - strict: conform to ODK template structure (read from `{{ODK_ASSET_ROOT}}/templates/ai/<phase>.md`)
+   - strict: conform to ODK template structure (read from `{{PLUGIN_ROOT}}/templates/ai/<phase>.md`)
    - passthrough: use original plugin format unchanged
    - merge: use plugin format as base, append ODK-required sections
 4. **CONFIRM** — Inform the user: "Written to `.codespec/changes/<id>/<artifact>` (ODK <mode> mode, overriding <plugin> default path)"
 
 This is a **hard override** — it takes priority over any other plugin's default output path.
 
-Read the template file from `{{ODK_ASSET_ROOT}}/templates/` for detailed section requirements when entering each phase in strict mode.
+Read the template file from `{{PLUGIN_ROOT}}/templates/` for detailed section requirements when entering each phase in strict mode.
 <!-- /SYNC: phase-mapping -->
 
 ## Design State Ownership Rules
@@ -104,6 +104,6 @@ base bridge rule.
 
 ## Template Reference
 
-- AI artifact templates: `{{ODK_ASSET_ROOT}}/templates/ai/` (proposal, spec, design, execution-plan, spec-for-validation)
-- Review templates: `{{ODK_ASSET_ROOT}}/templates/review/` (spec-compliance, code-quality, verification)
-- Plugin-specific adapter details: see `{{ODK_ASSET_ROOT}}/docs/adapters.md` and `{{ODK_ASSET_ROOT}}/docs/template-injection.md`
+- AI artifact templates: `{{PLUGIN_ROOT}}/templates/ai/` (proposal, spec, design, execution-plan, spec-for-validation)
+- Review templates: `{{PLUGIN_ROOT}}/templates/review/` (spec-compliance, code-quality, verification)
+- Plugin-specific adapter details: see `docs/adapters.md` and `docs/template-injection.md`

@@ -1,4 +1,4 @@
-﻿
+
 # ODK Validate
 
 Use when checking a change against the ODK delivery contract (Level A/B/C/D readiness) before archiving. Final gate. Zero plugin dependencies.
@@ -10,9 +10,9 @@ Use when checking a change against the ODK delivery contract (Level A/B/C/D read
 
 ## Sources
 
-- Artifact contract: installed `contracts/artifacts.yaml` (OpenCode: `{{ODK_ASSET_ROOT}}/contracts/artifacts.yaml`)
-- Templates: installed `templates/ai/` (OpenCode: `{{ODK_ASSET_ROOT}}/templates/ai/`)
-- If running inside the ODK repo, prefer `{{ODK_EXECUTABLE_ROOT}}/validator/validate-artifacts-contract.py <change-dir>` for strict checks and use this skill to explain/remediate failures
+- Artifact contract: installed `contracts/artifacts.yaml` (OpenCode: `$ODK_ROOT/core/contracts/artifacts.yaml`)
+- Templates: installed `templates/ai/` (OpenCode: `$ODK_ROOT/core/templates/ai/`)
+- If running inside the ODK repo, prefer `scripts/validate-artifacts-contract.py <change-dir>` for strict checks and use this skill to explain/remediate failures
 
 ## Steps
 

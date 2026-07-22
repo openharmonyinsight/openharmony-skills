@@ -1,4 +1,4 @@
-﻿# ODK MS Delta-Spec
+# ODK MS Delta-Spec
 
 Use when MatrixSpec is installed AND the user wants /matspec.delta-spec (ADDED/MODIFIED/REMOVED delta) for spec.md. Falls back to odk-spec if unavailable.
 
@@ -18,7 +18,7 @@ Invoke MatrixSpec `/matspec.delta-spec` for spec delta generation. Redirect outp
 1. Invoke MatrixSpec `/matspec.delta-spec` for delta-format spec generation (ADDED/MODIFIED/REMOVED).
 2. When MatrixSpec tries to write to `matspec/changes/`, apply `using-odk-bridge` Output Redirection Rules instead.
 3. Process output per active mode:
-   - strict: Transform to ODK spec template at `{{ODK_ASSET_ROOT}}/templates/ai/spec.md` format. Add AC numbering (AC-X.Y per requirement), compatibility declaration, verification mapping.
+   - strict: Transform to ODK spec template at `{{PLUGIN_ROOT}}/templates/ai/spec.md` format. Add AC numbering (AC-X.Y per requirement), compatibility declaration, verification mapping.
    - passthrough: Copy to `.codespec/changes/<id>/spec.md` unchanged.
    - merge: Use MatrixSpec delta format, append ODK sections: AC numbering guidance, compatibility declaration, verification mapping.
 4. Confirm with user.

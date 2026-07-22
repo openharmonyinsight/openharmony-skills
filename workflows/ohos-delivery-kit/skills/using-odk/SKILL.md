@@ -1,4 +1,4 @@
-﻿
+
 # Using ohos-delivery-kit
 
 Use when the user mentions ODK, ohos-delivery-kit, `.codespec`, or OpenHarmony delivery artifacts (proposal/spec/design/execution-plan/review/validate). Main router: loads phase skills and detects which bridge plugin (Superpowers/OpenSpec/MatrixSpec) is installed.
@@ -89,15 +89,15 @@ Bridge commands load `using-odk-bridge` automatically for output redirection and
 - When spawning subagents (e.g. via bridge commands), run them in isolated contexts — never fork the main session history; the main session only dispatches tasks and receives summaries
 - Pass evidence by file path, not by content — artifacts land on disk once (`evidence/`, `pr-diff.txt`, `findings.json`); later references pass the path, not the full text
 - Cap parallel fan-out at ≤4 subagents per layer; batch or narrow task scope if more are needed
-- Template files are located at `{{ODK_ASSET_ROOT}}/templates/` (installed with the plugin)
+- Template files are located at `{{PLUGIN_ROOT}}/templates/` (installed with the plugin)
 
 ## Profile Detection
 
 When generating ODK artifacts for a specific OpenHarmony module, apply subsystem-specific constraints:
 
 1. If `.codespec/profile.yaml` exists, use the declared profile IDs (e.g., `profiles: ["arkui"]`)
-2. Otherwise, infer profile from module keywords in the change path or user description (see `{{ODK_ASSET_ROOT}}/profiles/README.md` for activation rules)
-3. Read the matching profile(s) from `{{ODK_ASSET_ROOT}}/profiles/<id>.yaml`
+2. Otherwise, infer profile from module keywords in the change path or user description (see `core/profiles/README.md` for activation rules)
+3. Read the matching profile(s) from `{{PLUGIN_ROOT}}/profiles/<id>.yaml`
 4. Apply `template_overrides` to adjust dimensions and sections per phase:
    - Proposal: `required_dimensions` → mark those rows as "是" in the 8-dim N/A table; all others default to "视情况"
    - Design: `additional_sections` → append to required sections list
@@ -108,12 +108,12 @@ When generating ODK artifacts for a specific OpenHarmony module, apply subsystem
 5. Apply `agent_instructions` for the current phase (define/specify/design/plan) to add domain-specific constraints
 6. If a profile provides `fragments` with a composition strategy (prepend/append/wrap), apply to the generated artifact
 
-Profiles compose additively — they add required sections and constraints, never remove from the base template. When multiple profiles match, lower `priority` values take precedence for dimension conflicts, while sections and instructions are merged by union. See `{{ODK_ASSET_ROOT}}/profiles/README.md` for available profiles and their activation rules.
+Profiles compose additively — they add required sections and constraints, never remove from the base template. When multiple profiles match, lower `priority` values take precedence for dimension conflicts, while sections and instructions are merged by union. See `core/profiles/README.md` for available profiles and their activation rules.
 
 When using bridge commands, `using-odk-bridge` is loaded automatically and provides output mode selection and redirection rules.
 
 ## Template Reference
 
-- AI artifact templates: `{{ODK_ASSET_ROOT}}/templates/ai/` (proposal, spec, design, execution-plan, spec-for-validation, threat-model)
-- Review templates: `{{ODK_ASSET_ROOT}}/templates/review/` (spec-compliance, code-quality, verification)
-- Plugin-specific adapter details: see `{{ODK_ASSET_ROOT}}/docs/adapters.md` and `{{ODK_ASSET_ROOT}}/docs/template-injection.md`
+- AI artifact templates: `{{PLUGIN_ROOT}}/templates/ai/` (proposal, spec, design, execution-plan, spec-for-validation, threat-model)
+- Review templates: `{{PLUGIN_ROOT}}/templates/review/` (spec-compliance, code-quality, verification)
+- Plugin-specific adapter details: see `docs/adapters.md` and `docs/template-injection.md`

@@ -1,4 +1,4 @@
-﻿# ODK Spec for Validation
+# ODK Spec for Validation
 
 Use when deriving spec-for-validation.md (integration/system scenarios, SC→AC trace) from spec.md. Parallel bypass, does not block main flow. Zero plugin dependencies.
 Runs independently after spec.md is complete, alongside plan/implement/review.
@@ -24,7 +24,7 @@ Inputs are `proposal.md` and `spec.md` (no code dependency).
 1. Read `proposal.md` — success criteria, end-to-end flows, non-functional requirements
 2. Read `spec.md` — AC numbers, error codes, exception rules
 3. Read `design.md` (optional) — architecture decisions, module impact table
-4. Read template from `{{ODK_ASSET_ROOT}}/templates/ai/spec-for-validation.md`
+4. Read template from `{{PLUGIN_ROOT}}/templates/ai/spec-for-validation.md`
 
 ## Steps
 
