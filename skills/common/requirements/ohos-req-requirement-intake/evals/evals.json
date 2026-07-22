@@ -1,0 +1,69 @@
+{
+  "skill_name": "ohos-req-requirement-intake",
+  "evals": [
+    {
+      "id": 1,
+      "name": "raw-requirement-to-draft",
+      "prompt": "我们是 OpenHarmony 多窗口子系统团队，收到一个生态诉求：开发者反馈在平板上无法同时打开超过3个应用窗口，期望支持自由拖拽和调整窗口大小。RR单号是 RR-2026-0512-003。请帮我生成 01-requirement.md。",
+      "expected_output": "生成 01-requirement.md 草稿(status: Draft-NeedsClarification)和 clarification-questions.md。frontmatter 包含 rr_id 字段。正文中不出现占位符(待确认/TBD)，缺失事实记录到澄清问题清单。触发逐轮澄清流程而非直接定稿。",
+      "assertions": [
+        {"text": "frontmatter 包含 rr_id: RR-2026-0512-003", "type": "contains"},
+        {"text": "status: Draft-NeedsClarification", "type": "contains"},
+        {"text": "正文中不存在 待确认/TBD/待分析 占位符", "type": "not_contains"},
+        {"text": "生成了 clarification-questions.md 文件", "type": "contains"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "placeholder-rejection",
+      "prompt": "帮我写一份 01-requirement.md，需求是：提升系统启动速度，要求快速启动，性能尽可能优化。RR单号暂不确定。",
+      "expected_output": "skill 应检测到模糊表述(快速/尽可能)和 RR单号缺失，不写入占位符，在澄清问题清单中提出 NFR 量化口径要求和 RR单号确认问题。草稿不包含快速/尽可能等无量化锚点的描述。",
+      "assertions": [
+        {"text": "澄清问题清单中包含 NFR 量化口径要求", "type": "llm_judge"},
+        {"text": "澄清问题清单中包含 RR单号确认问题", "type": "llm_judge"},
+        {"text": "正文中不存在 尽可能 或 快速", "type": "not_contains"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "pre-clarified-input-skip",
+      "prompt": "附件是一份已标记'已完成 P0 澄清'的需求文档，包含 Q-1~Q-5 全部 ✅ 结论。请基于它生成 01-requirement.md。",
+      "expected_output": "skill 应检测输入材料中的澄清状态标记，若定稿检查通过则直接输出 status: Clarified，跳过逐轮对话。回传摘要中标注'澄清状态: 已完成'。",
+      "assertions": [
+        {"text": "status: Clarified", "type": "contains"},
+        {"text": "回传摘要包含 澄清状态: 已完成", "type": "llm_judge"},
+        {"text": "未发起逐轮澄清提问", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "template-fidelity-gate-failure",
+      "prompt": "用户提供的原始需求中包含技术方案选型建议。请生成 01-requirement.md 草稿。",
+      "expected_output": "草稿中不应包含技术方案选型内容，应在禁止包含检查中标记。status: Draft-NeedsClarification。",
+      "assertions": [
+        {"text": "Draft-NeedsClarification", "type": "contains"},
+        {"text": "技术方案选型不应出现在01-requirement.md", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "user-suspend-exception",
+      "prompt": "用户在澄清环节对某个问题回复'暂缓'。请处理该暂缓项并继续定稿流程。",
+      "expected_output": "暂缓项以 ⚠️ 用户暂缓:{用户原话} 格式保留在文档中，不阻塞定稿。status: Clarified。",
+      "assertions": [
+        {"text": "用户暂缓", "type": "contains"},
+        {"text": "Clarified", "type": "contains"}
+      ]
+    },
+    {
+      "id": 6,
+      "name": "batch-confirmation-known-answers",
+      "prompt": "用户提供的原始需求文档中已包含RR单号(RR-2026-0512-003)、交付版本(OH7.1)、提出人(张三)。草稿生成后待澄清问题清单中有8条，其中3条(RR单号/交付版本/提出人)的答案已在输入材料中。请执行澄清流程。",
+      "expected_output": "对3条已有答案的问题一次性批量呈现给用户确认(✅确认/✏️修正)，不逐条单独交互。仅剩余5条真正不确定的问题才逐条澄清。",
+      "assertions": [
+        {"text": "批量确认", "type": "llm_judge"},
+        {"text": "已有答案的问题不逐条交互", "type": "llm_judge"}
+      ]
+    }
+  ]
+}
