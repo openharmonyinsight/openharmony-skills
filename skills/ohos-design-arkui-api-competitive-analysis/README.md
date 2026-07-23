@@ -1,38 +1,62 @@
 # ohos-design-arkui-api-competitive-analysis
 
-ArkUI 接口竞品分析 skill —— 对 ArkUI 的 UI 接口（事件 / 手势 / 组件 / 布局 / 状态 / 动画）产出**结构一致、规格准确**的对标报告，对标 **Android（Compose/View）** 与 **iOS（SwiftUI/UIKit）**。
+面向 ArkUI 公共 UI API 的 Android/iOS 竞品分析 Skill，覆盖事件、键盘、手势、组件、布局、状态和动画。
 
-## 为什么需要 / Why
+## 能力
 
-团队做 ArkUI 接口对标时常见问题：维度零散、口径不一、**易把"内部实现"当"公共能力"**（如误用 ace_engine 内部 `.d.ts` 把触摸坐标单位当 px、把 `force`/`operatingHand` 当公共字段）。本 skill 用统一框架 + 数据铁律（以 `interface_sdk-js` 为权威）+ 报告模板 + 金标准样例固化方法论。
+- 锁定接口作用域和平台版本基线。
+- 以 `interface_sdk-js` 作为 ArkUI 公共接口权威源。
+- Android/iOS 优先引用 Android Developers 和 Apple Developer 官方文档。
+- 区分直接等价、功能等价、组合实现、替代方案和未找到等价能力。
+- 使用 Fact Ledger 与 Claim Ledger 管理证据、推论和待核事项。
+- 输出规格事实、能力矩阵、影响评估、迁移建议和来源审计。
 
-## 安装 / Install
+## 使用
+
+```text
+对 ArkUI keyboardShortcut 做 Android/iOS 应用级键盘快捷键竞品分析。
+```
+
+```text
+对 ArkUI Flex 做快速能力扫描，重点比较布局语义和迁移风险。
+```
+
+安装：
 
 ```bash
 npx skills add openharmonyinsight/openharmony-skills --skill ohos-design-arkui-api-competitive-analysis
 ```
 
-## 用法 / Usage
+## 工作流
 
-触发词示例："竞品分析 ArkUI onTouch"、"对标 ArkUI 与 Android/iOS 的触摸能力"、"做接口对标 / capability gap analysis"。
-
-典型产出见 `examples/onTouch-analysis.md`：Meta → 规格速览 → 能力对比矩阵 → 关键差异点 → 结论与迁移路径 → 附录来源。
-
-## 目录 / Layout
-
-```
-SKILL.md                         # 主入口（canonical 7 段骨架，中英双语）
-references/
-  analysis-dimensions.md         # 12 维框架 + API 类别→维度权重裁剪表
-  authoritative-sources.md       # interface_sdk-js 取数铁律 + 校准后的 onTouch 公共规格
-examples/
-  onTouch-analysis.md            # 金标准样例
-evals/
-  onTouch.md                     # with/without skill 测试用例
-  README.md                      # 跑法与通过标准
+```text
+分析契约
+  → 能力拆解
+  → 对标对象映射
+  → 各平台独立取证
+  → 规格归一化
+  → 断言审计
+  → 差异与影响
+  → 分级建议
+  → 报告与质量门禁
 ```
 
-## 与相关 skill 的边界 / Boundaries
+## 目录
 
-- `arkui-api-design`：关注**如何设计/编写** ArkUI API（static/dynamic 同步、JSDOC、Resource 类型）。本 skill 关注**对已有接口做跨平台能力对标**。
-- `android-to-harmonyos-migration-workflow`：关注**代码迁移**全流程（多 agent + 脚本）。本 skill 关注**接口层规格对标**，是迁移前的能力对齐输入。
+```text
+SKILL.md                         # 紧凑编排入口和不可违反的规则
+assets/report-template.md        # 通用主报告模板与按子类型启用的条件区块
+references/workflow.md           # 阶段产物、质量门禁和异常处理
+references/evidence-ledger.md    # Fact/Comparator/Claim 台账格式
+references/analysis-dimensions.md
+references/authoritative-sources.md
+references/platform-source-routing.md
+evals/evals.json                 # benchmark Prompt、预期输出和评分断言
+evals/README.md                  # benchmark 运行约定
+```
+
+## 边界
+
+- `arkui-api-design` 负责 ArkUI API 的设计和实现规范；本 Skill 负责跨平台能力与规格对标。
+- `android-to-harmonyos-migration-workflow` 负责完整代码迁移；本 Skill 产出的接口映射和风险可作为迁移输入。
+- 最小代码段用于解释 API 心智，不代表修改或实现真实项目。

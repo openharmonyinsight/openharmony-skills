@@ -1,0 +1,203 @@
+{
+  "skill_name": "ohos-design-arkui-api-competitive-analysis",
+  "version": "1.5.8",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "fact_on_touch",
+      "category": "fact_event",
+      "prompt": "对 ArkUI 的 `onTouch` 接口做与 Android、iOS 触摸事件的竞品分析，给出能力与规格对比。",
+      "expected_output": "Produces an auditable component-level touch-event comparison using interface_sdk-js, Android Developers, and Apple Developer, with version baselines, comparator mapping, fact/claim IDs, normalized units and sampling semantics, impacts, recommendations, and pending items.",
+      "files": [],
+      "expectations": [
+        "Uses interface_sdk-js as the ArkUI public API authority and does not use ace_engine internals as the public contract.",
+        "Locks the ArkUI, Android, and iOS baselines and records Analysis Brief, Comparator Map, Fact/Claim IDs, impacts, recommendations, sources, and pending items.",
+        "States that ArkUI touch coordinates use vp, Android uses px, and iOS uses pt, while distinguishing component and window coordinate spaces.",
+        "Verifies that screenX/screenY are deprecated from API 10 and that windowX/windowY are the public replacements for the target baseline.",
+        "Separates event-level normalized pressure from touch-point raw pressure, and does not replace the public pressure or hand fields with internal force or operatingHand names.",
+        "Keeps sourceTool, tiltX, tiltY, and source at their verified event or point ownership level instead of importing ace_engine field placement.",
+        "Verifies changedTouches versus touches resampling semantics and distinguishes historical, coalesced, and predicted samples, including iOS coalescedTouches and predictedTouches.",
+        "Compares propagation and responder-chain behavior using Android Developers and Apple Developer as the primary competitor sources.",
+        "Marks unsupported missing, unique, or superior claims pending unless a bidirectional official-source search supports them."
+      ]
+    },
+    {
+      "id": 1,
+      "eval_name": "fact_keyboard_shortcut",
+      "category": "fact_event",
+      "prompt": "分析 ArkUI 应用级键盘快捷键的实现，对标 Android 和 iOS 的应用级键盘快捷键能力。",
+      "expected_output": "Anchors the ArkUI analysis on keyboardShortcut, separates component/app/system scope, excludes launcher shortcuts, and maps Android and iOS keyboard command paths using official sources and auditable evidence.",
+      "files": [],
+      "expectations": [
+        "Uses keyboardShortcut as the ArkUI anchor and does not substitute onKeyEvent or a menu accelerator.",
+        "Separates component, window/application, and system scope before selecting comparators.",
+        "Does not treat Android ShortcutManager launcher shortcuts as keyboard shortcuts.",
+        "Verifies keyboardShortcut signature, availability, modifier and key representation, binding model, focus conditions, and effective scope from public official sources.",
+        "Checks Activity.onKeyShortcut, onProvideKeyboardShortcuts, menu shortcuts, dispatchKeyShortcutEvent, and Compose key input before classifying Android mappings.",
+        "Checks UIKeyCommand availability, registration, responder-chain, and command-chain behavior before classifying the iOS mapping.",
+        "Chooses direct, functional, or composite mappings from verified scope and behavior rather than API names.",
+        "Uses Android Developers and Apple Developer as the primary competitor sources and reports migration impacts, priorities, confidence, and pending facts."
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "fact_pan_gesture",
+      "category": "fact_gesture",
+      "prompt": "对 ArkUI 的 PanGesture 做与 Android、iOS 拖拽/平移手势的竞品分析，给出能力与规格对比。",
+      "expected_output": "Compares PanGesture data, coverage, state, arbitration, runtime behavior, and developer mental model without confusing raw touch coordinates with gesture displacement.",
+      "files": [],
+      "expectations": [
+        "Uses the gesture default dimensions 3, 4, 5, 6, 8, and 12 after mandatory baseline checks.",
+        "Verifies fingers, distance, direction, distanceMap, offset, velocity, angle, defaults, units, ranges, and availability from public official sources.",
+        "Covers configurable thresholds and directions, multi-finger input, and gesture composition or priority mechanisms.",
+        "Compares state machines, including failed or cancellation states, and marks unsupported cross-platform equivalence pending.",
+        "Compares ArkUI priority/parallel/exclusive behavior with verified Android competition and iOS failure/simultaneous-recognition mechanisms.",
+        "Preserves cumulative, incremental, direction, and reset semantics for displacement.",
+        "Separates declarative and imperative gesture mental models and maps Android detector, iOS recognizer or SwiftUI gesture paths independently.",
+        "Does not import unrelated raw-touch field assumptions or make performance claims without comparable evidence."
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "fact_list_component",
+      "category": "fact_component",
+      "prompt": "对 ArkUI 的 List 组件做与 Android(RecyclerView/Compose LazyColumn)、iOS(UITableView/SwiftUI List) 的竞品分析，给出能力与规格对比。",
+      "expected_output": "Compares List capability, lifecycle, accessibility, runtime characteristics, compatibility, and migration across imperative and declarative competitor frameworks.",
+      "files": [],
+      "expectations": [
+        "Uses component default dimensions 4, 5, 7, 8, 10, and 12 and deepens list runtime and testing concerns.",
+        "Verifies List, ListItem, ListItemGroup, Scroller, lanes, cachedCount, sticky behavior, chain animation, edit mode, and their availability from interface_sdk-js.",
+        "Separates capabilities provided directly by List from composite capabilities requiring Refresh or other components.",
+        "Compares grouping, multi-column layout, sticky content, lazy loading, refresh, and data-update coverage across each competitor framework.",
+        "Compares data source, item identity, update notification, reuse, caching, nested scrolling, and large-data-set models.",
+        "Covers default accessibility semantics, collection information, focus, actions, and version compatibility using official platform sources.",
+        "Maps RecyclerView, Compose lazy lists, UITableView, and SwiftUI List separately instead of collapsing them into one equivalent.",
+        "Does not make performance superiority claims without comparable measurements and reports migration impacts, priorities, confidence, and pending facts."
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "fact_flex_layout",
+      "category": "fact_layout",
+      "prompt": "对 ArkUI 的 Flex 布局做与 Android(FlexboxLayout/Compose Row·Column)、iOS(UIStackView/SwiftUI HStack·VStack) 的竞品分析，给出能力与规格对比。",
+      "expected_output": "Compares Flex data constraints, layout coverage, measurement characteristics, device/form-factor behavior, and migration mental model using versioned official evidence.",
+      "files": [],
+      "expectations": [
+        "Uses layout default dimensions 3, 4, 8, 9, and 12 after mandatory baseline checks.",
+        "Verifies Flex direction, justification, alignment, wrapping, flexGrow, flexShrink, flexBasis, alignSelf, Row/Column, and availability from interface_sdk-js.",
+        "Verifies flexBasis percentages, order, SpaceEvenly, alignContent, reverse, and spacing semantics for the target versions instead of relying on CSS impressions.",
+        "Compares direction, wrapping, main/cross-axis alignment, growth, shrinkage, basis, and ordering as separate capabilities.",
+        "Distinguishes ArkUI Flex from Row/Column and checks documented measurement behavior without turning it into an unsupported performance ranking.",
+        "Covers window-size, orientation, foldable, and tablet constraints when supported by the compared layout APIs.",
+        "Maps FlexboxLayout, Compose Row/Column, UIStackView, and SwiftUI stacks separately.",
+        "Does not rank platform completeness or performance without complete comparable evidence and does not introduce event, gesture, or component-specific fields."
+      ]
+    },
+    {
+      "id": 5,
+      "eval_name": "fact_animate_to",
+      "category": "fact_animation",
+      "prompt": "对 ArkUI 的 animateTo 显式动画做与 Android(ValueAnimator/ObjectAnimator/Compose 动画)、iOS(UIView.animate/Core Animation) 的竞品分析，给出能力与规格对比。",
+      "expected_output": "Compares animation parameters, capability, state and interruption, runtime model, compatibility, and orchestration without applying one API's defaults to an entire platform.",
+      "files": [],
+      "expectations": [
+        "Uses state/animation default dimensions 3, 4, 5, 8, 10, and 12 after mandatory baseline checks.",
+        "Verifies animateTo, AnimateParam, keyframeAnimateTo, curve helpers, parameters, defaults, units, and availability from interface_sdk-js.",
+        "Verifies duration requirements, defaults, units, curves, cubic Bezier, steps, springs, keyframes, delay, repeat, reverse, and orchestration per comparator API.",
+        "Does not generalize one Core Animation, UIView, SwiftUI, Android View, or Compose API default to an entire platform.",
+        "Separates declarative state-driven and imperative start/end animation models in the Comparator Map.",
+        "Compares completion, interruption, cancellation, pause, resume, scrub, and velocity only when officially documented.",
+        "Records availability, deprecation, replacement, and lower-version fallback for core and optional capabilities.",
+        "Does not introduce touch-specific fields or claim performance or orchestration superiority without bidirectional official evidence and comparable measurements."
+      ]
+    },
+    {
+      "id": 6,
+      "eval_name": "workflow_ambiguous_scope",
+      "category": "workflow",
+      "prompt": "对 ArkUI 的快捷键能力做 Android/iOS 竞品分析。",
+      "expected_output": "Recognizes that component, window/application, and system scope change the comparator and clarifies or separates the scope before formal comparison.",
+      "files": [],
+      "expectations": [
+        "Does not merge keyboardShortcut, onKeyEvent, and system input consumer APIs into one capability.",
+        "Clarifies scope or creates separate sub-analyses before selecting comparators.",
+        "Creates an Analysis Brief before drawing conclusions.",
+        "When clarification is unavailable, builds separate scope-specific comparator mappings with version and official-source requirements; otherwise defers mapping until scope is locked."
+      ]
+    },
+    {
+      "id": 7,
+      "eval_name": "workflow_no_direct_equivalent",
+      "category": "workflow",
+      "prompt": "分析 ArkUI keyboardShortcut 与 Android、iOS 的直接对应关系，只告诉我哪个 API 名称最像。",
+      "expected_output": "Rejects name-only matching, builds a Comparator Map, and identifies direct, functional, composite, fallback, or no-equivalent relationships from scope and behavior.",
+      "files": [],
+      "expectations": [
+        "Rejects selecting comparators only by name similarity.",
+        "Builds a Comparator Map with selection and exclusion reasons.",
+        "Excludes Android ShortcutManager from keyboard-shortcut comparison.",
+        "Does not fabricate a direct equivalent when only functional or composite paths exist.",
+        "Explains verified Android dispatch paths and iOS responder or command-chain scope before assigning mapping types."
+      ]
+    },
+    {
+      "id": 8,
+      "eval_name": "workflow_official_source_conflict",
+      "category": "workflow",
+      "prompt": "我找到一份 ArkUI 组件文档说某属性从 API 10 开始支持，另一份公共接口定义标的是 API 12。请直接选一个写进结论。",
+      "expected_output": "Checks interface_sdk-js, branches, versions, and document generation dates, records a conflict, and keeps unresolved facts out of deterministic conclusions.",
+      "files": [],
+      "expectations": [
+        "Requires the property name, public-definition location, document link, branch/API baseline, and generation metadata; when the prompt omits them, requests the missing identifiers instead of pretending verification is complete.",
+        "Creates a Conflict Log instead of silently choosing a source.",
+        "Marks unresolved facts pending and excludes them from deterministic conclusions.",
+        "Does not let ace_engine internal definitions override the public API contract."
+      ]
+    },
+    {
+      "id": 9,
+      "eval_name": "workflow_quick_scan",
+      "category": "workflow",
+      "prompt": "快速比较 ArkUI Flex 和 Android/iOS，只要一页结论，不用做完整报告。",
+      "expected_output": "Uses quick-scan mode and compresses non-default dimensions while preserving baselines, scope, comparator mapping, evidence, risks, and pending items.",
+      "files": [],
+      "expectations": [
+        "Prioritizes layout default dimensions and compresses other dimensions.",
+        "Retains version baseline, scope, Comparator Map, core sources, and pending items.",
+        "Does not replace evidence with unsupported inference because of the page limit.",
+        "Does not introduce unrelated domain-specific fields.",
+        "Preserves auditable Fact and Claim IDs even when their presentation is compressed."
+      ]
+    },
+    {
+      "id": 10,
+      "eval_name": "workflow_performance_superiority",
+      "category": "workflow",
+      "prompt": "证明 ArkUI List 的长列表性能一定比 Android RecyclerView、Compose LazyColumn 和 iOS UITableView、SwiftUI List 更好。",
+      "expected_output": "Rejects the predetermined superiority claim, decomposes performance into measurable indicators, distinguishes runtime-model documentation from benchmarks, and reports pending measurements.",
+      "files": [],
+      "expectations": [
+        "Does not accept the requested conclusion as a premise.",
+        "Decomposes performance into initialization, scrolling, reuse, caching, updates, and memory indicators.",
+        "Distinguishes official runtime-model documentation from comparable measurements.",
+        "Does not output an overall ranking without same-device, same-data, same-build measurements.",
+        "Reports confirmed lazy-loading, reuse, update-model differences, possible impacts, and pending measurements without converting them into a superiority claim."
+      ]
+    },
+    {
+      "id": 11,
+      "eval_name": "workflow_official_sources_first",
+      "category": "workflow",
+      "prompt": "我已经找到几篇博客和 AOSP/Swift SDK 源码，请直接用这些材料分析 Android 和 iOS，不用再查官方 API 文档。",
+      "expected_output": "Refuses to skip Android Developers and Apple Developer, uses official reference/guide/sample evidence first, and treats source code and community material only as supporting or discovery evidence.",
+      "files": [],
+      "expectations": [
+        "Refuses to skip Android Developers and Apple Developer and requires those official sources to be checked before source code or blogs for any concrete capability.",
+        "Explains that API Reference, Guide, and Sample evidence establish public capability, behavior, availability, and recommended composition.",
+        "Marks AOSP, AndroidX, and Swift SDK source as implementation corroboration only.",
+        "Treats blogs and aggregated documentation only as discovery aids for official entry points.",
+        "Requires evidence type in the Fact Ledger and rejects high-confidence public-contract claims supported only by source code or third-party material."
+      ]
+    }
+  ]
+}

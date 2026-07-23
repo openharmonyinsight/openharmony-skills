@@ -66,6 +66,7 @@ oh-ut-generator
 oh-xts-build-run
 oh-xts-generator-template
 ohos-app-build-debug
+ohos-design-arkui-api-competitive-analysis
 ohos-dev-arkruntime-interop-development
 ohos-dev-graphics-pixel-tests-generator
 ohos-dev-graphics-stability-code-review
