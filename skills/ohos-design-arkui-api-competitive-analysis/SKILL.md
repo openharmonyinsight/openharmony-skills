@@ -11,7 +11,7 @@ metadata:
   stage: design
   domain: arkui
   capability: api-competitive-analysis
-  version: 1.5.8
+  version: 1.5.9
   status: trial
 ---
 
