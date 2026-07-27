@@ -1,0 +1,246 @@
+#!/usr/bin/env bash
+# ohos-sdd — OpenHarmony SDD 机器层 CLI(shell 入口 + python 引擎调度)
+# 设计:docs/superpowers/specs/2026-06-14-spec-for-ai-standalone-architecture-design.md 第七节(D3)
+set -euo pipefail
+
+CLI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENGINE="${CLI_DIR}/ohos_sdd_engine.py"
+
+resolve_contract() {
+  # 源仓优先(向上找 openharmony/contracts/),其次运行时布局
+  local d="${CLI_DIR}"
+  while [[ "$d" != "/" ]]; do
+    if [[ -f "$d/openharmony/contracts/artifacts.yaml" ]]; then
+      printf '%s\n' "$d/openharmony/contracts/artifacts.yaml"; return 0
+    fi
+    d="$(cd "$d/.." && pwd)"
+  done
+  for cand in "${CLI_DIR}/../contracts/artifacts.yaml" \
+             "${CLI_DIR}/../shared/ohos-sdd/contracts/artifacts.yaml"; do
+    [[ -f "$cand" ]] && { printf '%s\n' "$cand"; return 0; }
+  done
+  return 1
+}
+
+resolve_templates() {
+  local d="${CLI_DIR}"
+  while [[ "$d" != "/" ]]; do
+    if [[ -d "$d/openharmony/templates" ]]; then printf '%s\n' "$d/openharmony/templates"; return 0; fi
+    d="$(cd "$d/.." && pwd)"
+  done
+  for cand in "${CLI_DIR}/../templates" \
+             "${CLI_DIR}/../shared/ohos-sdd/templates"; do
+    [[ -d "$cand" ]] && { printf '%s\n' "$cand"; return 0; }
+  done
+  return 1
+}
+
+resolve_profiles() {
+  local d="${CLI_DIR}"
+  while [[ "$d" != "/" ]]; do
+    if [[ -d "$d/openharmony/profiles" ]]; then printf '%s\n' "$d/openharmony/profiles"; return 0; fi
+    d="$(cd "$d/.." && pwd)"
+  done
+  for cand in "${CLI_DIR}/../profiles" \
+             "${CLI_DIR}/../shared/ohos-sdd/profiles"; do
+    [[ -d "$cand" ]] && { printf '%s\n' "$cand"; return 0; }
+  done
+  return 1
+}
+
+have_python() {
+  [[ "${OHOS_SDD_NO_PYTHON:-0}" == "1" ]] && return 1   # 可测钩子
+  command -v python3 >/dev/null 2>&1
+}
+
+warn_no_python() {
+  echo "[ohos-sdd] 深度校验需 python3;未装则跳过 Level B/C/D/E,仅 Level A required 存在性校验仍生效。" >&2
+}
+
+run_engine() {
+  # invoke the python engine; exit code propagates (0 pass / 1 validate-fail / 2 error)
+  python3 "${ENGINE}" "$@"
+}
+
+usage() {
+  cat <<'EOF'
+ohos-sdd — OpenHarmony SDD 机器层 CLI
+
+用法:
+  ohos-sdd status [<change>]
+  ohos-sdd validate [<change>] [--level A|B|C|D|E|all] [--json]
+  ohos-sdd archive <change>
+  ohos-sdd init <id>
+  ohos-sdd registry
+  ohos-sdd spec-for-test <generate|refresh|check> <change>
+  ohos-sdd version
+
+Level:A/B 结构 / C 依赖一致-可追溯 / D 归档就绪 / E profile 门禁;validate 默认 all。
+EOF
+}
+
+_validate_shell_fallback() {
+  # 无 python 时的结构兜底:只做 Level A 核心(required 交付件存在性)。
+  local change="$1"
+  if [[ -z "$change" ]]; then echo "validate: 需要 <change-dir>" >&2; return 2; fi
+  [[ -d "$change" ]] || { echo "validate: change dir not found: $change" >&2; return 2; }
+  # proposal/spec 是 required;execution-plan 是 conditional(简单变更可用 task.md 替代)
+  local required=(proposal.md spec.md)
+  local broken=0 f
+  echo "[FALLBACK] 结构校验(无 python,仅 Level A required 存在性)"
+  for f in "${required[@]}"; do
+    if [[ -f "${change}/${f}" ]]; then echo "[OK]   ${f}"
+    else echo "[MISS] ${f} (required)"; broken=$((broken+1)); fi
+  done
+  # execution-plan 或 task.md 至少有一个(简单变更只需 task.md)
+  if [[ ! -f "${change}/execution-plan.md" && ! -f "${change}/task.md" ]]; then
+    echo "[MISS] execution-plan.md 或 task.md (至少需要一个)"; broken=$((broken+1))
+  fi
+  echo "fallback: required-missing=${broken}"
+  [[ "$broken" -eq 0 ]]
+}
+
+cmd_status() {
+  local change="${1:-}"
+  if [[ -z "$change" ]]; then
+    echo "usage: ohos-sdd status <change-dir>" >&2; exit 2
+  fi
+  if [[ ! -d "$change" ]]; then
+    echo "status: change dir not found: $change" >&2; exit 2
+  fi
+
+  local rows=(
+    "proposal|proposal.md|required"
+    "spec|spec.md|required"
+    "design|design.md|conditional"
+    "execution-plan|execution-plan.md|conditional"
+    "review|review.md|reference"
+    "manifest|manifest.md|recommended"
+    "test-spec|test-spec.md|conditional"
+    "spec-for-test|spec-for-test.md|conditional-profile"
+  )
+
+  local present=0 missing=0 missing_required=0
+  echo "change: ${change}"
+  echo "--- deliverables ---"
+  for row in "${rows[@]}"; do
+    local rest="${row#*|}"
+    local file="${rest%%|*}"
+    local status="${rest##*|}"
+    local id="${row%%|*}"
+    if [[ -f "${change}/${file}" ]]; then
+      echo "[OK]   ${id}  ${file}"; present=$((present+1))
+    else
+      echo "[MISS] ${id}  ${file}  (${status})"
+      missing=$((missing+1))
+      [[ "$status" == "required" ]] && missing_required=$((missing_required+1))
+    fi
+  done
+
+  echo "--- dependency gaps ---"
+  local gaps=0
+  if [[ -f "${change}/spec.md" && ! -f "${change}/proposal.md" ]]; then echo "[GAP] spec 存在但缺 proposal"; gaps=$((gaps+1)); fi
+  if [[ -f "${change}/design.md" && ! -f "${change}/spec.md" ]]; then echo "[GAP] design 存在但缺 spec"; gaps=$((gaps+1)); fi
+  if [[ -f "${change}/execution-plan.md" && ! -f "${change}/spec.md" ]]; then echo "[GAP] execution-plan 存在但缺 spec"; gaps=$((gaps+1)); fi
+  if [[ -f "${change}/spec-for-test.md" && ! -f "${change}/design.md" ]]; then echo "[GAP] spec-for-test 存在但缺 design"; gaps=$((gaps+1)); fi
+
+  echo "--- summary ---"
+  echo "present=${present} missing=${missing} (required-missing=${missing_required}) gaps=${gaps}"
+  [[ "$missing_required" -eq 0 ]]
+}
+cmd_validate() {
+  local has_source=0 has_c=0 change="" a skip_next=0
+  for a in "$@"; do
+    if [[ $skip_next -eq 1 ]]; then
+      skip_next=0
+      continue
+    fi
+    case "$a" in
+      --source) has_source=1 ;;
+      --contract) has_c=1; skip_next=1 ;;
+      --level) skip_next=1 ;;
+      --json) ;;
+      -*) ;;
+      *) [[ -z "$change" ]] && change="$a" ;;
+    esac
+  done
+  if ! have_python; then
+    if [[ $has_source -eq 1 ]]; then
+      echo "validate --source 需 python3" >&2; return 2
+    fi
+    warn_no_python
+    _validate_shell_fallback "$change"
+    return
+  fi
+  if [[ $has_source -eq 1 ]]; then
+    run_engine validate "$@"
+    return
+  fi
+  local contract
+  contract="$(resolve_contract)" || { echo "validate: 找不到 artifacts.yaml 契约" >&2; return 2; }
+  local args=("$@")
+  [[ $has_c -eq 0 ]] && args=(--contract "$contract" "$@")
+  run_engine validate "${args[@]}"
+}
+cmd_init() {
+  local id="${1:-}"
+  [[ -n "$id" ]] || { echo "usage: ohos-sdd init <change-id>" >&2; return 2; }
+  local tmpl_dir
+  tmpl_dir="$(resolve_templates)" || { echo "init: 找不到模板目录" >&2; return 2; }
+  local target=".codespec/changes/${id}"
+  mkdir -p "$target/evidence/reviews" || { echo "init: 无法创建 $target" >&2; return 2; }
+  local f
+  for f in proposal.md spec.md manifest.md; do
+    [[ -f "${tmpl_dir}/${f}" ]] && cp "${tmpl_dir}/${f}" "${target}/${f}"
+  done
+  echo "已脚手架:${target}(proposal/spec/manifest + evidence/reviews/)"
+}
+
+cmd_registry() {
+  local reg=".codespec/registry.md"
+  if [[ -f "$reg" ]]; then cat "$reg"; return 0; fi
+  echo "(无 ${reg})"
+  return 1
+}
+
+cmd_archive() {
+  local change="${1:-}"
+  [[ -d "$change" ]] || { echo "archive: change 目录不存在: $change" >&2; return 2; }
+  local id; id="$(basename "$change")"
+  local parent; parent="$(cd "$change/.." && pwd)"            # .codespec/changes
+  local codespec_dir; codespec_dir="$(cd "$parent/.." && pwd)" # .codespec
+  local reg="${codespec_dir}/registry.md"
+  mkdir -p "$codespec_dir"
+  [[ -f "$reg" ]] || printf '# Registry\n\n' > "$reg"
+  if ! grep -q -- "- ${id} " "$reg" 2>/dev/null; then
+    printf -- '- %s archived\n' "$id" >> "$reg"
+  fi
+  echo "已归档:${id} → ${reg}"
+  echo "(长期 specs/ 回灌在 P5/后续 batch 实现)"
+}
+
+cmd_spec_for_test() {
+  have_python || { echo "spec-for-test 需 python3" >&2; return 2; }
+  local profiles_dir
+  profiles_dir="$(resolve_profiles)" || { echo "spec-for-test: 找不到 Profile 目录" >&2; return 2; }
+  run_engine spec-for-test "$@" --profiles "$profiles_dir"
+}
+
+main() {
+  local sub="${1:-}"
+  [[ $# -ge 1 ]] && shift || true
+  case "$sub" in
+    status)    cmd_status "$@" ;;
+    validate)  cmd_validate "$@" ;;
+    archive)   cmd_archive "$@" ;;
+    init)      cmd_init "$@" ;;
+    registry)  cmd_registry "$@" ;;
+    spec-for-test) cmd_spec_for_test "$@" ;;
+    version|--version) echo "ohos-sdd 0.3.1 (machine-layer skeleton)" ;;
+    help|--help|-h)    usage ;;
+    "")                usage; exit 0 ;;
+    *) echo "unknown subcommand: $sub" >&2; usage >&2; exit 2 ;;
+  esac
+}
+
+main "$@"

@@ -1,0 +1,124 @@
+schemaVersion: 1
+kind: Plugin
+id: ohos-sdd
+name: ohos-sdd
+version: 0.3.1
+description: OHOS SDD workflow plugin with commands, skills, agents, and reviewers for .codespec generation.
+license: MIT
+provenance: provenance.yaml
+
+variables:
+  ASSET_ROOT: runtime/assets
+  CMD_PREFIX:
+    claude-code: /ohos-sdd-
+    codex: ohos-sdd-
+    opencode: ohos-sdd-
+
+components:
+  skills:
+    - id: using-ohos-sdd
+      path: skills/using-ohos-sdd/SKILL.md
+      role: router
+    - id: ohos-sdd-base
+      include:
+        - skills/ohos-clarify/SKILL.md
+        - skills/ohos-propose/SKILL.md
+        - skills/ohos-spec/SKILL.md
+        - skills/ohos-design/SKILL.md
+        - skills/ohos-plan/SKILL.md
+        - skills/ohos-review/SKILL.md
+        - skills/ohos-validate/SKILL.md
+        - skills/ohos-security-threat-model/SKILL.md
+        - skills/ohos-spec-for-test/SKILL.md
+      role: sdd-workflow
+
+  prompts:
+    - id: session-router
+      path: prompts/session-router.md
+
+  hooks:
+    - id: session-router
+      path: hooks/session-router.yaml
+
+  assets:
+    - id: templates
+      path: runtime/assets/templates
+      usedBy:
+        - skills
+    - id: profiles
+      path: runtime/assets/profiles
+      usedBy:
+        - skills
+    - id: contracts
+      path: runtime/assets/contracts
+      usedBy:
+        - skills
+        - cli
+    - id: workflow
+      path: runtime/assets/workflow
+      usedBy:
+        - skills
+    - id: analysis
+      path: runtime/assets/analysis
+      usedBy:
+        - skills
+    - id: cli
+      path: runtime/assets/cli
+      usedBy:
+        - executables
+    - id: docs
+      path: runtime/assets/docs
+      usedBy:
+        - skills
+    - id: rules
+      path: runtime/assets/rules
+      usedBy:
+        - skills
+
+  executables:
+    - id: ohos-sdd-cli
+      path: runtime/assets/cli/ohos-sdd
+      runtime: python3
+      entrypoint: ohos-sdd
+      usedBy:
+        - ohos-validate
+        - ohos-spec-for-test
+
+  agents: []
+  tools: []
+  mcpServers: []
+
+commandProjection:
+  source: skill
+  generatedByHostAdapter: true
+  commands:
+    - skill: ohos-clarify
+    - skill: ohos-propose
+    - skill: ohos-spec
+    - skill: ohos-design
+    - skill: ohos-plan
+    - skill: ohos-review
+    - skill: ohos-validate
+    - skill: ohos-security-threat-model
+    - skill: ohos-spec-for-test
+
+compatibility:
+  targets:
+    claude-code:
+      strategy: generate-native-plugin
+      lifecycle: native
+    codex:
+      strategy: generate-native-plugin
+      lifecycle: native
+    opencode:
+      strategy: generate-install-payload
+      lifecycle: managed-by-ohos-agent
+  missingCapabilityPolicy: fail-or-report-declared-fallback
+
+build:
+  generatedArtifactsOnly: true
+  reproducible: true
+  outputs:
+    includeLockfile: true
+    includeFileDigests: true
+    includeCompatibilityReport: true
