@@ -1,0 +1,63 @@
+version: 1
+adapter: matrixspec
+status: experimental
+purpose: "Use MatrixSpec for brownfield baseline recovery and staged delta artifacts while ODK keeps the final archive contract."
+commands:
+  - name: odk-ms-proposal
+    source_capability: "/matspec.proposal"
+    produces:
+      - proposal
+    fallback:
+      - odk-propose
+  - name: odk-ms-delta-spec
+    source_capability: "/matspec.delta-spec"
+    produces:
+      - spec
+    fallback:
+      - odk-spec
+  - name: odk-ms-delta-design
+    source_capability: "/matspec.delta-design"
+    produces:
+      - design
+    fallback:
+      - odk-design
+  - name: odk-ms-tasks
+    source_capability: "/matspec.tasks"
+    produces:
+      - execution-plan
+    fallback:
+      - odk-plan
+  - name: odk-ms-validation
+    source_capability: "/matspec.validation"
+    produces:
+      - evidence/reviews
+    fallback:
+      - odk-review
+mapping:
+  proposal:
+    source: "MatrixSpec proposal template"
+    required_backfill:
+      - target_release
+      - eight_dimension_na_confirmation
+  spec:
+    source: "MatrixSpec delta spec or recovered SPEC.md"
+    required_backfill:
+      - numbered_ac
+      - compatibility_statement
+      - verification_mapping
+  design:
+    source: "MatrixSpec delta design or recovered DESIGN.md"
+    required_backfill:
+      - code_fact_baseline
+      - module_impact
+      - verification_approach
+  execution-plan:
+    source: "MatrixSpec tasks"
+    required_backfill:
+      - ac_task_traceability
+      - file_scope
+      - expected_actual_verification
+quality_boundary:
+  adapter_may_generate: true
+  adapter_may_validate_archive: false
+  final_validator: odk-validate

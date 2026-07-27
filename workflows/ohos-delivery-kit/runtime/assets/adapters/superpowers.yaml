@@ -1,0 +1,63 @@
+version: 1
+adapter: superpowers
+status: supported
+purpose: "Use Superpowers for process discipline while ODK keeps the archive contract."
+commands:
+  - name: odk-sp-brainstorm
+    source_capability: brainstorming
+    produces:
+      - proposal
+      - spec
+      - design
+    fallback:
+      - odk-propose
+      - odk-spec
+      - odk-design
+  - name: odk-sp-plan
+    source_capability: writing-plans
+    produces:
+      - execution-plan
+    fallback:
+      - odk-plan
+  - name: odk-sp-implement
+    source_capability: "test-driven-development + subagent-driven-development"
+    produces:
+      - code
+      - execution-plan.file_scope
+      - execution-plan.actual_results
+    fallback:
+      - odk-implement
+  - name: odk-sp-review
+    source_capability: "requesting-code-review + verification-before-completion"
+    produces:
+      - evidence/reviews
+    fallback:
+      - odk-review
+mapping:
+  proposal:
+    source: "brainstorming problem/goals/non-goals/success criteria"
+    required_backfill:
+      - target_release
+      - eight_dimension_na_confirmation
+  spec:
+    source: "brainstorming scenarios, business rules, edge cases, API notes"
+    required_backfill:
+      - numbered_ac
+      - compatibility_statement
+      - verification_mapping
+  design:
+    source: "brainstorming architecture, decisions, risks, testing strategy"
+    required_backfill:
+      - code_fact_baseline
+      - module_impact
+      - state_ownership_when_applicable
+  execution-plan:
+    source: "writing-plans task breakdown"
+    required_backfill:
+      - ac_task_traceability
+      - file_scope
+      - expected_actual_verification
+quality_boundary:
+  adapter_may_generate: true
+  adapter_may_validate_archive: false
+  final_validator: odk-validate
