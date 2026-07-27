@@ -1,0 +1,52 @@
+schema_version: "0.1.0"
+
+profile:
+  id: "arkruntime"
+  name: "ArkRuntime 运行时"
+  version: "0.1.0"
+  description: "ArkRuntime/ets_runtime/arkcompiler。GC、JIT/AOT、类型系统、内存管理。"
+
+
+activation:
+  module_keywords:
+    - "runtime"
+    - "compiler"
+    - "vm"
+    - "gc"
+    - "jit"
+    - "aot"
+    - "bytecode"
+    - "arkcompiler"
+
+template_overrides:
+  proposal:
+    required_dimensions: [perf, compatibility, api-sdk]
+  design:
+    additional_sections:
+      - "GC 策略设计"
+      - "JIT/AOT 编译策略"
+      - "FFI 接口设计"
+  spec:
+    additional_ac_categories:
+      - "GC 正确性"
+      - "语言标准合规"
+    fragments:
+      - file: "fragments/arkruntime/spec-append.md"
+        strategy: "append"
+  execution-plan:
+    additional_prohibitions:
+      - "GC 停顿不得退化（需基准数据）"
+      - "不得破坏 ETS/ArkTS 标准兼容"
+      - "字节码/AOT 格式变更需版本号"
+
+agent_instructions:
+  define: >
+    ArkRuntime 关注：GC 停顿 < 10ms(P95)、JIT/AOT 编译正确性、内存占用基线、ETS/ArkTS 标准兼容。
+  specify: >
+    GC 在内存压力场景下正确性验证；JIT/AOT 编译确定性；FFI 类型/内存安全；字节码版本兼容声明。
+  design: >
+    设计需明确 GC 状态机、JIT/AOT 编译边界、FFI 内存所有权、字节码/AOT 格式兼容和异常恢复路径。
+  plan: >
+    计划需覆盖 GC 停顿基准、内存压力正确性、JIT/AOT 确定性、FFI 类型/内存安全、ETS/ArkTS 标准兼容和格式版本验证。
+
+priority: 15

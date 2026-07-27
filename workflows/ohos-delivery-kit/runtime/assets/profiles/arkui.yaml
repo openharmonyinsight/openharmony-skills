@@ -1,0 +1,37 @@
+schema_version: "0.1.0"
+
+profile:
+  id: "arkui"
+  name: "ArkUI 应用框架"
+  version: "0.1.0"
+  description: "ArkUI 及其 UI 组件模块。关注公开 API 兼容、渲染性能、多设备适配。"
+
+
+activation:
+  module_keywords:
+    - "arkui"
+    - "component"
+    - "layout"
+    - "animation"
+    - "event"
+    - "gesture"
+
+template_overrides:
+  proposal:
+    required_dimensions: [api-sdk, compatibility, perf, i18n]
+  design:
+    additional_sections:
+      - "组件树/布局算法"
+      - "渲染管线"
+
+agent_instructions:
+  define: >
+    ArkUI 关注：公开 API 向后兼容、60fps 渲染硬约束、Phone/Tablet/Watch/TV 多设备适配、无障碍和国际化。
+  specify: >
+    每个公开 API 需标注 @since 版本；不同设备形态的布局差异需明确行为；不同输入模式（触摸/键盘/遥控器）下的交互需定义。
+  design: >
+    设计需明确组件树、布局算法、渲染管线和事件传递边界；跨设备适配、无障碍、国际化和公开 API 兼容性需进入关键设计决策。
+  plan: >
+    计划需覆盖公开 API 兼容、Phone/Tablet/Watch/TV 适配、输入模式验证、无障碍/国际化检查和渲染性能基准。
+
+priority: 20

@@ -1,0 +1,60 @@
+version: 1
+adapter: openspec
+status: supported
+purpose: "Use OpenSpec for structured change artifacts and delta specs while ODK keeps the final archive contract."
+commands:
+  - name: odk-ops-propose
+    source_capability: "/opsx:propose"
+    produces:
+      - proposal
+      - spec
+      - design
+      - execution-plan
+    fallback:
+      - odk-propose
+      - odk-spec
+      - odk-design
+      - odk-plan
+  - name: odk-ops-apply
+    source_capability: "/opsx:apply"
+    produces:
+      - code
+      - execution-plan.file_scope
+      - execution-plan.actual_results
+    fallback:
+      - odk-implement
+mapping:
+  proposal:
+    source: "openspec/changes/<name>/proposal.md"
+    required_backfill:
+      - target_release
+      - non_goals
+      - eight_dimension_na_confirmation
+      - success_criteria
+  spec:
+    source: "openspec/changes/<name>/specs/**/*.md"
+    accepted_source_format:
+      - ADDED
+      - MODIFIED
+      - REMOVED
+      - RENAMED
+    required_backfill:
+      - odk_ac_numbering
+      - compatibility_statement
+      - verification_mapping
+  design:
+    source: "openspec/changes/<name>/design.md"
+    required_backfill:
+      - code_fact_baseline
+      - module_impact
+      - verification_approach
+  execution-plan:
+    source: "openspec/changes/<name>/tasks.md"
+    required_backfill:
+      - ac_task_traceability
+      - file_scope
+      - expected_actual_verification
+quality_boundary:
+  adapter_may_generate: true
+  adapter_may_validate_archive: false
+  final_validator: odk-validate

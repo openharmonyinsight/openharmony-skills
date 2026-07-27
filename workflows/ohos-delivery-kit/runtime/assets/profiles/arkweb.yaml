@@ -1,0 +1,49 @@
+schema_version: "0.1.0"
+
+profile:
+  id: "arkweb"
+  name: "ArkWeb 引擎"
+  version: "0.1.0"
+  description: "ArkWeb/Chromium 内核。安全沙箱、W3C 标准兼容、CVE 跟踪。"
+
+
+activation:
+  module_keywords:
+    - "web"
+    - "chromium"
+    - "webkit"
+    - "blink"
+    - "v8"
+    - "javascript"
+
+template_overrides:
+  proposal:
+    required_dimensions: [security, compatibility, perf, build]
+  design:
+    additional_sections:
+      - "安全沙箱架构"
+      - "渲染进程隔离"
+      - "CVE 补丁策略"
+  spec:
+    additional_ac_categories:
+      - "Web 标准兼容"
+      - "安全漏洞防护"
+    fragments:
+      - file: "fragments/arkweb/spec-append.md"
+        strategy: "append"
+  execution-plan:
+    additional_prohibitions:
+      - "不得降级 Chromium 安全基线"
+      - "CVE 修补不得引入回归"
+
+agent_instructions:
+  define: >
+    ArkWeb 关注：Chromium 安全补丁 CVE 跟踪、W3C/WHATWG 标准兼容、JS/Wasm 沙箱隔离、CORS/CSP 策略。
+  specify: >
+    新增 Web API 需 W3C 规范引用和 WPT 测试通过；沙箱隔离有效性验证；首屏/JS 性能退化阈值。
+  design: >
+    设计需明确 Chromium 安全基线、进程隔离、沙箱边界、CORS/CSP 策略、CVE 补丁路径和 Web 标准兼容影响。
+  plan: >
+    计划需覆盖 WPT/标准兼容验证、沙箱隔离验证、CVE 回归检查、首屏/JS/Wasm 性能基准和安全基线不降级检查。
+
+priority: 15
