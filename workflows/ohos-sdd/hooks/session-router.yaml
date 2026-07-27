@@ -1,0 +1,22 @@
+schemaVersion: 1
+kind: Hook
+id: session-router
+description: Inject the lightweight ohos-sdd router prompt when a host session starts.
+
+event: session.started
+matcher: startup|clear|compact
+actions:
+  - type: injectPrompt
+    prompt: ../prompts/session-router.md
+    placement: session-context
+
+hostProjection:
+  claude-code:
+    generateShellWrapper: true
+    nativeEvent: SessionStart
+  codex:
+    generateShellWrapper: true
+    nativeEvent: SessionStart
+  opencode:
+    generateJsWrapper: true
+    nativeEvent: experimental.chat.messages.transform

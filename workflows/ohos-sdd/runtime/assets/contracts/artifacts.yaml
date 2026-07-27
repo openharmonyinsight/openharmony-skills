@@ -1,0 +1,297 @@
+# OpenHarmony SDD artifact contract.
+#
+# Purpose:
+# - Describe the current OpenHarmony delivery artifacts in a machine-readable way.
+# - Provide one input for later template drift checks and packaging validation.
+# - Record the current OpenHarmony delivery contract and accepted ODK alignment targets.
+
+schema: ohos-sdd-artifacts/v1
+source_root: openharmony
+
+identifier_grammars:
+  acceptance_criterion: AC-<number>(.<number>)*
+
+truth_sources:
+  templates: openharmony/templates
+  workflow: openharmony/workflow
+  profiles: openharmony/profiles
+  active_docs: openharmony/docs
+
+archive:
+  target_root: .codespec/changes
+  id_patterns:
+    - issue-<number>-<slug>
+    - draft-<yyyymmdd>-<slug>
+  registry: .codespec/registry.md
+  release_version_in_directory_name: false
+
+phase_order:
+  - id: define
+    name: Define
+    zh_name: 定义
+  - id: specify
+    name: Specify
+    zh_name: 规格说明
+  - id: design
+    name: Design
+    zh_name: 设计
+  - id: plan
+    name: Plan
+    zh_name: 计划
+
+artifacts:
+  - id: manifest
+    layer: core
+    file: manifest.md
+    template: templates/manifest.md
+    phase: all
+    status: recommended
+    role: work item metadata and cross-artifact index
+    default_location: .codespec/changes/<id>/manifest.md
+
+  - id: proposal
+    layer: core
+    file: proposal.md
+    template: templates/proposal.md
+    phase: define
+    status: required
+    role: raw requirement, clarification record, and requirement baseline
+    default_location: .codespec/changes/<id>/proposal.md
+    status_values:
+      - Draft
+      - Clarifying
+      - Baselined
+      - Deferred
+      - Rejected
+
+  - id: design
+    layer: core
+    file: design.md
+    template: templates/design.md
+    phase: design
+    depends_on:
+      - proposal
+      - spec
+    status: conditional
+    required_when:
+      - standard_or_higher_complexity
+      - multi_module_or_cross_repository_change
+      - new_api_or_layering_decision
+    role: architecture constraints, design decisions, and implementation direction
+    default_location: .codespec/changes/<id>/design.md
+    status_values:
+      - Draft
+      - Reviewing
+      - Approved
+      - Superseded
+
+  - id: spec
+    layer: core
+    file: spec.md
+    template: templates/spec.md
+    phase: specify
+    depends_on:
+      - proposal
+    status: required
+    role: user-visible behavior, acceptance criteria, API contract, compatibility, and test traceability
+    default_location: .codespec/changes/<id>/spec.md
+    status_values:
+      - Draft
+      - Review
+      - Approved
+      - Baselined
+
+  - id: execution_plan
+    layer: core
+    file: execution-plan.md
+    template: templates/execution-plan.md
+    phase: plan
+    depends_on:
+      - proposal
+      - spec
+    conditional_depends_on:
+      - artifact: design
+        when: design_exists
+    status: conditional
+    required_when:
+      - standard_or_higher_complexity
+      - multiple_independent_tasks
+      - cross_module_or_cross_repository_change
+    role: implementation plan, file scope, task decomposition, and handoff information
+    default_location: .codespec/changes/<id>/execution-plan.md
+    status_values:
+      - Draft
+      - ReadyForReview
+      - Approved
+      - Superseded
+
+  - id: task
+    layer: core
+    file: task.md
+    template: templates/task.md
+    phase: plan
+    status: conditional
+    required_when:
+      - simple_complexity
+      - implementation_needs_task_level_handoff
+      - multiple_independent_tasks
+      - agent_delegation
+    role: minimum executable implementation unit
+    default_location: .codespec/changes/<id>/tasks/<task-id>.md
+
+  - id: bugfix
+    layer: oh-extension
+    file: bugfix.md
+    template: templates/bugfix.md
+    phase: plan
+    spans:
+      - define
+      - plan
+    status: conditional
+    required_when:
+      - bugfix_flow
+    role: defect reproduction, root cause, fix plan, and regression scope
+    default_location: .codespec/changes/<id>/bugfix.md
+
+  - id: regression_test
+    layer: oh-extension
+    file: regression-test.md
+    template: templates/regression-test.md
+    phase: plan
+    spans:
+      - plan
+    status: conditional
+    required_when:
+      - bugfix_flow
+      - explicit_regression_scope_needed
+    role: regression verification plan and result record
+    default_location: .codespec/changes/<id>/regression-test.md
+
+  - id: test_spec
+    layer: oh-extension
+    file: test-spec.md
+    template: templates/test-spec.md
+    phase: plan
+    depends_on:
+      - proposal
+      - spec
+    conditional_depends_on:
+      - artifact: design
+        when: design_exists
+      - artifact: spec_for_test
+        when: profile_spec_for_test_used
+    status: conditional
+    required_when:
+      - integration_or_system_test_design_needed
+      - cross_module_or_cross_device_verification_needed
+      - compatibility_or_nonfunctional_test_strategy_needs_explicit_design
+    role: concrete integration, system, compatibility, and non-unit test design; consumes spec-for-test when Profile Spec for Test is used
+    default_location: .codespec/changes/<id>/test-spec.md
+
+  - id: spec_for_test
+    layer: oh-extension
+    file: spec-for-test.md
+    template: templates/spec-for-test.md
+    template_resolution: profile_extendable
+    phase: plan
+    depends_on:
+      - spec
+      - design
+    status: conditional
+    bypass: true
+    required_when:
+      - profile_supports_spec_for_test
+      - developer_triggers_spec_for_test
+    required_sections:
+      - AC 到验证点追溯
+      - 来源与审批
+    role: profile-extendable tester-facing projection of approved external behavior and verification points
+    default_location: .codespec/changes/<id>/spec-for-test.md
+    runtime_outputs:
+      - .codespec/changes/<id>/evidence/checks/check-spec-for-test.md
+    status_values:
+      - Draft
+      - ReadyForReview
+      - Approved
+      - ChangesRequested
+      - Superseded
+
+  - id: review
+    layer: oh-extension
+    file: review.md
+    template: templates/review.md
+    phase: plan
+    spans:
+      - plan
+    status: reference
+    role: design/spec approval, implementation review, code quality review, and final verification review
+    default_location: .codespec/changes/<id>/review.md
+    runtime_outputs:
+      - .codespec/changes/<id>/evidence/reviews/spec-compliance.md
+      - .codespec/changes/<id>/evidence/reviews/code-review.md
+      - .codespec/changes/<id>/evidence/reviews/verification.md
+
+  - id: gate_checklist
+    layer: oh-extension
+    file: gate-checklist.md
+    template: templates/gate-checklist.md
+    phase: all
+    status: reference
+    role: reusable gate criteria template; runtime check evidence should live under evidence/checks
+    runtime_outputs:
+      - .codespec/changes/<id>/evidence/checks/check-proposal.md
+      - .codespec/changes/<id>/evidence/checks/check-spec.md
+      - .codespec/changes/<id>/evidence/checks/check-design.md
+      - .codespec/changes/<id>/evidence/checks/check-execution-plan.md
+
+  - id: epic
+    layer: oh-extension
+    file: epic.md
+    template: templates/epic.md
+    phase: specify
+    spans:
+      - define
+      - specify
+    status: conditional
+    required_when:
+      - complex_or_critical_change
+      - cross_sig_or_cross_repository_feature
+    role: cross-SIG or cross-repository feature planning
+    default_location: .codespec/changes/<id>/epic.md
+
+  - id: scenario_library
+    layer: oh-extension
+    file: scenario-library.md
+    template: templates/scenario-library.md
+    phase: specify
+    status: reference
+    role: reusable Gherkin scenario library for complex feature specs
+
+  - id: claude_agent_instructions
+    layer: oh-extension
+    file: CLAUDE.md
+    template: templates/CLAUDE.md
+    phase: all
+    status: reference
+    role: project-level AI agent instruction template
+
+  - id: threat_model
+    layer: oh-extension
+    file: threat-model.md
+    template: templates/threat-model.md
+    phase: design
+    depends_on:
+      - proposal
+      - spec
+      - design
+    status: conditional
+    required_when:
+      - security_privacy_dimension_yes_and_high_risk
+    role: STRIDE 威胁建模 + 法规合规,高风险安全/隐私/合规变更的深度分析
+    default_location: .codespec/changes/<id>/threat-model.md
+
+current_drifts:
+  - id: phase_order_vs_odk
+    severity: migrating
+    description: spec-for-ai accepted ODK phase alignment in docs/designs/odk-alignment-decisions.md and is migrating from the legacy Define -> Specify -> Implement -> Release wording to Define -> Specify -> Design -> Plan. Secondary historical or reference docs may still contain legacy Stage terminology until follow-up cleanup completes.
+    follow_up_batch: P3 ODK contract alignment
