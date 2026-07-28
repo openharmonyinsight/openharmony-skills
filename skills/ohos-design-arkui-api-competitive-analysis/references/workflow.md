@@ -24,6 +24,7 @@
 | Target | ArkUI API、组件或能力主题 |
 | Purpose | 接口设计、能力补齐、迁移评估或文档完善 |
 | Scope tier | 组件级、窗口级、应用级或系统级 |
+| Subtype | 使用 `analysis-dimensions.md` 的具体子类型，不使用宽泛的“事件” |
 | Platforms | 默认 Android+iOS，可按用户要求裁剪 |
 | Baseline | ArkUI API/分支、Android API Level+Compose、iOS/iPadOS |
 | Query date | `YYYY-MM-DD` |
@@ -44,9 +45,9 @@
 
 再读取 `analysis-dimensions.md`，完成强制基线检查，并按类别默认重点与能力特定覆盖规则选择分析深度。将每个维度转成可回答的问题，而不是直接写结论。
 
-从入口符号递归跟踪公共签名引用的 options、event、item、controller、state 和 result 类型，直到适用的原子字段、默认值、单位、范围、归属层级和 availability 可回答；不适用的规格写 `not-applicable` 及原因，不得为补齐表格引入其它领域字段。不要只检查入口 API 名称。命中 `analysis-dimensions.md` 的子类型时，逐项展开该行的闭环规格；每项都要有状态，不能用“等”或少量示例字段代替完整检查。
+从入口符号递归跟踪公共签名引用的 options、event、item、controller、state 和 result 类型，直到适用的原子字段、默认值、单位、范围、归属层级和 availability 可回答；不适用的规格将 Coverage status 写为 `not-applicable` 并记录原因，不得为补齐表格引入其它领域字段。不要只检查入口 API 名称。命中 `analysis-dimensions.md` 的子类型时，逐项展开该行的闭环规格；每项都要有 Coverage status，不能用“等”或少量示例字段代替完整检查。
 
-**产物**：Capability Checklist，格式为 `C-01 能力问题 | 适用维度 | 必须检查的规格`。
+**产物**：Capability Checklist，格式为 `C-01 能力问题 | 子类型 | 适用维度 | 必须检查的规格`。后续 Comparator、Fact、Claim、Source 和条件区块使用 Capability ID 作为统一 `Applies to` 过滤键。
 
 ## 3. 对标对象映射
 
@@ -62,11 +63,13 @@
 
 记录选择理由和排除的相似 API。Compose/SwiftUI 优先，但不要为了声明式对称而忽略 View/UIKit 中更准确的原生能力。
 
+最终 Comparator Map 逐行使用 `evidence-ledger.md` 的 exact canonical schema。Android 和 iOS 必须分别填写 target、mapping type、rationale/exclusions；Supporting facts 和 Sources 必须同时包含决定 Android 与 iOS 映射的对应平台 Fact/Source，不能只引用 ArkUI 锚点证据；Claim ID 与 Claim status 必填。事实和断言尚未形成时只能保留内部候选表，不得把缺字段的候选表作为报告 Comparator Map 输出。
+
 用户要求“只告诉名称”时仍执行本阶段。先明确拒绝按名称相似度直接映射。输出可以压缩，但 Android 和 iOS 必须分别给出目标、mapping type、作用域/行为依据和至少一个排除项；不得返回无分类的 API 名称列表。
 
 键盘快捷键先按 `platform-source-routing.md` 完成 Path Check，再确认 mapping type；候选入口、排除项和路径解释要求不在流程层重复定义。其它交互在独立取证阶段核实自身分发、命中、仲裁或 responder 事实。输出顺序使用 `report-template.md`，不得先给 Comparator Map 再补决定映射所需的路径依据。
 
-**Gate B**：候选对标对象必须与 Analysis Brief 的作用域层级一致；最终 Comparator Map 在 Path Check 或独立取证后确认。
+**Gate B**：候选对标对象必须与 Analysis Brief 的作用域层级一致；最终 Comparator Map 在 Path Check 或独立取证后确认，并逐行通过 target/type/rationale、三平台 Fact/Source、Claim ID/status 完整性检查。
 
 ## 4. 各平台独立取证
 
@@ -74,16 +77,16 @@
 
 取证顺序：官方 API Reference → 官方 Guide → 官方 Sample → 平台源码。Android 优先使用 Android Developers，iOS 优先使用 Apple Developer。API Reference 用于确认公共符号、签名、参数和 availability；Guide 用于确认行为、生命周期、分发和限制；Sample 用于确认官方推荐的组合路径。官方文档足以支撑结论时不得用源码或第三方资料替代。
 
-AOSP、AndroidX 和 Swift SDK 源码统一记为 `Source`/E4，只能佐证实现；博客和聚合文档统一记为 `Discovery`/E5，只能帮助定位官方入口。Fact Ledger 的 `Evidence type` 必填。仅由 E4/E5 支撑的公共契约事实不能标为高置信度 `confirmed`。
+AOSP、AndroidX 和 Swift SDK 源码统一记为 `Source`/E4，只能佐证实现；博客和聚合文档统一记为 `Discovery`/E5，只能帮助定位官方入口。Fact Ledger 的 `Evidence type` 和 `Applies to` 必填。Fact status 与 Claim confidence/status 的合法组合只按 `evidence-ledger.md` 的 E4/E5 表执行，不使用“高置信度 Fact”这类混合表述。
 
 用户要求跳过官方文档时，回复仍须明确列出以下四点，不能只笼统说“优先官方”：
 
 1. 首句点名拒绝跳过 **Android Developers** 和 **Apple Developer**；API Reference 确认公共能力、签名、参数和 availability。
 2. Guide 确认行为、生命周期、分发和限制，Sample 确认官方推荐组合路径。
 3. AOSP、AndroidX、Swift SDK 仅作 E4 实现佐证；博客和聚合文档仅作 E5 官方入口发现材料。
-4. Fact Ledger 必填 Evidence type；仅由 E4/E5 支撑的公共契约主张不得标为高置信度 confirmed。
+4. Fact Ledger 必填 Evidence type 和 Applies to；仅由 E4/E5 支撑时按 `evidence-ledger.md` 分别设置 Fact status 与 Claim confidence/status。
 
-记录：精确符号、事实原文或忠实转述、版本、来源位置、证据类型、查询日期和状态。
+记录：精确符号、事实原文或忠实转述、版本、来源位置、证据类型、查询日期、Applies to 和状态。
 
 签名中的命名常量、枚举值、协议属性或链接子类型不是取证终点。继续打开官方 API 子页面，递归确认具体值、默认值、单位、可选项和语义；若 API Reference 只暴露常量名称，可用与锁定版本一致的官方发布源码或官方 source artifact 佐证常量值，并同时保留 API Reference 作为公共契约证据。官方子页面或精确版本官方源码已经可用时，不得因概览页未展开而标 `pending`。
 
@@ -114,7 +117,7 @@ Conflict ID | 涉及事实 | Source A | Source B | 可能原因 | 处理状态
 
 Normalized Spec 必须包含 Capability ID、三平台 Fact ID、状态、作用域和归一化口径；原始单位仅在能力具有单位时记录。不能只保留自然语言矩阵。
 
-完成归一化前执行覆盖核对：Capability Checklist 的每项必查规格都必须关联已定义的 Fact ID，或明确写 `pending/not-applicable` 及原因。任何出现在正文中的 Capability、Fact、Claim、Source ID 都必须在同一交付内容中定义，禁止只引用未展示的台账编号。
+完成归一化前执行覆盖核对：Capability Checklist 中 Coverage status 为 `confirmed/pending` 的规格必须关联已定义的 Fact ID；`not-applicable` 必须写明理由且 Fact ID 可为空。任何出现在正文中的 Capability、Fact、Claim、Source ID 都必须在同一交付内容中定义，禁止只引用未展示的台账编号。
 
 形成最终结论前扫描“最细、最完整、最强、领先、优于、最佳”等比较级或最高级。只有对应 Claim type 为 advantage、完成双向官方检索且状态为 accepted 时才保留；否则删除或改写为可验证的规格差异。
 
@@ -158,7 +161,7 @@ Recommendation ID | 问题 | 证据 | 影响 | 推荐动作 | P0/P1/P2 | 置信�
 
 使用 `../assets/report-template.md` 生成报告。事实、推论、待核事项分区呈现。
 
-完整报告展示 Capability Checklist、Fact Ledger、Normalized Spec 和适用时的 Conflict Log。快速扫描使用 `report-template.md` 的单表格式：默认重点维度可以合并为少量核心事实，只保留决定映射、风险和结论所需的 Capability/Fact/Claim/Source 定义；不得把压缩展示变成省略证据或待核状态。
+完整报告展示 Capability Checklist、Fact Ledger、Normalized Spec 和适用时的 Conflict Log。快速扫描先用 Analysis Brief 的具体 Subtype 选择 Capability ID，再只保留 `Applies to` 与这些 Capability ID 相交的条件区块、Comparator、Fact、Claim 和 Source。默认重点维度可以合并为少量核心事实，但不得改变 `evidence-ledger.md` 的 canonical schema、合并 Android/iOS mapping type，或省略证据和待核状态。
 
 遇到“证明某平台性能更好”等预设结论时，先拒绝该前提并拆成可测指标。除待核的同条件 benchmark 外，还要独立报告官方资料能够确认的加载方式、复用/缓存、稳定标识、更新通知/局部更新和状态驱动模型差异及其可能影响；这些运行时模型事实不得改写为性能排名。
 
@@ -178,7 +181,8 @@ Recommendation ID | 问题 | 证据 | 影响 | 推荐动作 | P0/P1/P2 | 置信�
 - [ ] 没有跨领域维度污染。
 - [ ] Analysis Brief 位于任何结论、推荐或平台比较之前。
 - [ ] Capability Checklist、Fact Ledger、Normalized Spec 和 Claim Ledger 已展示，或在快速扫描中以保留 ID 的压缩形式展示。
-- [ ] 子类型闭环清单中的每个适用规格均为 confirmed、pending 或 not-applicable，不存在“等”所代表的未审计字段。
+- [ ] 快速扫描仅包含 `Applies to` 命中当前 Capability ID 的条件区块、Fact、Claim 和 Source。
+- [ ] 子类型闭环清单中的每项均有 Coverage status；confirmed/pending 关联 Fact ID，not-applicable 记录理由且不制造占位 Fact。
 - [ ] 正文中出现的每个 Capability/Fact/Claim/Source ID 都已在同一交付内容中定义。
 
 ## 10. 异常处理

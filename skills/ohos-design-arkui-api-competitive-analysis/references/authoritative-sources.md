@@ -33,7 +33,7 @@
 
 ## 4. 来源引用格式（每项实质性断言必须可追溯）
 
-规格速览 / 能力矩阵 / 关键差异 / 迁移结论中，**每项实质性断言**关联 `Source ID`（`S1`、`S2`…），并在附录来源表中记录。Fact 与 Claim 的推荐显示语法为 `[A-01][S1]`、`[CL-01][S1][S2]`：
+规格速览 / 能力矩阵 / 关键差异 / 迁移结论中，**每项实质性断言**关联 `Source ID`（`S1`、`S2`…），并在附录来源表中记录。Fact 与 Claim 的推荐显示语法为 `[A-01][S1]`、`[CL-01][S1][S2]`。来源表字段只以 `evidence-ledger.md` 的 canonical Source Record 为准；本文件补充以下取值要求：
 
 | 列 | 说明 |
 |---|---|
@@ -41,10 +41,12 @@
 | 平台 | ArkUI / Android / iOS |
 | API 或符号 | 如 `List.cachedCount`、`LazyColumn`、`UITableViewDataSource` |
 | 证据类型 | 使用 `evidence-ledger.md` 的 `API Reference`、`Guide`、`Sample`、`Source` 或 `Discovery` |
+| 证据等级 | 按证据类型填写 E1、E2、E3、E4 或 E5 |
 | 来源 | 官方文档 URL 或仓库文件路径（含 `file:line`） |
 | 目标版本 / availability | `@since` / API Level / iOS availability |
 | 查询日期 | YYYY-MM-DD |
 | 章节 | 文档章节或锚点 |
+| Applies to | 该来源实际支撑的一个或多个 Capability ID |
 
 规则：
 - 分析推论只进入 Claim Ledger，并关联支撑它的 Fact/Source；不得把 `inference` 写入来源表的 Evidence type。

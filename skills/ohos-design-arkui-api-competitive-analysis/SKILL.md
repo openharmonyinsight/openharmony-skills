@@ -3,7 +3,7 @@ name: ohos-design-arkui-api-competitive-analysis
 description: >
   对 ArkUI 公共 UI API 与 Android（Compose/View）和 iOS（SwiftUI/UIKit）进行可审计的能力与规格竞品分析。
   适用于接口设计评审、能力补齐、Android/iOS 与 ArkUI 迁移评估、API 对标和 capability gap analysis，
-  覆盖事件、键盘、手势、组件、布局、状态和动画。要求锁定作用域与版本，以 interface_sdk-js 为 ArkUI
+  覆盖触摸/指针输入、键盘快捷键、手势、组件、布局、状态和动画。要求锁定作用域与版本，以 interface_sdk-js 为 ArkUI
   公共接口权威源，优先引用 Android/iOS 官方文档，区分等价关系，并输出带逐项证据、影响和优先级建议的报告。
 metadata:
   author: openharmony
@@ -11,7 +11,7 @@ metadata:
   stage: design
   domain: arkui
   capability: api-competitive-analysis
-  version: 1.5.9
+  version: 1.6.0
   status: trial
 ---
 
@@ -41,7 +41,7 @@ metadata:
 8. 领域事实必须按锁定版本从官方源动态取证；不要依赖内置字段速查表，也不要把某一领域的字段、状态或检查项套用到其它领域。
 9. Analysis Brief 必须是首个用户可见阶段产物；在它之前不要输出结论摘要、平台优劣或 API 推荐。
 10. 用户要求“只给名称”“一页结论”或其它压缩输出时，使用 `report-template.md` 的快速扫描单表；至少保留作用域、Comparator Map、一条已定义 Fact/Claim、来源和待核状态，名称相似不能替代映射判断。
-11. 命中事件、连续手势、虚拟化集合、Flex 类布局或显式动画子类型时，必须完成 `analysis-dimensions.md` 的对应闭环清单；每项标记 confirmed、pending 或 not-applicable。
+11. 命中 `analysis-dimensions.md` 定义的具体子类型时，例如原始触摸/指针、键盘快捷键、连续手势、虚拟化集合、Flex 类布局或显式动画，必须完成对应闭环清单；每项填写 Coverage status（confirmed、pending 或 not-applicable），不得用宽泛的“事件”触发其它输入子类型规则。
 12. 输出中引用的每个 Capability、Fact、Claim 和 Source ID 都必须在同一交付内容中定义；不得引用只存在于内部过程的编号。
 13. 用户要求跳过官方文档时，明确说明不能跳过 Android Developers 和 Apple Developer，并按 `platform-source-routing.md` 解释官方文档、平台源码和社区资料的证据角色。
 14. 子类型的必查字段、状态和闭环范围只以 `analysis-dimensions.md` 为准；本文件不复制其清单。
@@ -49,13 +49,14 @@ metadata:
 16. 条件矩阵、Path Check 顺序和快速/完整报告结构只以 `report-template.md` 为准；命中条件区块时不得删除。
 17. 官方来源冲突且输入不完整时，必须请求精确符号、公共定义路径、文档链接、双方版本基线和文档时间信息；不得用预设基线代替缺失输入。
 18. 公共签名引用命名常量、枚举或子属性页时，继续追踪官方定义，直到具体值、默认值、单位和语义闭环；可用的官方精确来源不得无故保留为 `pending`。
+19. 完整报告和快速扫描的每条 Comparator Map 都必须使用 `evidence-ledger.md` 的 canonical schema：Android/iOS 分别填写 target、mapping type 和 rationale/exclusions，并关联支撑各平台映射的 Fact ID、Source ID、Claim ID 与 Claim status；不得用 ArkUI 单方证据支撑竞品映射，也不得省略或合并平台 mapping type。
 
 ## 渐进式加载
 
 | 阶段或条件 | 读取内容 | 此前不要加载 |
 |---|---|---|
 | 开始分析 | 完整读取 `references/workflow.md` | 无 |
-| 拆解能力和选择维度 | 完整读取 `references/analysis-dimensions.md` | Analysis Brief 未确定前不要加载 |
+| 起草 Analysis Brief、选择具体子类型和拆解能力 | 完整读取 `references/analysis-dimensions.md` | Target 与 Scope tier 尚未识别时不要加载 |
 | 建立事实和断言台账 | 完整读取 `references/evidence-ledger.md` | 尚未形成 Capability Checklist 时不要加载 |
 | 提取 ArkUI 公共定义 | 完整读取 `references/authoritative-sources.md` | 尚未进入 ArkUI 取证阶段时不要加载 |
 | 映射 Android/iOS 对标对象 | 完整读取 `references/platform-source-routing.md` | ArkUI 原子能力尚未拆解时不要加载 |

@@ -7,12 +7,17 @@
 以下 token 是整个 Skill 的唯一 schema；其它文件只能引用，不得定义同义枚举：
 
 - `Evidence type`: `API Reference`、`Guide`、`Sample`、`Source`、`Discovery`。
+- `Coverage status`: `confirmed`、`pending`、`not-applicable`。
 - `Fact status`: `confirmed`、`conflict`、`pending`。
 - `Claim type`: `fact-comparison`、`inference`、`negative`、`advantage`。
 - `Claim status`: `accepted`、`pending`、`rejected`。
 - `Confidence`: `high`、`medium`、`low`。
 - `Mapping type`: `direct`、`functional`、`composite`、`fallback`、`no-equivalent-found`。
 - `Parity class`: `fully-equivalent`、`partially-equivalent`、`semantic-difference`、`composite`、`fallback`、`no-equivalent-found`。
+
+`Applies to` 统一填写一个或多个 Capability ID。Comparator Map、Fact、Claim、Source 和报告条件区块都使用该字段过滤，不定义另一套领域枚举。
+
+Coverage status 描述“该 Capability 规格在当前平台是否适用并已闭环”；Fact status 描述“已经记录的原子事实是否确认、冲突或待核”，二者不得共用一个状态字段。Coverage status 为 `confirmed` 或 `pending` 时必须关联 Fact ID；为 `not-applicable` 时填写理由，Fact ID 可为空，不得制造占位 Fact。
 
 分析推论只进入 Claim Ledger，不能作为 Source 或 Fact 的 Evidence type。
 
@@ -29,20 +34,21 @@
 | Version | `@since`、API Level、框架版本或 availability |
 | Source ID | 对应来源表编号 |
 | Evidence type | 必填；使用 Canonical enums 中的 `Evidence type` |
+| Applies to | 一个或多个 Capability ID |
 | Status | confirmed、conflict、pending |
 
 示例：
 
 ```text
-A-01 | ArkUI | List.cachedCount | cachedCount 配置列表项预加载数量 | API 7+ | S1 | API Reference | confirmed
+A-01 | ArkUI | List.cachedCount | cachedCount 配置列表项预加载数量 | API 7+ | S1 | API Reference | C-01 | confirmed
 ```
 
 ## Comparator Map
 
-| Capability ID | ArkUI anchor | Android target | iOS target | Mapping type | Rationale |
-|---|---|---|---|---|---|
+| Capability ID | ArkUI anchor | Android target | Android mapping type | Android rationale/exclusions | iOS target | iOS mapping type | iOS rationale/exclusions | Supporting facts | Sources | Claim ID | Claim status |
+|---|---|---|---|---|---|---|---|---|---|---|---|
 
-`Mapping type` 只能使用 Canonical enums 中的对应 token。
+Android 和 iOS 的 `Mapping type` 分别填写，只能使用 Canonical enums 中的对应 token。`Supporting facts`、`Sources`、`Claim ID` 和 `Claim status` 必须引用已定义的 Fact、Source 和 Claim；Comparator Map 不建立独立的结论状态。
 
 报告中的中文显示与内部 token 使用以下唯一映射：
 
@@ -54,7 +60,7 @@ A-01 | ArkUI | List.cachedCount | cachedCount 配置列表项预加载数量 | A
 | `fallback` | 替代方案 |
 | `no-equivalent-found` | 未找到等价能力 |
 
-Comparator mapping 描述“用哪个 API 路径实现能力”；能力矩阵的 parity class 描述“比较结果”，两者不得混用。
+Comparator mapping 描述“每个平台用哪个 API 路径实现能力”；能力矩阵的 parity class 描述“比较结果”，两者不得混用。快速扫描只能压缩该 schema 的展示，不能合并 Android/iOS mapping type 或丢失事实、来源和 Claim 状态。
 
 对容易混淆的相似 API，在 `Rationale` 中记录排除理由。例如组件对标时，说明为什么排除层级、生命周期或用户能力不一致的同名控件。
 
@@ -67,11 +73,21 @@ Comparator mapping 描述“用哪个 API 路径实现能力”；能力矩阵�
 | Claim type | fact-comparison、inference、negative、advantage |
 | Supporting facts | 一个或多个 Fact ID |
 | Sources | 一个或多个 Source ID |
+| Applies to | 一个或多个 Capability ID，必须与 Supporting facts 一致 |
 | Bidirectional search | required/done/not-applicable |
 | Confidence | high、medium、low |
 | Status | accepted、pending、rejected |
 
 只有 `accepted` 断言可以进入“关键差异”和“结论”。`pending` 只能进入“待核事项”。
+
+## Source Record
+
+来源表使用以下 canonical schema：
+
+| Source ID | Platform | API/Symbol | Evidence type | Evidence level | URL/path | Version/availability | Query date | Section | Applies to |
+|---|---|---|---|---|---|---|---|---|---|
+
+`Applies to` 必须指向该来源实际支撑的 Capability ID。快速扫描只保留与当前 Analysis Brief 所选 Capability ID 相交的 Source、Fact、Claim 和条件区块。
 
 ## 证据强度
 
@@ -84,6 +100,17 @@ Comparator mapping 描述“用哪个 API 路径实现能力”；能力矩阵�
 | E5 | 博客、聚合文档等社区资料 | 仅帮助定位官方入口，不支持确定性结论 |
 
 高置信度断言通常需要 E1，行为类结论可由 E1+E2 支撑。性能优越性不能只凭 API 形态推断；没有官方数据或实测时改写为“API 模型差异”或标 `待核`。
+
+### E4/E5 合法落表规则
+
+Fact status 与 Claim confidence/status 分开处理；Fact Ledger 没有 confidence 字段：
+
+| 证据 | Fact 合法状态 | Claim 合法 confidence/status |
+|---|---|---|
+| E4 平台源码 | 精确版本和位置可核验的实现事实可为 `confirmed`；公共契约、签名或 availability 仅有 E4 时必须为 `pending` | 仅限明确标为实现层推论时可为 `low/medium + accepted`；公共契约、跨平台等价、negative 或 advantage Claim 必须为 `pending` |
+| E5 社区发现材料 | 不得单独生成实质性 `confirmed` Fact；只记录发现路径，相关事实保持 `pending` | 只能为 `low + pending/rejected`，不得 `accepted` |
+
+E3 Sample 只确认样例实际展示的推荐组合或用法，不能单独确认未展示的默认值、完整能力范围或 availability。每个 E3 Source 同样必须填写 `Applies to`，不得因快速扫描而加载与当前 Capability ID 无关的 Sample。
 
 ## 双向检索协议
 

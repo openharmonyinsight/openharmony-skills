@@ -78,9 +78,18 @@ Fact Ledger 必须填写 Evidence type。只有源码或第三方材料时，不
 
 官方网页无法通过交互浏览器读取时，在任务缓存目录使用可审计的 HTTP 回退，不要直接转向博客：
 
+```bash
+mkdir -p "${TASK_CACHE}"
+curl -L --retry 2 -A "Mozilla/5.0" "<ANDROID_DEVELOPERS_URL>?hl=en" -o "${TASK_CACHE}/android-page.html"
+curl -L --retry 2 -A "Mozilla/5.0" "https://developer.apple.com/tutorials/data/documentation/<DOCC_PATH>.json" -o "${TASK_CACHE}/apple-doc.json"
+```
+
 ```powershell
-curl.exe -L --retry 2 -A "Mozilla/5.0" "<ANDROID_DEVELOPERS_URL>?hl=en" -o <TASK_CACHE>/android-page.html
-curl.exe -L --retry 2 -A "Mozilla/5.0" "https://developer.apple.com/tutorials/data/documentation/<DOCC_PATH>.json" -o <TASK_CACHE>/apple-doc.json
+$taskCache = '<TASK_CACHE>'
+New-Item -ItemType Directory -Force -Path $taskCache | Out-Null
+$headers = @{ 'User-Agent' = 'Mozilla/5.0' }
+Invoke-WebRequest -UseBasicParsing -Headers $headers -Uri '<ANDROID_DEVELOPERS_URL>?hl=en' -OutFile (Join-Path $taskCache 'android-page.html')
+Invoke-WebRequest -UseBasicParsing -Headers $headers -Uri 'https://developer.apple.com/tutorials/data/documentation/<DOCC_PATH>.json' -OutFile (Join-Path $taskCache 'apple-doc.json')
 ```
 
 - Android 优先请求具体 API Reference 或 Guide 页面，不从站点首页判断可访问性。

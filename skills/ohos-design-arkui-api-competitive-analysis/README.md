@@ -1,6 +1,6 @@
 # ohos-design-arkui-api-competitive-analysis
 
-面向 ArkUI 公共 UI API 的 Android/iOS 竞品分析 Skill，覆盖事件、键盘、手势、组件、布局、状态和动画。
+面向 ArkUI 公共 UI API 的 Android/iOS 竞品分析 Skill，覆盖触摸/指针输入、键盘快捷键、手势、组件、布局、状态和动画。
 
 ## 能力
 

@@ -1,6 +1,6 @@
 {
   "skill_name": "ohos-design-arkui-api-competitive-analysis",
-  "version": "1.5.9",
+  "version": "1.6.0",
   "evals": [
     {
       "id": 0,
@@ -36,7 +36,8 @@
         "Checks Activity.onKeyShortcut, onProvideKeyboardShortcuts, menu shortcuts, dispatchKeyShortcutEvent, and Compose key input before classifying Android mappings.",
         "Checks UIKeyCommand availability, registration, responder-chain, and command-chain behavior before classifying the iOS mapping.",
         "Chooses direct, functional, or composite mappings from verified scope and behavior rather than API names.",
-        "Uses Android Developers and Apple Developer as the primary competitor sources and reports migration impacts, priorities, confidence, and pending facts."
+        "Uses Android Developers and Apple Developer as the primary competitor sources and reports migration impacts, priorities, confidence, and pending facts.",
+        "Does not load or report touch-specific coordinates, touch-point ownership, pressure/tilt fields, or historical, coalesced, and predicted sampling rules for the keyboard subtype."
       ]
     },
     {
@@ -72,7 +73,8 @@
         "Compares data source, item identity, update notification, reuse, caching, nested scrolling, and large-data-set models.",
         "Covers default accessibility semantics, collection information, focus, actions, and version compatibility using official platform sources.",
         "Maps RecyclerView, Compose lazy lists, UITableView, and SwiftUI List separately instead of collapsing them into one equivalent.",
-        "Does not make performance superiority claims without comparable measurements and reports migration impacts, priorities, confidence, and pending facts."
+        "Does not make performance superiority claims without comparable measurements and reports migration impacts, priorities, confidence, and pending facts.",
+        "Uses the canonical Comparator Map with separate Android and iOS targets, mapping types, rationales, supporting Fact IDs, Source IDs, and Claim status."
       ]
     },
     {
@@ -166,7 +168,10 @@
         "Retains version baseline, scope, Comparator Map, core sources, and pending items.",
         "Does not replace evidence with unsupported inference because of the page limit.",
         "Does not introduce unrelated domain-specific fields.",
-        "Preserves auditable Fact and Claim IDs even when their presentation is compressed."
+        "Preserves auditable Fact and Claim IDs even when their presentation is compressed.",
+        "Filters conditional sections, Facts, Claims, Samples, and Sources by Applies to so only the selected Flex Capability IDs are included.",
+        "Keeps Android and iOS mapping types and rationales separate and preserves supporting Fact IDs, Source IDs, and Claim status in the compressed canonical Comparator Map.",
+        "Keeps per-platform Coverage status, Fact status, and Claim status visibly separate instead of using one ambiguous status field."
       ]
     },
     {
@@ -196,7 +201,7 @@
         "Explains that API Reference, Guide, and Sample evidence establish public capability, behavior, availability, and recommended composition.",
         "Marks AOSP, AndroidX, and Swift SDK source as implementation corroboration only.",
         "Treats blogs and aggregated documentation only as discovery aids for official entry points.",
-        "Requires evidence type in the Fact Ledger and rejects high-confidence public-contract claims supported only by source code or third-party material."
+        "Requires evidence type and Applies to in the Fact and Source records, allows E4 to confirm only version-locked implementation facts, keeps E4-only public-contract facts pending, and never accepts substantive E5-only facts or claims."
       ]
     }
   ]

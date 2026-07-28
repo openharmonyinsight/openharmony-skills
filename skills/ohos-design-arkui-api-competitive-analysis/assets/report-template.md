@@ -4,17 +4,19 @@
 
 仅在用户要求一页或极短输出时使用。先输出以下压缩 Analysis Brief，保证它是首个用户可见产物：
 
-| 目标/目的 | 作用域/API 类别 | 版本基线 | 模式/排除项 |
+| 目标/目的 | 作用域/API 类别/具体子类型 | 版本基线 | 模式/排除项 |
 |---|---|---|---|
-| {{TARGET_AND_PURPOSE}} | {{SCOPE_AND_CATEGORY}} | {{PLATFORM_BASELINES}} | quick-scan；{{EXCLUSIONS}} |
+| {{TARGET_AND_PURPOSE}} | {{SCOPE_CATEGORY_AND_SUBTYPE}} | {{PLATFORM_BASELINES}} | quick-scan；{{EXCLUSIONS}} |
 
-若命中第 3 节条件产物，在 Analysis Brief 之后输出对应条件表，再输出以下最小审计表。完整报告删除“快速扫描模式”并使用后续章节。
+先选择当前 Capability ID。若命中第 3 节条件产物，只输出 `Applies to` 与这些 Capability ID 相交的条件表，再输出以下最小审计表。完整报告删除“快速扫描模式”并使用后续章节。
 
-| Comparator Map | 核心 Fact | Claim/结论 | 风险与待核 | Sources |
-|---|---|---|---|---|
-| `C-01`：ArkUI → Android/iOS；mapping type 与排除理由 | `A-01`/`D-01`/`I-01`：决定映射和风险的原子事实 | `CL-01`：fact-comparison 或 inference；置信度 | 已确认影响；`P-01` 待核项或“无” | `S1`/`S2`/`S3`：官方入口、版本、查询日期 |
+| Capability/ArkUI anchor | Coverage status | Android target/type/rationale | iOS target/type/rationale | Supporting Facts/Sources | Claim | 风险与待核 |
+|---|---|---|---|---|---|---|
+| `C-01`；{{ARKUI_ANCHOR}} | ArkUI={{ARKUI_COVERAGE}}；Android={{ANDROID_COVERAGE}}；iOS={{IOS_COVERAGE}}；{{NOT_APPLICABLE_REASONS}} | {{ANDROID_TARGET}}；{{ANDROID_MAPPING_TYPE}}；{{ANDROID_RATIONALE_AND_EXCLUSIONS}} | {{IOS_TARGET}}；{{IOS_MAPPING_TYPE}}；{{IOS_RATIONALE_AND_EXCLUSIONS}} | `A-01`({{A_FACT_STATUS}})/`D-01`({{D_FACT_STATUS}})/`I-01`({{I_FACT_STATUS}})：{{ATOMIC_FACTS}}；`S1`/`S2`/`S3`：{{SOURCE_SUMMARY_WITH_VERSION_DATE_AND_APPLIES_TO}} | `CL-01`；{{CLAIM_TYPE}}；{{CONFIDENCE}}；{{CLAIM_STATUS}} | {{CONFIRMED_RISK}}；`P-01` 或“无” |
 
-表中出现的 ID 必须在单元格内完成定义，不能引用未展示的内部台账。默认重点维度可合并到核心 Fact，不要求复制完整报告的全部章节。
+表中出现的 ID 必须在单元格内完成定义，不能引用未展示的内部台账。默认重点维度可合并到 Supporting Facts/Sources 单元格，不要求复制完整报告的全部章节。
+
+每行强制检查：Coverage status 按平台展示且不代替 Fact status；Android 和 iOS 单元格都包含独立 mapping type 与理由；Supporting Facts/Sources 同时包含 ArkUI、Android、iOS 的 Fact/Source 和各 Fact status，不得用 ArkUI 单方证据代替竞品证据；Claim 单元格包含 Claim ID、type、confidence 和 Claim status。任一项缺失时该行仍为 `pending`，不能压缩掉字段。
 
 ## 1. 分析契约
 
@@ -24,6 +26,7 @@
 | 分析目的 | {{PURPOSE}} |
 | 作用域层级 | {{SCOPE_TIER}} |
 | API 类别 | {{CATEGORY}} |
+| 具体子类型 | {{SUBTYPE}} |
 | 报告模式 | {{MODE}} |
 | 排除项 | {{EXCLUSIONS}} |
 
@@ -37,9 +40,9 @@
 
 ## 2. 能力检查清单
 
-| 能力 ID | 原子能力问题 | 适用维度 | 必查规格 | 状态与 Fact |
-|---|---|---|---|---|
-| C-01 | {{CAPABILITY_QUESTION}} | {{DIMENSIONS}} | {{REQUIRED_SPEC}} | confirmed/pending/not-applicable；{{FACT_IDS}} |
+| 能力 ID | 原子能力问题 | 具体子类型 | 适用维度 | 必查规格 | Coverage status | Fact IDs | Not-applicable reason |
+|---|---|---|---|---|---|---|---|
+| C-01 | {{CAPABILITY_QUESTION}} | {{SUBTYPE}} | {{DIMENSIONS}} | {{REQUIRED_SPEC}} | {{COVERAGE_STATUS}} | {{FACT_IDS}} | {{NOT_APPLICABLE_REASON_OR_EMPTY}} |
 
 ## 3. 条件必需产物
 
@@ -47,20 +50,26 @@
 
 ### 3.1 键盘快捷键 Path Check
 
+`Applies to`：具体子类型为键盘快捷键的 Capability ID。
+
 键盘快捷键必须先完成本表，再输出 Comparator Map。触摸、手势等其它交互不要套用本表，改在 Fact Ledger 中记录其分发、命中、仲裁或 responder 事实。
 
-| 平台 | 路径/API | 如何到达或发布 | 入口角色 | 有效作用域 | 状态 | Fact/Source |
-|---|---|---|---|---|---|---|
-| Android | {{ANDROID_PATH}} | {{ANDROID_DISPATCH_OR_PUBLICATION}} | {{ANDROID_ROLE}} | {{ANDROID_SCOPE}} | confirmed/pending/not-applicable | {{FACT_AND_SOURCE_IDS}} |
-| iOS | {{IOS_PATH}} | {{IOS_RESPONDER_OR_COMMAND_CHAIN}} | {{IOS_ROLE}} | {{IOS_SCOPE}} | confirmed/pending/not-applicable | {{FACT_AND_SOURCE_IDS}} |
+| 平台 | 路径/API | 如何到达或发布 | 入口角色 | 有效作用域 | Coverage status | Fact IDs | Source IDs | Not-applicable reason |
+|---|---|---|---|---|---|---|---|---|
+| Android | {{ANDROID_PATH}} | {{ANDROID_DISPATCH_OR_PUBLICATION}} | {{ANDROID_ROLE}} | {{ANDROID_SCOPE}} | {{ANDROID_COVERAGE_STATUS}} | {{ANDROID_FACT_IDS}} | {{ANDROID_SOURCE_IDS}} | {{ANDROID_NOT_APPLICABLE_REASON_OR_EMPTY}} |
+| iOS | {{IOS_PATH}} | {{IOS_RESPONDER_OR_COMMAND_CHAIN}} | {{IOS_ROLE}} | {{IOS_SCOPE}} | {{IOS_COVERAGE_STATUS}} | {{IOS_FACT_IDS}} | {{IOS_SOURCE_IDS}} | {{IOS_NOT_APPLICABLE_REASON_OR_EMPTY}} |
 
 ### 3.2 子类型闭环
 
-| 子类型规格 | ArkUI | Android | iOS | 状态与 Fact |
-|---|---|---|---|---|
-| {{SUBTYPE_SPEC}} | {{ARKUI_STATUS}} | {{ANDROID_STATUS}} | {{IOS_STATUS}} | confirmed/pending/not-applicable；{{FACT_IDS}} |
+`Applies to`：当前 Analysis Brief 选中的 Capability ID；只展开其具体子类型规则。
+
+| 子类型规格 | ArkUI Coverage | ArkUI Fact/reason | Android Coverage | Android Fact/reason | iOS Coverage | iOS Fact/reason |
+|---|---|---|---|---|---|---|
+| {{SUBTYPE_SPEC}} | {{ARKUI_COVERAGE}} | {{ARKUI_FACT_IDS_OR_REASON}} | {{ANDROID_COVERAGE}} | {{ANDROID_FACT_IDS_OR_REASON}} | {{IOS_COVERAGE}} | {{IOS_FACT_IDS_OR_REASON}} |
 
 ### 3.3 List 条件矩阵
+
+`Applies to`：具体子类型为长列表或虚拟化集合的 Capability ID。
 
 仅长列表/虚拟化集合保留。能力矩阵至少覆盖分组、多列、sticky、lazy、刷新、数据源、稳定身份、更新通知、复用、缓存、nested scrolling、大数据、选择/重排。
 
@@ -74,6 +83,8 @@
 
 ### 3.4 动画条件矩阵
 
+`Applies to`：具体子类型为显式动画与复杂编排的 Capability ID。
+
 仅显式动画保留。不同 comparator API 不得合并单元格。
 
 | Comparator API | duration/delay/defaults | curves/steps/spring/keyframe | completion/control/velocity | orchestration | availability/fallback | Fact/Source |
@@ -82,17 +93,19 @@
 
 ## 4. 对标对象映射
 
-| 能力 ID | ArkUI 锚点 | Android 目标与类型 | Android 选择/排除理由 | iOS 目标与类型 | iOS 选择/排除理由 |
-|---|---|---|---|---|---|
-| C-01 | {{ARKUI_ANCHOR}} | {{ANDROID_TARGET}}；{{ANDROID_MAPPING_TYPE}} | {{ANDROID_RATIONALE_AND_EXCLUSIONS}} | {{IOS_TARGET}}；{{IOS_MAPPING_TYPE}} | {{IOS_RATIONALE_AND_EXCLUSIONS}} |
+| Capability ID | ArkUI anchor | Android target | Android mapping type | Android rationale/exclusions | iOS target | iOS mapping type | iOS rationale/exclusions | Supporting facts | Sources | Claim ID | Claim status |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| C-01 | {{ARKUI_ANCHOR}} | {{ANDROID_TARGET}} | {{ANDROID_MAPPING_TYPE}} | {{ANDROID_RATIONALE_AND_EXCLUSIONS}} | {{IOS_TARGET}} | {{IOS_MAPPING_TYPE}} | {{IOS_RATIONALE_AND_EXCLUSIONS}} | {{FACT_IDS}} | {{SOURCE_IDS}} | {{CLAIM_ID}} | {{CLAIM_STATUS}} |
 
 映射类型内部 token 与显示标签固定为：`direct`（直接等价）、`functional`（功能等价）、`composite`（组合实现）、`fallback`（替代方案）、`no-equivalent-found`（未找到等价能力）。
 
+每行必须引用决定该行映射的 ArkUI、Android、iOS Fact ID 和 Source ID。只有 ArkUI Fact/Source、缺少任一平台 mapping type/rationale、或没有 Claim ID/status 的行不是有效 Comparator Map。
+
 ## 5. Fact Ledger 与各平台规格事实
 
-| Fact ID | 平台 | API/符号 | 原子事实 | 版本 | Source ID | 证据类型 | 状态 |
-|---|---|---|---|---|---|---|---|
-| A-01 | ArkUI | {{ARKUI_SYMBOL}} | {{ATOMIC_FACT}} | {{VERSION}} | S1 | API Reference | confirmed/pending/conflict |
+| Fact ID | 平台 | API/符号 | 原子事实 | 版本 | Source ID | 证据类型 | Applies to | 状态 |
+|---|---|---|---|---|---|---|---|---|
+| A-01 | ArkUI | {{ARKUI_SYMBOL}} | {{ATOMIC_FACT}} | {{VERSION}} | S1 | API Reference | C-01 | confirmed/pending/conflict |
 
 ### 5.1 ArkUI
 
@@ -157,9 +170,9 @@
 
 动画或存在版本替代路径的任务必须保留；其它任务可按需要保留。
 
-| 能力/API | 引入版本 | 废弃/替代 | 低版本 fallback | 状态与来源 |
-|---|---|---|---|---|
-| {{VERSIONED_CAPABILITY}} | {{INTRODUCED}} | {{DEPRECATED_OR_REPLACEMENT}} | {{LOWER_VERSION_FALLBACK_OR_NONE}} | {{STATUS_AND_SOURCE_IDS}} |
+| 能力/API | 引入版本 | 废弃/替代 | 低版本 fallback | Coverage status | Fact/Source | Not-applicable reason |
+|---|---|---|---|---|---|---|
+| {{VERSIONED_CAPABILITY}} | {{INTRODUCED}} | {{DEPRECATED_OR_REPLACEMENT}} | {{LOWER_VERSION_FALLBACK_OR_NONE}} | {{COVERAGE_STATUS}} | {{FACT_AND_SOURCE_IDS}} | {{NOT_APPLICABLE_REASON_OR_EMPTY}} |
 
 ## 12. Conflict Log
 
@@ -181,12 +194,12 @@
 
 `Evidence type` 只使用 `evidence-ledger.md` 的 Canonical enums；分析推论不得作为来源类型。
 
-| Source ID | 平台 | API/符号 | 证据类型 | 来源 | 版本/availability | 查询日期 | 章节 |
-|---|---|---|---|---|---|---|---|
-| S1 | {{PLATFORM}} | {{SYMBOL}} | {{EVIDENCE_TYPE}} | {{URL_OR_PATH}} | {{VERSION}} | {{QUERY_DATE}} | {{SECTION}} |
+| Source ID | 平台 | API/符号 | 证据类型 | 证据等级 | 来源 | 版本/availability | 查询日期 | 章节 | Applies to |
+|---|---|---|---|---|---|---|---|---|---|
+| S1 | {{PLATFORM}} | {{SYMBOL}} | {{EVIDENCE_TYPE}} | {{EVIDENCE_LEVEL}} | {{URL_OR_PATH}} | {{VERSION}} | {{QUERY_DATE}} | {{SECTION}} | {{CAPABILITY_IDS}} |
 
 ## 15. 断言审计摘要
 
-| Claim ID | 断言类型 | 支撑事实 | 来源 | 双向检索 | 置信度 | 状态 |
-|---|---|---|---|---|---|---|
-| CL-01 | {{CLAIM_TYPE}} | {{FACT_IDS}} | {{SOURCE_IDS}} | {{SEARCH_STATUS}} | {{CONFIDENCE}} | accepted/pending/rejected |
+| Claim ID | 断言类型 | 支撑事实 | 来源 | Applies to | 双向检索 | 置信度 | 状态 |
+|---|---|---|---|---|---|---|---|
+| CL-01 | {{CLAIM_TYPE}} | {{FACT_IDS}} | {{SOURCE_IDS}} | {{CAPABILITY_IDS}} | {{SEARCH_STATUS}} | {{CONFIDENCE}} | accepted/pending/rejected |
