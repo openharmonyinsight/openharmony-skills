@@ -1,0 +1,358 @@
+{
+  "skill_name": "ohos-test-arkts-xts-generation",
+  "_assertion_format": {
+    "types": {
+      "file_exists": "target 支持通配符（如 *.test.ets），匹配到至少 1 个文件即通过",
+      "file_contains": "target 支持通配符；match_mode=any 表示任一匹配文件包含 pattern 即通过，match_mode=all 表示所有匹配文件都必须包含",
+      "file_not_contains": "target 支持通配符；match_mode=all 表示所有匹配文件都不含 pattern 才通过",
+      "script_exit_code": "执行 command，期望退出码等于 expected；支持 shell glob（如 for f in *.test.ets）",
+      "dir_contains": "dir 目录下存在匹配 glob pattern 的文件，min_count 为最小数量"
+    },
+    "placeholders": {
+      "{skill_root}": "skill 根目录绝对路径",
+      "{output_dir}": "测试产物输出目录"
+    }
+  },
+  "_naming_conventions": {
+    "test_file": "{测试文件名}.test.ets（如 UiTest.test.ets、Driver.test.ets，命名由 API/模块决定，可能拆分为多个文件）",
+    "design_doc": "{测试文件名}.test.design.md（与测试文件同名，扩展名为 .test.design.md）",
+    "source": "references/conventions/test_conventions.md §4.1, modules/L2_Generation/generator/design_doc_generator.md:48-51"
+  },
+  "evals": [
+    {
+      "id": 1,
+      "name": "generate-flowb-uitest-core",
+      "prompt": "帮我为 testfwk 子系统的 @ohos.UiTest 模块生成 XTS 测试用例。d.ts 文件在 interface/sdk-js/api/@ohos.UiTest.d.ts，重点关注 Driver 类的 findComponent、findComponents、assertComponentExist、delayMs 方法，以及 On 类的 text、id、type 方法。目标测试套路径 test/xts/acts/testfwk/uitest",
+      "description": "Flow B 标准扫描模式：测试技能从 .d.ts 解析到测试代码生成的完整流程，聚焦 Driver 和 On 核心类",
+      "files": [],
+      "assertions": [
+        {
+          "id": "1.1",
+          "type": "dir_contains",
+          "dir": "{output_dir}",
+          "pattern": "*.test.ets",
+          "min_count": 1,
+          "description": "至少生成 1 个测试文件（文件名由 API/模块命名决定，不硬编码）"
+        },
+        {
+          "id": "1.2",
+          "type": "dir_contains",
+          "dir": "{output_dir}",
+          "pattern": "*.test.design.md",
+          "min_count": 1,
+          "description": "至少生成 1 个设计文档（Phase 4 强制，扩展名为 .test.design.md）"
+        },
+        {
+          "id": "1.3",
+          "type": "script_exit_code",
+          "command": "for f in {output_dir}/*.test.ets; do python3 {skill_root}/scripts/validate_test.py --test-file \"$f\" --design-doc \"${f%.test.ets}.test.design.md\" || exit 1; done",
+          "expected": 0,
+          "description": "所有测试文件 Phase 7 validate_test.py 检查通过（自动匹配同名 design.md）"
+        },
+        {
+          "id": "1.4",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "from \"@ohos/hypium\"",
+          "match_mode": "any",
+          "description": "Dyn 项目至少有一个文件使用 @ohos/hypium 导入"
+        },
+        {
+          "id": "1.5",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "@tc.number",
+          "match_mode": "all",
+          "description": "每个测试文件都包含 @tc 注解"
+        },
+        {
+          "id": "1.6",
+          "type": "file_not_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "as any",
+          "match_mode": "all",
+          "description": "所有测试文件无 as any 类型断言"
+        },
+        {
+          "id": "1.7",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "findComponent",
+          "match_mode": "any",
+          "description": "覆盖了 findComponent 方法（prompt 点名）"
+        },
+        {
+          "id": "1.8",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "assertComponentExist",
+          "match_mode": "any",
+          "description": "覆盖了 assertComponentExist 方法（prompt 点名）"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "generate-flowa-uitest-coverage",
+      "prompt": "覆盖率扫描报告显示 UiTest 模块以下API未被覆盖：MatchPattern 枚举（REG_EXP、REG_EXP_ICASE）、Driver.screenCap、UiWindow.resize、UiWindow.split、DisplayRotation 枚举。请为这些未覆盖 API 补充测试用例",
+      "description": "Flow A 覆盖率报告驱动：测试技能基于覆盖率缺口精准补充测试的能力",
+      "files": [],
+      "assertions": [
+        {
+          "id": "2.1",
+          "type": "dir_contains",
+          "dir": "{output_dir}",
+          "pattern": "*.test.ets",
+          "min_count": 1,
+          "description": "至少生成 1 个覆盖率补充测试文件"
+        },
+        {
+          "id": "2.2",
+          "type": "script_exit_code",
+          "command": "for f in {output_dir}/*.test.ets; do python3 {skill_root}/scripts/validate_test.py --test-file \"$f\" || exit 1; done",
+          "expected": 0,
+          "description": "所有测试文件 Phase 7 validate_test.py 检查通过"
+        },
+        {
+          "id": "2.3",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "REG_EXP",
+          "match_mode": "any",
+          "description": "覆盖了 MatchPattern.REG_EXP（prompt 点名）"
+        },
+        {
+          "id": "2.4",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "screenCap",
+          "match_mode": "any",
+          "description": "覆盖了 Driver.screenCap（prompt 点名）"
+        },
+        {
+          "id": "2.5",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "resize",
+          "match_mode": "any",
+          "description": "覆盖了 UiWindow.resize（prompt 点名）"
+        },
+        {
+          "id": "2.6",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "@tc.number",
+          "match_mode": "all",
+          "description": "每个测试文件都包含 @tc 注解"
+        },
+        {
+          "id": "2.7",
+          "type": "file_not_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "as any",
+          "match_mode": "all",
+          "description": "所有测试文件无 as any"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "generate-flowc-uitest-newapi",
+      "prompt": "API 22 新增了 WindowChangeType 枚举（WINDOW_UNDEFINED/WINDOW_ADDED/WINDOW_REMOVED/WINDOW_BOUNDS_CHANGED）、ComponentEventType 枚举（COMPONENT_UNDEFINED/CLICKED/LONG_CLICKED/SCROLL_START/SCROLL_END/TEXT_CHANGED）、以及 UIEventObserver 的 windowChange 和 componentEventOccur 监听方法。这是新增 API，请为它们生成 XTS 测试",
+      "description": "Flow C 新增接口模式：测试技能对新发布 API 的测试生成能力",
+      "files": [],
+      "assertions": [
+        {
+          "id": "3.1",
+          "type": "dir_contains",
+          "dir": "{output_dir}",
+          "pattern": "*.test.ets",
+          "min_count": 1,
+          "description": "至少生成 1 个新增 API 测试文件"
+        },
+        {
+          "id": "3.2",
+          "type": "script_exit_code",
+          "command": "for f in {output_dir}/*.test.ets; do python3 {skill_root}/scripts/validate_test.py --test-file \"$f\" || exit 1; done",
+          "expected": 0,
+          "description": "所有测试文件 Phase 7 validate_test.py 检查通过"
+        },
+        {
+          "id": "3.3",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "windowChange",
+          "match_mode": "any",
+          "description": "覆盖了 windowChange 监听方法（prompt 点名）"
+        },
+        {
+          "id": "3.4",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "componentEventOccur",
+          "match_mode": "any",
+          "description": "覆盖了 componentEventOccur 监听方法（prompt 点名）"
+        },
+        {
+          "id": "3.5",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "WINDOW_ADDED",
+          "match_mode": "any",
+          "description": "覆盖了 WindowChangeType.WINDOW_ADDED（prompt 点名）"
+        },
+        {
+          "id": "3.6",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "CLICKED",
+          "match_mode": "any",
+          "description": "覆盖了 ComponentEventType.CLICKED（prompt 点名）"
+        },
+        {
+          "id": "3.7",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "@tc.number",
+          "match_mode": "all",
+          "description": "每个测试文件都包含 @tc 注解"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "generate-uitest-static",
+      "prompt": "请为 testfwk 子系统的 @ohos.UiTest 模块生成 XTS 测试用例，使用 ArkTS-Sta 静态语法模式（arkTSVersion 1.2）。d.ts 文件在 interface/sdk-js/api/@ohos.UiTest.d.ts，重点关注 Driver 类的 create、delayMs、findComponent、assertComponentExist 方法，以及 On 类的 text、id 方法。目标测试套路径 test/xts/acts/testfwk/uitestStatic",
+      "description": "ArkTS-Sta 静态语法模式：测试技能在 ets1.2 静态约束下的测试生成能力",
+      "files": [],
+      "assertions": [
+        {
+          "id": "4.1",
+          "type": "dir_contains",
+          "dir": "{output_dir}",
+          "pattern": "*.test.ets",
+          "min_count": 1,
+          "description": "至少生成 1 个静态测试文件"
+        },
+        {
+          "id": "4.2",
+          "type": "script_exit_code",
+          "command": "for f in {output_dir}/*.test.ets; do python3 {skill_root}/scripts/validate_test.py --test-file \"$f\" || exit 1; done",
+          "expected": 0,
+          "description": "所有测试文件 Phase 7 验证通过（validate_test.py 自动从 build-profile.json5 推断 Sta 模式并校验 hypium 相对路径导入）"
+        },
+        {
+          "id": "4.3",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "hypium/index",
+          "match_mode": "all",
+          "description": "Sta 项目所有文件使用相对路径导入 hypium"
+        },
+        {
+          "id": "4.4",
+          "type": "file_not_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "@ohos/hypium",
+          "match_mode": "all",
+          "description": "Sta 项目所有文件不使用 @ohos/hypium 导入（与 4.3 互斥校验）"
+        },
+        {
+          "id": "4.5",
+          "type": "file_not_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "as any",
+          "match_mode": "all",
+          "description": "Sta 项目无 as any（编译错误 ESE0143）"
+        },
+        {
+          "id": "4.6",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": ": void",
+          "match_mode": "all",
+          "description": "Sta 项目所有文件函数返回类型显式标注"
+        },
+        {
+          "id": "4.7",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "@tc.number",
+          "match_mode": "all",
+          "description": "每个测试文件都包含 @tc 注解"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "generate-uitest-multiversion",
+      "prompt": "请为 testfwk 子系统的 @ohos.UiTest 模块同时生成 ets1.1（动态ArkTS-Dyn）和 ets1.2（静态ArkTS-Sta）两个版本的 XTS 测试用例。d.ts 文件在 interface/sdk-js/api/@ohos.UiTest.d.ts，重点关注 Driver 类的 create、findComponent、assertComponentExist、delayMs 方法，以及 On 类的 text、id 方法。动态版目标路径 test/xts/acts/testfwk/uitest，静态版目标路径 test/xts/acts/testfwk/uitestStatic",
+      "description": "多版本串行生成模式：测试技能在 ets1.1+ets1.2 双版本下的串行生成、prebuilts切换和编译能力",
+      "files": [],
+      "assertions": [
+        {
+          "id": "5.1",
+          "type": "dir_contains",
+          "dir": "{output_dir}/uitest",
+          "pattern": "*.test.ets",
+          "min_count": 1,
+          "description": "动态版至少生成 1 个测试文件"
+        },
+        {
+          "id": "5.2",
+          "type": "dir_contains",
+          "dir": "{output_dir}/uitestStatic",
+          "pattern": "*.test.ets",
+          "min_count": 1,
+          "description": "静态版至少生成 1 个测试文件"
+        },
+        {
+          "id": "5.3",
+          "type": "file_contains",
+          "target": "{output_dir}/uitest/*.test.ets",
+          "pattern": "@ohos/hypium",
+          "match_mode": "all",
+          "description": "动态版所有文件使用 @ohos/hypium 导入"
+        },
+        {
+          "id": "5.4",
+          "type": "file_contains",
+          "target": "{output_dir}/uitestStatic/*.test.ets",
+          "pattern": "hypium/index",
+          "match_mode": "all",
+          "description": "静态版所有文件使用相对路径导入 hypium"
+        },
+        {
+          "id": "5.5",
+          "type": "file_not_contains",
+          "target": "{output_dir}/uitestStatic/*.test.ets",
+          "pattern": "as any",
+          "match_mode": "all",
+          "description": "静态版无 as any"
+        },
+        {
+          "id": "5.6",
+          "type": "script_exit_code",
+          "command": "for f in {output_dir}/uitest/*.test.ets; do python3 {skill_root}/scripts/validate_test.py --test-file \"$f\" || exit 1; done",
+          "expected": 0,
+          "description": "动态版所有测试文件 Phase 7 验证通过"
+        },
+        {
+          "id": "5.7",
+          "type": "script_exit_code",
+          "command": "for f in {output_dir}/uitestStatic/*.test.ets; do python3 {skill_root}/scripts/validate_test.py --test-file \"$f\" || exit 1; done",
+          "expected": 0,
+          "description": "静态版所有测试文件 Phase 7 验证通过（含 Sta hypium 导入校验）"
+        },
+        {
+          "id": "5.8",
+          "type": "file_not_contains",
+          "target": "{output_dir}/uitest/*.test.ets",
+          "pattern": "hypium/index",
+          "match_mode": "all",
+          "description": "动态版所有文件不使用相对路径导入（与 5.3 互斥，确保 Dyn/Sta 隔离）"
+        }
+      ]
+    }
+  ]
+}

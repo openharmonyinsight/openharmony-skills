@@ -1,0 +1,318 @@
+{
+  "skill_name": "ohos-design-test-demo-pipeline",
+  "_assertion_format": {
+    "types": {
+      "file_exists": "target 支持通配符（如 *.ets），匹配到至少 1 个文件即通过",
+      "file_contains": "target 支持通配符；match_mode=any 表示任一匹配文件包含 pattern 即通过，match_mode=all 表示所有匹配文件都必须包含",
+      "file_not_contains": "target 支持通配符；match_mode=all 表示所有匹配文件都不含 pattern 才通过",
+      "script_exit_code": "执行 command，期望退出码等于 expected；支持 shell glob（如 for f in *.ets）",
+      "dir_contains": "dir 目录下存在匹配 glob pattern 的文件，min_count 为最小数量"
+    },
+    "placeholders": {
+      "{skill_root}": "skill 根目录绝对路径",
+      "{output_dir}": "测试产物输出目录",
+      "{fixtures_dir}": "夹具文件目录绝对路径（evals/fixtures/）"
+    }
+  },
+  "_naming_conventions": {
+    "demo_design": "demo_design.md（Phase1 输出，Demo UI 设计文档）",
+    "testdemo": "TestDemo/（Phase2 输出，完整 ArkUI 工程目录）",
+    "demo_code_manifest": "demo_code_manifest.md（Phase2 输出，代码清单）",
+    "page_file": "PageXXX.ets（页面文件，PascalCase.ets 命名）",
+    "source": "phases/phase1_ui_design.md 输出格式, phases/phase2_code_generation.md 约束1-10"
+  },
+  "evals": [
+    {
+      "id": 1,
+      "name": "phase1-ui-design",
+      "prompt": "请基于测试点设计文件 demo_test_points_preference.md 生成 Demo UI 设计文档 demo_design.md 到当前输出目录。测试点文件在当前输出目录下。要求：1) 为测试点设计 ArkUI 页面，每个页面含控件清单和操作模式；2) 页面ID格式 PAGE-xxx；3) 操作模式ID格式 PM-XXX；4) 控件ID遵循 {type}_{page_seq}_{semantic_name} 命名规范（如 btn_001_execute）；5) 每个测试点至少关联一个UI控件（100%覆盖）；6) 输出含导航结构和汇总表。",
+      "description": "Phase1 Demo UI 设计：测试从测试点生成页面规划、控件设计、操作模式映射、控件ID命名规范、导航结构的能力",
+      "files": [
+        "fixtures/demo_test_points_preference.md"
+      ],
+      "assertions": [
+        {
+          "id": "1.1",
+          "type": "file_exists",
+          "target": "{output_dir}/demo_design.md",
+          "description": "生成了 Demo UI 设计文档"
+        },
+        {
+          "id": "1.2",
+          "type": "file_contains",
+          "target": "{output_dir}/demo_design.md",
+          "pattern": "PAGE-",
+          "match_mode": "any",
+          "description": "输出含页面ID（PAGE-xxx 格式）"
+        },
+        {
+          "id": "1.3",
+          "type": "file_contains",
+          "target": "{output_dir}/demo_design.md",
+          "pattern": "PM-",
+          "match_mode": "any",
+          "description": "输出含操作模式ID（PM-XXX 格式）"
+        },
+        {
+          "id": "1.4",
+          "type": "file_contains",
+          "target": "{output_dir}/demo_design.md",
+          "pattern": "控件清单",
+          "match_mode": "any",
+          "description": "输出含控件清单表"
+        },
+        {
+          "id": "1.5",
+          "type": "file_contains",
+          "target": "{output_dir}/demo_design.md",
+          "pattern": "操作模式",
+          "match_mode": "any",
+          "description": "输出含操作模式定义"
+        },
+        {
+          "id": "1.6",
+          "type": "file_contains",
+          "target": "{output_dir}/demo_design.md",
+          "pattern": "btn_001",
+          "match_mode": "any",
+          "description": "控件ID遵循 {type}_{page_seq}_{semantic_name} 命名规范（btn_001_ 前缀）"
+        },
+        {
+          "id": "1.7",
+          "type": "file_contains",
+          "target": "{output_dir}/demo_design.md",
+          "pattern": "input_001",
+          "match_mode": "any",
+          "description": "输入控件ID遵循命名规范（input_001_ 前缀）"
+        },
+        {
+          "id": "1.8",
+          "type": "file_contains",
+          "target": "{output_dir}/demo_design.md",
+          "pattern": "测试点覆盖",
+          "match_mode": "any",
+          "description": "输出含测试点覆盖率统计"
+        },
+        {
+          "id": "1.9",
+          "type": "file_contains",
+          "target": "{output_dir}/demo_design.md",
+          "pattern": "导航",
+          "match_mode": "any",
+          "description": "输出含导航结构（页面路由表）"
+        },
+        {
+          "id": "1.10",
+          "type": "file_contains",
+          "target": "{output_dir}/demo_design.md",
+          "pattern": "TP-PREF-001",
+          "match_mode": "any",
+          "description": "测试点ID TP-PREF-001 出现在映射表中（覆盖）"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "phase2-code-generation",
+      "prompt": "请基于 Demo 设计文档 demo_design.md 生成可编译的 HarmonyOS NEXT ArkUI 工程代码。设计文档在当前输出目录下。要求：1) 生成 TestDemo/ 工程目录到当前输出目录；2) 每个页面文件使用 @Entry 和 @Component 装饰器，包含 build() 方法；3) 所有可交互控件必须有 .id() 修饰符；4) 字符串使用 $r('app.string.xxx') 资源引用，不硬编码；5) 生成 demo_code_manifest.md 代码清单文件；6) 遵循 ArkTS 命名规范（类名 UpperCamelCase，常量 UPPER_SNAKE_CASE）。",
+      "description": "Phase2 代码生成：测试从设计文档生成 ArkUI 工程、ArkTS 装饰器、id() 修饰符、$r() 资源引用、命名规范的能力",
+      "files": [
+        "fixtures/demo_design_preference.md"
+      ],
+      "assertions": [
+        {
+          "id": "2.1",
+          "type": "dir_contains",
+          "dir": "{output_dir}/TestDemo",
+          "pattern": "*.ets",
+          "min_count": 1,
+          "description": "TestDemo 目录下至少生成 1 个 .ets 源文件"
+        },
+        {
+          "id": "2.2",
+          "type": "file_exists",
+          "target": "{output_dir}/demo_code_manifest.md",
+          "description": "生成了代码清单文件"
+        },
+        {
+          "id": "2.3",
+          "type": "file_contains",
+          "target": "{output_dir}/TestDemo/**/*.ets",
+          "pattern": "@Entry",
+          "match_mode": "any",
+          "description": "至少有一个页面文件包含 @Entry 装饰器"
+        },
+        {
+          "id": "2.4",
+          "type": "file_contains",
+          "target": "{output_dir}/TestDemo/**/*.ets",
+          "pattern": "@Component",
+          "match_mode": "any",
+          "description": "至少有一个文件包含 @Component 装饰器"
+        },
+        {
+          "id": "2.5",
+          "type": "file_contains",
+          "target": "{output_dir}/TestDemo/**/*.ets",
+          "pattern": "build()",
+          "match_mode": "any",
+          "description": "至少有一个文件包含 build() 方法"
+        },
+        {
+          "id": "2.6",
+          "type": "file_contains",
+          "target": "{output_dir}/TestDemo/**/*.ets",
+          "pattern": ".id(",
+          "match_mode": "any",
+          "description": "可交互控件包含 .id() 修饰符（可被测试框架定位）"
+        },
+        {
+          "id": "2.7",
+          "type": "file_contains",
+          "target": "{output_dir}/TestDemo/**/*.ets",
+          "pattern": "$r(",
+          "match_mode": "any",
+          "description": "使用 $r() 资源引用（不硬编码字符串）"
+        },
+        {
+          "id": "2.8",
+          "type": "file_contains",
+          "target": "{output_dir}/TestDemo/**/*.ets",
+          "pattern": "btn_001",
+          "match_mode": "any",
+          "description": "控件ID与设计文档一致（btn_001_ 前缀）"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "phase2-arkts-never-rules",
+      "prompt": "请基于 Demo 设计文档 demo_design.md 生成可编译的 HarmonyOS NEXT ArkUI 工程代码到 TestDemo/ 目录。设计文档在当前输出目录下。严格要求遵守 ArkTS 编码规范：1) 禁止使用命令式 DOM 操作（ArkUI 无 document.getElementById，必须用 @State 响应式绑定）；2) 禁止使用 as any 类型断言；3) 禁止使用 Array<T> 语法（统一用 T[]）；4) 字符串必须用 $r() 资源引用不硬编码；5) 所有异步 API 调用必须 try-catch 包裹。",
+      "description": "Phase2 ArkTS NEVER 规则合规：测试 ArkUI 声明式语法约束、类型安全规范、资源引用规范的强制执行能力",
+      "files": [
+        "fixtures/demo_design_preference.md"
+      ],
+      "assertions": [
+        {
+          "id": "3.1",
+          "type": "dir_contains",
+          "dir": "{output_dir}/TestDemo",
+          "pattern": "*.ets",
+          "min_count": 1,
+          "description": "TestDemo 目录下生成了 .ets 源文件"
+        },
+        {
+          "id": "3.2",
+          "type": "file_not_contains",
+          "target": "{output_dir}/TestDemo/**/*.ets",
+          "pattern": "document.getElementById",
+          "match_mode": "all",
+          "description": "所有 .ets 文件无 document.getElementById（ArkUI 无 DOM 操作）"
+        },
+        {
+          "id": "3.3",
+          "type": "file_not_contains",
+          "target": "{output_dir}/TestDemo/**/*.ets",
+          "pattern": "as any",
+          "match_mode": "all",
+          "description": "所有 .ets 文件无 as any 类型断言"
+        },
+        {
+          "id": "3.4",
+          "type": "file_not_contains",
+          "target": "{output_dir}/TestDemo/**/*.ets",
+          "pattern": "Array<",
+          "match_mode": "all",
+          "description": "所有 .ets 文件无 Array<T> 语法（统一用 T[]）"
+        },
+        {
+          "id": "3.5",
+          "type": "file_contains",
+          "target": "{output_dir}/TestDemo/**/*.ets",
+          "pattern": "$r(",
+          "match_mode": "any",
+          "description": "使用 $r() 资源引用（禁止硬编码字符串）"
+        },
+        {
+          "id": "3.6",
+          "type": "file_contains",
+          "target": "{output_dir}/TestDemo/**/*.ets",
+          "pattern": "@State",
+          "match_mode": "any",
+          "description": "使用 @State 响应式绑定（非命令式操作）"
+        },
+        {
+          "id": "3.7",
+          "type": "file_contains",
+          "target": "{output_dir}/TestDemo/**/*.ets",
+          "pattern": "try",
+          "match_mode": "any",
+          "description": "异步 API 调用使用 try-catch 包裹"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "phase2-template-integrity",
+      "prompt": "请基于 Demo 设计文档 demo_design.md 生成可编译的 HarmonyOS NEXT ArkUI 工程代码到 TestDemo/ 目录。设计文档在当前输出目录下。要求：1) 基于工程模板生成，模板配置文件（build-profile.json5、oh-package.json5、hvigorfile.ts）原样复制不修改；2) module.json5 增量添加 requestPermissions 权限声明；3) main_pages.json 追加页面路由；4) 生成 Index.ets 首页导航；5) 生成 Constants.ets 控件ID常量类。",
+      "description": "Phase2 模板完整性：测试工程模板复制规则、配置文件增量修改、权限声明、路由注册、首页导航生成的能力",
+      "files": [
+        "fixtures/demo_design_preference.md"
+      ],
+      "assertions": [
+        {
+          "id": "4.1",
+          "type": "file_exists",
+          "target": "{output_dir}/TestDemo/build-profile.json5",
+          "description": "工程级 build-profile.json5 存在（模板复制）"
+        },
+        {
+          "id": "4.2",
+          "type": "file_exists",
+          "target": "{output_dir}/TestDemo/oh-package.json5",
+          "description": "工程级 oh-package.json5 存在（模板复制）"
+        },
+        {
+          "id": "4.3",
+          "type": "file_exists",
+          "target": "{output_dir}/TestDemo/entry/build-profile.json5",
+          "description": "模块级 build-profile.json5 存在（模板复制）"
+        },
+        {
+          "id": "4.4",
+          "type": "file_exists",
+          "target": "{output_dir}/TestDemo/entry/src/main/module.json5",
+          "description": "module.json5 存在（增量修改权限声明）"
+        },
+        {
+          "id": "4.5",
+          "type": "file_contains",
+          "target": "{output_dir}/TestDemo/entry/src/main/module.json5",
+          "pattern": "requestPermissions",
+          "match_mode": "any",
+          "description": "module.json5 含 requestPermissions 权限声明"
+        },
+        {
+          "id": "4.6",
+          "type": "file_exists",
+          "target": "{output_dir}/TestDemo/entry/src/main/ets/pages/Index.ets",
+          "description": "Index.ets 首页导航文件存在"
+        },
+        {
+          "id": "4.7",
+          "type": "file_contains",
+          "target": "{output_dir}/TestDemo/entry/src/main/ets/pages/Index.ets",
+          "pattern": "pushUrl",
+          "match_mode": "any",
+          "description": "Index.ets 使用 router.pushUrl 跳转（导航功能）"
+        },
+        {
+          "id": "4.8",
+          "type": "file_exists",
+          "target": "{output_dir}/TestDemo/entry/src/main/resources/base/profile/main_pages.json",
+          "description": "main_pages.json 路由配置文件存在"
+        }
+      ]
+    }
+  ]
+}
