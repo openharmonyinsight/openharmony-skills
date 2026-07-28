@@ -1,0 +1,356 @@
+{
+  "skill_name": "ohos-design-test-coordinator",
+  "_assertion_format": {
+    "types": {
+      "file_exists": "target 支持通配符（如 *.md），匹配到至少 1 个文件即通过",
+      "file_contains": "target 支持通配符；match_mode=any 表示任一匹配文件包含 pattern 即通过，match_mode=all 表示所有匹配文件都必须包含",
+      "file_not_contains": "target 支持通配符；match_mode=all 表示所有匹配文件都不含 pattern 才通过",
+      "script_exit_code": "执行 command，期望退出码等于 expected；支持 shell glob（如 for f in *.md）",
+      "dir_contains": "dir 目录下存在匹配 glob pattern 的文件，min_count 为最小数量"
+    },
+    "placeholders": {
+      "{skill_root}": "skill 根目录绝对路径",
+      "{output_dir}": "测试产物输出目录",
+      "{fixtures_dir}": "夹具文件目录绝对路径（evals/fixtures/）"
+    }
+  },
+  "_naming_conventions": {
+    "requirement_analysis": "requirement_analysis.md（Phase1 输出，IBO 需求分析报告）",
+    "knowledge_match": "knowledge_match.md（知识库匹配结果，三段式 §1/§2/§3）",
+    "test_point_design": "test_point_design.md（Phase2 输出，测试点设计）",
+    "test_cases": "test_cases.md（Phase4 输出，测试用例细化）",
+    "source": "rules/phase1_rules.md §6 输出格式骨架, phases/phase2_testpoint.md, phases/phase4_testcase.md"
+  },
+  "evals": [
+    {
+      "id": 1,
+      "name": "phase1-ibo-requirement-analysis",
+      "prompt": "请分析需求文档 requirement_appclone.md，基于 IBO（输入-边界-输出）原则提取黑盒可测试行为。需求文档在当前输出目录下。请生成 requirement_analysis.md 和 knowledge_match.md 两个文件到当前输出目录。要求：1) 提取主单元（用户故事 US-1/US-2）、输入条件规格表、被测场景表；2) 对每个主单元判定正交/非正交并采用对应格式表述；3) 执行交付推断区分测试对象与回归对象写入 knowledge_match.md；4) 过滤内部接口（@internal 标记的 API 不输出到 SDK API 表）。",
+      "description": "Phase1 需求解析：测试 IBO 原则解析需求文档、提取主单元/输入条件/被测场景、正交判定、交付推断、内部接口过滤的完整能力",
+      "files": [
+        "fixtures/requirement_appclone.md"
+      ],
+      "assertions": [
+        {
+          "id": "1.1",
+          "type": "file_exists",
+          "target": "{output_dir}/requirement_analysis.md",
+          "description": "生成了需求分析报告文件"
+        },
+        {
+          "id": "1.2",
+          "type": "file_exists",
+          "target": "{output_dir}/knowledge_match.md",
+          "description": "生成了知识库匹配结果文件"
+        },
+        {
+          "id": "1.3",
+          "type": "file_contains",
+          "target": "{output_dir}/requirement_analysis.md",
+          "pattern": "主单元",
+          "match_mode": "any",
+          "description": "输出含主单元结构（IBO 拆分核心）"
+        },
+        {
+          "id": "1.4",
+          "type": "file_contains",
+          "target": "{output_dir}/requirement_analysis.md",
+          "pattern": "输入条件",
+          "match_mode": "any",
+          "description": "输出含输入条件规格表（IBO 的 Input）"
+        },
+        {
+          "id": "1.5",
+          "type": "file_contains",
+          "target": "{output_dir}/requirement_analysis.md",
+          "pattern": "被测场景",
+          "match_mode": "any",
+          "description": "输出含被测场景表（IBO 的 Output 验证）"
+        },
+        {
+          "id": "1.6",
+          "type": "file_contains",
+          "target": "{output_dir}/requirement_analysis.md",
+          "pattern": "正交判定",
+          "match_mode": "any",
+          "description": "输出含正交/非正交判定（输入条件耦合分析）"
+        },
+        {
+          "id": "1.7",
+          "type": "file_contains",
+          "target": "{output_dir}/requirement_analysis.md",
+          "pattern": "US-1",
+          "match_mode": "any",
+          "description": "输出包含 US-1 主单元章节"
+        },
+        {
+          "id": "1.8",
+          "type": "file_contains",
+          "target": "{output_dir}/requirement_analysis.md",
+          "pattern": "US-2",
+          "match_mode": "any",
+          "description": "输出包含 US-2 主单元章节"
+        },
+        {
+          "id": "1.9",
+          "type": "file_contains",
+          "target": "{output_dir}/knowledge_match.md",
+          "pattern": "交付推断",
+          "match_mode": "any",
+          "description": "knowledge_match.md 含交付推断结果（测试对象/回归对象区分）"
+        },
+        {
+          "id": "1.10",
+          "type": "file_not_contains",
+          "target": "{output_dir}/requirement_analysis.md",
+          "pattern": "getAppCloneInfo",
+          "match_mode": "all",
+          "description": "内部接口 getAppCloneInfo（@internal）不出现在 SDK API 表中"
+        },
+        {
+          "id": "1.11",
+          "type": "file_contains",
+          "target": "{output_dir}/requirement_analysis.md",
+          "pattern": "SDK API",
+          "match_mode": "any",
+          "description": "输出含 SDK API 信息表（public 接口清单）"
+        },
+        {
+          "id": "1.12",
+          "type": "file_contains",
+          "target": "{output_dir}/requirement_analysis.md",
+          "pattern": "自检",
+          "match_mode": "any",
+          "description": "输出含自检结果（格式/语义守门）"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "phase2-testpoint-generation",
+      "prompt": "请基于需求分析报告 requirement_analysis.md 生成测试点设计。需求分析报告在当前输出目录下。请生成 test_point_design.md 到当前输出目录。要求：1) 为每个被测场景生成测试点，编号格式 TP-{主单元ID}-{序号}（如 TP-US01-001）；2) 按风险分级标注 P0/P1/P2/P3（P0=安全/权限/核心逻辑，P1=中风险，P2=低风险，P3=防御性）；3) 预期结果必须包含外部可观测证据（不能仅依赖接口返回值）；4) 标注执行方式（XTS/黑盒自动化/API性能/手工）。",
+      "description": "Phase2 测试点生成：测试从需求分析生成测试点、风险分级 P0-P3、验证完整性、执行方式判定的能力",
+      "files": [
+        "fixtures/requirement_analysis_appclone.md"
+      ],
+      "assertions": [
+        {
+          "id": "2.1",
+          "type": "file_exists",
+          "target": "{output_dir}/test_point_design.md",
+          "description": "生成了测试点设计文件"
+        },
+        {
+          "id": "2.2",
+          "type": "file_contains",
+          "target": "{output_dir}/test_point_design.md",
+          "pattern": "TP-US01",
+          "match_mode": "any",
+          "description": "US-1 的测试点编号格式正确（TP-{主单元ID}-{序号}）"
+        },
+        {
+          "id": "2.3",
+          "type": "file_contains",
+          "target": "{output_dir}/test_point_design.md",
+          "pattern": "TP-US02",
+          "match_mode": "any",
+          "description": "US-2 的测试点编号格式正确"
+        },
+        {
+          "id": "2.4",
+          "type": "file_contains",
+          "target": "{output_dir}/test_point_design.md",
+          "pattern": "P0",
+          "match_mode": "any",
+          "description": "含 P0 高风险测试点（安全/权限/核心逻辑）"
+        },
+        {
+          "id": "2.5",
+          "type": "file_contains",
+          "target": "{output_dir}/test_point_design.md",
+          "pattern": "P1",
+          "match_mode": "any",
+          "description": "含 P1 中风险测试点"
+        },
+        {
+          "id": "2.6",
+          "type": "file_contains",
+          "target": "{output_dir}/test_point_design.md",
+          "pattern": "预期结果",
+          "match_mode": "any",
+          "description": "测试点含预期结果列（验证完整性）"
+        },
+        {
+          "id": "2.7",
+          "type": "file_contains",
+          "target": "{output_dir}/test_point_design.md",
+          "pattern": "黑盒自动化",
+          "match_mode": "any",
+          "description": "标注了执行方式（黑盒自动化）"
+        },
+        {
+          "id": "2.8",
+          "type": "file_contains",
+          "target": "{output_dir}/test_point_design.md",
+          "pattern": "汇总",
+          "match_mode": "any",
+          "description": "输出含汇总表（按执行方式统计）"
+        },
+        {
+          "id": "2.9",
+          "type": "file_not_contains",
+          "target": "{output_dir}/test_point_design.md",
+          "pattern": "getAppCloneInfo",
+          "match_mode": "all",
+          "description": "测试点不涉及内部接口"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "phase4-testcase-refinement",
+      "prompt": "请基于测试点设计 test_point_design.md 细化生成完整测试用例。测试点设计文件在当前输出目录下。请生成 test_cases.md 到当前输出目录。要求：1) 为每个测试点生成测试用例，编号格式 TC-{主单元编号}-{序号}（如 TC-US01-001）；2) 每条用例必须包含完整的预置条件、测试步骤、预期结果三部分，测试步骤和预期结果必须展开为具体操作，不得省略或用'...'代替；3) 预期结果必须包含外部可观测证据；4) 用例编号起始值为 case_id_temp_001。",
+      "description": "Phase4 测试用例细化：测试从测试点生成完整用例、步骤展开完整性、预期结果可观测性、禁止省略的能力",
+      "files": [
+        "fixtures/test_point_design_appclone.md"
+      ],
+      "assertions": [
+        {
+          "id": "3.1",
+          "type": "file_exists",
+          "target": "{output_dir}/test_cases.md",
+          "description": "生成了测试用例文件"
+        },
+        {
+          "id": "3.2",
+          "type": "file_contains",
+          "target": "{output_dir}/test_cases.md",
+          "pattern": "TC-US01",
+          "match_mode": "any",
+          "description": "US-1 的用例编号格式正确（TC-{主单元编号}-{序号}）"
+        },
+        {
+          "id": "3.3",
+          "type": "file_contains",
+          "target": "{output_dir}/test_cases.md",
+          "pattern": "TC-US02",
+          "match_mode": "any",
+          "description": "US-2 的用例编号格式正确"
+        },
+        {
+          "id": "3.4",
+          "type": "file_contains",
+          "target": "{output_dir}/test_cases.md",
+          "pattern": "预置条件",
+          "match_mode": "any",
+          "description": "用例含预置条件部分"
+        },
+        {
+          "id": "3.5",
+          "type": "file_contains",
+          "target": "{output_dir}/test_cases.md",
+          "pattern": "测试步骤",
+          "match_mode": "any",
+          "description": "用例含测试步骤部分"
+        },
+        {
+          "id": "3.6",
+          "type": "file_contains",
+          "target": "{output_dir}/test_cases.md",
+          "pattern": "预期结果",
+          "match_mode": "any",
+          "description": "用例含预期结果部分"
+        },
+        {
+          "id": "3.7",
+          "type": "file_not_contains",
+          "target": "{output_dir}/test_cases.md",
+          "pattern": "...",
+          "match_mode": "all",
+          "description": "用例中不含省略号（禁止用省略语句代替实际用例）"
+        },
+        {
+          "id": "3.8",
+          "type": "file_not_contains",
+          "target": "{output_dir}/test_cases.md",
+          "pattern": "等等",
+          "match_mode": "all",
+          "description": "用例中不含'等等'（禁止省略）"
+        },
+        {
+          "id": "3.9",
+          "type": "file_contains",
+          "target": "{output_dir}/test_cases.md",
+          "pattern": "case_id_temp_001",
+          "match_mode": "any",
+          "description": "用例编号使用指定的起始值"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "phase1-inner-api-filter",
+      "prompt": "请分析需求文档 requirement_appclone.md 并生成需求分析报告 requirement_analysis.md 到当前输出目录。需求文档在当前输出目录下。特别注意：需求中的 getAppCloneInfo 接口标记为 @internal，属于内部接口，必须执行过滤——不输出到 SDK API 表，其参数不提取到输入条件表。请在报告中输出过滤说明（删除的内部接口数量）。",
+      "description": "Phase1 内部接口过滤：测试 IBO 原则中 inner API 过滤的强制执行能力——内部接口不进入 SDK API 表、参数不进入输入条件表、输出过滤说明",
+      "files": [
+        "fixtures/requirement_appclone.md"
+      ],
+      "assertions": [
+        {
+          "id": "4.1",
+          "type": "file_exists",
+          "target": "{output_dir}/requirement_analysis.md",
+          "description": "生成了需求分析报告"
+        },
+        {
+          "id": "4.2",
+          "type": "file_contains",
+          "target": "{output_dir}/requirement_analysis.md",
+          "pattern": "inner",
+          "match_mode": "any",
+          "description": "报告含 inner 接口过滤说明"
+        },
+        {
+          "id": "4.3",
+          "type": "file_contains",
+          "target": "{output_dir}/requirement_analysis.md",
+          "pattern": "删除",
+          "match_mode": "any",
+          "description": "报告含删除的内部接口数量说明"
+        },
+        {
+          "id": "4.4",
+          "type": "file_not_contains",
+          "target": "{output_dir}/requirement_analysis.md",
+          "pattern": "getAppCloneInfo",
+          "match_mode": "all",
+          "description": "内部接口 getAppCloneInfo 不出现在报告中（已过滤）"
+        },
+        {
+          "id": "4.5",
+          "type": "file_contains",
+          "target": "{output_dir}/requirement_analysis.md",
+          "pattern": "setAppClonePreference",
+          "match_mode": "any",
+          "description": "public 接口 setAppClonePreference 保留在 SDK API 表中"
+        },
+        {
+          "id": "4.6",
+          "type": "file_contains",
+          "target": "{output_dir}/requirement_analysis.md",
+          "pattern": "getAppClonePreference",
+          "match_mode": "any",
+          "description": "public 接口 getAppClonePreference 保留在 SDK API 表中"
+        },
+        {
+          "id": "4.7",
+          "type": "file_contains",
+          "target": "{output_dir}/requirement_analysis.md",
+          "pattern": "自检",
+          "match_mode": "any",
+          "description": "报告含自检结果（验证 inner 过滤已执行二次检查）"
+        }
+      ]
+    }
+  ]
+}
