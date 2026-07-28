@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(curl:https://api.gitcode.com/*)",
-      "Bash(curl.exe:https://api.gitcode.com/*)"
-    ]
-  }
-}
