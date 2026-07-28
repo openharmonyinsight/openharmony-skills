@@ -1,0 +1,62 @@
+{
+  "skill_name": "ohos-test-capi-xts-generation",
+  "evals": [
+    {
+      "id": 1,
+      "name": "capi-flowb-hilog-core",
+      "prompt": "请为 hilog 子系统的 log.h 生成 N-API 封装 XTS 测试用例。头文件路径 interface/sdk_c/hiviewdfx/hilog/include/hilog/log.h，重点关注 OH_LOG_Print、OH_LOG_IsLoggable、OH_LOG_SetMinLogLevel 三个函数。目标测试套路径 test/xts/acts/hiviewdfx/hilogndktest",
+      "description": "Flow B 标准流程：完整 N-API 封装（C++ NapiTest.cpp + index.d.ts + .test.ets）",
+      "files": [],
+      "assertions": [
+        {"text": "Contains a .design.md test design document with SUB_ prefixed test case IDs for all 3 target APIs"},
+        {"text": "NapiTest.cpp includes N-API wrapper functions for OH_LOG_Print, OH_LOG_IsLoggable, and OH_LOG_SetMinLogLevel"},
+        {"text": "NapiTest.cpp uses nm_modname = 'entry' (not a custom module name)"},
+        {"text": "index.d.ts TypeScript declarations match N-API registered function names and signatures"},
+        {"text": ".test.ets file has proper @tc annotations (@tc.number, @tc.name, @tc.desc) on each test case"},
+        {"text": ".test.ets test cases use Hypium framework (describe/it/expect from @ohos/hypium)"},
+        {"text": ".test.ets imports from 'libentry.so' matching the nm_modname"},
+        {"text": "N-API triple consistency: all C++ registered functions appear in both index.d.ts and are called in .test.ets"},
+        {"text": "Test cases cover PARAM, RETURN, and BOUNDARY types (not just one type)"},
+        {"text": "OH_LOG_SetMinLogLevel tests restore default level after testing to avoid polluting other tests"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "capi-flowa-hilog-coverage",
+      "prompt": "覆盖率报告显示 hilog 模块以下 API 未被覆盖：OH_LOG_PrintMsg、OH_LOG_PrintMsgByLen、OH_LOG_VPrint、PreferStrategy 枚举。请补充这些 API 的 N-API 封装测试",
+      "description": "Flow A 覆盖率报告驱动：精准补充未覆盖 API 的 N-API 封装测试",
+      "files": [],
+      "assertions": [
+        {"text": "Contains a .design.md test design document targeting the uncovered APIs (OH_LOG_PrintMsg, OH_LOG_PrintMsgByLen, OH_LOG_VPrint, PreferStrategy)"},
+        {"text": "NapiTest.cpp includes N-API wrapper functions for the uncovered APIs"},
+        {"text": "NapiTest.cpp uses nm_modname = 'entry'"},
+        {"text": "index.d.ts declarations match N-API registered function names and parameter types"},
+        {"text": ".test.ets file has proper @tc annotations on each test case"},
+        {"text": ".test.ets test cases use Hypium framework (describe/it/expect from @ohos/hypium)"},
+        {"text": ".test.ets imports from 'libentry.so'"},
+        {"text": "N-API triple consistency: C++ registered functions, d.ts declarations, and ETS calls all match"},
+        {"text": "Does NOT create a new project (Flow A should supplement existing test suite, not create new project)"},
+        {"text": "Test design document includes SUB_ prefixed IDs with coverage statistics"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "capi-newproject-zlib",
+      "prompt": "请为 zlib 子系统生成 N-API 封装 XTS 测试用例。头文件路径 interface/sdk_c/third_party/zlib/zlib.h，重点关注 compress、uncompress、compressBound 三个函数。用户未指定目标测试套路径，请根据 subsystem_mapping 确定路径。",
+      "description": "Flow B 创建新工程：测试从 template_project 复制创建新测试工程的能力",
+      "files": [],
+      "assertions": [
+        {"text": "Contains a .design.md test design document with SUB_ prefixed test case IDs for compress, uncompress, compressBound"},
+        {"text": "Creates a complete project structure (BUILD.gn, oh-package.json5, entry/, CMakeLists.txt, module.json5, etc.)"},
+        {"text": "NapiTest.cpp includes N-API wrapper functions for compress, uncompress, and compressBound"},
+        {"text": "NapiTest.cpp uses nm_modname = 'entry'"},
+        {"text": "index.d.ts declarations match N-API registered function names and parameter types"},
+        {"text": ".test.ets file has proper @tc annotations on each test case"},
+        {"text": ".test.ets test cases use Hypium framework (describe/it/expect from @ohos/hypium)"},
+        {"text": ".test.ets imports from 'libentry.so'"},
+        {"text": "N-API triple consistency: C++ registered functions, d.ts declarations, and ETS calls all match"},
+        {"text": "Project includes template-required files like signature/, hvigor/, AppScope/, syscap.json"}
+      ]
+    }
+  ]
+}
