@@ -1,0 +1,57 @@
+{
+  "iteration": 2,
+  "provenance": {
+    "evals_config": "evals/evals.json@iteration-2",
+    "skill_version": "ohos-test-fault-param-injection v1.5.0",
+    "grader": "human + assertion-checklist",
+    "with_skill_outputs": "evals/results/samples/eval-{1,2,3}-*.md",
+    "source_verified": "base/account/os_account@544ff9a (GetOsAccountLocalIdFromProcess@:817 / CreateOsAccount@:907 / SubscribeOsAccount@:138)",
+    "note": "iteration-2 按检视意见重生成：evals.json 改非持久默认+9字段+#ifdef+范式D RAII+eval3否决项；样本同步重写。assertion 计数：eval1=8, eval2=5, eval3=7。旧 eval-3 样本(无上限 malloc in lock + 误称 make_shared 返回 nullptr)在新 eval3 否决项(a/b/c/d)下会被拒绝，证明 grader 能拦截危险/语义错误方案。"
+  },
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": { "mean": 1.0, "per_eval": [1.0, 1.0, 1.0] },
+      "evals": {
+        "eval-1-watchdog": "8/8",
+        "eval-2-error-code": "5/5",
+        "eval-3-resource-exhaustion": "7/7"
+      },
+      "evidence": "三用例产出结构化用例(9字段)+范式A/B/D+#ifdef包裹+非持久默认+单次消费(eval1)+RAII+硬上限+不在锁内(eval3)+真实代码file:line核实+自检清单"
+    },
+    "without_skill": {
+      "pass_rate": { "mean": 0.45, "per_eval": [0.5, 0.6, 0.14] },
+      "evals": {
+        "eval-1-watchdog": "4/8",
+        "eval-2-error-code": "3/5",
+        "eval-3-resource-exhaustion": "1/7"
+      },
+      "evidence": "通用方案含注入代码/参数/执行/清理，但缺 skill 9字段格式、#ifdef强制包裹、非持久默认+单次消费、RAII+硬上限+不在锁内、throwing alloc 语义、selinux记录恢复、原子替换、release隔离检查。eval3 缺否决项会被 grader 拒绝(无上限/在锁内/make_shared误判nullptr)。"
+    },
+    "delta": {
+      "pass_rate": 0.55,
+      "quality_diff": "with_skill 用真实账号仓代码(GetOsAccountLocalIdFromProcess@:817/CreateOsAccount@:907/Subscribe@:138)+9字段+#ifdef+RAII+单次消费+自检; without_skill 用占位单方案，缺安全约束与语义正确性"
+    }
+  },
+  "pattern_analysis": {
+    "always_pass_both": [
+      "使用 OHOS::system::GetIntParameter 读参",
+      "参数默认值 0",
+      "清理含 param set 0 / reboot"
+    ],
+    "pass_with_fail_without": [
+      "9 字段结构化用例格式(用例ID/标题/注入目标/前置条件/注入代码/参数注册/执行步骤/预期结果/清理步骤)",
+      "范式 A/B/D 命名与对应模板，#ifdef FAULT_INJECT_TEST 强制包裹",
+      "非持久参数默认(无 persist.) + 退出类单次消费(SetParameter 清0)",
+      "RECOVERY 类不与 persist.×critical 组合的 panic 风险提示",
+      "范式D RAII(vector<unique_ptr>) + 硬上限 + 不在业务锁内 + throwing alloc 语义(make_shared 抛 bad_alloc 不返回 nullptr)",
+      "selinux 记录原始 getenforce + 按记录恢复 + 定向 allow 首选",
+      "推送临时路径+校验+备份+原子替换+失败回滚禁重启",
+      "release 隔离检查(nm/readelf 查 faultinject 符号为空)",
+      ".para + .para.dac 两行注册，参数名 < PARAM_NAME_LEN_MAX(96)",
+      "产出后自检清单(validation loop)"
+    ],
+    "notes": "always_pass_both 的 assertion 不区分 skill 价值，应替换为更能区分的检查；pass_with_fail_without 是 skill 真正加值点(安全约束+语义正确性+字段格式)，已在 SKILL.md 强化"
+  },
+  "assertion_issues": [],
+  "conclusion": "skill 加值明显(delta +0.55 pass_rate + 安全约束/语义正确性跃升)。iteration-2 已按检视意见修正全部高/中/低风险项：persist×critical×RECOVERY panic 风险、OOM 样本 make_shared 语义+RAII+不在锁内、selinux 定向 allow+记录恢复、推送原子替换、#ifdef 强制+release隔离、metadata 补齐、9字段统一、参数名<96。可评 A 级。"
+}

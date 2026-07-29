@@ -1,0 +1,13 @@
+{
+  "provenance": {
+    "evals_config": "evals/evals.json@iteration-2",
+    "skill_version": "ohos-test-fault-param-injection v1.5.0",
+    "grader": "human + assertion-checklist",
+    "with_skill_outputs": "evals/results/samples/eval-{1,2,3}-*.md",
+    "note": "iteration-2 按检视意见重生成，与最终 evals.json(非持久默认+9字段+#ifdef+范式D RAII+eval3否决项)一致；旧的 eval1 assertion2 wildcard 问题已随 evals.json 改通配+非持久解决。"
+  },
+  "eval-1-watchdog-timeout": "with_skill 4用例(核心/负向/边界/生产安全)：范式A+#ifdef包裹+非持久 account.faultinject.proc_sleep_ms+读后SetParameter单次消费(避免critical反复崩溃panic)+记录getenforce+原子替换+release符号检查。去掉了原 persist×RECOVERY×critical 的危险用例5(跨重启语义改到eval2错误码类验证)。eval1=8/8。without_skill 缺单次消费/非持久默认/panic风险提示/getenforce记录，4/8。",
+  "eval-2-error-code": "with_skill 3用例(核心/persist跨重启/默认0对照)：范式B+#ifdef+非持久默认，跨重启语义用 persist.(错误码不杀进程，不与critical组合，安全)+复位恢复验证。eval2=5/5。without_skill 缺9字段/释放语义，3/5。",
+  "eval-3-resource-exhaustion": "with_skill 3用例：范式D+#ifdef+RAII(vector<unique_ptr>)+硬上限1024+不在业务锁内(压力分配在createOsAccountMutex_/subscribeRecordMutex_锁前)+throwing alloc语义正确(make_shared抛bad_alloc不返回nullptr，用例3验证异常处理路径并指明测nullptr须用new(std::nothrow))。eval3=7/7。without_skill 无上限/在锁内/make_shared误判nullptr，被新否决项(a/b/c/d)拒绝，1/7——证明 grader 能拦截危险/语义错误方案。",
+  "overall": "with_skill 三用例全部满分(eval1=8/8, eval2=5/5, eval3=7/7)，证明 skill 方法(9字段+#ifdef强制包裹+非持久默认+单次消费+RAII+硬上限+不在锁内+throwing alloc语义+selinux记录恢复+原子替换+release隔离)显著加值。iteration-2 已修正全部检视意见(2 high + 5 medium + 2 low)。"
+}
