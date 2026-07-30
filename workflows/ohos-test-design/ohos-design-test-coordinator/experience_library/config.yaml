@@ -1,0 +1,57 @@
+domains:
+  ArkUI:
+    display_name: ArkUI
+    keywords:
+    - ArkUI
+    - arkui
+    knowledge_layers:
+      domain-knowledge:
+        display_name: 领域知识
+        files: []
+      test-experience:
+        display_name: 测试经验
+        files: []
+      case-refinement:
+        display_name: 用例细化
+        files: []
+  BundleManager:
+    display_name: 包管理
+    keywords:
+    - 包管理
+    - BundleManager
+    knowledge_layers:
+      domain-knowledge:
+        display_name: 领域知识
+        files: []
+      test-experience:
+        display_name: 测试经验
+        files: []
+      case-refinement:
+        display_name: 用例细化
+        files: []
+general_knowledge_layers:
+  domain-knowledge:
+    display_name: 通用领域知识
+    files: []
+  test-experience:
+    display_name: 通用测试经验
+    files: []
+  case-refinement:
+    display_name: 通用用例细化
+    files: []
+knowledge_layers_meta:
+  domain-knowledge:
+    display_name: 领域知识
+    phase: phase1
+    description: 领域概念与规格
+  test-experience:
+    display_name: 测试经验
+    phase: phase2
+    description: 测试经验：补充遗漏的测试点
+  case-refinement:
+    display_name: 用例细化
+    phase: phase4
+    description: 细化用例步骤
+output:
+  min_test_points_per_suggestion: 1
+  require_skip_reason: true
