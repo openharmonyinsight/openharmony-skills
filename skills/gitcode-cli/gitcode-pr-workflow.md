@@ -215,8 +215,9 @@ echo "Created Issue: $ISSUE_NUMBER"
 
 **模板查找路径**（按优先级）：
 1. `.gitcode/PULL_REQUEST_TEMPLATE.md`
-2. `.github/PULL_REQUEST_TEMPLATE.md`
-3. `docs/PULL_REQUEST_TEMPLATE.md`
+2. `.gitee/PULL_REQUEST_TEMPLATE.zh-CN.md`
+3. `.github/PULL_REQUEST_TEMPLATE.md`
+4. `docs/PULL_REQUEST_TEMPLATE.md`
 
 ```bash
 # 1. 先查找目标仓库的PR模板
