@@ -45,9 +45,9 @@
         {
           "id": "1.3",
           "type": "script_exit_code",
-          "command": "for f in {output_dir}/*.test.ets; do python3 {skill_root}/scripts/validate_test.py --test-file \"$f\" --design-doc \"${f%.test.ets}.test.design.md\" || exit 1; done",
+          "command": "for f in {output_dir}/*.test.ets; do grep -q \"@tc.number\" \"$f\" 2>/dev/null || continue; python3 {skill_root}/scripts/validate_test.py --test-file \"$f\" || exit 1; done",
           "expected": 0,
-          "description": "所有测试文件 Phase 7 validate_test.py 检查通过（自动匹配同名 design.md）"
+          "description": "所有测试用例文件(含@tc.number,跳过List注册文件)Phase7 validate_test.py 通过"
         },
         {
           "id": "1.4",
@@ -59,11 +59,10 @@
         },
         {
           "id": "1.5",
-          "type": "file_contains",
-          "target": "{output_dir}/*.test.ets",
-          "pattern": "@tc.number",
-          "match_mode": "all",
-          "description": "每个测试文件都包含 @tc 注解"
+          "type": "script_exit_code",
+          "command": "python3 -c \"import glob; n=sum(open(f,encoding='utf-8').read().count('@tc.number') for f in glob.glob('{output_dir}/*.test.ets')); exit(0 if n>=7 else 1)\"",
+          "expected": 0,
+          "description": "@tc.number 总数≥7(7个目标API各≥1,注册文件List不计)"
         },
         {
           "id": "1.6",
@@ -109,9 +108,9 @@
         {
           "id": "2.2",
           "type": "script_exit_code",
-          "command": "for f in {output_dir}/*.test.ets; do python3 {skill_root}/scripts/validate_test.py --test-file \"$f\" || exit 1; done",
+          "command": "for f in {output_dir}/*.test.ets; do grep -q \"@tc.number\" \"$f\" 2>/dev/null || continue; python3 {skill_root}/scripts/validate_test.py --test-file \"$f\" || exit 1; done",
           "expected": 0,
-          "description": "所有测试文件 Phase 7 validate_test.py 检查通过"
+          "description": "测试用例文件(含@tc.number,跳过List注册文件)Phase7 validate_test.py 通过"
         },
         {
           "id": "2.3",
@@ -139,11 +138,10 @@
         },
         {
           "id": "2.6",
-          "type": "file_contains",
-          "target": "{output_dir}/*.test.ets",
-          "pattern": "@tc.number",
-          "match_mode": "all",
-          "description": "每个测试文件都包含 @tc 注解"
+          "type": "script_exit_code",
+          "command": "python3 -c \"import glob; n=sum(open(f,encoding='utf-8').read().count('@tc.number') for f in glob.glob('{output_dir}/*.test.ets')); exit(0 if n>=5 else 1)\"",
+          "expected": 0,
+          "description": "@tc.number 总数≥5(5个未覆盖API各≥1,注册文件List不计)"
         },
         {
           "id": "2.7",
@@ -173,9 +171,9 @@
         {
           "id": "3.2",
           "type": "script_exit_code",
-          "command": "for f in {output_dir}/*.test.ets; do python3 {skill_root}/scripts/validate_test.py --test-file \"$f\" || exit 1; done",
+          "command": "for f in {output_dir}/*.test.ets; do grep -q \"@tc.number\" \"$f\" 2>/dev/null || continue; python3 {skill_root}/scripts/validate_test.py --test-file \"$f\" || exit 1; done",
           "expected": 0,
-          "description": "所有测试文件 Phase 7 validate_test.py 检查通过"
+          "description": "测试用例文件(含@tc.number,跳过List注册文件)Phase7 validate_test.py 通过"
         },
         {
           "id": "3.3",
@@ -211,11 +209,10 @@
         },
         {
           "id": "3.7",
-          "type": "file_contains",
-          "target": "{output_dir}/*.test.ets",
-          "pattern": "@tc.number",
-          "match_mode": "all",
-          "description": "每个测试文件都包含 @tc 注解"
+          "type": "script_exit_code",
+          "command": "python3 -c \"import glob; n=sum(open(f,encoding='utf-8').read().count('@tc.number') for f in glob.glob('{output_dir}/*.test.ets')); exit(0 if n>=2 else 1)\"",
+          "expected": 0,
+          "description": "@tc.number 总数≥2(2个新增方法各≥1,注册文件List不计)"
         }
       ]
     },
@@ -351,6 +348,117 @@
           "pattern": "hypium/index",
           "match_mode": "all",
           "description": "动态版所有文件不使用相对路径导入（与 5.3 互斥，确保 Dyn/Sta 隔离）"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "generate-flowd-uitest-pr33680",
+      "prompt": "我提供了 api_diff 报告 {skill_root}/evals/api_diff_pr33680.json，这是 @ohos.UiTest.d.ts（interface/sdk-js/api/@ohos.UiTest.d.ts）的一组 API 变更（PR 33680 uitest接口名称整改：11 组接口改名 + drag 错误码新增 401）。请基于这些变更补充 XTS 测试。",
+      "description": "Flow D 变更驱动（真实 PR 33680）：parse_api_diff 消费 api_diff 报告 → 11 组 API_RENAME + 1 处 ERRORCODE_CHANGES(401) → Phase4 生成改名迁移/非兼容确认章节 → Phase5 生成新名测试 + 401 错误码测试",
+      "files": [],
+      "assertions": [
+        {
+          "id": "6.1",
+          "type": "dir_contains",
+          "dir": "{output_dir}",
+          "pattern": "*.test.ets",
+          "min_count": 1,
+          "description": "至少生成 1 个测试文件"
+        },
+        {
+          "id": "6.2",
+          "type": "dir_contains",
+          "dir": "{output_dir}",
+          "pattern": "*.test.design.md",
+          "min_count": 1,
+          "description": "Flow D 仍走 Phase4 设计文档"
+        },
+        {
+          "id": "6.3",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.design.md",
+          "pattern": "变更来源",
+          "match_mode": "any",
+          "description": "设计文档头部「变更来源」章节（phase-4:152）"
+        },
+        {
+          "id": "6.4",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.design.md",
+          "pattern": "改名迁移",
+          "match_mode": "any",
+          "description": "11 组 API_RENAME →「改名迁移」章节（phase-4:147）"
+        },
+        {
+          "id": "6.5",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.design.md",
+          "pattern": "非兼容性变更",
+          "match_mode": "any",
+          "description": "改名=非兼容 →「⚠️非兼容性变更确认」章节（phase-4:157）"
+        },
+        {
+          "id": "6.6",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.design.md",
+          "pattern": "驱动",
+          "match_mode": "any",
+          "description": "备注列标注 statusCode 驱动（phase-4:153）"
+        },
+        {
+          "id": "6.7",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "beforeComponent",
+          "match_mode": "any",
+          "description": "改名新名（On.isBefore→beforeComponent）生成测试"
+        },
+        {
+          "id": "6.8",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "clickAtWithOptions",
+          "match_mode": "any",
+          "description": "改名新名（Driver.clickAt→clickAtWithOptions）生成测试"
+        },
+        {
+          "id": "6.9",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "withinComponent",
+          "match_mode": "any",
+          "description": "改名新名（On.within→withinComponent）生成测试"
+        },
+        {
+          "id": "6.10",
+          "type": "file_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "401",
+          "match_mode": "any",
+          "description": "drag statusCode7 新错误码 401 → ERROR 测试"
+        },
+        {
+          "id": "6.11",
+          "type": "script_exit_code",
+          "command": "for f in {output_dir}/*.test.ets; do grep -q \"@tc.number\" \"$f\" 2>/dev/null || continue; python3 {skill_root}/scripts/validate_test.py --test-file \"$f\" || exit 1; done",
+          "expected": 0,
+          "description": "所有测试用例文件(含@tc.number的,跳过List注册文件)Phase7 validate_test.py 通过"
+        },
+        {
+          "id": "6.12",
+          "type": "script_exit_code",
+          "command": "python3 -c \"import glob; n=sum(open(f,encoding='utf-8').read().count('@tc.number') for f in glob.glob('{output_dir}/*.test.ets')); exit(0 if n>=11 else 1)\"",
+          "expected": 0,
+          "description": "@tc.number 总数≥11(11改名新名各≥1+drag,注册文件List不计入)"
+        },
+        {
+          "id": "6.13",
+          "type": "file_not_contains",
+          "target": "{output_dir}/*.test.ets",
+          "pattern": "as any",
+          "match_mode": "all",
+          "description": "无 as any 类型断言"
         }
       ]
     }

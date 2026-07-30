@@ -208,8 +208,9 @@ def check_assert_methods(test_content: str) -> tuple[bool, str]:
       - assertNotNull (不存在，应用 not().assertNull())
       - assertNotEqual (不存在，应用 not().assertEqual())
     """
-    # 匹配 expect(...).methodName( 模式
-    pattern = re.compile(r'\.\b(assert[A-Z]\w*)\s*\(')
+    # 匹配 expect(...).methodName( 模式：要求 ).assertXxx( (expect 链)，
+    # 排除 driver.assertComponentExist( 等以 assert 开头的非 Hypium API 用用
+    pattern = re.compile(r'\)\.\b(assert[A-Z]\w*)\s*\(')
     # 匹配 expect(...).not() / .message() 模式
     modifier_pattern = re.compile(r'\.\b(not|message)\s*\(')
 
