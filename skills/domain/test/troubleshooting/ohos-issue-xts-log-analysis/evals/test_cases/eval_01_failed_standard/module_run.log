@@ -1,0 +1,6 @@
+[2026-06-26 16:25:40,000] [25016] [OHJSUnitDriver] [INFO] [Collected suite count is: 1, test count is: 2]
+[2026-06-26 16:25:41,000] [25016] [Listener] [INFO] [Start test suite [TextAreaLetterSpacing].]
+[2026-06-26 16:25:42,611] [25016] [Listener] [INFO] [[1/2 FMR0123417000740] TextAreaLetterSpacing#textAreaLetterSpacing001 FAILED]
+[2026-06-26 16:25:51,418] [25016] [Listener] [INFO] [[2/2 FMR0123417000740] TextAreaLetterSpacing#textAreaLetterSpacing002 FAILED]
+[2026-06-26 16:25:51,500] [25016] [Listener] [INFO] [End test suite [TextAreaLetterSpacing].]
+[2026-06-26 16:25:51,501] [25016] [OHJSUnitTestParser] [INFO] [0 tests in TextAreaLetterSpacing had missed]

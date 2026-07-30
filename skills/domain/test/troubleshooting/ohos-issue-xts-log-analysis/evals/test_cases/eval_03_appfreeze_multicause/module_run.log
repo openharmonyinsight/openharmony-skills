@@ -1,0 +1,8 @@
+[2026-06-30 00:34:14,285] [25016] [OHJSUnitDriver] [INFO] [Collected suite count is: 2, test count is: 24]
+[2026-06-30 00:34:14,290] [25016] [Listener] [INFO] [Start test suite [AVTransCoderNdkTest].]
+[2026-06-30 00:34:19,534] [25016] [Listener] [INFO] [[1/4 FMR0123417000740] AVTransCoderNdkTest#testOhAvTransCoderNdkPrepareError0007 FAILED]
+[2026-06-30 00:35:05,501] [25016] [Listener] [INFO] [End test suite [AVTransCoderNdkTest].]
+[2026-06-30 00:35:09,537] [25016] [Listener] [INFO] [Start test suite [AVPlayerTest].]
+[2026-06-30 00:35:11,586] [25016] [Listener] [INFO] [[1/20 FMR0123417000740] AVPlayerTest#testOhAvPlayerSetPlaybackRateError001 PASSED]
+[2026-06-30 00:40:45,998] [25016] [Listener] [INFO] [End test suite [AVPlayerTest].]
+[2026-06-30 00:40:46,667] [25016] [OHJSUnitTestParser] [INFO] [20 tests in AVPlayerTest had missed]

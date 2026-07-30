@@ -1,0 +1,23 @@
+Reason:THREAD_BLOCK_6S
+Process Memory(kB): 121812(Rss)
+Device Memory(kB): Total 11866588, Free 1309784, Available 5347328
+Page switch history:
+  00:40:38:925 /ets/pages/Index
+  00:40:31:871 /ets/pages/Index
+  00:35:11:586 /ets/pages/Index
+TIMESTAMP:2026/06/30-00:40:42:241
+TIMESTAMP = 2026/06/30-00:40:39:406
+Fault time:2026/06/30-00:40:38
+TIMESTAMP = 2026/06/30-00:40:42:241
+Fault time:2026/06/30-00:40:41
+
+Dump main thread stack start time: 2026-06-30 00:40:38.925
+Tid:5462, Name:player.napitest
+state=S, utime=212, stime=84, priority=-54, nice=-10, clk=100
+#00 pc 00000000001f03cc /system/lib/ld-musl-aarch64.so.1(sleep+64)(4246509192596535a89208c7cce9641a)
+#01 pc 000000000001fdcc /data/storage/el1/bundle/libs/arm64/libavplayerndk.so(abc488375b1f847b1766e7793187fec38ab32a71)
+#02 pc 0000000000069830 /system/lib64/platformsdk/libace_napi.z.so(panda::JSValueRef ArkNativeFunctionCallBack<true>(panda::JsiRuntimeCallInfo*)+288)(f8dbd479d321cce5a4868d643ca28e70)
+#03 pc 0000000000e871e8 /system/lib64/module/arkcompiler/stub.an(RTStub_PushCallArgsAndDispatchNative+40)
+#04 pc 000000000047a17c /system/lib64/module/arkcompiler/stub.an(BCStub_HandleCallthis1Imm8V8V8StwCopy+420)
+#05 at anonymous (entry|entry|1.0.0|src/ohosTest/ets/test/AVPlayerNdk.test.ts:701:39)
+Dump main thread stack end time: 2026-06-30 00:40:38.997

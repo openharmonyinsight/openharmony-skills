@@ -1,0 +1,9 @@
+{
+    "devices": {
+        "default": []
+    },
+    "system_capabilities": [
+        "SystemCapability.Test.CapA",
+        "SystemCapability.Test.CapB"
+    ]
+}

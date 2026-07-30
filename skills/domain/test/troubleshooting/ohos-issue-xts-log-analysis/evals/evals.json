@@ -1,0 +1,80 @@
+{
+  "skill_name": "ohos-issue-xts-log-analysis",
+  "version": "0.1.0",
+  "description": "覆盖XTS日志定界3类核心场景的评估用例集。每个用例含测试输入（日志目录）、预期结果与可验证断言。with_skill通过完整流程执行,without_skill通过无Skill基线LLM执行。断言与输出格式无关，聚焦分析结论正确性（根因识别/定界归属/计数准确）。",
+  "test_cases_dir": "test_cases",
+  "evals": [
+    {
+      "id": 0,
+      "name": "failed-standard-attribution",
+      "prompt": "分析这个OpenHarmony XTS测试日志目录，识别失败用例并生成定界报告，说明问题归属（测试侧/系统侧）",
+      "files": [
+        "test_cases/eval_01_failed_standard/summary_report.xml",
+        "test_cases/eval_01_failed_standard/module_run.log",
+        "test_cases/eval_01_failed_standard/hilog.107.20260626-162511.txt"
+      ],
+      "expected_output": "识别2个FAILED用例(textAreaLetterSpacing001/002)，断言失败(expect #00000000 equals #FFE31111)，被测API为@ohos.arkui.inspector，定界为系统侧问题(API实现缺陷)",
+      "assertions": [
+        {"text": "识别2个失败用例 textAreaLetterSpacing001 和 textAreaLetterSpacing002", "type": "contains"},
+        {"text": "失败原因为断言失败 expect #00000000 equals #FFE31111", "type": "contains"},
+        {"text": "识别被测API为 @ohos.arkui.inspector（从源码import提取非猜测）", "type": "llm_judge"},
+        {"text": "映射到ArkUI子系统", "type": "contains"},
+        {"text": "消耗时间为8806ms（从hilog真实提取非编造）", "type": "contains"},
+        {"text": "问题归属为系统侧（API实现缺陷非测试代码问题）", "type": "contains"},
+        {"text": "两个用例标注为同根因", "type": "llm_judge"},
+        {"text": "FAILED=2 BLOCKED=0 PASSED=0 计数准确", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "crash-cascading-blocked",
+      "prompt": "分析这个OpenHarmony XTS测试日志目录，识别失败和阻塞用例，定位崩溃根因并生成定界报告，说明问题归属（测试侧/系统侧）",
+      "files": [
+        "test_cases/eval_02_crash_blocked/module_run.log",
+        "test_cases/eval_02_crash_blocked/hilog.539.20260630-023904.txt",
+        "test_cases/eval_02_crash_blocked/crash_log_20260630_023904/cppcrash-media_service-20010177-1718230400000.log",
+        "test_cases/eval_02_crash_blocked/crash_log_20260630_023904/cppcrash-media_service-20010177-1718230500000.log"
+      ],
+      "expected_output": "识别media_service进程SIGSEGV崩溃(2次)，崩溃函数HiTransCoderImpl::OnEvent(NULL指针解引用)，崩溃SO库libmedia_engine_histreamer.z.so，BLOCKED=54(52 missed+2 suite missed)，定界为系统侧问题",
+      "assertions": [
+        {"text": "识别根因为media_service进程SIGSEGV崩溃（非分辨率参数校验等误判）", "type": "llm_judge"},
+        {"text": "崩溃SO库为 libmedia_engine_histreamer.z.so", "type": "contains"},
+        {"text": "崩溃函数为 HiTransCoderImpl::OnEvent", "type": "contains"},
+        {"text": "调用栈为真实#00 pc格式（非示意图/文字描述）", "type": "llm_judge"},
+        {"text": "调用栈至少包含3-4个栈帧", "type": "llm_judge"},
+        {"text": "识别到2次崩溃（对应2个cppcrash文件）", "type": "llm_judge"},
+        {"text": "2条崩溃时间戳均列出（非用等省略）", "type": "llm_judge"},
+        {"text": "BLOCKED=54（套件内missed 52 + 整套件missed 2），非只算2", "type": "llm_judge"},
+        {"text": "问题归属为系统侧（media_service崩溃）", "type": "contains"},
+        {"text": "SDK domain(C002B)和系统服务domain(C02B2B/C02B22)均标注", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "appfreeze-multicause-attribution",
+      "prompt": "分析这个OpenHarmony XTS测试日志目录，识别失败和阻塞用例，定位根因并生成定界报告。注意可能存在多个独立根因，需分别分析、分别定界、分别流转",
+      "files": [
+        "test_cases/eval_03_appfreeze_multicause/module_run.log",
+        "test_cases/eval_03_appfreeze_multicause/hilog.539.20260630-023904.txt",
+        "test_cases/eval_03_appfreeze_multicause/crash_log_20260630_023904/cppcrash-media_service-20010177-1718230400000.log",
+        "test_cases/eval_03_appfreeze_multicause/crash_log_20260630_023904/appfreeze-com.example.avplayerndk-20010177-1718231200000.log"
+      ],
+      "expected_output": "识别2个独立根因：根因1=media_service SIGSEGV崩溃(系统侧)→FAILED；根因2=appfreeze THREAD_BLOCK_6S(测试NAPI库sleep阻塞主线程,测试侧)→BLOCKED。崩溃栈在libmedia_engine_histreamer.z.so的HiTransCoderImpl::OnEvent，appfreeze主线程栈#00 sleep+64(libc)+#01 libavplayerndk.so(测试NAPI库)。分别定界、分别流转",
+      "assertions": [
+        {"text": "识别到2个独立根因（非归因为单一根因）", "type": "llm_judge"},
+        {"text": "根因1为media_service SIGSEGV崩溃→系统侧", "type": "contains"},
+        {"text": "根因2为appfreeze主线程sleep阻塞→测试侧", "type": "contains"},
+        {"text": "两个根因调用栈不同(SIGSEGV in libmedia_engine_histreamer.z.so vs sleep in libc/libavplayerndk.so)", "type": "llm_judge"},
+        {"text": "未将appfreeze误归因为前序崩溃导致", "type": "llm_judge"},
+        {"text": "从appfreeze日志提取主线程调用栈(#00 pc格式非可能原因猜测)", "type": "llm_judge"},
+        {"text": "识别阻塞函数为sleep+64(在ld-musl-aarch64.so.1/libc中)", "type": "contains"},
+        {"text": "识别阻塞来源为libavplayerndk.so(测试NAPI库非系统库)", "type": "contains"},
+        {"text": "从cppcrash日志提取崩溃调用栈(#00 pc格式)", "type": "llm_judge"},
+        {"text": "崩溃函数为HiTransCoderImpl::OnEvent(在libmedia_engine_histreamer.z.so中)", "type": "contains"},
+        {"text": "崩溃根因定界=系统侧 appfreeze根因定界=测试侧 分别定界非混为一节", "type": "llm_judge"},
+        {"text": "建议流转分两条：系统侧→系统团队 测试侧→测试团队", "type": "llm_judge"},
+        {"text": "未将测试侧问题错误流转给系统团队", "type": "llm_judge"}
+      ]
+    }
+  ]
+}

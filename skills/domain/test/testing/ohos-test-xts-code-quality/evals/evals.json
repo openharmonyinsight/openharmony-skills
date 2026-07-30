@@ -1,0 +1,140 @@
+{
+  "skill_name": "ohos-test-xts-code-quality",
+  "version": "2.0.13",
+  "description": "覆盖全部29条规则(R001-R023, R201-R206)的评估用例集。每个用例含测试输入、预期结果与可验证断言。with_skill通过扫描器执行,without_skill通过无Skill基线LLM执行。",
+  "test_cases_dir": "test_cases/subsystem_demo",
+  "evals": [
+    {
+      "id": 0,
+      "name": "false-positive-suppression",
+      "prompt": "检查这个OpenHarmony XTS测试文件的代码质量问题，列出所有问题及其规则编号",
+      "files": ["test_cases/subsystem_demo/traps.test.ts"],
+      "expected_output": "不应检出任何问题：async+done混合模式合法(R201不报)、Promise.all安全(R203不报)、.once自动移除(R204不报)、await sleep不需try-catch(R202不报)",
+      "assertions": [
+        {"text": "未误报async+done混合模式为问题", "type": "llm_judge"},
+        {"text": "未误报Promise.all安全并发为问题", "type": "llm_judge"},
+        {"text": "未误报emitter.once自动移除为问题", "type": "llm_judge"},
+        {"text": "总问题数为0(零误报)", "type": "contains"}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "source-compliance-rules",
+      "prompt": "检查这两个OpenHarmony XTS文件的代码质量问题，列出所有问题及其规则编号",
+      "files": ["test_cases/subsystem_demo/compliance.test.ts", "test_cases/subsystem_demo/ui_source.ets"],
+      "expected_output": "应检出13条规则：R001(getSync禁止)、R002(错误码字符串断言)、R003(恒真断言)、R004(缺少断言)、R005(固定尺寸)、R006(设备类型差异化)、R008(注释格式)、R009(tc.number命名)、R013(注释废弃代码)、R015(Level缺省)、R016(testcase命名)、R022(宽松比较)、R023(类型强转)",
+      "assertions": [
+        {"text": "检出R001禁止getSync系统接口", "type": "contains"},
+        {"text": "检出R002 error.code字符串断言", "type": "contains"},
+        {"text": "检出R003恒真断言", "type": "contains"},
+        {"text": "检出R004缺少断言", "type": "contains"},
+        {"text": "检出R005组件尺寸固定值", "type": "contains"},
+        {"text": "检出R006禁止设备类型差异化", "type": "contains"},
+        {"text": "检出R008用例注释格式(冒号分隔)", "type": "contains"},
+        {"text": "检出R009 tc.number命名不规范", "type": "contains"},
+        {"text": "检出R013注释废弃代码", "type": "contains"},
+        {"text": "检出R015 Level参数缺省", "type": "contains"},
+        {"text": "检出R016 testcase命名特殊字符", "type": "contains"},
+        {"text": "检出R022 errcode宽松比较", "type": "contains"},
+        {"text": "检出R023 errcode类型强转", "type": "contains"},
+        {"text": "未误报硬编码字符串/$r资源等非XTS规则", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "async-resource-rules",
+      "prompt": "检查这个OpenHarmony XTS测试文件的代码质量问题，列出所有问题及其规则编号",
+      "files": ["test_cases/subsystem_demo/async_resource.test.ts"],
+      "expected_output": "应检出7条规则：R201(异步无done)、R202(Promise无catch)、R203(并发无隔离)、R204(资源未释放)、R205(beforeAll无afterAll)、R206(用例间隐式依赖)、R018(testcase重复)",
+      "assertions": [
+        {"text": "检出R201异步无done", "type": "contains"},
+        {"text": "检出R202 Promise无catch", "type": "contains"},
+        {"text": "检出R203并发无隔离", "type": "contains"},
+        {"text": "检出R204资源未释放", "type": "contains"},
+        {"text": "检出R205 beforeAll无afterAll", "type": "contains"},
+        {"text": "检出R206用例间隐式依赖", "type": "contains"},
+        {"text": "检出R018 testcase重复", "type": "contains"},
+        {"text": "未误报conn.close未在try/finally等非XTS规则", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "config-build-signature-rules",
+      "prompt": "检查这些OpenHarmony XTS配置/构建/签名文件的代码质量问题，列出所有问题及其规则编号",
+      "files": [
+        "test_cases/subsystem_demo/Test.json",
+        "test_cases/subsystem_demo/syscap.json",
+        "test_cases/subsystem_demo/oh-package.json5",
+        "test_cases/subsystem_demo/BUILD.gn",
+        "test_cases/subsystem_demo/dup_testsuite.test.ts",
+        "test_cases/subsystem_demo/pages/pageA.ets",
+        "test_cases/subsystem_demo/pages/pageB.ets",
+        "test_cases/subsystem_demo/signature/entry_default.p7b"
+      ],
+      "expected_output": "应检出9条规则：R007(Test.json禁止配置)、R010(part/subsystem不匹配)、R011(testsuite重复)、R012(p7b APL等级)、R014(HAP命名)、R017(syscap多能力)、R019(.key重复)、R020(.id重复)、R021(hypium版本过低)",
+      "assertions": [
+        {"text": "检出R007 Test.json禁止配置项", "type": "contains"},
+        {"text": "检出R010 part/subsystem不匹配", "type": "contains"},
+        {"text": "检出R011 testsuite重复", "type": "contains"},
+        {"text": "检出R012 p7b APL等级错误", "type": "contains"},
+        {"text": "检出R014 HAP命名不规范", "type": "contains"},
+        {"text": "检出R017 syscap多能力配置", "type": "contains"},
+        {"text": "检出R019 .key重复", "type": "contains"},
+        {"text": "检出R020 .id重复", "type": "contains"},
+        {"text": "检出R021 hypium版本过低", "type": "contains"},
+        {"text": "未误报缺少driver/kits/签名损坏等非XTS规则", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "error-code-assertion-focus",
+      "prompt": "检查这个OpenHarmony XTS测试文件的错误码断言规范问题，仅列出错误码相关规则及其编号",
+      "files": ["test_cases/subsystem_demo/compliance.test.ts"],
+      "expected_output": "应检出3条错误码规则：R002(error.code字符串断言)、R022(errcode宽松比较)、R023(errcode类型强转)",
+      "assertions": [
+        {"text": "检出R002 error.code字符串断言", "type": "contains"},
+        {"text": "检出R022 errcode宽松比较", "type": "contains"},
+        {"text": "检出R023 errcode类型强转", "type": "contains"},
+        {"text": "未误报非错误码类规则(如R005尺寸/R013注释)作为错误码问题", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "naming-and-format-focus",
+      "prompt": "检查这个OpenHarmony XTS测试文件的命名与注释格式问题，仅列出命名/格式类规则及其编号",
+      "files": ["test_cases/subsystem_demo/compliance.test.ts"],
+      "expected_output": "应检出3条命名格式规则：R008(用例注释格式冒号分隔)、R009(tc.number命名)、R016(testcase命名特殊字符)",
+      "assertions": [
+        {"text": "检出R008用例注释格式(冒号分隔)", "type": "contains"},
+        {"text": "检出R009 tc.number命名不规范", "type": "contains"},
+        {"text": "检出R016 testcase命名特殊字符", "type": "contains"},
+        {"text": "未误报命名规则范围外的问题", "type": "llm_judge"}
+      ]
+    },
+    {
+      "id": 6,
+      "name": "duplicate-rules-focus",
+      "prompt": "检查这个OpenHarmony XTS测试文件与配置的重复类问题，仅列出重复相关规则及其编号",
+      "files": ["test_cases/subsystem_demo/dup_testsuite.test.ts", "test_cases/subsystem_demo/Test.json"],
+      "expected_output": "应检出4条重复类规则：R011(testsuite重复)、R018(testcase重复)、R019(.key重复)、R020(.id重复)",
+      "assertions": [
+        {"text": "检出R011 testsuite重复", "type": "contains"},
+        {"text": "检出R018 testcase重复", "type": "contains"},
+        {"text": "检出R019 .key重复", "type": "contains"},
+        {"text": "检出R020 .id重复", "type": "contains"}
+      ]
+    },
+    {
+      "id": 7,
+      "name": "signature-and-syscap-focus",
+      "prompt": "检查这个OpenHarmony XTS签名与syscap配置文件的问题，仅列出签名/能力相关规则及其编号",
+      "files": ["test_cases/subsystem_demo/signature/entry_default.p7b", "test_cases/subsystem_demo/syscap.json"],
+      "expected_output": "应检出2条规则：R012(p7b APL等级错误)、R017(syscap多能力配置)",
+      "assertions": [
+        {"text": "检出R012 p7b APL等级错误", "type": "contains"},
+        {"text": "检出R017 syscap多能力配置", "type": "contains"},
+        {"text": "未误报签名文件损坏等非XTS规则", "type": "llm_judge"}
+      ]
+    }
+  ]
+}
