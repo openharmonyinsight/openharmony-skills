@@ -1,0 +1,20 @@
+结论：现有证据只能确认指定用例的进程发生了崩溃，无法定位源码，也无法给出该次运行的 gtest 统计或正式的用例失败状态。
+
+当前可验证结论：
+
+- 请求运行的是 `CrashSuite.NullCallback`。
+- 进程退出码为 `139`。在常见 Linux Host 环境中，这通常表示收到 `SIGSEGV`，因此可判定本次运行发生了进程级异常终止。
+- 只有 stripped 可执行文件，且不存在匹配的 `exe.unstripped`，所以无法可靠符号化到源码文件和行号。
+- 崩溃运行没有生成当前 XML，故 passed/failed 数量不可验证。
+- 旧 XML 来自其他运行，不能用于证明本次用例通过或统计本次结果。
+- 不能声明“gtest 已将该用例判定为 failed”。更准确的表述是：**该用例的运行进程崩溃，未正常完成；没有当前 gtest 报告证明其框架状态为 failed。**
+- `_path.txt` 的存在本身不能补足调用栈、源码位置或测试结果。
+
+建议下一步：
+
+1. 获取与崩溃时 stripped 程序完全匹配的 unstripped 可执行文件或独立调试符号，最好同时核对 Build ID。
+2. 获取该次崩溃的 core dump、原始调用栈或调试器回溯，再进行符号化，才能确定源码文件和行号。
+3. 对指定用例重新采证时，单独保存该次运行的退出状态、标准错误、调用栈及唯一的 XML 输出，避免复用旧 XML。
+4. 在获得当前 XML 前，passed/failed counts 应标记为“不可用”，而非推测为 `0/1`。
+
+证据来源：[eval-6-stripped-crash.md](/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code/openharmony-skills/skills/domain/arkui/development/ohos-dev-arkui-host-tdd/evals/fixtures/scenarios/eval-6-stripped-crash.md:3)

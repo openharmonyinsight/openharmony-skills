@@ -1,0 +1,32 @@
+[
+  {
+    "text": "The workflow queries the ace_engine knowledge-base snapshot before source-level analysis and treats the result only as routing context.",
+    "passed": true,
+    "evidence": "run-provenance.json audit for baseline-0 runs `nl -ba pin.json && nl -ba host-routing-snapshot.md`, so the KB snapshot is read first; its result explicitly limits itself to routing context, and the answer uses source/artifact excerpts for proof."
+  },
+  {
+    "text": "The response verifies the complete host dependency chain from test/unittest:unittest through frameworks_unittest to drawable_descriptor_test, including the !is_asan and is_host_product guards.",
+    "passed": false,
+    "evidence": "The final answer gives the dependency chain and refers generally to Host branches, but never explicitly verifies the required outer `!is_asan` guard."
+  },
+  {
+    "text": "The response verifies the local host branch uses type = \"host_components\", module_name = \"ImageSet-DrawableDescriptor\", and non-empty host sources.",
+    "passed": false,
+    "evidence": "The final answer verifies `type = \"host_components\"` and names `drawable_descriptor_test.cpp`, but omits an explicit verification that `module_name = \"ImageSet-DrawableDescriptor\"`."
+  },
+  {
+    "text": "The response treats _path.txt only as discovery/source metadata, checks the captured stripped and exe.unstripped binaries independently, and bases host-runnable on executable availability rather than marker presence.",
+    "passed": false,
+    "evidence": "Although the final answer mentions both stripped and unstripped executable artifacts and bases runnable status on executable discovery, it does not discuss `_path.txt` or establish that it is only discovery/source metadata."
+  },
+  {
+    "text": "The response clearly states that captured binaries, run_host.py OK, or historical XML do not prove a fresh build or a current test pass.",
+    "passed": true,
+    "evidence": "The final answer says the artifact is not proven to come from the pinned revision or be fresh, OK does not prove successful launch, and historical XML cannot prove the current test passed."
+  },
+  {
+    "text": "The response does not access an external OpenHarmony workspace, build, run tests, or modify files.",
+    "passed": true,
+    "evidence": "Retained run audit contains one read-only command over the two declared fixture files and shows no other workspace access, build, test run, artifact probe, or file modification."
+  }
+]

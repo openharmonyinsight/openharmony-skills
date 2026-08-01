@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "target_skill": "ohos-dev-arkui-host-tdd",
+  "installed_path": "/home/huawei/.codex/skills/ohos-dev-arkui-host-tdd",
+  "disabled_path": "/tmp/host-tdd-nine-case-forward-eval-20260729/disabled-skill",
+  "method": "The only installed target-skill directory was moved outside the Codex discovery root before all nine baseline cases and restored immediately after the baseline integration case.",
+  "baseline_metadata_flag": "baseline_isolated_confirmed=true",
+  "sha256_before_baseline": "80fe481e8248ded8508538cd7ad4faf68dad6371c8ef7a399a4904c22163054a",
+  "sha256_after_baseline": "80fe481e8248ded8508538cd7ad4faf68dad6371c8ef7a399a4904c22163054a",
+  "restored": true,
+  "disabled_path_absent_after_restore": true
+}

@@ -1,0 +1,47 @@
+当前证据只能确认：执行 `CrashSuite.NullCallback` 时进程异常崩溃，退出码为 `139`，通常对应 `SIGSEGV`。这不是普通的 gtest 断言失败。
+
+当前可验证结论：
+
+- 精确用例：`--gtest_filter=CrashSuite.NullCallback`
+- 崩溃运行未成功完成，且没有生成本次 XML。
+- 无法给出本次运行的 passed/failed 数量。
+- 不能声明该用例被 gtest 记录为 `FAILED`；准确表述应为“运行该用例时测试进程崩溃”。
+- 旧 XML 属于另一次运行，其通过结果不能证明本次运行通过，也不能否定本次崩溃。
+- 只有 stripped 可执行文件、没有匹配的 `exe.unstripped`，因此不能可靠确定源码文件和行号。
+- `_path.txt` 仅是 GN 生成的发现标记，不能证明 Host 路由正确、编译成功、产物新鲜或测试通过。
+- `host-configured` 无法判断：没有提供 GN 依赖闭包、`is_host_product`、`type`、`module_name` 或 Host `sources` 证据。
+- stripped 产物存在，但 `artifact-current` 为未证明；没有当前构建及 stripped/unstripped 同源证据。
+
+下一步应先在真实、可写的 OpenHarmony Host 环境中生成当前且匹配的符号化产物。构建须由 `$ohos-dev-arkui-ace-engine-build` 管理。首先进行观察性检查：
+
+```bash
+bash <ace-build-skill-dir>/scripts/monitor_progress.sh \
+  --root <oh-root> --product host_product \
+  --target ace_engine_test --check
+```
+
+该检查不是构建预约。若存在匹配的 active 构建，不得启动第二个构建；若目标或归属不匹配，则无法归因，应停止。
+
+无活动构建时，通过 wrapper 的原子锁启动 `host_product` / `ace_engine_test`，保留 `--no-prebuilt-sdk`，其余参数采用构建技能的当前策略，然后按 wrapper 返回的 launch ID 监控至终态：
+
+```bash
+bash <ace-build-skill-dir>/scripts/build_wrapper.sh \
+  --product host_product -- \
+  <由构建技能生成的参数，包含 --no-prebuilt-sdk>
+```
+
+```bash
+bash <ace-build-skill-dir>/scripts/monitor_progress.sh \
+  --root <oh-root> --product host_product \
+  --target ace_engine_test --launch-id <id>
+```
+
+确认产物新鲜且 stripped/unstripped 属于同一次构建后，再运行符号化二进制：
+
+```bash
+out/host/host_product/exe.unstripped/tests/unittest/ace_engine/<SuiteDirectory>/<binary> \
+  --gtest_filter=CrashSuite.NullCallback \
+  --gtest_output=xml:<current-xml-path>
+```
+
+届时依据符号化栈确定源码文件和行号；若仍硬崩溃且未生成 XML，仍只能报告信号、退出码和栈帧，不能编造 gtest 计数。

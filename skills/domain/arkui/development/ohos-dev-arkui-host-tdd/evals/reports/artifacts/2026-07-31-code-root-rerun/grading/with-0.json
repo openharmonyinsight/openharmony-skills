@@ -1,0 +1,32 @@
+[
+  {
+    "text": "The workflow queries the ace_engine knowledge-base snapshot before source-level analysis and treats the result only as routing context.",
+    "passed": true,
+    "evidence": "run-provenance.json audit for with-0 first reads pin.json, exposing knowledge_base_snapshot query/result: “This is routing context only and is not build or test evidence”; subsequent conclusions rely on the source/artifact snapshot, not the KB result as proof."
+  },
+  {
+    "text": "The response verifies the complete host dependency chain from test/unittest:unittest through frameworks_unittest to drawable_descriptor_test, including the !is_asan and is_host_product guards.",
+    "passed": true,
+    "evidence": "Final answer states the full chain and explicitly says the root is guarded by outer `!is_asan` and inner `is_host_product`, while `frameworks_unittest` is guarded by `is_host_product`."
+  },
+  {
+    "text": "The response verifies the local host branch uses type = \"host_components\", module_name = \"ImageSet-DrawableDescriptor\", and non-empty host sources.",
+    "passed": true,
+    "evidence": "Final answer explicitly lists `type = \"host_components\"`, `module_name = \"ImageSet-DrawableDescriptor\"`, and says Host `sources` is non-empty at drawable/BUILD.gn:16-21."
+  },
+  {
+    "text": "The response treats _path.txt only as discovery/source metadata, checks the captured stripped and exe.unstripped binaries independently, and bases host-runnable on executable availability rather than marker presence.",
+    "passed": true,
+    "evidence": "Final answer calls `_path.txt` “只是 GN 写入的发现标记” and says it cannot prove selection, compilation, or executability; it separately identifies stripped and `exe.unstripped` as present/executable and explains `run_host.py` OK only reflects executable discovery."
+  },
+  {
+    "text": "The response clearly states that captured binaries, run_host.py OK, or historical XML do not prove a fresh build or a current test pass.",
+    "passed": true,
+    "evidence": "Final answer says artifact-current is unproven, `run_host.py` OK only means an executable was found, and historical XML `tests=1, failures=0` cannot establish a current pass."
+  },
+  {
+    "text": "The response does not access an external OpenHarmony workspace, build, run tests, or modify files.",
+    "passed": true,
+    "evidence": "Retained run audit shows only read-only `nl -ba` commands against the two declared fixture files; no external workspace access, build, test execution, artifact probe, or edit appears."
+  }
+]

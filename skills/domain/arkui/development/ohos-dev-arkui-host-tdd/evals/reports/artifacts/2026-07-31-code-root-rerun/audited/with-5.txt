@@ -1,0 +1,77 @@
+审查结论：这是生产代码缺少边界检查导致的越界未定义行为。删除用例或改成 `EXPECT_DEATH` 都会掩盖缺陷，不应采纳。以下假定非法索引的约定返回值为 `0`，与现有边界用例一致。
+
+```diff
+diff --git a/<production-source-path>/frame_duration.cpp b/<production-source-path>/frame_duration.cpp
+--- a/<production-source-path>/frame_duration.cpp
++++ b/<production-source-path>/frame_duration.cpp
+@@ -1,5 +1,8 @@
+ int32_t GetFrameDuration(const std::vector<int32_t>& durations, size_t index)
+ {
++    if (index >= durations.size()) {
++        return 0;
++    }
+     return durations[index];
+ }
+
+diff --git a/<host-test-source-path>/frame_duration_test.cpp b/<host-test-source-path>/frame_duration_test.cpp
+--- a/<host-test-source-path>/frame_duration_test.cpp
++++ b/<host-test-source-path>/frame_duration_test.cpp
+@@ -1,4 +1,9 @@
+-TEST(GetFrameDurationTest, EmptyInput)
++TEST(GetFrameDurationTest, BoundaryHandling)
+ {
+     EXPECT_EQ(GetFrameDuration({}, 0), 0);
++
++    const std::vector<int32_t> durations { 16 };
++    EXPECT_EQ(GetFrameDuration(durations, durations.size()), 0);
++    EXPECT_EQ(GetFrameDuration(durations, 0), 16);
+ }
+```
+
+防御点包括：
+
+- 空容器索引 `0` 返回 `0`，不再解引用无效元素。
+- 非空容器的尾后索引返回 `0`。
+- 合法索引仍返回原始值，防止修复破坏正常路径。
+- 使用 `index >= durations.size()`，同时覆盖空容器和所有越界索引。
+
+当前验证结论：
+
+- 已有执行证据表明进程收到 `SIGSEGV`，属于进程崩溃，不是普通 gtest 断言失败。
+- 崩溃导致没有生成 XML；不能虚构用例数量或 gtest 结果。
+- `operator[]` 越界属于未定义行为，不能把每次都崩溃作为稳定契约，因此不应使用 `EXPECT_DEATH`。
+- 本 diff 仅经过静态审查，未写入、未编译、未运行，不能称为通过 TDD。
+- 输入未提供 `BUILD.gn`，所以 Host 依赖闭包、`!is_asan`、`is_host_product`、`type = "host_components"`、`module_name` 和 Host `sources` 非空均未验证。
+- `_path.txt`、可执行文件、`exe.unstripped` 和 artifact-current 均未探测，状态为未证明。
+
+后续验证顺序必须是：Host build → 精确用例 → 周边套件；生产代码发生变化后，再按仓库要求补充完整产品构建。
+
+精确过滤器：
+
+```text
+--gtest_filter=GetFrameDurationTest.BoundaryHandling
+```
+
+周边套件过滤器：
+
+```text
+--gtest_filter=GetFrameDurationTest.*
+```
+
+构建前只读检查形式应为：
+
+```bash
+bash <ace-build-skill-dir>/scripts/monitor_progress.sh \
+  --root <oh-root> --product host_product \
+  --target ace_engine_test --check
+```
+
+该检查不是构建预约；若发现匹配的 active 构建，不得启动第二个构建，若目标不匹配则无法归因并应停止。未来构建必须在真实、可写的 Host 环境中，由 `$ohos-dev-arkui-ace-engine-build` 按当前参数策略使用 wrapper 的原子锁启动 `host_product/ace_engine_test`，保留 `--no-prebuilt-sdk`，随后执行：
+
+```bash
+bash <ace-build-skill-dir>/scripts/monitor_progress.sh \
+  --root <oh-root> --product host_product \
+  --target ace_engine_test --launch-id <id>
+```
+
+并等待其终态成功后，才能运行上述精确用例。

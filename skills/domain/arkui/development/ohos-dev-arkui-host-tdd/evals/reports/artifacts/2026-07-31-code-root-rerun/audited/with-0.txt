@@ -1,0 +1,15 @@
+结论：在该 pinned revision 上，`drawable_descriptor_test` 是“有条件地 host-configured”，快照中是 host-runnable；但 artifact-current 和当前测试通过均无法推出。
+
+| 项目 | 判断 | 依据 |
+|---|---|---|
+| host-configured | **是，但要求 `is_host_product && !is_asan`** | 完整路由为 `test/unittest:unittest` → `test/unittest/frameworks:frameworks_unittest` → `test/unittest/frameworks/core/drawable:drawable_descriptor_test`。根组受外层 `!is_asan` 和内层 `is_host_product` 保护（`test/unittest/BUILD.gn:20-29`）；中间组受 `is_host_product` 保护并依赖 drawable target（`test/unittest/frameworks/BUILD.gn:16-20`）。目标自身位于 `is_host_product` 分支，`type = "host_components"`、`module_name = "ImageSet-DrawableDescriptor"`，且 Host `sources` 非空（`test/unittest/frameworks/core/drawable/BUILD.gn:16-21`）。因此 ASan Host 配置不能由该快照证明可达。 |
+| Host 依赖适配 | **快照所示条件满足** | Host 测试依赖包含 drawable 生产实现（`test/unittest/BUILD.gn:770-776`）；设备 IPC 仅在 `!is_host_product` 下加入（`:802-804`）；Host mock 库提供 File URI、Base64、ImageSource、PixelMap 替代（`:818-840`）。测试包含 PixelMap/Picture mock（`test/unittest/frameworks/core/drawable/drawable_descriptor_test.cpp:21-22`），ImageSource 入口返回 Host mock（`test/mock/frameworks/base/image/mock_image_source.cpp:19-22,29-32`）。 |
+| host-runnable | **是，仅表示快照时产物可用** | 快照记录 stripped 和 `exe.unstripped` 均 `present=true, executable=true`，对应：`out/host/host_product/tests/unittest/ace_engine/ImageSet-DrawableDescriptor/drawable_descriptor_test` 及其 `exe.unstripped` 路径；`run_host_status` 为 `OK`（[host-routing-snapshot.md:225](</srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code/openharmony-skills/skills/domain/arkui/development/ohos-dev-arkui-host-tdd/evals/fixtures/ace-engine-host-routing/host-routing-snapshot.md:225>)）。 |
+
+能够推出的验证结论：
+
+- 可以确认该 target 在 revision `3d648d632141678368bde7a0376cf80f67f6e3e4` 的非 ASan Host GN 闭包中静态可达（[pin.json:3](</srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code/openharmony-skills/skills/domain/arkui/development/ohos-dev-arkui-host-tdd/evals/fixtures/ace-engine-host-routing/pin.json:3>)）。
+- 可以确认快照采集时存在可执行的 stripped 和 symbolized 文件；`run_host.py` 的 `OK` 只代表发现了可执行文件（`test/unittest/scripts/run_host.py:128-147,183-200`）。
+- `_path.txt` 存在并记录 `//foundation/arkui/ace_engine/test/unittest/frameworks/core/drawable`，但它只是 GN 写入的发现标记（`build/test.gni:138-145`），不能证明被选中、编译成功或可执行。
+- **artifact-current：未证明。** Fixture 没有把产物与当前 Host 配置、成功构建记录、相关输入的新旧关系、GN 再生成状态或 Build ID 绑定起来。
+- 历史 XML 只记录过 `tests=1, failures=0`；不能推出当前源码对应测试通过、整个 suite 通过或功能已经验证。此次没有执行构建或测试，因此当前测试结果应报告为 **未验证**。

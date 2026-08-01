@@ -1,0 +1,13 @@
+已按 `environment.json` 执行，因 `ready: true` 才重跑；未重新编译或修改源码/测试。
+
+- 命令：
+
+```bash
+/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code/out/host/host_product/exe.unstripped/tests/unittest/ace_engine/ImageSet-DrawableDescriptor/drawable_descriptor_test --gtest_filter=DrawableDescriptorTest.AnimatedDrawableDescTest044 --gtest_output=xml:/tmp/host-tdd-repro-eval-20260731-rerun-code-root/audited/baseline-integration/integration-case-1.xml
+```
+
+- 退出结果：`0`，测试通过。
+- 用例统计：运行 `1`，通过 `1`，失败 `0`，错误 `0`，跳过/禁用 `0`。
+- XML：已实际生成，大小 `638` 字节：[integration-case-1.xml](/tmp/host-tdd-repro-eval-20260731-rerun-code-root/audited/baseline-integration/integration-case-1.xml)。
+
+进程退出阶段出现覆盖率 `.gcda` 无法写入的 profiling 警告，但不影响测试通过及 XML 生成。

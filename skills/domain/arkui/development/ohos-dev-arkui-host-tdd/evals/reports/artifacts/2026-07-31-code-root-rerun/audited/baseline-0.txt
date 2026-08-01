@@ -1,0 +1,72 @@
+审计结论：
+
+| 判断项 | 结论 | 含义 |
+|---|---|---|
+| host-configured | 是 | GN 路由明确将测试配置为 Host 组件测试，并接入 Host mock |
+| host-runnable | 是，但仅限静态产物状态 | 快照记录了可执行文件，`run_host.py` 会将其列为 `OK`；未证明实际启动成功 |
+| 测试验证通过 | 不能推出 | 没有本次构建、执行或新鲜 gtest 结果证据 |
+
+### 1. host-configured：是
+
+证据链完整：
+
+- Host 顶层 `unittest` 依赖 `frameworks:frameworks_unittest`：`test/unittest/BUILD.gn:20-29`。
+- Host 的 `frameworks_unittest` 依赖 `core/drawable:drawable_descriptor_test`：`test/unittest/frameworks/BUILD.gn:16-20`。
+- 目标在 Host 分支中声明为：
+
+  - `ace_unittest("drawable_descriptor_test")`
+  - `type = "host_components"`
+  - 源文件为 `drawable_descriptor_test.cpp`
+
+  见 `test/unittest/frameworks/core/drawable/BUILD.gn:16-20`。
+
+Host 依赖替换也已配置：
+
+- Host 测试依赖库纳入实际 drawable 实现：`test/unittest/BUILD.gn:770-776`。
+- Host 下排除设备 IPC：`test/unittest/BUILD.gn:802-804`。
+- Host mock 库提供 File URI、Base64、ImageSource 和 PixelMap 替代实现：`test/unittest/BUILD.gn:818-840`。
+- 测试直接包含 mock PixelMap/Picture 和生产 drawable 头文件：`test/unittest/frameworks/core/drawable/drawable_descriptor_test.cpp:16,21-22,26,29`。
+- `ImageSource::Create` 被 Host mock 接管：`test/mock/frameworks/base/image/mock_image_source.cpp:19-32`。
+
+因此可以确认：在 pinned revision `3d648d632141678368bde7a0376cf80f67f6e3e4` 下，该测试具有明确的 Host GN 配置和 mock 依赖路径。Revision 及源文件哈希记录见 [pin.json](/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code/openharmony-skills/skills/domain/arkui/development/ohos-dev-arkui-host-tdd/evals/fixtures/ace-engine-host-routing/pin.json:3)。
+
+### 2. host-runnable：是，但仅能判断为“存在可执行候选产物”
+
+快照中的产物清单记录：
+
+- `ImageSet-DrawableDescriptor/drawable_descriptor_test`
+- stripped 和 unstripped 产物均 `present=true`
+- 两者均 `executable=true`
+- `run_host_status="OK"`
+
+见 [host-routing-snapshot.md](/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code/openharmony-skills/skills/domain/arkui/development/ohos-dev-arkui-host-tdd/evals/fixtures/ace-engine-host-routing/host-routing-snapshot.md:232)。
+
+`run_host.py` 的语义表明：
+
+- `compiled` 只要求 `binary_path` 存在且是文件：`test/unittest/scripts/run_host.py:89-90`。
+- 发现可执行文件时检查 `os.path.isfile` 和 `os.access(..., os.X_OK)`：同文件 `:143-145`。
+- 列表中的 `OK` 是对这种静态 `compiled` 状态的打印：同文件 `:183-200`。
+
+所以可以称其为 host-runnable，即快照中存在可被 Host runner 发现的可执行文件；但不能把 `OK` 解读为“已经运行成功”。
+
+### 3. 能够推出的验证结论
+
+能够推出：
+
+- 测试已正确接入 Host GN 路由。
+- Host 分支采用 `host_components`，并配置了必要的 Host mock/依赖替换。
+- 捕获快照时，runner 可发现一个具有执行权限的 `drawable_descriptor_test` 产物。
+- 存在一份历史 XML，记录 `tests=1, failures=0`。
+
+不能推出：
+
+- 该产物由 pinned revision 成功构建。
+- 产物与所列源码哈希一致或足够新鲜。
+- 可执行文件实际能够启动、完成初始化或正常退出。
+- 当前测试执行通过。
+- 历史 XML 确实来自当前产物、当前 revision 或当前源码。
+- drawable 功能行为已经得到有效验证。
+
+fixture 自身也明确限定：`present=true`、`executable=true` 不证明源码新鲜度、构建成功、运行启动成功或 gtest 结果，见 [host-routing-snapshot.md](/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code/openharmony-skills/skills/domain/arkui/development/ohos-dev-arkui-host-tdd/evals/fixtures/ace-engine-host-routing/host-routing-snapshot.md:225)。
+
+最终判定：**host-configured = 是；host-runnable = 是（静态产物可执行性层面）；验证通过 = 证据不足，不能认定。**

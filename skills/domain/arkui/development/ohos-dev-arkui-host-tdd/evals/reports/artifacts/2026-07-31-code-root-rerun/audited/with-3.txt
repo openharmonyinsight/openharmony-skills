@@ -1,0 +1,32 @@
+基于固定 revision `3d648d632141678368bde7a0376cf80f67f6e3e4` 的随附快照：
+
+| 判断项 | 结论 | 依据 |
+|---|---|---|
+| host-configured | **否** | 未进入完整 Host 依赖闭包，且自身不是 `host_components` target |
+| host-runnable | **否** | stripped 和 `exe.unstripped` 可执行文件均不存在 |
+| artifact-current | **无法证明/不适用** | 没有可执行产物，更没有构建来源或新鲜度证据 |
+
+完整 Host 路由如下：
+
+1. `test/unittest:unittest` 仅在外层 `!is_asan`、内层 `is_host_product` 下依赖 `core:core_unittest`。
+2. `core:core_unittest` 在 `is_host_product` 下依赖 `pattern:core_pattern_unittest`。
+3. `core_pattern_unittest` 的 Host 分支只接入 `text:text_test_ng`，没有接入 `text:text_test_ng_addition`。
+4. 快照中的 `# "text:text_test_ng_addition"` 位于非 Host 分支且已被注释，因此也不构成依赖。
+5. 局部 target 虽然存在，但声明为：
+
+   - `type = "new"`，不是 `host_components`
+   - `module_name = "TextSet-Text"`
+   - sources 非空：关闭完整套件时为 `text_test_min.cpp`，否则为原始 sources 加 `text_test_min.cpp`
+   - 没有专门的 `is_host_product` target 分支
+   - fixture 未提供足够信息证明其设备运行依赖已被 Host mocks 替换
+
+因此，单看局部 `ace_unittest("text_test_ng_addition")` 声明不能推导 Host 已配置；依赖闭包和 Host target 形态都不满足条件。
+
+`_path.txt` 与 `MISSING` 的关系是：
+
+- `build/test.gni` 无条件写入 `<target>_path.txt`；`_has_sources` 只控制 `.sources` 文件的写入。
+- marker 内容 `//foundation/arkui/ace_engine/test/unittest/core/pattern/text` 是 target 的 GN 源目录，不是可执行文件路径。
+- `run_host.py` 将 `_path.txt` marker 与实际可执行文件合并做发现：只有同名可执行文件存在时才算 compiled/`OK`；只有 marker、没有可执行文件时就显示 `MISSING`。
+- captured inventory 正是这种情况：marker 存在，但 stripped 与 `exe.unstripped` 均不存在，所以显示 `MISSING`。
+
+故 `MISSING` 表示这次文件系统发现中“知道有这个声明，但未找到同名可执行文件”；它本身不等价于编译失败。本 fixture 的静态 GN 图进一步表明，更直接的原因是该 target 没有被接入 Host 依赖闭包。

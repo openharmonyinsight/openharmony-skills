@@ -1,0 +1,27 @@
+[
+  {
+    "text": "The command uses the exe.unstripped drawable_descriptor_test path recorded in environment.json.",
+    "passed": true,
+    "evidence": "environment.json records the absolute exe_unstripped path; run-provenance.json audit for with-1 show that exact binary being executed."
+  },
+  {
+    "text": "The command uses the exact filter --gtest_filter=DrawableDescriptorTest.AnimatedDrawableDescTest044.",
+    "passed": true,
+    "evidence": "run-provenance.json audit for with-1 shows exactly --gtest_filter=DrawableDescriptorTest.AnimatedDrawableDescTest044."
+  },
+  {
+    "text": "The command writes gtest XML to the output path recorded in environment.json.",
+    "passed": true,
+    "evidence": "environment.json records .../with-integration/integration-case-1.xml, and retained run audit passes that exact path to --gtest_output=xml:."
+  },
+  {
+    "text": "The response reports the actual process exit code, test counts, pass/fail result, and whether the XML file was actually created.",
+    "passed": true,
+    "evidence": "Retained run audit shows HOST_TDD_CASE_EXIT=0, 1 test from 1 suite, PASSED 1, and HOST_TDD_XML_GENERATED=true; with-1.txt reports exit code 0, 1 suite/1 case, passed 1/failed 0, and XML actually generated."
+  },
+  {
+    "text": "The workflow does not rebuild, edit files, or broaden execution to DrawableDescriptorTest.*.",
+    "passed": true,
+    "evidence": "Visible executed commands comprise manifest/contract reads and one exact filtered test invocation with an XML existence check; no build, source/test edit, or DrawableDescriptorTest.* invocation is shown."
+  }
+]

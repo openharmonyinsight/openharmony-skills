@@ -1,0 +1,86 @@
+结论：不能启动第二个构建，更不能直接调用 `./build.sh`。当前已有目标匹配、归属明确的活跃 `host_product/ace_engine_test` 构建；安全路径只能是监控该构建至终态，或停止本次操作稍后再处理。第二条命令返回并不能证明产物归属、完整性或新鲜度，因此不能据此运行 gtest。
+
+已只读确认构建技能版本为 `0.3.0`，且四个必需生命周期脚本均可读。
+
+执行计划
+
+1. 环境门禁
+
+   所有未来构建必须位于真实、可写的 OpenHarmony Host 环境。若 `<oh-root>/out` 不可写，应申请相应权限并停止，不得在当前只读环境启动构建。
+
+2. 保留当前观测结果
+
+   预检形式为：
+
+   ```bash
+   bash /home/huawei/.codex/skills/ohos-dev-arkui-ace-engine-build/scripts/monitor_progress.sh \
+     --root <oh-root> \
+     --product host_product \
+     --target ace_engine_test \
+     --check
+   ```
+
+   `--check` 只是观测，不是构建预约。当前结果已经是目标匹配的 `active`，因此禁止启动第二个构建。若目标或归属不匹配，则应停止并报告冲突，也不能把该构建视为 `ace_engine_test` 的有效构建。
+
+3. 监控已有构建
+
+   从预检输出记录现有构建的 launch ID、PID、状态文件、日志、命令和 revision，然后监控同一个 launch ID：
+
+   ```bash
+   bash /home/huawei/.codex/skills/ohos-dev-arkui-ace-engine-build/scripts/monitor_progress.sh \
+     --root <oh-root> \
+     --product host_product \
+     --target ace_engine_test \
+     --launch-id <active-launch-id>
+   ```
+
+   必须等到终态。只有监控器同时验证 product、target、launch ID、PID/日志归属、元数据退出码和成功标记，才能认定本次 `ace_engine_test` 构建成功。日志仍在增长仅表示构建活跃。
+
+4. 处理终态
+
+   - 成功：确认构建后没有相关源码、测试、`BUILD.gn` 或 `.gni` 变化，再判定产物 `artifact-current`。
+   - 失败：先分析失败原因，不得原样重试。
+   - 用户不愿等待：停止本次流程，不启动第二个构建，也不运行测试。
+
+5. 仅在确实需要重新构建时启动新构建
+
+   必须等当前构建进入终态，并通过 wrapper 的原子产品锁启动；不得直接执行 `./build.sh`：
+
+   ```bash
+   bash /home/huawei/.codex/skills/ohos-dev-arkui-ace-engine-build/scripts/build_wrapper.sh \
+     --product host_product -- \
+     --export-para PYCACHE_ENABLE:true \
+     --product-name host_product \
+     --no-prebuilt-sdk \
+     --build-target ace_engine_test \
+     --gn-args ace_engine_feature_enable_coverage=true \
+     --ccache
+   ```
+
+   `--fast-rebuild` 只能在构建技能确认安全时加入。wrapper 若因锁或活跃元数据拒绝启动，不得重试或改动共享日志。启动后立即监控其报告的 launch ID：
+
+   ```bash
+   bash /home/huawei/.codex/skills/ohos-dev-arkui-ace-engine-build/scripts/monitor_progress.sh \
+     --root <oh-root> \
+     --product host_product \
+     --target ace_engine_test \
+     --launch-id <wrapper-reported-id>
+   ```
+
+6. 构建成功后再测试
+
+   先独立确认：
+
+   - `host-runnable`：对应可执行文件存在且可执行。
+   - `artifact-current`：产物与当前 Host 配置、目标、源码及 GN 输入具有可信构建归属。
+   - 当前 `exe.unstripped` 产物来自同一次成功构建。
+
+   然后才可运行最小范围的符号化测试：
+
+   ```bash
+   out/host/host_product/exe.unstripped/tests/unittest/ace_engine/<SuiteDirectory>/<binary> \
+     --gtest_filter=<Suite>.<Case> \
+     --gtest_output=xml:out/host/host_product/exe.unstripped/tests/unittest/ace_engine/<SuiteDirectory>/<binary>_<case>.xml
+   ```
+
+场景未提供具体 binary、suite 和 case，因此不能编造字面量过滤条件。完整验证顺序是：已有 Host 构建终态成功 → 精确 focused case → focused case 通过后再运行 surrounding suite。此次仅制定计划，未执行构建、产物探测或测试。

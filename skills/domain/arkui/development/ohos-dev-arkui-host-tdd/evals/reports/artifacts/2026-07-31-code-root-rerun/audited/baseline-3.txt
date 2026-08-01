@@ -1,0 +1,17 @@
+结论：
+
+- **host-configured：否**
+  - Host 路由为 `unittest → core_unittest → core_pattern_unittest`。
+  - `core_pattern_unittest` 的 Host 分支只依赖 `text:text_test_ng`，没有依赖 `text_test_ng_addition`。
+  - `text_test_ng_addition` 虽在局部 `BUILD.gn` 中无条件声明，但使用 `type = "new"`，也没有独立的 `is_host_product` / `host_components` 分支。局部声明不等于进入 Host 测试依赖图。
+
+- **host-runnable：否**
+  - captured inventory 中 stripped 和 unstripped 可执行文件均不存在。
+  - `run_host.py` 以实际可执行文件决定 `compiled`；因此该项状态为 `MISSING`，不能运行。
+
+`_path.txt` 与 `MISSING` 的关系：
+
+- `ace_unittest` 模板会无条件写出 `${target_name}_path.txt`，它只记录 target 所在源码目录。
+- `run_host.py` 将可执行文件和 `_path.txt` 中发现的名称取并集；所以只有 `_path.txt` 也会让测试出现在列表里。
+- 对 `text_test_ng_addition`，`_path.txt` 提供了名称、分类和 `SOURCE`，但没有对应可执行文件，故被列为 **`MISSING`**。
+- 因此 `_path.txt` 的存在不是 Host 配置成功、编译成功或可运行的证据；这里它恰好解释了为何“能被发现，但状态是 MISSING”。

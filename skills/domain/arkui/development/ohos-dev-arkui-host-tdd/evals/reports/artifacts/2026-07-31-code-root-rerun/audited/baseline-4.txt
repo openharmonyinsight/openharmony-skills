@@ -1,0 +1,17 @@
+结论：当前请求在给定约束下不可执行，因此不应开始编辑。
+
+可核对证据：
+
+- Fixture 固定于 ace_engine revision `3d648d632141678368bde7a0376cf80f67f6e3e4`。
+- `host_product` 的 `core_pattern_unittest` 只路由了 `text:text_test_ng`，见快照中 `test/unittest/core/pattern/BUILD.gn:20–60`。
+- `text_test_ng_addition` 未加入该 Host 路由；它只在非 Host 分支附近出现，而且被注释掉，见 `:171–175`。
+- `text_test_ng` 有明确的 Host 定义：`type = "host_components"`，见文本 BUILD 的 `:41–47`。
+- `text_test_ng_addition` 只有无条件的 `type = "new"` 定义，没有 Host 分支，见 `:65–95`。
+- 产物快照与路由一致：
+  - `text_test_ng`：Host 可执行文件存在，状态 `OK`。
+  - `text_test_ng_addition`：仅有 `_path.txt`，两个可执行文件均不存在，状态 `MISSING`。
+- `run_host.py` 会合并 `_path.txt` 与可执行文件记录；因此能够列出 `text_test_ng_addition` 不代表它已编译或可运行。其实际列表状态也是 `MISSING`。
+
+要在 `host_product` 上运行该 suite，至少需要改变 GN Host 路由/目标类型；或者把用例放入已有的 `text_test_ng`。前者违反“不可修改 BUILD.gn”，后者违反“不可改用其他 suite”。依赖或 mock 调整不能解决这个目标未进入 Host 构建的问题。
+
+本次仅只读查看了声明的两个 fixture；未编辑文件、未访问其他输入，也未执行构建、产物探测或测试命令。

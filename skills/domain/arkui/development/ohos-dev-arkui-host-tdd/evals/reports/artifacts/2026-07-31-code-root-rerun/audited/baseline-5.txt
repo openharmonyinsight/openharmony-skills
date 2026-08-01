@@ -1,0 +1,40 @@
+审查结论：这是需要修复的真实边界缺陷。`std::vector::operator[]` 不检查边界，空容器或 `index >= size()` 会触发未定义行为；`SIGSEGV` 只是其中一种表现。因此不能删除用例，也不应使用不稳定的 `EXPECT_DEATH`。
+
+最小 unified diff（路径为描述性占位符）：
+
+```diff
+diff --git a/path/to/frame_duration.cpp b/path/to/frame_duration.cpp
+--- a/path/to/frame_duration.cpp
++++ b/path/to/frame_duration.cpp
+@@ -1,5 +1,8 @@
+ int32_t GetFrameDuration(const std::vector<int32_t>& durations, size_t index)
+ {
++    if (index >= durations.size()) {
++        return 0;
++    }
+     return durations[index];
+ }
+diff --git a/path/to/frame_duration_test.cpp b/path/to/frame_duration_test.cpp
+--- a/path/to/frame_duration_test.cpp
++++ b/path/to/frame_duration_test.cpp
+@@ -1 +1,5 @@
+-EXPECT_EQ(GetFrameDuration({}, 0), 0);
++TEST(FrameDurationTest, ReturnsZeroWhenIndexIsOutOfRange)
++{
++    EXPECT_EQ(GetFrameDuration({}, 0), 0);
++    EXPECT_EQ(GetFrameDuration({16}, 1), 0);
++}
+```
+
+防御用例覆盖：
+
+- 空容器访问索引 `0`。
+- 非空容器访问 `index == size()`，防止修复仅特判空容器。
+- 建议现有正常索引用例继续覆盖有效路径，例如 `GetFrameDuration({16}, 0) == 16`。
+
+当前验证结论：
+
+- 修复前：已有执行证据表明场景以 `SIGSEGV` 终止，边界缺陷已复现。
+- 该次运行未生成 gtest XML，因此不能表述为“测试正常失败”；实际是测试进程异常终止。
+- 建议补丁：仅完成静态审查，逻辑上覆盖所有越界索引。
+- 按要求未修改工作区、未编译、未运行测试，所以补丁目前仍是“未执行验证”，不能声称测试已通过。

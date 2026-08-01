@@ -1,0 +1,54 @@
+结论：在给定约束下，请求不可执行；不应开始编辑。
+
+依据固定版本 `3d648d632141678368bde7a0376cf80f67f6e3e4` 的 [Host 路由快照](/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code/openharmony-skills/skills/domain/arkui/development/ohos-dev-arkui-host-tdd/evals/fixtures/ace-engine-host-routing/host-routing-snapshot.md)：
+
+- Host 依赖闭包是：
+  `test/unittest:unittest`
+  → 经 `!is_asan`
+  → 经 `is_host_product`
+  → `core:core_unittest`
+  → 经 `is_host_product`
+  → `pattern:core_pattern_unittest`
+  → 经 `is_host_product`
+  → `text:text_test_ng`。
+- 该闭包没有包含 `text:text_test_ng_addition`；快照中它只以注释形式出现，不能形成依赖。
+- `text_test_ng_addition` 没有 `is_host_product` 分支，且 `type = "new"`，不是 Host 所需的 `type = "host_components"`。
+- 其 `module_name = "TextSet-Text"`；sources 在两种 `ace_enable_full_test_suite` 分支下都可非空，但这不能弥补 Host 路由和类型缺失。
+- 因此 `text_test_ng_addition` 的静态状态是 **host-configured：否**。
+
+产物证据也一致：
+
+- `_path.txt` 存在，仅记录源目录；它不是 Host 选中、编译成功或可运行的证明。
+- stripped 和 `exe.unstripped` 均不存在。
+- `run_host.py` 快照为 `MISSING`，因此 **host-runnable：否**。
+- 没有可归属到当前源码和 Host 配置的成功构建证据，故 **artifact-current：无法证明**。
+- `text_test_ng` 虽然 Host 可达且有产物，但“不允许改用其他 suite”，不能作为替代。
+
+要使该请求成立，至少需要修改 GN Host 路由，并为 `text_test_ng_addition` 建立 `is_host_product`/`host_components` 配置。这正是请求明确禁止的 BUILD.gn 或依赖修改。因此，仅向该 suite 添加边界用例会产生无法在 `host_product` 上验证的改动，不满足目标。
+
+若将来解除路由限制，剩余验证顺序必须是：Host 构建 → 精确用例 → surrounding suite，即：
+
+```text
+--gtest_filter=<Suite>.<Case>
+--gtest_filter=<Suite>.*
+```
+
+构建前观察命令应为：
+
+```bash
+bash <ace-build-skill-dir>/scripts/monitor_progress.sh \
+  --root <oh-root> --product host_product \
+  --target ace_engine_test --check
+```
+
+该检查不是构建预留；若发现匹配的 active 构建，不得启动第二个构建，目标或归属不匹配则必须停止。未来构建还须先核验构建技能版本及生命周期脚本，并在真实可写的 Host 环境中，由 wrapper 取得原子锁，使用 `host_product`、`ace_engine_test`、`--no-prebuilt-sdk` 和构建技能当时的参数策略，随后执行：
+
+```bash
+bash <ace-build-skill-dir>/scripts/monitor_progress.sh \
+  --root <oh-root> --product host_product \
+  --target ace_engine_test --launch-id <id>
+```
+
+直至得到可归属的终态。
+
+本次只读取了两个指定 fixture；未编辑文件，未访问其他评测输入，未编译、探测产物或运行测试。

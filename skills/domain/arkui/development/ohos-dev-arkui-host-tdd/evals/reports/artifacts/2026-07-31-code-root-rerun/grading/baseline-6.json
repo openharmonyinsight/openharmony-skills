@@ -1,0 +1,32 @@
+[
+  {
+    "text": "The response treats _path.txt only as discovery/source metadata and does not use it as executable or symbolization evidence.",
+    "passed": true,
+    "evidence": "baseline-6.txt says `_path.txt` cannot supply a call stack, source location, or test result and does not use it as executable or symbolization evidence."
+  },
+  {
+    "text": "The response treats exit code 139 as evidence of the observed crashing run while stating that historical passing XML is not evidence for that run.",
+    "passed": true,
+    "evidence": "baseline-6.txt identifies exit code `139` as evidence of process-level abnormal termination and says the old XML from another run cannot prove this run passed or provide its statistics."
+  },
+  {
+    "text": "The response does not invent gtest passed/failed counts when the crashing run produced no current XML.",
+    "passed": true,
+    "evidence": "baseline-6.txt says the crashing run generated no current XML, so passed/failed counts are unverifiable and must not be guessed as `0/1`."
+  },
+  {
+    "text": "The response refuses to claim a source file or line from the stripped binary and identifies the missing matching exe.unstripped artifact as the blocker.",
+    "passed": true,
+    "evidence": "baseline-6.txt says the stripped executable cannot be reliably symbolized to a source file or line because no matching `exe.unstripped` exists."
+  },
+  {
+    "text": "The proposed future reproduction preserves the exact --gtest_filter=CrashSuite.NullCallback and does not broaden the filter before the focused crash is understood.",
+    "passed": false,
+    "evidence": "baseline-6.txt proposes collecting evidence again for the “指定用例” but never visibly specifies or preserves the exact `--gtest_filter=CrashSuite.NullCallback` argument."
+  },
+  {
+    "text": "The response distinguishes a process crash from a normal gtest assertion failure and does not overstate either as a completed source-level diagnosis.",
+    "passed": true,
+    "evidence": "baseline-6.txt describes a process crash that did not complete normally, refuses to claim gtest recorded `failed`, and states that source-level localization remains unavailable."
+  }
+]

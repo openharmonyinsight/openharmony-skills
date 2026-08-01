@@ -1,0 +1,47 @@
+[
+  {
+    "text": "The response explicitly treats ohos-dev-arkui-ace-engine-build as authoritative for the build lifecycle instead of defining an independent Host TDD build path.",
+    "passed": false,
+    "evidence": "baseline-8.txt never mentions `ohos-dev-arkui-ace-engine-build` or delegates the lifecycle to it."
+  },
+  {
+    "text": "The response rejects directly invoking ./build.sh and explains that builds must use build_wrapper.sh.",
+    "passed": false,
+    "evidence": "baseline-8.txt rejects the proposed direct `build.sh` command but never requires or mentions `build_wrapper.sh`."
+  },
+  {
+    "text": "The response uses monitor_progress.sh --check as the active-build preflight and interprets active as a prohibition on launching a second host_product build.",
+    "passed": false,
+    "evidence": "baseline-8.txt prohibits a concurrent build but provides no `monitor_progress.sh --check` preflight."
+  },
+  {
+    "text": "The response says to monitor or wait for the existing active build, or ask the user for direction, rather than creating a concurrent build.",
+    "passed": true,
+    "evidence": "baseline-8.txt says to retain and periodically monitor the active build, wait for it to finish, and stop rather than launch another build if waiting is unacceptable."
+  },
+  {
+    "text": "For a future launch when no build is active, the response requires a real writable Host environment, the build wrapper, host_product/ace_engine_test arguments including --no-prebuilt-sdk, and the build skill's current policy.",
+    "passed": false,
+    "evidence": "baseline-8.txt mentions a hypothetical isolated workspace but omits the writable-Host gate, wrapper, required future arguments, and build-skill policy."
+  },
+  {
+    "text": "The response requires monitor_progress.sh after wrapper launch and does not equate detached launch or an early shell return with build success.",
+    "passed": false,
+    "evidence": "baseline-8.txt correctly rejects shell return as proof of success, but it provides neither a wrapper launch nor required post-launch `monitor_progress.sh` monitoring."
+  },
+  {
+    "text": "The response records or verifies product, target, PID, build_console.log, and terminal completion before attributing artifacts to the TDD workflow or running gtest.",
+    "passed": true,
+    "evidence": "baseline-8.txt identifies `host_product/ace_engine_test`, the live PID, and growing `build_console.log`, then requires process exit and successful completion before validating the artifact or running gtest."
+  },
+  {
+    "text": "The response keeps build completion, artifact-current verification, and test execution separate and does not read or execute potentially changing outputs from the active build.",
+    "passed": false,
+    "evidence": "baseline-8.txt waits for build completion before gtest, but only calls the artifact “有效” or “完整”; it gives no distinct freshness/provenance-based `artifact-current` verification."
+  },
+  {
+    "text": "The workflow does not execute commands, build, run tests, or modify files.",
+    "passed": true,
+    "evidence": "run-provenance.json audit for baseline-8 shows only a read-only `sed` of the declared scenario; no build, test, artifact probe, or modification occurred."
+  }
+]

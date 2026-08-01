@@ -1,0 +1,37 @@
+[
+  {
+    "text": "The response concludes that text_test_ng_addition is not host-configured because the host dependency chain selects text:text_test_ng but not text_test_ng_addition.",
+    "passed": true,
+    "evidence": "with-3.txt states host-configured is “否” and says the Host branch “只接入 `text:text_test_ng`，没有接入 `text:text_test_ng_addition`.”"
+  },
+  {
+    "text": "The response notes that text_test_ng_addition uses type = \"new\" without an is_host_product/type = \"host_components\" branch.",
+    "passed": true,
+    "evidence": "with-3.txt explicitly says “`type = \"new\"`，不是 `host_components`” and “没有专门的 `is_host_product` target 分支.”"
+  },
+  {
+    "text": "The response concludes that it is not host-runnable in the captured snapshot because neither the stripped nor exe.unstripped text_test_ng_addition binary exists.",
+    "passed": true,
+    "evidence": "with-3.txt concludes host-runnable is “否” because “stripped 和 `exe.unstripped` 可执行文件均不存在.”"
+  },
+  {
+    "text": "The response explains that build/test.gni writes _path.txt during GN generation and that its contents are the target source directory, not a runnable path or compilation proof.",
+    "passed": false,
+    "evidence": "with-3.txt says `build/test.gni` writes the marker and that its content is the GN source directory rather than an executable path, but never visibly states that this happens during GN generation."
+  },
+  {
+    "text": "The response explains that run_host.py reports MISSING when the discovery marker exists without a same-name executable and does not equate MISSING with a proven compile failure.",
+    "passed": true,
+    "evidence": "with-3.txt says marker-only discovery yields `MISSING` and explicitly states “它本身不等价于编译失败.”"
+  },
+  {
+    "text": "The response treats both run_host.py OK and MISSING as filesystem discovery statuses and does not infer correct GN routing, a successful or fresh build, or any test result from either status.",
+    "passed": false,
+    "evidence": "with-3.txt describes executable-present as `OK` and marker-only as `MISSING`, but does not explicitly establish that neither status—including `OK`—proves correct GN routing, build success/freshness, or any test result."
+  },
+  {
+    "text": "The response does not access an external workspace, build, execute tests, modify files, or infer host compliance from the local ace_unittest declaration alone.",
+    "passed": true,
+    "evidence": "run-provenance.json audit for with-3 shows only read-only `rg`/`sed` access to the two declared fixture files, no build/test/edit commands, and the final says the local `ace_unittest` declaration cannot establish Host configuration."
+  }
+]

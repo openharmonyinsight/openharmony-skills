@@ -1,0 +1,388 @@
+{
+  "schema_version": 1,
+  "report_date_utc": "2026-07-31",
+  "run_kind": "full-rerun-after-explicit-code-root-confirmation",
+  "repository_head": "7ab2767de1f48cf513467d7e083c97f9cd16bcbf",
+  "oh_root": "/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code",
+  "target_skill": "ohos-dev-arkui-host-tdd",
+  "target_skill_sha256": "80fe481e8248ded8508538cd7ad4faf68dad6371c8ef7a399a4904c22163054a",
+  "eval_definition_sha256": "e8b8df2f0866adbd1fdd8118ebb43f41ade046fc46087f34d21764d728739c1e",
+  "integration_definition_sha256": "1e5f049ae6414e5d9609d69f20ada914b417110184bed3cee8c4af0ebf64e3ba",
+  "grader_harness_sha256": "fa51c32f8824b5c2a8b03c2980849c6bf132d051f93faa075d81fb21de42a0cf",
+  "pinned_ace_engine_revision": "3d648d632141678368bde7a0376cf80f67f6e3e4",
+  "integration_manifest_captured_at": "2026-07-31T11:27:35.999367+00:00",
+  "eval_model": "gpt-5.6-sol",
+  "eval_reasoning_effort": "high",
+  "grader_model": "gpt-5.6-sol",
+  "grader_reasoning_effort": "high",
+  "grader_policy": "Installed Skill instructions selected by an eval agent are procedural context, not undeclared task fixture data or an external OpenHarmony workspace.",
+  "retained_evidence_policy": {
+    "repository": [
+      "final with-skill and baseline answers",
+      "validated per-arm grading JSON",
+      "integration environment manifests and gtest XML",
+      "compact provenance, baseline isolation, hashes, and action summaries"
+    ],
+    "external_working_directory_only": [
+      "generated prompts",
+      "full transcripts",
+      "grader raw output and scratch",
+      "per-run command logs",
+      "per-run metadata"
+    ]
+  },
+  "runs": [
+    {
+      "suite": "hermetic",
+      "case_id": 0,
+      "arm": "baseline",
+      "sandbox": "read-only",
+      "exit_code": 0,
+      "prompt_sha256": "e1aa64bacb2f034057a7112a7deace6dee87c02c2995dd5557a735bce42730ca",
+      "answer": "audited/baseline-0.txt",
+      "answer_sha256": "3a3a77365a2946cd5e93764c37986e02c2500ab82608c2b75d644bf6c1067152",
+      "command_audit_sha256": "adcf6cfa8b191c892a711554254faa1c475c3db18eed34a1722970b45b4d3982",
+      "audit_summary": {
+        "command_invocations": 1,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "read-only declared fixtures and installed procedural skill files",
+        "external_openharmony_workspace_access": false,
+        "test_executed": false
+      }
+    },
+    {
+      "suite": "hermetic",
+      "case_id": 0,
+      "arm": "with",
+      "sandbox": "read-only",
+      "exit_code": 0,
+      "prompt_sha256": "b4d73cf6dc333a5ea79e81371b1e4c87733376140024a3d73e444b4b5254a4f4",
+      "answer": "audited/with-0.txt",
+      "answer_sha256": "88dc585d16726de6516fcc9366160ce73d44ec29296319c5f1269ee3d3a89b5c",
+      "command_audit_sha256": "1faf7289697a4c4f63297a9ae4f0495cc3ca822baeee191ee345d76266c012e6",
+      "audit_summary": {
+        "command_invocations": 2,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "read-only declared fixtures and installed procedural skill files",
+        "external_openharmony_workspace_access": false,
+        "test_executed": false
+      }
+    },
+    {
+      "suite": "integration",
+      "case_id": 1,
+      "arm": "baseline",
+      "sandbox": "workspace-write",
+      "exit_code": 0,
+      "prompt_sha256": "d946329eb1a039206d46a2f8e68189c9e414c7b4fc447d399d6c259d16568a24",
+      "answer": "audited/baseline-integration/baseline-1.txt",
+      "answer_sha256": "0bed3742023c76230d4e6524faccc5a05d612f7999f8bfd3483a2659f00d983f",
+      "command_audit_sha256": "be7e8b2bb4219b1aa8f2286259600d475b9c060121b6183b97cf4cc5d690fb2b",
+      "audit_summary": {
+        "command_invocations": 3,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "declared contract/manifest reads plus one exact exe.unstripped gtest invocation",
+        "test_executed": true,
+        "gtest_filter": "DrawableDescriptorTest.AnimatedDrawableDescTest044",
+        "xml": "audited/baseline-integration/integration-case-1.xml",
+        "xml_sha256": "ba11305ad2d6fa396eb3f92eeacbf134f9a2241df444e0ed1a19555d6adddf30",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0
+      }
+    },
+    {
+      "suite": "integration",
+      "case_id": 1,
+      "arm": "with",
+      "sandbox": "workspace-write",
+      "exit_code": 0,
+      "prompt_sha256": "9f2cd4bdddba4e191fd17844a8499dde6439f4e4a79c9e89953fc33e7b3174cc",
+      "answer": "audited/with-integration/with-1.txt",
+      "answer_sha256": "b25cdc8846516dc6501f0cd8e65ac82a4e556f1317fab3728ffdd8edf543635a",
+      "command_audit_sha256": "726249b7f44f0a2bca67bb8d093a002a5fef73ccaf97414fa12ecb45f1695ccb",
+      "audit_summary": {
+        "command_invocations": 3,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "declared contract/manifest reads plus one exact exe.unstripped gtest invocation",
+        "test_executed": true,
+        "gtest_filter": "DrawableDescriptorTest.AnimatedDrawableDescTest044",
+        "xml": "audited/with-integration/integration-case-1.xml",
+        "xml_sha256": "b671395c82fb63156a2b133dc9a8925c1496fb8af1368a35855f1576bcb7be0f",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0
+      }
+    },
+    {
+      "suite": "hermetic",
+      "case_id": 2,
+      "arm": "baseline",
+      "sandbox": "read-only",
+      "exit_code": 0,
+      "prompt_sha256": "ee3ee6af62c3c9cdb239579fe39893abc86118510a728dd1e14183a0174e2322",
+      "answer": "audited/baseline-2.txt",
+      "answer_sha256": "5764316279f86ecd11e174c0f2e47ea226ef83cafe300b08318dab02cca3b15c",
+      "command_audit_sha256": "e1f475c9ca6a54d9c7d79f14fe8a0effd4e5f781f9ad5f7e722d6215961ec154",
+      "audit_summary": {
+        "command_invocations": 3,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "read-only declared fixtures and installed procedural skill files",
+        "external_openharmony_workspace_access": false,
+        "test_executed": false
+      }
+    },
+    {
+      "suite": "hermetic",
+      "case_id": 2,
+      "arm": "with",
+      "sandbox": "read-only",
+      "exit_code": 0,
+      "prompt_sha256": "b67e6e690a70a73349b726bf68063ae0ff939567966fe7647d285b831324de8a",
+      "answer": "audited/with-2.txt",
+      "answer_sha256": "1d040ca4864ed050bcd7f9466daf4cbd450232ec125b05ea937f03983767943e",
+      "command_audit_sha256": "f1efc0e95720c862402ada67d07d28b71b72db2f6052e1b312654ff1a4d8a9e7",
+      "audit_summary": {
+        "command_invocations": 2,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "read-only declared fixtures and installed procedural skill files",
+        "external_openharmony_workspace_access": false,
+        "test_executed": false
+      }
+    },
+    {
+      "suite": "hermetic",
+      "case_id": 3,
+      "arm": "baseline",
+      "sandbox": "read-only",
+      "exit_code": 0,
+      "prompt_sha256": "d5431b0a0afab207463831a38d6a4e7321093b9a6780642da2ef06e0d3d5063a",
+      "answer": "audited/baseline-3.txt",
+      "answer_sha256": "5aad994df20989b27e2b99605afd137d8f3ffa1bea73c4dbf8aa5aa28e0bcfc7",
+      "command_audit_sha256": "6e696b558ce8e1f2ab30b146504b236eeb024c3f3245c819179c08433590e792",
+      "audit_summary": {
+        "command_invocations": 1,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "read-only declared fixtures and installed procedural skill files",
+        "external_openharmony_workspace_access": false,
+        "test_executed": false
+      }
+    },
+    {
+      "suite": "hermetic",
+      "case_id": 3,
+      "arm": "with",
+      "sandbox": "read-only",
+      "exit_code": 0,
+      "prompt_sha256": "cc632b4c3a129a3c3feee14560e2b0824981d13e0ea32d471b5e7ef1a0f81116",
+      "answer": "audited/with-3.txt",
+      "answer_sha256": "68c12df5b3afe7889d49cc0a377a380a8b8d086c86b7dbb74e255fb95eadc3f0",
+      "command_audit_sha256": "509cdc08ea89074286481d1cf0c863d83ef3cf69d29488e7dad6ecf9e1b30cf8",
+      "audit_summary": {
+        "command_invocations": 3,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "read-only declared fixtures and installed procedural skill files",
+        "external_openharmony_workspace_access": false,
+        "test_executed": false
+      }
+    },
+    {
+      "suite": "hermetic",
+      "case_id": 4,
+      "arm": "baseline",
+      "sandbox": "read-only",
+      "exit_code": 0,
+      "prompt_sha256": "e37f5d00c3a76e59cab90883f8e153f4829b7880cac67b5bea81b17344e94338",
+      "answer": "audited/baseline-4.txt",
+      "answer_sha256": "5637e5a29fcd2cf15a4ba6f241c8c1e59a33956c4f7516ec9db4ff3a48589ffa",
+      "command_audit_sha256": "d981ec0b56ebd3ecccdc3fda3a627422eb67ded38629e9f7fcbddcd20f9760db",
+      "audit_summary": {
+        "command_invocations": 1,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "read-only declared fixtures and installed procedural skill files",
+        "external_openharmony_workspace_access": false,
+        "test_executed": false
+      }
+    },
+    {
+      "suite": "hermetic",
+      "case_id": 4,
+      "arm": "with",
+      "sandbox": "read-only",
+      "exit_code": 0,
+      "prompt_sha256": "8a31f645408e7964adc7d438dc0dbef6b9ed253ef9e29d4c793d88375a7c38cc",
+      "answer": "audited/with-4.txt",
+      "answer_sha256": "c0f97a99dd3970073f1046f5270eb5c51dbc90ab7c3f7f1c5a207595cba0296f",
+      "command_audit_sha256": "a0a37da21471dedbadce88baf8a8078c23cf2a216ed1af2b0a43447d2c1fb8d6",
+      "audit_summary": {
+        "command_invocations": 1,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "read-only declared fixtures and installed procedural skill files",
+        "external_openharmony_workspace_access": false,
+        "test_executed": false
+      }
+    },
+    {
+      "suite": "hermetic",
+      "case_id": 5,
+      "arm": "baseline",
+      "sandbox": "read-only",
+      "exit_code": 0,
+      "prompt_sha256": "8de9b8937af560f682cf06275b8bb3f847688705b2da713264d7ebdcf836b2f1",
+      "answer": "audited/baseline-5.txt",
+      "answer_sha256": "a45d8a9c63a73733a7575787ced20c3778dd98808bfa2cdb0f826a7437127358",
+      "command_audit_sha256": "3917a390d722e2ca36000206c60664627c649c3b51d9ece156181b7e9b1b09f8",
+      "audit_summary": {
+        "command_invocations": 1,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "read-only declared fixtures and installed procedural skill files",
+        "external_openharmony_workspace_access": false,
+        "test_executed": false
+      }
+    },
+    {
+      "suite": "hermetic",
+      "case_id": 5,
+      "arm": "with",
+      "sandbox": "read-only",
+      "exit_code": 0,
+      "prompt_sha256": "ae9a00b46f2ff685b94e1bee321a99ae901e0771ef63a990abcebaf02011169d",
+      "answer": "audited/with-5.txt",
+      "answer_sha256": "a708f5ec1059af500006e30c9f8a91988fc34f113fc7d8361ac1790d433afa5e",
+      "command_audit_sha256": "6a5ae4fd9f9d64c8c7fe5d65bb8085d0cdbd0c2f6855b6f98b5b2a6a7c50007e",
+      "audit_summary": {
+        "command_invocations": 1,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "read-only declared fixtures and installed procedural skill files",
+        "external_openharmony_workspace_access": false,
+        "test_executed": false
+      }
+    },
+    {
+      "suite": "hermetic",
+      "case_id": 6,
+      "arm": "baseline",
+      "sandbox": "read-only",
+      "exit_code": 0,
+      "prompt_sha256": "ed34f7df082cfb0c3858e26954b0f4013c7a3ca6474957baf9c905aeb1d9eb36",
+      "answer": "audited/baseline-6.txt",
+      "answer_sha256": "fade5ec0d7742ec340a8fc4704ea6c99b7edee68a62160435b72572b20487ce5",
+      "command_audit_sha256": "b8326af2edb7b8de70bdc31d9e9bbb1043109f3e7e384893c2d513edb13103ab",
+      "audit_summary": {
+        "command_invocations": 1,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "read-only declared fixtures and installed procedural skill files",
+        "external_openharmony_workspace_access": false,
+        "test_executed": false
+      }
+    },
+    {
+      "suite": "hermetic",
+      "case_id": 6,
+      "arm": "with",
+      "sandbox": "read-only",
+      "exit_code": 0,
+      "prompt_sha256": "197144f50e15b57f93b71f3ac2efb1555574041a3ebbf8557ecf65b292b41042",
+      "answer": "audited/with-6.txt",
+      "answer_sha256": "e0de98607aed5ea0eeca8cba5a2cd90108466397deda538e912107c6fedd1f0a",
+      "command_audit_sha256": "b8326af2edb7b8de70bdc31d9e9bbb1043109f3e7e384893c2d513edb13103ab",
+      "audit_summary": {
+        "command_invocations": 1,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "read-only declared fixtures and installed procedural skill files",
+        "external_openharmony_workspace_access": false,
+        "test_executed": false
+      }
+    },
+    {
+      "suite": "hermetic",
+      "case_id": 7,
+      "arm": "baseline",
+      "sandbox": "read-only",
+      "exit_code": 0,
+      "prompt_sha256": "402070cc95b93cbc397457eafac762d641be4f7536f898ba1c2e73add93b2ba2",
+      "answer": "audited/baseline-7.txt",
+      "answer_sha256": "9361f19db8ff80e09e7d1df8ec9eddb6ffe57059aa29bd6204bc9c58f2ef2b40",
+      "command_audit_sha256": "954c67f157e35e832f6ac1bb74ab625521a5f6d138019260e36c779cf7e344ed",
+      "audit_summary": {
+        "command_invocations": 1,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "read-only declared fixtures and installed procedural skill files",
+        "external_openharmony_workspace_access": false,
+        "test_executed": false
+      }
+    },
+    {
+      "suite": "hermetic",
+      "case_id": 7,
+      "arm": "with",
+      "sandbox": "read-only",
+      "exit_code": 0,
+      "prompt_sha256": "3b60b790ae86bbf9b702699159c3ad24f72d1836e5316648cad91917133aeb06",
+      "answer": "audited/with-7.txt",
+      "answer_sha256": "ad8f2adb8e2db750ddabbe86112c3bad66fb741f64c2e5ec5640e57d8bf15aed",
+      "command_audit_sha256": "954c67f157e35e832f6ac1bb74ab625521a5f6d138019260e36c779cf7e344ed",
+      "audit_summary": {
+        "command_invocations": 1,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "read-only declared fixtures and installed procedural skill files",
+        "external_openharmony_workspace_access": false,
+        "test_executed": false
+      }
+    },
+    {
+      "suite": "hermetic",
+      "case_id": 8,
+      "arm": "baseline",
+      "sandbox": "read-only",
+      "exit_code": 0,
+      "prompt_sha256": "6a540c72d591e29245846354bf1203e19c5315f3026e24d4ae93bec7d9e6f79c",
+      "answer": "audited/baseline-8.txt",
+      "answer_sha256": "b5348bff1f5db6da84e4499d7928b88ed49704f9063102722fd648f33965b39c",
+      "command_audit_sha256": "efafdcb143016b4cf2df1a2449e95150a9ea4bf19b28dc8b4b1915932614d7cc",
+      "audit_summary": {
+        "command_invocations": 1,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "read-only declared fixtures and installed procedural skill files",
+        "external_openharmony_workspace_access": false,
+        "test_executed": false
+      }
+    },
+    {
+      "suite": "hermetic",
+      "case_id": 8,
+      "arm": "with",
+      "sandbox": "read-only",
+      "exit_code": 0,
+      "prompt_sha256": "c7ab0ea3155903715d32a313e30ffd059eb813e8e565de6bca8635d648807e4c",
+      "answer": "audited/with-8.txt",
+      "answer_sha256": "4cfedd93acfe37580d4d0dcf6b5f14c9f7defa5201bd840d95f06fa23857c1d7",
+      "command_audit_sha256": "8508588ae9cbc83c5fae9456b55895b4b200541024ece1240e9f45a9a8fe038e",
+      "audit_summary": {
+        "command_invocations": 1,
+        "build_executed": false,
+        "files_modified": false,
+        "scope": "read-only declared fixtures and installed procedural skill files",
+        "external_openharmony_workspace_access": false,
+        "test_executed": false
+      }
+    }
+  ]
+}

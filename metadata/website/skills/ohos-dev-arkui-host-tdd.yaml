@@ -1,0 +1,85 @@
+schemaVersion: 1
+
+id: ohos-dev-arkui-host-tdd
+title: ArkUI ACE Engine Host 单元测试
+summary: 审计 ACE Engine Host 测试可达性与合规性，设计防御性用例，并完成构建、精确执行和证据报告。
+
+category:
+  scope: domain
+  namespace: arkui
+  stage: development
+  domain: arkui
+  capability: host-tdd
+
+status:
+  maturity: trial
+  version: 0.1.2
+  owner: openharmony
+
+tags:
+  - arkui
+  - ace-engine
+  - host-product
+  - tdd
+  - gtest
+  - unittest
+
+audience:
+  - ArkUI ACE Engine 开发者
+  - ACE Engine Host 单元测试维护者
+  - 负责测试复现与证据检视的开发和测试人员
+
+useCases:
+  - title: 审计 Host 测试合规性
+    description: 检查 ace_unittest 目标、Host GN 依赖闭包、条件守卫、sources 和 module_name，判断测试是否可达。
+  - title: 新增或修复防御性测试
+    description: 围绕真实缺陷设计断言和 mock，完成目标构建、精确过滤执行及周边套件验证。
+  - title: 复现 Host 测试失败或崩溃
+    description: 核验产物新鲜度和来源，使用 exe.unstripped 与精确 gtest filter 区分崩溃和断言失败。
+  - title: 输出可复核验证证据
+    description: 分离报告发现、构建和测试阶段，记录命令、产物、过滤器、XML 及环境限制。
+
+whenToUse:
+  - 需要为 OpenHarmony foundation/arkui/ace_engine 新增、修复或运行 host_product gtest。
+  - 需要判断某个 ace_unittest 是否进入 Host GN 依赖图并具备 Host 运行条件。
+  - 需要复现 ACE Engine Host 测试失败或崩溃，并核验符号化产物的新鲜度和来源。
+  - 需要验证 drawable、image、text、frameworks 或 core 相关单元测试变更并形成证据报告。
+
+whenNotToUse:
+  - 仅需编译 ACE Engine、SDK 或设备产品，不涉及 Host 单元测试工作流。
+  - 目标不是 OpenHarmony ArkUI ACE Engine 的 host_product gtest。
+  - 仅需分析已有构建日志中的编译或链接错误，不需要设计、运行或报告测试。
+
+inputs:
+  required:
+    - OpenHarmony 源码根目录及 foundation/arkui/ace_engine 工作区。
+    - 待处理的测试目标、套件、用例或缺陷信息。
+    - 可写的 host_product 构建环境；只读审计除外。
+  optional:
+    - 现有 Host 构建产物、exe.unstripped、gtest XML 和构建来源信息。
+    - 相关源码、测试、BUILD.gn 或 .gni 变更。
+    - 精确 gtest filter 和已有失败日志或崩溃栈。
+
+outputs:
+  - Host GN 可达性和合规性审计结论。
+  - 防御性测试设计或实现变更。
+  - 由 ohos-dev-arkui-ace-engine-build 管理的 Host 构建生命周期证据。
+  - 精确用例和周边套件的执行结果、XML 或崩溃证据。
+  - 明确区分发现、构建与测试阶段的精简验证报告。
+
+quickStart:
+  steps:
+    - 提供 OpenHarmony 根目录、测试目标或缺陷，以及期望验证范围。
+    - 先审计 Host GN 路由、条件守卫、sources、module_name 和运行依赖。
+    - 需要构建时由必需的 ACE Engine build skill 管理 host_product 构建并监控到终态。
+    - 使用精确 gtest filter 运行目标用例，再验证周边套件并汇总证据。
+  examplePrompt: |
+    请使用 ohos-dev-arkui-host-tdd 审计并运行 DrawableDescriptorTest.AnimatedDrawableDescTest044，
+    源码根目录是 /path/to/openharmony；请核验 Host GN 可达性、产物新鲜度，
+    使用精确 gtest filter 执行并输出精简证据报告。
+
+related:
+  skills:
+    - ohos-dev-arkui-ace-engine-build
+    - ohos-dev-arkui-build-error-analyzer
+  docs: []
