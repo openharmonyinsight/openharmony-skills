@@ -14,7 +14,7 @@
 - 需要人工视觉判断或像素级比对
 - 当前 Host Preview 无法复现的跨平台或多设备差异
 
-不适用时，必须在 `spec.md`、ArkUI Spec for Test 的 `spec-for-test.md`、`test-spec.md` 或 gate 证据中写清 N/A 理由和替代验证方式。
+不适用时，必须在 `spec.md`、ArkUI Spec for Validation 的 `spec-for-validation.md`、`test-spec.md` 或 gate 证据中写清 N/A 理由和替代验证方式。
 
 ## 常用命令
 

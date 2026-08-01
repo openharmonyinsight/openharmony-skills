@@ -47,7 +47,7 @@ OHOS SDD 是**能力分解**(像 superpowers),不是阶段顺序器。每个能�
 | ohos-propose | 起草/基线 proposal | proposal/manifest |
 | ohos-spec | 写 spec | spec/epic |
 | ohos-design | 写 design | design |
-| ohos-spec-for-test | Profile 定义的测试输入旁路 | spec_for_test |
+| ohos-spec-for-validation | Profile 定义的测试输入旁路 | spec_for_validation |
 | ohos-plan | 写 execution-plan | execution_plan/task |
 | ohos-review | 审查合规 | review |
 | ohos-validate | 声称完成前 | gate_checklist |

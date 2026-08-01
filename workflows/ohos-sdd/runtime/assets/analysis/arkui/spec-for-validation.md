@@ -1,12 +1,12 @@
-# ArkUI Spec for Test Playbook
+# ArkUI Spec for Validation Playbook
 
 ## 定位
 
-Spec for Test 是 `spec.md`、`design.md` Approved 后由开发者显式触发的 ArkUI 旁路。输出 `spec-for-test.md`，作为测试人员开展测试设计的输入；具体用例、环境和执行结果不写回该文件。
+Spec for Validation 是 `spec.md`、`design.md` Approved 后由开发者显式触发的 ArkUI 旁路。输出 `spec-for-validation.md`，作为测试人员开展测试设计的输入；具体用例、环境和执行结果不写回该文件。
 
 ## 输出格式与保真规则
 
-- 公共层保留 `templates/spec-for-test.md` 作为默认格式；ArkUI 因 2D、NFR、2C 需要不同的细项表格，通过 Profile `template_override` 使用 `profiles/arkui/templates/spec-for-test.md`。产物必须自包含，测试人员无需打开其他文档即可开展测试设计。
+- 公共层保留 `templates/spec-for-validation.md` 作为默认格式；ArkUI 因 2D、NFR、2C 需要不同的细项表格，通过 Profile `template_override` 使用 `profiles/arkui/templates/spec-for-validation.md`。产物必须自包含，测试人员无需打开其他文档即可开展测试设计。
 - 每个 `US-*` 必须完整保留标题、角色（作为）、目标（我想要/我希望）、价值（以便/以免）和该 US 下全部 AC，不得概括、合并或缩写。
 - `规则定义` 同时兼容统一规则表和存量 Spec 的业务规则、功能规则、异常/豁免规则、恢复契约；只投影对外触发条件、预期行为、边界和恢复结果。
 - API 只保留系统/开放调用方可见的签名、参数、返回值、错误语义和兼容迁移，不保留源码基线、内部类关系或调用链。
@@ -38,4 +38,4 @@ Spec for Test 是 `spec.md`、`design.md` Approved 后由开发者显式触发�
 | NFR 细项缺少可量化指标或触发条件 | `spec.md`；缺少可观察入口时同时回修 `design.md` |
 | 仅测试数据、环境或用例拆分问题 | `test-spec.md` 或测试用例系统 |
 
-任一上游文件变更后，旧 `spec-for-test.md` 的来源 hash 失效，必须执行 `ohos-sdd spec-for-test refresh`。
+任一上游文件变更后，旧 `spec-for-validation.md` 的来源 hash 失效，必须执行 `ohos-sdd spec-for-validation refresh`。

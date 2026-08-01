@@ -1,5 +1,5 @@
 ---
-artifact: spec-for-test
+artifact: spec-for-validation
 format_version: arkui-detailed-v1
 status: Draft
 source_spec: spec.md
@@ -364,7 +364,7 @@ generated_at: {{GENERATED_AT}}
 |---|---|---|
 | spec.md | `spec.md` | Approved / `{{SOURCE_SPEC_HASH}}` |
 | design.md | `design.md` | Approved / `{{SOURCE_DESIGN_HASH}}` |
-| Profile playbook | `analysis/arkui/spec-for-test.md` | Active |
+| Profile playbook | `analysis/arkui/spec-for-validation.md` | Active |
 
 ## 十一、来源与审批
 
@@ -389,4 +389,4 @@ generated_at: {{GENERATED_AT}}
 1. 第一至四章来自 `spec.md`，不得摘要、删减或手工改写。
 2. 第五章 2D、第六章 NFR 验证细项、第七章 2C 为测试输入分析区。
 3. 每个“是否涉及”小节选择“是”时必须完成后续字段；选择“否/N/A”时必须填写不涉及理由。
-4. `spec-for-test.md` 只描述对外行为和测试侧验证输入，不记录开发自验证类型、用例、命令或执行结果。
+4. `spec-for-validation.md` 只描述对外行为和测试侧验证输入，不记录开发自验证类型、用例、命令或执行结果。

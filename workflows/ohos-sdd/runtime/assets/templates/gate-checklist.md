@@ -168,7 +168,7 @@
 - [ ] 每个 Task 的不做范围明确
 - [ ] Task 粒度合理（每个 Task 形成独立可验证的能力闭环）
 - [ ] 交接信息完整
-- [ ] Profile Spec for Test 如已触发，`spec-for-test.md` 来源一致、AC 完整、Profile 定义的分析与审批要求已满足，且不含开发自验证类型、用例、命令或结果
+- [ ] Profile Spec for Validation 如已触发，`spec-for-validation.md` 来源一致、AC 完整、Profile 定义的分析与审批要求已满足，且不含开发自验证类型、用例、命令或结果
 
 ### 出口检查
 

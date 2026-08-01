@@ -12,11 +12,11 @@ subprofiles:
   - capi
   - sdk-api
   - render
-spec_for_test:
+spec_for_validation:
   title: ArkUI 测试设计规格
   adapter: arkui
-  template_override: templates/spec-for-test.md
-  playbook: analysis/arkui/spec-for-test.md
+  template_override: templates/spec-for-validation.md
+  playbook: analysis/arkui/spec-for-validation.md
   analysis:
     - id: 2d
       title: 2D 能力特征分析
@@ -57,7 +57,7 @@ spec_for_test:
 - Define：交互结束判定、合法延迟状态、异常豁免、维测合同、热路径预算；交互、无障碍、国际化、多形态适配
 - Specify：规则定义（行为/边界/异常/恢复）、对象覆盖边界、验证映射；当前特性和同 FuncID 前置存量 Feat 必须完成长期归档
 - Design：复杂对象关系图、交互事件流程图、状态切换或恢复决策图；组件代码、渲染链路、设计约束；`design.md` 与 `spec.md` 必须交叉一致
-- Plan：行为、交互和状态一致性；组件 API、渲染成本、可维护性；Task 与验证路径拆解；开发者可显式触发 Spec for Test 旁路生成测试输入
+- Plan：行为、交互和状态一致性；组件 API、渲染成本、可维护性；Task 与验证路径拆解；开发者可显式触发 Spec for Validation 旁路生成测试输入
 
 ## 基本信息
 
@@ -77,7 +77,7 @@ spec_for_test:
 | Specify | 先做 FeatID 连续性预检和存量特性归档读取；P0/P1 AC 必须映射验证 |
 | Design | `design.md` 与 `spec.md` 交叉一致；API、模块边界、验证映射、热路径预算和 SpecTest 映射不能漂移 |
 | Plan | Task 级验证闭环；命中 SpecTest 时记录 case/suite/命令/报告；最终交付前安排长期 `specs/` 回灌 |
-| Spec for Test（旁路） | spec/design Approved 后可生成 `spec-for-test.md`；完整保留每个 US 的角色/目标/价值和所属 AC，投影对外规则/API/兼容性，再按 ArkUI 模板分别展开 2D、NFR、2C 细项和测试侧验证点；不含内部实现及开发自验证信息；测试输入交付前需双 Owner 审批 |
+| Spec for Validation（旁路） | spec/design Approved 后可生成 `spec-for-validation.md`；完整保留每个 US 的角色/目标/价值和所属 AC，投影对外规则/API/兼容性，再按 ArkUI 模板分别展开 2D、NFR、2C 细项和测试侧验证点；不含内部实现及开发自验证信息；测试输入交付前需双 Owner 审批 |
 
 ## 专项检查清单
 
@@ -88,7 +88,7 @@ spec_for_test:
 - [ ] 适用的 Host Preview / SpecTest / 设备补验路径已映射到 AC 和 Task。
 - [ ] 不适用项有 N/A 理由和替代验证方式。
 - [ ] 最终交付前 `.codespec` 短期产物、长期 `specs`、manifest、registry 和 review 证据状态一致。
-- [ ] 触发 Spec for Test 时，`spec-for-test.md` 的来源 hash、AC 集合、2C/2D 和验证点通过 `ohos-sdd spec-for-test check`。
+- [ ] 触发 Spec for Validation 时，`spec-for-validation.md` 的来源 hash、AC 集合、2C/2D 和验证点通过 `ohos-sdd spec-for-validation check`。
 
 ## ArkUI 最小加载路径
 
@@ -110,7 +110,7 @@ spec_for_test:
 - 写 `design.md` / `execution-plan.md`：`profile.md` -> 命中的子 profile -> `analysis/arkui/validation-playbook.md`
 - 执行 ArkUI gate 或写 `evidence/checks/*`：`profile.md` -> `analysis/arkui/gate-playbook.md`
 - 做验证/评审：`profile.md` -> `analysis/arkui/validation-playbook.md`；需要核对 gate 证据时再读 `analysis/arkui/gate-playbook.md`
-- 生成测试输入：`profile.md` -> `profiles/arkui/templates/spec-for-test.md`（ArkUI override）-> `analysis/arkui/spec-for-test.md`；公共 `templates/spec-for-test.md` 仅作为未覆盖 Profile 的默认格式
+- 生成测试输入：`profile.md` -> `profiles/arkui/templates/spec-for-validation.md`（ArkUI override）-> `analysis/arkui/spec-for-validation.md`；公共 `templates/spec-for-validation.md` 仅作为未覆盖 Profile 的默认格式
 
 ## ArkUI-SDD 执行资产
 
@@ -179,15 +179,15 @@ Base profile 只保留默认必读摘要和 gate 插槽定义。
 
 SpecTest 适用性、常用命令、Build/Test 入口不再内嵌在 base profile。需要这些信息时，读取 `analysis/arkui/validation-playbook.md`（源仓对应 `openharmony/context-engine/analysis/arkui/validation-playbook.md`）。
 
-## Spec for Test 旁路
+## Spec for Validation 旁路
 
 仅 ArkUI Profile 支持。`spec.md`、`design.md` Approved 后，开发者执行：
 
 ```bash
-ohos-sdd spec-for-test generate .codespec/changes/<id>
+ohos-sdd spec-for-validation generate .codespec/changes/<id>
 ```
 
-生成 Agent 按 `analysis/arkui/spec-for-test.md` 完成 AC 验证点以及 2D、NFR、2C 的逐项分析，只允许编辑 `TEST-ANALYSIS` 区域，不得改写 CLI 生成的来源投影，再执行 `ohos-sdd spec-for-test check`。具体测试用例仍写入 `test-spec.md` 或测试团队用例系统。
+生成 Agent 按 `analysis/arkui/spec-for-validation.md` 完成 AC 验证点以及 2D、NFR、2C 的逐项分析，只允许编辑 `TEST-ANALYSIS` 区域，不得改写 CLI 生成的来源投影，再执行 `ohos-sdd spec-for-validation check`。具体测试用例仍写入 `test-spec.md` 或测试团队用例系统。
 
 ## Profile 选择
 

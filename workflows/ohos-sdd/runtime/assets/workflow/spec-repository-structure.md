@@ -73,7 +73,7 @@
 | `design.md` | Feature 级设计 | ✅ 必需（简单变更可标记简化） |
 | `spec.md` | 用户可见行为、AC、兼容性和测试追溯 | ✅ 必需 |
 | `execution-plan.md` | AI 实施计划和 Task 拆解 | ✅ 必需 |
-| `spec-for-test.md` | Profile-defined Spec for Test 条件旁路产物；对外行为、验证点及 Profile 专项分析 | 支持该能力的 Profile 显式触发时必需 |
+| `spec-for-validation.md` | Profile-defined Spec for Validation 条件旁路产物；对外行为、验证点及 Profile 专项分析 | 支持该能力的 Profile 显式触发时必需 |
 
 spec-for-ai 扩展文件（可选但推荐）：
 

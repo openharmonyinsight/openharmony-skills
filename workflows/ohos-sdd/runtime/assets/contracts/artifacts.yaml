@@ -178,20 +178,20 @@ artifacts:
     conditional_depends_on:
       - artifact: design
         when: design_exists
-      - artifact: spec_for_test
-        when: profile_spec_for_test_used
+      - artifact: spec_for_validation
+        when: profile_spec_for_validation_used
     status: conditional
     required_when:
       - integration_or_system_test_design_needed
       - cross_module_or_cross_device_verification_needed
       - compatibility_or_nonfunctional_test_strategy_needs_explicit_design
-    role: concrete integration, system, compatibility, and non-unit test design; consumes spec-for-test when Profile Spec for Test is used
+    role: concrete integration, system, compatibility, and non-unit test design; consumes spec-for-validation when Profile Spec for Validation is used
     default_location: .codespec/changes/<id>/test-spec.md
 
-  - id: spec_for_test
+  - id: spec_for_validation
     layer: oh-extension
-    file: spec-for-test.md
-    template: templates/spec-for-test.md
+    file: spec-for-validation.md
+    template: templates/spec-for-validation.md
     template_resolution: profile_extendable
     phase: plan
     depends_on:
@@ -200,15 +200,15 @@ artifacts:
     status: conditional
     bypass: true
     required_when:
-      - profile_supports_spec_for_test
-      - developer_triggers_spec_for_test
+      - profile_supports_spec_for_validation
+      - developer_triggers_spec_for_validation
     required_sections:
       - AC 到验证点追溯
       - 来源与审批
     role: profile-extendable tester-facing projection of approved external behavior and verification points
-    default_location: .codespec/changes/<id>/spec-for-test.md
+    default_location: .codespec/changes/<id>/spec-for-validation.md
     runtime_outputs:
-      - .codespec/changes/<id>/evidence/checks/check-spec-for-test.md
+      - .codespec/changes/<id>/evidence/checks/check-spec-for-validation.md
     status_values:
       - Draft
       - ReadyForReview

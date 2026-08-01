@@ -2,7 +2,7 @@ schemaVersion: 1
 kind: Plugin
 id: ohos-sdd
 name: ohos-sdd
-version: 0.3.1
+version: 0.3.3
 description: OHOS SDD workflow plugin with commands, skills, agents, and reviewers for .codespec generation.
 license: MIT
 provenance: provenance.yaml

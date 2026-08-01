@@ -5,10 +5,10 @@ id: ohos-sdd
 source:
   repository: https://gitcode.com/oshunter/spec-for-ai.git
   branch: dev
-  commit: de6bc061dc28a6c2b6dc4744ad4d93f3b8467c3a
-  sourceVersion: 0.3.1
-  commitDate: 2026-07-27T19:19:08+08:00
-  importedAt: 2026-07-27
+  commit: 0d4e63018ebd4d72eb14e66a90e0c62a3bfd742f
+  sourceVersion: 0.3.3
+  commitDate: 2026-07-29T23:11:25+08:00
+  importedAt: 2026-08-01
 
 license:
   declared: MIT

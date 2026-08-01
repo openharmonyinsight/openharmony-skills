@@ -11,7 +11,7 @@ Profile 用来表达不同子系统的差异化约束，例如：
 - 审查阶段应重点检查哪些风险
 - 哪些 expert / reviewer 角色需要参与
 - 最终交付前应补哪些专项验证
-- 是否支持 Spec for Test，以及对应的输出格式、专项分析和审批规则
+- 是否支持 Spec for Validation，以及对应的输出格式、专项分析和审批规则
 
 ## 与复杂度分级的关系
 
@@ -34,7 +34,7 @@ profiles/
 ├── arkui/
 │   ├── profile.md
 │   ├── templates/
-│   │   └── spec-for-test.md  # ArkUI 详细 2D/NFR/2C 格式覆盖
+│   │   └── spec-for-validation.md  # ArkUI 详细 2D/NFR/2C 格式覆盖
 │   └── subprofiles/
 │       ├── README.md
 │       ├── component.md
@@ -53,7 +53,7 @@ profiles/
 2. 再判断是否需要子系统 profile。
 3. 如需 profile，把 profile 名写入业务仓 `manifest.md`。
 4. 各阶段先读取 `profile.md`，再按需读取子 profile 与 `context-engine/analysis/<profile>/` 中的补充文档。
-5. 如 Profile 声明 `spec_for_test`，开发者可在 spec/design Approved 后显式生成 Profile 格式的 `spec-for-test.md`。
+5. 如 Profile 声明 `spec_for_validation`，开发者可在 spec/design Approved 后显式生成 Profile 格式的 `spec-for-validation.md`。
 
 ## Profile 编写指南
 
@@ -96,19 +96,19 @@ repo="$(basename "${url%.git}")"
 
 | 角色 | 主 profile | 子 profile | Profile 模板 |
 |---|---|---|---|
-| source(本目录) | `<name>/profile.md` | `<name>/subprofiles/<sub>.md` | 全局默认 `../templates/spec-for-test.md`；可选 `<name>/templates/*` 覆盖 |
-| runtime(`{{ASSET_ROOT}}/profiles/`) | `<name>/profile.md` | `<name>/subprofiles/<sub>.md` | 全局默认 `{{ASSET_ROOT}}/templates/spec-for-test.md`；可选 `<name>/templates/*` 覆盖 |
+| source(本目录) | `<name>/profile.md` | `<name>/subprofiles/<sub>.md` | 全局默认 `../templates/spec-for-validation.md`；可选 `<name>/templates/*` 覆盖 |
+| runtime(`{{ASSET_ROOT}}/profiles/`) | `<name>/profile.md` | `<name>/subprofiles/<sub>.md` | 全局默认 `{{ASSET_ROOT}}/templates/spec-for-validation.md`；可选 `<name>/templates/*` 覆盖 |
 
-### 可选 Spec for Test 声明
+### 可选 Spec for Validation 声明
 
 支持测试输入旁路的 Profile 在 frontmatter 中声明：
 
 ```yaml
-spec_for_test:
+spec_for_validation:
   title: <输出文档标题>
   adapter: <adapter-name> # 可选
-  template_override: templates/spec-for-test.md # 可选
-  playbook: analysis/<profile>/spec-for-test.md
+  template_override: templates/spec-for-validation.md # 可选
+  playbook: analysis/<profile>/spec-for-validation.md
   analysis:
     - id: <stable-id>
       title: <分析区标题>
@@ -116,12 +116,12 @@ spec_for_test:
         - <验证分析项>
 ```
 
-- 默认使用公共 `openharmony/templates/spec-for-test.md`，公共层负责生命周期、通用投影、渲染、检查和证据生成。
+- 默认使用公共 `openharmony/templates/spec-for-validation.md`，公共层负责生命周期、通用投影、渲染、检查和证据生成。
 - `title` 定义输出文档标题；`analysis` 以声明方式追加 Profile 专项分析区和检查项。
-- `adapter` 对应 `ohos_sdd_spec_for_test_<adapter>.py`，仅在需要特殊投影或领域过滤规则时声明，不应重复公共流程逻辑。
+- `adapter` 对应 `ohos_sdd_spec_for_validation_<adapter>.py`，仅在需要特殊投影或领域过滤规则时声明，不应重复公共流程逻辑。
 - `template_override` 相对当前 Profile 目录解析，仅在默认格式无法满足该 Profile 时使用。
 - `playbook` 描述测试人员输入的填写规则和缺口回流方式。
-- 未声明 `spec_for_test` 的 Profile 不支持该旁路，CLI 应明确拒绝，不回退到其他 Profile 格式。
+- 未声明 `spec_for_validation` 的 Profile 不支持该旁路，CLI 应明确拒绝，不回退到其他 Profile 格式。
 
 ### 软规范
 

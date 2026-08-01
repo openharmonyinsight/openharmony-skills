@@ -1,5 +1,5 @@
 ---
-artifact: spec-for-test
+artifact: spec-for-validation
 status: Draft
 source_spec: spec.md
 source_spec_hash: {{SOURCE_SPEC_HASH}}
@@ -14,7 +14,7 @@ generated_at: {{GENERATED_AT}}
 
 # {{PROFILE_TITLE}}
 
-> Profile 定义的 Spec for Test 旁路产物，面向测试工程师和测试设计 Agent。
+> Profile 定义的 Spec for Validation 旁路产物，面向测试工程师和测试设计 Agent。
 > 用户故事、AC、规则、API、兼容性和非功能性要求来自 Approved `spec.md`；验证点和专项分析由命中的 Profile 声明。
 > `GENERATED:*` 区域只能由 CLI 生成或刷新，禁止摘要、删减或手工改写；人工只填写 `TEST-ANALYSIS` 区域。
 
