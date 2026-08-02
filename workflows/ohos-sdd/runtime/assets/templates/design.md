@@ -279,7 +279,7 @@ sequenceDiagram
 | 配置 | | |
 | 敏感数据处理(传输/存储/日志) | | |
 
-详细清单见 `{{ASSET_ROOT}}/docs/security-guide.md`。
+详细清单见 `{{ASSET_ROOT}}/analysis/security-playbook.md`。
 
 ### 深度威胁分析(如需)
 
