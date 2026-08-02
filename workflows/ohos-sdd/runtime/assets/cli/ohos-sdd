@@ -7,12 +7,11 @@ CLI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENGINE="${CLI_DIR}/ohos_sdd_engine.py"
 
 resolve_contract() {
-  # 源仓优先(向上找 openharmony/contracts/),其次运行时布局
   local d="${CLI_DIR}"
   while [[ "$d" != "/" ]]; do
-    if [[ -f "$d/openharmony/contracts/artifacts.yaml" ]]; then
-      printf '%s\n' "$d/openharmony/contracts/artifacts.yaml"; return 0
-    fi
+    for cand in "$d/runtime/assets/contracts/artifacts.yaml" "$d/contracts/artifacts.yaml"; do
+      [[ -f "$cand" ]] && { printf '%s\n' "$cand"; return 0; }
+    done
     d="$(cd "$d/.." && pwd)"
   done
   for cand in "${CLI_DIR}/../contracts/artifacts.yaml" \
@@ -25,7 +24,9 @@ resolve_contract() {
 resolve_templates() {
   local d="${CLI_DIR}"
   while [[ "$d" != "/" ]]; do
-    if [[ -d "$d/openharmony/templates" ]]; then printf '%s\n' "$d/openharmony/templates"; return 0; fi
+    for cand in "$d/runtime/assets/templates" "$d/templates"; do
+      [[ -d "$cand" ]] && { printf '%s\n' "$cand"; return 0; }
+    done
     d="$(cd "$d/.." && pwd)"
   done
   for cand in "${CLI_DIR}/../templates" \
@@ -38,7 +39,9 @@ resolve_templates() {
 resolve_profiles() {
   local d="${CLI_DIR}"
   while [[ "$d" != "/" ]]; do
-    if [[ -d "$d/openharmony/profiles" ]]; then printf '%s\n' "$d/openharmony/profiles"; return 0; fi
+    for cand in "$d/runtime/assets/profiles" "$d/profiles"; do
+      [[ -d "$cand" ]] && { printf '%s\n' "$cand"; return 0; }
+    done
     d="$(cd "$d/.." && pwd)"
   done
   for cand in "${CLI_DIR}/../profiles" \
@@ -252,7 +255,7 @@ main() {
       echo "spec-for-test 已重命名为 spec-for-validation；请迁移旧文件和 Profile 配置后使用新命令" >&2
       exit 2
       ;;
-    version|--version) echo "ohos-sdd 0.3.3 (machine-layer skeleton)" ;;
+    version|--version) echo "ohos-sdd 0.4.0 (machine-layer skeleton)" ;;
     help|--help|-h)    usage ;;
     "")                usage; exit 0 ;;
     *) echo "unknown subcommand: $sub" >&2; usage >&2; exit 2 ;;

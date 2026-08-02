@@ -1,6 +1,6 @@
 # OpenHarmony Template Source
 
-本目录是 OpenHarmony SDD 公共交付模板真相源，包含 4 阶段主工作流、通用条件旁路模板 + CLAUDE.md + manifest.md。Profile 专属格式放在 `openharmony/profiles/<name>/templates/`。
+本目录是 OpenHarmony SDD 公共交付模板真相源，包含 4 阶段主工作流、通用条件旁路模板 + CLAUDE.md + manifest.md。Profile 专属格式放在 `profiles/<name>/templates/`。
 
 运行时 `{{ASSET_ROOT}}/templates/` 由打包工具从本目录生成；如存在差异，以本目录为准。
 
@@ -25,4 +25,4 @@
 
 ## 同步源
 
-公共模板以 `openharmony/templates/` 为唯一源；Profile 专属模板以 `openharmony/profiles/<name>/templates/` 为唯一源。更新后运行 `bash packaging/build.sh` 刷新运行时模板。
+公共模板以 `templates/` 为唯一源；Profile 专属模板以 `profiles/<name>/templates/` 为唯一源。更新后运行 `bash packaging/build.sh` 刷新运行时模板。

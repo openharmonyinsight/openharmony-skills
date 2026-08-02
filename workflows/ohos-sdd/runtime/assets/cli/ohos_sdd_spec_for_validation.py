@@ -56,9 +56,10 @@ def _ac_set(text):
 def _find_profiles_dir(start_dir):
     directory = os.path.abspath(start_dir)
     while True:
-        candidate = os.path.join(directory, "openharmony", "profiles")
-        if os.path.isdir(candidate):
-            return candidate
+        for candidate in (os.path.join(directory, "runtime", "assets", "profiles"),
+                          os.path.join(directory, "profiles")):
+            if os.path.isdir(candidate):
+                return candidate
         parent = os.path.dirname(directory)
         if parent == directory:
             break
@@ -760,22 +761,22 @@ class SpecForValidationService:
 
     def contract_template_checks(self, root, artifact_id):
         """Validate the global template and all opt-in Profile extensions.
-        兼容源仓布局(root/openharmony/...)和发布布局(root/...)。"""
+        兼容新仓布局(root/runtime/assets/...)和发布布局(root/...)。"""
         checks = []
-        # 尝试源仓布局和发布布局
         def _resolve(*segs):
-            """兼容源仓(root/openharmony/...)和发布布局(root/...)。
-            发布布局 tools/cli/ 被 flatten 为 cli/。"""
-            for prefix in ("openharmony", ""):
+            """兼容新仓(root/runtime/assets/...)和发布布局(root/...)。
+            tools/cli/ 自动扁平化为 cli/（发布布局历史路径兼容）。"""
+            for prefix in ("runtime/assets", ""):
                 p = os.path.join(root, prefix, *segs)
                 if os.path.exists(p):
                     return p
-            # 发布布局:tools/cli/ → cli/
+            # tools/cli/ → cli/ 扁平化兼容
             if segs and segs[0] == "tools" and len(segs) > 1:
-                p = os.path.join(root, *segs[1:])
-                if os.path.exists(p):
-                    return p
-            return os.path.join(root, "openharmony", *segs)  # 回退到源仓路径(保持原有报错信息)
+                for prefix in ("runtime/assets", ""):
+                    p = os.path.join(root, prefix, *segs[1:])
+                    if os.path.exists(p):
+                        return p
+            return os.path.join(root, *segs)  # 回退路径(保持报错信息可读)
 
         global_template = _resolve("templates", "spec-for-validation.md")
         global_ok = os.path.isfile(global_template) and os.path.getsize(global_template) > 0
@@ -804,17 +805,15 @@ class SpecForValidationService:
                     continue
                 issues = []
                 playbook = str(config.get("playbook") or "").strip()
-                # playbook 路径在源仓为 openharmony/context-engine/<playbook>,
-                # 发布布局为 <playbook>(playbook 本身以 analysis/ 开头)
                 playbook_path = ""
                 if playbook:
-                    for prefix in ("openharmony/context-engine", ""):
+                    for prefix in ("runtime/assets", ""):
                         pp = os.path.join(root, prefix, playbook)
                         if os.path.isfile(pp):
                             playbook_path = pp
                             break
                     if not playbook_path:
-                        playbook_path = os.path.join(root, "openharmony", "context-engine", playbook)
+                        playbook_path = os.path.join(root, playbook)
                 if not playbook or not os.path.isfile(playbook_path):
                     issues.append(f"playbook 缺失:{playbook}")
                 adapter = str(config.get("adapter") or "").strip()

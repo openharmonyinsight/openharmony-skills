@@ -100,7 +100,7 @@ spec_for_validation:
 
 路径说明：
 
-- 源仓路径：`openharmony/context-engine/analysis/arkui/`
+- 源仓路径：`runtime/assets/analysis/arkui/`
 - 运行时路径：`{{ASSET_ROOT}}/analysis/arkui/`
 
 按任务的最小上下文参考：
@@ -114,7 +114,7 @@ spec_for_validation:
 
 ## ArkUI-SDD 执行资产
 
-ArkUI 变更的流程实例写入 `.codespec/`，长期功能规格沉淀到 `specs/`。详细资产关系见 `analysis/arkui/asset-model.md`（源仓对应 `openharmony/context-engine/analysis/arkui/asset-model.md`）。
+ArkUI 变更的流程实例写入 `.codespec/`，长期功能规格沉淀到 `specs/`。详细资产关系见 `analysis/arkui/asset-model.md`（源仓对应 `runtime/assets/analysis/arkui/asset-model.md`）。
 
 最低映射关系：
 
@@ -140,8 +140,8 @@ ArkUI 变更的流程实例写入 `.codespec/`，长期功能规格沉淀到 `sp
 
 Base profile 只保留默认必读摘要和 gate 插槽定义。
 
-- 不确定该读哪些 ArkUI 上下文、或需要检索策略时，读取 `analysis/arkui/context-loading.md`（源仓对应 `openharmony/context-engine/analysis/arkui/context-loading.md`）。
-- 实际执行 ArkUI gate、编写 `evidence/checks/*` 或 review gate 证据时，读取 `analysis/arkui/gate-playbook.md`（源仓对应 `openharmony/context-engine/analysis/arkui/gate-playbook.md`）。
+- 不确定该读哪些 ArkUI 上下文、或需要检索策略时，读取 `analysis/arkui/context-loading.md`（源仓对应 `runtime/assets/analysis/arkui/context-loading.md`）。
+- 实际执行 ArkUI gate、编写 `evidence/checks/*` 或 review gate 证据时，读取 `analysis/arkui/gate-playbook.md`（源仓对应 `runtime/assets/analysis/arkui/gate-playbook.md`）。
 - 默认不要为了“更全面”读取全部 analysis。
 
 ## Profile Gate 定义
@@ -177,7 +177,7 @@ Base profile 只保留默认必读摘要和 gate 插槽定义。
 
 ## SpecTest Host Preview 与 Build/Test 入口
 
-SpecTest 适用性、常用命令、Build/Test 入口不再内嵌在 base profile。需要这些信息时，读取 `analysis/arkui/validation-playbook.md`（源仓对应 `openharmony/context-engine/analysis/arkui/validation-playbook.md`）。
+SpecTest 适用性、常用命令、Build/Test 入口不再内嵌在 base profile。需要这些信息时，读取 `analysis/arkui/validation-playbook.md`（源仓对应 `runtime/assets/analysis/arkui/validation-playbook.md`）。
 
 ## Spec for Validation 旁路
 

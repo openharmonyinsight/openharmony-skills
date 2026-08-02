@@ -116,7 +116,7 @@ spec_for_validation:
         - <验证分析项>
 ```
 
-- 默认使用公共 `openharmony/templates/spec-for-validation.md`，公共层负责生命周期、通用投影、渲染、检查和证据生成。
+- 默认使用公共 `templates/spec-for-validation.md`，公共层负责生命周期、通用投影、渲染、检查和证据生成。
 - `title` 定义输出文档标题；`analysis` 以声明方式追加 Profile 专项分析区和检查项。
 - `adapter` 对应 `ohos_sdd_spec_for_validation_<adapter>.py`，仅在需要特殊投影或领域过滤规则时声明，不应重复公共流程逻辑。
 - `template_override` 相对当前 Profile 目录解析，仅在默认格式无法满足该 Profile 时使用。
@@ -129,7 +129,7 @@ profile schema 推荐节(基本信息 / 阶段补充约束 / 专项检查清单)
 
 ### 与打包目录的关系
 
-- `openharmony/profiles/`：社区版，面向贡献者阅读和编辑
+- `profiles/`：社区版，面向贡献者阅读和编辑
 - `{{ASSET_ROOT}}/profiles/`：运行时版本，由打包工具从本目录生成，供 Agent 执行
 - 修改本目录后重新运行 `bash packaging/build.sh` 即可刷新运行时 profile
 

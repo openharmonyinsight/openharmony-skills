@@ -76,7 +76,7 @@ subprofiles: []
 |--------|------|----------|------|
 | P0 | arkweb_144 源码（NWebImpl / CEF Host / CDP Handler） | `gitcode.com/openharmony-tpc/chromium_arkweb`（Chromium 内核适配仓） | 实现路径验证、已有能力确认 |
 | P0 | Chromium CDP Protocol（.pdl 文件） | Chromium 源码 `content/browser/devtools/protocol/` | CDP 命令参数和响应格式 |
-| P1 | context-engine/analysis/arkweb/ | 本仓库 `openharmony/context-engine/analysis/arkweb/` | 架构分析、组件知识 |
+| P1 | context-engine/analysis/arkweb/ | 本仓库 `analysis/arkweb/` | 架构分析、组件知识 |
 | P1 | openharmony_master 源码（NAPI / NWeb 接口 / 胶水层） | `gitcode.com/AkashiKaiki/web_webview`（个人 fork，官方仓库见 openharmony-tpc/web_webview） | 接口层和桥接层验证 |
 
 ### 使用规则

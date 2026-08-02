@@ -2,8 +2,8 @@ schemaVersion: 1
 kind: Plugin
 id: ohos-sdd
 name: ohos-sdd
-version: 0.3.3
-description: OHOS SDD workflow plugin with commands, skills, agents, and reviewers for .codespec generation.
+version: 0.4.0
+description: OpenHarmony SDD workflow plugin with skills, profiles, and runtime assets.
 license: MIT
 provenance: provenance.yaml
 
@@ -29,8 +29,8 @@ components:
         - skills/ohos-review/SKILL.md
         - skills/ohos-validate/SKILL.md
         - skills/ohos-security-threat-model/SKILL.md
-        - skills/ohos-spec-for-test/SKILL.md
-      role: sdd-workflow
+        - skills/ohos-spec-for-validation/SKILL.md
+      role: delivery-workflow
 
   prompts:
     - id: session-router
@@ -43,46 +43,32 @@ components:
   assets:
     - id: templates
       path: runtime/assets/templates
-      usedBy:
-        - skills
+      usedBy: [skills]
     - id: profiles
       path: runtime/assets/profiles
-      usedBy:
-        - skills
+      usedBy: [skills]
     - id: contracts
       path: runtime/assets/contracts
-      usedBy:
-        - skills
-        - cli
+      usedBy: [skills, cli]
     - id: workflow
       path: runtime/assets/workflow
-      usedBy:
-        - skills
+      usedBy: [skills]
     - id: analysis
       path: runtime/assets/analysis
-      usedBy:
-        - skills
+      usedBy: [skills]
     - id: cli
       path: runtime/assets/cli
-      usedBy:
-        - executables
-    - id: docs
-      path: runtime/assets/docs
-      usedBy:
-        - skills
+      usedBy: [executables]
     - id: rules
       path: runtime/assets/rules
-      usedBy:
-        - skills
+      usedBy: [skills]
 
   executables:
     - id: ohos-sdd-cli
       path: runtime/assets/cli/ohos-sdd
       runtime: python3
       entrypoint: ohos-sdd
-      usedBy:
-        - ohos-validate
-        - ohos-spec-for-test
+      usedBy: [ohos-validate, ohos-spec-for-validation]
 
   agents: []
   tools: []
@@ -100,7 +86,7 @@ commandProjection:
     - skill: ohos-review
     - skill: ohos-validate
     - skill: ohos-security-threat-model
-    - skill: ohos-spec-for-test
+    - skill: ohos-spec-for-validation
 
 compatibility:
   targets:

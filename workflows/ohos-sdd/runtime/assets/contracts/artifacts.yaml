@@ -6,16 +6,16 @@
 # - Record the current OpenHarmony delivery contract and accepted ODK alignment targets.
 
 schema: ohos-sdd-artifacts/v1
-source_root: openharmony
+source_root: .
 
 identifier_grammars:
   acceptance_criterion: AC-<number>(.<number>)*
 
 truth_sources:
-  templates: openharmony/templates
-  workflow: openharmony/workflow
-  profiles: openharmony/profiles
-  active_docs: openharmony/docs
+  templates: templates
+  workflow: workflow
+  profiles: profiles
+  active_docs: docs
 
 archive:
   target_root: .codespec/changes
