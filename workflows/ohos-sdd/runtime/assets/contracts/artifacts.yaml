@@ -293,5 +293,5 @@ artifacts:
 current_drifts:
   - id: phase_order_vs_odk
     severity: migrating
-    description: spec-for-ai accepted ODK phase alignment in docs/designs/odk-alignment-decisions.md and is migrating from the legacy Define -> Specify -> Implement -> Release wording to Define -> Specify -> Design -> Plan. Secondary historical or reference docs may still contain legacy Stage terminology until follow-up cleanup completes.
+    description: ohos-sdd accepted ODK phase alignment and has migrated from the legacy Define -> Specify -> Implement -> Release wording to Define -> Specify -> Design -> Plan. Secondary historical or reference docs may still contain legacy Stage terminology until follow-up cleanup completes.
     follow_up_batch: P3 ODK contract alignment

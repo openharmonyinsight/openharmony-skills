@@ -5,10 +5,10 @@ id: ohos-sdd
 source:
   repository: https://gitcode.com/oshunter/ohos-sdd.git
   branch: main
-  commit: ea3b0c423da9a8b14f4b84d395586cfdfea87ee7
+  commit: 104a2e0d637f6aa78dc3fe2fdd807f7e50cf2314
   sourceVersion: 0.4.0
-  commitDate: 2026-08-02T23:54:04+08:00
-  importedAt: 2026-08-02
+  commitDate: 2026-08-03T00:22:17+08:00
+  importedAt: 2026-08-03
 
 license:
   declared: MIT
