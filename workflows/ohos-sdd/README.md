@@ -1,10 +1,10 @@
 # ohos-sdd Workflow Plugin
 
-Neutral-source plugin providing OpenHarmony SDD workflow skills, profiles, and runtime assets.
+OpenHarmony SDD workflow plugin providing skills, profiles, and runtime assets.
 
 ## Source
 
-Synced from `oshunter/spec-for-ai` dev branch via
+Synced from `oshunter/ohos-sdd` main branch via
 `ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills`.
 
 ## Structure
@@ -13,8 +13,8 @@ Synced from `oshunter/spec-for-ai` dev branch via
 - `provenance.yaml` — source tracking (auto-updated by publish script)
 - `hooks/session-router.yaml` — declarative session-start hook
 - `prompts/session-router.md` — router prompt
-- `skills/` — 10 ohos-sdd skills (synced from `openharmony/skills/`)
-- `runtime/assets/` — templates, profiles, contracts, workflow, analysis, cli, security-guide, examples
+- `skills/` — 10 ohos-sdd skills (synced from `skills/`)
+- `runtime/assets/` — templates, profiles, contracts, workflow, analysis, cli, rules
 
 ## Variables
 
@@ -24,6 +24,6 @@ Synced from `oshunter/spec-for-ai` dev branch via
 ## Differences from ODK Plugin
 
 - No validator executable (CLI executable registered instead)
-- Additional assets: workflow/, analysis/, cli/
-- security-guide.md included (referenced by skills for security checks)
+- Additional assets: workflow/, analysis/, cli/, rules/
+- security-playbook.md included in analysis/ (referenced by design.md template for security checks)
 - Skills use `{{ASSET_ROOT}}` placeholder (synced from source `{{PLUGIN_ROOT}}`)
