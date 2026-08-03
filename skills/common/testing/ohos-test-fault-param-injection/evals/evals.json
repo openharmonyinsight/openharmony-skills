@@ -1,0 +1,49 @@
+{
+  "skill_name": "ohos-test-fault-param-injection",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我们有个 SA 的高频 IPC 接口注册了 watchdog，超时 6s 会触发 XCOLLIE_FLAG_RECOVERY 杀进程。现在要验证这个超时恢复链路真能杀进程并被 init 重拉，但平时没法稳定复现超时。怎么搞？",
+      "expected_output": "一个结构化手工测试用例：在目标函数的 SetTimer 之后插入范式A(sleep 读 <sub>.faultinject.<func>_sleep_ms，非持久默认0，#ifdef FAULT_INJECT_TEST 包裹)，读后 SetParameter 清零做单次消费，param set 7000 触发；预期 6s 后 watchdog 杀进程、init 按 critical 重拉、就绪参数/bootevent 重新 true，且提示 critical 重复崩溃的 panic 风险；清理 param set 0 + setenforce 按记录恢复 + reboot。前置记录 getenforce、注册 .para/.para.dac。RECOVERY 类不得用 persist. 前缀。",
+      "files": [],
+      "assertions": [
+        "输出含完整的 9 个用例字段(用例ID/标题/注入目标/前置条件/注入代码/参数注册/执行步骤/预期结果/清理步骤)",
+        "注入代码使用 OHOS::system::GetIntParameter 读 <sub>.faultinject.<func>_sleep_ms(非持久，无 persist. 前缀) 且默认值 0，并被 #ifdef FAULT_INJECT_TEST 包裹",
+        "注入点在 SetTimer 之后、业务逻辑之前；读后立即 SetParameter 清零做单次消费(防止 init 重拉后反复崩溃)",
+        "参数注册给出 .para 和 .para.dac 两行(非持久默认)",
+        "执行步骤含 param set 注入值且该值 >6s 阈值",
+        "预期结果含进程被杀+init重拉+恢复判据，并提示 critical 服务 N 次内重复崩溃的 panic 重启风险",
+        "清理步骤含 param set 0 + setenforce 按原始记录恢复 + reboot",
+        "前置条件记录了原始 getenforce 状态"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我想测调用方对某 SA 接口返回错误码 20900001 时的容错逻辑，但这个错误码正常根本不会出现。能不能用参数注入的方式让那个接口直接返回 20900001，好验证调用方的降级处理？",
+      "expected_output": "一个用例：在目标函数入口插入范式B(读 <sub>.faultinject.<func>_err，非持久默认0)，param set 20900001 让函数直接返回该错误码；预期调用方走到降级/重试分支；清理 param set 0。强调默认值 ERR_OK 保证生产路径不受影响。跨重启语义验证可用 persist. 前缀(错误码不杀进程，安全)。",
+      "files": [],
+      "assertions": [
+        "注入代码使用范式B(读 <func>_err 参数，非0则 return 该错误码)，#ifdef FAULT_INJECT_TEST 包裹",
+        "参数默认值是 ERR_OK 或 0(保证生产路径不返回错误)",
+        "预期结果描述了调用方的容错/降级/重试行为",
+        "清理步骤将参数复位为 0 或 ERR_OK",
+        "用例字段齐全(9 个字段)；若验证跨重启语义则用 persist. 前缀(错误码类不杀进程，不与 critical 崩溃点组合)"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "某系统服务在资源耗尽场景下应该走 OOM 保护降级，但这种环境太难造了。能不能用系统参数控制注入多少资源占用，来验证 OOM 保护逻辑？",
+      "expected_output": "一个用例：优先确定性注入(可替换 allocator/failpoint 在目标分配点直接返回失败)；或压力法在目标路径插入范式D(读 <func>_leak，RAII 容器 vector<unique_ptr> 持有 + 硬上限 + new(std::nothrow))，注入点在业务锁外。预期进程走 OOM 保护/降级/回收分支；清理 param set 0。throwing allocation(make_shared/new)失败抛 std::bad_alloc 不返回 nullptr，测 nullptr 须用 new(std::nothrow)。",
+      "files": [],
+      "assertions": [
+        "注入代码优先确定性注入(可替换 allocator/failpoint)或压力法用 RAII 容器(std::vector<std::unique_ptr>)管理 + 硬上限 + new(std::nothrow)，#ifdef FAULT_INJECT_TEST 包裹",
+        "压力法注入点不在业务锁内执行(持锁长占资源致死锁/线程耗尽)",
+        "参数默认值是 0(生产不耗尽资源)",
+        "对 throwing allocation 语义正确：make_shared/new 失败抛 std::bad_alloc(不返回 nullptr)，测 nullptr 须用 new(std::nothrow)",
+        "预期结果含 OOM 保护/降级/回收判据",
+        "清理步骤将 leak 参数复位为 0；用例或注意事项提到资源耗尽注入后必须复位(否则进程持续占用直至重启)",
+        "否决项(任一命中即不合格)：(a)无上限耗尽整机资源 (b)在业务锁内执行压力循环 (c)把 throwing allocation 当成返回 nullptr (d)无隔离上限或无失败后清理"
+      ]
+    }
+  ]
+}
