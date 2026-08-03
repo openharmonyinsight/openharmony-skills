@@ -6,7 +6,7 @@
 
 ## 交付件依赖图
 
-核心依赖链：`proposal → spec → design → execution-plan → code`；`evidence/{checks,reviews}` 作旁证。声明支持 Spec for Test 的 Profile 可在 spec/design Approved 后显式触发旁路：`spec + design → spec-for-test`；如继续编写具体测试设计，则形成条件依赖 `spec-for-test → test-spec`。
+核心依赖链：`proposal → spec → design → execution-plan → code`；`evidence/{checks,reviews}` 作旁证。声明支持 Spec for Validation 的 Profile 可在 spec/design Approved 后显式触发旁路：`spec + design → spec-for-validation`；如继续编写具体测试设计，则形成条件依赖 `spec-for-validation → test-spec`。
 每个交付件的存在与内容都必须能由上游追溯，依赖边由 Level C 机器校验。
 
 | 交付件 | 上游依赖 | 机器一致性检查（Level C 边） |
@@ -15,8 +15,8 @@
 | spec | proposal | spec 验收追溯 ≥1 AC（追溯 proposal 成功标准） |
 | design | proposal + spec | design 引用的 AC 在 spec 存在 |
 | execution-plan | proposal + spec + design | spec 每个 AC 在 plan 覆盖 |
-| spec-for-test（Profile 条件旁路） | spec + design | 来源 hash 一致；AC 集合与 spec 一致；design 已 Approved；格式、专项分析与审批满足 Profile 定义；不得包含内部实现信息 |
-| test-spec（条件测试设计） | proposal + spec + design（如有）+ spec-for-test（已触发 Spec for Test 时） | 以 spec-for-test 作为测试输入，转化为具体场景、环境、数据和证据设计；不回写开发自验证内容 |
+| spec-for-validation（Profile 条件旁路） | spec + design | 来源 hash 一致；AC 集合与 spec 一致；design 已 Approved；格式、专项分析与审批满足 Profile 定义；不得包含内部实现信息 |
+| test-spec（条件测试设计） | proposal + spec + design（如有）+ spec-for-validation（已触发 Spec for Validation 时） | 以 spec-for-validation 作为测试输入，转化为具体场景、环境、数据和证据设计；不回写开发自验证内容 |
 | code | execution-plan | 受影响文件清单已声明（真实 git-diff 比对留后续 batch） |
 | evidence/checks/* | 对应交付件 | per-交付件 provenance + 一致性结论（B 项） |
 | evidence/reviews/* | spec + code | 逐 AC 审查结论，Level D 机器真相源（A 项） |
@@ -96,7 +96,7 @@ Blocked: 外部依赖阻塞（等待或升级 Owner）
 | 实现与 Spec/Design 不一致 | 回 spec/design/execution-plan 对应源头修正 |
 | 代码质量或工程规则不合格 | 保持在执行/审查，不得宣称交付完成 |
 | 验证证据不足 | 保持在执行/验证，不得宣称交付完成 |
-| Profile 测试输入缺少行为或验证点 | 行为缺口回 spec；可观察性缺口回 design；刷新 spec-for-test |
+| Profile 测试输入缺少行为或验证点 | 行为缺口回 spec；可观察性缺口回 design；刷新 spec-for-validation |
 
 ## 硬规则
 

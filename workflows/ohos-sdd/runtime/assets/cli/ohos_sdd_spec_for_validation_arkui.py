@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""ArkUI-only extensions for the common spec-for-test adapter."""
+"""ArkUI-only extensions for the common spec-for-validation adapter."""
 
 import re
 
-from ohos_sdd_spec_for_test import (
-    BaseSpecForTestAdapter,
+from ohos_sdd_spec_for_validation import (
+    BaseSpecForValidationAdapter,
     _ac_verification_complete,
     _external_spec_projection,
     _markdown_section_blocks,
@@ -29,7 +29,7 @@ ARKUI_NFR_HEADINGS = (
 )
 
 
-class ProfileAdapter(BaseSpecForTestAdapter):
+class ProfileAdapter(BaseSpecForValidationAdapter):
     """Add ArkUI filters and the detailed 2D/NFR/2C template contract."""
 
     def internal_detail_patterns(self):

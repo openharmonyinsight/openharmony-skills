@@ -25,7 +25,7 @@ subprofiles: []
 | 阶段 | 补充要求 |
 |------|----------|
 | Phase 1 (Define) | 显式确认 OHOS 版本、设备范围、输入设备、兼容性和 DFX 是否涉及 |
-| Phase 2 (Specify) | 明确行为规则、兼容性和异常路径；优先读取 `context-engine/analysis/arkweb/`、ArkWeb 相关源码、试点分析材料 |
+| Phase 2 (Specify) | 明确行为规则、兼容性和异常路径；优先读取 `analysis/arkweb/`、ArkWeb 相关源码、试点分析材料 |
 | Phase 3 (Design) | 明确 ArkWeb 与上层应用/框架、下层 Chromium 或平台适配边界，沉淀模块关系和接口约束 |
 | Phase 4 (Plan) | 重点检查实现范围、验证路径与兼容性闭环；增加 Committer / Owner 视角，重点关注线程、安全、性能、可测试性 |
 
@@ -76,7 +76,7 @@ subprofiles: []
 |--------|------|----------|------|
 | P0 | arkweb_144 源码（NWebImpl / CEF Host / CDP Handler） | `gitcode.com/openharmony-tpc/chromium_arkweb`（Chromium 内核适配仓） | 实现路径验证、已有能力确认 |
 | P0 | Chromium CDP Protocol（.pdl 文件） | Chromium 源码 `content/browser/devtools/protocol/` | CDP 命令参数和响应格式 |
-| P1 | context-engine/analysis/arkweb/ | 本仓库 `openharmony/context-engine/analysis/arkweb/` | 架构分析、组件知识 |
+| P1 | analysis/arkweb/ | 本仓库 `analysis/arkweb/` | 架构分析、组件知识 |
 | P1 | openharmony_master 源码（NAPI / NWeb 接口 / 胶水层） | `gitcode.com/AkashiKaiki/web_webview`（个人 fork，官方仓库见 openharmony-tpc/web_webview） | 接口层和桥接层验证 |
 
 ### 使用规则
@@ -88,4 +88,4 @@ subprofiles: []
 
 - 对新需求先判断是"ArkWeb 新设计"还是"基于存量行为增量修改"
 - 遇到 Chromium 侧依赖、跨模块调用或复杂输入链路时，不要跳过 Phase 3 设计
-- 如历史分析材料不足，先补 `context-engine/analysis/arkweb/` 再推进复杂设计
+- 如历史分析材料不足，先补 `analysis/arkweb/` 再推进复杂设计

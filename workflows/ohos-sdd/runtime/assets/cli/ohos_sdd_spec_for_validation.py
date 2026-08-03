@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Profile-extendable spec-for-test support for the ohos-sdd CLI.
+"""Profile-extendable spec-for-validation support for the ohos-sdd CLI.
 
 This module owns the common lifecycle, default projection/rendering, source
 consistency, evidence, and Profile routing. Profile adapters extend only domain
@@ -56,9 +56,10 @@ def _ac_set(text):
 def _find_profiles_dir(start_dir):
     directory = os.path.abspath(start_dir)
     while True:
-        candidate = os.path.join(directory, "openharmony", "profiles")
-        if os.path.isdir(candidate):
-            return candidate
+        for candidate in (os.path.join(directory, "runtime", "assets", "profiles"),
+                          os.path.join(directory, "profiles")):
+            if os.path.isdir(candidate):
+                return candidate
         parent = os.path.dirname(directory)
         if parent == directory:
             break
@@ -290,17 +291,17 @@ def _analysis_definitions(config):
     if isinstance(raw, dict):
         raw = [raw]
     if not isinstance(raw, list):
-        raise ValueError("spec_for_test.analysis 必须为列表")
+        raise ValueError("spec_for_validation.analysis 必须为列表")
     definitions = []
     for index, entry in enumerate(raw, 1):
         if not isinstance(entry, dict):
-            raise ValueError("spec_for_test.analysis 每项必须为映射")
+            raise ValueError("spec_for_validation.analysis 每项必须为映射")
         title = str(entry.get("title") or "").strip()
         items = entry.get("items") or []
         if isinstance(items, str):
             items = [items]
         if not title or not isinstance(items, list) or not all(str(item).strip() for item in items):
-            raise ValueError("spec_for_test.analysis 每项必须声明 title 和非空 items")
+            raise ValueError("spec_for_validation.analysis 每项必须声明 title 和非空 items")
         definitions.append({
             "id": str(entry.get("id") or index).strip(),
             "title": title,
@@ -431,7 +432,7 @@ def _ac_verification_complete(analysis, spec_acs):
     return issues
 
 
-class BaseSpecForTestAdapter:
+class BaseSpecForValidationAdapter:
     """Common projection, rendering, validation, and approval policy."""
 
     def __init__(self, parse_frontmatter, config):
@@ -556,25 +557,25 @@ class BaseSpecForTestAdapter:
         found = [token for token in self.forbidden_tokens() if token in generated_content]
         internal_hits = _internal_detail_hits(generated_content, self.internal_detail_patterns())
         internal_issues = found + internal_hits
-        add(not internal_issues, "Spec for Test 无内部实现信息",
+        add(not internal_issues, "Spec for Validation 无内部实现信息",
             "命中禁止内容:" + ", ".join(internal_issues) if internal_issues else "")
         missing_stories = sorted(_story_ids(spec) - _story_ids(external_spec))
-        add(not missing_stories, "Spec for Test 用户故事完整",
+        add(not missing_stories, "Spec for Validation 用户故事完整",
             "未投影来源用户故事:" + ", ".join(missing_stories) if missing_stories else "")
         expected_external = self.external_spec_projection(spec)
         projection_changed = (_normalized_projection(external_spec) !=
                               _normalized_projection(expected_external))
-        add(not projection_changed, "Spec for Test 来源规格投影未改写",
+        add(not projection_changed, "Spec for Validation 来源规格投影未改写",
             "GENERATED:EXTERNAL-SPEC 区域只能由 CLI 刷新，不得摘要、删减或手工改写"
             if projection_changed else "")
         if "<!-- GENERATED:NFR-SPEC:BEGIN -->" in artifact:
             nfr_changed = (_normalized_projection(nfr_source) !=
                            _normalized_projection(self.nfr_source_projection(spec)))
-            add(not nfr_changed, "Spec for Test 非功能性需求来源投影未改写",
+            add(not nfr_changed, "Spec for Validation 非功能性需求来源投影未改写",
                 "GENERATED:NFR-SPEC 区域只能由 CLI 刷新，不得摘要、删减或手工改写"
                 if nfr_changed else "")
         developer_verify = DEVELOPER_SELF_VERIFICATION.findall(artifact)
-        add(not developer_verify, "Spec for Test 无开发自验证信息",
+        add(not developer_verify, "Spec for Validation 无开发自验证信息",
             "测试输入产物不得包含开发侧自验证类型" if developer_verify else "")
         if require_complete:
             spec_acs = _ac_set(spec)
@@ -586,7 +587,7 @@ class BaseSpecForTestAdapter:
     def source_edge_issues(self, spec, design, artifact):
         spec_issues = []
         if DEVELOPER_SELF_VERIFICATION.search(artifact):
-            spec_issues.append("spec-for-test 不得包含开发侧自验证类型、用例、命令或结果")
+            spec_issues.append("spec-for-validation 不得包含开发侧自验证类型、用例、命令或结果")
         external_spec = _between(artifact, "<!-- GENERATED:EXTERNAL-SPEC:BEGIN -->",
                                  "<!-- GENERATED:EXTERNAL-SPEC:END -->")
         expected = self.external_spec_projection(spec)
@@ -612,8 +613,8 @@ class BaseSpecForTestAdapter:
         return dev in accepted and test in accepted
 
 
-class SpecForTestService:
-    """Spec-for-test application service with optional Profile extensions."""
+class SpecForValidationService:
+    """spec-for-validation application service with optional Profile extensions."""
 
     def __init__(self, parse_frontmatter):
         self.parse_frontmatter = parse_frontmatter
@@ -642,10 +643,68 @@ class SpecForTestService:
         with open(profile_path, encoding="utf-8") as fh:
             return self.parse_frontmatter(fh.read())
 
+    def legacy_issues(self, change_dir, profiles_dir=None):
+        """Return migration blockers left by the spec-for-test rename."""
+        issues = []
+        legacy_artifact = os.path.join(change_dir, "spec-for-test.md")
+        current_artifact = os.path.join(change_dir, "spec-for-validation.md")
+        legacy_evidence = os.path.join(
+            change_dir, "evidence", "checks", "check-spec-for-test.md")
+        current_evidence = os.path.join(
+            change_dir, "evidence", "checks", "check-spec-for-validation.md")
+
+        if os.path.isfile(legacy_artifact):
+            if os.path.isfile(current_artifact):
+                issues.append(
+                    "spec-for-test.md 与 spec-for-validation.md 同时存在；"
+                    "请确认唯一事实源并删除旧文件")
+            else:
+                issues.append(
+                    "检测到旧产物 spec-for-test.md；请迁移为 spec-for-validation.md")
+        if os.path.isfile(legacy_evidence):
+            if os.path.isfile(current_evidence):
+                issues.append(
+                    "check-spec-for-test.md 与 check-spec-for-validation.md 同时存在；"
+                    "请删除旧 evidence 并重新运行 check")
+            else:
+                issues.append(
+                    "检测到旧 evidence check-spec-for-test.md；"
+                    "请删除旧 evidence 并运行 spec-for-validation check")
+
+        test_spec = _read(change_dir, "test-spec.md") or ""
+        if re.search(
+                r"(?<![A-Za-z0-9_.-])spec-for-test\.md(?![A-Za-z0-9_.-])",
+                test_spec):
+            issues.append(
+                "test-spec.md 仍引用 spec-for-test.md；请改为 spec-for-validation.md")
+
+        profile, _manifest = self._manifest_profile(change_dir)
+        if profile:
+            profiles_dir = profiles_dir or _find_profiles_dir(change_dir)
+            if profiles_dir:
+                profile_fm = self._profile_frontmatter(
+                    profiles_dir, profile.split("/", 1)[0])
+                has_legacy = "spec_for_test" in profile_fm
+                has_current = "spec_for_validation" in profile_fm
+                if has_legacy and has_current:
+                    issues.append(
+                        f"profile={profile} 同时声明 spec_for_test 与 spec_for_validation；"
+                        "请删除旧键 spec_for_test")
+                elif has_legacy:
+                    issues.append(
+                        f"profile={profile} 使用旧键 spec_for_test；"
+                        "请迁移为 spec_for_validation")
+        return issues
+
+    def require_no_legacy(self, change_dir, profiles_dir=None):
+        issues = self.legacy_issues(change_dir, profiles_dir)
+        if issues:
+            raise ValueError("legacy 迁移阻塞: " + "; ".join(issues))
+
     @staticmethod
     def _default_template_path(profiles_dir):
         return os.path.join(os.path.dirname(os.path.abspath(profiles_dir)),
-                            "templates", "spec-for-test.md")
+                            "templates", "spec-for-validation.md")
 
     def _adapter(self, change_dir, profiles_dir=None):
         profile, manifest = self._manifest_profile(change_dir)
@@ -656,29 +715,38 @@ class SpecForTestService:
         if not profiles_dir:
             raise ValueError("找不到 Profile 目录")
         profile_fm = self._profile_frontmatter(profiles_dir, base_profile)
-        config = profile_fm.get("spec_for_test")
+        has_legacy = "spec_for_test" in profile_fm
+        has_current = "spec_for_validation" in profile_fm
+        if has_legacy and has_current:
+            raise ValueError(
+                f"profile={profile} 同时声明 spec_for_test 与 spec_for_validation；"
+                "请删除旧键 spec_for_test")
+        if has_legacy:
+            raise ValueError(
+                f"profile={profile} 使用旧键 spec_for_test；请迁移为 spec_for_validation")
+        config = profile_fm.get("spec_for_validation")
         if not isinstance(config, dict):
-            raise ValueError(f"profile={profile} 未声明支持 Spec for Test")
+            raise ValueError(f"profile={profile} 未声明支持 Spec for Validation")
         if not str(config.get("playbook") or "").strip():
-            raise ValueError(f"profile={profile} 的 spec_for_test 配置缺少 playbook")
+            raise ValueError(f"profile={profile} 的 spec_for_validation 配置缺少 playbook")
 
-        adapter_class = BaseSpecForTestAdapter
+        adapter_class = BaseSpecForValidationAdapter
         adapter_name = str(config.get("adapter") or "").strip()
         if adapter_name:
             safe_adapter = re.sub(r"[^A-Za-z0-9_]", "_", adapter_name.replace("-", "_"))
             if safe_adapter != adapter_name.replace("-", "_"):
-                raise ValueError(f"profile={profile} 的 Spec for Test adapter 名称非法")
-            module_name = f"ohos_sdd_spec_for_test_{safe_adapter}"
+                raise ValueError(f"profile={profile} 的 Spec for Validation adapter 名称非法")
+            module_name = f"ohos_sdd_spec_for_validation_{safe_adapter}"
             try:
                 module = importlib.import_module(module_name)
             except ModuleNotFoundError as exc:
                 if exc.name != module_name:
                     raise
                 raise ValueError(
-                    f"profile={profile} 未提供 Spec for Test adapter:{adapter_name}") from exc
+                    f"profile={profile} 未提供 Spec for Validation adapter:{adapter_name}") from exc
             adapter_class = getattr(module, "ProfileAdapter", None)
             if adapter_class is None:
-                raise ValueError(f"profile={profile} 的 Spec for Test adapter 缺少 ProfileAdapter")
+                raise ValueError(f"profile={profile} 的 Spec for Validation adapter 缺少 ProfileAdapter")
 
         template_path = os.path.abspath(self._default_template_path(profiles_dir))
         template_override = str(config.get("template_override") or "").strip()
@@ -686,31 +754,31 @@ class SpecForTestService:
             profile_assets = os.path.abspath(os.path.join(profiles_dir, base_profile))
             template_path = os.path.abspath(os.path.join(profile_assets, template_override))
             if os.path.commonpath((profile_assets, template_path)) != profile_assets:
-                raise ValueError(f"profile={profile} 的 Spec for Test template_override 路径越界")
+                raise ValueError(f"profile={profile} 的 Spec for Validation template_override 路径越界")
         if not os.path.isfile(template_path):
-            raise ValueError(f"找不到 Spec for Test 模板:{template_path}")
+            raise ValueError(f"找不到 Spec for Validation 模板:{template_path}")
         return adapter_class(self.parse_frontmatter, config), template_path, profile, manifest
 
     def contract_template_checks(self, root, artifact_id):
         """Validate the global template and all opt-in Profile extensions.
-        兼容源仓布局(root/openharmony/...)和发布布局(root/...)。"""
+        兼容新仓布局(root/runtime/assets/...)和发布布局(root/...)。"""
         checks = []
-        # 尝试源仓布局和发布布局
         def _resolve(*segs):
-            """兼容源仓(root/openharmony/...)和发布布局(root/...)。
-            发布布局 tools/cli/ 被 flatten 为 cli/。"""
-            for prefix in ("openharmony", ""):
+            """兼容新仓(root/runtime/assets/...)和发布布局(root/...)。
+            tools/cli/ 自动扁平化为 cli/（发布布局历史路径兼容）。"""
+            for prefix in ("runtime/assets", ""):
                 p = os.path.join(root, prefix, *segs)
                 if os.path.exists(p):
                     return p
-            # 发布布局:tools/cli/ → cli/
+            # tools/cli/ → cli/ 扁平化兼容
             if segs and segs[0] == "tools" and len(segs) > 1:
-                p = os.path.join(root, *segs[1:])
-                if os.path.exists(p):
-                    return p
-            return os.path.join(root, "openharmony", *segs)  # 回退到源仓路径(保持原有报错信息)
+                for prefix in ("runtime/assets", ""):
+                    p = os.path.join(root, prefix, *segs[1:])
+                    if os.path.exists(p):
+                        return p
+            return os.path.join(root, *segs)  # 回退路径(保持报错信息可读)
 
-        global_template = _resolve("templates", "spec-for-test.md")
+        global_template = _resolve("templates", "spec-for-validation.md")
         global_ok = os.path.isfile(global_template) and os.path.getsize(global_template) > 0
         checks.append((global_ok, f"{artifact_id}.template",
                        "" if global_ok else f"全局模板缺失或为空:{global_template}"))
@@ -724,28 +792,34 @@ class SpecForTestService:
                     continue
                 with open(profile_md, encoding="utf-8") as fh:
                     profile_fm = self.parse_frontmatter(fh.read())
-                config = profile_fm.get("spec_for_test")
+                has_legacy = "spec_for_test" in profile_fm
+                has_current = "spec_for_validation" in profile_fm
+                if has_legacy:
+                    issue = ("同时声明 spec_for_test 与 spec_for_validation；请删除旧键 spec_for_test"
+                             if has_current else
+                             "使用旧键 spec_for_test；请迁移为 spec_for_validation")
+                    checks.append((False, f"{artifact_id}.profile-config:{profile_name}", issue))
+                    continue
+                config = profile_fm.get("spec_for_validation")
                 if not isinstance(config, dict):
                     continue
                 issues = []
                 playbook = str(config.get("playbook") or "").strip()
-                # playbook 路径在源仓为 openharmony/context-engine/<playbook>,
-                # 发布布局为 <playbook>(playbook 本身以 analysis/ 开头)
                 playbook_path = ""
                 if playbook:
-                    for prefix in ("openharmony/context-engine", ""):
+                    for prefix in ("runtime/assets", ""):
                         pp = os.path.join(root, prefix, playbook)
                         if os.path.isfile(pp):
                             playbook_path = pp
                             break
                     if not playbook_path:
-                        playbook_path = os.path.join(root, "openharmony", "context-engine", playbook)
+                        playbook_path = os.path.join(root, playbook)
                 if not playbook or not os.path.isfile(playbook_path):
                     issues.append(f"playbook 缺失:{playbook}")
                 adapter = str(config.get("adapter") or "").strip()
                 if adapter:
                     adapter_path = _resolve("tools", "cli",
-                        f"ohos_sdd_spec_for_test_{adapter.replace('-', '_')}.py")
+                        f"ohos_sdd_spec_for_validation_{adapter.replace('-', '_')}.py")
                     if not os.path.isfile(adapter_path):
                         issues.append(f"adapter 缺失:{adapter}")
                 override = str(config.get("template_override") or "").strip()
@@ -764,7 +838,7 @@ class SpecForTestService:
                 if not issues:
                     supported_profiles.append(profile_name)
         checks.append((bool(supported_profiles), f"{artifact_id}.profile-support",
-                       "" if supported_profiles else "没有 Profile 声明有效的 spec_for_test 增量配置"))
+                       "" if supported_profiles else "没有 Profile 声明有效的 spec_for_validation 增量配置"))
         return checks
 
     def render(self, change_dir, profiles_dir=None, preserve_analysis=False):
@@ -778,13 +852,13 @@ class SpecForTestService:
         return adapter.render(
             change_dir=change_dir, template_path=template_path, spec=spec, design=design,
             profile=profile, manifest=manifest, preserve_analysis=preserve_analysis,
-            old_artifact=_read(change_dir, "spec-for-test.md") or "")
+            old_artifact=_read(change_dir, "spec-for-validation.md") or "")
 
     def checks(self, change_dir, require_complete=True, profiles_dir=None):
         checks = []
         spec = _read(change_dir, "spec.md")
         design = _read(change_dir, "design.md")
-        artifact = _read(change_dir, "spec-for-test.md")
+        artifact = _read(change_dir, "spec-for-validation.md")
 
         def add(ok, item, issue=""):
             checks.append((ok, item, issue))
@@ -792,25 +866,25 @@ class SpecForTestService:
         adapter = None
         try:
             adapter, _template_path, _profile, _manifest = self._adapter(change_dir, profiles_dir)
-            add(True, "Profile Spec for Test 支持")
+            add(True, "Profile Spec for Validation 支持")
         except ValueError as exc:
-            add(False, "Profile Spec for Test 支持", str(exc))
+            add(False, "Profile Spec for Validation 支持", str(exc))
         add(bool(spec and self._is_approved(spec)), "Spec Approved",
             "spec.md 缺失或未 Approved/Baselined")
         add(bool(design and self._is_approved(design)), "Design Approved",
             "design.md 缺失或未 Approved/Baselined")
-        add(bool(artifact), "spec-for-test 存在", "spec-for-test.md 缺失")
+        add(bool(artifact), "spec-for-validation 存在", "spec-for-validation.md 缺失")
         if not artifact:
             return checks
         frontmatter = self.parse_frontmatter(artifact)
-        add(frontmatter.get("artifact") == "spec-for-test", "交付件类型",
-            "frontmatter.artifact 必须为 spec-for-test")
+        add(frontmatter.get("artifact") == "spec-for-validation", "交付件类型",
+            "frontmatter.artifact 必须为 spec-for-validation")
         add(frontmatter.get("source_spec_hash") == _sha256_text(spec), "Spec 来源一致",
             "source_spec_hash 与当前 spec.md 不一致")
         add(frontmatter.get("source_design_hash") == _sha256_text(design), "Design 来源一致",
             "source_design_hash 与当前 design.md 不一致")
         add(_ac_set(artifact) == _ac_set(spec), "AC 集合一致",
-            f"spec={sorted(_ac_set(spec))}, spec-for-test={sorted(_ac_set(artifact))}")
+            f"spec={sorted(_ac_set(spec))}, spec-for-validation={sorted(_ac_set(artifact))}")
         if adapter is not None:
             checks.extend(adapter.checks(spec, design, artifact, require_complete=require_complete))
         if require_complete:
@@ -822,9 +896,9 @@ class SpecForTestService:
     def write_evidence(change_dir, checks):
         target_dir = os.path.join(change_dir, "evidence", "checks")
         os.makedirs(target_dir, exist_ok=True)
-        target = os.path.join(target_dir, "check-spec-for-test.md")
+        target = os.path.join(target_dir, "check-spec-for-validation.md")
         passed = all(ok for ok, _item, _issue in checks)
-        lines = ["# Spec for Test 检查", "", f"- 结论: {'PASS' if passed else 'FAIL'}",
+        lines = ["# Spec for Validation 检查", "", f"- 结论: {'PASS' if passed else 'FAIL'}",
                  f"- 时间: {datetime.now(timezone.utc).isoformat(timespec='seconds')}", "",
                  "| 检查项 | 结论 | 证据/问题 |", "|---|---|---|"]
         for ok, item, issue in checks:
@@ -834,7 +908,7 @@ class SpecForTestService:
         return target, passed
 
     def source_edge_issues(self, change_dir, spec, design):
-        artifact = _read(change_dir, "spec-for-test.md")
+        artifact = _read(change_dir, "spec-for-validation.md")
         if artifact is None:
             return None
         frontmatter = self.parse_frontmatter(artifact)
@@ -863,10 +937,10 @@ class SpecForTestService:
         return spec_issues, design_issues
 
     def archive_ready(self, change_dir):
-        artifact = _read(change_dir, "spec-for-test.md")
+        artifact = _read(change_dir, "spec-for-validation.md")
         if artifact is None:
             return True
-        evidence = _read(change_dir, os.path.join("evidence", "checks", "check-spec-for-test.md"))
+        evidence = _read(change_dir, os.path.join("evidence", "checks", "check-spec-for-validation.md"))
         try:
             adapter, _template_path, _profile, _manifest = self._adapter(change_dir)
         except ValueError:
@@ -898,25 +972,30 @@ class SpecForTestService:
     def command(self, argv):
         action, change, profiles = self._parse_args(argv)
         if action not in {"generate", "refresh", "check"} or not change:
-            print("usage: ohos-sdd spec-for-test <generate|refresh|check> <change-dir>",
+            print("usage: ohos-sdd spec-for-validation <generate|refresh|check> <change-dir>",
                   file=sys.stderr)
             return 2
         if not os.path.isdir(change):
-            print(f"spec-for-test: change dir not found:{change}", file=sys.stderr)
+            print(f"spec-for-validation: change dir not found:{change}", file=sys.stderr)
+            return 2
+        try:
+            self.require_no_legacy(change, profiles)
+        except ValueError as exc:
+            print(f"spec-for-validation: {exc}", file=sys.stderr)
             return 2
         if action in {"generate", "refresh"}:
-            target = os.path.join(change, "spec-for-test.md")
+            target = os.path.join(change, "spec-for-validation.md")
             if action == "generate" and os.path.exists(target):
-                print("spec-for-test generate: spec-for-test.md 已存在，请使用 refresh", file=sys.stderr)
+                print("spec-for-validation generate: spec-for-validation.md 已存在，请使用 refresh", file=sys.stderr)
                 return 2
             profiles = profiles or _find_profiles_dir(change)
             if not profiles:
-                print("spec-for-test: 找不到 Profile 目录", file=sys.stderr)
+                print("spec-for-validation: 找不到 Profile 目录", file=sys.stderr)
                 return 2
             try:
                 rendered = self.render(change, profiles, preserve_analysis=(action == "refresh"))
             except ValueError as exc:
-                print(f"spec-for-test {action}: {exc}", file=sys.stderr)
+                print(f"spec-for-validation {action}: {exc}", file=sys.stderr)
                 return 1
             with open(target, "w", encoding="utf-8") as fh:
                 fh.write(rendered)
@@ -925,7 +1004,7 @@ class SpecForTestService:
             print(f"已{('生成' if action == 'generate' else '刷新')}:{target}")
             print(f"草稿检查证据:{evidence}")
             print("当前产物为 Draft；在 Profile 定义的分析、审批准备和状态完成前，证据为 FAIL 属预期")
-            print("下一步:按 ohos-spec-for-test skill 和命中的 Profile 完成测试输入分析，再运行 check")
+            print("下一步:按 ohos-spec-for-validation skill 和命中的 Profile 完成测试输入分析，再运行 check")
             return 0
 
         checks = self.checks(change, require_complete=True, profiles_dir=profiles)

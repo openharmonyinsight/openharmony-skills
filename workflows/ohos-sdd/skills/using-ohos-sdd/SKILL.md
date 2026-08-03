@@ -16,12 +16,12 @@ license: MIT
 
 ## 路径约定
 
-本 skill 是 **runtime asset**（随 dist 分发，Agent 执行时读）。文中 `{{ASSET_ROOT}}/*` 是源码占位符，分发时由打包工具替换为实际路径。在**源仓** `openharmony/` 对应：
+本 skill 是 **runtime asset**（随 dist 分发，Agent 执行时读）。文中 `{{ASSET_ROOT}}/*` 是源码占位符，分发时由打包工具替换为实际路径。在**源仓** `runtime/assets/` 对应：
 
 | `{{ASSET_ROOT}}` 路径 | 源仓对应 |
 |---|---|
-| `{{ASSET_ROOT}}/workflow/workflow.md` | `openharmony/workflow/workflow.md` |
-| `{{ASSET_ROOT}}/profiles/<name>/profile.md` | `openharmony/profiles/<name>/profile.md`（主）/ `openharmony/profiles/<name>/subprofiles/<sub>.md`（子） |
+| `{{ASSET_ROOT}}/workflow/workflow.md` | `runtime/assets/workflow/workflow.md` |
+| `{{ASSET_ROOT}}/profiles/<name>/profile.md` | `runtime/assets/profiles/<name>/profile.md`（主）/ `runtime/assets/profiles/<name>/subprofiles/<sub>.md`（子） |
 
 从源仓阅读或改 skill 时以源仓路径为准；Agent 执行（runtime）时 `{{ASSET_ROOT}}` 已被替换为实际路径。
 
@@ -47,7 +47,7 @@ OHOS SDD 是**能力分解**(像 superpowers),不是阶段顺序器。每个能�
 | ohos-propose | 起草/基线 proposal | proposal/manifest |
 | ohos-spec | 写 spec | spec/epic |
 | ohos-design | 写 design | design |
-| ohos-spec-for-test | Profile 定义的测试输入旁路 | spec_for_test |
+| ohos-spec-for-validation | Profile 定义的测试输入旁路 | spec_for_validation |
 | ohos-plan | 写 execution-plan | execution_plan/task |
 | ohos-review | 审查合规 | review |
 | ohos-validate | 声称完成前 | gate_checklist |
@@ -84,7 +84,7 @@ OHOS SDD 是**能力分解**(像 superpowers),不是阶段顺序器。每个能�
    url="$(git remote get-url origin 2>/dev/null || true)"
    repo="$(basename "${url%.git}")"
    ```
-   扫 `{{ASSET_ROOT}}/profiles/<name>/profile.md`(或 source `openharmony/profiles/<name>/profile.md`)的 `repos` 字段,仓名命中 → 主 profile。写回 `manifest.profile` + `profile_source: inferred`(owner 已定主类型则保留 `owner`)。
+   扫 `{{ASSET_ROOT}}/profiles/<name>/profile.md`(或 source `runtime/assets/profiles/<name>/profile.md`)的 `repos` 字段,仓名命中 → 主 profile。写回 `manifest.profile` + `profile_source: inferred`(owner 已定主类型则保留 `owner`)。
 2. **仓内 → 子 profile**:扫本次变更文件路径 → 匹配 `profiles/<profile>/subprofiles/<sub>.md` 的 `applies_to` glob(`applies_to` 是路径 glob 模式,YAML 标量;按其字面值匹配路径,如 `**/components_ng/**`)→ 命中子 profile(可多个)→ 写回 `manifest.subprofiles`(block seq)。
 3. **代码特征对账(轻量提示)**:若 manifest 声明的 profile 与 git remote 仓名归属不一致,或路径特征与声明子 profile 不符 → **提示 owner 确认**;**不自动改主类型**(主类型 owner 定)。
 4. **兜底**:无 git / 无 remote / monorepo / 推断不出 → manifest.profile 留 owner 填或 `none`;subprofiles 留空。

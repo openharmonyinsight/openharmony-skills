@@ -1,6 +1,6 @@
 # 测试规格
 
-> 基于 `proposal.md`、`spec.md`，并在需要时参考 `design.md` 派生；如已触发 Profile Spec for Test，必须以 Approved `spec-for-test.md` 作为测试输入。
+> 基于 `proposal.md`、`spec.md`，并在需要时参考 `design.md` 派生；如已触发 Profile Spec for Validation，必须以 Approved `spec-for-validation.md` 作为测试输入。
 > `spec.md` 已描述的正常流程、异常规则和错误码不在此重复；本模板只补充集成测试、系统测试、兼容性测试以及跨组件交互视角的增量场景。
 > 每个场景都必须关联 `spec.md` 中的 AC 编号，保持追溯链完整。
 

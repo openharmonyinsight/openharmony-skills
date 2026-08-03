@@ -159,7 +159,7 @@
 | 回归范围已覆盖或明确 N/A | PASS/FAIL | [regression-test.md / 测试报告] |
 | 兼容性与发布风险已确认 | PASS/FAIL | [证据] |
 | Open Issues 已处理或明确接受 | PASS/FAIL | [证据] |
-| Profile Spec for Test（如触发）满足 Profile 审批要求并 Approved | PASS/FAIL/N/A | spec-for-test.md + check-spec-for-test.md |
+| Profile Spec for Validation（如触发）满足 Profile 审批要求并 Approved | PASS/FAIL/N/A | spec-for-validation.md + check-spec-for-validation.md |
 
 **审批决策：**
 - [ ] GC 通过，允许交付/合入

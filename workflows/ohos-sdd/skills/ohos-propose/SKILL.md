@@ -17,7 +17,7 @@ license: MIT
 - Part of the OHOS SDD workflow — see `using-ohos-sdd` for discovery and profile routing
 - `manifest.md` tracks feature metadata including `profile` (repo classification)
 - `{{ASSET_ROOT}}` is a build-time placeholder for the plugin's shared asset directory
-- Slash commands: `/ohos-intake` (new requirement), `/ohos-baseline` (freeze baseline)
+- Slash command: `/ohos-propose` (draft or baseline proposal)
 
 ## 核心规则
 

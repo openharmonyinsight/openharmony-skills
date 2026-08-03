@@ -1,7 +1,7 @@
 # ArkUI Sub-profiles
 
 > 路径说明：本文的相对路径默认面向运行时布局（`{{ASSET_ROOT}}/profiles/arkui/`）。
-> 在源目录中，ArkUI base profile 位于 `../profile.md`（即 `openharmony/profiles/arkui/profile.md`）。
+> 在源目录中，ArkUI base profile 位于 `../profile.md`（即 `runtime/assets/profiles/arkui/profile.md`）。
 
 ## 读取规则
 

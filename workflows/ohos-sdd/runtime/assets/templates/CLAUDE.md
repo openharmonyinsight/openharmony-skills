@@ -56,7 +56,7 @@ Phase 4: 计划      → execution-plan.md + task.md
 | **复杂** (多仓/SIG) | proposal.md + epic.md | design.md (全量+扩展) | spec.md (全量+场景库) | 全量 Plan + 多 task.md | review.md (全量) |
 | **关键** (安全/性能) | 同复杂 | design.md (全量+安全/性能专项) | spec.md (全量+合规) | 全量 Plan + 专家 | review.md (全量+专项) |
 
-公共模板位于 `openharmony/templates/`：proposal.md, spec.md, design.md, execution-plan.md, task.md, epic.md, bugfix.md, test-spec.md, regression-test.md, review.md, scenario-library.md, gate-checklist.md。Profile 专属模板位于 `openharmony/profiles/<name>/templates/`。
+公共模板位于 `templates/`：proposal.md, spec.md, design.md, execution-plan.md, task.md, epic.md, bugfix.md, test-spec.md, regression-test.md, review.md, scenario-library.md, gate-checklist.md。Profile 专属模板位于 `profiles/<name>/templates/`。
 
 ## 硬规则
 
@@ -109,7 +109,7 @@ Phase 4: 计划      → execution-plan.md + task.md
 
 ## 上下文工程
 
-SDD 工作流由 `openharmony/skills/` 下的 skill 体系驱动，统一入口 `using-ohos-sdd`（元路由，按阶段分发）：
+SDD 工作流由 `skills/` 下的 skill 体系驱动，统一入口 `using-ohos-sdd`（元路由，按阶段分发）：
 
 | Skill | 用途 |
 |-------|------|
@@ -122,7 +122,7 @@ SDD 工作流由 `openharmony/skills/` 下的 skill 体系驱动，统一入口 
 | `ohos-validate` | A–E 分级校验 |
 | `ohos-clarify` | 需求澄清与不涉及项确认 |
 
-四层架构等开发规则见 `openharmony/rules/`。
+四层架构等开发规则见 `rules/`。
 
 ## Specs 目录
 

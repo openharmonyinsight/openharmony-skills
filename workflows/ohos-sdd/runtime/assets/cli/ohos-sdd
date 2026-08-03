@@ -7,12 +7,11 @@ CLI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENGINE="${CLI_DIR}/ohos_sdd_engine.py"
 
 resolve_contract() {
-  # 源仓优先(向上找 openharmony/contracts/),其次运行时布局
   local d="${CLI_DIR}"
   while [[ "$d" != "/" ]]; do
-    if [[ -f "$d/openharmony/contracts/artifacts.yaml" ]]; then
-      printf '%s\n' "$d/openharmony/contracts/artifacts.yaml"; return 0
-    fi
+    for cand in "$d/runtime/assets/contracts/artifacts.yaml" "$d/contracts/artifacts.yaml"; do
+      [[ -f "$cand" ]] && { printf '%s\n' "$cand"; return 0; }
+    done
     d="$(cd "$d/.." && pwd)"
   done
   for cand in "${CLI_DIR}/../contracts/artifacts.yaml" \
@@ -25,7 +24,9 @@ resolve_contract() {
 resolve_templates() {
   local d="${CLI_DIR}"
   while [[ "$d" != "/" ]]; do
-    if [[ -d "$d/openharmony/templates" ]]; then printf '%s\n' "$d/openharmony/templates"; return 0; fi
+    for cand in "$d/runtime/assets/templates" "$d/templates"; do
+      [[ -d "$cand" ]] && { printf '%s\n' "$cand"; return 0; }
+    done
     d="$(cd "$d/.." && pwd)"
   done
   for cand in "${CLI_DIR}/../templates" \
@@ -38,7 +39,9 @@ resolve_templates() {
 resolve_profiles() {
   local d="${CLI_DIR}"
   while [[ "$d" != "/" ]]; do
-    if [[ -d "$d/openharmony/profiles" ]]; then printf '%s\n' "$d/openharmony/profiles"; return 0; fi
+    for cand in "$d/runtime/assets/profiles" "$d/profiles"; do
+      [[ -d "$cand" ]] && { printf '%s\n' "$cand"; return 0; }
+    done
     d="$(cd "$d/.." && pwd)"
   done
   for cand in "${CLI_DIR}/../profiles" \
@@ -72,7 +75,7 @@ ohos-sdd — OpenHarmony SDD 机器层 CLI
   ohos-sdd archive <change>
   ohos-sdd init <id>
   ohos-sdd registry
-  ohos-sdd spec-for-test <generate|refresh|check> <change>
+  ohos-sdd spec-for-validation <generate|refresh|check> <change>
   ohos-sdd version
 
 Level:A/B 结构 / C 依赖一致-可追溯 / D 归档就绪 / E profile 门禁;validate 默认 all。
@@ -108,6 +111,13 @@ cmd_status() {
   if [[ ! -d "$change" ]]; then
     echo "status: change dir not found: $change" >&2; exit 2
   fi
+  if have_python; then
+    if ! run_engine legacy-check "$change"; then
+      return 1
+    fi
+  else
+    echo "[ohos-sdd] status 未执行 legacy 迁移检查：需要 python3" >&2
+  fi
 
   local rows=(
     "proposal|proposal.md|required"
@@ -117,7 +127,7 @@ cmd_status() {
     "review|review.md|reference"
     "manifest|manifest.md|recommended"
     "test-spec|test-spec.md|conditional"
-    "spec-for-test|spec-for-test.md|conditional-profile"
+    "spec-for-validation|spec-for-validation.md|conditional-profile"
   )
 
   local present=0 missing=0 missing_required=0
@@ -142,7 +152,7 @@ cmd_status() {
   if [[ -f "${change}/spec.md" && ! -f "${change}/proposal.md" ]]; then echo "[GAP] spec 存在但缺 proposal"; gaps=$((gaps+1)); fi
   if [[ -f "${change}/design.md" && ! -f "${change}/spec.md" ]]; then echo "[GAP] design 存在但缺 spec"; gaps=$((gaps+1)); fi
   if [[ -f "${change}/execution-plan.md" && ! -f "${change}/spec.md" ]]; then echo "[GAP] execution-plan 存在但缺 spec"; gaps=$((gaps+1)); fi
-  if [[ -f "${change}/spec-for-test.md" && ! -f "${change}/design.md" ]]; then echo "[GAP] spec-for-test 存在但缺 design"; gaps=$((gaps+1)); fi
+  if [[ -f "${change}/spec-for-validation.md" && ! -f "${change}/design.md" ]]; then echo "[GAP] spec-for-validation 存在但缺 design"; gaps=$((gaps+1)); fi
 
   echo "--- summary ---"
   echo "present=${present} missing=${missing} (required-missing=${missing_required}) gaps=${gaps}"
@@ -206,6 +216,11 @@ cmd_registry() {
 cmd_archive() {
   local change="${1:-}"
   [[ -d "$change" ]] || { echo "archive: change 目录不存在: $change" >&2; return 2; }
+  have_python || { echo "archive: legacy 迁移检查需要 python3，拒绝归档" >&2; return 2; }
+  if ! run_engine legacy-check "$change"; then
+    echo "archive: 请先完成 legacy 迁移" >&2
+    return 1
+  fi
   local id; id="$(basename "$change")"
   local parent; parent="$(cd "$change/.." && pwd)"            # .codespec/changes
   local codespec_dir; codespec_dir="$(cd "$parent/.." && pwd)" # .codespec
@@ -219,11 +234,11 @@ cmd_archive() {
   echo "(长期 specs/ 回灌在 P5/后续 batch 实现)"
 }
 
-cmd_spec_for_test() {
-  have_python || { echo "spec-for-test 需 python3" >&2; return 2; }
+cmd_spec_for_validation() {
+  have_python || { echo "spec-for-validation 需 python3" >&2; return 2; }
   local profiles_dir
-  profiles_dir="$(resolve_profiles)" || { echo "spec-for-test: 找不到 Profile 目录" >&2; return 2; }
-  run_engine spec-for-test "$@" --profiles "$profiles_dir"
+  profiles_dir="$(resolve_profiles)" || { echo "spec-for-validation: 找不到 Profile 目录" >&2; return 2; }
+  run_engine spec-for-validation "$@" --profiles "$profiles_dir"
 }
 
 main() {
@@ -235,8 +250,12 @@ main() {
     archive)   cmd_archive "$@" ;;
     init)      cmd_init "$@" ;;
     registry)  cmd_registry "$@" ;;
-    spec-for-test) cmd_spec_for_test "$@" ;;
-    version|--version) echo "ohos-sdd 0.3.1 (machine-layer skeleton)" ;;
+    spec-for-validation) cmd_spec_for_validation "$@" ;;
+    spec-for-test)
+      echo "spec-for-test 已重命名为 spec-for-validation；请迁移旧文件和 Profile 配置后使用新命令" >&2
+      exit 2
+      ;;
+    version|--version) echo "ohos-sdd 0.4.0 (machine-layer skeleton)" ;;
     help|--help|-h)    usage ;;
     "")                usage; exit 0 ;;
     *) echo "unknown subcommand: $sub" >&2; usage >&2; exit 2 ;;

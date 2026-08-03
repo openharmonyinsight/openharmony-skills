@@ -20,12 +20,12 @@
 |------|----------|------|
 | 临时查询记录 | Feature / Bugfix 目录下的 context pack | 为单次任务服务 |
 | 规则与 Skill | `rules/architecture/` + `skills/` | 开发规则正文与 SDD 流程 skill |
-| 长期分析资产 | `context-engine/analysis/` | 沉淀可复用的子系统背景和长期判断 |
+| 长期分析资产 | `analysis/` | 沉淀可复用的子系统背景和长期判断 |
 
 ## 推荐目录结构
 
 ```text
-context-engine/analysis/
+analysis/
 ├── README.md
 ├── arkweb/
 │   ├── subsystem-overview.md
@@ -92,6 +92,6 @@ context-engine/analysis/
 | 子目录 | 当前状态 |
 |--------|----------|
 | `arkweb/` | 已填充 subsystem-overview.md，其余待补充 |
-| `arkui/` | 已包含上下文加载、资产模型、验证/gate 与 Spec for Test playbook |
+| `arkui/` | 已包含上下文加载、资产模型、验证/gate 与 Spec for Validation playbook |
 | `arkgraphic/` | 已创建占位 README，待补真实分析内容 |
 | `arkdata/` | 已创建占位 README，待补真实分析内容 |

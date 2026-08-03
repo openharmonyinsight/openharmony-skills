@@ -2,7 +2,7 @@
 """ohos-sdd core engine, stdlib-only.
 
 Owns: mini YAML parser, validate Levels A/B/C/D, contract self-check.
-Profile-extendable Spec for Test support lives in ohos_sdd_spec_for_test.py.
+Profile-extendable Spec for Validation support lives in ohos_sdd_spec_for_validation.py.
 NO third-party imports (no PyYAML). When python is absent the shell dispatcher
 takes the no-python path; this file is only reached when python3 is available.
 """
@@ -141,26 +141,26 @@ def yaml_frontmatter(text):
     return yaml_load("\n".join(lines[1:end]))
 
 
-_SPEC_FOR_TEST_SERVICE = None
+_SPEC_FOR_VALIDATION_SERVICE = None
 
 
-def _spec_for_test_service():
-    """Load the optional Spec for Test runtime only when its capability is used."""
-    global _SPEC_FOR_TEST_SERVICE
-    if _SPEC_FOR_TEST_SERVICE is None:
-        module = importlib.import_module("ohos_sdd_spec_for_test")
-        _SPEC_FOR_TEST_SERVICE = module.SpecForTestService(yaml_frontmatter)
-    return _SPEC_FOR_TEST_SERVICE
+def _spec_for_validation_service():
+    """Load the optional Spec for Validation runtime only when its capability is used."""
+    global _SPEC_FOR_VALIDATION_SERVICE
+    if _SPEC_FOR_VALIDATION_SERVICE is None:
+        module = importlib.import_module("ohos_sdd_spec_for_validation")
+        _SPEC_FOR_VALIDATION_SERVICE = module.SpecForValidationService(yaml_frontmatter)
+    return _SPEC_FOR_VALIDATION_SERVICE
 
 
-class _LazySpecForTestService:
+class _LazySpecForValidationService:
     """Compatibility facade that keeps imports lazy for existing callers/tests."""
 
     def __getattr__(self, name):
-        return getattr(_spec_for_test_service(), name)
+        return getattr(_spec_for_validation_service(), name)
 
 
-SPEC_FOR_TEST = _LazySpecForTestService()
+SPEC_FOR_VALIDATION = _LazySpecForValidationService()
 
 
 # 交付件 -> 拥有它的能力 skill(rework_capability 路由)
@@ -170,7 +170,7 @@ REWORK = {
     "design": "ohos-design",
     "execution_plan": "ohos-plan", "task": "ohos-plan",
     "bugfix": "ohos-plan", "regression_test": "ohos-plan", "test_spec": "ohos-plan",
-    "spec_for_test": "ohos-spec-for-test",
+    "spec_for_validation": "ohos-spec-for-validation",
     "review": "ohos-review",
     "gate_checklist": "ohos-validate",
     "scenario_library": "ohos-spec", "claude_agent_instructions": "ohos-propose",
@@ -186,9 +186,10 @@ def load_contract(path):
 def _find_contract():
     d = os.getcwd()
     while d != "/":
-        p = os.path.join(d, "openharmony", "contracts", "artifacts.yaml")
-        if os.path.isfile(p):
-            return load_contract(p)
+        for cand in (os.path.join(d, "runtime", "assets", "contracts", "artifacts.yaml"),
+                     os.path.join(d, "contracts", "artifacts.yaml")):
+            if os.path.isfile(cand):
+                return load_contract(cand)
         d = os.path.dirname(d)
     here = os.path.dirname(os.path.abspath(__file__))
     for rel in (os.path.join(here, "..", "contracts", "artifacts.yaml"),
@@ -238,11 +239,21 @@ LEVEL_B = {
     "test-spec.md": [r"^# 测试规格"],
 }
 LEVEL_B_H1_ONLY = ("design.md", "review.md",
-                   "bugfix.md", "regression-test.md", "spec-for-test.md")
+                   "bugfix.md", "regression-test.md", "spec-for-validation.md")
+
+
+def _legacy_check(change_dir, level):
+    issues = SPEC_FOR_VALIDATION.legacy_issues(change_dir)
+    if not issues:
+        return []
+    return [{"ok": False, "level": level, "artifact": "legacy-spec-for-test",
+             "file": "", "issue": "; ".join(issues),
+             "rework_capability": "ohos-spec-for-validation",
+             "evidence": f"Level {level} legacy 迁移检查"}]
 
 
 def validate_level_b(change_dir, contract):
-    checks = []
+    checks = _legacy_check(change_dir, "B")
     for fname, (aid, _status) in _artifact_file_map(contract).items():
         fpath = os.path.join(change_dir, fname)
         if not os.path.isfile(fpath):
@@ -255,8 +266,8 @@ def validate_level_b(change_dir, contract):
                 issues.append(f"缺少结构标题 /{pat}/")
         if fname in LEVEL_B_H1_ONLY and not re.search(r"^# .+", text, re.MULTILINE):
             issues.append("缺少 H1 标题")
-        if fname == "spec-for-test.md" and yaml_frontmatter(text).get("artifact") != "spec-for-test":
-            issues.append("frontmatter.artifact 必须为 spec-for-test")
+        if fname == "spec-for-validation.md" and yaml_frontmatter(text).get("artifact") != "spec-for-validation":
+            issues.append("frontmatter.artifact 必须为 spec-for-validation")
         if issues:
             checks.append({"ok": False, "level": "B", "artifact": aid, "file": fname,
                            "issue": "; ".join(issues),
@@ -275,9 +286,9 @@ EDGE_REWORK = {
     "spec→task": "ohos-plan",
     "spec→plan": "ohos-plan",
     "execution-plan→code": "ohos-plan",
-    "spec→spec-for-test": "ohos-spec-for-test",
-    "design→spec-for-test": "ohos-spec-for-test",
-    "spec-for-test→test-spec": "ohos-plan",
+    "spec→spec-for-validation": "ohos-spec-for-validation",
+    "design→spec-for-validation": "ohos-spec-for-validation",
+    "spec-for-validation→test-spec": "ohos-plan",
 }
 
 
@@ -316,7 +327,7 @@ def _edge(ok, edge, issue):
 
 
 def validate_level_c(change_dir):
-    checks = []
+    checks = _legacy_check(change_dir, "C")
     spec = _read(change_dir, "spec.md")
     design = _read(change_dir, "design.md")
     plan = _read(change_dir, "execution-plan.md")
@@ -358,24 +369,26 @@ def validate_level_c(change_dir):
         checks.append(_edge(False, "spec→plan",
                             "无 execution-plan.md 且无 task.md,plan 交付件缺失"))
 
-    # conditional bypass: spec/design → Profile-defined spec-for-test
-    spec_for_test_path = os.path.join(change_dir, "spec-for-test.md")
-    if os.path.isfile(spec_for_test_path):
-        source_issues = SPEC_FOR_TEST.source_edge_issues(change_dir, spec, design)
+    # conditional bypass: spec/design → Profile-defined spec-for-validation
+    spec_for_validation_path = os.path.join(change_dir, "spec-for-validation.md")
+    if os.path.isfile(spec_for_validation_path):
+        source_issues = SPEC_FOR_VALIDATION.source_edge_issues(change_dir, spec, design)
         spec_issues, design_issues = source_issues
-        checks.append(_edge(not spec_issues, "spec→spec-for-test", "; ".join(spec_issues)))
-        checks.append(_edge(not design_issues, "design→spec-for-test", "; ".join(design_issues)))
+        checks.append(_edge(not spec_issues, "spec→spec-for-validation", "; ".join(spec_issues)))
+        checks.append(_edge(not design_issues, "design→spec-for-validation", "; ".join(design_issues)))
         test_spec = _read(change_dir, "test-spec.md")
         if test_spec is not None:
-            spec_for_test = _read(change_dir, "spec-for-test.md") or ""
+            spec_for_validation = _read(change_dir, "spec-for-validation.md") or ""
             test_spec_issues = []
-            if "spec-for-test.md" not in test_spec:
-                test_spec_issues.append("test-spec 未声明 spec-for-test.md 测试输入")
-            unknown_acs = _ac_set(test_spec) - _ac_set(spec_for_test)
+            if not re.search(
+                    r"(?<![A-Za-z0-9_.-])spec-for-validation\.md(?![A-Za-z0-9_.-])",
+                    test_spec):
+                test_spec_issues.append("test-spec 未声明 spec-for-validation.md 测试输入")
+            unknown_acs = _ac_set(test_spec) - _ac_set(spec_for_validation)
             if unknown_acs:
                 test_spec_issues.append(
-                    f"test-spec 引用了 spec-for-test 不存在的 AC:{sorted(unknown_acs)}")
-            checks.append(_edge(not test_spec_issues, "spec-for-test→test-spec",
+                    f"test-spec 引用了 spec-for-validation 不存在的 AC:{sorted(unknown_acs)}")
+            checks.append(_edge(not test_spec_issues, "spec-for-validation→test-spec",
                                 "; ".join(test_spec_issues)))
 
     return checks
@@ -404,7 +417,7 @@ def _d_edge(ok, item, issue):
 
 
 def validate_level_d(change_dir, contract):
-    checks = []
+    checks = _legacy_check(change_dir, "D")
     registry = _find_up(change_dir, ".codespec", "registry.md")
     checks.append(_d_edge(bool(registry), "registry",
                           "未找到 .codespec/registry.md(change 未被索引)" if not registry else ""))
@@ -429,12 +442,12 @@ def validate_level_d(change_dir, contract):
     review_ok = has_evidence or bool(rv and rv.strip())
     checks.append(_d_edge(review_ok, "review",
                           "" if review_ok else "无 evidence/reviews/spec-compliance.md 且 review.md 为空"))
-    if _read(change_dir, "spec-for-test.md") is not None:
-        spec_for_test_ok = SPEC_FOR_TEST.archive_ready(change_dir)
-        checks.append(_d_edge(spec_for_test_ok, "spec-for-test",
-                              "spec-for-test.md 必须满足命中 Profile 的审批要求、状态为 Approved，"
-                              "当前 Profile 完整检查通过，且 check-spec-for-test.md 结论为 PASS"
-                              if not spec_for_test_ok else ""))
+    if _read(change_dir, "spec-for-validation.md") is not None:
+        spec_for_validation_ok = SPEC_FOR_VALIDATION.archive_ready(change_dir)
+        checks.append(_d_edge(spec_for_validation_ok, "spec-for-validation",
+                              "spec-for-validation.md 必须满足命中 Profile 的审批要求、状态为 Approved，"
+                              "当前 Profile 完整检查通过，且 check-spec-for-validation.md 结论为 PASS"
+                              if not spec_for_validation_ok else ""))
     return checks
 
 
@@ -442,12 +455,13 @@ PROFILES_RESERVED = {"none", "custom", "security-sensitive"}
 
 
 def _find_profiles_dir(start_dir):
-    """向上找 profile 集合目录:优先源仓 openharmony/profiles,回退 dist shared/ohos-sdd/profiles。"""
+    """向上找 profile 集合目录:新仓 runtime/assets/profiles, 发布布局 profiles, dist shared/ohos-sdd/profiles。"""
     d = os.path.abspath(start_dir)
     while True:
-        cand = os.path.join(d, "openharmony", "profiles")
-        if os.path.isdir(cand):
-            return cand
+        for cand in (os.path.join(d, "runtime", "assets", "profiles"),
+                     os.path.join(d, "profiles")):
+            if os.path.isdir(cand):
+                return cand
         parent = os.path.dirname(d)
         if parent == d:
             break
@@ -526,7 +540,7 @@ def validate_level_e(change_dir, root):
     """Level E profile 维度:E1 合法 / E2 文件存在 / E3 schema warn / E4 subprofile 文件 /
     E5 best-effort repo / E6 repo 唯一。root 用于定位 profiles 集合。"""
     checks = []
-    profiles_dir = _find_profiles_dir(change_dir) or os.path.join(root, "openharmony", "profiles")
+    profiles_dir = _find_profiles_dir(change_dir) or os.path.join(root, "runtime", "assets", "profiles")
     main_map, subs_map = _scan_profiles(profiles_dir)
 
     mf = _read(change_dir, "manifest.md")
@@ -642,46 +656,46 @@ def validate_level_e(change_dir, root):
 # contract 自检:模板标题组(与现有 ruby validator 逐字对齐)。
 # 注:gate-* 形态是当前契约;P2 gate→check 迁移时须同步本表(见 contract-transition 附录决议 2)。
 _HEADING_GROUPS = [
-    ("openharmony/templates/proposal.md", [
+    ("templates/proposal.md", [
         "# 需求文档", "## 一、原始需求", "## 二、澄清记录", "## 三、需求基线"]),
-    ("openharmony/templates/spec.md", [
+    ("templates/spec.md", [
         "# 特性规格", "## 用户故事", "## 验收追溯", "## 验证映射", "## Spec 自审清单"]),
-    ("openharmony/templates/design.md", [
+    ("templates/design.md", [
         "# 架构设计", "## 需求基线", "## 上下文和现状", "## 关键设计决策", "## 后续 Task 拆分"]),
-    ("openharmony/templates/execution-plan.md", [
+    ("templates/execution-plan.md", [
         "# 执行计划", "## 受影响文件全量清单", EP_HEADING_AC_TRACE,
         "## Task 详情", "## Plan 自审清单"]),
-    ("openharmony/templates/task.md", [
+    ("templates/task.md", [
         "# 任务规格", "## 代码变更摘要", "## 验证检查清单"]),
-    ("openharmony/templates/test-spec.md", [
+    ("templates/test-spec.md", [
         "# 测试规格", "## 测试范围", "## 环境前置与公共配置", "## 场景"]),
-    ("openharmony/templates/gate-checklist.md", [
+    ("templates/gate-checklist.md", [
         "# 阶段检查清单",
         "## 一、定义阶段（进入规格说明条件）",
         "## 二、规格说明阶段（进入设计条件）",
         "## 三、设计阶段（进入计划条件）",
         "## 四、计划阶段（进入实现条件）"]),
-    ("openharmony/templates/threat-model.md", [
+    ("templates/threat-model.md", [
         "# 威胁模型分析", "## 数据流图", "## STRIDE 威胁分析",
         "## 法规合规检查", "## 风险与缓解"]),
 ]
 
 _EXAMPLE_FILES = [
-    "openharmony/examples/bugfix-example/bugfix.md",
-    "openharmony/examples/bugfix-example/regression-test.md",
-    "openharmony/examples/archive-shape/.codespec/registry.md",
-    "openharmony/examples/archive-shape/.codespec/changes/issue-12345-notification-category/proposal.md",
-    "openharmony/examples/archive-shape/.codespec/changes/issue-12345-notification-category/manifest.md",
-    "openharmony/examples/archive-shape/.codespec/changes/issue-12345-notification-category/spec.md",
-    "openharmony/examples/archive-shape/.codespec/changes/issue-12345-notification-category/design.md",
-    "openharmony/examples/archive-shape/.codespec/changes/issue-12345-notification-category/execution-plan.md",
-    "openharmony/examples/archive-shape/.codespec/changes/issue-12345-notification-category/review.md",
-    "openharmony/examples/archive-shape/.codespec/changes/issue-12345-notification-category/test-spec.md",
-    "openharmony/examples/archive-shape/.codespec/changes/issue-12345-notification-category/evidence/checks/check-proposal.md",
-    "openharmony/examples/archive-shape/.codespec/changes/issue-12345-notification-category/evidence/checks/check-spec.md",
-    "openharmony/examples/archive-shape/.codespec/changes/issue-12345-notification-category/evidence/checks/check-design.md",
-    "openharmony/examples/archive-shape/.codespec/changes/issue-12345-notification-category/evidence/checks/check-execution-plan.md",
-    "openharmony/examples/archive-shape/.codespec/changes/issue-12345-notification-category/evidence/reviews/spec-compliance.md",
+    "examples/bugfix-example/bugfix.md",
+    "examples/bugfix-example/regression-test.md",
+    "examples/archive-shape/.codespec/registry.md",
+    "examples/archive-shape/.codespec/changes/issue-12345-notification-category/proposal.md",
+    "examples/archive-shape/.codespec/changes/issue-12345-notification-category/manifest.md",
+    "examples/archive-shape/.codespec/changes/issue-12345-notification-category/spec.md",
+    "examples/archive-shape/.codespec/changes/issue-12345-notification-category/design.md",
+    "examples/archive-shape/.codespec/changes/issue-12345-notification-category/execution-plan.md",
+    "examples/archive-shape/.codespec/changes/issue-12345-notification-category/review.md",
+    "examples/archive-shape/.codespec/changes/issue-12345-notification-category/test-spec.md",
+    "examples/archive-shape/.codespec/changes/issue-12345-notification-category/evidence/checks/check-proposal.md",
+    "examples/archive-shape/.codespec/changes/issue-12345-notification-category/evidence/checks/check-spec.md",
+    "examples/archive-shape/.codespec/changes/issue-12345-notification-category/evidence/checks/check-design.md",
+    "examples/archive-shape/.codespec/changes/issue-12345-notification-category/evidence/checks/check-execution-plan.md",
+    "examples/archive-shape/.codespec/changes/issue-12345-notification-category/evidence/reviews/spec-compliance.md",
 ]
 
 _VALID_STATUS = {"required", "conditional", "recommended", "reference"}
@@ -698,17 +712,14 @@ def _cbad(label, issue):
 
 
 def validate_contract_source(root):
-    """Contract 自检。兼容源仓布局(root/openharmony/contracts/artifacts.yaml)
+    """Contract 自检。兼容新仓布局(root/runtime/assets/contracts/artifacts.yaml)
     和发布布局(root/contracts/artifacts.yaml)。"""
     checks = []
-    # 尝试源仓布局和发布布局
-    contract_path = os.path.join(root, "openharmony", "contracts", "artifacts.yaml")
-    prefix = "openharmony/"  # 模板/示例路径前缀
+    contract_path = os.path.join(root, "runtime", "assets", "contracts", "artifacts.yaml")
     if not os.path.isfile(contract_path):
         contract_path = os.path.join(root, "contracts", "artifacts.yaml")
-        prefix = ""  # 发布布局:模板路径无 openharmony/ 前缀
     if not os.path.isfile(contract_path):
-        checks.append(_cbad("contract", f"artifacts.yaml 缺失(尝试了 openharmony/contracts/ 和 contracts/)"))
+        checks.append(_cbad("contract", f"artifacts.yaml 缺失(尝试了 runtime/assets/contracts/, contracts/)"))
         return checks
     contract = load_contract(contract_path)
 
@@ -730,7 +741,7 @@ def validate_contract_source(root):
         resolution = a.get("template_resolution", "static")
         if resolution == "profile_extendable":
             try:
-                template_checks = SPEC_FOR_TEST.contract_template_checks(root, aid)
+                template_checks = SPEC_FOR_VALIDATION.contract_template_checks(root, aid)
             except (ModuleNotFoundError, SyntaxError, ImportError) as exc:
                 tpath = os.path.join(root, tmpl) if tmpl else None
                 if tpath and os.path.isfile(tpath) and os.path.getsize(tpath) > 0:
@@ -739,12 +750,18 @@ def validate_contract_source(root):
                     checks.append(_cbad(f"{aid}.template", f"模板缺失或空:{tmpl}"))
                 checks.append(_cbad(
                     f"{aid}.profile_extendable_runtime",
-                    f"spec_for_test 模块不可用，Profile 增量校验降级:{type(exc).__name__}: {exc}"))
+                    f"spec_for_validation 模块不可用，Profile 增量校验降级:{type(exc).__name__}: {exc}"))
             else:
                 for ok, label, issue in template_checks:
                     checks.append(_cok(label) if ok else _cbad(label, issue))
         else:
             tpath = os.path.join(root, tmpl) if tmpl else None
+            if tpath and not os.path.isfile(tpath):
+                for alt in (os.path.join(root, "runtime", "assets", tmpl),
+                            os.path.join(root, "templates", os.path.basename(tmpl))):
+                    if os.path.isfile(alt):
+                        tpath = alt
+                        break
             if tpath and os.path.isfile(tpath) and os.path.getsize(tpath) > 0:
                 checks.append(_cok(f"{aid}.template"))
             else:
@@ -792,10 +809,9 @@ def validate_contract_source(root):
                                      "conditional dependency 必须声明有效 artifact 和 when"))
 
     for rel, headings in _HEADING_GROUPS:
-        # 发布布局:rel 以 openharmony/ 开头,去掉前缀后查找
         fpath = os.path.join(root, rel)
-        if not os.path.isfile(fpath) and rel.startswith("openharmony/"):
-            fpath = os.path.join(root, rel[len("openharmony/"):])
+        if not os.path.isfile(fpath):
+            fpath = os.path.join(root, "runtime", "assets", rel)
         if os.path.isfile(fpath):
             with open(fpath, encoding="utf-8") as fh:
                 lines = fh.read().splitlines()
@@ -808,15 +824,11 @@ def validate_contract_source(root):
 
     for ex in _EXAMPLE_FILES:
         epath = os.path.join(root, ex)
-        if not os.path.isfile(epath) and ex.startswith("openharmony/"):
-            epath = os.path.join(root, ex[len("openharmony/"):])
         if os.path.isfile(epath):
             checks.append(_cok(f"example:{ex}"))
-        elif not prefix:
+        else:
             # 发布布局无 examples,跳过(不报 fail)
             checks.append(_cok(f"example:{ex}"))
-        else:
-            checks.append(_cbad(f"example:{ex}", "示例文件缺失"))
 
     for d in contract.get("current_drifts", []):
         complete = all(d.get(k) for k in ("id", "severity", "description", "follow_up_batch"))
@@ -829,9 +841,10 @@ def validate_contract_source(root):
 def _find_contract_path():
     d = os.getcwd()
     while d != "/":
-        p = os.path.join(d, "openharmony", "contracts", "artifacts.yaml")
-        if os.path.isfile(p):
-            return p
+        for cand in (os.path.join(d, "runtime", "assets", "contracts", "artifacts.yaml"),
+                     os.path.join(d, "contracts", "artifacts.yaml")):
+            if os.path.isfile(cand):
+                return cand
         d = os.path.dirname(d)
     here = os.path.dirname(os.path.abspath(__file__))
     for rel in (os.path.join(here, "..", "contracts", "artifacts.yaml"),
@@ -908,11 +921,13 @@ def _parse_validate_args(argv):
 
 
 def _root_from_change(change_dir):
-    """从 change_dir 推仓库 root:向上找含 openharmony/ 的目录;找不到回退 change_dir 自身绝对路径
-    (与 _find_profiles_dir 的参考系一致,而非 cwd)。"""
+    """从 change_dir 推仓库 root:向上找含 runtime/assets/ 或 contracts/ 的目录;
+    找不到回退 change_dir 自身绝对路径。"""
     d = os.path.abspath(change_dir or os.getcwd())
     while True:
-        if os.path.isdir(os.path.join(d, "openharmony")):
+        if os.path.isdir(os.path.join(d, "runtime", "assets")):
+            return d
+        if os.path.isdir(os.path.join(d, "contracts")):
             return d
         parent = os.path.dirname(d)
         if parent == d:
@@ -936,11 +951,11 @@ def cmd_validate(argv):
             print("validate --source: 找不到契约 artifacts.yaml",
                   file=sys.stderr)
             return 2
-        # 源仓布局: cpath = root/openharmony/contracts/artifacts.yaml → root = 上 3 级
+        # 新仓布局: cpath = root/runtime/assets/contracts/artifacts.yaml → root = 上 4 级
         # 发布布局: cpath = root/contracts/artifacts.yaml → root = 上 2 级
-        root = os.path.dirname(os.path.dirname(os.path.dirname(cpath)))
-        if not os.path.isfile(os.path.join(root, "openharmony", "contracts", "artifacts.yaml")):
-            root = os.path.dirname(os.path.dirname(cpath))
+        root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(cpath))))
+        if not os.path.isfile(os.path.join(root, "runtime", "assets", "contracts", "artifacts.yaml")):
+            root = os.path.dirname(os.path.dirname(cpath))  # 发布布局
         checks = validate_contract_source(root)
         result = _assemble("", "validate --source", "contract", checks)
         _emit(result, opts["json"])
@@ -964,6 +979,15 @@ def cmd_validate(argv):
             checks += validate_level_d(opts["change"], contract)
         elif lv == "E":
             checks += validate_level_e(opts["change"], _root_from_change(opts["change"]))
+    seen_legacy = False
+    deduplicated = []
+    for check in checks:
+        if check.get("artifact") == "legacy-spec-for-test":
+            if seen_legacy:
+                continue
+            seen_legacy = True
+        deduplicated.append(check)
+    checks = deduplicated
     result = _assemble(opts["change"], "validate", opts["level"], checks)
     _emit(result, opts["json"])
     return 0 if result["passed"] else 1
@@ -974,10 +998,23 @@ def main(argv):
     rest = argv[2:]
     if sub == "validate":
         return cmd_validate(rest)
+    if sub == "spec-for-validation":
+        return SPEC_FOR_VALIDATION.command(rest)
     if sub == "spec-for-test":
-        return SPEC_FOR_TEST.command(rest)
+        print("spec-for-test 已重命名为 spec-for-validation；"
+              "请迁移旧文件和 Profile 配置后使用新命令", file=sys.stderr)
+        return 2
+    if sub == "legacy-check":
+        change = rest[0] if rest else ""
+        if not change or not os.path.isdir(change):
+            print("usage: engine legacy-check <change-dir>", file=sys.stderr)
+            return 2
+        issues = SPEC_FOR_VALIDATION.legacy_issues(change)
+        for issue in issues:
+            print(f"legacy 迁移阻塞: {issue}", file=sys.stderr)
+        return 1 if issues else 0
     if sub == "version":
-        print("ohos-sdd 0.3.1 (engine)"); return 0
+        print("ohos-sdd 0.4.0 (engine)"); return 0
     print(f"engine: unknown subcommand {sub!r}", file=sys.stderr)
     return 2
 

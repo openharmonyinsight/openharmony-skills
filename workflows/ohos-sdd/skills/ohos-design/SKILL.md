@@ -24,7 +24,7 @@ license: MIT
 2. 设计决策对比(备选 vs 选定 + 理由)
 3. 模块/分层影响;引用 spec AC(design AC ⊆ spec AC,Level C 边)
 4. 分层调用合规(应用→框架→服务→内核);无跨层违规
-5. 安全基础检查(条件触发):读 proposal「不涉及项确认」→「安全与权限」;= 是 → 在 design.md「可选设计扩展」下展开「安全基础检查」(信任边界 + 基础要求 + 敏感数据);命中高风险判据(见 ohos-security-threat-model 触发条件表)→ 在「深度威胁分析(如需)」记录升级决定并链到 threat-model.md;= 否/N/A → 省略,不留空占位
+5. 安全基础检查(条件触发):读 proposal「不涉及项确认」→「安全与权限」;= 是 → 读 {{ASSET_ROOT}}/analysis/security-playbook.md 获取检查项含义和推荐值 → 在 design.md「可选设计扩展」下展开「安全基础检查」(信任边界 + 基础要求 + 敏感数据);命中高风险判据(见 ohos-security-threat-model 触发条件表)→ 在「深度威胁分析(如需)」记录升级决定并链到 threat-model.md;= 否/N/A → 省略,不留空占位
 6. 若 manifest.profile ≠ none,按 {{ASSET_ROOT}}/workflow/profile-application.md 应用 profile 命中声明(读 profile 正文 + 追加专项检查)
 7. 产出:design.md
 

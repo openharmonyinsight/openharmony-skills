@@ -6,7 +6,7 @@
 >
 > **阶段命名**：4 阶段模型为 Define（定义）→ Specify（规格说明）→ Design（设计）→ Plan（计划），与 ODK 主阶段命名保持一致。Gate 文件名按阶段命名：`check-proposal.md`、`check-spec.md`、`check-design.md`、`check-execution-plan.md`。
 >
-> **与 ODK Gate 的映射**：当前 `spec-for-ai` 保留 4 个阶段 gate 文件用于细粒度过程证据，而 ODK 的人工门禁是 `GA / GB / GC` 三个 Gate。推荐映射为：`check-proposal.md` 对应 `GA`，`check-spec.md` + `check-design.md` + `check-execution-plan.md` 共同支撑 `GB`，最终实现/验证/交付证据由 `review.md` 与 `evidence/reviews/` 支撑 `GC`。
+> **与 ODK Gate 的映射**：ohos-sdd 保留 4 个阶段 gate 文件用于细粒度过程证据，而 ODK 的人工门禁是 `GA / GB / GC` 三个 Gate。推荐映射为：`check-proposal.md` 对应 `GA`，`check-spec.md` + `check-design.md` + `check-execution-plan.md` 共同支撑 `GB`，最终实现/验证/交付证据由 `review.md` 与 `evidence/reviews/` 支撑 `GC`。
 >
 > **阶段结构**：每个阶段分为入口检查、工作检查和出口检查三部分。入口检查通过后才能开始本阶段工作；出口检查通过后才能进入下一阶段。命中 Profile 时，Profile 定义的 Gate 注入到对应阶段的同名插槽执行。
 
@@ -23,9 +23,9 @@
 
 ## 前置：Profile 判定（四阶段之前必执行）
 
-> 若仓路径或需求内容命中 `ohos-sdd/profiles/{profile}.md`，必须先加载 Profile 追加规则再进入四阶段。未命中时跳过本节。
+> 若仓路径或需求内容命中 `{{ASSET_ROOT}}/profiles/<profile>/profile.md`，必须先加载 Profile 追加规则再进入四阶段。未命中时跳过本节。
 
-- [ ] 已扫描 `ohos-sdd/profiles/` 目录，确认可用 Profile 列表
+- [ ] 已扫描 `{{ASSET_ROOT}}/profiles/` 目录，确认可用 Profile 列表
 - [ ] 已根据仓路径或需求内容判定是否命中 Profile
 - [ ] 若命中且有子 Profile，已进一步判定子 Profile
 - [ ] Profile 追加规则已合并到后续阶段的检查项和 Gate 条件
@@ -168,7 +168,7 @@
 - [ ] 每个 Task 的不做范围明确
 - [ ] Task 粒度合理（每个 Task 形成独立可验证的能力闭环）
 - [ ] 交接信息完整
-- [ ] Profile Spec for Test 如已触发，`spec-for-test.md` 来源一致、AC 完整、Profile 定义的分析与审批要求已满足，且不含开发自验证类型、用例、命令或结果
+- [ ] Profile Spec for Validation 如已触发，`spec-for-validation.md` 来源一致、AC 完整、Profile 定义的分析与审批要求已满足，且不含开发自验证类型、用例、命令或结果
 
 ### 出口检查
 
