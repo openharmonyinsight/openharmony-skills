@@ -1,0 +1,79 @@
+schemaVersion: 1
+
+id: ohos-design-arkui-api-competitive-analysis
+title: ArkUI API 竞品分析
+summary: 对 ArkUI 公共 UI API 与 Android、iOS 进行可审计的能力、规格和迁移差异分析。
+
+category:
+  scope: domain
+  namespace: arkui
+  stage: design
+  domain: arkui
+  capability: api-competitive-analysis
+
+status:
+  maturity: trial
+  version: 1.6.0
+  owner: openharmony
+
+tags:
+  - arkui
+  - android
+  - ios
+  - api-design
+  - competitive-analysis
+  - migration
+  - capability-gap
+
+audience:
+  - ArkUI API 设计人员
+  - Android、iOS 与 ArkUI 迁移评估人员
+  - OpenHarmony 接口评审人员
+
+useCases:
+  - title: ArkUI API 对标分析
+    description: 对指定 ArkUI API 与 Android Compose/View、iOS SwiftUI/UIKit 的能力和规格进行比较。
+  - title: 跨平台迁移评估
+    description: 识别 Android、iOS 与 ArkUI 的等价关系、能力差异、迁移风险和替代方案。
+  - title: API 能力补齐评审
+    description: 基于官方来源识别 capability gap，并形成可追溯的优先级建议。
+
+whenToUse:
+  - 需要对 ArkUI 公共 UI API 进行 Android 或 iOS 竞品分析。
+  - 需要评估 Android、iOS 与 ArkUI 的 API 映射和迁移风险。
+  - 需要进行 ArkUI API 设计评审、能力补齐或 capability gap analysis。
+
+whenNotToUse:
+  - 需要执行性能实测。
+  - 需要修改产品代码或 ace_engine 实现。
+  - 只需要 Flutter 或 Web 平台对标。
+
+inputs:
+  required:
+    - ArkUI API、组件或能力主题。
+    - 分析目的。
+  optional:
+    - 作用域层级。
+    - ArkUI、Android 和 iOS 版本基线。
+    - 快速扫描或完整报告模式。
+
+outputs:
+  - Analysis Brief 与 Capability Checklist。
+  - Android、iOS Comparator Map。
+  - 可追溯的三平台事实、能力矩阵和断言审计。
+  - 迁移影响、风险和分级建议。
+  - 官方来源记录与待核事项。
+
+quickStart:
+  steps:
+    - 指定要分析的 ArkUI API 或能力及分析目的。
+    - 确认作用域、平台版本和报告深度。
+    - 要求 Agent 使用官方来源生成可审计的 Android、iOS 对标报告。
+  examplePrompt: |
+    请对 ArkUI 的 List 组件进行 Android RecyclerView、Compose LazyColumn、
+    iOS UITableView 和 SwiftUI List 的竞品分析，并给出迁移风险与建议。
+
+related:
+  skills:
+    - ohos-design-arkui-spec-generator
+  docs: []
