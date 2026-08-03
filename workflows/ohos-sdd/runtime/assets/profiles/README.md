@@ -52,7 +52,7 @@ profiles/
 1. 先按源仓 `docs/02-分级流程指南.md` 选择复杂度级别。
 2. 再判断是否需要子系统 profile。
 3. 如需 profile，把 profile 名写入业务仓 `manifest.md`。
-4. 各阶段先读取 `profile.md`，再按需读取子 profile 与 `context-engine/analysis/<profile>/` 中的补充文档。
+4. 各阶段先读取 `profile.md`，再按需读取子 profile 与 `{{ASSET_ROOT}}/analysis/<profile>/` 中的补充文档。
 5. 如 Profile 声明 `spec_for_validation`，开发者可在 spec/design Approved 后显式生成 Profile 格式的 `spec-for-validation.md`。
 
 ## Profile 编写指南
@@ -142,7 +142,7 @@ profile schema 推荐节(基本信息 / 阶段补充约束 / 专项检查清单)
 
 - `profile.md` 是门禁和专项约束真相源，默认必读
 - `subprofiles/` 只在命中模块类型时读取
-- `context-engine/analysis/<profile>/` 只在需要更多背景、验证路径或长期资产说明时读取
+- `{{ASSET_ROOT}}/analysis/<profile>/` 只在需要更多背景、验证路径或长期资产说明时读取
 - 不要为了“更全面”默认全读整个 profile 目录
 
 ## 最低约束

@@ -23,9 +23,9 @@
 
 ## 前置：Profile 判定（四阶段之前必执行）
 
-> 若仓路径或需求内容命中 `ohos-sdd/profiles/{profile}.md`，必须先加载 Profile 追加规则再进入四阶段。未命中时跳过本节。
+> 若仓路径或需求内容命中 `{{ASSET_ROOT}}/profiles/<profile>/profile.md`，必须先加载 Profile 追加规则再进入四阶段。未命中时跳过本节。
 
-- [ ] 已扫描 `ohos-sdd/profiles/` 目录，确认可用 Profile 列表
+- [ ] 已扫描 `{{ASSET_ROOT}}/profiles/` 目录，确认可用 Profile 列表
 - [ ] 已根据仓路径或需求内容判定是否命中 Profile
 - [ ] 若命中且有子 Profile，已进一步判定子 Profile
 - [ ] Profile 追加规则已合并到后续阶段的检查项和 Gate 条件

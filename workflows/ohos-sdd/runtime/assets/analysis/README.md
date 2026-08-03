@@ -20,12 +20,12 @@
 |------|----------|------|
 | 临时查询记录 | Feature / Bugfix 目录下的 context pack | 为单次任务服务 |
 | 规则与 Skill | `rules/architecture/` + `skills/` | 开发规则正文与 SDD 流程 skill |
-| 长期分析资产 | `context-engine/analysis/` | 沉淀可复用的子系统背景和长期判断 |
+| 长期分析资产 | `analysis/` | 沉淀可复用的子系统背景和长期判断 |
 
 ## 推荐目录结构
 
 ```text
-context-engine/analysis/
+analysis/
 ├── README.md
 ├── arkweb/
 │   ├── subsystem-overview.md

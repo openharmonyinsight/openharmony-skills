@@ -15,7 +15,6 @@ truth_sources:
   templates: templates
   workflow: workflow
   profiles: profiles
-  active_docs: docs
 
 archive:
   target_root: .codespec/changes
