@@ -1,0 +1,4 @@
+interface:
+  display_name: "OHOS Dev ArkUI Host TDD"
+  short_description: "Defense-first ArkUI host unit testing"
+  default_prompt: "Use $ohos-dev-arkui-host-tdd to audit ace_engine host routing, classify host compliance, and build or run focused host gtests only when evidence gates are satisfied."

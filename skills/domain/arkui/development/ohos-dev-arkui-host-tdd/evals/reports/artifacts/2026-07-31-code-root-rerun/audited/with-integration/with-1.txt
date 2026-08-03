@@ -1,0 +1,17 @@
+已按 manifest 在 pinned Host workspace 完成单用例重跑；未重新编译，未修改源码或测试。
+
+命令（工作目录：`/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code`）：
+
+```bash
+out/host/host_product/exe.unstripped/tests/unittest/ace_engine/ImageSet-DrawableDescriptor/drawable_descriptor_test \
+  --gtest_filter=DrawableDescriptorTest.AnimatedDrawableDescTest044 \
+  --gtest_output=xml:/tmp/host-tdd-repro-eval-20260731-rerun-code-root/audited/with-integration/integration-case-1.xml
+```
+
+- 环境门禁：`ready: true`
+- 退出结果：退出码 `0`
+- 用例统计：1 个测试套件，1 个用例；通过 1，失败 0；耗时 0 ms
+- XML：已实际生成（`true`）
+- XML 路径：[integration-case-1.xml](/tmp/host-tdd-repro-eval-20260731-rerun-code-root/audited/with-integration/integration-case-1.xml)
+
+执行结束时出现多条 coverage `.gcda` 无法写入的 profiling 警告，但不影响该用例通过及 XML 生成。

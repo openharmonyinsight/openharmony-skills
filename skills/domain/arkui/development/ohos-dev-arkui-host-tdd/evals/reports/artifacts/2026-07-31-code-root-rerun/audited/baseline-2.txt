@@ -1,0 +1,13 @@
+诊断结论：
+
+- `--filter text_pattern` 无匹配，只说明 `run_host.py` 发现的 `CATEGORY/TEST NAME` 中不包含 `text_pattern`。
+- 过滤器不匹配源码文件名。fixture 显示 `text_pattern_test_ng.cpp` 属于 Host 目标 `TextSet-Text/text_test_ng`。
+- 这不能说明源码未纳入 GN、目标未编译、构建失败、测试无法启动或用例失败。
+- 快照仅能证明固定 revision 下的路由和当时的产物观察；`OK` 表示发现了可执行文件，不代表产物新鲜、构建成功或 gtest 通过。
+- `text_test_ng_addition` 的 `MISSING` 是另一目标的状态，不能用于判断 `text_pattern_test_ng.cpp`。
+
+下一条只读发现命令（仅建议，未执行）：
+
+```bash
+python3 test/unittest/scripts/run_host.py --list --filter text_test_ng
+```

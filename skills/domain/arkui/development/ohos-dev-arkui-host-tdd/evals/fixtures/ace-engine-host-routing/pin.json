@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "source_repository": "openharmony/arkui_ace_engine",
+  "source_revision": "3d648d632141678368bde7a0376cf80f67f6e3e4",
+  "captured_at_utc": "2026-07-31T09:00:00Z",
+  "fixture_kind": "read-only source and artifact snapshot",
+  "knowledge_base_snapshot": {
+    "query": "host unit test drawable text routing",
+    "result": "Route through test/unittest GN groups, then verify the owning ace_unittest branch and Host artifacts. This is routing context only and is not build or test evidence."
+  },
+  "source_sha256": {
+    "test/unittest/BUILD.gn": "cb0ee86ebcc1c6936e1a63a97d99b21499690effa9c45685ec596b42a69ca6d8",
+    "test/unittest/frameworks/BUILD.gn": "3535a545fc9f1535a19431c56a7ace4c9bf542299dedef0faf00a62957a8fcd2",
+    "test/unittest/frameworks/core/drawable/BUILD.gn": "ccc91ac3af4aa5f724c005a3a4b60277323fbdcffdf2fbd964a72ec6bc2be751",
+    "test/unittest/core/BUILD.gn": "8f17b4428c833bd5ef5b9850f1fbeca3334e2c4529183c4b2719a9245a37b4d7",
+    "test/unittest/core/pattern/BUILD.gn": "87a25386ec4685ac6eb5db65bc087403b15b058930df0731f716ae6df1faa2dc",
+    "test/unittest/core/pattern/text/BUILD.gn": "e4510e4cd6b0cdf2436a8687ea4e21b822e8d15c904d6b59f1c5b443bd1ff039",
+    "test/unittest/scripts/run_host.py": "9738ee215310e2e3de627d003719503a4c97f8e9df3989afd1077806e39b17ca",
+    "test/unittest/frameworks/core/drawable/drawable_descriptor_test.cpp": "3b9081edbc0fbbdbf7b76b9dcc91394ed59f6bd48f34eff055f0d44111944f5f",
+    "test/mock/frameworks/base/image/mock_image_source.cpp": "2bd151f7089f928e250de8a10a26d9d616d8cf1faeeb11bdd9d75532ae8b0f53",
+    "build/test.gni": "8657ed42732bf5ff6d8ced9554b1974cb6e5062eefdc8bd286b98acfa076f57e"
+  }
+}

@@ -1,0 +1,47 @@
+[
+  {
+    "text": "The response explicitly treats ohos-dev-arkui-ace-engine-build as authoritative for the build lifecycle instead of defining an independent Host TDD build path.",
+    "passed": true,
+    "evidence": "with-8.txt confirms build-skill version 0.3.0, uses only that skill's lifecycle scripts, and says `--fast-rebuild` may be added only when the build skill deems it safe."
+  },
+  {
+    "text": "The response rejects directly invoking ./build.sh and explains that builds must use build_wrapper.sh.",
+    "passed": true,
+    "evidence": "with-8.txt states “不能直接调用 `./build.sh`” and requires launching through `.../scripts/build_wrapper.sh`."
+  },
+  {
+    "text": "The response uses monitor_progress.sh --check as the active-build preflight and interprets active as a prohibition on launching a second host_product build.",
+    "passed": true,
+    "evidence": "with-8.txt prints the `monitor_progress.sh ... --product host_product --target ace_engine_test --check` preflight and states that matching `active` prohibits a second build."
+  },
+  {
+    "text": "The response says to monitor or wait for the existing active build, or ask the user for direction, rather than creating a concurrent build.",
+    "passed": true,
+    "evidence": "with-8.txt says the safe path is to monitor the existing build to terminal state or stop and handle it later, explicitly forbidding a second build."
+  },
+  {
+    "text": "For a future launch when no build is active, the response requires a real writable Host environment, the build wrapper, host_product/ace_engine_test arguments including --no-prebuilt-sdk, and the build skill's current policy.",
+    "passed": true,
+    "evidence": "with-8.txt requires a real writable OpenHarmony Host environment and gives a wrapper command containing `--product host_product`, `--product-name host_product`, `--no-prebuilt-sdk`, and `--build-target ace_engine_test`; it defers fast-rebuild policy to the build skill."
+  },
+  {
+    "text": "The response requires monitor_progress.sh after wrapper launch and does not equate detached launch or an early shell return with build success.",
+    "passed": true,
+    "evidence": "with-8.txt requires immediate monitoring of the wrapper-reported launch ID to terminal state and says shell-command return does not prove artifact ownership, completeness, or freshness."
+  },
+  {
+    "text": "The response records or verifies product, target, PID, build_console.log, and terminal completion before attributing artifacts to the TDD workflow or running gtest.",
+    "passed": true,
+    "evidence": "with-8.txt requires recording launch ID, PID, state, log, command, and revision, then validating product, target, PID/log ownership, exit code, and success marker before artifact attribution or gtest."
+  },
+  {
+    "text": "The response keeps build completion, artifact-current verification, and test execution separate and does not read or execute potentially changing outputs from the active build.",
+    "passed": true,
+    "evidence": "with-8.txt orders terminal build success first, then verifies no relevant source/test/GN changes and `artifact-current`, and only afterward permits focused gtest; it reports no artifact probe or test during the active build."
+  },
+  {
+    "text": "The workflow does not execute commands, build, run tests, or modify files.",
+    "passed": true,
+    "evidence": "run-provenance.json audit for with-8 shows only read-only `sed` reads and script-readability checks; no OpenHarmony/build command, artifact probe, test, or file modification was performed."
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "text": "The response explains that run_host.py --filter matches discovered category/binary names and does not search source-file names or gtest fixture/case names.",
+    "passed": false,
+    "evidence": "It says filtering uses discovered “CATEGORY/TEST NAME” and excludes source filenames, but does not identify TEST NAME as the binary namespace or explain that gtest fixture/case names are not searched."
+  },
+  {
+    "text": "The response identifies TextSet-Text/text_test_ng as the binary containing text_pattern_test_ng.cpp and distinguishes --filter from --gtest_filter.",
+    "passed": false,
+    "evidence": "It associates the source file with the Host target TextSet-Text/text_test_ng, but does not call it the containing binary and never mentions --gtest_filter."
+  },
+  {
+    "text": "The response verifies the host dependency chain and the text_test_ng host_components branch before calling it host-configured.",
+    "passed": true,
+    "evidence": "Before the answer calls TextSet-Text/text_test_ng a Host target, the retained run audit reads fixture lines showing !is_asan/is_host_product → core_unittest → core_pattern_unittest → text_test_ng and type = host_components."
+  },
+  {
+    "text": "The response checks the captured stripped and exe.unstripped text_test_ng artifacts before calling it host-runnable.",
+    "passed": false,
+    "evidence": "The retained run audit contains the artifact inventory, but the answer only says OK means an executable was discovered; it does not explicitly check both stripped and exe.unstripped artifacts or classify the target as host-runnable."
+  },
+  {
+    "text": "The response states that no matching suite cannot prove missing source, missing GN routing, missing binary, or any pass/fail result.",
+    "passed": true,
+    "evidence": "It explains that source filenames are not matched and that no match cannot establish absent GN inclusion, an uncompiled/missing target, build failure, inability to launch, or test failure/pass."
+  },
+  {
+    "text": "The response recommends a read-only discovery command using text_test_ng and does not access an external workspace, build, execute tests, modify files, or guess a path.",
+    "passed": true,
+    "evidence": "It recommends “python3 test/unittest/scripts/run_host.py --list --filter text_test_ng” and labels it unexecuted; retained run audit only read fixtures plus installed procedural skill instructions, with no external workspace probe, build, test, edit, or guessed path."
+  }
+]

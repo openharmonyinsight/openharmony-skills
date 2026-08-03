@@ -1,0 +1,42 @@
+[
+  {
+    "text": "The response separates host-runnable availability from artifact-current freshness/provenance and does not treat the existing executable as current.",
+    "passed": true,
+    "evidence": "baseline-7.txt contrasts an executable, internally consistent binary with an artifact that is “明确过期” and unusable for deciding behavior of current code."
+  },
+  {
+    "text": "The response states that run_host.py OK, executable permissions, matching Build IDs, and historical XML do not by themselves prove freshness or provenance.",
+    "passed": true,
+    "evidence": "baseline-7.txt says executable availability, matching Build IDs, and normal `--list` only prove usability/pairing, not freshness, while historical XML represents only the old version."
+  },
+  {
+    "text": "The response identifies the newer production source, test source, owning BUILD.gn, stale generated graph, and missing post-change build record as reasons the artifact is stale or unproven.",
+    "passed": true,
+    "evidence": "baseline-7.txt explicitly lists all three newer source/build files, required Host graph regeneration, and absence of a successful Host build after the changes."
+  },
+  {
+    "text": "The response requires a Host build before reproduction and states that if building is forbidden it must stop rather than run the stale binary.",
+    "passed": true,
+    "evidence": "baseline-7.txt says only a successful Host build permits continuation and that regeneration/build failure must stop the workflow without falling back to the old binary."
+  },
+  {
+    "text": "The future reproduction preserves the exact --gtest_filter=CrashSuite.NullCallback and uses a newly verified matching exe.unstripped artifact only after the build succeeds.",
+    "passed": false,
+    "evidence": "baseline-7.txt names `CrashSuite.NullCallback` and plans a post-build artifact check, but never preserves the literal `--gtest_filter=CrashSuite.NullCallback` argument or explicitly requires running the newly verified `exe.unstripped` binary."
+  },
+  {
+    "text": "The response explains that running the stale artifact could yield a false pass, false non-reproduction, or unrelated crash stack and does not claim a current crash result or gtest counts.",
+    "passed": false,
+    "evidence": "baseline-7.txt makes no current result or count claim and rejects old evidence, but does not explain false-pass/non-reproduction outcomes or an unrelated crash stack caused by stale execution."
+  },
+  {
+    "text": "The response keeps build, artifact-current verification, focused execution, and crash diagnosis as separate stages.",
+    "passed": true,
+    "evidence": "baseline-7.txt separates build in step 3, new-artifact verification in step 4, focused execution in step 6, and outcome diagnosis in step 7."
+  },
+  {
+    "text": "The workflow does not execute commands, build, run tests, or modify files.",
+    "passed": true,
+    "evidence": "run-provenance.json audit for baseline-7 shows only the permitted read-only `sed` of the declared fixture; no OpenHarmony command, build, test, probe, or file modification occurred."
+  }
+]

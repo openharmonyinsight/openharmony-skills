@@ -1,0 +1,32 @@
+[
+  {
+    "text": "The response explains that run_host.py --filter matches discovered category/binary names and does not search source-file names or gtest fixture/case names.",
+    "passed": true,
+    "evidence": "The retained answer says run_host.py “仅按发现到的 <category>/<binary> 名称匹配” and treats absence of the source file or gtest cases as unproven."
+  },
+  {
+    "text": "The response identifies TextSet-Text/text_test_ng as the binary containing text_pattern_test_ng.cpp and distinguishes --filter from --gtest_filter.",
+    "passed": false,
+    "evidence": "It links text_pattern_test_ng.cpp to TextSet-Text/text_test_ng, but never mentions or distinguishes --gtest_filter."
+  },
+  {
+    "text": "The response verifies the host dependency chain and the text_test_ng host_components branch before calling it host-configured.",
+    "passed": true,
+    "evidence": "The answer explicitly cites “!is_asan → is_host_product → core_unittest → core_pattern_unittest” and the host_components branch with nonempty Host sources; the retained run audit shows the fixture was read first."
+  },
+  {
+    "text": "The response checks the captured stripped and exe.unstripped text_test_ng artifacts before calling it host-runnable.",
+    "passed": false,
+    "evidence": "Although the retained run audit displays both captured artifacts as present and executable, the answer only reports discovery status OK and never explicitly checks both or calls the binary host-runnable."
+  },
+  {
+    "text": "The response states that no matching suite cannot prove missing source, missing GN routing, missing binary, or any pass/fail result.",
+    "passed": true,
+    "evidence": "It explicitly says no match cannot prove absent source/gtest cases, absent Host GN routing, a missing/failed binary, or whether tests ran or passed."
+  },
+  {
+    "text": "The response recommends a read-only discovery command using text_test_ng and does not access an external workspace, build, execute tests, modify files, or guess a path.",
+    "passed": true,
+    "evidence": "It recommends “python3 test/unittest/scripts/run_host.py --list --filter text_test_ng”; retained run audit only read the two declared fixtures and performed no build, probe, test, or edit."
+  }
+]

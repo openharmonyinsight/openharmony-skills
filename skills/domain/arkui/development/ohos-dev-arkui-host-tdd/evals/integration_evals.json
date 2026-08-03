@@ -1,0 +1,22 @@
+{
+  "skill_name": "ohos-dev-arkui-host-tdd",
+  "suite": "host-integration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "环境准备程序已生成随附 `environment.json`。只有其中 `ready` 为 true 时，才在该 pinned Host workspace 上重跑 `DrawableDescriptorTest.AnimatedDrawableDescTest044`。不要重新编译或修改源码/测试；必须使用 manifest 指定的 exe.unstripped 二进制、精确 filter，并将 XML 写到 manifest 指定路径。分别报告命令、退出结果、用例统计和 XML 是否实际生成。",
+      "expected_output": "Runs only the requested case with the prepared symbolized host binary, preserves an XML artifact, and reports observed process and gtest results without broadening the filter.",
+      "files": [
+        "fixtures/integration/environment-requirements.md",
+        "${EVAL_ARTIFACT_DIR}/environment.json"
+      ],
+      "expectations": [
+        "The command uses the exe.unstripped drawable_descriptor_test path recorded in environment.json.",
+        "The command uses the exact filter --gtest_filter=DrawableDescriptorTest.AnimatedDrawableDescTest044.",
+        "The command writes gtest XML to the output path recorded in environment.json.",
+        "The response reports the actual process exit code, test counts, pass/fail result, and whether the XML file was actually created.",
+        "The workflow does not rebuild, edit files, or broaden execution to DrawableDescriptorTest.*."
+      ]
+    }
+  ]
+}

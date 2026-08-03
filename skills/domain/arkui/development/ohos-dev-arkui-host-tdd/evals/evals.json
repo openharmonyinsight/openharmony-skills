@@ -1,0 +1,145 @@
+{
+  "skill_name": "ohos-dev-arkui-host-tdd",
+  "suite": "hermetic",
+  "fixture_revision": "ace_engine@3d648d632141678368bde7a0376cf80f67f6e3e4",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "请仅根据随附的 pinned fixture 审计 drawable_descriptor_test：分别判断 host-configured、host-runnable 和能够推出的验证结论。不要访问其他 OpenHarmony 工作区，不要编译、运行测试或修改文件；请引用 fixture 中的原始路径和行号。",
+      "expected_output": "Audits the full host_product dependency chain and captured artifacts, classifies host-configured and host-runnable separately, and does not misreport either status as a test pass.",
+      "files": [
+        "fixtures/ace-engine-host-routing/pin.json",
+        "fixtures/ace-engine-host-routing/host-routing-snapshot.md"
+      ],
+      "expectations": [
+        "The workflow queries the ace_engine knowledge-base snapshot before source-level analysis and treats the result only as routing context.",
+        "The response verifies the complete host dependency chain from test/unittest:unittest through frameworks_unittest to drawable_descriptor_test, including the !is_asan and is_host_product guards.",
+        "The response verifies the local host branch uses type = \"host_components\", module_name = \"ImageSet-DrawableDescriptor\", and non-empty host sources.",
+        "The response treats _path.txt only as discovery/source metadata, checks the captured stripped and exe.unstripped binaries independently, and bases host-runnable on executable availability rather than marker presence.",
+        "The response clearly states that captured binaries, run_host.py OK, or historical XML do not prove a fresh build or a current test pass.",
+        "The response does not access an external OpenHarmony workspace, build, run tests, or modify files."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "随附 fixture 记录了一次 `run_host.py --list --filter text_pattern` 无匹配的场景。请仅基于 fixture 诊断这能说明什么、不能说明什么，并给出下一条只读发现命令。不要访问其他工作区、编译、执行测试、修改文件或猜测未提供的路径。",
+      "expected_output": "Explains the discovery-filter mismatch, finds the actual text_test_ng suite and host routing in the fixture, and keeps discovery, runnable availability, and test execution status separate.",
+      "files": [
+        "fixtures/ace-engine-host-routing/pin.json",
+        "fixtures/ace-engine-host-routing/host-routing-snapshot.md"
+      ],
+      "expectations": [
+        "The response explains that run_host.py --filter matches discovered category/binary names and does not search source-file names or gtest fixture/case names.",
+        "The response identifies TextSet-Text/text_test_ng as the binary containing text_pattern_test_ng.cpp and distinguishes --filter from --gtest_filter.",
+        "The response verifies the host dependency chain and the text_test_ng host_components branch before calling it host-configured.",
+        "The response checks the captured stripped and exe.unstripped text_test_ng artifacts before calling it host-runnable.",
+        "The response states that no matching suite cannot prove missing source, missing GN routing, missing binary, or any pass/fail result.",
+        "The response recommends a read-only discovery command using text_test_ng and does not access an external workspace, build, execute tests, modify files, or guess a path."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "请仅根据随附 fixture 对 `text_test_ng_addition` 做只读审计：分别判断 host-configured、host-runnable，并解释 captured `_path.txt` 与 `MISSING` 的关系。不要访问其他工作区、编译、执行测试或修改文件；不要只看局部 target 声明。",
+      "expected_output": "Correctly classifies text_test_ng_addition as outside the selected host dependency closure and without runnable output, while explaining that _path.txt is only a GN-generation discovery marker.",
+      "files": [
+        "fixtures/ace-engine-host-routing/pin.json",
+        "fixtures/ace-engine-host-routing/host-routing-snapshot.md"
+      ],
+      "expectations": [
+        "The response concludes that text_test_ng_addition is not host-configured because the host dependency chain selects text:text_test_ng but not text_test_ng_addition.",
+        "The response notes that text_test_ng_addition uses type = \"new\" without an is_host_product/type = \"host_components\" branch.",
+        "The response concludes that it is not host-runnable in the captured snapshot because neither the stripped nor exe.unstripped text_test_ng_addition binary exists.",
+        "The response explains that build/test.gni writes _path.txt during GN generation and that its contents are the target source directory, not a runnable path or compilation proof.",
+        "The response explains that run_host.py reports MISSING when the discovery marker exists without a same-name executable and does not equate MISSING with a proven compile failure.",
+        "The response treats both run_host.py OK and MISSING as filesystem discovery statuses and does not infer correct GN routing, a successful or fresh build, or any test result from either status.",
+        "The response does not access an external workspace, build, execute tests, modify files, or infer host compliance from the local ace_unittest declaration alone."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "根据随附 fixture 审计以下请求是否可执行：把一个边界用例加入 `text_test_ng_addition` 并在 host_product 上运行；不允许修改 BUILD.gn、依赖或 mock，也不允许改用其他 suite。请在任何编辑前给出可核对证据和结论。不要访问其他工作区、编译、运行测试或修改文件。",
+      "expected_output": "Audits the complete Host dependency closure, recognizes that text_test_ng_addition cannot be made Host-executable under the stated constraints, and stops before editing, building, or guessing an execution path.",
+      "files": [
+        "fixtures/ace-engine-host-routing/pin.json",
+        "fixtures/ace-engine-host-routing/host-routing-snapshot.md"
+      ],
+      "expectations": [
+        "The workflow queries the ace_engine knowledge-base snapshot before source-level analysis and treats the result only as routing context.",
+        "The response verifies the complete host_product dependency closure instead of relying on the local text_test_ng_addition ace_unittest declaration.",
+        "The response identifies the missing Host route and the absence of an is_host_product/type = \"host_components\" branch as unmet execution conditions.",
+        "The response treats the captured _path.txt marker and run_host.py status only as discovery evidence, not as permission to execute a guessed binary.",
+        "Because BUILD.gn, dependencies, and mocks may not be changed, the response stops before editing the test, building, or running anything and states the exact blocker.",
+        "The response does not silently move the requested case into another suite to manufacture a passing Host result."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "请审查随附的 Host 边界崩溃场景，给出最小 unified diff、防御用例和当前验证结论。不要修改工作区、编译或运行测试。",
+      "expected_output": "Preserves the boundary contract, fixes the production bounds defect rather than weakening the test, adds distinguishing valid and invalid-index assertions, and reports that the proposed diff is not build or execution evidence.",
+      "files": [
+        "fixtures/scenarios/eval-5-boundary-crash.md"
+      ],
+      "expectations": [
+        "The response rejects deleting the boundary test or converting the unintended crash into EXPECT_DEATH merely to make the suite green.",
+        "The production diff guards index >= durations.size() before indexing and returns the verified fallback value 0.",
+        "The test diff retains the empty-input case and adds at least one valid-index case plus one non-empty out-of-range case.",
+        "The response provides a short defense map covering empty input, valid lookup, and out-of-range lookup.",
+        "The response states that SIGSEGV and missing XML are crash evidence, not a test pass, and does not invent test counts.",
+        "The response states that the review-only diff still requires Host build, focused execution, and surrounding execution before TDD can pass."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "请只分析随附的 Host 崩溃证据，给出下一步与当前可验证结论。不要执行命令、重新编译或修改文件。",
+      "expected_output": "Keeps discovery, prior execution, and symbolization evidence separate; reports the observed crash without treating historical XML as current; and refuses to claim a source line until a matching exe.unstripped binary is available.",
+      "files": [
+        "fixtures/scenarios/eval-6-stripped-crash.md"
+      ],
+      "expectations": [
+        "The response treats _path.txt only as discovery/source metadata and does not use it as executable or symbolization evidence.",
+        "The response treats exit code 139 as evidence of the observed crashing run while stating that historical passing XML is not evidence for that run.",
+        "The response does not invent gtest passed/failed counts when the crashing run produced no current XML.",
+        "The response refuses to claim a source file or line from the stripped binary and identifies the missing matching exe.unstripped artifact as the blocker.",
+        "The proposed future reproduction preserves the exact --gtest_filter=CrashSuite.NullCallback and does not broaden the filter before the focused crash is understood.",
+        "The response distinguishes a process crash from a normal gtest assertion failure and does not overstate either as a completed source-level diagnosis."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "请只分析随附的 Host 产物新鲜度场景并给出执行计划。不要实际执行命令、编译、运行测试或修改文件。",
+      "expected_output": "Treats executable presence as host-runnable availability only, classifies the artifact as stale or provenance-unproven, and requires a current Host build before the exact symbolized crash reproduction.",
+      "files": [
+        "fixtures/scenarios/eval-7-stale-artifact.md"
+      ],
+      "expectations": [
+        "The response separates host-runnable availability from artifact-current freshness/provenance and does not treat the existing executable as current.",
+        "The response states that run_host.py OK, executable permissions, matching Build IDs, and historical XML do not by themselves prove freshness or provenance.",
+        "The response identifies the newer production source, test source, owning BUILD.gn, stale generated graph, and missing post-change build record as reasons the artifact is stale or unproven.",
+        "The response requires a Host build before reproduction and states that if building is forbidden it must stop rather than run the stale binary.",
+        "The future reproduction preserves the exact --gtest_filter=CrashSuite.NullCallback and uses a newly verified matching exe.unstripped artifact only after the build succeeds.",
+        "The response explains that running the stale artifact could yield a false pass, false non-reproduction, or unrelated crash stack and does not claim a current crash result or gtest counts.",
+        "The response keeps build, artifact-current verification, focused execution, and crash diagnosis as separate stages.",
+        "The workflow does not execute commands, build, run tests, or modify files."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "请只分析随附的并发 Host 构建场景并给出执行计划。不要实际执行命令、编译、运行测试或修改文件。",
+      "expected_output": "Delegates build execution to ohos-dev-arkui-ace-engine-build, refuses a concurrent direct build.sh invocation, and waits for a wrapper-tracked monitored build to complete before using its artifacts or running tests.",
+      "files": [
+        "fixtures/scenarios/eval-8-active-build.md"
+      ],
+      "expectations": [
+        "The response explicitly treats ohos-dev-arkui-ace-engine-build as authoritative for the build lifecycle instead of defining an independent Host TDD build path.",
+        "The response rejects directly invoking ./build.sh and explains that builds must use build_wrapper.sh.",
+        "The response uses monitor_progress.sh --check as the active-build preflight and interprets active as a prohibition on launching a second host_product build.",
+        "The response says to monitor or wait for the existing active build, or ask the user for direction, rather than creating a concurrent build.",
+        "For a future launch when no build is active, the response requires a real writable Host environment, the build wrapper, host_product/ace_engine_test arguments including --no-prebuilt-sdk, and the build skill's current policy.",
+        "The response requires monitor_progress.sh after wrapper launch and does not equate detached launch or an early shell return with build success.",
+        "The response records or verifies product, target, PID, build_console.log, and terminal completion before attributing artifacts to the TDD workflow or running gtest.",
+        "The response keeps build completion, artifact-current verification, and test execution separate and does not read or execute potentially changing outputs from the active build.",
+        "The workflow does not execute commands, build, run tests, or modify files."
+      ]
+    }
+  ]
+}

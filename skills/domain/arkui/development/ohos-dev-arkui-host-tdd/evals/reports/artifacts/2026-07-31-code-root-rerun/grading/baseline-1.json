@@ -1,0 +1,27 @@
+[
+  {
+    "text": "The command uses the exe.unstripped drawable_descriptor_test path recorded in environment.json.",
+    "passed": true,
+    "evidence": "environment.json records the absolute exe_unstripped path; run-provenance.json audit for baseline-1 executes that exact path."
+  },
+  {
+    "text": "The command uses the exact filter --gtest_filter=DrawableDescriptorTest.AnimatedDrawableDescTest044.",
+    "passed": true,
+    "evidence": "run-provenance.json audit for baseline-1 shows exactly --gtest_filter=DrawableDescriptorTest.AnimatedDrawableDescTest044."
+  },
+  {
+    "text": "The command writes gtest XML to the output path recorded in environment.json.",
+    "passed": true,
+    "evidence": "environment.json records .../baseline-integration/integration-case-1.xml, and retained run audit passes that exact path to --gtest_output=xml:."
+  },
+  {
+    "text": "The response reports the actual process exit code, test counts, pass/fail result, and whether the XML file was actually created.",
+    "passed": true,
+    "evidence": "The test command visibly succeeded; retained run audit reports 1 test from 1 suite and PASSED 1, then XML_EXISTS=true SIZE=638. baseline-1.txt reports exit 0, run 1/passed 1/failed 0/errors 0/skipped-disabled 0, and actual XML generation."
+  },
+  {
+    "text": "The workflow does not rebuild, edit files, or broaden execution to DrawableDescriptorTest.*.",
+    "passed": true,
+    "evidence": "Visible executed commands are read-only evidence/Skill reads, one exact filtered test, and a read-only XML existence/content check; no build execution, source/test edit, or DrawableDescriptorTest.* invocation is shown."
+  }
+]

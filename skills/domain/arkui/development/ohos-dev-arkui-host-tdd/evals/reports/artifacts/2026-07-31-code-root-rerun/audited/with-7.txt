@@ -1,0 +1,88 @@
+结论：当前二进制虽然可执行，但已明确过期，不能立即运行并用结果判断当前崩溃是否仍复现。必须先完成新的 Host 构建。
+
+| 维度 | 判定 | 依据 |
+|---|---|---|
+| `host-runnable` | 是 | stripped 与 `exe.unstripped` 均存在且可执行 |
+| `artifact-current` | 否，明确 stale | 生产源码、测试源码、`BUILD.gn` 均更新；Host 图要求重新生成；变更后没有成功构建记录 |
+| stripped/unstripped 一致性 | 仅证明来自同一旧构建 | Build ID 匹配不证明对应当前代码 |
+| discovery | `OK` | 只证明扫描到了可执行文件 |
+| 历史测试结果 | 不可用于当前结论 | 旧 XML 的 pass 不代表当前代码通过 |
+| `host-configured` | 现有材料不足以确认 | 未提供完整 GN 依赖闭包、各层 guard、`type`、`module_name` 和 Host `sources` |
+| `_path.txt` | 未知 | 场景未提供；即使存在也只是发现元数据 |
+
+执行计划如下，全程应由 `ohos-dev-arkui-ace-engine-build` 管理构建生命周期：
+
+1. 静态确认 Host 配置
+
+   从 `test/unittest:unittest` 追踪到所属 `ace_unittest` 的完整传递依赖路径，逐项记录所有中间目标和 guard，包括存在时的 `!is_asan`、`is_host_product`，并确认：
+
+   - `type = "host_components"`
+   - `module_name` 稳定且与输出目录对应
+   - Host `sources` 非空
+   - 不依赖未替换的设备侧运行时能力
+
+2. 验证构建能力
+
+   当前评测限制只允许读取场景文件，因此尚未读取依赖技能及其脚本。实际执行前必须确认：
+
+   - 已安装 `ohos-dev-arkui-ace-engine-build`，版本不低于 `0.3.0`
+   - `build_wrapper.sh`、`monitor_progress.sh`、`build_state.py`、`run_build_session.sh` 均可读
+
+   若不满足，停止并报告：
+
+   ```text
+   missing or incompatible required skill: ohos-dev-arkui-ace-engine-build
+   ```
+
+3. 环境门禁
+
+   必须使用真实、可写的 OpenHarmony Host 环境。若 `<oh-root>/out` 不可写，应先申请所需权限，不得启动构建，也不得改用 `./build.sh`。
+
+4. 观察现有构建
+
+   ```bash
+   bash <ace-build-skill-dir>/scripts/monitor_progress.sh \
+     --root <oh-root> --product host_product \
+     --target ace_engine_test --check
+   ```
+
+   `--check` 只是观察，不是构建资源预留。若发现匹配的 `active` 构建，禁止启动第二个构建，应按其 launch ID 监控；若产品、目标或归属不匹配，则停止并报告归属冲突。
+
+5. 原子启动并监控 Host 构建
+
+   无活动构建时，由构建技能按当前策略生成 `host_product`、`ace_engine_test` 参数，且必须包含 `--no-prebuilt-sdk`；通过 wrapper 的原子产品锁启动：
+
+   ```bash
+   bash <ace-build-skill-dir>/scripts/build_wrapper.sh \
+     --product host_product -- \
+     <由构建技能生成的当前参数，包含 --no-prebuilt-sdk>
+   ```
+
+   随即使用 wrapper 返回的 launch ID 监控到终态：
+
+   ```bash
+   bash <ace-build-skill-dir>/scripts/monitor_progress.sh \
+     --root <oh-root> --product host_product \
+     --target ace_engine_test \
+     --launch-id <wrapper-reported-id>
+   ```
+
+   只有在 product、target、launch ID、PID、命令、revision、状态和日志归属均验证且终态成功后，才能继续。
+
+6. 重新确认产物
+
+   构建成功后检查 discovery，但仍将其视为文件系统快照；同时确认 runnable 与 `exe.unstripped` 都来自刚完成的构建、Build ID 匹配，构建后没有新的相关改动，GN 图不再要求重新生成。此时才能判定 `artifact-current`。
+
+7. 运行唯一请求的复现用例
+
+   使用当前 `exe.unstripped` 二进制，保留准确过滤器：
+
+   ```bash
+   out/host/host_product/exe.unstripped/tests/unittest/ace_engine/<SuiteDirectory>/<binary> \
+     --gtest_filter=CrashSuite.NullCallback \
+     --gtest_output=xml:out/host/host_product/exe.unstripped/tests/unittest/ace_engine/<SuiteDirectory>/<binary>_CrashSuite_NullCallback.xml
+   ```
+
+   这是复现请求，聚焦用例结束后即可停止，不自动扩大到整个 suite。进程崩溃与普通 gtest 断言失败必须分开报告；若崩溃导致 XML 未生成，应使用退出信号、控制台输出和未剥离符号栈作为证据。
+
+本次仅读取了指定场景文件，未执行构建、产物探测、测试或文件修改。

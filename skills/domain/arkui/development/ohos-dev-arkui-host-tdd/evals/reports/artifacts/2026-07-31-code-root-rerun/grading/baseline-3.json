@@ -1,0 +1,37 @@
+[
+  {
+    "text": "The response concludes that text_test_ng_addition is not host-configured because the host dependency chain selects text:text_test_ng but not text_test_ng_addition.",
+    "passed": true,
+    "evidence": "baseline-3.txt concludes host-configured is “否” and states the Host branch depends on `text:text_test_ng` but not `text_test_ng_addition`."
+  },
+  {
+    "text": "The response notes that text_test_ng_addition uses type = \"new\" without an is_host_product/type = \"host_components\" branch.",
+    "passed": true,
+    "evidence": "baseline-3.txt explicitly states it uses `type = \"new\"` and has no independent `is_host_product` / `host_components` branch."
+  },
+  {
+    "text": "The response concludes that it is not host-runnable in the captured snapshot because neither the stripped nor exe.unstripped text_test_ng_addition binary exists.",
+    "passed": true,
+    "evidence": "baseline-3.txt concludes host-runnable is “否” because the captured inventory lacks both stripped and unstripped executables."
+  },
+  {
+    "text": "The response explains that build/test.gni writes _path.txt during GN generation and that its contents are the target source directory, not a runnable path or compilation proof.",
+    "passed": false,
+    "evidence": "baseline-3.txt says the `ace_unittest` template writes `_path.txt`, that it records the source directory, and that it is not compilation-success evidence, but omits both the `build/test.gni` attribution and the GN-generation timing."
+  },
+  {
+    "text": "The response explains that run_host.py reports MISSING when the discovery marker exists without a same-name executable and does not equate MISSING with a proven compile failure.",
+    "passed": false,
+    "evidence": "baseline-3.txt explains marker-without-executable discovery produces `MISSING`, but never explicitly says `MISSING` is not proof of a compile failure."
+  },
+  {
+    "text": "The response treats both run_host.py OK and MISSING as filesystem discovery statuses and does not infer correct GN routing, a successful or fresh build, or any test result from either status.",
+    "passed": false,
+    "evidence": "baseline-3.txt discusses only the target’s `MISSING` case; it does not address what `OK` proves or disclaim routing, build freshness, and test-result inferences from both statuses."
+  },
+  {
+    "text": "The response does not access an external workspace, build, execute tests, modify files, or infer host compliance from the local ace_unittest declaration alone.",
+    "passed": true,
+    "evidence": "run-provenance.json audit for baseline-3 shows one read-only `sed` command limited to the two declared fixtures, no build/test/edit/probe actions, and the final explicitly says the local declaration does not imply inclusion in the Host dependency graph."
+  }
+]

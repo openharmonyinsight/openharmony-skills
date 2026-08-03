@@ -1,0 +1,32 @@
+[
+  {
+    "text": "The workflow queries the ace_engine knowledge-base snapshot before source-level analysis and treats the result only as routing context.",
+    "passed": true,
+    "evidence": "run-provenance.json audit for with-4 shows pin.json read first; its knowledge_base_snapshot says \"This is routing context only and is not build or test evidence,\" followed by source-level GN snapshot analysis."
+  },
+  {
+    "text": "The response verifies the complete host_product dependency closure instead of relying on the local text_test_ng_addition ace_unittest declaration.",
+    "passed": true,
+    "evidence": "with-4.txt explicitly traces `test/unittest:unittest` → `core:core_unittest` → `pattern:core_pattern_unittest` → `text:text_test_ng` through the Host branches and notes that `text_test_ng_addition` is absent."
+  },
+  {
+    "text": "The response identifies the missing Host route and the absence of an is_host_product/type = \"host_components\" branch as unmet execution conditions.",
+    "passed": true,
+    "evidence": "with-4.txt states the closure excludes `text_test_ng_addition`, it has no `is_host_product` branch, and its `type = \"new\"` is not the required `type = \"host_components\"`."
+  },
+  {
+    "text": "The response treats the captured _path.txt marker and run_host.py status only as discovery evidence, not as permission to execute a guessed binary.",
+    "passed": true,
+    "evidence": "with-4.txt says `_path.txt` only records the source directory and is not proof of Host selection, compilation, or runnability; it reports `run_host.py` as `MISSING`. The retained run audit shows no binary execution."
+  },
+  {
+    "text": "Because BUILD.gn, dependencies, and mocks may not be changed, the response stops before editing the test, building, or running anything and states the exact blocker.",
+    "passed": true,
+    "evidence": "with-4.txt says the request requires adding the GN Host route and an `is_host_product`/`host_components` configuration, which the constraints prohibit. retained run audit shows only read-only `sed`; no edit, build, probe, or test occurred."
+  },
+  {
+    "text": "The response does not silently move the requested case into another suite to manufacture a passing Host result.",
+    "passed": true,
+    "evidence": "with-4.txt explicitly says Host-reachable `text_test_ng` cannot substitute because using another suite is forbidden."
+  }
+]

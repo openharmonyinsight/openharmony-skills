@@ -1,0 +1,18 @@
+`--filter text_pattern` 无匹配只说明：`run_host.py` 仅按发现到的 `<category>/<binary>` 名称匹配，而 `text_pattern` 只出现在源文件 `text_pattern_test_ng.cpp` 中，不在 `TextSet-Text/text_test_ng` 这个发现名称里。
+
+它不能说明：
+
+- 源文件或 gtest 用例不存在。
+- `text_test_ng` 未接入 Host GN 路由。fixture 反而显示其经 `!is_asan → is_host_product → core_unittest → core_pattern_unittest` 可达，且为 `host_components`、`module_name = "TextSet-Text"`、Host sources 非空。
+- 二进制缺失或编译失败。
+- 现有产物是否新鲜、是否来自当前源码。
+- 测试是否执行或通过。
+
+下一条只读发现命令应改用二进制名：
+
+```bash
+# cwd: <ace-root>
+python3 test/unittest/scripts/run_host.py --list --filter text_test_ng
+```
+
+按 fixture，该命令会发现 `text_test_ng` 为 `OK`、`text_test_ng_addition` 为 `MISSING`；这仍然只是产物发现状态，不是构建或测试结果。

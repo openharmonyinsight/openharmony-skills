@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-07-31T11:27:35.999367+00:00",
+  "ready": true,
+  "oh_root": "/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code",
+  "ace_root": "/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code/foundation/arkui/ace_engine",
+  "pinned_ace_revision": "3d648d632141678368bde7a0376cf80f67f6e3e4",
+  "checks": {
+    "ace_revision": "3d648d632141678368bde7a0376cf80f67f6e3e4",
+    "ace_worktree_clean": true,
+    "ace_revision_pinned": true,
+    "build_state_present": true,
+    "build_product": "host_product",
+    "build_targets": [
+      "ace_engine_test"
+    ],
+    "build_status": "success",
+    "build_exit_code": 0,
+    "build_success": true,
+    "artifacts_executable": true,
+    "matching_build_ids": true
+  },
+  "build_state_path": "/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code/out/host/host_product/build_state.json",
+  "build_state": {
+    "ace_engine_revision": "3d648d632141678368bde7a0376cf80f67f6e3e4",
+    "build_pid": 2628120,
+    "command": [
+      "./build.sh",
+      "--export-para",
+      "PYCACHE_ENABLE:true",
+      "--product-name",
+      "host_product",
+      "--no-prebuilt-sdk",
+      "--build-target",
+      "ace_engine_test",
+      "--gn-args",
+      "ace_engine_feature_enable_coverage=true",
+      "--ccache"
+    ],
+    "command_display": "./build.sh --export-para PYCACHE_ENABLE:true --product-name host_product --no-prebuilt-sdk --build-target ace_engine_test --gn-args ace_engine_feature_enable_coverage=true --ccache",
+    "cwd": "/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code",
+    "exit_code": 0,
+    "finished_at": "2026-07-31T09:44:38Z",
+    "launch_id": "20260731T092043Z-2628093-4036",
+    "lock_file": "/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code/out/host/host_product/.build_wrapper.lock",
+    "log": "/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code/out/host/host_product/build_console.log",
+    "oh_root": "/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code",
+    "out_dir": "/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code/out/host/host_product",
+    "product": "host_product",
+    "schema_version": 1,
+    "start_revision": "700fc8fbb0f0597c118e909f5041fde7bcfed0e9",
+    "start_revision_source": "/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code/.repo/manifests",
+    "started_at": "2026-07-31T09:20:43Z",
+    "status": "success",
+    "supervisor_pid": 2628116,
+    "targets": [
+      "ace_engine_test"
+    ]
+  },
+  "artifacts": {
+    "stripped": {
+      "path": "/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code/out/host/host_product/tests/unittest/ace_engine/ImageSet-DrawableDescriptor/drawable_descriptor_test",
+      "present": true,
+      "executable": true,
+      "size": 133753824,
+      "mtime_ns": 1785491072800325095,
+      "sha256": "a3fc57bee0863f6c4b2ec5e597453adf80ced187ca8649beabb90c6e8de248c2",
+      "build_id": "a7f8cc89dcded8ca02c7d51fb21f54d7"
+    },
+    "exe_unstripped": {
+      "path": "/srv/workspace/openharmony_master_default_20260713175555_huawei_b8da041e5/code/out/host/host_product/exe.unstripped/tests/unittest/ace_engine/ImageSet-DrawableDescriptor/drawable_descriptor_test",
+      "present": true,
+      "executable": true,
+      "size": 618063360,
+      "mtime_ns": 1785491062074934928,
+      "sha256": "1a785ea6c54c6e9ee043f8bc30e0b59ae7b370b50c02d4cbe755038d980e0394",
+      "build_id": "a7f8cc89dcded8ca02c7d51fb21f54d7"
+    }
+  },
+  "requested_case": "DrawableDescriptorTest.AnimatedDrawableDescTest044",
+  "gtest_filter": "--gtest_filter=DrawableDescriptorTest.AnimatedDrawableDescTest044",
+  "xml_output": "/tmp/host-tdd-repro-eval-20260731-rerun-code-root/audited/with-integration/integration-case-1.xml"
+}
