@@ -148,6 +148,15 @@ get_skill_version() {
 }
 
 # ==================== Probes ====================
+# Security: probes come from SKILL.md metadata and are executed WITHOUT eval.
+# Only two whitelisted shapes are allowed; anything else is rejected:
+#   1) test -f {dir}/<relpath>
+#   2) {dir}/<relpath> --help 2>&1 | grep -q -- '<literal>'
+# <relpath> is restricted to [A-Za-z0-9_./-] (no '..', verified below), so a
+# malicious or compromised SKILL.md cannot run arbitrary shell commands.
+
+PROBE_RE_TESTF="^test -f \{dir\}/([A-Za-z0-9_./-]+)\$"
+PROBE_RE_HELP="^\{dir\}/([A-Za-z0-9_./-]+) --help 2>&1 \| grep -q (-- )?'([^']*)'\$"
 
 run_probes() {
   local name="$1" probe_count="$2"
@@ -160,15 +169,30 @@ run_probes() {
     return
   fi
 
+  local probe rel pattern
   while IFS= read -r probe; do
     [[ -z "$probe" ]] && continue
-    local cmd="${probe//\{dir\}/${dir}}"
-    if eval "$cmd" >/dev/null 2>&1; then
-      ((pass++)) || true
+    if [[ "$probe" =~ $PROBE_RE_TESTF ]]; then
+      rel="${BASH_REMATCH[1]}"
+      if [[ "$rel" == *".."* ]]; then
+        fail_details="${fail_details}    REJECTED(路径穿越): ${probe}"$'\n'
+      elif [[ -f "${dir}/${rel}" ]]; then
+        ((pass++)) || true
+      else
+        fail_details="${fail_details}    FAIL: ${probe}"$'\n'
+      fi
+    elif [[ "$probe" =~ $PROBE_RE_HELP ]]; then
+      rel="${BASH_REMATCH[1]}"
+      pattern="${BASH_REMATCH[3]}"
+      if [[ "$rel" == *".."* ]]; then
+        fail_details="${fail_details}    REJECTED(路径穿越): ${probe}"$'\n'
+      elif "${dir}/${rel}" --help 2>&1 | grep -q -- "$pattern"; then
+        ((pass++)) || true
+      else
+        fail_details="${fail_details}    FAIL: ${probe}"$'\n'
+      fi
     else
-      local safe_cmd
-      safe_cmd=$(echo "$cmd" | sed 's|.opencode/skills|…/skills|')
-      fail_details="${fail_details}    FAIL: ${safe_cmd}"$'\n'
+      fail_details="${fail_details}    REJECTED(非白名单形态): ${probe}"$'\n'
     fi
   done < "$probe_file"
 
@@ -186,12 +210,16 @@ log_warn()  { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
 log_error() { printf "${RED}[ERROR]${NC} %s\n" "$1"; }
 
 # ==================== Remote sources ====================
+# Format: repo_url|branch|subpath|pinned_commit
+# Supply-chain guard: the pinned commit is the audited revision. Install only
+# proceeds when the fetched HEAD matches the pin. If upstream moved, review
+# the changes first, then bump the pin explicitly.
 
 declare -A SKILL_REMOTE=(
-  ["ohos-test-xts-code-quality"]="https://gitcode.com/openharmony-sig/compatibility.git|master|test_suite/resource/skills_XTS/ohos-test-xts-code-quality"
-  ["ohos-dev-arkts-static-specification-reference"]="https://gitcode.com/openharmonyinsight/openharmony-skills.git|release|skills/common/development/ohos-dev-arkts-static-specification-reference"
-  ["arkts-skill"]="https://gitcode.com/Maxi_241437/arkts-skills.git|main|skills/arkts-skill"
-  ["demo-pipeline"]="https://gitcode.com/openharmony-ai-testdesign/oh-test-skills.git|main|ohos-test-design/skills/demo-pipeline"
+  ["ohos-test-xts-code-quality"]="https://gitcode.com/openharmony-sig/compatibility.git|master|test_suite/resource/skills_XTS/ohos-test-xts-code-quality|ee30247c37003b801cb1b58d86a1aba325b0d507"
+  ["ohos-dev-arkts-static-specification-reference"]="https://gitcode.com/openharmonyinsight/openharmony-skills.git|release|skills/common/development/ohos-dev-arkts-static-specification-reference|ca3b89354cd397b79acb05380f71742c157cf602"
+  ["arkts-skill"]="https://gitcode.com/Maxi_241437/arkts-skills.git|main|skills/arkts-skill|170fa1486c6b82e4a55aa36e84e32295c8de766f"
+  ["demo-pipeline"]="https://gitcode.com/openharmony-ai-testdesign/oh-test-skills.git|main|ohos-test-design/skills/demo-pipeline|957710721c7f922b8bf38201b1502aeb1bd369f6"
 )
 
 declare -A SKILL_LOCAL_FALLBACK=(
@@ -219,20 +247,42 @@ resolve_source() {
     log_error "${name}: 无本地源也无远程源配置"
     return 1
   fi
-  local repo_url="${remote%%|*}"
-  local rest="${remote#*|}"
-  local branch="${rest%%|*}"
-  local subpath="${rest#*|}"
+  local repo_url branch subpath pinned
+  IFS='|' read -r repo_url branch subpath pinned <<< "${remote}"
+  if [[ -z "${repo_url}" || -z "${branch}" || -z "${subpath}" || -z "${pinned}" ]]; then
+    log_error "${name}: SKILL_REMOTE 格式错误（需 url|branch|subpath|pinned_commit）"
+    return 1
+  fi
+  if [[ ! "${pinned}" =~ ^[0-9a-f]{40}$ ]]; then
+    log_error "${name}: pinned commit 必须是 40 位完整 SHA（当前: ${pinned}）"
+    return 1
+  fi
   local repo_hash
   repo_hash=$(echo -n "${repo_url}" | sha256sum | cut -c1-12)
   local clone_dir="${CACHE_DIR}/${repo_hash}"
   if [ ! -d "${clone_dir}/.git" ]; then
     log_info "克隆 ${repo_url} (branch: ${branch})..."
     mkdir -p "${CACHE_DIR}"
-    git clone --depth 1 --branch "${branch}" "${repo_url}" "${clone_dir}" 2>&1 | sed 's/^/  /'
+    if ! git clone --depth 1 --branch "${branch}" "${repo_url}" "${clone_dir}" 2>&1 | sed 's/^/  /'; then
+      log_error "${name}: 克隆失败: ${repo_url}"
+      return 1
+    fi
   else
     log_info "更新缓存 ${repo_url}..."
-    (cd "${clone_dir}" && git fetch --depth 1 origin "${branch}" 2>&1 && git reset --hard "origin/${branch}" 2>&1) | sed 's/^/  /'
+    if ! (cd "${clone_dir}" && git fetch --depth 1 origin "${branch}" 2>&1 && git reset --hard "origin/${branch}" 2>&1) | sed 's/^/  /'; then
+      log_error "${name}: 更新缓存失败: ${repo_url}"
+      return 1
+    fi
+  fi
+  # Supply-chain guard: refuse to install unaudited revisions.
+  local actual
+  actual=$(cd "${clone_dir}" && git rev-parse HEAD)
+  if [[ "${actual}" != "${pinned}" ]]; then
+    log_error "${name}: commit 漂移（供应链防护触发）"
+    log_error "  pinned = ${pinned}"
+    log_error "  actual = ${actual}"
+    log_error "  上游 ${branch} 在锁定后已更新。请先审查上游变更，再更新 SKILL_REMOTE 中的 pinned commit。"
+    return 1
   fi
   local source_path="${clone_dir}/${subpath}"
   if [ ! -f "${source_path}/SKILL.md" ]; then
