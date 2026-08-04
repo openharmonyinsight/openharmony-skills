@@ -1,6 +1,6 @@
 # L2_Report - 报告生成流程（Step 6）
 
-> 报告结构规范见 [ReportStructure.md](./ReportStructure.md)。约束自检见 [constraints.md](../../references/constraints.md)。
+> 报告结构规范见 [ReportStructure.md](./ReportStructure.md)。约束自检见 [report-constraints.md](../../references/report-constraints.md)。
 ---
 
 ## Step 6：生成报告
@@ -48,7 +48,7 @@ grep -n "missed" <日志目录>/module_run.log         # missed=套件中断标�
 
 ## 报告生成前置门槛
 
-> 生成报告前，AI必须自检以下条件，不通过则补执行对应步骤。规则详见 [constraints.md](../../references/constraints.md)。
+> 生成报告前，AI必须自检以下条件，不通过则补执行对应步骤。规则详见 [report-constraints.md](../../references/report-constraints.md)。
 
 | 检查项 | 通过条件 | 不通过时的处理 |
 |--------|---------|--------------|

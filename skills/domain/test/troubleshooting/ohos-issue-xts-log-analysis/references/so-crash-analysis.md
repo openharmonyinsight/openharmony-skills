@@ -179,8 +179,8 @@ python3 scripts/query_db.py so libability_runtime.z.so
 ### 第五步：查询责任人
 
 ```bash
-# 查询子系统责任人
-python3 scripts/query_db.py rules ArkUI
+# 查询子系统 SO 库归属与责任人
+python3 scripts/query_db.py so --subsystem ArkUI
 ```
 
 ## 常见场景

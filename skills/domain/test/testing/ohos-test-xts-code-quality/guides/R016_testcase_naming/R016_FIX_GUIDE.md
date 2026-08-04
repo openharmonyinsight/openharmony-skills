@@ -352,5 +352,5 @@ grep -B5 "it(" file.test.ets | grep "@tc.name"
 ## 相关文档
 
 - [../../SKILL.md](../../SKILL.md) - 完整技能说明
-- [../../rules/R016/SKILL.md](../../rules/R016/SKILL.md) - R016规则示例和实现
+- [../../references/RULES_COMPLIANCE.md](../../references/RULES_COMPLIANCE.md) - R016规则示例和实现
 - [../FIX_GUIDE.md](../FIX_GUIDE.md) - 通用修复指南

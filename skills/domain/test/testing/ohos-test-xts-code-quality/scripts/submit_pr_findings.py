@@ -55,7 +55,7 @@ def resolve_token(token=None):
 
 
 def parse_pr_url(pr_url):
-    match = re.search(r"gitcode\.com/([^/]+)/([^/]+)/pull/(\d+)", pr_url)
+    match = re.search(r"gitcode\.com/([^/]+)/([^/]+)/(?:pulls?|merge_requests)/(\d+)", pr_url)
     if not match:
         raise ValueError(f"Invalid GitCode PR URL: {pr_url}")
     return match.group(1), match.group(2), match.group(3)
@@ -168,8 +168,9 @@ def build_line_comments(issues, diff_context=None):
 
         if diff_context:
             ctx = diff_context.get(file_path)
-            if ctx and ctx.get('commentable_lines'):
-                if line not in ctx['commentable_lines']:
+            if ctx:
+                new_added = ctx.get('new_added_lines')
+                if new_added and line not in new_added:
                     continue
 
         body = (

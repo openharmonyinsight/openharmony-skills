@@ -28,6 +28,7 @@ query_db.py - XTS 规则数据库查询工具（替代文档里供抄写的 SQL�
     python query_db.py rules --high
     python query_db.py contacts 元能力
     python query_db.py so libace.z.so
+    python query_db.py so --subsystem ArkUI
     python query_db.py stats --by domain
     python query_db.py --list-tables
 """
@@ -52,7 +53,7 @@ def _connect(db_path=None):
     if db_path is None:
         db_path = _default_db_path()
     if not os.path.exists(db_path):
-        return None, "db 不存在: {}（请先运行 data/init_db.py 或检查部署）".format(db_path)
+        return None, "db 不存在: {}（xts_rules.db 随包预置，请重新获取 Skill 包或检查部署路径）".format(db_path)
     try:
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
@@ -276,6 +277,7 @@ def main():
   python query_db.py contacts 元能力
   python query_db.py contacts --primary
   python query_db.py so libace.z.so
+  python query_db.py so --subsystem ArkUI
   python query_db.py commands 日志管理
   python query_db.py stats --by domain
   python query_db.py --list-tables
@@ -296,7 +298,7 @@ def main():
     p_ct.add_argument("--primary", action="store_true")
 
     p_so = sub.add_parser("so", help="查 so_mapping 表")
-    p_so.add_argument("so_name")
+    p_so.add_argument("so_name", nargs="?")
     p_so.add_argument("--subsystem")
 
     p_cmd = sub.add_parser("commands", help="查 commands 表")

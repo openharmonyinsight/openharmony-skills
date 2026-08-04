@@ -306,9 +306,9 @@ grep -E "^#0[0-9] pc " appfreeze-*.log
 
 ```bash
 # 查询冻屏相关规则
-python3 scripts/query_db.py rules THREAD_BLOCK
-python3 scripts/query_db.py rules freeze
-python3 scripts/query_db.py rules block
+python3 scripts/query_db.py rules --keyword THREAD_BLOCK
+python3 scripts/query_db.py rules --keyword freeze
+python3 scripts/query_db.py rules --keyword block
 ```
 
 ---

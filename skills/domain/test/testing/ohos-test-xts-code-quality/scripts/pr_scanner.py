@@ -173,34 +173,39 @@ class PRScanner:
 
     def _http_get_json(self, url):
         if HAS_REQUESTS:
-            resp = requests.get(url, params={"access_token": self.token}, timeout=30)
+            resp = requests.get(url, headers=self._auth_headers(), timeout=30)
             resp.raise_for_status()
             return resp.json()
         else:
-            sep = "&" if "?" in url else "?"
-            full_url = f"{url}{sep}access_token={self.token}"
-            req = urllib.request.Request(full_url)
+            req = urllib.request.Request(url, headers=self._auth_headers())
             with urllib.request.urlopen(req, timeout=30) as resp:
                 return json.loads(resp.read().decode('utf-8'))
 
     def _http_get_text(self, url):
         if HAS_REQUESTS:
-            resp = requests.get(url, params={"access_token": self.token}, timeout=30)
+            resp = requests.get(url, headers=self._auth_headers(), timeout=30)
             resp.raise_for_status()
             return resp.text
         else:
-            sep = "&" if "?" in url else "?"
-            full_url = f"{url}{sep}access_token={self.token}"
-            req = urllib.request.Request(full_url)
+            req = urllib.request.Request(url, headers=self._auth_headers())
             with urllib.request.urlopen(req, timeout=30) as resp:
                 return resp.read().decode('utf-8')
 
+    def _auth_headers(self):
+        """返回认证 headers（使用 Authorization Bearer 而非 query 参数，
+        防止 token 泄漏到代理/服务端/诊断日志）"""
+        if self.token:
+            return {"Authorization": f"Bearer {self.token}"}
+        return {}
+
     @staticmethod
     def parse_pr_url(pr_url):
-        match = re.search(r"gitcode\.com/([^/]+)/([^/]+)/pulls?/(\d+)", pr_url)
+        # 支持 GitCode 的 /pull/、/pulls/ 和 /merge_requests/ 三种 URL 格式
+        match = re.search(r"gitcode\.com/([^/]+)/([^/]+)/(?:pulls?|merge_requests)/(\d+)", pr_url)
         if not match:
             raise ValueError(f"Invalid GitCode PR URL format: {pr_url}\n"
-                             f"Expected: https://gitcode.com/{{owner}}/{{repo}}/pulls/{{id}}")
+                             f"Expected: https://gitcode.com/{{owner}}/{{repo}}/pulls/{{id}}"
+                             f" or https://gitcode.com/{{owner}}/{{repo}}/merge_requests/{{id}}")
         return {"owner": match.group(1), "repo": match.group(2), "pr_id": match.group(3)}
 
     def get_pr_details(self, owner, repo, pr_id):
@@ -547,13 +552,16 @@ def deduplicate_issues(issues, existing_comments, diff_context=None):
         return issues
 
     reported = set()
-    reported_rules_in_pr = set()
 
     for comment in existing_comments:
         path = comment.get('path', '')
         line = comment.get('line')
         body = comment.get('body', '')
 
+        # 仅按 (file, line, rule) 精确匹配去重，
+        # 不再使用 '*' 通配符（会误拦同一行的其他规则问题）
+        # 也不再从 PR 普通评论中提取规则 ID 做全 PR 过滤
+        # （会导致一条评论提到 R001 后所有 R001 问题被过滤）
         if comment.get('type') == 'diff_comment' and path and line is not None:
             try:
                 line_int = int(line)
@@ -562,11 +570,6 @@ def deduplicate_issues(issues, existing_comments, diff_context=None):
             rule_match = re.search(r'\b(R\d{3}|C\d{3}|R\d{3}_\w+)\b', body)
             if rule_match:
                 reported.add((path, line_int, rule_match.group(1)))
-            reported.add((path, line_int, '*'))
-
-        if comment.get('type') == 'pr_comment':
-            for m in re.finditer(r'\b(R\d{3}|C\d{3}|R\d{3}_\w+)\b', body):
-                reported_rules_in_pr.add(m.group(1))
 
     new_issues = []
     for issue in issues:
@@ -574,17 +577,17 @@ def deduplicate_issues(issues, existing_comments, diff_context=None):
         line = issue.get('line', 0)
         rule = issue.get('rule', '')
 
+        # 变更行过滤：仅扫描 PR 新增行（new_added_lines），
+        # 不使用 commentable_lines（包含上下文行，会导致误报）
         if diff_context:
             ctx = diff_context.get(file_path)
-            if ctx and ctx.get('commentable_lines'):
-                if line not in ctx['commentable_lines']:
+            if ctx:
+                new_added = ctx.get('new_added_lines')
+                if new_added and line not in new_added:
                     continue
 
+        # 精确匹配去重：同一文件同一行同一规则已报告才跳过
         if (file_path, line, rule) in reported:
-            continue
-        if (file_path, line, '*') in reported:
-            continue
-        if rule in reported_rules_in_pr:
             continue
 
         new_issues.append(issue)

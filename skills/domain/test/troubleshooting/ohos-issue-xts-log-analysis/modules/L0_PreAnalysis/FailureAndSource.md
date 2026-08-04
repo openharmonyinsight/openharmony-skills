@@ -1,6 +1,6 @@
 # L0_PreAnalysis - 锁定失败用例与源码定位（Step 2-2.5.6）
 
-> 流程总览见 [SKILL.md](../../SKILL.md)。约束见 [constraints.md](../../references/constraints.md)。源码手动回退见 [source-location.md](../../references/source-location.md)。
+> 流程总览见 [SKILL.md](../../SKILL.md)。约束见 [evidence-chain-constraints.md](../../references/evidence-chain-constraints.md)。源码手动回退见 [source-location.md](../../references/source-location.md)。
 >
 > **流程B（形态④）**：Step 2（锁定失败用例）跳过（改为用户提供用例名）；**Step 2.5（源码定位）和 Step 2.5.6（import提取）与流程A完全相同，必须执行**（用户提供路径/用例名作为输入，脚本仍定位文件、仍提取import→domain，否则Step 5无domain可过滤）。
 ---
@@ -263,7 +263,7 @@ python3 scripts/explore_import_chain.py <源码文件> --max-depth 3
 **后续衔接**：
 - 步骤A的输出是后续 domain 查询和证据链生成的基础
 - 步骤B的 domain 查询结果作为 Step 5 分层过滤的 `<domain正则>` 输入
-- 禁止跳过步骤A直接进入分层过滤（详见 [AI行为约束](../../references/constraints.md)）
+- 禁止跳过步骤A直接进入分层过滤（详见 [AI行为约束](../../references/evidence-chain-constraints.md)）
 
 **禁止事项**：
 - ❌ 禁止跳过此步骤直接进入 Step 5 分层过滤

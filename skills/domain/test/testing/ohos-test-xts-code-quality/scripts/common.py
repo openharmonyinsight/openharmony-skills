@@ -488,12 +488,20 @@ def get_rule_category(rule_id):
     return RULE_CATEGORIES.get(rule_id, '编码规范合规')
 
 def sanitize_text(text):
-    """清洗文本中的无效字符"""
+    """清洗文本中的无效字符 + 防止 Excel 公式注入
+
+    1. 移除控制字符（ASCII 0-31，除了换行符10和制表符9）
+    2. 防止 Excel 公式注入：以 = + - @ 开头的单元格会被 Excel 解释为公式，
+       恶意 PR 内容（源码片段、修复建议等）可利用此执行任意公式。
+       对策：在这些前导字符前加单引号前缀，使 Excel 视为纯文本。
+    """
     if not text:
         return ''
-    # 移除控制字符（ASCII 0-31，除了换行符10和制表符9）
     import re
     cleaned = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', str(text))
+    # Excel 公式注入防护：以 = + - @ 开头时加前导单引号
+    if cleaned and cleaned[0] in ('=', '+', '-', '@'):
+        cleaned = "'" + cleaned
     return cleaned
 
 def write_excel_with_bom(filepath, wb):
@@ -1213,6 +1221,10 @@ def generate_html_report(all_issues, report_dir, rules_info, rule_counts, scan_m
     }
     
     data_json = json.dumps(embedded_data, ensure_ascii=False, indent=2)
+    # 防止存储型 XSS：转义 </script> 标签，防止 JSON 数据中的 </script>
+    # 破坏 <script> 标签边界并注入恶意脚本
+    data_json = data_json.replace('</', '<\\/')
+    data_json = data_json.replace('<', '\\u003c')
     final_html = template_html.replace('__DATA_PLACEHOLDER__', data_json)
     
     html_path = os.path.join(report_dir, 'XTS_代码质量检查报告.html')

@@ -16,6 +16,7 @@
 
 import concurrent.futures
 import glob
+import hashlib
 import json
 import os
 import subprocess
@@ -149,8 +150,25 @@ def find_dict_file(log_dir):
     
     return None
 
-def check_decrypt_cache(output_dir):
-    """检查解密缓存"""
+def _file_hash(filepath):
+    """计算文件 SHA-256 哈希（用于缓存失效检测）。"""
+    try:
+        h = hashlib.sha256()
+        with open(filepath, 'rb') as f:
+            for chunk in iter(lambda: f.read(8192), b''):
+                h.update(chunk)
+        return h.hexdigest()
+    except Exception:
+        return None
+
+def check_decrypt_cache(output_dir, gz_files=None, dict_file=None):
+    """检查解密缓存（避免重复解密）
+
+    缓存命中条件（全部满足才跳过解密）：
+    1. 状态文件存在且 decrypted=True
+    2. success_files == total_files（所有文件都成功解密）
+    3. 输入文件哈希匹配（若状态文件中记录了哈希）
+    """
     state_file = os.path.join(output_dir, DECRYPT_STATE_FILE)
     
     if not os.path.exists(state_file):
@@ -160,12 +178,48 @@ def check_decrypt_cache(output_dir):
         with open(state_file, 'r', encoding='utf-8') as f:
             state = json.load(f)
         
-        if state.get("decrypted", False):
-            return state
+        if not state.get("decrypted", False):
+            return None
+
+        # 验证 success_files == total_files
+        total = state.get("total_files", 0)
+        success = state.get("success_files", 0)
+        if success != total or success == 0:
+            return None
+
+        # 验证输出文件仍然存在且非空
+        for entry in state.get("decrypted_files", []):
+            output_file = os.path.join(output_dir, entry.get("output", ""))
+            if not os.path.exists(output_file) or os.path.getsize(output_file) == 0:
+                return None
+
+        # 验证输入文件哈希（如果提供了 gz_files 和 dict_file）
+        if gz_files and dict_file:
+            stored_input_hash = state.get("input_hash", "")
+            current_input_hash = _compute_input_hash(gz_files, dict_file)
+            if stored_input_hash and current_input_hash and stored_input_hash != current_input_hash:
+                return None  # 输入文件已变化，缓存失效
+
+        return state
     except Exception as e:
         print(f"⚠️  缓存文件读取失败: {e}")
     
     return None
+
+def _compute_input_hash(gz_files, dict_file):
+    """计算输入文件（gz + dict）的组合哈希。"""
+    try:
+        h = hashlib.sha256()
+        for gz in sorted(gz_files):
+            fh = _file_hash(gz)
+            if fh:
+                h.update(fh.encode())
+        dh = _file_hash(dict_file)
+        if dh:
+            h.update(dh.encode())
+        return h.hexdigest()
+    except Exception:
+        return None
 
 def decrypt_single_file(gz_file, output_dir, dict_file, hilogtool_path):
     """解密单个hilog.gz文件"""
@@ -238,7 +292,11 @@ def verify_decrypted_file(output_file):
         return False, str(e)
 
 def generate_decrypt_state(output_dir, gz_files, dict_file, parallel=True):
-    """生成解密状态文件"""
+    """生成解密状态文件
+
+    decrypted=True 仅当所有 gz 文件都有有效输出（非空 .txt）。
+    否则 decrypted=False，下次运行不会 cache_hit。
+    """
     state_file = os.path.join(output_dir, DECRYPT_STATE_FILE)
     
     decrypted_files = []
@@ -257,16 +315,29 @@ def generate_decrypt_state(output_dir, gz_files, dict_file, parallel=True):
                 "info": info,
                 "size": f"{size/1024/1024:.2f}MB"
             })
+        else:
+            decrypted_files.append({
+                "file": basename,
+                "output": basename.replace('.gz', '.txt'),
+                "valid": False,
+                "info": "输出文件不存在",
+                "size": "0.00MB"
+            })
+    
+    total_files = len(gz_files)
+    success_files = sum(1 for f in decrypted_files if f["valid"])
+    all_success = success_files == total_files and total_files > 0
     
     state = {
         "log_dir": os.path.dirname(output_dir[:-7] if output_dir.endswith('_parsed') else output_dir),
         "output_dir": output_dir,
         "dict_location": dict_file,
-        "decrypted": True,
+        "decrypted": all_success,
         "parallel": parallel,
         "decrypted_files": decrypted_files,
-        "total_files": len(gz_files),
-        "success_files": sum(1 for f in decrypted_files if f["valid"]),
+        "total_files": total_files,
+        "success_files": success_files,
+        "input_hash": _compute_input_hash(gz_files, dict_file) if dict_file else None,
         "decrypted_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
     
@@ -275,31 +346,38 @@ def generate_decrypt_state(output_dir, gz_files, dict_file, parallel=True):
     
     return state
 
-def verify_dict_location():
-    """验证dict位置，防止dict被放在skill目录"""
+def verify_dict_location(clean=False):
+    """验证dict位置，防止dict被放在skill目录
+
+    默认仅警告，不删除。需显式 --clean 参数才执行删除，
+    防止用户误将 dict 放在 skill 目录后被静默删除。
+    """
     skill_dict_dir = os.path.join(SKILL_DIR, "dict")
     
     if os.path.exists(skill_dict_dir):
         print("\n⚠️  警告：检测到skill目录下有dict文件！")
         print(f"   位置: {skill_dict_dir}")
         print("   原因：执行hilogtool时可能使用了cd命令（错误做法）")
-        print("   清理中...")
         
-        import shutil
-        try:
-            shutil.rmtree(skill_dict_dir)
-            print("   ✅ 已自动清理")
-        except Exception as e:
-            print(f"   ❌ 清理失败: {e}")
-            print("   请手动清理：")
-            import platform as _pf
-            if _pf.system() == "Windows":
-                print(f'   cmd:        rmdir /s /q "{skill_dict_dir}"')
-                print(f'   PowerShell: Remove-Item -Recurse -Force "{skill_dict_dir}"')
-            else:
-                print(f'   rm -rf "{skill_dict_dir}"')
+        if clean:
+            print("   --clean 已指定，正在清理...")
+            import shutil
+            try:
+                shutil.rmtree(skill_dict_dir)
+                print("   ✅ 已自动清理")
+            except Exception as e:
+                print(f"   ❌ 清理失败: {e}")
+                print("   请手动清理：")
+                import platform as _pf
+                if _pf.system() == "Windows":
+                    print(f'   cmd:        rmdir /s /q "{skill_dict_dir}"')
+                    print(f'   PowerShell: Remove-Item -Recurse -Force "{skill_dict_dir}"')
+                else:
+                    print(f'   rm -rf "{skill_dict_dir}"')
+        else:
+            print("   未执行删除（需 --clean 参数确认）。请手动移出 dict 后重试。")
 
-def parallel_decrypt(log_dir, output_dir=None, dict_file=None, hilogtool_path=None, max_workers=4):
+def parallel_decrypt(log_dir, output_dir=None, dict_file=None, hilogtool_path=None, max_workers=4, clean=False):
     """并行解密多个hilog.gz文件"""
     
     # 查找hilog.gz文件
@@ -315,8 +393,12 @@ def parallel_decrypt(log_dir, output_dir=None, dict_file=None, hilogtool_path=No
     if output_dir is None:
         output_dir = f"{log_dir}_parsed"
     
-    # 检查缓存
-    cache = check_decrypt_cache(output_dir)
+    # 查找dict文件（缓存检查需要）
+    if dict_file is None:
+        dict_file = find_dict_file(log_dir)
+    
+    # 检查缓存（传入 gz_files + dict_file 做哈希验证）
+    cache = check_decrypt_cache(output_dir, gz_files, dict_file)
     if cache:
         print("✅ 检测到解密缓存，跳过解密")
         print(f"   缓存时间: {cache.get('decrypted_time', 'N/A')}")
@@ -325,10 +407,6 @@ def parallel_decrypt(log_dir, output_dir=None, dict_file=None, hilogtool_path=No
     
     # 创建输出目录
     os.makedirs(output_dir, exist_ok=True)
-    
-    # 查找dict文件
-    if dict_file is None:
-        dict_file = find_dict_file(log_dir)
     
     if not dict_file:
         print("❌ 未找到dict文件")
@@ -398,38 +476,42 @@ def parallel_decrypt(log_dir, output_dir=None, dict_file=None, hilogtool_path=No
     state = generate_decrypt_state(output_dir, gz_files, dict_file, parallel=True)
     print(f"\n📄 解密状态文件: {os.path.join(output_dir, DECRYPT_STATE_FILE)}")
     
-    # 验证dict位置（防止dict被放在skill目录）
-    verify_dict_location()
+    # 验证dict位置（防止dict被放在skill目录，需 --clean 才删除）
+    verify_dict_location(clean=clean)
     
     return failed == 0
 
 def main():
     """主函数"""
     if len(sys.argv) < 2:
-        print("用法: python3 parallel_decrypt.py <日志目录> [输出目录] [dict文件] [线程数] [hilogtool路径]")
+        print("用法: python3 parallel_decrypt.py <日志目录> [输出目录] [dict文件] [线程数] [hilogtool路径] [--clean]")
         print("\n功能：")
         print("  - 并行解密多个hilog.gz文件（提升10倍效率）")
-        print("  - 自动检查缓存（避免重复解密）")
-        print("  - 验证解密结果（确保解密成功）")
+        print("  - 自动检查缓存（避免重复解密，含输入哈希验证）")
+        print("  - 验证解密结果（确保解密成功，失败不写缓存）")
         print("  - 跨平台：Windows原生运行exe，Linux用wine64")
+        print("  - --clean: 确认清理 skill 目录下误放的 dict 文件")
         print("\n示例:")
         print("  python3 parallel_decrypt.py /path/to/hilog_FMR0123417000740")
         print("  python3 parallel_decrypt.py /path/to/logs /path/to/output 4")
         print("  python3 parallel_decrypt.py D:\\logs\\hilog D:\\logs\\hilog_parsed")
-        print("  python3 parallel_decrypt.py D:\\logs\\hilog D:\\out D:\\dict.zip 4 D:\\hilogtool.exe")
+        print("  python3 parallel_decrypt.py D:\\logs\\hilog D:\\out D:\\dict.zip 4 D:\\hilogtool.exe --clean")
         sys.exit(1)
     
-    log_dir = sys.argv[1]
-    output_dir = sys.argv[2] if len(sys.argv) > 2 else None
-    dict_file = sys.argv[3] if len(sys.argv) > 3 else None
-    max_workers = int(sys.argv[4]) if len(sys.argv) > 4 else 4
-    hilogtool_path = sys.argv[5] if len(sys.argv) > 5 else None
+    clean = '--clean' in sys.argv
+    args = [a for a in sys.argv[1:] if a != '--clean']
+    
+    log_dir = args[0]
+    output_dir = args[1] if len(args) > 1 else None
+    dict_file = args[2] if len(args) > 2 else None
+    max_workers = int(args[3]) if len(args) > 3 else 4
+    hilogtool_path = args[4] if len(args) > 4 else None
     
     if not os.path.exists(log_dir):
         print(f"❌ 日志目录不存在: {log_dir}")
         sys.exit(1)
     
-    success = parallel_decrypt(log_dir, output_dir, dict_file, hilogtool_path=hilogtool_path, max_workers=max_workers)
+    success = parallel_decrypt(log_dir, output_dir, dict_file, hilogtool_path=hilogtool_path, max_workers=max_workers, clean=clean)
     
     sys.exit(0 if success else 1)
 

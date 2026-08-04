@@ -40,6 +40,23 @@ def _find(log_dir, patterns, recursive=True):
     return uniq
 
 
+def _find_parsed_dirs(log_dir):
+    """查找解密输出目录（parallel_decrypt 默认输出到同级 <log_dir>_parsed/）。
+
+    覆盖两种命名：
+      - <log_dir>_parsed/  （parallel_decrypt.py 默认输出）
+      - <log_dir>/_parsed/  （某些解密工具输出到子目录）
+    """
+    parsed_dirs = []
+    candidate = f"{log_dir}_parsed"
+    if os.path.isdir(candidate):
+        parsed_dirs.append(candidate)
+    sub_candidate = os.path.join(log_dir, '_parsed')
+    if os.path.isdir(sub_candidate):
+        parsed_dirs.append(sub_candidate)
+    return parsed_dirs
+
+
 def run_gate(log_dir):
     if not os.path.isdir(log_dir):
         print(f"❌ 日志目录不存在: {log_dir}")
@@ -56,13 +73,19 @@ def run_gate(log_dir):
         return 0
 
     # 有加密日志 → 必须有解密产物
-    parsed_txt = _find(log_dir, ['*.txt'])  # *_parsed/*.txt
-    parsed_txt = [f for f in parsed_txt if '_parsed' in f or f.endswith('.txt')]
-    decrypt_state = _find(log_dir, ['.decrypt_state.json'])
+    # 解密产物在同级 <log_dir>_parsed/ 目录（parallel_decrypt 默认输出位置），
+    # 也可能在 log_dir 本身或 log_dir/_parsed/ 子目录
+    search_dirs = [log_dir] + _find_parsed_dirs(log_dir)
+    all_txt = []
+    for d in search_dirs:
+        all_txt += _find(d, ['*.txt'])
+    decrypt_state = []
+    for d in search_dirs:
+        decrypt_state += _find(d, ['.decrypt_state.json'])
 
     has_parsed_output = any(
         os.path.basename(f).startswith('hilog') and f.endswith('.txt')
-        for f in _find(log_dir, ['*.txt'])
+        for f in all_txt
     )
 
     if (not has_parsed_output) and (not decrypt_state):
@@ -73,7 +96,9 @@ def run_gate(log_dir):
         print("=" * 70)
         print(f"日志目录: {log_dir}")
         print(f"加密 hilog: {len(hilog_gz)} 个")
-        print(f"解密产物(*_parsed/*.txt): {'无' if not has_parsed_output else '有'}")
+        parsed_dirs = _find_parsed_dirs(log_dir)
+        print(f"解密产物(*_parsed/*.txt): {'无' if not has_parsed_output else '有'}"
+              + (f" (搜索目录: {', '.join(parsed_dirs)})" if parsed_dirs else " (未找到 _parsed 目录)"))
         print(f"decrypt_state: {'无' if not decrypt_state else '有'}")
         print()
         print("⚠️  解密硬门禁：含 hilog.*.gz 且未解密 → 禁止生成含")
@@ -94,7 +119,7 @@ def run_gate(log_dir):
 
     print("✅ preflight 通过：发现 hilog.*.gz 且已解密（有 _parsed/*.txt 或 decrypt_state）")
     print("ℹ️  取数铁律：filter_hilog.py 若返回 0 条结果，必须 debug（查正则/格式）或写「未提取到」，")
-    print("    禁止改用文字描述或编造日志行（详见 AI_CONSTRAINTS 空结果处置铁律）")
+    print("    禁止改用文字描述或编造日志行")
     return 0
 
 

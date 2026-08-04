@@ -67,11 +67,12 @@
         "test_cases/subsystem_demo/oh-package.json5",
         "test_cases/subsystem_demo/BUILD.gn",
         "test_cases/subsystem_demo/dup_testsuite.test.ts",
+        "test_cases/subsystem_demo/compliance.test.ts",
         "test_cases/subsystem_demo/pages/pageA.ets",
         "test_cases/subsystem_demo/pages/pageB.ets",
         "test_cases/subsystem_demo/signature/entry_default.p7b"
       ],
-      "expected_output": "应检出9条规则：R007(Test.json禁止配置)、R010(part/subsystem不匹配)、R011(testsuite重复)、R012(p7b APL等级)、R014(HAP命名)、R017(syscap多能力)、R019(.key重复)、R020(.id重复)、R021(hypium版本过低)",
+      "expected_output": "应检出9条规则：R007(Test.json禁止配置)、R010(part/subsystem不匹配)、R011(testsuite重复)、R012(p7b APL等级)、R014(HAP命名)、R017(syscap多能力)、R019(.key重复)、R020(.id重复)、R021(hypium版本过低)。注：compliance.test.ts提供R011跨文件重复检测上下文（dup_testsuite.test.ts的describe('ComplianceTest')与compliance.test.ts重复）",
       "assertions": [
         {"text": "检出R007 Test.json禁止配置项", "type": "contains"},
         {"text": "检出R010 part/subsystem不匹配", "type": "contains"},
@@ -115,8 +116,8 @@
       "id": 6,
       "name": "duplicate-rules-focus",
       "prompt": "检查这个OpenHarmony XTS测试文件与配置的重复类问题，仅列出重复相关规则及其编号",
-      "files": ["test_cases/subsystem_demo/dup_testsuite.test.ts", "test_cases/subsystem_demo/Test.json"],
-      "expected_output": "应检出4条重复类规则：R011(testsuite重复)、R018(testcase重复)、R019(.key重复)、R020(.id重复)",
+      "files": ["test_cases/subsystem_demo/dup_testsuite.test.ts", "test_cases/subsystem_demo/Test.json", "test_cases/subsystem_demo/compliance.test.ts", "test_cases/subsystem_demo/async_resource.test.ts", "test_cases/subsystem_demo/pages/pageA.ets", "test_cases/subsystem_demo/pages/pageB.ets"],
+      "expected_output": "应检出4条重复类规则：R011(testsuite重复)、R018(testcase重复)、R019(.key重复)、R020(.id重复)。注：compliance.test.ts提供R011上下文（describe('ComplianceTest')与dup_testsuite.test.ts重复）；async_resource.test.ts提供R018上下文（两个同名it('SUB_demo_R018_dupCase_0100')）；pageA.ets+pageB.ets提供R019/R020上下文（.key/.id跨文件重复）",
       "assertions": [
         {"text": "检出R011 testsuite重复", "type": "contains"},
         {"text": "检出R018 testcase重复", "type": "contains"},

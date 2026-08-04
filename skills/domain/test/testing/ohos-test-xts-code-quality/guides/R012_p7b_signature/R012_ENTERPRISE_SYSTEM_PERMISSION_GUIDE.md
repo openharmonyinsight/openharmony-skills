@@ -339,6 +339,6 @@ vim profile.json
 ## 相关文档
 
 - [R012修复指南](./R012_FIX_GUIDE.md)
-- [R012修复总结](./R012_FIX_SUMMARY.md)
+- [R012修复指南](./R012_FIX_GUIDE.md)
 - [R012修复脚本设计文档](./R012_FIX_SCRIPT_DESIGN.md)
 - [R012未知权限处理指南](./R012_UNKNOWN_PERMISSION_GUIDE.md)

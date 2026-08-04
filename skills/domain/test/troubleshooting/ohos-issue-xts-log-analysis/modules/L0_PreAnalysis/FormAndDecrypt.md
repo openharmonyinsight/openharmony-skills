@@ -1,6 +1,6 @@
 # L0_PreAnalysis - 形态识别与解密（Step 1-1.5）
 
-> 适用形态①②③。形态④见 [Form4_Limited.md](./Form4_Limited.md)。流程总览见 [SKILL.md](../../SKILL.md)。约束见 [constraints.md](../../references/constraints.md)。
+> 适用形态①②③。形态④见 [Form4_Limited.md](./Form4_Limited.md)。流程总览见 [SKILL.md](../../SKILL.md)。约束见 [report-constraints.md](../../references/report-constraints.md)。
 
 ---
 

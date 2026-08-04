@@ -258,9 +258,9 @@ python3 xts_quality_check.py arkui --rules R011,R018
 
 ## 相关文档
 
-- [BUILD.gn文件结构](../../references/BUILD_GN_STRUCTURE.md)
-- [XTS工程组织规范](../../references/XTS_PROJECT_ORGANIZATION.md)
-- [R011规则详细说明](../../rules/R011/SKILL.md)
+- [BUILD.gn文件结构](../../references/RULES_COMPLIANCE.md)
+- [XTS工程组织规范](../../references/RULES_COMPLIANCE.md)
+- [R011规则详细说明](../../references/RULES_COMPLIANCE.md)
 
 ## 更新记录
 

@@ -71,6 +71,6 @@ ls -la <日志目录>
 **无 [Hypium] 标记时的降级**：
 - 提示用户提供时间窗
 - 或提示用户尝试其他定位方法
-- appfreeze 场景主线程冻结、[Hypium] 可能未写入 → 见 [constraints 规则1b](../../references/constraints.md) 的回退顺序
+- appfreeze 场景主线程冻结、[Hypium] 可能未写入 → 见 [report-constraints 规则1b](../../references/report-constraints.md) 的回退顺序
 
 ---

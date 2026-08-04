@@ -7,16 +7,16 @@ metadata:
   stage: troubleshooting
   domain: xts
   capability: log-analysis
-  version: 0.1.0
-  status: stable
+  version: 0.2.0
+  status: beta
   tags:
     - xts
     - log-analysis
     - troubleshooting
     - domain-tracing
   related-skills:
-    - ohos-issue-crash-log-analysis
-    - ohos-test-xts-generation
+    - ohos-issue-graphics-cppcrash-analysis
+    - ohos-issue-graphics-sysfreeze-analysis
 ---
 
 # ohos-issue-xts-log-analysis
@@ -130,22 +130,22 @@ Step 1 形态识别        → modules/L0_PreAnalysis/FormAndDecrypt.md（流程
 Step 1.5 解密          → modules/L0_PreAnalysis/FormAndDecrypt.md（A+B共享）
 Step 2 锁定失败用例    → modules/L0_PreAnalysis/FailureAndSource.md（仅流程A；流程B跳过，用户提供用例名）
 Step 2.5 源码定位      → modules/L0_PreAnalysis/FailureAndSource.md + references/source-location.md（A+B共享）
-Step 2.5.6 import提取  → references/constraints.md（六、证据链生成流程）（A+B共享，必须）
+Step 2.5.6 import提取  → references/evidence-chain-constraints.md（证据链生成流程）（A+B共享，必须）
 Step 2.7 崩溃/冻结检测 → modules/L0_PreAnalysis/CrashFreezeDetect.md（检测命令）→ 按结果加载：
                           modules/L0_PreAnalysis/CrashAnalysis.md（崩溃）/ FreezeAnalysis.md（冻屏）（A+B共享）
 Step 3 执行状态分析    → references/shell-chain.md（仅流程A；流程B跳过，无module_run.log）
 Step 4 提取时间窗      → modules/L0_PreAnalysis/ExecutionAndTimeWindow.md（含形态④变体）+ references/time-window.md
 Step 5 分层过滤        → modules/L1_Filter/LayeredFilter.md（A+B共享）
 Step 6 生成报告        → modules/L2_Report/ReportGeneration.md（A+B共享）+ ReportStructure.md（格式）
-  生成前自检           → references/constraints.md 三b节（P1-P8清单）
+  生成前自检           → references/report-constraints.md 三b节（P1-P8清单）
 ```
 
 > 每步只加载对应文件，不要一次性加载全部引用。
 
 ### ⚠️ 强制流程（证据链追溯）— 禁止跳过
-> 完整约束：[references/constraints.md](./references/constraints.md)（证据链+通用禁止+报告数据真实性+自检清单，单一权威定义）
+> 完整约束：[evidence-chain-constraints.md](./references/evidence-chain-constraints.md)（证据链生成）+ [report-constraints.md](./references/report-constraints.md)（数据真实性+自检+校验+多根因）
 > 
-> **加载时机**：Step 2.5.6（import提取）时加载 constraints.md 六节（证据链）；Step 6（报告生成）时加载 constraints.md 二~三b节（数据真实性+自检清单）。**不要在 Step 1 形态识别阶段加载约束文件**。
+> **加载时机**：Step 2.5.6（import提取）时加载 evidence-chain-constraints.md（证据链）；Step 6（报告生成）时加载 report-constraints.md（二~三b节，数据真实性+自检清单）。**不要在 Step 1 形态识别阶段加载约束文件**。
 
 **核心禁止**（违规→报告无效）：禁止猜测import/模块名/domain；禁止猜测日志内容/XXX占位符；禁止省略分层标记[主]/[P1]/[P2]/[P3]；禁止混淆测试框架与被测API；禁止跳过内部模块探索（≤3层）。
 
@@ -178,7 +178,7 @@ Step 6 生成报告        → modules/L2_Report/ReportGeneration.md（A+B共享
 | filter_hilog.py | 全平台分层过滤+Hypium时间窗提取（Linux/Windows必用，统一[主]/[P1]/[P2]/[P3]标记） |
 | validate_report.py | 报告结构校验（2章节/6段落/BLOCKED计数/appfreeze/分层统计/取数真实性/崩溃时间线，生成后必跑，硬门禁） |
 | query_db.py | 定界规则/责任人/SO库归属查询 |
-| analyze_crash_stack.py | SO 崩溃栈快速分析（可选，调 query_db.so_mapping） |
+| analyze_crash_stack.py | SO 崩溃栈分析（解析 cppcrash-*.log 文件/目录/stdin，提取 #NN pc 栈帧→查 so_mapping 定界） |
 
 > AI主导判断，脚本辅助。
 
@@ -187,7 +187,7 @@ Step 6 生成报告        → modules/L2_Report/ReportGeneration.md（A+B共享
 >
 > ⚠️ **生成报告前必须加载以下文件（缺一不可，未加载则章节结构必错）**：
 > 1. [modules/L2_Report/ReportGeneration.md](./modules/L2_Report/ReportGeneration.md) — 完整格式规范 + 报告生成流程 + 标准段落结构
-> 2. [references/constraints.md](./references/constraints.md) 三b节 — P1-P8 自检清单
+> 2. [references/report-constraints.md](./references/report-constraints.md) 三b节 — P1-P8 自检清单
 >
 > **加载时机**：Step 6（报告生成）时加载。**不要在 Step 1-5 分析阶段加载 ReportGeneration.md**（分析阶段只需 SKILL.md + 对应流程模块）。
 
@@ -198,7 +198,7 @@ Step 6 生成报告        → modules/L2_Report/ReportGeneration.md（A+B共享
 - **必须含**：所在日志(hilog)、起始行号、结束行号；分层统计 主:N行|P1:X|P2:Y|P3:Z + [主]/[P1]/[P2]/[P3] 标记
 - **禁止简化**：第2-14个用例也需完整表格（基本信息+时间窗提取必填）；禁止用文字替代表格
 - **BLOCKED分类**：类型A异常触发用例（完整6段，与FAILED同）；类型B级联阻塞（汇总，不逐条）；崩溃为根因时1.1节放崩溃分析（真实调用栈+时间线，禁XXX占位符，BLOCKED须含套件内missed完整统计）
-- **数据真实性6规则**（详见 [references/constraints.md](./references/constraints.md)）：①时间窗起<止 ②消耗时间grep真实值 ③禁XXX占位符 ④崩溃真实调用栈 ⑤BLOCKED完整统计 ⑥解密硬门禁
+- **数据真实性7规则**（详见 [references/report-constraints.md](./references/report-constraints.md)）：①时间窗起<止 ②消耗时间grep真实值 ③禁XXX占位符 ④崩溃真实调用栈 ⑤BLOCKED完整统计 ⑥解密硬门禁 ⑦空结果禁伪造
 
 ## 全平台取数（强制，2026-07-14改进）
 Linux/Windows 均必须用 Python 脚本取数（统一 [主]/[P1]/[P2]/[P3] 标记格式，grep 无法生成标记），禁止退化为"推测/约N行"：
@@ -210,7 +210,7 @@ python3 scripts/filter_hilog.py -i <hilog> -d <domain> --time-start <t> --time-e
 # 报告结构校验（生成后必跑）
 python3 scripts/validate_report.py <报告.md> <module_run.log> <crash_log目录>
 ```
-> 取不到精确值如实写"未提取到"，禁止"XXX（推测）"/"约N行"。详细约束见 [references/constraints.md](./references/constraints.md)。
+> 取不到精确值如实写"未提取到"，禁止"XXX（推测）"/"约N行"。详细约束见 [references/report-constraints.md](./references/report-constraints.md)。
 >
 > ⚠️ **Windows 桩程序环境取数（2026-07-15）**：上述 `python3 scripts/xxx.py` 在 Windows 上若 `python3` 是 Microsoft Store 桩程序会**静默退出零输出**（filter_hilog 无行号、preflight_gate 静默"通过"、validate_report 无校验 → 断安全链）。此时改用通用启动器：`cmd /c scripts\run.cmd filter_hilog -i <hilog> ...` / `run.cmd validate_report <报告> <mrl> <crash>` / `run.cmd preflight_gate <日志目录>`（探测桩程序，无真 Python 时**失败退出**而非静默成功）。Linux/macOS 无此问题，直接 `python3 scripts/xxx.py`。
 
@@ -227,12 +227,12 @@ python3 scripts/validate_report.py <报告.md> <module_run.log> <crash_log目录
 | 行号用~约数 | filter_hilog.py未执行或Python桩程序 | 强制：用.cmd启动器或filter_hilog.py |
 | 多根因未识别 | appfreeze误归因为崩溃导致 | 强制：cppcrash+appfreeze→分别提取栈→独立定界 |
 
-> 生成报告前对照 [constraints.md 三b节](./references/constraints.md) 自检清单逐项确认；生成后必跑 `validate_report.py`（校验10-13自动检查上述偏差）。
+> 生成报告前对照 [report-constraints.md 三b节](./references/report-constraints.md) 自检清单逐项确认；生成后必跑 `validate_report.py`（校验10-13自动检查上述偏差）。
 
 ## 故障排除
 - **Windows 下 `.py` 脚本零输出/无 `_parsed/`**（`python3` 是 Microsoft Store 桩程序）→ 用 `scripts\check_dict.cmd` / `scripts\parallel_decrypt.cmd` 启动器（自动绕过），见 [hilogtool-guide.md](./references/hilogtool-guide.md) "Windows Python 桩程序"小节
 - 解密问题（dict缺失/路径/hilogtool）→ [hilogtool-guide.md](./references/hilogtool-guide.md)
-- **wine 不可用** → `sudo apt-get install wine64`；应急可用 `strings hilog.000.gz | grep -E "Error|FAILED|Hypium"`（不完整，仅应急）
+- **wine 不可用** → `sudo apt-get install wine64`；应急可用 `hilogtool.exe` 原生解密后 `filter_hilog.py` 提取（**禁用 strings**，无法解析 GLS_BINARY 加密层）
 - **hilogtool 报错 std::out_of_range** → 原因：使用了 gunzip 解压后的文件。hilog.gz 包含两层（gzip+GLS_BINARY加密），**禁用 gunzip**，必须用 hilogtool 处理原始 .gz 文件
 - 源码/OH_ROOT → [config.md](./docs/config.md)
 - 数据库缺失 → 确认 skill 安装完整；关键字/SO库未匹配 → `python3 scripts/query_db.py rules --keyword "<关键字>"` / `so "<库名>"`
@@ -246,5 +246,6 @@ python3 scripts/validate_report.py <报告.md> <module_run.log> <crash_log目录
 
 ---
 
-**更新**：2026-07-30（重构：modules/ 分层目录化 L0_PreAnalysis/L1_Filter/L2_Report；L0_Standard 拆为7文件；L3_CrashFreeze 并入 L0 拆为 CrashAnalysis+FreezeAnalysis+CrashFreezeDetect；L2_Report 拆为 ReportGeneration+ReportStructure；docs/ 扁平化入 references/；Form4Limited→Form4_Limited 瘦身为流程B薄路由+步骤路由表；修复P7：流程B补2.5/2.5.6/2.7共享标注；新增Flow Coverage Map；ExecutionAndTimeWindow补形态④变体节）
+**更新**：2026-08-04（修复3个Critical Issue：①analyze_crash_stack.py 重写为接受 cppcrash 文件/目录/stdin 参数，提取 #NN pc 栈帧→查 so_mapping 定界，不再打印合成示例；②query_db.py rules 位置参数语法全部修正为 --keyword（CrashAnalysis/FreezeAnalysis/so-crash-analysis），so 子命令 so_name 改为可选支持 --subsystem 查询；③constraints.md(684行) 拆分为 evidence-chain-constraints.md(证据链生成，Step 2.5.6 加载) + report-constraints.md(数据真实性+自检+校验+多根因，Step 5-6 加载)，删除冗余的七节通用禁止事项(违规示例与六节重复)，全仓15处引用同步更新）
+**历史**：2026-07-30（重构：modules/ 分层目录化 L0_PreAnalysis/L1_Filter/L2_Report；L0_Standard 拆为7文件；L3_CrashFreeze 并入 L0 拆为 CrashAnalysis+FreezeAnalysis+CrashFreezeDetect；L2_Report 拆为 ReportGeneration+ReportStructure；docs/ 扁平化入 references/；Form4Limited→Form4_Limited 瘦身为流程B薄路由+步骤路由表；修复P7：流程B补2.5/2.5.6/2.7共享标注；新增Flow Coverage Map；ExecutionAndTimeWindow补形态④变体节）
 **设计理念**：文档驱动AI操作，AI主导判断，脚本辅助查询；SKILL.md 仅含触发+流程+关键命令+指针，细节在各 reference

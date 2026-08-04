@@ -1,6 +1,6 @@
 # L2_Report - 报告结构规范
 
-> 报告生成流程见 [ReportGeneration.md](./ReportGeneration.md)。约束见 [constraints.md](../../references/constraints.md)。
+> 报告生成流程见 [ReportGeneration.md](./ReportGeneration.md)。约束见 [report-constraints.md](../../references/report-constraints.md)。
 ---
 
 ## 报告格式规范

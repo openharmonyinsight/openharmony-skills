@@ -2,15 +2,16 @@
 """
 分层过滤脚本 - 用于精准过滤 hilog 日志
 
-⚠️ **定位说明**：此脚本为**可选工具**，AI可以选择使用此脚本，也可以自己用 grep 实现。
+⚠️ **定位说明**：此脚本为**全平台必用工具**，用于生成统一的 [主]/[P1]/[P2]/[P3] 分层标记。
+grep/sed 无法生成分层标记格式，因此 Linux/Windows 均必须使用此脚本。
 
-**设计理念**：AI主导判断，脚本辅助查询。AI可以选择使用此脚本实现分层过滤，也可以自己实现。
+**设计理念**：AI主导判断，脚本辅助查询。AI使用此脚本获取分层过滤结果和精确行号。
 
 **使用方式**：
-- AI选择使用此脚本：调用脚本获取分层过滤结果
-- AI选择自己实现：用 grep/sed 实现时间窗过滤、domain分组、渐进式扩展
+- 分层过滤：调用脚本获取 [主]/[P1]/[P2]/[P3] 标记的过滤结果
+- 时间窗提取：调用脚本 --extract-hypium 获取 [Hypium] 标记时间窗
 
-根据 IMPROVEMENT_PLAN.md 的 A-3 分层过滤模型设计实现：
+根据分层过滤模型设计实现：
 - Layer 1: 时间窗硬过滤
 - Layer 2: domain 分组（主分析集 + 备用集）
 - Layer 3: 渐进式扩展（PID/TID 优先 + 位置窗口兜底）
@@ -18,9 +19,7 @@
 
 ⭐ 新增功能：[Hypium]标记时间窗提取（替代module_run.log）
 
-输出分层切片（带来源标记 [主]、[P1]、[P2]、[P3]）+ 统计信息
-
-详细使用说明：见 docs/TOOLS.md
+ 输出分层切片（带来源标记 [主]、[P1]、[P2]、[P3]）+ 统计信息
 """
 
 import argparse
@@ -162,6 +161,7 @@ class HypiumMarkerExtractor:
         """
         time_windows = []
         testcase_start_map = {}  # testcase_name → HypiumTimeWindow
+        specdone_results = {}    # testcase_name → HypiumTimeWindow (已 specDone 但可被 [fail] 修正)
         
         for line in hilog_lines:
             if not line.message:
@@ -184,6 +184,7 @@ class HypiumMarkerExtractor:
             fail_match = cls.HYPIUM_FAIL_PATTERN.search(line.message)
             if fail_match:
                 testcase_name = fail_match.group(1) or fail_match.group(2)
+                # 先查 active map（正常流程）
                 if testcase_name in testcase_start_map:
                     tw = testcase_start_map[testcase_name]
                     tw.status = "Failed"
@@ -191,6 +192,13 @@ class HypiumMarkerExtractor:
                     tw.end_time = line.timestamp
                     tw.end_line = line.line_num
                     tw.end_marker = "fail"
+                # 再查已 specDone 的结果（[fail] 在 specDone 之后到达，
+                # 需修正之前误判为 Passed 的用例）
+                elif testcase_name in specdone_results:
+                    tw = specdone_results[testcase_name]
+                    tw.status = "Failed"
+                    tw.consuming_ms = int(fail_match.group(3)) if fail_match.group(3) else None
+                    tw.end_marker = "fail_corrected"
             
             # 检查[Hypium] specDone 精确结束标记（优先级①）
             specdone_match = cls.HYPIUM_SPECDONE_PATTERN.search(line.message)
@@ -203,8 +211,10 @@ class HypiumMarkerExtractor:
                     tw.end_marker = "specDone"
                     if tw.status != "Failed":
                         tw.status = "Passed"
-                    else:
-                        time_windows.append(tw)  # Failed 用例：精确结束，入结果
+                    # 无论 Passed 还是 Failed，都入结果
+                    time_windows.append(tw)
+                    # 同时记录到 specdone_results，允许后续 [fail] 修正
+                    specdone_results[testcase_name] = tw
                     del testcase_start_map[testcase_name]
             
             # 检查[Hypium]pass标记（旧版格式，无 specDone 时作成功结束）
@@ -218,6 +228,7 @@ class HypiumMarkerExtractor:
                     tw.end_marker = "pass"
                     if tw.status != "Failed":
                         tw.status = "Passed"
+                    time_windows.append(tw)
                     del testcase_start_map[testcase_name]
         
         # 处理未结束的用例
@@ -697,8 +708,9 @@ def main():
                 else:
                     print(f"  结束: 未结束（用例仍在运行或未找到fail/pass标记）")
             else:
-                print(f"\n未找到用例 {args.testcase} 的[Hypium]标记")
+                print(f"\n❌ 未找到用例 {args.testcase} 的[Hypium]标记")
                 print("提示: 请检查用例名是否正确，或检查hilog是否包含[Hypium]标记")
+                sys.exit(1)
         else:
             # 输出所有用例的时间窗
             HypiumMarkerExtractor.print_time_windows(time_windows)

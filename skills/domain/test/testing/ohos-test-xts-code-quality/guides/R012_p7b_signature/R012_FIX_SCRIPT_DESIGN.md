@@ -807,5 +807,5 @@ diff <(openssl cms -verify -in file.p7b.backup -inform DER -noverify 2>/dev/null
 ## 相关文档
 
 - [R012问题修复指南](./R012_FIX_GUIDE.md)
-- [R012问题历史记录](./R012_ISSUE_HISTORY.md)
+- [R012修复脚本设计](./R012_FIX_SCRIPT_DESIGN.md)
 - [签名工具仓库](https://gitcode.com/openharmony/developtools_hapsigner) - 签名工具源码和下载

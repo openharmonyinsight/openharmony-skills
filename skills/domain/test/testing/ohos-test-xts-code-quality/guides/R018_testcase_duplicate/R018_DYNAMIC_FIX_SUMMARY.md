@@ -107,7 +107,7 @@ it('testAnimateMotionIdProp', Level.LEVEL0, async function(done) { ... })
 ## 相关文档
 
 - [R018动态拼接修复技术说明](R018_DYNAMIC_TESTCASE_FIX.md)
-- [R018规则示例](../../rules/R018/SKILL.md)
+- [R018规则示例](../../references/RULES_COMPLIANCE.md)
 - [R018修复指南](R018_FIX_GUIDE.md)
 
 ## 更新记录

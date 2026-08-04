@@ -7,7 +7,7 @@ metadata:
   stage: testing
   domain: xts
   capability: code-quality
-  version: 2.0.13
+  version: 2.0.14
   status: stable
   tags:
     - xts
@@ -15,7 +15,6 @@ metadata:
     - code-review
     - testing
   related-skills:
-    - check-test-code-quality
     - ohos-test-ut-generation
     - ohos-test-arkts-xts-generation
 ---
@@ -164,7 +163,7 @@ PR模式自动：
 
 ## 评估用例（evals）
 
-随包提供覆盖全部 30 条规则的评估用例集，用于验证 Skill 的检出能力与误报抑制：
+随包提供覆盖全部 29 条规则的评估用例集，用于验证 Skill 的检出能力与误报抑制：
 
 | 文档 | 加载时机 |
 |------|---------|
@@ -174,10 +173,11 @@ PR模式自动：
 复跑方式：
 
 ```bash
-# with_skill（扫描器）
-python {SKILL_DIR}/scripts/main.py {SKILL_DIR}/evals/test_cases/subsystem_demo --level all
+# with_skill（扫描器 + 断言校验，8/8 PASS）
+python {SKILL_DIR}/scripts/run_evals.py
 
-# without_skill：在未加载本 Skill 的环境中，对 evals.json 中各 prompt 用 LLM 执行同一任务
+# without_skill 自动化基线对比（朴素扫描器 vs Skill 扫描器，输出对比报告）
+python {SKILL_DIR}/scripts/run_evals_without_skill.py
 ```
 
 ## 参考文档
@@ -207,4 +207,4 @@ python {SKILL_DIR}/scripts/sync_subsystem_mapping.py --check
 python {SKILL_DIR}/scripts/sync_subsystem_mapping.py --update
 ```
 
-> **版本**: 2.0.13 | 更新日期: 2026-07-29 | 配置文件: skill_config.json
+> **版本**: 2.0.14 | 更新日期: 2026-07-31 | 配置文件: skill_config.json

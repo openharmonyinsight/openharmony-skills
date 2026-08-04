@@ -64,11 +64,8 @@ conn.close()
 "
 ```
 
-**版本升级脚本**：
-```bash
-# 升级到最新版本（如果版本落后）
-python3 data/init_db.py --upgrade
-```
+**版本与升级**：
+`xts_rules.db` 为预构建数据库，随 Skill 包发布，当前版本 `v3.0`（见 `db_version` 表）。无独立构建脚本；升级随 Skill 版本更新发布，无需用户手动执行 `init_db.py`。
 
 ---
 
@@ -304,7 +301,7 @@ INSERT INTO subsystem_bridge (domain_en, subsystem_cn, rules_domain) VALUES
 ## 数据统计
 
 **当前数据库统计**：
-- rules: 80条定界规则
+- rules: 90条定界规则
 - contacts: 79个责任人（包含PM和接口人）
 - so_mapping: 711个SO库映射（23个子系统）
 - subsystem_mapping: 76个目录映射

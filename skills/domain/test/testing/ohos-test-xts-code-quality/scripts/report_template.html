@@ -471,6 +471,16 @@
     let currentIssuePage = 1;
     const ISSUE_PAGE_SIZE = 50;
 
+    function escapeHtml(str) {
+      if (str == null) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     function init() {
       renderHeader();
       renderStats();
@@ -586,14 +596,14 @@
         const isFixable = fixableRules.includes(i.rule);
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><strong>${i.rule}</strong></td>
-          <td><span class="badge ${i.severity.toLowerCase()}">${i.severity}</span></td>
+          <td><strong>${escapeHtml(i.rule)}</strong></td>
+          <td><span class="badge ${escapeHtml(i.severity.toLowerCase())}">${escapeHtml(i.severity)}</span></td>
           <td>${isFixable ? '<span class="badge" style="background: #e8f5e9; color: #2e7d32;">Yes</span>' : 'No'}</td>
-          <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${i.file}</td>
-          <td>${i.line}</td>
-          <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${i.testcase || '-'}</td>
+          <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(i.file)}</td>
+          <td>${escapeHtml(i.line)}</td>
+          <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(i.testcase) || '-'}</td>
           <td><button class="filter-btn" onclick="showDetail(${startIdx + idx})">查看</button></td>
-          <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${i.suggestion || '-'}</td>
+          <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(i.suggestion) || '-'}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -636,20 +646,20 @@
       title.textContent = `${issue.rule} - ${issue.file}:${issue.line}`;
       body.innerHTML = `
         <div style="margin-bottom: 1rem;">
-          <strong>所属用例:</strong> ${issue.testcase || '-'}
+          <strong>所属用例:</strong> ${escapeHtml(issue.testcase) || '-'}
         </div>
         <div style="margin-bottom: 1rem;">
-          <strong>所属子系统:</strong> ${issue.subsystem || '-'}
+          <strong>所属子系统:</strong> ${escapeHtml(issue.subsystem) || '-'}
         </div>
         <div style="margin-bottom: 1rem;">
           <strong>修复建议:</strong><br>
           <div style="margin-top: 0.5rem; padding: 0.5rem; background: var(--bg); border-radius: 4px;">
-            ${issue.suggestion || '-'}
+            ${escapeHtml(issue.suggestion) || '-'}
           </div>
         </div>
         <div>
           <strong>代码片段:</strong>
-          <div class="code-snippet" style="margin-top: 0.5rem;">${issue.snippet || '-'}</div>
+          <div class="code-snippet" style="margin-top: 0.5rem;">${escapeHtml(issue.snippet) || '-'}</div>
         </div>
       `;
       modal.classList.add('visible');

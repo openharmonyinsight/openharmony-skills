@@ -1,0 +1,77 @@
+schemaVersion: 1
+
+id: ohos-test-xts-code-quality
+title: XTS 测试代码质量检查
+summary: 检查 OpenHarmony XTS 测试代码质量，审查 PR 测试代码，检测编码规范违规、异步安全问题与资源泄漏，扫描 29 条内置规则，输出 HTML/Excel 报告并可自动提交 PR 评论。
+
+category:
+  scope: domain
+  namespace: test
+  stage: testing
+  domain: xts
+  capability: code-quality
+
+status:
+  maturity: stable
+  version: 2.0.14
+  owner: openharmony
+
+tags:
+  - xts
+  - code-quality
+  - code-review
+  - testing
+  - p7b-signature
+  - async-safety
+
+audience:
+  - OpenHarmony XTS 测试用例开发者
+  - 代码审查人员
+  - 测试质量工程师
+  - PR 门禁自动化维护者
+
+useCases:
+  - title: 本地代码扫描
+    description: 扫描 XTS 测试项目，检测 29 条规则（R001-R023, R201-R206）的违规，输出 HTML/Excel 报告。
+  - title: GitCode PR 审查
+    description: 对 PR 变更文件自动扫描，去重已报告问题，提交评论并支持自动修复。
+  - title: 自动修复
+    description: 对可修复规则（R008/R011/R012/R014/R016/R018）提供 step-by-step 修复指南。
+
+whenToUse:
+  - 需要检查 XTS 测试代码质量、PR 测试代码审查、编码规范检查。
+  - 提到异步安全、资源泄漏、getSync 接口检查、错误码断言、testcase 命名。
+  - 提到 testsuite 重复、p7b 签名、HAP 命名、用例重复。
+  - 需要 XTS test quality, test code review, async safety scan, resource leak detection。
+
+whenNotToUse:
+  - 目标是生成 XTS 测试用例（用 ohos-test-arkts-xts-generation 或 ohos-test-capi-xts-generation）。
+  - 目标是分析 XTS 测试日志（用 ohos-issue-xts-log-analysis）。
+  - 只需要 C/C++ 单元测试生成（用 ohos-test-ut-generation）。
+
+inputs:
+  required:
+    - 扫描路径（本地项目目录）或 GitCode PR URL
+  optional:
+    - GitCode token（PR 模式）
+    - 规则过滤参数（--level, --rules, --category）
+    - Sta 模式标记（--sta-mode）
+
+outputs:
+  - HTML 报告（XTS_代码质量检查报告.html）
+  - Excel 报告（XTS_代码质量检查报告.xlsx）
+  - PR 评论（PR 模式）
+
+quickStart:
+  steps:
+    - 提供扫描路径或 PR URL。
+    - 选择扫描级别（critical/warning/all）或特定规则。
+    - 执行扫描并查看报告。
+  examplePrompt: |
+    请使用 ohos-test-xts-code-quality 扫描 /path/to/xts/acts 项目的代码质量。
+
+related:
+  skills:
+    - ohos-test-ut-generation
+    - ohos-test-arkts-xts-generation
+    - ohos-test-capi-xts-generation

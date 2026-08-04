@@ -117,9 +117,9 @@ python {SKILL_DIR}/scripts/main.py arkui --rules R018 --fix
 
 - [R018修复指南](R018_FIX_GUIDE.md)
 - [R018动态拼接修复总结](R018_DYNAMIC_FIX_SUMMARY.md)
-- [R018规则示例](../../rules/R018/SKILL.md)
+- [R018规则示例](../../references/RULES_COMPLIANCE.md)
 
-- [R018实现细节](../../rules/R018/SKILL.md)
+- [R018实现细节](../../references/RULES_COMPLIANCE.md)
 
 ## 更新记录
 

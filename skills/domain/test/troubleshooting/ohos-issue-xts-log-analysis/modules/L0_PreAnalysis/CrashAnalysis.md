@@ -189,24 +189,32 @@ Stack:
 ### 自动化崩溃分析
 
 ```bash
-# 使用崩溃分析脚本
-cd ~/.opencode/skills/ohos-issue-xts-log-analysis/scripts
-python3 analyze_crash_stack.py /path/to/faultlog/
+# 分析 crash_log 目录下所有 cppcrash-*.log
+python3 scripts/analyze_crash_stack.py /path/to/crash_log_*/
+
+# 分析单个 cppcrash 文件
+python3 scripts/analyze_crash_stack.py /path/to/cppcrash-media_service-*.log
+
+# 从标准输入解析崩溃栈文本（适合 appfreeze 主线程栈）
+grep -E "^#0[0-9] pc " appfreeze-*.log | python3 scripts/analyze_crash_stack.py -
+
+# 运行内置示例
+python3 scripts/analyze_crash_stack.py --example
 ```
 
 **脚本功能**：
-- 自动解析cppcrash/jscrash日志
-- 提取关键字段（Reason、Registers、Callstack）
-- 匹配数据库规则定界
-- 生成分析报告
+- 解析 cppcrash-*.log 文件（或目录批量解析），提取 Reason、Process Name、Timestamp、Thread Name
+- 从 Callstack 提取 #NN pc 栈帧，解析 SO 库名与函数名
+- 查询 so_mapping 表获取子系统归属与责任人
+- 输出定界结论（主崩溃库、崩溃函数、问题归属、建议流转）
 
 ### 手动查询崩溃规则
 
 ```bash
 # 查询崩溃相关规则
-python3 scripts/query_db.py rules SIGSEGV
-python3 scripts/query_db.py rules crash
-python3 scripts/query_db.py rules App died
+python3 scripts/query_db.py rules --keyword SIGSEGV
+python3 scripts/query_db.py rules --keyword crash
+python3 scripts/query_db.py rules --keyword "App died"
 ```
 
 ---

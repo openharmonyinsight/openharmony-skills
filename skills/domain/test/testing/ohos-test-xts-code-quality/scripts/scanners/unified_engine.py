@@ -30,9 +30,12 @@ import os
 import re
 import sys
 import time
+import logging
 from typing import Dict, List, Set, Optional, Tuple
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from collections import defaultdict
+
+logger = logging.getLogger(__name__)
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from common import (
@@ -290,6 +293,7 @@ class FileParallelEngine:
         
         all_issues = []
         done_count = 0
+        failed_count = 0
         last_callback_time = time.time()
         CALLBACK_INTERVAL = 2  # 每2秒调用一次回调
         
@@ -297,17 +301,22 @@ class FileParallelEngine:
             futures = {executor.submit(self.scanner.scan_file, fp): fp for fp in files}
             
             for future in as_completed(futures):
+                fp = futures[future]
                 try:
                     issues = future.result()
                     all_issues.extend(issues)
                 except Exception as e:
-                    pass
+                    failed_count += 1
+                    logger.error(f"扫描文件失败: {fp}: {e}")
                 
                 done_count += 1
                 current_time = time.time()
                 if progress_callback and (done_count % 100 == 0 or current_time - last_callback_time >= CALLBACK_INTERVAL):
                     progress_callback(done_count, len(files), len(all_issues))
                     last_callback_time = current_time
+        
+        if failed_count > 0:
+            logger.warning(f"扫描完成：{done_count} 文件处理，{failed_count} 文件扫描失败（假阴性风险）")
         
         return all_issues
     
@@ -338,6 +347,7 @@ class FileParallelEngine:
         n_workers = max(1, min(n_workers, 32))
         
         done_count = 0
+        failed_count = 0
         last_callback_time = time.time()
         CALLBACK_INTERVAL = 2
         
@@ -352,14 +362,18 @@ class FileParallelEngine:
                 try:
                     issues = future.result()
                     all_issues.extend(issues)
-                except Exception:
-                    pass
+                except Exception as e:
+                    failed_count += 1
+                    logger.error(f"扫描文件失败: {e}")
                 
                 done_count += 1
                 current_time = time.time()
                 if progress_callback and (done_count % 100 == 0 or current_time - last_callback_time >= CALLBACK_INTERVAL):
                     progress_callback(done_count, total_files, len(all_issues))
                     last_callback_time = current_time
+        
+        if failed_count > 0:
+            logger.warning(f"scan_by_file_map 完成：{done_count} 文件处理，{failed_count} 文件扫描失败（假阴性风险）")
         
         return all_issues
     
@@ -463,7 +477,9 @@ class ProjectLevelScanner:
         id_results = grep_scan(base_dir, [r'\.id\s*\('])
         key_id_files = set()
         for fp, _, _, _ in key_results + id_results:
-            if '/pages/' in fp:
+            # 跨平台路径判断：规范化后检查是否包含 pages 目录段
+            normalized = os.path.normpath(fp).replace('\\', '/')
+            if '/pages/' in normalized:
                 key_id_files.add(fp)
         
         # Step 2: 从预过滤文件中识别独立XTS工程（确保工程和文件匹配）
@@ -642,7 +658,8 @@ class ProjectLevelScanner:
         for fp in files:
             abs_fp = os.path.abspath(fp)
             rel_fp = os.path.relpath(abs_fp, base_dir)
-            parts = rel_fp.split('/')
+            # 跨平台：统一为正斜杠后再 split，兼容 Windows 反斜杠路径
+            parts = rel_fp.replace('\\', '/').split('/')
             # 寻找entry目录，其父目录就是工程根目录
             for i, part in enumerate(parts):
                 if part == 'entry' and i > 0:

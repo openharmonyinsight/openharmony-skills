@@ -215,5 +215,5 @@ python {SKILL_DIR}/scripts/main.py /path/to/project --rules R011
 ## 相关文档
 
 - [../../SKILL.md](../../SKILL.md) - 完整技能说明
-- [../../rules/R011/SKILL.md](../../rules/R011/SKILL.md) - R011规则示例和实现
+- [../../references/RULES_COMPLIANCE.md](../../references/RULES_COMPLIANCE.md) - R011规则示例和实现
 - [../FIX_GUIDE.md](../FIX_GUIDE.md) - 通用修复指南

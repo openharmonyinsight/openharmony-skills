@@ -343,6 +343,6 @@ python3 fix_r012_p7b.py --batch-fix unknown_permissions.conf
 ## 相关文档
 
 - [R012修复指南](./R012_FIX_GUIDE.md)
-- [R012修复总结](./R012_FIX_SUMMARY.md)
+- [R012修复指南](./R012_FIX_GUIDE.md)
 - [R012修复脚本设计文档](./R012_FIX_SCRIPT_DESIGN.md)
 - [OpenHarmony权限管理](https://gitcode.com/openharmony/docs/blob/master/zh-cn/application-dev/security/AccessToken/access-token.md)
