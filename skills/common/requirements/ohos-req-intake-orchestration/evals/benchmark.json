@@ -1,12 +1,12 @@
 {
-  "bundle": "ohos-phase0-intake",
+  "bundle": "ohos-requirements-intake",
   "date": "2026-07-20",
   "baseline": "without skill: generic assistant receives only the case prompt and repository README rules",
   "candidate": "with skill: assistant receives the matching SKILL.md plus referenced templates/rules",
   "metrics": {
     "case_pass_rate": {
-      "with_skill": "44/44",
-      "without_skill": "13/44"
+      "with_skill": "31/31",
+      "without_skill": "10/31"
     },
     "phase0_orchestration_coverage": [
       "Ready",
@@ -15,7 +15,7 @@
       "evidence-limited feasibility",
       "single proposal",
       "multi proposal",
-      "role-blocked handoff"
+      "gate-blocked missing owner"
     ],
     "platform_smoke": {
       "windows": "Python standard-library scripts; no Bash required",
@@ -26,12 +26,12 @@
   "key_deltas": [
     {
       "area": "traceability",
-      "with_skill": "Preserves rr_id and FR/AC identifiers across requirement, IR, proposal, SR, and handoff.",
+      "with_skill": "Preserves rr_id and FR/AC identifiers across requirement, feature/proposal baseline, and value decision record.",
       "without_skill": "Frequently omits rr_id propagation or renumbers AC items."
     },
     {
       "area": "gate routing",
-      "with_skill": "Routes Ready, Conditional Ready, and Not Ready distinctly; Conditional Ready writes conditions to IR.",
+      "with_skill": "Routes Ready, Conditional Ready, and Not Ready distinctly; Conditional Ready records conditions in the feature/proposal baseline.",
       "without_skill": "Often treats Conditional Ready as failure or skips condition propagation."
     },
     {

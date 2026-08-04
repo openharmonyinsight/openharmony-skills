@@ -1,27 +1,24 @@
 {
-  "bundle": "ohos-phase0-intake",
+  "bundle": "ohos-requirements-intake",
   "date": "2026-07-20",
   "validated_source_commit": "78d46457f826d3bc66c3e0f8f54728cbd577f77c",
   "method": "structured eval review plus executable smoke tests",
   "summary": {
-    "skills": 10,
-    "structured_cases": 41,
+    "skills": 7,
+    "structured_cases": 28,
     "ppt_cases": 3,
-    "with_skill_passed": 44,
+    "with_skill_passed": 31,
     "with_skill_failed": 0,
-    "without_skill_passed": 13,
-    "without_skill_failed": 31
+    "without_skill_passed": 10,
+    "without_skill_failed": 21
   },
   "skills": [
     {"name": "ohos-req-requirement-intake", "cases": 6, "with_skill": "6/6", "without_skill": "2/6"},
     {"name": "ohos-req-feasibility-analysis", "cases": 3, "with_skill": "3/3", "without_skill": "1/3"},
     {"name": "ohos-req-arch-decision", "cases": 3, "with_skill": "3/3", "without_skill": "1/3"},
-    {"name": "ohos-req-feature-baseline", "cases": 4, "with_skill": "4/4", "without_skill": "1/4"},
-    {"name": "ohos-req-review-gate", "cases": 5, "with_skill": "5/5", "without_skill": "2/5"},
+    {"name": "ohos-req-feature-proposal-baseline", "cases": 9, "with_skill": "9/9", "without_skill": "3/9"},
     {"name": "ohos-req-value-decision", "cases": 5, "with_skill": "5/5", "without_skill": "2/5"},
-    {"name": "ohos-req-feature-to-ir", "cases": 4, "with_skill": "4/4", "without_skill": "1/4"},
     {"name": "ohos-req-intake-orchestration", "cases": 5, "with_skill": "5/5", "without_skill": "1/5"},
-    {"name": "ohos-req-proposal-to-sr", "cases": 6, "with_skill": "6/6", "without_skill": "2/6"},
     {"name": "ohos-req-review-ppt-gen", "cases": 3, "with_skill": "3/3", "without_skill": "0/3"}
   ],
   "verification": [

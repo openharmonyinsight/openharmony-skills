@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check Phase 0 Intake Bundle related-skill declarations."""
+"""Check requirements intake bundle related-skill declarations."""
 
 from __future__ import annotations
 
@@ -9,12 +9,7 @@ from pathlib import Path
 
 from install_related_skills import ORCHESTRATOR, REQUIRED_SKILLS
 
-ALLOWED_EXTERNAL_SKILLS = {
-    # External handoff package/tool names referenced by the requirement intake docs.
-    "ohos-delivery",
-    "ohos-delivery-kit",
-    "ohos-phase0-intake",
-}
+ALLOWED_EXTERNAL_SKILLS = {"ohos-requirements-intake"}
 
 
 def split_frontmatter(text: str) -> tuple[str, str]:
@@ -103,7 +98,7 @@ def main() -> int:
     declared_names = names_in_frontmatter(frontmatter)
     required_names = {name for name, _, _ in REQUIRED_SKILLS}
 
-    print("Bundle: ohos-phase0-intake")
+    print("Bundle: ohos-requirements-intake")
     print(
         f"body={len(body_names)} declared={len(declared_names)} "
         f"install={len(required_names)}"

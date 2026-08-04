@@ -5,11 +5,11 @@
       "id": 1,
       "name": "accept-and-proceed",
       "prompt": "评审会议结束，结论是接纳。评审意见3条：(1)补充性能基线数据，负责人李四，处理方式：Phase 2补充；(2)AC-04验证方式需细化，负责人王五，处理方式：当前版本补充；(3)兼容性分析需增加PC形态，负责人赵六，处理方式：当前版本补充。请生成决策纪要。",
-      "expected_output": "生成 value-decision-record.md（status: Accepted），评审意见表3条含处理方式和负责人。路由结论为'可进入 feature-to-ir'。",
+      "expected_output": "生成 value-decision-record.md（status: Accepted），评审意见表3条含处理方式和负责人。路由结论为需求导入评审流程完成。",
       "assertions": [
         {"text": "status: Accepted", "type": "contains"},
         {"text": "3条评审意见含处理方式和负责人", "type": "llm_judge"},
-        {"text": "路由结论包含 可进入 feature-to-ir", "type": "contains"}
+        {"text": "路由结论包含 流程完成", "type": "contains"}
       ]
     },
     {
@@ -26,7 +26,7 @@
       "id": 3,
       "name": "re-review-and-rollback",
       "prompt": "评审会议结束，结论是下次重新上会。修改要求：(1)01-requirement.md 需补充用户场景量化数据；(2)02-feasibility.md 需增加竞品对标分析。请生成决策纪要。",
-      "expected_output": "生成 value-decision-record.md（status: PendingRe-review），修改要求2条，路由结论为退回 Step 0.1 和 0.2。",
+      "expected_output": "生成 value-decision-record.md（status: PendingRe-review），修改要求2条，路由结论为退回 Step 1 和 Step 2，最终取最低编号 Step 1。",
       "assertions": [
         {"text": "status: PendingRe-review", "type": "contains"},
         {"text": "修改要求2条", "type": "llm_judge"},

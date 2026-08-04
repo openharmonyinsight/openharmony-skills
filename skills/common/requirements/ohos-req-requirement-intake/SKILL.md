@@ -1,6 +1,6 @@
 ---
 name: ohos-req-requirement-intake
-description: Use when importing an OHOS requirement into Phase 0.1, especially for 01-requirement.md, requirement intake, background, user value, scenarios, scope, FR/NFR, affected modules, or priority. Triggers: 需求导入, 01-requirement, 需求基线, RR单号. Do NOT use for feasibility analysis (ohos-req-feasibility-analysis), architecture decision (ohos-req-arch-decision), or feature baseline (ohos-req-feature-baseline).
+description: Use when importing an OHOS requirement into requirements Step 1, especially for 01-requirement.md, requirement intake, background, user value, scenarios, scope, FR/NFR, affected modules, or priority. Triggers: 需求导入, 01-requirement, 需求基线, RR单号. Do NOT use for feasibility analysis (ohos-req-feasibility-analysis), architecture decision (ohos-req-arch-decision), or feature/proposal baseline (ohos-req-feature-proposal-baseline).
 metadata:
   author: openharmony
   scope: common
@@ -19,17 +19,15 @@ metadata:
 
 ## 定位
 
-OHOS 电子流需求管理系统的 RR单号（rr_id）是跨 Phase 0-9 的唯一追溯键，从 01-requirement.md frontmatter 继承到 IR/SR/handoff 全链路。requirement 阶段的澄清状态（Draft-NeedsClarification → Clarified）决定 feasibility 是否允许启动——电子流系统据此判定需求是否进入分析阶段。requirement 不得包含技术方案选型，确保 feasibility 的选型中立性。
+OHOS 电子流需求管理系统的 RR单号（rr_id）是需求导入评审流程的唯一追溯键，从 01-requirement.md frontmatter 继承到 04-feature.md 和 value-decision-record.md。requirement 阶段的澄清状态（Draft-NeedsClarification → Clarified）决定 feasibility 是否允许启动——电子流系统据此判定需求是否进入分析阶段。requirement 不得包含技术方案选型，确保 feasibility 的选型中立性。
 
 ## Do NOT Load
 
-本 skill 仅在 Phase 0.1（01-requirement.md 生成）时激活。以下场景不应加载：
+本 skill 仅在 requirements Step 1（01-requirement.md 生成）时激活。以下场景不应加载：
 
 - 可行性分析（02-feasibility.md）→ ohos-req-feasibility-analysis
 - 方案架构决策（03-arch-decision-record.md）→ ohos-req-arch-decision
-- Feature 评审基线（04-feature.md）→ ohos-req-feature-baseline
-- Review Ready Gate → ohos-req-review-gate
-- IR 生成 → ohos-req-feature-to-ir
+- Feature/Proposal 评审基线与 Review Ready Gate（04-feature.md）→ ohos-req-feature-proposal-baseline
 
 ## ⭐ 硬规则：禁止不确定项输出
 

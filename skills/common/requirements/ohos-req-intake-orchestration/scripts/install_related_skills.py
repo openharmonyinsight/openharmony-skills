@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Phase 0 Intake Bundle dependency preflight and installer.
+"""Requirements intake bundle dependency preflight and installer.
 
 Uses only the Python standard library so it runs on Windows, Linux, and macOS.
 """
@@ -17,12 +17,9 @@ REQUIRED_SKILLS = [
     ("ohos-req-requirement-intake", "0.1.0", True),
     ("ohos-req-feasibility-analysis", "0.1.0", True),
     ("ohos-req-arch-decision", "0.1.0", True),
-    ("ohos-req-feature-baseline", "0.1.0", True),
-    ("ohos-req-review-gate", "0.1.0", True),
+    ("ohos-req-feature-proposal-baseline", "0.1.0", True),
     ("ohos-req-value-decision", "0.1.0", True),
     ("ohos-req-review-ppt-gen", "0.1.0", False),
-    ("ohos-req-feature-to-ir", "0.1.0", True),
-    ("ohos-req-proposal-to-sr", "0.1.0", True),
 ]
 ORCHESTRATOR = "ohos-req-intake-orchestration"
 
@@ -89,7 +86,7 @@ def check_bundle(target: Path) -> tuple[int, list[str], list[str]]:
 
 def print_report(installed: int, missing: list[str], mismatches: list[str]) -> None:
     total = len(REQUIRED_SKILLS) + 1
-    print("Bundle: ohos-phase0-intake")
+    print("Bundle: ohos-requirements-intake")
     print(f"Installed: {installed}/{total}")
     for name in missing:
         print(f"  MISSING (required): {name}")

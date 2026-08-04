@@ -4,19 +4,19 @@
     {
       "id": 1,
       "name": "full-workflow-orchestration",
-      "prompt": "收到原始需求：在OpenHarmony中支持USB HID设备的多实例绑定，RR单号RR-2026-0512-003。请执行Phase 0全流程。",
-      "expected_output": "按Step 0.1->0.9.1顺序编排。每步spawn subagent，回传<=15行。最终产出01-04/IR/proposal/handoff.md。handoff.md含rr_id。RR单号从01继承到所有下游产物。",
+      "prompt": "收到原始需求：在OpenHarmony中支持USB HID设备的多实例绑定，RR单号RR-2026-0512-003。请执行需求导入评审全流程。",
+      "expected_output": "按Step 1->14顺序编排。每步spawn subagent，回传<=15行。最终产出01-04/value-decision-record.md。04-feature.md含内建Gate结论。RR单号从01继承到04和决策纪要。",
       "assertions": [
         {"text": "01-requirement.md frontmatter 含 rr_id: RR-2026-0512-003", "type": "contains"},
-        {"text": "handoff.md 含 rr_id", "type": "contains"},
+        {"text": "04-feature.md 含 rr_id", "type": "contains"},
         {"text": "各subagent回传<=15行", "type": "llm_judge"},
-        {"text": "Step 0.3.2 决策结论收集为强制暂停点", "type": "llm_judge"}
+        {"text": "Step 8 决策结论收集为强制暂停点", "type": "llm_judge"}
       ]
     },
     {
       "id": 2,
       "name": "token-economy-enforcement",
-      "prompt": "执行Phase 0全流程时，在Step 0.2 feasibility的spawn task中，主session把02-feasibility.md全文嵌入task描述传给subagent。请检查是否符合规范。",
+      "prompt": "执行需求导入评审全流程时，在Step 2 feasibility的spawn task中，主session把02-feasibility.md全文嵌入task描述传给subagent。请检查是否符合规范。",
       "expected_output": "应检测到Token经济性违规——禁止嵌入文件内容到task描述。task只含四要素(角色/输入路径/输出路径/任务简述)。证据应传路径不传内容。",
       "assertions": [
         {"text": "检测到task描述包含全文内容违规", "type": "llm_judge"},
@@ -26,18 +26,18 @@
     {
       "id": 3,
       "name": "split-confirmation-gate",
-      "prompt": "Step 0.4 feature生成后，拆分方案包含3个proposal。请继续执行。",
-      "expected_output": "拆分结果必须向用户展示并等待确认(拆分确认门禁)，不自行定稿拆分方案。每个proposal不超过复杂度上限(简单≤5/标准≤8/复杂≤15人月)。确认后才进入Step 0.5 Review Ready Gate。",
+      "prompt": "Step 10 feature生成后，拆分方案包含3个proposal。请继续执行。",
+      "expected_output": "拆分结果必须向用户展示并等待确认(拆分确认门禁)，不自行定稿拆分方案。每个proposal不超过复杂度上限(简单≤5/标准≤8/复杂≤15人月)。确认后才执行内建 Review Ready Gate。",
       "assertions": [
         {"text": "触发拆分确认门禁(向用户展示等待确认)", "type": "llm_judge"},
         {"text": "每个proposal不超过复杂度上限", "type": "llm_judge"},
-        {"text": "确认后才进入Step 0.5", "type": "llm_judge"}
+        {"text": "确认后才执行内建 Review Ready Gate", "type": "llm_judge"}
       ]
     },
     {
       "id": 4,
       "name": "mode-b-serial-execution",
-      "prompt": "环境不支持 subagent 并行隔离，需使用 Mode B 串行执行 Phase 0 流程。01-04 文档均已就绪，请编排串行执行路径。",
+      "prompt": "环境不支持 subagent 并行隔离，需使用 Mode B 串行执行需求导入评审流程。01-04 文档均已就绪，请编排串行执行路径。",
       "expected_output": "输出串行执行路径，每步含 skill 名和回传摘要格式，无并行 spawn。",
       "assertions": [
         {"text": "串行", "type": "contains"},
@@ -47,13 +47,13 @@
     },
     {
       "id": 5,
-      "name": "role-block-handoff",
-      "prompt": "Phase 0全流程完成，SR-01.md和SR-02.md均已生成。但SR-01.md §二责任人表中分析责任人为空、测试责任人标注'待确定'。请生成handoff.md。",
-      "expected_output": "handoff完整性校验检测到SR角色缺失，阻断交接。提示用户回填SR-01.md的分析责任人和测试责任人后再生成handoff。",
+      "name": "gate-block-missing-owner",
+      "prompt": "Step 10 已生成04-feature.md，但条件项缺少Owner和关闭时点。请继续进入评审会议。",
+      "expected_output": "内建 Review Ready Gate 将条件项升级为 Not Ready，阻断进入评审会议。提示用户补充Owner、关闭动作和关闭时点后重新执行Step 10。",
       "assertions": [
-        {"text": "阻断交接", "type": "llm_judge"},
-        {"text": "分析责任人", "type": "contains"},
-        {"text": "测试责任人", "type": "contains"}
+        {"text": "Not Ready", "type": "contains"},
+        {"text": "Owner", "type": "contains"},
+        {"text": "关闭时点", "type": "contains"}
       ]
     }
   ]

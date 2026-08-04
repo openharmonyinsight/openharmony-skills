@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cross-platform smoke tests for the Phase 0 Intake Bundle scripts."""
+"""Cross-platform smoke tests for the requirements intake bundle scripts."""
 
 from __future__ import annotations
 
@@ -95,7 +95,7 @@ def main() -> int:
     else:
         bad("S1 期望 CONSISTENT", cout)
 
-    shutil.rmtree(sbx_skill(root, "ohos-req-review-gate"))
+    shutil.rmtree(sbx_skill(root, "ohos-req-feature-proposal-baseline"))
     out = run_script(sbx_script(root, "install_related_skills.py"), "--check")
     if "Required missing: 1" in out and "Result: NOT READY" in out:
         ok("S2 缺失依赖预检失败 (missing 1)")
@@ -106,8 +106,8 @@ def main() -> int:
     out = run_script(sbx_script(root_orch_only, "install_related_skills.py"), "--install")
     if (
         "OHOS_REQ_SKILLS_SOURCE_DIR" in out
-        and "Installed: 1/10" in out
-        and "Required missing: 8" in out
+        and "Installed: 1/7" in out
+        and "Required missing: 5" in out
         and "Result: READY" not in out
     ):
         ok("S2a 单独编排 skill 无 source 的 --install 被显式拒绝")
@@ -120,7 +120,7 @@ def main() -> int:
         env={"OHOS_REQ_SKILLS_SOURCE_DIR": str(SKILLS_DIR)},
     )
     if (
-        "Installed missing skill: ohos-req-review-gate" in out
+        "Installed missing skill: ohos-req-feature-proposal-baseline" in out
         and "Required missing: 0" in out
         and "Result: READY" in out
     ):
@@ -165,14 +165,10 @@ def main() -> int:
         bad("S5 期望 INCONSISTENT", cout)
 
     root4 = setup_sandbox()
-    summary_template = (
-        sbx_skill(root4, "ohos-req-review-gate")
-        / "reference"
-        / "gate-summary-template.md"
-    )
-    summary_template.write_text(
-        summary_template.read_text(encoding="utf-8")
-        + "\n- Ready → 执行 ohos-feat-to-ir 生成 IR\n",
+    feature_skill = sbx_skill(root4, "ohos-req-feature-proposal-baseline") / "SKILL.md"
+    feature_skill.write_text(
+        feature_skill.read_text(encoding="utf-8")
+        + "\n- Ready -> 执行 ohos-feat-to-ir 生成旧 IR\n",
         encoding="utf-8",
     )
     cout = run_script(sbx_script(root4, "check_related_skills_consistency.py"))
