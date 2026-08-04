@@ -210,3 +210,5 @@ oh-gc org list
 oh-gc org view <org>
 oh-gc org members <org>
 ```
+
+**Pitfall:** `oh-gc org list` (current-user org endpoint) often returns `No organizations found (API endpoint may not be available)` even when the user belongs to orgs. Use `oh-gc user orgs <username>` instead — it returns `name name [description]` rows and works reliably (verified on 0.7.4 and 0.8.2; org list endpoint still broken in 0.8.2).
