@@ -1006,7 +1006,7 @@ SUB_ZLIB_Adler32_PARAM_001
 
 ## 十一、配置文件更新要求
 
-> 📋 **通用校验流程参考**：[modules/L2_Generation/verification_common.md](../../../../modules/L2_Generation/verification_common.md)
+> 📋 **通用校验流程参考**：[modules/L2_Generation/verification_common.md](../../../../modules/L2_Generation/generator/verification_common.md)
 >
 > 本节仅提供 Zlib 模块特有的配置要求，通用校验流程请查看上述链接。
 
@@ -1044,7 +1044,7 @@ grep "SystemCapability.BundleManager.Zlib" entry/src/main/syscap.json
 
 > ⚠️ **重要：BUILD.gn 和 Test.json 中的 hap 包名必须对应！
 >
-> 详细的 hap 包名对应校验请参考 [通用校验模块](../../../../modules/L2_Generation/verification_common.md#232-配置文件参数检查)
+> 详细的 hap 包名对应校验请参考 [通用校验模块](../../../../modules/L2_Generation/generator/verification_common.md#232-配置文件参数检查)
 
 #### Zlib 测试套命名示例
 
@@ -1056,7 +1056,7 @@ grep "SystemCapability.BundleManager.Zlib" entry/src/main/syscap.json
 
 ### 11.3 三步同步校验要求
 
-> 📋 **详细校验流程**：[通用校验模块 - 三重Napi校验](../../../../modules/L2_Generation/verification_common.md#一三重napi校验)
+> 📋 **详细校验流程**：[通用校验模块 - 三重Napi校验](../../../../modules/L2_Generation/generator/verification_common.md#一三重napi校验)
 
 新增 Zlib 模块测试用例完成后，必须执行三步同步校验：
 
@@ -1066,7 +1066,7 @@ grep "SystemCapability.BundleManager.Zlib" entry/src/main/syscap.json
 
 ### 11.4 编译前工程结构校验
 
-> 📋 **详细校验流程**：[通用校验模块 - 编译前工程结构校验](../../../../modules/L2_Generation/verification_common.md#二编译前工程结构校验)
+> 📋 **详细校验流程**：[通用校验模块 - 编译前工程结构校验](../../../../modules/L2_Generation/generator/verification_common.md#二编译前工程结构校验)
 
 编译前必须执行工程结构校验，确保：
 - 所有必需文件存在

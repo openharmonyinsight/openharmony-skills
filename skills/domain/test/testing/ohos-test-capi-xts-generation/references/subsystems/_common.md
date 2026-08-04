@@ -580,7 +580,7 @@ static napi_value Init(napi_env env, napi_value exports)
 
 ## 十六、校验流程参考
 
-> 📋 **校验流程详见通用校验模块**：[modules/L2_Generation/verification_common.md](../../modules/L2_Generation/verification_common.md)
+> 📋 **校验流程详见通用校验模块**：[modules/L2_Generation/verification_common.md](../../modules/L2_Generation/generator/verification_common.md)
 >
 > 本节仅提供校验概要，详细校验方法请查看通用校验模块。
 

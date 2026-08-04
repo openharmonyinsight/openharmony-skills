@@ -3,10 +3,10 @@
 > **文档目的**：定义 OpenHarmony CAPI (Native C API) XTS 测试的基础框架、规范和标准，为 N-API 测试提供理论基础
 
 > 📖 **相关文档**：
-> - [N-API 和 ETS 公共模式](./test_patterns_napi_ets.md) - N-API 封装和 ETS 测试的公共模式定义
-> - [N-API 和 ETS 高级模式](./test_patterns_napi_ets_advance.md) - N-API 和 ETS 测试的高级模式和特殊场景
-> - [测试生成核心](../L2_Generation/test_generation_c.md) - 测试用例生成核心文档
-> - [子系统测试示例](../examples/) - 各子系统的完整测试用例示例和实现
+> - [N-API 和 ETS 公共模式](../L2_Generation/generator/test_patterns_napi_ets.md) - N-API 封装和 ETS 测试的公共模式定义
+> - [N-API 和 ETS 高级模式](../L2_Generation/generator/test_patterns_napi_ets_advance.md) - N-API 和 ETS 测试的高级模式和特殊场景
+> - [测试生成核心](../L2_Generation/generator/test_generation_c.md) - 测试用例生成核心文档
+> - [子系统测试示例](../../examples/) - 各子系统的完整测试用例示例和实现
 
 ## 一、CAPI 测试基础
 
@@ -140,12 +140,12 @@ OpenHarmony CAPI 支持两种测试方式：
 - 参数组合测试
 
 **子系统示例**：
-详细的子系统测试示例请参考 [examples/](../examples/) 目录中的具体实现：
+详细的子系统测试示例请参考 [examples/](../../examples/) 目录中的具体实现：
 
-- **BundleManager 参数测试**：[examples/bundlemanager_examples.md](../examples/bundlemanager_examples.md#1-参数测试)
-- **ArkUI 参数测试**：[examples/arkui_examples.md](../examples/arkui_examples.md#1-参数测试)
-- **Ability 参数测试**：[examples/ability_examples.md](../examples/ability_examples.md#2-参数测试)
-- **Accessibility 参数测试**：[examples/accessibility_examples.md](../examples/accessibility_examples.md#2-功能测试)
+- **BundleManager 参数测试**：[examples/bundlemanager_examples.md](../../examples/bundlemanager_examples.md#1-参数测试)
+- **ArkUI 参数测试**：[examples/arkui_examples.md](../../examples/arkui_examples.md#1-参数测试)
+- **Ability 参数测试**：[examples/ability_examples.md](../../examples/ability_examples.md#2-参数测试)
+- **Accessibility 参数测试**：[examples/accessibility_examples.md](../../examples/accessibility_examples.md#2-功能测试)
 
 > **提示**：每个子系统示例都包含完整的测试代码、N-API 封装和 ETS 测试实现。
 
@@ -165,12 +165,12 @@ OpenHarmony CAPI 支持两种测试方式：
 - 错误恢复机制
 
 **子系统示例**：
-详细的子系统测试示例请参考 [examples/](../examples/) 目录中的具体实现：
+详细的子系统测试示例请参考 [examples/](../../examples/) 目录中的具体实现：
 
-- **BundleManager 错误测试**：[examples/bundlemanager_examples.md](../examples/bundlemanager_examples.md#2-错误测试)
-- **ArkUI 错误测试**：[examples/arkui_examples.md](../examples/arkui_examples.md#2-错误测试)
-- **Ability 错误测试**：[examples/ability_examples.md](../examples/ability_examples.md#3-错误测试)
-- **Accessibility 错误测试**：[examples/accessibility_examples.md](../examples/accessibility_examples.md#4-错误处理测试)
+- **BundleManager 错误测试**：[examples/bundlemanager_examples.md](../../examples/bundlemanager_examples.md#2-错误测试)
+- **ArkUI 错误测试**：[examples/arkui_examples.md](../../examples/arkui_examples.md#2-错误测试)
+- **Ability 错误测试**：[examples/ability_examples.md](../../examples/ability_examples.md#3-错误测试)
+- **Accessibility 错误测试**：[examples/accessibility_examples.md](../../examples/accessibility_examples.md#4-错误处理测试)
 
 > **提示**：错误处理是测试的重要部分，确保所有可能的错误情况都被覆盖。
 
@@ -190,12 +190,12 @@ OpenHarmony CAPI 支持两种测试方式：
 - 返回值一致性检查
 
 **子系统示例**：
-详细的子系统测试示例请参考 [examples/](../examples/) 目录中的具体实现：
+详细的子系统测试示例请参考 [examples/](../../examples/) 目录中的具体实现：
 
-- **BundleManager 返回值测试**：[examples/bundlemanager_examples.md](../examples/bundlemanager_examples.md#3-返回值测试)
-- **ArkUI 返回值测试**：[examples/arkui_examples.md](../examples/arkui_examples.md#3-返回值测试)
-- **Ability 返回值测试**：[examples/ability_examples.md](../examples/ability_examples.md#1-基础功能测试)
-- **Accessibility 返回值测试**：[examples/accessibility_examples.md](../examples/accessibility_examples.md#1-基础功能测试)
+- **BundleManager 返回值测试**：[examples/bundlemanager_examples.md](../../examples/bundlemanager_examples.md#3-返回值测试)
+- **ArkUI 返回值测试**：[examples/arkui_examples.md](../../examples/arkui_examples.md#3-返回值测试)
+- **Ability 返回值测试**：[examples/ability_examples.md](../../examples/ability_examples.md#1-基础功能测试)
+- **Accessibility 返回值测试**：[examples/accessibility_examples.md](../../examples/accessibility_examples.md#1-基础功能测试)
 
 > **提示**：返回值测试确保 API 的行为符合预期，是功能正确性的重要保证。
 
@@ -215,12 +215,12 @@ OpenHarmony CAPI 支持两种测试方式：
 - 稳定性测试
 
 **子系统示例**：
-详细的子系统测试示例请参考 [examples/](../examples/) 目录中的具体实现：
+详细的子系统测试示例请参考 [examples/](../../examples/) 目录中的具体实现：
 
-- **BundleManager 边界测试**：[examples/bundlemanager_examples.md](../examples/bundlemanager_examples.md#4-边界测试)
-- **ArkUI 边界测试**：[examples/arkui_examples.md](../examples/arkui_examples.md#4-边界测试)
-- **Ability 边界测试**：[examples/ability_examples.md](../examples/ability_examples.md#3-边界测试)
-- **Accessibility 边界测试**：[examples/accessibility_examples.md](../examples/accessibility_examples.md#3-边界测试)
+- **BundleManager 边界测试**：[examples/bundlemanager_examples.md](../../examples/bundlemanager_examples.md#4-边界测试)
+- **ArkUI 边界测试**：[examples/arkui_examples.md](../../examples/arkui_examples.md#4-边界测试)
+- **Ability 边界测试**：[examples/ability_examples.md](../../examples/ability_examples.md#3-边界测试)
+- **Accessibility 边界测试**：[examples/accessibility_examples.md](../../examples/accessibility_examples.md#3-边界测试)
 
 > **提示**：边界测试确保 API 在极限情况下的稳定性，是测试中非常重要的一环。
 
@@ -240,12 +240,12 @@ OpenHarmony CAPI 支持两种测试方式：
 - 性能影响
 
 **子系统示例**：
-详细的子系统测试示例请参考 [examples/](../examples/) 目录中的具体实现：
+详细的子系统测试示例请参考 [examples/](../../examples/) 目录中的具体实现：
 
-- **BundleManager 内存测试**：[examples/bundlemanager_examples.md](../examples/bundlemanager_examples.md#5-内存测试)
-- **ArkUI 内存测试**：[examples/arkui_examples.md](../examples/arkui_examples.md#5-内存测试)
-- **Ability 内存测试**：[examples/ability_examples.md](../examples/ability_examples.md#5-内存管理测试)
-- **Accessibility 内存测试**：[examples/accessibility_examples.md](../examples/accessibility_examples.md#5-内存管理测试)
+- **BundleManager 内存测试**：[examples/bundlemanager_examples.md](../../examples/bundlemanager_examples.md#5-内存测试)
+- **ArkUI 内存测试**：[examples/arkui_examples.md](../../examples/arkui_examples.md#5-内存测试)
+- **Ability 内存测试**：[examples/ability_examples.md](../../examples/ability_examples.md#5-内存管理测试)
+- **Accessibility 内存测试**：[examples/accessibility_examples.md](../../examples/accessibility_examples.md#5-内存管理测试)
 
 > **提示**：内存泄漏检测是 CAPI 测试中的重要环节，应结合 valgrind 等工具进行验证。
 
@@ -304,12 +304,12 @@ it('BundleManager_Concurrent_Access', TestType.FUNCTION | Size.LARGETEST | Level
 - 响应时间测试
 
 **子系统示例**：
-详细的子系统测试示例请参考 [examples/](../examples/) 目录中的具体实现：
+详细的子系统测试示例请参考 [examples/](../../examples/) 目录中的具体实现：
 
-- **BundleManager 性能测试**：[examples/bundlemanager_examples.md](../examples/bundlemanager_examples.md#7-性能测试)
-- **ArkUI 性能测试**：[examples/arkui_examples.md](../examples/arkui_examples.md#6-性能测试)
-- **Ability 性能测试**：[examples/ability_examples.md](../examples/ability_examples.md#6-性能测试)
-- **Accessibility 性能测试**：[examples/accessibility_examples.md](../examples/accessibility_examples.md#6-性能测试)
+- **BundleManager 性能测试**：[examples/bundlemanager_examples.md](../../examples/bundlemanager_examples.md#7-性能测试)
+- **ArkUI 性能测试**：[examples/arkui_examples.md](../../examples/arkui_examples.md#6-性能测试)
+- **Ability 性能测试**：[examples/ability_examples.md](../../examples/ability_examples.md#6-性能测试)
+- **Accessibility 性能测试**：[examples/accessibility_examples.md](../../examples/accessibility_examples.md#6-性能测试)
 
 #### 3.2.3 稳定性测试
 
@@ -322,12 +322,12 @@ it('BundleManager_Concurrent_Access', TestType.FUNCTION | Size.LARGETEST | Level
 - 内存压力测试
 
 **子系统示例**：
-详细的子系统测试示例请参考 [examples/](../examples/) 目录中的具体实现：
+详细的子系统测试示例请参考 [examples/](../../examples/) 目录中的具体实现：
 
-- **BundleManager 稳定性测试**：[examples/bundlemanager_examples.md](../examples/bundlemanager_examples.md#8-稳定性测试)
-- **ArkUI 稳定性测试**：[examples/arkui_examples.md](../examples/arkui_examples.md#13-稳定性测试)
-- **Ability 稳定性测试**：[examples/ability_examples.md](../examples/ability_examples.md#13-稳定性测试)
-- **Accessibility 稳定性测试**：[examples/accessibility_examples.md](../examples/accessibility_examples.md#13-稳定性测试)
+- **BundleManager 稳定性测试**：[examples/bundlemanager_examples.md](../../examples/bundlemanager_examples.md#8-稳定性测试)
+- **ArkUI 稳定性测试**：[examples/arkui_examples.md](../../examples/arkui_examples.md#13-稳定性测试)
+- **Ability 稳定性测试**：[examples/ability_examples.md](../../examples/ability_examples.md#13-稳定性测试)
+- **Accessibility 稳定性测试**：[examples/accessibility_examples.md](../../examples/accessibility_examples.md#13-稳定性测试)
 
 > **提示**：性能和稳定性测试确保 API 在高负载和长期运行环境下的可靠性。
 
@@ -399,12 +399,12 @@ static napi_value ArkUI_Click(napi_env env, napi_callback_info info);
 - 错误处理全面
 
 **N-API 封装示例**：
-详细的 N-API 封装示例请参考 [examples/](../examples/) 目录中的具体实现：
+详细的 N-API 封装示例请参考 [examples/](../../examples/) 目录中的具体实现：
 
-- **BundleManager N-API 封装**：[examples/bundlemanager_examples.md](../examples/bundlemanager_examples.md#9-n-api-封装示例)
-- **ArkUI N-API 封装**：[examples/arkui_examples.md](../examples/arkui_examples.md#7-n-api-封装示例)
-- **Ability N-API 封装**：[examples/ability_examples.md](../examples/ability_examples.md#8-n-api-封装示例)
-- **Accessibility N-API 封装**：[examples/accessibility_examples.md](../examples/accessibility_examples.md#8-n-api-封装示例)
+- **BundleManager N-API 封装**：[examples/bundlemanager_examples.md](../../examples/bundlemanager_examples.md#9-n-api-封装示例)
+- **ArkUI N-API 封装**：[examples/arkui_examples.md](../../examples/arkui_examples.md#7-n-api-封装示例)
+- **Ability N-API 封装**：[examples/ability_examples.md](../../examples/ability_examples.md#8-n-api-封装示例)
+- **Accessibility N-API 封装**：[examples/accessibility_examples.md](../../examples/accessibility_examples.md#8-n-api-封装示例)
 
 > **提示**：N-API 封装应遵循统一的错误处理规范，强制使用 `napi_throw_error` 抛出异常。
 
@@ -417,12 +417,12 @@ static napi_value ArkUI_Click(napi_env env, napi_callback_info info);
 - 处理异步操作
 
 **ETS 测试示例**：
-详细的 ETS 测试示例请参考 [examples/](../examples/) 目录中的具体实现：
+详细的 ETS 测试示例请参考 [examples/](../../examples/) 目录中的具体实现：
 
-- **BundleManager ETS 测试**：[examples/bundlemanager_examples.md](../examples/bundlemanager_examples.md#10-ets-测试示例)
-- **ArkUI ETS 测试**：[examples/arkui_examples.md](../examples/arkui_examples.md#8-ets-测试示例)
-- **Ability ETS 测试**：[examples/ability_examples.md](../examples/ability_examples.md#9-ets-测试示例)
-- **Accessibility ETS 测试**：[examples/accessibility_examples.md](../examples/accessibility_examples.md#9-ets-测试示例)
+- **BundleManager ETS 测试**：[examples/bundlemanager_examples.md](../../examples/bundlemanager_examples.md#10-ets-测试示例)
+- **ArkUI ETS 测试**：[examples/arkui_examples.md](../../examples/arkui_examples.md#8-ets-测试示例)
+- **Ability ETS 测试**：[examples/ability_examples.md](../../examples/ability_examples.md#9-ets-测试示例)
+- **Accessibility ETS 测试**：[examples/accessibility_examples.md](../../examples/accessibility_examples.md#9-ets-测试示例)
 
 > **提示**：ETS 测试应使用 Try-Catch 包裹异常，使用 `expect` 进行断言，记录详细的测试日志。
 
@@ -440,12 +440,12 @@ static napi_value ArkUI_Click(napi_env env, napi_callback_info info);
 | `assertNotNull` | 值不为 null | `expect(result).assertNotNull()` |
 
 **子系统示例**：
-详细的断言使用示例请参考 [examples/](../examples/) 目录中的具体实现：
+详细的断言使用示例请参考 [examples/](../../examples/) 目录中的具体实现：
 
-- **BundleManager 断言示例**：[examples/bundlemanager_examples.md](../examples/bundlemanager_examples.md#11-断言示例)
-- **ArkUI 断言示例**：[examples/arkui_examples.md](../examples/arkui_examples.md#9-断言示例)
-- **Ability 断言示例**：[examples/ability_examples.md](../examples/ability_examples.md#10-断言示例)
-- **Accessibility 断言示例**：[examples/accessibility_examples.md](../examples/accessibility_examples.md#10-断言示例)
+- **BundleManager 断言示例**：[examples/bundlemanager_examples.md](../../examples/bundlemanager_examples.md#11-断言示例)
+- **ArkUI 断言示例**：[examples/arkui_examples.md](../../examples/arkui_examples.md#9-断言示例)
+- **Ability 断言示例**：[examples/ability_examples.md](../../examples/ability_examples.md#10-断言示例)
+- **Accessibility 断言示例**：[examples/accessibility_examples.md](../../examples/accessibility_examples.md#10-断言示例)
 
 #### 断言使用规范
 
@@ -623,12 +623,12 @@ it('ArkUI_ThrowError', TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL1,
 - 确保资源正确释放
 
 **子系统示例**：
-详细的错误处理示例请参考 [examples/](../examples/) 目录中的具体实现：
+详细的错误处理示例请参考 [examples/](../../examples/) 目录中的具体实现：
 
-- **BundleManager N-API 错误处理**：[examples/bundlemanager_examples.md](../examples/bundlemanager_examples.md#12-napi-错误处理)
-- **ArkUI N-API 错误处理**：[examples/arkui_examples.md](../examples/arkui_examples.md#11-napi-错误处理)
-- **Ability N-API 错误处理**：[examples/ability_examples.md](../examples/ability_examples.md#11-napi-错误处理)
-- **Accessibility N-API 错误处理**：[examples/accessibility_examples.md](../examples/accessibility_examples.md#11-napi-错误处理)
+- **BundleManager N-API 错误处理**：[examples/bundlemanager_examples.md](../../examples/bundlemanager_examples.md#12-napi-错误处理)
+- **ArkUI N-API 错误处理**：[examples/arkui_examples.md](../../examples/arkui_examples.md#11-napi-错误处理)
+- **Ability N-API 错误处理**：[examples/ability_examples.md](../../examples/ability_examples.md#11-napi-错误处理)
+- **Accessibility N-API 错误处理**：[examples/accessibility_examples.md](../../examples/accessibility_examples.md#11-napi-错误处理)
 
 #### 4.4.2 ETS 层错误处理
 
@@ -638,12 +638,12 @@ it('ArkUI_ThrowError', TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL1,
 - 断言错误码
 
 **子系统示例**：
-详细的 ETS 错误处理示例请参考 [examples/](../examples/) 目录中的具体实现：
+详细的 ETS 错误处理示例请参考 [examples/](../../examples/) 目录中的具体实现：
 
-- **BundleManager ETS 错误处理**：[examples/bundlemanager_examples.md](../examples/bundlemanager_examples.md#12-错误处理)
-- **ArkUI ETS 错误处理**：[examples/arkui_examples.md](../examples/arkui_examples.md#12-错误处理)
-- **Ability ETS 错误处理**：[examples/ability_examples.md](../examples/ability_examples.md#11-错误处理)
-- **Accessibility ETS 错误处理**：[examples/accessibility_examples.md](../examples/accessibility_examples.md#11-错误处理)
+- **BundleManager ETS 错误处理**：[examples/bundlemanager_examples.md](../../examples/bundlemanager_examples.md#12-错误处理)
+- **ArkUI ETS 错误处理**：[examples/arkui_examples.md](../../examples/arkui_examples.md#12-错误处理)
+- **Ability ETS 错误处理**：[examples/ability_examples.md](../../examples/ability_examples.md#11-错误处理)
+- **Accessibility ETS 错误处理**：[examples/accessibility_examples.md](../../examples/accessibility_examples.md#11-错误处理)
 
 > **提示**：错误处理应完整覆盖所有可能的错误场景，包括参数验证、系统级错误和异常情况。
 
@@ -661,12 +661,12 @@ it('ArkUI_ThrowError', TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL1,
 #### 4.5.2 日志格式
 
 **子系统示例**：
-详细的日志记录示例请参考 [examples/](../examples/) 目录中的具体实现：
+详细的日志记录示例请参考 [examples/](../../examples/) 目录中的具体实现：
 
-- **BundleManager 日志示例**：[examples/bundlemanager_examples.md](../examples/bundlemanager_examples.md#13-日志记录示例)
-- **ArkUI 日志示例**：[examples/arkui_examples.md](../examples/arkui_examples.md#12-日志记录示例)
-- **Ability 日志示例**：[examples/ability_examples.md](../examples/ability_examples.md#12-日志记录示例)
-- **Accessibility 日志示例**：[examples/accessibility_examples.md](../examples/accessibility_examples.md#12-日志记录示例)
+- **BundleManager 日志示例**：[examples/bundlemanager_examples.md](../../examples/bundlemanager_examples.md#13-日志记录示例)
+- **ArkUI 日志示例**：[examples/arkui_examples.md](../../examples/arkui_examples.md#12-日志记录示例)
+- **Ability 日志示例**：[examples/ability_examples.md](../../examples/ability_examples.md#12-日志记录示例)
+- **Accessibility 日志示例**：[examples/accessibility_examples.md](../../examples/accessibility_examples.md#12-日志记录示例)
 
 > **提示**：日志记录应遵循分级原则，使用合适的日志级别记录关键信息，便于调试和问题排查。
 
@@ -850,12 +850,12 @@ hdc shell hilog | grep -E "ArkUITest|ArkUI"
 #### 6.2.2 性能测试示例
 
 **子系统性能测试**：
-详细的性能测试示例请参考 [examples/](../examples/) 目录中的具体实现：
+详细的性能测试示例请参考 [examples/](../../examples/) 目录中的具体实现：
 
-- **BundleManager 性能测试**：[examples/bundlemanager_examples.md](../examples/bundlemanager_examples.md#7-性能测试)
-- **ArkUI 性能测试**：[examples/arkui_examples.md](../examples/arkui_examples.md#6-性能测试)
-- **Ability 性能测试**：[examples/ability_examples.md](../examples/ability_examples.md#6-性能测试)
-- **Accessibility 性能测试**：[examples/accessibility_examples.md](../examples/accessibility_examples.md#6-性能测试)
+- **BundleManager 性能测试**：[examples/bundlemanager_examples.md](../../examples/bundlemanager_examples.md#7-性能测试)
+- **ArkUI 性能测试**：[examples/arkui_examples.md](../../examples/arkui_examples.md#6-性能测试)
+- **Ability 性能测试**：[examples/ability_examples.md](../../examples/ability_examples.md#6-性能测试)
+- **Accessibility 性能测试**：[examples/accessibility_examples.md](../../examples/accessibility_examples.md#6-性能测试)
 
 > **提示**：性能测试应关注执行时间、内存消耗、CPU 使用率和吞吐量等关键指标。
 

@@ -138,8 +138,8 @@ hdc shell hilog | grep -E "AccessibilityTest|Accessibility"
 ## 相关文档
 
 - [CAPI 测试框架指南](../modules/conventions/hypium_framework_c.md) - 完整的测试框架定义和规范
-- [N-API 和 ETS 公共模式](../modules/conventions/test_patterns_napi_ets.md) - N-API 封装和 ETS 测试的公共模式
-- [测试生成核心](../modules/L2_Generation/test_generation_c.md) - 测试用例生成核心文档
+- [N-API 和 ETS 公共模式](../modules/L2_Generation/generator/test_patterns_napi_ets.md) - N-API 封装和 ETS 测试的公共模式
+- [测试生成核心](../modules/L2_Generation/generator/test_generation_c.md) - 测试用例生成核心文档
 
 ## 兼容性
 

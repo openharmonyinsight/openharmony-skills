@@ -331,7 +331,7 @@ def compute_incremental(status_code, old_msg, new_msg):
     return inc
 
 
-def build_api_entry(diff, ets_version):
+def build_api_entry(diff, ets_version, subsystem=''):
     """Convert one api_diff change into a standard uncovered_apis entry."""
     status_code = int(diff.get('statusCode', -1))
     change_type, risk = STATUS_MAP.get(status_code, ('UNKNOWN', 'MEDIUM'))
@@ -375,7 +375,7 @@ def build_api_entry(diff, ets_version):
         'func': new_msg or raw_text,
         'kit': syscap,
         'file_path': dts_path.replace('\\', '/'),
-        'subsystem': '',
+        'subsystem': subsystem,
         'error_codes': err_str,
         'start_version': '',
         'stage_label': '',
@@ -513,7 +513,7 @@ def build_output(diffs, ets_versions, subsystem, kit, dts_file, iter_phase, task
     skipped_delete = 0
     built_entries = []
     for d in diffs:
-        entry = build_api_entry(d, primary)
+        entry = build_api_entry(d, primary, subsystem or '')
         if not passes_filter(entry, subsystem, kit, dts_file):
             continue
         built_entries.append(entry)
