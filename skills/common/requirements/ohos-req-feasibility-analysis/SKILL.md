@@ -25,12 +25,12 @@ OHOS 代码证据包（kb_precheck_path）是 feasibility 的独立于用户设�
 
 - `{docs_dir}/01-requirement.md`
 - `{docs_dir}/_draft/feasibility-inputs.md`（Step 3 用户提供或确认不提供的本地关键代码仓路径、接口文档和前置依赖资料记录）
-- 代码证据包：`{kb_precheck_path}`（由 `ohos-intake` Step 4 轻量代码预检产出；未产出时按本 skill Fallback 规则降级）
+- 代码证据包：`{kb_precheck_path}`（由 `ohos-req-intake-orchestration` Step 4 轻量代码预检产出；未产出时按本 skill Fallback 规则降级）
 - 可用的源码、架构文档、Owner 结论、竞品或 PoC 证据
 
 ## 前置输入契约
 
-启动提醒、建议补充资料清单推导和用户确认动作由 `ohos-intake` Step 3 统一定义和执行（参见 ohos-intake SKILL.md），本 skill 不重复维护规则。
+启动提醒、建议补充资料清单推导和用户确认动作由 `ohos-req-intake-orchestration` Step 3 统一定义和执行（参见 ohos-req-intake-orchestration SKILL.md），本 skill 不重复维护规则。
 
 生成 `02-feasibility.md` 前必须满足：
 - `{docs_dir}/_draft/feasibility-inputs.md` 已存在。
@@ -53,7 +53,7 @@ OHOS 代码证据包（kb_precheck_path）是 feasibility 的独立于用户设�
 2. 读取 `{docs_dir}/_draft/feasibility-inputs.md`，确认用户已提供资料或明确确认不提供额外资料。
 3. 确认评估范围与产品范围、FR/NFR 一致。
 4. **候选路径分析**（含代码证据、子能力、可视化、估算四个子步骤）：
-   - **4a 代码证据分析**：读取 `{kb_precheck_path}` 和用户提供的本地关键代码仓路径/文档/Owner 结论，提取关键接口、类、调用链，为候选路径提供代码级证据，将关键代码仓库分析写入 §2 技术可行性下的 §2.1「关键代码仓库分析」表（模板外补充子节：仓库/模块/路径/关键接口/影响类型/证据来源），供 ohos-feature §4 模块覆盖完整性校验引用。证据包和用户资料均未覆盖的接口/路径标记"证据受限，待 Phase 2 代码分析验证"，不得虚构。
+   - **4a 代码证据分析**：读取 `{kb_precheck_path}` 和用户提供的本地关键代码仓路径/文档/Owner 结论，提取关键接口、类、调用链，为候选路径提供代码级证据，将关键代码仓库分析写入 §2 技术可行性下的 §2.1「关键代码仓库分析」表（模板外补充子节：仓库/模块/路径/关键接口/影响类型/证据来源），供 `ohos-req-feature-proposal-baseline` §4 模块覆盖完整性校验引用。证据包和用户资料均未覆盖的接口/路径标记"证据受限，待 Phase 2 代码分析验证"，不得虚构。
    - **4b 子能力拆分**：识别是否存在多个可独立交付、独立验证或依赖不同系统能力的子能力；若存在，必须先按子能力分别评估价值、现有能力差距、候选路径、兼容性、安全、性能和依赖，再给出组合路径判断。不得只用一个整体方案掩盖子能力差异。
    - **4c 可视化方案图**：为每个候选路径绘制：
      - 流程图（Mermaid flowchart）：展示数据流转路径和模块交互顺序

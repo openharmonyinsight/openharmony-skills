@@ -1,7 +1,7 @@
 ---
 target_release: ""
 feature_id: ""        # 关联 platform_issues 的 FEAT-NNNNN
-rr_id: ""             # RR单号：从 IR.md 继承
+rr_id: ""             # RR单号：从 04-feature.md 继承
 issue: ""
 author: ""
 date: ""
@@ -20,7 +20,7 @@ gate_a: ""           # GA 审视记录链接
 | 字段 | 内容 |
 |------|------|
 | 需求ID | {feature_id} |
-| RR单号 | {从 IR.md 继承} |
+| RR单号 | {从 04-feature.md 继承} |
 
 ## 2. 初始分级判断
 > L0/简单变更：非目标等章节可简化为一句话；L1+ 建议完整填写。

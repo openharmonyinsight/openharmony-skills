@@ -78,9 +78,9 @@ PendingRe-review 时需标注退回哪个 Step。判定依据：
 | 修改要求涉及的文档 | 退回 Step | 理由 |
 |-------------------|----------|------|
 | 01-requirement.md 需修改 | Step 1 | 需求基线变更，下游 02-04 全部需级联更新 |
-| 02-feasibility.md 需修改 | Step 2 | 可行性结论变更影响 03/04 |
-| 03-arch-decision-record.md 需修改 | Step 3 | 方案变更影响 04 |
-| 04-feature.md 需修改 | Step 4 | Feature 内容调整 |
+| 02-feasibility.md 需修改 | Step 5 | 可行性结论变更影响 03/04 |
+| 03-arch-decision-record.md 需修改 | Step 7 | 方案变更影响 04 |
+| 04-feature.md 需修改 | Step 10 | Feature 内容调整 |
 | 多个文档需修改 | 退回**最低编号** Step | 从源头修复，避免中间文档不一致 |
 
 ## 输出契约
@@ -104,7 +104,7 @@ PendingRe-review 时需标注退回哪个 Step。判定依据：
   ],
   "routing": {
     "action": "proceed | close | rollback",
-    "target_step": "null | 1 | 2 | 3 | 4",
+    "target_step": "null | 1 | 5 | 7 | 10",
     "target_skill": "null | ohos-req-requirement-intake | ohos-req-feasibility-analysis | ohos-req-arch-decision | ohos-req-feature-proposal-baseline"
   },
   "next_action": "需求导入评审流程完成 | 关闭/归档 | 退回 Step X"
@@ -115,7 +115,7 @@ PendingRe-review 时需标注退回哪个 Step。判定依据：
 
 - `decision`：仅取 `"Accepted" | "Rejected" | "PendingRe-review"`，不可使用其他值
 - `routing.action`：`proceed`（接纳→放行）/ `close`（不接纳→关闭）/ `rollback`（退回）
-- `routing.target_step`：仅 rollback 时有值，取最低编号 Step
+- `routing.target_step`：仅 rollback 时有值，取修改要求涉及文档对应的最低编排 Step（01→1，02→5，03→7，04→10）
 - `review_opinions[].handling` + `review_opinions[].owner`：每条意见必须两个字段同时存在，缺失时填 `[待补充]`
 
 ## 决策纪要格式

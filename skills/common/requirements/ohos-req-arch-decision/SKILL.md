@@ -113,7 +113,7 @@ metadata:
 
 ## 职责边界
 
-本 skill 只产出方案选型决策，不产出 Feature/Proposal 评审基线（目标/非目标/AC/交付影响），这些由 ohos-feature skill 负责。
+本 skill 只产出方案选型决策，不产出 Feature/Proposal 评审基线（目标/非目标/AC/交付影响），这些由 `ohos-req-feature-proposal-baseline` skill 负责。
 
 ## NEVER
 
@@ -135,7 +135,7 @@ metadata:
 
 | 场景 | 行为 |
 |------|------|
-| 01-02 未就绪 | 提示用户先完成上游 Step 1-0.2，列出缺失文档 |
+| 01-02 未就绪 | 提示用户先完成上游 Step 1-6，列出缺失文档 |
 | 用户未提供候选方案 | 追问用户："请提供至少 2 个候选方案用于比较" |
 | 用户未做决策（阶段A后） | 保持 status: PendingDecision，追问："请提供评审会议决策结论" |
 | 遗留问题未提供 | §6 保留占位符 [待用户评审会议后填写]，不自行填充 |

@@ -55,7 +55,7 @@ flowchart TD
 1. 决策由用户提供，AI 不代行。Step 8 为强制交互点。
 2. 拆分结果由用户确认，AI 不自行定稿。Step 11 为强制交互点。
 3. Review Ready Gate 已融合进 `ohos-req-feature-proposal-baseline`，不再维护独立 Gate skill。
-4. requirements 流程不再生成下游 IR、SR 或交接契约，相关转换 skill 已移除。
+4. requirements 流程不再生成下游 IR、SR 或 handoff 交接契约，相关转换 skill 已移除；历史同名产物只读保留、非前置，不自动改名/删除/覆盖。
 5. 步骤按自然顺序编号为 Step 1 到 Step 14，不再使用小数步骤编号。
 
 ## 预检

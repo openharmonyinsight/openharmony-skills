@@ -28,7 +28,7 @@
     {
       "id": 2,
       "name": "token-economy-enforcement",
-      "prompt": "执行需求导入评审全流程时，在Step 2 feasibility的spawn task中，主session把02-feasibility.md全文嵌入task描述传给subagent。请检查是否符合规范。",
+      "prompt": "执行需求导入评审全流程时，在Step 5 feasibility的spawn task中，主session把02-feasibility.md全文嵌入task描述传给subagent。请检查是否符合规范。",
       "expected_output": "应检测到Token经济性违规——禁止嵌入文件内容到task描述。task只含四要素(角色/输入路径/输出路径/任务简述)。证据应传路径不传内容。",
       "assertions": [
         {

@@ -14,22 +14,22 @@ metadata:
   related-skills:
     - name: ohos-req-requirement-intake
       required: true
-      min_version: 0.1.0
+      min_version: 0.3.0
     - name: ohos-req-feasibility-analysis
       required: true
-      min_version: 0.1.0
+      min_version: 0.3.0
     - name: ohos-req-arch-decision
       required: true
-      min_version: 0.1.0
+      min_version: 0.3.0
     - name: ohos-req-feature-proposal-baseline
       required: true
-      min_version: 0.1.0
+      min_version: 0.3.0
     - name: ohos-req-value-decision
       required: true
-      min_version: 0.1.0
+      min_version: 0.3.0
     - name: ohos-req-value-ppt-gen
       required: false
-      min_version: 0.1.0
+      min_version: 0.2.0
 ---
 
 **Announce at start:** "我正在使用 ohos-req-intake-orchestration skill 编排需求导入评审流程。"
@@ -58,6 +58,8 @@ OHOS 需求导入评审全流程编排入口，串联 5 个主步骤（requireme
 
 - `01-requirement.md` → `02-feasibility.md` → `03-arch-decision-record.md` → `04-feature.md`
 - `value-decision-record.md`
+
+不再输出 `IR.md`、`SR.md` 或 `handoff.md`。若历史目录中存在这些旧产物，只读保留用于追溯；本流程不得自动改名、删除或覆盖，也不得把它们作为 Step 1-14 的前置条件。
 
 ## 模板与产物命名约定
 

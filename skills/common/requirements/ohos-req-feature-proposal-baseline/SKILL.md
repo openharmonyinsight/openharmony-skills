@@ -1,6 +1,6 @@
 ---
 name: ohos-req-feature-proposal-baseline
-description: Use when preparing an OHOS Feature and proposal review baseline in requirements Step 4, especially for 04-feature.md, proposals/*.md, SIG review readiness, built-in Review Ready Gate, proposal splitting, feature scope, acceptance criteria, or delivery impact. Do NOT use for requirement intake (ohos-req-requirement-intake), feasibility analysis (ohos-req-feasibility-analysis), or architecture decision (ohos-req-arch-decision).
+description: Use when preparing an OHOS Feature and proposal review baseline in requirements Step 10-12, especially for 04-feature.md, proposals/*.md, SIG review readiness, built-in Review Ready Gate, proposal splitting, feature scope, acceptance criteria, or delivery impact. Do NOT use for requirement intake (ohos-req-requirement-intake), feasibility analysis (ohos-req-feasibility-analysis), or architecture decision (ohos-req-arch-decision).
 metadata:
   author: openharmony
   scope: common
@@ -72,7 +72,7 @@ metadata:
     - proposal 边界、Owner/SIG、工作量、依赖、开放条件项写入模板对应章节，不新增模板外 H1/H2
 11. **⭐ 拆分结果确认门禁**：向用户展示 04-feature.md 中的拆分方案以及已生成 proposal 文件列表（每个 proposal 的路径、边界、工作量、Owner、依赖），等待用户确认或调整后才允许执行 Review Ready Gate。AI 不自行定稿拆分方案。
 12. 保存 `{docs_dir}/04-feature.md` 和全部 `{docs_dir}/proposals/05-proposal-<slug>.md`。
-13. 执行内建 Review Ready Gate（读取刚保存且经用户确认的 04-feature.md 和 proposal 文件），写入 Gate 结论和条件项摘要。
+13. 执行内建 Review Ready Gate（读取刚保存且经用户确认的 04-feature.md 和 proposal 文件），写入 `04-feature.md` 的固定 `## Review Ready Gate` 章节：`decision_gate` YAML、13 项检查表、条件项、后续观测项、FR→AC 追溯表。
 
 ## 职责边界
 
@@ -96,8 +96,8 @@ Gate 检查读取 01-04，不需要调用独立 skill。判定项为 8 项固定
 |--------|------|----------|
 | 概述与价值 | 有核心诉求和业务价值描述 | §1 章节存在且非占位符 |
 | 范围明确 | 目标和非目标已列出 | §2 章节存在且非占位符 |
-| AC 完整 | 有可观察指标和验证方式 | §3 至少 1 条 AC 行非占位符 |
-| 受影响范围 | 明确跨仓模块、Owner/SIG | §4 至少 1 条影响范围行非占位符 |
+| AC 完整 | 每条 AC 均有标准、可观察指标和验证方式 | §3 每条 AC 行逐列检查；任一 AC 缺指标或验证方式→warn；所有 AC 为空或占位→fail |
+| 受影响范围 | 明确跨仓模块、Owner/SIG | §4 至少 1 条影响范围行非占位符；任一受影响模块缺 Owner/SIG→warn；全空→fail |
 | 拆分决策 | 有拆分结论和 proposal 边界 | §5 章节存在且非占位符 |
 | Proposal 文件 | 每个拆分项均有实际 proposal 文件 | §5 proposal 表中的文件路径必须存在；不拆分时也必须存在 1 份 proposal |
 | 工作量约束 | 每个 proposal 不超过复杂度上限 | §5 每个 proposal 工作量不超过简单≤5/标准≤8/复杂≤15 人月 |
@@ -117,6 +117,37 @@ Gate 检查读取 01-04，不需要调用独立 skill。判定项为 8 项固定
 - `Conditional Ready`：无失败项，存在可关闭 warn 项且每条都有 Owner、关闭动作和时点。
 - `Not Ready`：存在失败项，或存在可关闭 warn 项但缺少 Owner、关闭动作或关闭时点；禁止生成正式需求 PPT。
 
+### Gate 输出契约
+
+`04-feature.md` 必须包含固定 `## Review Ready Gate` 章节，位置在需求变更影响性分析之后。该章节是 `ohos-req-value-decision` 的上游输入，不允许自由文本替代。
+
+```yaml
+decision_gate:
+  schema_version: "1.0"
+  gate: "Ready | Conditional Ready | Not Ready"
+  summary: "<一句话结论>"
+  block_reasons:
+    - "<Not Ready 阻塞原因；无则 []>"
+  conditions:
+    - id: "COND-01"
+      description: "<当前评审可关闭条件项>"
+      owner: "<负责人>"
+      action: "<关闭动作>"
+      due: "<关闭时点>"
+  observations:
+    - id: "OBS-01"
+      description: "<后续观测项>"
+      owner: "<负责人>"
+      target_stage: "<目标关闭阶段>"
+      non_blocking_reason: "<不阻塞理由>"
+```
+
+固定检查表必须包含 13 项检查项，列为 `检查项 | 结论 | 证据 | 条件项/阻塞项`，结论仅允许 `pass | warn | fail`。`decision_gate.gate` 由检查表推导：存在 fail 或缺 Owner/动作/时点的可关闭 warn → `Not Ready`；无 fail 且存在完整可关闭 warn → `Conditional Ready`；全部 pass 或仅后续观测项 → `Ready`。
+
+### 旧 IR/SR/handoff 兼容边界
+
+本 requirements 流程不再生成 `IR.md`、`SR.md` 或 `handoff.md`，也不自动改名、删除或覆盖历史目录中的同名旧产物。旧 IR/SR/handoff 只读保留，用于历史追溯；新流程的正式评审输入以 `01-requirement.md`、`02-feasibility.md`、`03-arch-decision-record.md`、`04-feature.md`、`proposals/05-proposal-*.md`、`value-decision-record.md` 为准。下游交付若仍需要 SR/handoff，必须由下游交付流程基于本 skill 输出另行生成，不作为 requirements Step 1-14 前置条件。
+
 ### AC一致性校验
 
 执行 Gate 后生成 FR→AC 追溯表，检查编号一致性：每条 FR 必须映射到至少一条 AC，AC 编号在 04-feature.md 内唯一且无遗漏。校验结果写入 04-feature.md §5 备注。
@@ -126,7 +157,7 @@ Gate 检查读取 01-04，不需要调用独立 skill。判定项为 8 项固定
 | 场景 | 恢复指导 |
 |------|---------|
 | Not Ready (04-feature.md 内容不完整) | 告知用户缺失的具体章节，引导回本 skill 对应子步骤补全 |
-| Not Ready (01-03 未完成) | 告知用户需先完成上游 Step 1-3，列出缺失文档 |
+| Not Ready (01-03 未完成) | 告知用户需先完成上游 Step 1/5/7 对应文档，列出缺失文档 |
 | Conditional Ready | 列出条件项，引导用户确认是否接受条件放行或退回修改 |
 | 拆分未确认 (Step 11 gate) | 提示用户确认拆分方案，不可自行定稿 |
 | proposal 文件缺失 | 回到本 skill Step 10 生成缺失的 `{docs_dir}/proposals/05-proposal-<slug>.md`，不可只保留 04-feature.md 表格 |
@@ -141,6 +172,7 @@ Gate 检查读取 01-04，不需要调用独立 skill。判定项为 8 项固定
 - [ ] 内容可追溯到 01-03
 - [ ] RR单号已从 01-requirement.md 继承（frontmatter `rr_id` + §一表格）
 - [ ] 目标、非目标、AC 和范围可评审
+- [ ] 每条 AC 均有标准、可观察指标和验证方式；缺列已形成 warn 或 fail
 - [ ] 影响范围有 Owner/SIG 和交付物
 - [ ] Conditional 项有 Owner 和关闭时点
 - [ ] 拆分结论包含事实依据
@@ -152,6 +184,7 @@ Gate 检查读取 01-04，不需要调用独立 skill。判定项为 8 项固定
 - [ ] 拆分结果已经用户确认（非 AI 自行定稿）
 - [ ] 03-arch-decision-record.md §6 遗留问题由用户评审会议输入（非 AI 生成）
 - [ ] 03-arch-decision-record.md §6 每条遗留项负责人/解决动作/计划关闭时间齐全
+- [ ] `## Review Ready Gate` 章节按固定 schema 写入，`decision_gate` 与检查表一致
 
 ## NEVER
 
@@ -161,6 +194,7 @@ Gate 检查读取 01-04，不需要调用独立 skill。判定项为 8 项固定
 - **禁止 AI 代行 §6 遗留问题生成**：遗留问题必须由用户评审会议输入，不得从 feasibility 条件项或风险自动推演（原因：AI 推演会引入虚构风险项）
 - **禁止 Not Ready 时生成正式需求 PPT 或进入评审会议**：存在失败项时禁止把未就绪 Feature/Proposal 基线提交评审（原因：未通过门禁的需求进入下游会导致返工和评审阻塞）
 - **禁止复制 01-03 详细论证**：04-feature.md 只收敛结论，不复制详细论证（原因：避免文档冗余和信息不一致）
+- **禁止在 requirements 流程重新生成 IR/SR/handoff**：历史 IR/SR/handoff 只读保留，新流程不把它们作为前置条件或输出（原因：本流程已收敛为 01-04 + proposal + value decision）
 
 ## 输出
 

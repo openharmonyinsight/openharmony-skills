@@ -77,7 +77,7 @@
       "id": 3,
       "name": "legacy-issue-block",
       "prompt": "01-03已就绪。03-arch-decision-record.md 遗留问题中有1条缺少'解决动作'字段。请生成 04-feature.md。",
-      "expected_output": "遗留问题闭环校验检测到三字段不全，Gate降级为Not Ready，block_reasons记录缺失项。不生成IR。",
+      "expected_output": "遗留问题闭环校验检测到三字段不全，Gate降级为Not Ready，block_reasons记录缺失项。04-feature.md 固定 Review Ready Gate 章节写入 decision_gate.block_reasons。",
       "assertions": [
         {
           "text": "Gate 结论为 Not Ready",
@@ -86,6 +86,114 @@
         {
           "text": "block_reasons 包含遗留项三字段不全",
           "type": "llm_judge"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "gate-output-contract-required",
+      "prompt": "01-03已就绪。用户确认不拆分proposal，请生成04-feature.md、proposal文件并执行内建 Review Ready Gate。",
+      "expected_output": "04-feature.md 必须包含固定 ## Review Ready Gate 章节，含 decision_gate YAML(schema_version/gate/summary/block_reasons/conditions/observations)、13项检查表、条件项、后续观测项和 FR→AC 追溯表。value-decision 后续可稳定消费该契约。",
+      "assertions": [
+        {
+          "text": "decision_gate",
+          "type": "contains"
+        },
+        {
+          "text": "schema_version",
+          "type": "contains"
+        },
+        {
+          "text": "block_reasons",
+          "type": "contains"
+        },
+        {
+          "text": "conditions",
+          "type": "contains"
+        },
+        {
+          "text": "observations",
+          "type": "contains"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "partial-ac-warning",
+      "prompt": "04-feature.md 草稿中 AC-04 有标准和可观察指标，但验证方式为空；其他 AC 完整。请执行内建 Review Ready Gate。",
+      "expected_output": "AC 完整检查必须逐条逐列判定。AC-04 缺验证方式时该检查为 warn；若该 warn 有 Owner、关闭动作和关闭时点，则 Gate 为 Conditional Ready，否则为 Not Ready。",
+      "assertions": [
+        {
+          "text": "AC-04",
+          "type": "contains"
+        },
+        {
+          "text": "warn",
+          "type": "contains"
+        },
+        {
+          "text": "验证方式",
+          "type": "contains"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "affected-module-owner-required",
+      "prompt": "04-feature.md 草稿的§4受影响模块表中有2个模块，其中1个模块缺少 Owner/SIG。请执行内建 Review Ready Gate。",
+      "expected_output": "受影响范围检查必须识别 Owner/SIG 缺失并标为 warn；若没有 Owner、关闭动作、关闭时点，则 Gate 升级为 Not Ready。§4 模板必须包含 Owner/SIG 列。",
+      "assertions": [
+        {
+          "text": "Owner/SIG",
+          "type": "contains"
+        },
+        {
+          "text": "warn",
+          "type": "contains"
+        },
+        {
+          "text": "Not Ready",
+          "type": "contains"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "observation-non-blocking",
+      "prompt": "04-feature.md 的 Gate 只有1个后续观测项：Phase 2补充性能基准，已记录 Owner 和目标关闭阶段；无失败项和当前评审可关闭条件项。请执行 Gate 判定。",
+      "expected_output": "后续观测项写入 observations 表，不阻塞 Gate。无 fail 且仅有后续观测项时 Gate 为 Ready。",
+      "assertions": [
+        {
+          "text": "observations",
+          "type": "contains"
+        },
+        {
+          "text": "Ready",
+          "type": "contains"
+        },
+        {
+          "text": "不阻塞",
+          "type": "contains"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "legacy-ir-sr-handoff-readonly",
+      "prompt": "历史目录中已有 IR.md、SR.md 和 handoff.md。请按新版 requirements 流程生成 04-feature.md 和 proposal。",
+      "expected_output": "新版 requirements 流程不生成、不改名、不删除、不覆盖 IR.md/SR.md/handoff.md；旧产物只读保留用于追溯，不能作为 Step 1-14 前置条件。正式输出为 04-feature.md、proposals/05-proposal-*.md 和后续 value-decision-record.md。",
+      "assertions": [
+        {
+          "text": "只读保留",
+          "type": "contains"
+        },
+        {
+          "text": "不生成",
+          "type": "contains"
+        },
+        {
+          "text": "proposals/05-proposal-",
+          "type": "contains"
         }
       ]
     },
