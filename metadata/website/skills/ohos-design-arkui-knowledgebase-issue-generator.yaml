@@ -1,0 +1,78 @@
+schemaVersion: 1
+
+id: ohos-design-arkui-knowledgebase-issue-generator
+title: ArkUI 问题知识库生成与修复
+summary: 生成、更新或修复 ArkUI ace_engine 问题型知识库文档，支持从 bug 报告/PR 修复中提取问题模式、根因分析和排查路径，并注册到 context_registry.json。
+
+category:
+  scope: domain
+  namespace: arkui
+  stage: design
+  domain: arkui
+  capability: knowledgebase-issue-generator
+
+status:
+  maturity: trial
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - arkui
+  - ace-engine
+  - knowledge-base
+  - kb
+  - issue
+  - troubleshooting
+  - root-cause-analysis
+
+audience:
+  - ArkUI ace_engine 框架开发者
+  - ArkUI 问题排查与维护人员
+  - ArkUI 知识库维护者
+
+useCases:
+  - title: 创建问题知识库
+    description: 从 bug 报告、PR 修复或口头描述中提取问题模式，生成 docs/kb/issues/ 下的结构化 KB 页面，包含根因分类、排查路径和修复方案。
+  - title: 更新问题知识库
+    description: 向已有问题 KB 补充新的根因类别、关联案例或修复方案，保留未修改内容不变。
+  - title: 修复问题知识库
+    description: 修复已有问题 KB 的结构性问题、过期链接或无效的 context_registry.json 条目。
+
+whenToUse:
+  - 用户要求生成、更新或修复 ArkUI 问题型知识库文档。
+  - 需要将历史典型问题经验沉淀为 docs/kb/issues/ 下的 KB 页面。
+  - 用户提到问题KB、issue KB、troubleshooting KB、问题排查KB、问题经验沉淀等关键词。
+
+whenNotToUse:
+  - 需要生成代码型 KB（组件、能力、架构等）——使用 ohos-design-arkui-knowledgebase-generator。
+  - 需要修改产品源码或 Spec 文件。
+  - 构建、编译或运行测试相关需求。
+
+inputs:
+  required:
+    - 问题描述或 bug 报告/PR/Issue 链接。
+    - 操作类型：生成、更新或修复。
+  optional:
+    - 根因类别信息。
+    - 关联组件/能力名称。
+    - 关联 PR/Commit/Issue 链接。
+    - FuncID 关联信息。
+
+outputs:
+  - docs/kb/issues/ 下的结构化问题 KB 页面。
+  - 更新后的 docs/context_registry.json 条目。
+  - 验证结果（validate_context.py、kb_search.py 搜索确认）。
+
+quickStart:
+  steps:
+    - 提供问题描述或 bug/PR/Issue 链接，确认操作类型。
+    - Agent 运行 kb_search.py 判断目标是否已有 KB，确定 create/update/repair 模式。
+    - Agent 验证根因和代码路径后生成或更新 KB 页面和路由元数据。
+  examplePrompt: |
+    帮我把 Navigation 返回崩溃的问题沉淀为 issue KB，
+    参考 PR #12345 的修复方案。
+
+related:
+  skills:
+    - ohos-design-arkui-knowledgebase-generator
+  docs: []

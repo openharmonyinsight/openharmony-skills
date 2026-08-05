@@ -67,36 +67,47 @@ Deprecation annotations live in SDK `.d.ts` / `.d.ets` / `.static.d.ets` files u
 
 1. **Locate all SDK declaration files** relevant to the target:
    ```bash
-   find <OH_ROOT>/interface/sdk-js/api -name "*<target>*" -type f
+    # Generate candidate names from PascalCase target (e.g. NavRouter → NavRouter, nav_router, navRouter)
+    target="<TargetName>"
+    # Use a symbol-name-based search instead of guessing filenames — acronym boundaries
+    # (e.g. UIExtensionComponent → u_i_extension_component) and non-standard naming
+    # conventions make regex-based conversion unreliable.
+    # Step 1: Find all declaration files containing the target symbol name
+    rg -l "$target" <OH_ROOT>/interface/sdk-js/api/ --glob '*.d.ts' --glob '*.d.ets' --glob '*.static.d.ets' | sort -u
    ```
-   This returns the dynamic `.d.ts`, static `.static.d.ets`, and Modifier `.d.ts` / `.static.d.ets` files. For non-component targets (capabilities, API topics, architecture), check the relevant `.d.ts` or interface files where the entity is declared.
+   This returns the dynamic `.d.ts`, static `.static.d.ets`, and Modifier `.d.ts` / `.static.d.ets` files. Using `-iname` (case-insensitive) ensures PascalCase targets like `NavRouter` also match `nav_router.d.ts` (snake_case). For non-component targets (capabilities, API topics, architecture), check the relevant `.d.ts` or interface files where the entity is declared.
 
-2. **Read each file and search for `@deprecated`**: Do not just grep — read the file content to capture the full annotation including `@useinstead`:
-   ```bash
-   grep -n "@deprecated" <OH_ROOT>/interface/sdk-js/api/@internal/component/ets/<target>.d.ts
-   grep -n "@deprecated" <OH_ROOT>/interface/sdk-js/api/arkui/<Target>Modifier.d.ts
-   grep -n "@deprecated" <OH_ROOT>/interface/sdk-js/api/arkui/<Target>Modifier.static.d.ets
-   grep -n "@deprecated" <OH_ROOT>/interface/sdk-js/api/arkui/component/<target>.static.d.ets
-   ```
-   If any of these files do not exist, note that and skip — but do NOT assume deprecation status from absence of a file.
+ 2. **Read each file and search for `@deprecated`**: Use the file list from Step 1 — do NOT re-derive paths by concatenating `<target>.d.ts`, as real filenames may not follow the target name (e.g. `nav_router.d.ts` for `NavRouter`, `ui_extension_component.d.ts` for `UIExtensionComponent`). For each file found in Step 1:
+    ```bash
+    # For each file in the Step 1 result list:
+    grep -n "@deprecated" <file>
+    ```
+    If any of these files do not exist, note that and skip — but do NOT assume deprecation status from absence of a file.
 
-   For non-component targets, search in the appropriate SDK subdirectory:
+   For non-component targets (capabilities, API topics, architecture), the target's declaration may reside in an **aggregated file** whose filename does not contain the target name (e.g. `getContext` is declared in `common.d.ts`). Therefore, **do NOT filter by filename** — search by symbol name inside file content. **The correct order is: first locate the declaration, then check for @deprecated on that declaration.** Do NOT pre-filter by @deprecated presence, as the target's declaration may reside in a file that has no other @deprecated annotations.
    ```bash
-   find <OH_ROOT>/interface/sdk-js/api -name "*.d.ts" -exec grep -l "@deprecated" {} + | grep -i "<target>"
+   # Step 1: Locate ALL declarations of <TargetSymbol> across all SDK files
+   rg -n "<TargetSymbol>" <OH_ROOT>/interface/sdk-js/api/ --glob '*.d.ts' --glob '*.d.ets' --glob '*.static.d.ets'
+
+   # Step 2: For each declaration found, read the full JSDoc preceding it to check for @deprecated
+   # This covers declare function, export declare class, export interface, etc.
+   # because it matches the symbol name rather than a specific keyword pattern.
    ```
+   This approach covers `declare function`, `export declare class`, `export declare interface`, `export const`, namespace-internal declarations, and all other SDK declaration forms. **Only after locating and checking the target's declarations in ALL applicable paradigms can you conclude "not deprecated". If the target's declaration cannot be located in any paradigm, output "废弃状态未验证" — do NOT conclude "not deprecated" from absence of evidence.**
    Also check for deprecation in NAPI kit `.d.ts` files:
    ```bash
    grep -rn "@deprecated" <OH_ROOT>/interface/sdk-js/api/@internal/component/ets/  # broad scan for cross-component deprecation
    grep -rn "@deprecated" <OH_ROOT>/interface/sdk-js/api/arkui/                    # modifier-level deprecation
    ```
 
-3. **If ANY `@deprecated since <version>` annotation is found** on the target's interface, class, const, enum, or top-level declaration (not just individual methods/properties), the ENTIRE target entity is deprecated. Record:
-   - Deprecation version (e.g. `@deprecated since 13`, `@deprecated since 22`)
-   - Recommended replacement from `@useinstead` annotation (e.g. `@useinstead Swiper`, `@useinstead NavDestinationAttribute`)
-   - Whether the deprecation applies only to specific paradigms (e.g. `dynamiconly`)
-   - Scope of deprecation: entire entity (component/interface/capability) deprecated vs. only specific members deprecated
+3. **If ANY `@deprecated since <version>` annotation is found** on the target's interface, class, const, enum, or top-level declaration (not just individual methods/properties), determine the deprecation **scope**:
+    - Deprecation version (e.g. `@deprecated since 13`, `@deprecated since 22`)
+    - Recommended replacement from `@useinstead` annotation (e.g. `@useinstead Swiper`, `@useinstead NavDestinationAttribute`)
+    - Whether the deprecation applies only to specific paradigms (e.g. `dynamiconly`)
+    - **Paradigm-level deprecation**: If `@deprecated` applies only to one paradigm (e.g. dynamic only) but other paradigms (static, modifier) remain active, the target is **NOT globally deprecated**. Record the paradigm-specific deprecation and mark only the affected paradigm's routes in the KB.
+    - **Entity-level deprecation**: A `@deprecated` annotation on one paradigm's declaration does NOT automatically imply global deprecation. Each paradigm's declaration is independent. Only set the target as globally deprecated when ALL applicable paradigms have been verified as deprecated — i.e. every paradigm's declaration file contains an entity-level `@deprecated` annotation, or there is explicit cross-paradigm documentation (e.g. a migration guide) confirming the entire target is deprecated. Absence of `dynamiconly`/`staticonly` in the annotation text is NOT sufficient proof of global scope when the target has separate per-paradigm declaration files.
 
-4. **If NO `@deprecated` annotations are found at interface/class/const/enum level**, the target is NOT deprecated. State this explicitly in the KB 定位 section.
+ 4. **If NO `@deprecated` annotations are found at interface/class/const/enum level** across ALL applicable paradigms where the target's declaration was located, the target is NOT deprecated. State this explicitly in the KB 定位 section. **If the target's declaration could not be located in any paradigm**, output "废弃状态未验证" — do NOT conclude "not deprecated" from absence of evidence.
 
 **Anti-pattern — DO NOT:**
 - ❌ Skip the `@deprecated` check because "the target seems active" or "no one mentioned deprecation"
@@ -104,6 +115,7 @@ Deprecation annotations live in SDK `.d.ts` / `.d.ets` / `.static.d.ets` files u
 - ❌ Only check one `.d.ts` file when multiple paradigm files exist (dynamic, static, modifier)
 - ❌ Treat method-level deprecation as equivalent to entity-level deprecation — a single deprecated method does not make the whole component/interface deprecated, but entity-level `@deprecated` on the interface/class/const/enum does
 - ❌ Limit this check to component KBs only — it applies equally to capability, API/SDK, and architecture KBs
+- ❌ Guess SDK declaration filenames by concatenating `<target>.d.ts` — real filenames may not follow the target name (e.g. `nav_router.d.ts` for `NavRouter`, `ui_extension_component.d.ts` for `UIExtensionComponent`). Use the file list from Step 1 instead.
 
 When a deprecated item is found:
 
@@ -115,7 +127,7 @@ When a deprecated item is found:
    - **常见问题定位 / 调试入口 / 相关主题**: Never suggest a deprecated API as the solution to a problem. Always point to the recommended replacement.
    - **Do not omit deprecated source paths entirely**: They still exist in the codebase and may be relevant for backward-compatibility debugging, but they must always carry the deprecation marker and must never be the first or recommended entry.
 
-**In `docs/context_registry.json`**, set `"status": "deprecated"` for deprecated targets (any `kind`). Include the deprecation version and recommended replacement in the `keywords` array.
+**In `docs/context_registry.json`**, set `"status": "deprecated"` only when the target is **globally deprecated** (all paradigms). For paradigm-specific deprecation (e.g. dynamic only), keep `"status": "active"` but mark the affected paradigm routes in the KB with "(仅动态范式已废弃，API X)". Include the deprecation version, paradigm scope, and recommended replacement in the `keywords` array.
 
 ### Frameworks / Capabilities
 

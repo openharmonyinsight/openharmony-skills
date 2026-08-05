@@ -1,0 +1,94 @@
+{
+  "skill_name": "ohos-design-arkui-spec-generator",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "backfill-component-spec",
+      "prompt": "帮 Toggle 组件补录规格文档。Toggle 已有 FuncID 05-04-06，在 specs/registry/functions.yaml 中已注册。",
+      "expected_output": "应按 Step 0 注册 FeatID，Step 1 确认范围，Step 2 源码探索，Step 3 呈现关键发现，Step 4 生成 spec 文档。spec 包含 US+AC 表、统一规则表、API 版本差异、兼容性矩阵。SDK .d.ts 验证 API 声明。",
+      "files": [],
+      "expectations": [
+        "读取 specs/registry/functions.yaml 确认 FuncID",
+        "在 specs/registry/features.yaml 中注册 FeatID，FeatID 从 Feat-01 开始连续编号",
+        "运行 generate_index.py --check 验证注册",
+        "从 SDK .d.ts 交叉验证 API 声明（static/dynamic/modifier 三种范式）",
+        "spec 包含 US（User Stories）+ AC 表（编号 AC-X.Y，WHEN/THEN 格式）",
+        "spec 包含统一规则表（R-N IDs，类型标签：行为/边界/异常/恢复）",
+        "spec 包含 file:line 源码引用作为声明依据（与 SKILL.md 要求一致）",
+        "不包含长代码片段或完整行为矩阵"
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "new-feature-without-registry",
+      "prompt": "帮 Progress 组件补录规格文档。Progress 组件尚未在 specs/registry 中注册。",
+      "expected_output": "应先在 functions.yaml 中注册 FuncID（按 L1/L2/L3 树结构确定位置），在 features.yaml 中注册 FeatID，创建 specs/ 目录，运行 generate_index.py --check 验证后，再进入 spec 生成流程。",
+      "files": [],
+      "expectations": [
+        "检测到 Progress 未在 registry 中注册",
+        "在 functions.yaml 中添加 FuncID 条目，保持 FuncID 升序",
+        "在 features.yaml 中添加 FeatID 条目",
+        "创建 specs/ 目录路径",
+        "运行 generate_index.py --check 验证注册通过",
+        "注册通过后才进入 spec 生成流程"
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "feat-decomposition",
+      "prompt": "帮 Text 组件补录规格文档。Text 组件有大量公开 API（超过 30 个属性），用户只说了「补齐 Text 组件规格」未指定具体 Feat。",
+      "expected_output": "应触发 Step 0.5 Feat 分解分析：读取 feat-decomposition.md，扫描 Text 的公开 API，按 5 种分解启发式和内聚性/文档体量规则拆分为多个 Feat，请用户确认分解方案后再分配 FeatID。",
+      "files": [],
+      "expectations": [
+        "检测到用户未指定具体 Feat 且组件 API 超过 5 个",
+        "触发 Step 0.5 Feat 分解分析",
+        "读取 references/feat-decomposition.md",
+        "按 5 种分解启发式拆分为多个 Feat",
+        "每个 Feat 预计生成 5-15 KB，超过 20 KB 继续拆分，低于 3 KB 合并（与 feat-decomposition.md 的量化标准一致）",
+        "请用户确认分解方案后再分配 FeatID"
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "incremental-design-merge",
+      "prompt": "帮 04-common-capability/03-common-attributes/01-layout-attributes/ 补录 padding 属性的规格。该目录下已有 design.md。",
+      "expected_output": "应检测到 design.md 已存在，走增量合并路径：在 Step 1 中询问用户增量合并策略，Step 4 中优先将新内容合并到现有章节，而非创建独立章节。spec 生成后应更新 design.md 的相关章节。",
+      "files": [],
+      "expectations": [
+        "检测到 design.md 已存在",
+        "走增量合并路径而非初始设计路径",
+        "在 Step 1 中询问用户增量合并策略（优先合并到现有章节）",
+        "读取 references/design-doc-merge.md",
+        "新内容合并到 design.md 现有章节，而非创建独立章节",
+        "spec 生成后同步更新 design.md"
+      ]
+    },
+    {
+      "id": 5,
+      "eval_name": "implementation-is-spec",
+      "prompt": "帮 Marquee 组件补录规格文档。我发现 Marquee 的 start() 方法在 repeatCount 为 -1 时行为不符合预期——应该无限循环但实际只跑了一次。请把正确行为写进 spec。",
+      "expected_output": "应遵循核心原则「当前实现即规格」——spec 必须如实记录当前实现的行为，即使看起来有 bug。应在 spec 的风险/备注中标注该行为可能不符合用户预期，但不应将 spec 修改为「理想」行为。当前实现 IS the spec。",
+      "files": [],
+      "expectations": [
+        "spec 如实记录当前实现的行为（repeatCount 为 -1 时只跑一次）",
+        "不将 spec 修改为「理想」行为（无限循环）",
+        "在 spec 的风险/备注中标注该行为可能不符合用户预期",
+        "不修改产品源码"
+      ]
+    },
+    {
+      "id": 6,
+      "eval_name": "source-sdk-conflict-resolution",
+      "prompt": "帮 Stepper 组件补录规格文档。我发现 Stepper 的 .d.ts 中声明了 onChange 回调，但源码中实际实现的是 onIndexChange，两者参数不同。",
+      "expected_output": "应按冲突解决优先级处理：SDK .d.ts 声明 > 源码实现。在 spec 中以 SDK .d.ts 声明为准，在风险/兼容性表中标注源码与 SDK 声明不一致，注明源码实际实现名称和参数差异。",
+      "files": [],
+      "expectations": [
+        "识别源码与 SDK .d.ts 声明不一致",
+        "在 spec 中以 SDK .d.ts 声明为准（权威层级更高）",
+        "在风险/兼容性表中标注源码与 SDK 声明不一致",
+        "注明源码实际实现名称（onIndexChange）和参数差异",
+        "不修改 SDK 声明或源码来消除不一致"
+      ]
+    }
+  ]
+}

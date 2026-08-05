@@ -1,0 +1,94 @@
+{
+  "skill_name": "ohos-design-arkui-knowledgebase-generator",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "create-component-kb",
+      "prompt": "帮我在 docs/kb/ 下新建一个 Slider 组件的知识库页面，并更新 context_registry.json。Slider 组件已经完成组件化改造。",
+      "expected_output": "应生成 Slider 组件的 KB 页面，包含定位、源码入口、API 入口（dynamic/static/modifier 三种范式）、API 解析实现路径（组件化路径）、测试入口、相关 Spec 等章节，并在 context_registry.json 中添加符合 schema 的条目。应运行 kb_search.py 确认无重复后再创建。",
+      "files": [],
+      "expectations": [
+        "先运行 kb_search.py Slider 确认目标是否已有 KB",
+        "KB 页面包含定位章节，描述 Slider 的功能定位",
+        "KB 页面包含 API 入口表格，覆盖 dynamic .d.ts、static .static.d.ets、modifier .d.ts 三种范式",
+        "KB 页面包含 API 解析实现路径章节，使用组件化路径（pattern/<comp>/bridge/）而非 JSView 路径",
+        "context_registry.json 条目使用 kind: component，包含 func_id、spec_domain、spec_status 等必填字段",
+        "不包含行号引用（file:line 格式）",
+        "不包含代码片段",
+        "运行 validate_context.py 验证"
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "create-deprecated-component-kb",
+      "prompt": "帮我在 docs/kb/ 下新建 NavRouter 组件的知识库页面。NavRouter 所有范式均 @deprecated（动态 API 13、modifier API 20），推荐使用 NavPathStack 替代。SDK 声明文件见 evals/files/sdk-declarations/。",
+      "expected_output": "应生成 NavRouter KB 页面，在定位章节明确标注废弃状态和推荐替代，源码/API 入口中废弃路径标记(已废弃，API X)，推荐替代路径排在前面。context_registry.json 中 status 设为 deprecated，keywords 包含废弃版本和推荐替代。",
+      "files": ["evals/files/sdk-declarations/nav_router.d.ts", "evals/files/sdk-declarations/NavRouterModifier.d.ts"],
+      "expectations": [
+        "检查 SDK .d.ts 文件中的 @deprecated 注解",
+        "KB 定位章节明确标注「已废弃，推荐使用 NavPathStack 替代」",
+        "源码/API 入口表格中废弃路径标记为(已废弃，API X)，推荐替代路径排在前面",
+        "context_registry.json 中 status 设为 deprecated",
+        "keywords 数组包含废弃版本和推荐替代信息",
+        "不将废弃 API 作为推荐方案呈现"
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "migrate-old-kb",
+      "prompt": "帮我把 Slider 组件的旧知识库从 docs/pattern/ 迁移到 docs/kb/ 新结构，并更新 context_registry.json。假设旧 KB 在 docs/pattern/slider.md。",
+      "expected_output": "应读取旧 KB 作为提示，重新验证源码/API/测试路径后生成新 KB，从 knowledge_base_INDEX.json 移除旧条目，在 context_registry.json 添加新条目，删除旧 KB 文件。旧 KB 中的行为声明和默认值不应直接搬入新 KB，除非重新验证。",
+      "files": [],
+      "expectations": [
+        "运行 kb_search.py 确认旧 KB 在 INDEX 中存在",
+        "读取旧 KB 作为提示而非真相源",
+        "新 KB 内容基于当前源码验证，不直接复制旧 KB 的行为声明或默认值",
+        "从 knowledge_base_INDEX.json 移除旧条目",
+        "在 context_registry.json 添加新条目，不保留 legacy_kb 字段",
+        "删除旧 KB 文件",
+        "运行 validate_context.py 验证"
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "registry-only-repair",
+      "prompt": "docs/context_registry.json 中 Text 组件条目的 func_id 字段值错误（写成了 05-09-04 而实际应为 05-09-03），请修复。",
+      "expected_output": "应读取 context_registry.json 中的 Text 条目，从 specs/registry/functions.yaml 验证正确的 func_id，修复后运行 validate_context.py 确认 0 ERROR。不应创建新 KB 页面或修改 KB 文件。",
+      "files": [],
+      "expectations": [
+        "读取 context_registry.json 中的现有 Text 条目",
+        "从 specs/registry/functions.yaml 验证正确的 func_id",
+        "只修复 func_id 字段，不修改其他字段",
+        "不创建新 KB 页面",
+        "不增加 README 主题数",
+        "运行 validate_context.py 验证"
+      ]
+    },
+    {
+      "id": 5,
+      "eval_name": "aggregated-deprecated-api-detection",
+      "prompt": "帮我在 docs/kb/ 下新建一个 getContext 的知识库页面。getContext 是一个非组件 API，声明在聚合文件 common.d.ts 中。需要验证其废弃状态。SDK 声明文件见 evals/files/sdk-declarations/。",
+      "expected_output": "应正确检测 getContext 的废弃状态——先在所有 SDK 声明文件中按符号名定位声明（不按文件名过滤），再读取声明前的 JSDoc 检查 @deprecated。声明未定位到时应输出「废弃状态未验证」而非「未废弃」。",
+      "files": ["evals/files/sdk-declarations/common.d.ts"],
+      "expectations": [
+        "不按文件名过滤来定位声明——应按符号名在文件内容中搜索",
+        "覆盖 declare function、export declare 等多种声明形态",
+        "正确定位 getContext 在聚合文件 common.d.ts 中的声明",
+        "如果声明未定位到，输出「废弃状态未验证」而非「未废弃」",
+        "如果检测到 @deprecated，正确记录废弃版本和推荐替代"
+      ]
+    },
+    {
+      "id": 6,
+      "eval_name": "reject-issue-kb-request",
+      "prompt": "帮我把 Navigation 返回崩溃的问题经验沉淀为 KB，参考 PR #12345 的修复方案。",
+      "expected_output": "应识别这是问题型 KB 需求，路由到 ohos-design-arkui-knowledgebase-issue-generator，而非自己处理。因为本 skill 只处理代码型 KB（component/capability/architecture/API/syntax）。",
+      "files": [],
+      "expectations": [
+        "识别用户请求为问题型 KB（troubleshooting/issue pattern）",
+        "不直接在 docs/kb/issues/ 下创建页面",
+        "建议用户使用 ohos-design-arkui-knowledgebase-issue-generator"
+      ]
+    }
+  ]
+}
