@@ -5,15 +5,15 @@
 
 ## Skill 目录
 
-| Skill | 说明 |
-|------|------|
-| [ohos-req-intake-orchestration](ohos-req-intake-orchestration/SKILL.md) | 需求导入评审全流程编排入口 |
-| [ohos-req-requirement-intake](ohos-req-requirement-intake/SKILL.md) | 原始需求归一化与 `01-requirement.md` 生成 |
-| [ohos-req-feasibility-analysis](ohos-req-feasibility-analysis/SKILL.md) | 需求可行性分析与 `02-feasibility.md` 生成 |
-| [ohos-req-arch-decision](ohos-req-arch-decision/SKILL.md) | 候选方案分析与 `03-arch-decision-record.md` 定稿 |
-| [ohos-req-feature-proposal-baseline](ohos-req-feature-proposal-baseline/SKILL.md) | Feature/Proposal 评审基线、拆分与内建 Review Ready Gate |
-| [ohos-req-value-decision](ohos-req-value-decision/SKILL.md) | 评审决策纪要回流与流程路由 |
-| [ohos-req-value-ppt-gen](ohos-req-value-ppt-gen/SKILL.md) | 需求评审 PPT 生成，可选依赖 |
+| Skill | 作用 | 输入 | 输出 |
+|------|------|------|------|
+| [ohos-req-intake-orchestration](ohos-req-intake-orchestration/SKILL.md) | 需求导入评审全流程编排入口 | 用户原始需求、可选 Issue/PRD/会议纪要 | Step 1-14 编排结果与流程状态 |
+| [ohos-req-requirement-intake](ohos-req-requirement-intake/SKILL.md) | 原始需求归一化与澄清 | 原始诉求、RR 单号、版本/场景/范围信息 | `01-requirement.md`、`_draft/clarification-questions.md` |
+| [ohos-req-feasibility-analysis](ohos-req-feasibility-analysis/SKILL.md) | 需求可行性分析 | `01-requirement.md`、资料输入记录、轻量代码预检证据包 | `02-feasibility.md`、可行性澄清问题 |
+| [ohos-req-arch-decision](ohos-req-arch-decision/SKILL.md) | 候选方案分析与用户决策定稿 | `01-requirement.md`、`02-feasibility.md`、用户决策结论 | `03-arch-decision-record.md` |
+| [ohos-req-feature-proposal-baseline](ohos-req-feature-proposal-baseline/SKILL.md) | Feature/Proposal 基线、拆分与内建 Review Ready Gate | `01-requirement.md`、`02-feasibility.md`、`03-arch-decision-record.md` | `04-feature.md`、`proposals/05-proposal-<slug>.md` |
+| [ohos-req-value-decision](ohos-req-value-decision/SKILL.md) | 评审决策纪要回流与流程路由 | 评审会议纪要、`01-04` 产物、Gate 结论 | `value-decision-record.md`、路由动作 |
+| [ohos-req-value-ppt-gen](ohos-req-value-ppt-gen/SKILL.md) | 需求评审 PPT 生成，可选依赖 | `04-feature.md` 或评审材料 spec、可选图/模板资源 | OpenHarmony 需求评审 PPTX |
 
 ## 流程总览
 
@@ -72,4 +72,32 @@ Installed: 7/7
 Required missing: 0
 Version mismatch: 0
 Result: READY
+```
+
+## 评测与评分
+
+本目录按 `skill-judge` 8 维度完成质量评分，并按 Anthropic skill-creator 风格维护结构化 eval。当前评分结论：
+
+| 指标 | 结果 |
+|------|------|
+| Skill Judge 总分 | `104/120` |
+| 等级 | `B+` |
+| Eval cases | `43` |
+| Assertions | `138` |
+| Programmatic assertions | `95` |
+| Manual assertions | `43` |
+| Unsupported assertions | `0` |
+
+验证命令：
+
+```bash
+python3 skills/common/requirements/evals/run_skill_evals.py collect \
+  --root skills/common/requirements \
+  --benchmark-json /tmp/ohos-req-skills-benchmark.json \
+  --benchmark-md /tmp/ohos-req-skills-benchmark.md
+
+bash skills/common/requirements/ohos-req-intake-orchestration/scripts/install_related_skills.sh --check-probes
+bash skills/common/requirements/ohos-req-intake-orchestration/scripts/test_related_skills_consistency.sh
+python3 -m unittest discover -s skills/common/requirements/evals/tests -p 'test_*.py'
+python3 -m unittest skills/common/requirements/ohos-req-value-ppt-gen/tests/test_deckbuilder_smoke.py
 ```
