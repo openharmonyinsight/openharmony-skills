@@ -2,7 +2,7 @@
 
 > 📖 **相关文档**：
 > - [通用配置](../_common.md) - 所有子系统共享的通用配置
-> - [头文件解析模块](../../modules/L1_Analysis/unified_api_parser_c.md) - API 信息提取
+> - [头文件解析模块](../../../modules/L1_Analysis/parser/unified_api_parser_c.md) - API 信息提取
 
 > **子系统信息**
 > - 名称：hilog

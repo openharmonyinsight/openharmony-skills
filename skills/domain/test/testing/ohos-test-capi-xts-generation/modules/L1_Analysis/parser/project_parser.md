@@ -2,7 +2,7 @@
 
 > 📖 **相关文档**：
 > - [头文件解析模块](./unified_api_parser_c.md) - API 信息提取和结构化
-> - [测试覆盖率分析](./coverage_analyzer.md) - 测试覆盖情况分析
+> - [测试覆盖率分析](../analyzer/coverage_analyzer.md) - 测试覆盖情况分析
 
 > **模块信息**
 > - 层级：L1_Analysis

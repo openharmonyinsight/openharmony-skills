@@ -71,17 +71,49 @@ def sync_acts_suite(acts_source: str, acts_win: str) -> bool:
     return True
 
 
+_TEST_NAME_RE = re.compile(r'^[A-Za-z0-9_]+$')
+_WIN_DRIVE_RE = re.compile(r'^[A-Za-z]:\\')
+# PowerShell/cmd 元字符与不可见控制字符一律拒绝
+_UNSAFE_CHARS_RE = re.compile(r'[;&|`$"\'<>\r\n\x00]')
+
+
+def _validate_test_name(test_name: str) -> str:
+    """xdevice 测试套名只允许字母/数字/下划线, 防止命令注入。"""
+    if not isinstance(test_name, str) or not _TEST_NAME_RE.match(test_name):
+        raise ValueError(f"非法测试套名（仅允许字母/数字/下划线）: {test_name!r}")
+    return test_name
+
+
+def _validate_win_path(path: str) -> str:
+    """Windows 路径白名单校验: 必须是 X:\\ 形式且不含 shell 元字符。"""
+    if not isinstance(path, str) or not path:
+        raise ValueError("路径为空")
+    if not _WIN_DRIVE_RE.match(path):
+        raise ValueError(f"非法 Windows 路径（须为 X:\\ 形式）: {path!r}")
+    if _UNSAFE_CHARS_RE.search(path):
+        raise ValueError(f"路径含非法字符: {path!r}")
+    return path
+
+
 def run_test_via_windows(acts_win: str, test_name: str, timeout: int = 1800) -> dict:
-    """通过 PowerShell 在 Windows 侧执行 xdevice 测试"""
+    """通过 PowerShell 在 Windows 侧执行 xdevice 测试
+
+    安全: test_name 与路径均经白名单校验后才进入命令, 路径以 -LiteralPath
+    单引号包裹, 杜绝 PowerShell 命令注入。
+    """
+    _validate_test_name(test_name)
     # Windows 路径转换
     acts_win_winpath = acts_win.replace('/mnt/', '').replace('/', '\\')
     # e.g. /mnt/d/acts_suite/acts -> D:\acts_suite\acts
     drive = acts_win_winpath[0].upper()
     acts_win_winpath = f"{drive}:{acts_win_winpath[1:]}"
+    _validate_win_path(acts_win_winpath)
 
+    # 路径用单引号字面量包裹（' 转义为 ''）; test_name 已过白名单, 无需引号
+    safe_path = acts_win_winpath.replace("'", "''")
     cmd = (
-        f'cd {acts_win_winpath}; '
-        f'python -m xdevice run -l {test_name} -t ACTS'
+        f"Set-Location -LiteralPath '{safe_path}'; "
+        f"python -m xdevice run -l {test_name} -t ACTS"
     )
 
     print(f"▶️ 执行测试: {test_name}")
@@ -90,7 +122,7 @@ def run_test_via_windows(acts_win: str, test_name: str, timeout: int = 1800) -> 
 
     try:
         result = subprocess.run(
-            ['powershell.exe', '-Command', cmd],
+            ['powershell.exe', '-NoProfile', '-Command', cmd],
             capture_output=True,
             text=True,
             timeout=timeout,
@@ -418,7 +450,11 @@ def cmd_run(args):
 
     # Step 2: 执行测试
     print("\n=== Step 2: 执行 XTS 测试 ===")
-    result = run_test_via_windows(acts_win, args.test_name, args.timeout)
+    try:
+        result = run_test_via_windows(acts_win, args.test_name, args.timeout)
+    except ValueError as e:
+        print(f"❌ 输入校验失败: {e}")
+        sys.exit(1)
 
     # Step 3: 收集结果
     print("\n=== Step 3: 收集测试结果 ===")

@@ -1,8 +1,8 @@
 # 测试覆盖率分析模块
 
 > 📖 **相关文档**：
-> - [头文件解析模块](./unified_api_parser_c.md) - API 信息提取和结构化
-> - [测试生成核心](../L2_Generation/test_generation_c.md) - 基于覆盖率报告生成测试用例
+> - [头文件解析模块](../parser/unified_api_parser_c.md) - API 信息提取和结构化
+> - [测试生成核心](../../L2_Generation/generator/test_generation_c.md) - 基于覆盖率报告生成测试用例
 
 > **模块信息**
 > - 层级：L1_Analysis

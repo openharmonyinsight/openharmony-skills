@@ -214,6 +214,6 @@ capi_test_template/
 
 ## 参考文档
 
-- [工程配置模板](../../modules/L2_Generation/project_config_templates.md)
-- [测试用例生成](../../modules/L2_Generation/test_generation_c.md)
+- [工程配置模板](../../modules/L2_Generation/generator/project_config_templates.md)
+- [测试用例生成](../../modules/L2_Generation/generator/test_generation_c.md)
 - [测试套结构检查](../../scripts/check_test_suite_structure.sh)

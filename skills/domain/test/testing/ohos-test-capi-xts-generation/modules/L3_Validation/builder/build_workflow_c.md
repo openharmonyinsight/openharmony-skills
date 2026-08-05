@@ -7,7 +7,7 @@
 > - 平台：Linux / Windows (WSL/DevEco Studio/MinGW)
 >
 > **相关文档**：
-> - [编译环境配置参考](../../references/env_setup_reference.md) - 环境搭建详细步骤
+> - [编译环境配置参考](../../../references/env_setup_reference.md) - 环境搭建详细步骤
 > - [编译环境配置](./linux_compile_env_setup_c.md) - Linux 编译环境配置
 
 > **重要提示**
@@ -26,7 +26,7 @@
 | **CAPI 支持** | 完整 | 完整 | 有限 | 有限 |
 | **性能** | 最佳 | 良好 | 中等 | 较差 |
 
-> 环境配置的详细步骤已移至 [references/env_setup_reference.md](../../references/env_setup_reference.md)
+> 环境配置的详细步骤已移至 [references/env_setup_reference.md](../../../references/env_setup_reference.md)
 
 ---
 
