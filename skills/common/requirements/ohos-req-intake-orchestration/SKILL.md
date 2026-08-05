@@ -27,7 +27,7 @@ metadata:
     - name: ohos-req-value-decision
       required: true
       min_version: 0.1.0
-    - name: ohos-req-review-ppt-gen
+    - name: ohos-req-value-ppt-gen
       required: false
       min_version: 0.1.0
 ---
@@ -81,26 +81,21 @@ OHOS 需求导入评审全流程编排入口，串联 5 个主步骤（requireme
 需求导入评审工作流启动前，必须执行依赖完整性预检：
 
 ```bash
-python3 {SKILL_HOME}/skills/common/requirements/ohos-req-intake-orchestration/scripts/install_related_skills.py --check
+bash {SKILL_HOME}/skills/common/requirements/ohos-req-intake-orchestration/scripts/install_related_skills.sh --check
 ```
 
 预期输出：
 ```
 Bundle: ohos-requirements-intake
-Installed: 6/7 或 7/7（可选 `ohos-req-review-ppt-gen` 已存在时为 7/7）
+Installed: 6/7 或 7/7（可选 `ohos-req-value-ppt-gen` 已存在时为 7/7）
 Required missing: 0
 Version mismatch: 0
 Result: READY
 ```
 
-**任何必选 Skill 缺失或版本不匹配 → 阻断流程启动**，返回缺失列表和安装命令：
+**任何必选 Skill 缺失或版本不匹配 → 阻断流程启动**，返回缺失列表。
 
-```bash
-OHOS_REQ_SKILLS_SOURCE_DIR=/path/to/openharmony-skills/skills \
-python3 {SKILL_HOME}/skills/common/requirements/ohos-req-intake-orchestration/scripts/install_related_skills.py --install
-```
-
-安装脚本仅从 `OHOS_REQ_SKILLS_SOURCE_DIR` 指向的本地 skills 目录复制缺失依赖，不负责联网拉取仓库。若用户只安装了 `ohos-req-intake-orchestration` 单个 skill，必须显式提供包含完整 bundle 的本地 source 路径；否则 `--install` 会失败并提示设置该变量。脚本使用 Python 标准库实现，支持 Windows / Linux / macOS；`.sh` 文件仅作为 Linux/macOS 包装器。安装后重新执行预检，通过后才允许进入 Step 1。
+openharmony-skills 的 `install_related_skills.sh` 用于本地目录完整性检查；如缺失必选 skill，应从同一仓库同一分支补齐 `skills/common/requirements/ohos-req-*` 目录后重新执行预检，通过后才允许进入 Step 1。
 
 ### Step 1: requirement.md — 需求导入
 
@@ -226,7 +221,7 @@ Gate 决策后，必须执行 FR→AC 追溯校验：
 
 ### Step 13: PPT 生成（可选）
 
-Gate 通过后、评审会议前，主 Session 可应请求调用 `ohos-req-review-ppt-gen` 生成需求评审 PPT，供评审会议使用。
+Gate 通过后、评审会议前，主 Session 可应请求调用 `ohos-req-value-ppt-gen` 生成需求评审 PPT，供评审会议使用。
 
 ```text
 Feature 已通过 Review Ready Gate。如需生成需求评审 PPT 供评审会议使用，请主动请求。

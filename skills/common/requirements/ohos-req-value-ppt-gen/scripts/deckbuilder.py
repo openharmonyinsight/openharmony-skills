@@ -189,8 +189,15 @@ class Deck:
             return
         h = Inches(0.30)
         w = Emu(int(int(h) * self.LOGO_RATIO))
-        slide.shapes.add_picture(self._logo, self.MARGIN,
-                                 self.H - h - Inches(0.16), width=w, height=h)
+        try:
+            slide.shapes.add_picture(self._logo, self.MARGIN,
+                                     self.H - h - Inches(0.16), width=w, height=h)
+        except Exception as exc:
+            warnings.warn(
+                "deckbuilder: logo image %r could not be loaded (%s); "
+                "continuing without the footer logo." % (self._logo, exc),
+                stacklevel=2)
+            self._logo = None
 
     def _header(self, slide, title, subtitle=None, takeaway=None, numbered=True):
         """Light title block: no band — title + thin accent underline.

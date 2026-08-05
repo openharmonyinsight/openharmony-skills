@@ -1,7 +1,7 @@
 # with-skill / without-skill 对照评估报告
 
 日期：2026-07-14
-对象：`ohos-req-review-ppt-gen` skill（修复 PR #279 评审意见后的版本；生成本报告时
+对象：`ohos-req-value-ppt-gen` skill（修复 PR #279 评审意见后的版本；生成本报告时
 skill 名为 `ohos-req-pptx-review-deck-generation`，之后精简重命名，内容不受影响）
 用例来源：`evals/cases.yaml`（3 个 case，对应 `evals/prompts/*.md`）
 

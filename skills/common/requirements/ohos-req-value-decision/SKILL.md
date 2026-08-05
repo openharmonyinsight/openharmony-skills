@@ -22,10 +22,10 @@ metadata:
 
 ## 定位
 
-requirements Step 14 — 评审会议后的决策纪要回流。在 Feature/Proposal 基线内建 Gate 和可选 review-ppt-gen 之后执行，是需求导入评审流程的收尾步骤。
+requirements Step 14 — 评审会议后的决策纪要回流。在 Feature/Proposal 基线内建 Gate 和可选 value-ppt-gen 之后执行，是需求导入评审流程的收尾步骤。
 
 ```
-feature-proposal-baseline(Step 10-12, 内建 Gate) → review-ppt-gen(可选) → [评审会议] → value-decision(Step 14)
+feature-proposal-baseline(Step 10-12, 内建 Gate) → value-ppt-gen(可选) → [评审会议] → value-decision(Step 14)
                                                                                   ├─ 接纳 → 评审流程完成
                                                                                   ├─ 不接纳 → 关闭/归档
                                                                                   └─ 下次重新上会 → 退回对应 Step
