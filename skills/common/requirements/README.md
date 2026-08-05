@@ -6,12 +6,28 @@
 
 ```text
 原始诉求
-  -> Step 1-2  需求导入与澄清
-  -> Step 3-6  可行性输入、轻量代码预检、可行性分析与澄清
-  -> Step 7-9  架构方案候选分析、用户决策、ADR 定稿
-  -> Step 10-12 Feature/Proposal 评审基线、拆分确认、Review Ready Gate
-  -> Step 13   需求评审 PPT 生成（可选）
-  -> Step 14   评审决策纪要回流
+  -> ohos-req-intake-orchestration
+       预检   依赖检查、流程编排、跨步骤追溯
+  -> ohos-req-requirement-intake
+       Step 1  生成 01-requirement.md
+       Step 2  需求澄清门禁
+  -> ohos-req-feasibility-analysis
+       Step 3  可行性分析输入提醒
+       Step 4  轻量代码预检
+       Step 5  生成 02-feasibility.md
+       Step 6  feasibility 澄清门禁
+  -> ohos-req-arch-decision
+       Step 7  生成 03-arch-decision-record.md 候选分析
+       Step 8  收集用户决策结论
+       Step 9  ADR 定稿
+  -> ohos-req-feature-proposal-baseline
+       Step 10 生成 04-feature.md
+       Step 11 拆分结果确认
+       Step 12 内建 Review Ready Gate + AC 校验
+  -> ohos-req-value-ppt-gen
+       Step 13 生成需求评审 PPT（可选）
+  -> ohos-req-value-decision
+       Step 14 评审决策纪要回流
 ```
 
 ## Skills
