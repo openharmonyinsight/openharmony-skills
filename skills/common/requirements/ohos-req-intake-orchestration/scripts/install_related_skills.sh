@@ -88,7 +88,7 @@ echo "Version mismatch: $version_mismatch_count"
 if [[ "$missing_count" -gt 0 ]]; then
   echo "Result: NOT READY"
   echo ""
-  echo "Restore missing skills from skills/common/requirements in the same repository branch."
+  echo "Restore missing skills from platform_issues/user_guide in the same repository branch."
   exit 1
 fi
 

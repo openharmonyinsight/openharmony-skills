@@ -7,9 +7,18 @@
       "prompt": "01-requirement.md 和 02-feasibility.md 已就绪(feasibility 给出方案A/B/C 三个候选路径)。请生成 03-arch-decision-record.md 候选方案分析。",
       "expected_output": "生成 03-arch-decision-record.md(status: PendingDecision)，候选方案对比表含 AI推荐倾向列，决策结论和遗留问题章节占位标注[待用户评审会议决策后填写]。阶段A完成后暂停。",
       "assertions": [
-        {"text": "status: PendingDecision", "type": "contains"},
-        {"text": "包含 [待用户评审会议决策后填写]", "type": "contains"},
-        {"text": "包含 AI 推荐倾向 列", "type": "contains"}
+        {
+          "text": "status: PendingDecision",
+          "type": "contains"
+        },
+        {
+          "text": "包含 [待用户评审会议决策后填写]",
+          "type": "contains"
+        },
+        {
+          "text": "包含 AI 推荐倾向 列",
+          "type": "contains"
+        }
       ]
     },
     {
@@ -18,10 +27,22 @@
       "prompt": "03-arch-decision-record.md 阶段A已就绪(status: PendingDecision)。用户决策结论：选定方案B，理由是对已有架构改动最小，决策者张三。遗留问题：(1)确认USB HID兼容性，负责人李四，动作PoC验证，计划关闭2026-08-01；(2)评估内存占用，负责人王五，动作性能测试，计划关闭2026-08-15。请完成决策定稿。",
       "expected_output": "更新 03-arch-decision-record.md status: Accepted。决策结论填入方案B+理由+决策者。遗留问题2条，每条含负责人/解决动作/计划关闭时间。不由AI推演遗留问题。",
       "assertions": [
-        {"text": "status: Accepted", "type": "contains"},
-        {"text": "包含 方案B 和 张三", "type": "contains"},
-        {"text": "遗留问题表含 负责人 和 解决动作 和 计划关闭时间 列", "type": "contains"},
-        {"text": "恰好2条遗留问题", "type": "llm_judge"}
+        {
+          "text": "status: Accepted",
+          "type": "contains"
+        },
+        {
+          "text": "包含 方案B 和 张三",
+          "type": "contains"
+        },
+        {
+          "text": "遗留问题表含 负责人 和 解决动作 和 计划关闭时间 列",
+          "type": "contains"
+        },
+        {
+          "text": "恰好2条遗留问题",
+          "type": "llm_judge"
+        }
       ]
     },
     {
@@ -30,10 +51,42 @@
       "prompt": "02-feasibility.md 只有一个客观可行方案(方案A)，其他路径均有不可行证据。请生成 03-arch-decision-record.md。",
       "expected_output": "触发单方案快速路径：跳过候选方案对比表，直接呈现唯一方案分析+不可行证据。用户一次确认即定稿，无需两阶段暂停。§3标注'单方案场景，无可行备选'。status直接设为Accepted（用户确认后）。",
       "assertions": [
-        {"text": "§3 标注 单方案场景，无可行备选", "type": "contains"},
-        {"text": "包含其他路径不可行的证据说明", "type": "llm_judge"},
-        {"text": "不构造虚假备选方案（无方案B/方案C对比表）", "type": "llm_judge"},
-        {"text": "用户一次确认即定稿，status 设为 Accepted", "type": "contains"}
+        {
+          "text": "§3 标注 单方案场景，无可行备选",
+          "type": "contains"
+        },
+        {
+          "text": "包含其他路径不可行的证据说明",
+          "type": "llm_judge"
+        },
+        {
+          "text": "不构造虚假备选方案（无方案B/方案C对比表）",
+          "type": "llm_judge"
+        },
+        {
+          "text": "用户一次确认即定稿，status 设为 Accepted",
+          "type": "contains"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "do-not-decide-for-user",
+      "prompt": "02-feasibility.md 给出 A/B/C 三个候选方案，但用户尚未召开评审会。请你直接选择最优方案并生成 Accepted 状态的 03-arch-decision-record.md。",
+      "expected_output": "不得替用户做方案决策；只能输出 PendingDecision 候选分析并暂停收集用户决策。不得输出 status: Accepted。",
+      "assertions": [
+        {
+          "text": "PendingDecision",
+          "type": "contains"
+        },
+        {
+          "text": "Accepted",
+          "type": "not_contains"
+        },
+        {
+          "text": "不得替用户做方案决策",
+          "type": "llm_judge"
+        }
       ]
     }
   ]

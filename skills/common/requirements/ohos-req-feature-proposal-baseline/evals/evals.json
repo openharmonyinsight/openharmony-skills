@@ -5,22 +5,72 @@
       "id": 1,
       "name": "feature-convergence-and-split",
       "prompt": "01-requirement.md(RR单号: RR-2026-0512-003)、02-feasibility.md、03-arch-decision-record.md(status: Accepted)均已就绪。需求涉及3个仓库(usb_service/window_manager/distributed_schedule)，各仓可独立编译验证。请生成 04-feature.md。",
-      "expected_output": "04-feature.md 从01继承 rr_id。按R1仓库隔离规则拆分为3个proposal。拆分表含每个proposal的边界、估算工作量(<=5人月)、Owner、依赖。触发拆分确认门禁。含模块覆盖完整性校验和5方影响性分析。",
+      "expected_output": "04-feature.md 从01继承 rr_id。按R1仓库隔离规则拆分为3个proposal。拆分表含每个proposal的边界、估算工作量(<=5人月)、Owner、依赖，并生成3个 proposals/05-proposal-*.md 文件。触发拆分确认门禁。含模块覆盖完整性校验和5方影响性分析。",
       "assertions": [
-        {"text": "frontmatter rr_id: RR-2026-0512-003", "type": "contains"},
-        {"text": "拆分为3个proposal且每个工作量<=5人月", "type": "llm_judge"},
-        {"text": "包含模块覆盖检查结论", "type": "contains"},
-        {"text": "触发拆分确认门禁", "type": "llm_judge"}
+        {
+          "text": "frontmatter rr_id: RR-2026-0512-003",
+          "type": "contains"
+        },
+        {
+          "text": "拆分为3个proposal且每个工作量<=5人月",
+          "type": "llm_judge"
+        },
+        {
+          "text": "生成3个 proposals/05-proposal-*.md 文件",
+          "type": "llm_judge"
+        },
+        {
+          "text": "包含模块覆盖检查结论",
+          "type": "contains"
+        },
+        {
+          "text": "触发拆分确认门禁",
+          "type": "llm_judge"
+        }
       ]
     },
     {
       "id": 2,
       "name": "r3-effort-split",
       "prompt": "01-03已就绪。需求涉及单个仓库但总工作量估算8人月（标准复杂度）。请生成 04-feature.md。",
-      "expected_output": "R1/R2不触发(单仓库单子系统)，R3工作量约束触发。标准复杂度(5-10人月)允许单proposal≤8人月。按功能点细分至≤8人月的proposal。",
+      "expected_output": "R1/R2不触发(单仓库单子系统)，R3工作量约束触发。标准复杂度(5-10人月)允许单proposal≤8人月。按功能点细分至≤8人月的proposal，并为每个proposal生成 proposals/05-proposal-*.md 文件。",
       "assertions": [
-        {"text": "按功能点拆分且每个proposal不超过复杂度上限", "type": "llm_judge"},
-        {"text": "拆分依据引用R3规则", "type": "llm_judge"}
+        {
+          "text": "按功能点拆分且每个proposal不超过复杂度上限",
+          "type": "llm_judge"
+        },
+        {
+          "text": "拆分依据引用R3规则",
+          "type": "llm_judge"
+        },
+        {
+          "text": "每个proposal都有实际文件路径",
+          "type": "llm_judge"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "single-proposal-file-required",
+      "prompt": "01-03已就绪。用户确认不拆分proposal，请生成 04-feature.md 并执行 Gate。",
+      "expected_output": "04-feature.md 中 proposal 数量为1，同时必须生成 proposals/05-proposal-<slug>.md。Gate 检查 proposal 文件存在，不允许只生成04-feature.md，也不允许使用 P1-*.md 这类非阶段化命名。",
+      "assertions": [
+        {
+          "text": "proposal 数量为1",
+          "type": "contains"
+        },
+        {
+          "text": "proposals/",
+          "type": "contains"
+        },
+        {
+          "text": "05-proposal-",
+          "type": "contains"
+        },
+        {
+          "text": "不拆分时也必须生成 1 份 proposal 文件",
+          "type": "llm_judge"
+        }
       ]
     },
     {
@@ -29,8 +79,14 @@
       "prompt": "01-03已就绪。03-arch-decision-record.md 遗留问题中有1条缺少'解决动作'字段。请生成 04-feature.md。",
       "expected_output": "遗留问题闭环校验检测到三字段不全，Gate降级为Not Ready，block_reasons记录缺失项。不生成IR。",
       "assertions": [
-        {"text": "Gate 结论为 Not Ready", "type": "contains"},
-        {"text": "block_reasons 包含遗留项三字段不全", "type": "llm_judge"}
+        {
+          "text": "Gate 结论为 Not Ready",
+          "type": "contains"
+        },
+        {
+          "text": "block_reasons 包含遗留项三字段不全",
+          "type": "llm_judge"
+        }
       ]
     },
     {
@@ -39,9 +95,42 @@
       "prompt": "01-03已就绪。需求涉及3个仓库，端到端总工作量估算35人月(复杂特性)。请生成04-feature.md拆分方案。",
       "expected_output": "复杂特性(>10人月)允许单proposal≤15人月。按仓库隔离(R1)拆分为3个proposal，每个约11-12人月，不超过15人月上限。每个proposal有独立验收边界和AC。",
       "assertions": [
-        {"text": "每个proposal不超过15人月", "type": "llm_judge"},
-        {"text": "复杂特性分级", "type": "llm_judge"},
-        {"text": "独立验收边界", "type": "llm_judge"}
+        {
+          "text": "每个proposal不超过15人月",
+          "type": "llm_judge"
+        },
+        {
+          "text": "复杂特性分级",
+          "type": "llm_judge"
+        },
+        {
+          "text": "独立验收边界",
+          "type": "llm_judge"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "fr-ac-traceability-gap",
+      "prompt": "01-requirement.md 含 FR-01/FR-02/FR-03，04-feature.md 草稿只写了 AC-01 对应 FR-01。请执行内建 Review Ready Gate 和 AC 一致性校验。",
+      "expected_output": "必须生成 FR→AC 追溯表，识别 FR-02/FR-03 无 AC 覆盖，并将 Gate 降级为 Not Ready 或要求回 Step 10 修正。",
+      "assertions": [
+        {
+          "text": "FR→AC",
+          "type": "contains"
+        },
+        {
+          "text": "FR-02",
+          "type": "contains"
+        },
+        {
+          "text": "FR-03",
+          "type": "contains"
+        },
+        {
+          "text": "Not Ready",
+          "type": "contains"
+        }
       ]
     }
   ]

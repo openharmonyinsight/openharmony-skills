@@ -81,7 +81,7 @@ OHOS 需求导入评审全流程编排入口，串联 5 个主步骤（requireme
 需求导入评审工作流启动前，必须执行依赖完整性预检：
 
 ```bash
-bash {SKILL_HOME}/skills/common/requirements/ohos-req-intake-orchestration/scripts/install_related_skills.sh --check
+bash {SKILL_HOME}/platform_issues/user_guide/ohos-req-intake-orchestration/scripts/install_related_skills.sh --check
 ```
 
 预期输出：
@@ -95,7 +95,7 @@ Result: READY
 
 **任何必选 Skill 缺失或版本不匹配 → 阻断流程启动**，返回缺失列表。
 
-openharmony-skills 的 `install_related_skills.sh` 用于本地目录完整性检查；如缺失必选 skill，应从同一仓库同一分支补齐 `skills/common/requirements/ohos-req-*` 目录后重新执行预检，通过后才允许进入 Step 1。
+sdd-pilot 的 `install_related_skills.sh` 用于本地目录完整性检查；如缺失必选 skill，应从同一仓库同一分支补齐 `platform_issues/user_guide/ohos-req-*` 目录后重新执行预检，通过后才允许进入 Step 1。
 
 ### Step 1: requirement.md — 需求导入
 

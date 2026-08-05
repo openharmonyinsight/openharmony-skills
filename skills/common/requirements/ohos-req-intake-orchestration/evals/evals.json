@@ -7,10 +7,22 @@
       "prompt": "收到原始需求：在OpenHarmony中支持USB HID设备的多实例绑定，RR单号RR-2026-0512-003。请执行需求导入评审全流程。",
       "expected_output": "按Step 1->14顺序编排。每步spawn subagent，回传<=15行。最终产出01-04/value-decision-record.md。04-feature.md含内建Gate结论。RR单号从01继承到04和决策纪要。",
       "assertions": [
-        {"text": "01-requirement.md frontmatter 含 rr_id: RR-2026-0512-003", "type": "contains"},
-        {"text": "04-feature.md 含 rr_id", "type": "contains"},
-        {"text": "各subagent回传<=15行", "type": "llm_judge"},
-        {"text": "Step 8 决策结论收集为强制暂停点", "type": "llm_judge"}
+        {
+          "text": "01-requirement.md frontmatter 含 rr_id: RR-2026-0512-003",
+          "type": "contains"
+        },
+        {
+          "text": "04-feature.md 含 rr_id",
+          "type": "contains"
+        },
+        {
+          "text": "各subagent回传<=15行",
+          "type": "llm_judge"
+        },
+        {
+          "text": "Step 8 决策结论收集为强制暂停点",
+          "type": "llm_judge"
+        }
       ]
     },
     {
@@ -19,8 +31,14 @@
       "prompt": "执行需求导入评审全流程时，在Step 2 feasibility的spawn task中，主session把02-feasibility.md全文嵌入task描述传给subagent。请检查是否符合规范。",
       "expected_output": "应检测到Token经济性违规——禁止嵌入文件内容到task描述。task只含四要素(角色/输入路径/输出路径/任务简述)。证据应传路径不传内容。",
       "assertions": [
-        {"text": "检测到task描述包含全文内容违规", "type": "llm_judge"},
-        {"text": "task只含四要素(角色/输入路径/输出路径/任务简述)", "type": "llm_judge"}
+        {
+          "text": "检测到task描述包含全文内容违规",
+          "type": "llm_judge"
+        },
+        {
+          "text": "task只含四要素(角色/输入路径/输出路径/任务简述)",
+          "type": "llm_judge"
+        }
       ]
     },
     {
@@ -29,9 +47,18 @@
       "prompt": "Step 10 feature生成后，拆分方案包含3个proposal。请继续执行。",
       "expected_output": "拆分结果必须向用户展示并等待确认(拆分确认门禁)，不自行定稿拆分方案。每个proposal不超过复杂度上限(简单≤5/标准≤8/复杂≤15人月)。确认后才执行内建 Review Ready Gate。",
       "assertions": [
-        {"text": "触发拆分确认门禁(向用户展示等待确认)", "type": "llm_judge"},
-        {"text": "每个proposal不超过复杂度上限", "type": "llm_judge"},
-        {"text": "确认后才执行内建 Review Ready Gate", "type": "llm_judge"}
+        {
+          "text": "触发拆分确认门禁(向用户展示等待确认)",
+          "type": "llm_judge"
+        },
+        {
+          "text": "每个proposal不超过复杂度上限",
+          "type": "llm_judge"
+        },
+        {
+          "text": "确认后才执行内建 Review Ready Gate",
+          "type": "llm_judge"
+        }
       ]
     },
     {
@@ -40,9 +67,18 @@
       "prompt": "环境不支持 subagent 并行隔离，需使用 Mode B 串行执行需求导入评审流程。01-04 文档均已就绪，请编排串行执行路径。",
       "expected_output": "输出串行执行路径，每步含 skill 名和回传摘要格式，无并行 spawn。",
       "assertions": [
-        {"text": "串行", "type": "contains"},
-        {"text": "Mode B", "type": "contains"},
-        {"text": "无并行 spawn", "type": "llm_judge"}
+        {
+          "text": "串行",
+          "type": "contains"
+        },
+        {
+          "text": "Mode B",
+          "type": "contains"
+        },
+        {
+          "text": "无并行 spawn",
+          "type": "llm_judge"
+        }
       ]
     },
     {
@@ -51,9 +87,42 @@
       "prompt": "Step 10 已生成04-feature.md，但条件项缺少Owner和关闭时点。请继续进入评审会议。",
       "expected_output": "内建 Review Ready Gate 将条件项升级为 Not Ready，阻断进入评审会议。提示用户补充Owner、关闭动作和关闭时点后重新执行Step 10。",
       "assertions": [
-        {"text": "Not Ready", "type": "contains"},
-        {"text": "Owner", "type": "contains"},
-        {"text": "关闭时点", "type": "contains"}
+        {
+          "text": "Not Ready",
+          "type": "contains"
+        },
+        {
+          "text": "Owner",
+          "type": "contains"
+        },
+        {
+          "text": "关闭时点",
+          "type": "contains"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "rr-id-propagation-cross-step",
+      "prompt": "执行需求导入评审全流程。01-requirement.md frontmatter 中 rr_id 为 RR-2026-0805-001。请检查 04-feature.md 和 value-decision-record.md 的追溯一致性。",
+      "expected_output": "必须从 01-requirement.md 继承 rr_id 到 04-feature.md 和 value-decision-record.md；若不一致，阻断并要求回填修正。",
+      "assertions": [
+        {
+          "text": "RR-2026-0805-001",
+          "type": "contains"
+        },
+        {
+          "text": "04-feature.md",
+          "type": "contains"
+        },
+        {
+          "text": "value-decision-record.md",
+          "type": "contains"
+        },
+        {
+          "text": "rr_id 追溯一致",
+          "type": "llm_judge"
+        }
       ]
     }
   ]

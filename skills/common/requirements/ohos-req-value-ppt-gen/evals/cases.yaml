@@ -29,3 +29,9 @@ cases:
     prompt: prompts/wide-table.md
     expected: expected/wide-table.md
     tags: [table, layout, overflow]
+
+  - id: ohos-req-value-ppt-gen-004-invalid-logo-fallback
+    title: logo 资源损坏时 warning 降级而非生成失败
+    prompt: prompts/invalid-logo-fallback.md
+    expected: expected/invalid-logo-fallback.md
+    tags: [asset, logo, fallback, smoke]
