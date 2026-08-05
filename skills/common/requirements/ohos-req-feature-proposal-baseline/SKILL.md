@@ -6,7 +6,7 @@ metadata:
   scope: common
   stage: requirements
   capability: feature-proposal-baseline
-  version: 0.3.0
+  version: 0.4.0
   status: draft
   tags:
     - sdd
@@ -19,7 +19,7 @@ metadata:
 
 ## 定位
 
-04-feature.md 是 OHOS SIG 评审会议的 Feature/Proposal 基线输入；`proposals/*.md` 是后续交付阶段的实际 proposal 输入。本 skill 合并原 Review Ready Gate：在生成 04-feature.md、生成全部 proposal 文件并经用户确认拆分/不拆分结果后，直接执行结构化 Gate 判定，输出 `Ready` / `Conditional Ready` / `Not Ready` 结论。工作量分级约束（PIR #152 P1）按端到端总人月推导：简单(≤5)/标准(≤8)/复杂(≤15)三级，复杂特性须有独立验收边界。模块覆盖完整性校验引用 02-feasibility.md §2.1 代码仓库分析表，缺失模块必须补行或写明排除理由。03-arch-decision-record.md §6 遗留问题闭环校验阻断 Not Ready Gate。
+04-feature.md 是 OHOS SIG 评审会议的 Feature/Proposal 基线输入；`proposals/*.md` 是 requirements 阶段的 proposal 索引产物，进入 ODK 交付阶段前必须按本 skill 的 ODK handoff 规则转换为 `.codespec/changes/<change-id>/proposal.md`。本 skill 合并原 Review Ready Gate：在生成 04-feature.md、生成全部 proposal 文件并经用户确认拆分/不拆分结果后，直接执行结构化 Gate 判定，输出 `Ready` / `Conditional Ready` / `Not Ready` 结论。工作量分级约束（PIR #152 P1）按端到端总人月推导：简单(≤5)/标准(≤8)/复杂(≤15)三级，复杂特性须有独立验收边界。模块覆盖完整性校验引用 02-feasibility.md §2.1 代码仓库分析表，缺失模块必须补行或写明排除理由。03-arch-decision-record.md §6 遗留问题闭环校验阻断 Not Ready Gate。
 
 ## ⭐ 思维准则
 
@@ -68,7 +68,7 @@ metadata:
     - 从 04-feature.md 继承的 `feature_id`、`rr_id`、`target_release`
     - proposal 背景与问题、初始分级判断、目标/非目标
     - 用户故事与能力、成功标准、影响范围
-    - 假设与开放问题、不涉及项确认（8 维）
+    - Agent Scope Guard、假设与开放问题、不涉及项确认（8 维）
     - proposal 边界、Owner/SIG、工作量、依赖、开放条件项写入模板对应章节，不新增模板外 H1/H2
 11. **⭐ 拆分结果确认门禁**：向用户展示 04-feature.md 中的拆分方案以及已生成 proposal 文件列表（每个 proposal 的路径、边界、工作量、Owner、依赖），等待用户确认或调整后才允许执行 Review Ready Gate。AI 不自行定稿拆分方案。
 12. 保存 `{docs_dir}/04-feature.md` 和全部 `{docs_dir}/proposals/05-proposal-<slug>.md`。
@@ -90,7 +90,7 @@ metadata:
 
 ## Review Ready Gate（内建）
 
-Gate 检查读取 01-04，不需要调用独立 skill。判定项为 8 项固定检查 + 3 项结构一致性 + 1 项遗留问题闭环：
+Gate 检查读取 01-04，不需要调用独立 skill。判定项为 9 项基础检查 + 3 项结构一致性 + 1 项遗留问题闭环：
 
 | 检查项 | 要求 | 判定方法 |
 |--------|------|----------|
@@ -148,6 +148,10 @@ decision_gate:
 
 本 requirements 流程不再生成 `IR.md`、`SR.md` 或 `handoff.md`，也不自动改名、删除或覆盖历史目录中的同名旧产物。旧 IR/SR/handoff 只读保留，用于历史追溯；新流程的正式评审输入以 `01-requirement.md`、`02-feasibility.md`、`03-arch-decision-record.md`、`04-feature.md`、`proposals/05-proposal-*.md`、`value-decision-record.md` 为准。下游交付若仍需要 SR/handoff，必须由下游交付流程基于本 skill 输出另行生成，不作为 requirements Step 1-14 前置条件。
 
+### ODK Handoff 规则
+
+`proposals/05-proposal-<slug>.md` 不是 ODK 的最终归档路径。进入 ODK 交付阶段时，必须为每个已确认 proposal 建立明确 change-id，并把该 proposal 转换或复制到 `.codespec/changes/<change-id>/proposal.md`，同时满足 ODK `artifacts.yaml` 的 required sections（含 `Agent Scope Guard`）。转换时字段来源固定为：`rr_id` 从 01→04→proposal 继承，`target_release` 从 04/proposal frontmatter 继承或由用户确认，`change_type`、`issue`、`author`、`date` 不得从历史 IR/SR/handoff 推断。
+
 ### AC一致性校验
 
 执行 Gate 后生成 FR→AC 追溯表，检查编号一致性：每条 FR 必须映射到至少一条 AC，AC 编号在 04-feature.md 内唯一且无遗漏。校验结果写入 04-feature.md §5 备注。
@@ -190,7 +194,7 @@ decision_gate:
 
 - **禁止 AI 自行定稿拆分方案**：拆分结果必须经用户确认后才允许执行 Review Ready Gate（原因：拆分涉及资源分配和交付优先级，属人类决策）
 - **禁止只生成 04-feature.md 而不生成 proposal 文件**：04-feature.md 的 proposal 表是索引，不是正式 proposal 产物；每个 proposal 必须落盘为 `{docs_dir}/proposals/05-proposal-<slug>.md`（原因：后续交付阶段需要实际 proposal 输入）
-- **禁止使用非阶段化 proposal 文件名**：proposal 文件名必须是 `05-proposal-<slug>.md`；不得使用 `P1-*.md`、`proposal-1.md`、`<feature-id>.md` 等格式（原因：需求流程产物按自然阶段号排序，proposal 属 Step 5）
+- **禁止使用非阶段化 proposal 文件名**：requirements 阶段 proposal 文件名必须是 `05-proposal-<slug>.md`；不得使用 `P1-*.md`、`proposal-1.md`、`<feature-id>.md` 等格式（原因：proposal 由 Step 10 生成，但按 05 阶段化命名紧随 04-feature.md 排序）
 - **禁止 AI 代行 §6 遗留问题生成**：遗留问题必须由用户评审会议输入，不得从 feasibility 条件项或风险自动推演（原因：AI 推演会引入虚构风险项）
 - **禁止 Not Ready 时生成正式需求 PPT 或进入评审会议**：存在失败项时禁止把未就绪 Feature/Proposal 基线提交评审（原因：未通过门禁的需求进入下游会导致返工和评审阻塞）
 - **禁止复制 01-03 详细论证**：04-feature.md 只收敛结论，不复制详细论证（原因：避免文档冗余和信息不一致）

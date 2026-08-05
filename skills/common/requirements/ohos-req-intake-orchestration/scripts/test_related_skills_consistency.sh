@@ -39,7 +39,7 @@ echo "$out" | grep -q 'Required missing: 1' && echo "$out" | grep -q 'Result: NO
   && ok "S2 缺失依赖预检失败 (missing 1)" || { bad "S2 期望 missing 1 NOT READY"; echo "$out"; }
 
 # --- 场景3：依赖版本过低 → install --check NOT READY (version mismatch) ---
-awk '{if (!done && $0=="  version: 0.3.0") {print "  version: 0.0.1"; done=1} else {print}}' \
+awk '{if (!done && $0=="  version: 0.4.0") {print "  version: 0.0.1"; done=1} else {print}}' \
   "$sbx/skills/common/requirements/ohos-req-arch-decision/SKILL.md" > "$sbx/arch.new" \
   && mv "$sbx/arch.new" "$sbx/skills/common/requirements/ohos-req-arch-decision/SKILL.md"
 out="$(bash "$(sbx_install "$sbx")" --check || true)"
@@ -77,14 +77,14 @@ out="$(OHOS_REQ_SKILLS_DIR="$target" OHOS_REQ_SKILLS_SOURCE_DIR="$sbx5/skills/co
 echo "$out" | grep -q 'Installed: 7/7' && echo "$out" | grep -q 'Result: READY' && [[ -d "$target/ohos-req-feature-proposal-baseline" ]] \
   && ok "S7 --install 复制缺失依赖并 READY" || { bad "S7 期望 install READY"; echo "$out"; }
 
-# --- 场景8：数值 semver 比较不把 0.10.0 误判为小于 0.3.0 ---
+# --- 场景8：数值 semver 比较不把 0.10.0 误判为小于 0.4.0 ---
 sbx6="$(setup_sandbox)"
-awk '{if (!done && $0=="  version: 0.3.0") {print "  version: 0.10.0"; done=1} else {print}}' \
+awk '{if (!done && $0=="  version: 0.4.0") {print "  version: 0.10.0"; done=1} else {print}}' \
   "$sbx6/skills/common/requirements/ohos-req-feature-proposal-baseline/SKILL.md" > "$sbx6/feature.new" \
   && mv "$sbx6/feature.new" "$sbx6/skills/common/requirements/ohos-req-feature-proposal-baseline/SKILL.md"
 out="$(bash "$(sbx_install "$sbx6")" --check || true)"
 echo "$out" | grep -q 'Version mismatch: 0' && echo "$out" | grep -q 'Result: READY' \
-  && ok "S8 semver 0.10.0 >= 0.3.0" || { bad "S8 期望 semver READY"; echo "$out"; }
+  && ok "S8 semver 0.10.0 >= 0.4.0" || { bad "S8 期望 semver READY"; echo "$out"; }
 
 echo ""
 echo "Summary: $pass passed, $fail failed"

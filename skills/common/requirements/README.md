@@ -1,7 +1,7 @@
 # OHOS SDD 需求导入评审工作流指南
 
 > 本指南描述 OHOS SDD 需求导入评审流程，适用于任何子系统/领域。
-> skill 规范位于 `platform_issues/user_guide/ohos-req-xxx/SKILL.md`。
+> skill 规范位于 `skills/common/requirements/ohos-req-xxx/SKILL.md`。
 
 ## Skill 目录
 
@@ -48,6 +48,7 @@ flowchart TD
 | Step 5 | `02-feasibility.md` | 各方案独立工作量估算，禁止替用户做选型 |
 | Step 7/9 | `03-arch-decision-record.md` | 阶段 A 候选分析，阶段 B 根据用户决策定稿 |
 | Step 10-12 | `04-feature.md` | Feature/Proposal 基线、拆分策略、影响性分析和内建 Gate 结论 |
+| Step 10-12 | `proposals/05-proposal-<slug>.md` | requirements 阶段 proposal 索引产物，进入 ODK 前转换为 `.codespec/changes/<change-id>/proposal.md` |
 | Step 14 | `value-decision-record.md` | 评审接纳/不接纳/下次重新上会的决策记录 |
 
 ## 核心原则
@@ -57,11 +58,12 @@ flowchart TD
 3. Review Ready Gate 已融合进 `ohos-req-feature-proposal-baseline`，不再维护独立 Gate skill。
 4. requirements 流程不再生成下游 IR、SR 或 handoff 交接契约，相关转换 skill 已移除；历史同名产物只读保留、非前置，不自动改名/删除/覆盖。
 5. 步骤按自然顺序编号为 Step 1 到 Step 14，不再使用小数步骤编号。
+6. `proposals/05-proposal-<slug>.md` 是需求评审索引产物；进入 ODK 交付阶段时必须建立 change-id 并转换/复制到 `.codespec/changes/<change-id>/proposal.md`，补齐 ODK required sections（含 `Agent Scope Guard`）。
 
 ## 预检
 
 ```bash
-bash platform_issues/user_guide/ohos-req-intake-orchestration/scripts/install_related_skills.sh --check
+bash skills/common/requirements/ohos-req-intake-orchestration/scripts/install_related_skills.sh --check
 ```
 
 预期结果：
@@ -80,12 +82,12 @@ Result: READY
 
 | 指标 | 结果 |
 |------|------|
-| Skill Judge 总分 | `104/120` |
-| 等级 | `B+` |
-| Eval cases | `43` |
-| Assertions | `138` |
-| Programmatic assertions | `95` |
-| Manual assertions | `43` |
+| Skill Judge 总分 | `110/120` |
+| 等级 | `A-` |
+| Eval cases | `47` |
+| Assertions | `150` |
+| Programmatic assertions | `106` |
+| Manual assertions | `44` |
 | Unsupported assertions | `0` |
 
 验证命令：

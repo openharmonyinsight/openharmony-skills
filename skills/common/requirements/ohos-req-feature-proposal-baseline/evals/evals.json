@@ -178,6 +178,87 @@
       ]
     },
     {
+      "id": 12,
+      "name": "gate-all-pass-ready",
+      "prompt": "01-04均完整，proposal文件存在，AC逐列完整，受影响模块均有Owner/SIG，02/03条件项已覆盖，无遗留阻塞，仅需执行内建 Review Ready Gate。",
+      "expected_output": "13项检查均为pass，decision_gate.gate 为 Ready；无 block_reasons、conditions 为空，允许进入正式评审。",
+      "assertions": [
+        {
+          "text": "Ready",
+          "type": "contains"
+        },
+        {
+          "text": "13项检查均为pass",
+          "type": "llm_judge"
+        },
+        {
+          "text": "block_reasons: []",
+          "type": "contains"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "name": "missing-feature-file-not-ready",
+      "prompt": "01-requirement.md、02-feasibility.md、03-arch-decision-record.md 均存在，但 04-feature.md 缺失。请执行 Review Ready Gate。",
+      "expected_output": "Gate 不得自由生成通过结论；必须判定 Not Ready，并提示回 Step 10 生成或补全 04-feature.md。",
+      "assertions": [
+        {
+          "text": "Not Ready",
+          "type": "contains"
+        },
+        {
+          "text": "Step 10",
+          "type": "contains"
+        },
+        {
+          "text": "04-feature.md",
+          "type": "contains"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "name": "missing-upstream-docs-degrade",
+      "prompt": "04-feature.md 草稿存在，但 02-feasibility.md 缺失 §2.1 代码仓库分析表，03-arch-decision-record.md 缺失 §6 遗留问题输入。请执行内建 Review Ready Gate。",
+      "expected_output": "02 §2.1 缺失导致模块覆盖校验 warn；03 §6 缺失或占位导致遗留问题闭环 fail，最终 Gate 为 Not Ready，block_reasons 指向 Step 7/9 需补决策遗留问题输入。",
+      "assertions": [
+        {
+          "text": "warn",
+          "type": "contains"
+        },
+        {
+          "text": "Not Ready",
+          "type": "contains"
+        },
+        {
+          "text": "03-arch-decision-record.md §6",
+          "type": "contains"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "name": "odk-handoff-contract",
+      "prompt": "04-feature.md 和 proposals/05-proposal-arkweb-drag-preview.md 已经确认，用户要求进入 ODK 交付阶段。请说明 requirements proposal 如何交接给 ODK。",
+      "expected_output": "requirements 阶段保留 proposals/05-proposal-<slug>.md 索引产物；进入 ODK 时必须建立 change-id，并转换或复制到 .codespec/changes/<change-id>/proposal.md，且包含 Agent Scope Guard。rr_id 来源固定为 01→04→proposal，不从 IR/SR/handoff 推断。",
+      "assertions": [
+        {
+          "text": ".codespec/changes/<change-id>/proposal.md",
+          "type": "contains"
+        },
+        {
+          "text": "Agent Scope Guard",
+          "type": "contains"
+        },
+        {
+          "text": "IR",
+          "type": "not_contains",
+          "tokens": ["从 IR 继承", "从已废弃 IR 继承"]
+        }
+      ]
+    },
+    {
       "id": 11,
       "name": "legacy-ir-sr-handoff-readonly",
       "prompt": "历史目录中已有 IR.md、SR.md 和 handoff.md。请按新版 requirements 流程生成 04-feature.md 和 proposal。",

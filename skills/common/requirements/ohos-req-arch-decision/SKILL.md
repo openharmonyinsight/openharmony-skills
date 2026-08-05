@@ -6,7 +6,7 @@ metadata:
   scope: common
   stage: requirements
   capability: arch-decision
-  version: 0.3.0
+  version: 0.4.0
   status: draft
   tags:
     - sdd

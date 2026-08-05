@@ -19,11 +19,11 @@ SKILLS_DIR="${OHOS_REQ_SKILLS_DIR:-$DEFAULT_SKILLS_DIR}"
 SOURCE_DIR="${OHOS_REQ_SKILLS_SOURCE_DIR:-$DEFAULT_SKILLS_DIR}"
 
 REQUIRED_SKILLS=(
-  "ohos-req-requirement-intake:0.3.0:true"
-  "ohos-req-feasibility-analysis:0.3.0:true"
-  "ohos-req-arch-decision:0.3.0:true"
-  "ohos-req-feature-proposal-baseline:0.3.0:true"
-  "ohos-req-value-decision:0.3.0:true"
+  "ohos-req-requirement-intake:0.4.0:true"
+  "ohos-req-feasibility-analysis:0.4.0:true"
+  "ohos-req-arch-decision:0.4.0:true"
+  "ohos-req-feature-proposal-baseline:0.4.0:true"
+  "ohos-req-value-decision:0.4.0:true"
   "ohos-req-value-ppt-gen:0.2.0:false"
 )
 
@@ -128,7 +128,7 @@ echo "Version mismatch: $version_mismatch_count"
 if [[ "$missing_count" -gt 0 ]]; then
   echo "Result: NOT READY"
   echo ""
-  echo "Restore missing skills from platform_issues/user_guide in the same repository branch, or run --install with OHOS_REQ_SKILLS_SOURCE_DIR."
+  echo "Restore missing skills from skills/common/requirements in the same repository branch, or run --install with OHOS_REQ_SKILLS_SOURCE_DIR."
   exit 1
 fi
 

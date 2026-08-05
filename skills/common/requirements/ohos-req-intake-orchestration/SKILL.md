@@ -6,7 +6,7 @@ metadata:
   scope: common
   stage: requirements
   capability: intake-orchestration
-  version: 0.3.0
+  version: 0.4.0
   status: draft
   tags:
     - sdd
@@ -14,19 +14,19 @@ metadata:
   related-skills:
     - name: ohos-req-requirement-intake
       required: true
-      min_version: 0.3.0
+      min_version: 0.4.0
     - name: ohos-req-feasibility-analysis
       required: true
-      min_version: 0.3.0
+      min_version: 0.4.0
     - name: ohos-req-arch-decision
       required: true
-      min_version: 0.3.0
+      min_version: 0.4.0
     - name: ohos-req-feature-proposal-baseline
       required: true
-      min_version: 0.3.0
+      min_version: 0.4.0
     - name: ohos-req-value-decision
       required: true
-      min_version: 0.3.0
+      min_version: 0.4.0
     - name: ohos-req-value-ppt-gen
       required: false
       min_version: 0.2.0
@@ -83,7 +83,7 @@ OHOS 需求导入评审全流程编排入口，串联 5 个主步骤（requireme
 需求导入评审工作流启动前，必须执行依赖完整性预检：
 
 ```bash
-bash {SKILL_HOME}/platform_issues/user_guide/ohos-req-intake-orchestration/scripts/install_related_skills.sh --check
+bash {SKILL_HOME}/scripts/install_related_skills.sh --check
 ```
 
 预期输出：
@@ -97,7 +97,7 @@ Result: READY
 
 **任何必选 Skill 缺失或版本不匹配 → 阻断流程启动**，返回缺失列表。
 
-sdd-pilot 的 `install_related_skills.sh` 用于本地目录完整性检查；如缺失必选 skill，应从同一仓库同一分支补齐 `platform_issues/user_guide/ohos-req-*` 目录后重新执行预检，通过后才允许进入 Step 1。
+`install_related_skills.sh` 按当前 skill 目录解析 requirements skills 根目录；如缺失必选 skill，应从同一仓库同一分支的 `skills/common/requirements/ohos-req-*` 目录补齐，或使用 `OHOS_REQ_SKILLS_SOURCE_DIR` 指向同结构来源后执行 `--install`，通过后才允许进入 Step 1。
 
 ### Step 1: requirement.md — 需求导入
 

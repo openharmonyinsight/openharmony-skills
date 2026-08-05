@@ -1,6 +1,6 @@
 # User Guide Skill Evals
 
-本目录提供 `platform_issues/user_guide` 下 requirements skills 的本地评测辅助工具。
+本目录提供 `skills/common/requirements` 下 requirements skills 的本地评测辅助工具。
 
 ## 评测模型
 
@@ -15,8 +15,8 @@
 ## 生成覆盖率 benchmark
 
 ```bash
-python3 platform_issues/user_guide/evals/run_skill_evals.py collect \
-  --root platform_issues/user_guide \
+python3 skills/common/requirements/evals/run_skill_evals.py collect \
+  --root skills/common/requirements \
   --benchmark-json /tmp/user-guide-skill-benchmark.json \
   --benchmark-md /tmp/user-guide-skill-benchmark.md
 ```
@@ -24,8 +24,8 @@ python3 platform_issues/user_guide/evals/run_skill_evals.py collect \
 ## 评分单个输出
 
 ```bash
-python3 platform_issues/user_guide/evals/run_skill_evals.py grade \
-  --evals platform_issues/user_guide/ohos-req-requirement-intake/evals/evals.json \
+python3 skills/common/requirements/evals/run_skill_evals.py grade \
+  --evals skills/common/requirements/ohos-req-requirement-intake/evals/evals.json \
   --eval-id 1 \
   --output /tmp/with-skill-output.txt \
   --result /tmp/grading.json

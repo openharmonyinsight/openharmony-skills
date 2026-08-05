@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-PROGRAMMATIC_TYPES = {"contains", "not_contains", "regex"}
+PROGRAMMATIC_TYPES = {"contains", "not_contains", "regex", "file_exists", "json_field"}
 MANUAL_TYPES = {"llm_judge"}
 
 
@@ -40,16 +40,34 @@ def select_eval(evals_path, eval_id):
 
 def grade_assertion(assertion, output_text):
     kind = assertion.get("type", "llm_judge")
-    needle = assertion.get("text", "")
+    needle = assertion.get("text") or assertion.get("pattern") or ""
     if kind == "contains":
         passed = needle in output_text
         evidence = "found text" if passed else "missing text"
     elif kind == "not_contains":
-        passed = needle not in output_text
+        needles = assertion.get("tokens") or assertion.get("patterns") or [needle]
+        unexpected = [item for item in needles if item and item in output_text]
+        passed = not unexpected
         evidence = "text absent" if passed else "unexpected text present"
     elif kind == "regex":
         passed = re.search(needle, output_text, re.M) is not None
         evidence = "regex matched" if passed else "regex did not match"
+    elif kind == "file_exists":
+        path = Path(assertion.get("path", ""))
+        passed = path.exists()
+        evidence = "file exists" if passed else "file missing"
+    elif kind == "json_field":
+        field = assertion.get("field", "")
+        expected = assertion.get("equals")
+        try:
+            value = json.loads(output_text)
+            for part in field.split("."):
+                value = value[part]
+            passed = value == expected if "equals" in assertion else value is not None
+            evidence = "json field matched" if passed else "json field mismatch"
+        except Exception as exc:
+            passed = False
+            evidence = "json field error: %s" % exc
     elif kind in MANUAL_TYPES:
         return {
             "text": needle,
@@ -112,6 +130,14 @@ def parse_yaml_case_count(path):
     return len(re.findall(r"^\s*-\s+id:", path.read_text(encoding="utf-8"), re.M))
 
 
+def parse_yaml_assertion_count(path):
+    if not path.exists():
+        return 0
+    text = path.read_text(encoding="utf-8")
+    must_count = len(re.findall(r"^\s*-\s+(must|must_not):", text, re.M))
+    return must_count or parse_yaml_case_count(path)
+
+
 def collect_skill(skill_dir):
     evals_path = skill_dir / "evals" / "evals.json"
     yaml_path = skill_dir / "evals" / "cases.yaml"
@@ -139,7 +165,10 @@ def collect_skill(skill_dir):
                     skill_data["unsupported_assertions"] += 1
     elif yaml_path.exists():
         skill_data["cases"] = parse_yaml_case_count(yaml_path)
-        skill_data["manual_assertions"] = skill_data["cases"]
+        skill_data["assertions"] = parse_yaml_assertion_count(yaml_path)
+        skill_data["manual_assertions"] = skill_data["assertions"]
+        if skill_data["manual_assertions"]:
+            skill_data["assertion_types"]["manual_yaml"] = skill_data["manual_assertions"]
     return skill_data
 
 
