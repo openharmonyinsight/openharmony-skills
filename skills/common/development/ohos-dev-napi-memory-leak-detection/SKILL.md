@@ -1,6 +1,20 @@
 ---
 name: ohos-dev-napi-memory-leak-detection
 description: Detect and fix OpenHarmony NAPI memory leaks caused by missing HandleScope / HandleEscape scope management or mishandled napi_ref lifecycle. Use when reviewing or writing C/C++ NAPI module code that: (1) returns napi_value, (2) has napi_value& output parameters, (3) calls napi_create_* / napi_new_instance, (4) sets object properties with temporary napi_value variables, (5) runs in async work / async callbacks across threads, or (6) uses napi_wrap / napi_create_reference / napi_delete_reference. Covers HandleScope, HandleEscape, napi_escape_handle, napi_ref strong/weak references, napi_async_work, napi_threadsafe_function, and OpenHarmony Ability Runtime differences. See references/background.md for memory management principles.
+metadata:
+  author: openharmony
+  scope: common
+  stage: development
+  domain: napi
+  capability: memory-leak-detection
+  version: 0.1.0
+  status: draft
+  tags:
+    - napi
+    - memory-leak
+    - handlescope
+    - napi-ref
+    - native-module
 ---
 
 # NAPI Memory Leak Detection

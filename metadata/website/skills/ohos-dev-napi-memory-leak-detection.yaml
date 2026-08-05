@@ -1,0 +1,70 @@
+schemaVersion: 1
+
+id: ohos-dev-napi-memory-leak-detection
+title: NAPI 内存泄漏检测
+summary: 检测并修复 OpenHarmony NAPI C/C++ 代码中因缺失 HandleScope / HandleEscape 作用域管理或 napi_ref 生命周期误用导致的内存泄漏。
+
+category:
+  scope: common
+  namespace: development
+  stage: development
+  domain: napi
+  capability: memory-leak-detection
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - napi
+  - memory-leak
+  - handlescope
+  - napi-ref
+  - native-module
+
+audience:
+  - OpenHarmony NAPI 模块开发者
+  - NAPI 模块代码审查人员
+  - 原生绑定性能优化人员
+
+useCases:
+  - title: 审查 NAPI 代码中的内存泄漏
+    description: 检查函数返回值 napi_value、napi_value& 输出参数、napi_create_* / napi_new_instance 调用、临时 napi_value 变量和跨线程异步回调中的 HandleScope / HandleEscape 缺失。
+  - title: 修复 napi_ref 生命周期问题
+    description: 检查 napi_wrap / napi_create_reference / napi_delete_reference 的强/弱引用管理，避免对象无法回收。
+  - title: 处理异步与跨线程泄漏
+    description: 检查 napi_async_work、napi_threadsafe_function 在异步回调中的作用域管理及 OpenHarmony Ability Runtime 差异。
+
+whenToUse:
+  - 需要审查或编写返回 napi_value 或含 napi_value& 输出参数的 NAPI C/C++ 函数。
+  - 代码涉及 napi_create_*、napi_new_instance、napi_wrap、napi_create_reference / napi_delete_reference。
+  - 异步工作、异步回调跨线程执行，或对象属性使用临时 napi_value 变量。
+  - 出现疑似内存泄漏、对象无法回收或 HandleScope 相关崩溃。
+
+whenNotToUse:
+  - 不涉及 ArkTS/JS 原生绑定，仅为普通 C++ 业务逻辑。
+  - 需要 NAPI 模块注册或 BUILD.gn 构建配置帮助，应使用 ohos-dev-napi-module。
+  - 需要生成 CAPI XTS 测试，应使用 CAPI XTS 生成 Skill。
+
+inputs:
+  required:
+    - NAPI 模块 C/C++ 源码或目标函数代码
+    - 疑似泄漏场景描述
+  optional:
+    - 运行日志、内存增长观测或崩溃栈
+    - 涉及的异步 / 线程 / napi_ref 使用场景
+
+outputs:
+  - 内存泄漏根因定位
+  - HandleScope / HandleEscape / napi_ref 修复建议
+  - 跨线程与异步回调的防护规则
+
+related:
+  skills:
+    - ohos-dev-napi-module
+  docs:
+    - title: 内存管理原理
+      path: references/background.md
+    - title: 详细案例
+      path: references/detailed-cases.md
