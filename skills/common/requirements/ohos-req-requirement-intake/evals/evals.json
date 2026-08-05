@@ -17,7 +17,8 @@
         },
         {
           "text": "正文中不存在 待确认/TBD/待分析 占位符",
-          "type": "not_contains"
+          "type": "not_contains",
+          "tokens": ["待确认", "TBD", "待分析"]
         },
         {
           "text": "生成了 clarification-questions.md 文件",
@@ -41,7 +42,8 @@
         },
         {
           "text": "正文中不存在 尽可能 或 快速",
-          "type": "not_contains"
+          "type": "not_contains",
+          "tokens": ["尽可能", "快速"]
         }
       ]
     },
@@ -125,7 +127,8 @@
         },
         {
           "text": "status: Draft-NeedsClarification",
-          "type": "not_contains"
+          "type": "not_contains",
+          "tokens": ["status: Draft-NeedsClarification"]
         },
         {
           "text": "下游设计",

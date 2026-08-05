@@ -81,7 +81,8 @@
         },
         {
           "text": "Accepted",
-          "type": "not_contains"
+          "type": "not_contains",
+          "tokens": ["status: Accepted", "\"status\": \"Accepted\""]
         },
         {
           "text": "不得替用户做方案决策",

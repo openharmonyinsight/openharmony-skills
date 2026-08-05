@@ -5,14 +5,15 @@ rr_id: ""             # RR单号：从 04-feature.md 继承
 issue: ""
 author: ""
 date: ""
-status: Draft        # Draft → GA-Approved
-gate_a: ""           # GA 审视记录链接
+status: Draft        # Draft | GA-Approved；GA-Approved 必须填写 gate_a
+gate_a: ""           # GA 审视记录链接或归档路径；为空时不得视为正式可交付
 ---
 # Proposal
 
 > 模板定位：SDD 入口 proposal，归档到对应代码仓，过 GATE A(GA: Proposal Gate)。
 > 以 ODK `core/templates/ai/proposal.md` 为基，融合 OpenSpec(Why) + MatrixSpec(User Stories/DFX)。
 > requirements 阶段先落盘为 `proposals/05-proposal-<slug>.md`；进入 ODK 交付阶段时转换为 `.codespec/changes/<change-id>/proposal.md`，并满足 ODK `artifacts.yaml`。
+> GA 证据规则：`status: GA-Approved` 时 `gate_a` 必须非空；缺失时 Review Ready Gate 判定 Not Ready。
 
 ## 1. 背景与问题（Why）
 <!-- 动机、问题陈述、当前痛点（OpenSpec Why 风格） -->

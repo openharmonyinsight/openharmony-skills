@@ -1,6 +1,6 @@
 ---
 feature_id: ""
-rr_id: ""        # RR单号：需求管理系统的追踪编号，最早在此回填，后续 feature/IR/proposal/SR 继承
+rr_id: ""        # RR单号：需求管理系统的追踪编号，最早在此回填，后续 04-feature.md 与 proposal 继承
 requester: ""
 date: ""
 status: Draft

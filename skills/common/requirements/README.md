@@ -7,7 +7,7 @@
 
 | Skill | 作用 | 输入 | 输出 |
 |------|------|------|------|
-| [ohos-req-intake-orchestration](ohos-req-intake-orchestration/SKILL.md) | 需求导入评审全流程编排入口 | 用户原始需求、可选 Issue/PRD/会议纪要 | Step 1-14 编排结果与流程状态 |
+| [ohos-req-intake-orchestration](ohos-req-intake-orchestration/SKILL.md) | 需求导入评审全流程编排入口 | 用户原始需求、可选 Issue/PRD/会议纪要 | 5 个产物阶段的流程状态 |
 | [ohos-req-requirement-intake](ohos-req-requirement-intake/SKILL.md) | 原始需求归一化与澄清 | 原始诉求、RR 单号、版本/场景/范围信息 | `01-requirement.md`、`_draft/clarification-questions.md` |
 | [ohos-req-feasibility-analysis](ohos-req-feasibility-analysis/SKILL.md) | 需求可行性分析 | `01-requirement.md`、资料输入记录、轻量代码预检证据包 | `02-feasibility.md`、可行性澄清问题 |
 | [ohos-req-arch-decision](ohos-req-arch-decision/SKILL.md) | 候选方案分析与用户决策定稿 | `01-requirement.md`、`02-feasibility.md`、用户决策结论 | `03-arch-decision-record.md` |
@@ -19,37 +19,31 @@
 
 ```mermaid
 flowchart TD
-    A([用户原始需求]) --> B["Step 1 Requirement<br/>ohos-req-requirement-intake"]
-    B --> C["Step 2 澄清门禁<br/>逐轮澄清并回填结论"]
-    C -->|Clarified| D["Step 3 可行性输入提醒"]
-    D --> E["Step 4 轻量代码预检"]
-    E --> F["Step 5 Feasibility<br/>ohos-req-feasibility-analysis"]
-    F --> G["Step 6 Feasibility 澄清门禁"]
-    G -->|Clarified| H["Step 7 ADR 候选分析<br/>ohos-req-arch-decision"]
-    H --> I["Step 8 决策收集<br/>用户选定方案和遗留问题"]
-    I --> J["Step 9 ADR 定稿"]
-    J --> K["Step 10 Feature/Proposal Baseline<br/>ohos-req-feature-proposal-baseline"]
-    K --> L["Step 11 拆分确认"]
-    L --> M["Step 12 内建 Review Ready Gate + AC 校验"]
-    M -->|Ready/Conditional Ready| N["Step 13 PPT 生成（可选）<br/>ohos-req-value-ppt-gen"]
-    M -->|Not Ready| K
-    N --> O["Step 14 评审决策纪要回流<br/>ohos-req-value-decision"]
-    M --> O
-    O -->|接纳| P([需求导入评审流程完成])
-    O -->|不接纳| Q([关闭/归档])
-    O -->|下次重新上会| K
+    A([用户原始需求]) --> B["需求基线<br/>01-requirement.md"]
+    B --> C["可行性结论<br/>02-feasibility.md"]
+    C --> D["方案决策<br/>03-arch-decision-record.md"]
+    D --> E["Feature/Proposal 基线<br/>04-feature.md + 05-proposal-*"]
+    E -->|Gate Ready/Conditional Ready| F["评审输出与决策回流<br/>PPT 可选 + value-decision-record.md"]
+    E -->|Gate Not Ready| E
+    F -->|接纳| G([需求导入评审流程完成])
+    F -->|不接纳| H([关闭/归档])
+    F -->|下次重新上会| I["按 target_step 分派<br/>需求基线 / 可行性结论 / 方案决策 / Feature 基线"]
+    I --> B
+    I --> C
+    I --> D
+    I --> E
 ```
 
 ## 产物
 
-| Step | 产物 | 关键规则 |
-|------|------|---------|
-| Step 1 | `01-requirement.md` | 原始诉求归一化为事实基线，RR 单号写入 frontmatter |
-| Step 5 | `02-feasibility.md` | 各方案独立工作量估算，禁止替用户做选型 |
-| Step 7/9 | `03-arch-decision-record.md` | 阶段 A 候选分析，阶段 B 根据用户决策定稿 |
-| Step 10-12 | `04-feature.md` | Feature/Proposal 基线、拆分策略、影响性分析和内建 Gate 结论 |
-| Step 10-12 | `proposals/05-proposal-<slug>.md` | requirements 阶段 proposal 索引产物，进入 ODK 前转换为 `.codespec/changes/<change-id>/proposal.md` |
-| Step 14 | `value-decision-record.md` | 评审接纳/不接纳/下次重新上会的决策记录 |
+| 对外阶段 | 产物 | 内部 checkpoint | 关键规则 |
+|------|------|------|---------|
+| 需求基线 | `01-requirement.md` | Step 1-2 | 原始诉求归一化为事实基线，RR 单号写入 frontmatter |
+| 可行性结论 | `02-feasibility.md` | Step 3-6 | 各方案独立工作量估算，禁止替用户做选型 |
+| 方案决策 | `03-arch-decision-record.md` | Step 7-9 | 阶段 A 候选分析，阶段 B 根据用户决策定稿 |
+| Feature/Proposal 基线 | `04-feature.md` | Step 10-12 | Feature/Proposal 基线、拆分策略、影响性分析和内建 Gate 结论 |
+| Feature/Proposal 基线 | `proposals/05-proposal-<slug>.md` | Step 10-12 | requirements 阶段 proposal 索引产物，进入 ODK 前转换为 `.codespec/changes/<change-id>/proposal.md` |
+| 评审闭环 | `value-decision-record.md` | Step 14 | 评审接纳/不接纳/下次重新上会的决策记录 |
 
 ## 核心原则
 
@@ -57,7 +51,7 @@ flowchart TD
 2. 拆分结果由用户确认，AI 不自行定稿。Step 11 为强制交互点。
 3. Review Ready Gate 已融合进 `ohos-req-feature-proposal-baseline`，不再维护独立 Gate skill。
 4. requirements 流程不再生成下游 IR、SR 或 handoff 交接契约，相关转换 skill 已移除；历史同名产物只读保留、非前置，不自动改名/删除/覆盖。
-5. 步骤按自然顺序编号为 Step 1 到 Step 14，不再使用小数步骤编号。
+5. 对用户只呈现 5 个产物阶段；Step 1-14 仅作为内部 checkpoint 和机器路由编号，不在普通提示中反复暴露。
 6. `proposals/05-proposal-<slug>.md` 是需求评审索引产物；进入 ODK 交付阶段时必须建立 change-id 并转换/复制到 `.codespec/changes/<change-id>/proposal.md`，补齐 ODK required sections（含 `Agent Scope Guard`）。
 
 ## 预检
@@ -83,12 +77,14 @@ Result: READY
 | 指标 | 结果 |
 |------|------|
 | Skill Judge 总分 | `110/120` |
-| 等级 | `A-` |
-| Eval cases | `47` |
-| Assertions | `150` |
-| Programmatic assertions | `106` |
+| 等级 | `A` |
+| Eval cases | `48` |
+| Assertions | `155` |
+| Programmatic assertions | `111` |
 | Manual assertions | `44` |
 | Unsupported assertions | `0` |
+
+评分明细见 [evals/skill-judge-score.md](evals/skill-judge-score.md)。
 
 验证命令：
 

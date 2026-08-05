@@ -69,7 +69,9 @@ skill 名为 `ohos-req-pptx-review-deck-generation`，之后精简重命名，�
   （该工具不在本仓库内，需要维护者在其评分环境中运行）。建议维护者在此报告
   基础上运行 `skills-judge` 给出正式 B 级及以上评分，并将评分结果附加到本
   报告或单独提交。
-- with/without 对比目前基于 3 个 eval case、每 case 各 1 次运行；如需更强的
+- with/without 对比报告原始实跑基于 3 个 eval case、每 case 各 1 次运行；当前
+  `cases.yaml` 已扩展为 4 个 case（新增 invalid-logo-fallback），后续正式复核应按
+  4 个 case 全量重跑。如需更强的
   统计显著性，可增加每 case 的重复次数。
 - 产物文件（`output.pptx`/`build.py`）未随本报告提交到仓库（体积与可重现性
   考虑），如评审需要可另行提供。

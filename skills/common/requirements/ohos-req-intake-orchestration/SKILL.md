@@ -38,7 +38,7 @@ metadata:
 
 ## 定位
 
-OHOS 需求导入评审全流程编排入口，串联 5 个主步骤（requirement→feasibility→decision→feature/proposal baseline with gate→value decision）。RR单号（rr_id）从 01-requirement.md frontmatter 继承到 04-feature.md 和 value-decision-record.md，是电子流系统的唯一追溯键。Token 经济性规则（spawn 四要素+隔离上下文+摘要≤15行+扇出≤4）是所有 subagent 调用的绑定契约。模式 A（subagent 编排）和模式 B（主 session 串行）根据运行时 subagent 能力自动切换。
+OHOS 需求导入评审全流程编排入口。对用户只呈现 5 个产物阶段（需求基线→可行性结论→方案决策→Feature/Proposal 基线→评审闭环）；Step 1-14 仅作为内部 checkpoint 和机器路由编号。RR单号（rr_id）从 01-requirement.md frontmatter 继承到 04-feature.md 和 value-decision-record.md，是电子流系统的唯一追溯键。Token 经济性规则（spawn 四要素+隔离上下文+摘要≤15行+扇出≤4）是所有 subagent 调用的绑定契约。模式 A（subagent 编排）和模式 B（主 session 串行）根据运行时 subagent 能力自动切换。
 
 ## NEVER
 
@@ -49,6 +49,7 @@ OHOS 需求导入评审全流程编排入口，串联 5 个主步骤（requireme
 3. **禁止跳过预检步骤**——启动预检不通过时阻断启动，不得绕过（reason: gate integrity）
 4. **禁止自行定稿拆分方案**——Step 11 必须向用户展示拆分方案并等待确认，AI 不代行（reason: resource allocation is human decision）
 5. **禁止绕过内建 Gate**——Step 12 必须由 `ohos-req-feature-proposal-baseline` 在 04-feature.md 最终版上执行 Review Ready Gate（reason: gate integrity）
+6. **禁止向用户反复暴露内部 Step 编号**——用户提示使用产物阶段名（需求基线、可行性结论、方案决策、Feature/Proposal 基线、评审闭环）；Step 编号仅写入内部路由字段或调试信息（reason: UX clarity）
 
 ## 输入
 
@@ -67,7 +68,7 @@ OHOS 需求导入评审全流程编排入口，串联 5 个主步骤（requireme
 
 ## 环境变量
 
-环境变量解析逻辑见 `reference/env-vars.md`。SKILL_HOME > WORK_HOME > DOCS_REPO 三级优先，详见参考文件。
+环境变量解析逻辑见 `reference/env-vars.md`。`ORCHESTRATOR_SKILL_DIR` 专用于定位本 skill 的 `scripts/` 与 `reference/`；`SKILL_HOME` 表示主 Session 工作区，不用于定位内置脚本。
 
 ## 核心原则
 
@@ -83,7 +84,7 @@ OHOS 需求导入评审全流程编排入口，串联 5 个主步骤（requireme
 需求导入评审工作流启动前，必须执行依赖完整性预检：
 
 ```bash
-bash {SKILL_HOME}/scripts/install_related_skills.sh --check
+bash {ORCHESTRATOR_SKILL_DIR}/scripts/install_related_skills.sh --check
 ```
 
 预期输出：
@@ -97,7 +98,7 @@ Result: READY
 
 **任何必选 Skill 缺失或版本不匹配 → 阻断流程启动**，返回缺失列表。
 
-`install_related_skills.sh` 按当前 skill 目录解析 requirements skills 根目录；如缺失必选 skill，应从同一仓库同一分支的 `skills/common/requirements/ohos-req-*` 目录补齐，或使用 `OHOS_REQ_SKILLS_SOURCE_DIR` 指向同结构来源后执行 `--install`，通过后才允许进入 Step 1。
+`install_related_skills.sh` 按 `ORCHESTRATOR_SKILL_DIR` 解析 requirements skills 根目录；如缺失必选 skill，应从同一仓库同一分支的 `skills/common/requirements/ohos-req-*` 目录补齐，或使用 `OHOS_REQ_SKILLS_SOURCE_DIR` 指向同结构来源后执行 `--install`，通过后才允许进入需求基线阶段。
 
 ### Step 1: requirement.md — 需求导入
 
@@ -252,6 +253,18 @@ Feature 已通过 Review Ready Gate。如需生成需求评审 PPT 供评审会�
 | `docs/features/{id}/` | 正式编号产物（01-04、value-decision-record 等） | gitcode-pr 必须提交 |
 | `docs/features/{id}/_draft/` | 中间文件（草稿、实验数据） | gitcode-pr 提交前自动过滤 |
 | `tmp/` | 知识库证据包等临时文件 | gitcode-pr 提交前自动过滤 |
+
+## 用户可见阶段与内部 checkpoint
+
+| 用户可见阶段 | 内部 checkpoint | 用户提示写法 |
+|--------------|----------------|--------------|
+| 需求基线 | Step 1-2 | "生成/确认 01-requirement.md" |
+| 可行性结论 | Step 3-6 | "进入可行性分析" |
+| 方案决策 | Step 7-9 | "需要你确认方案决策" |
+| Feature/Proposal 基线 | Step 10-12 | "需要你确认 proposal 拆分和 Gate 结论" |
+| 评审闭环 | Step 13-14 | "生成评审输出或记录评审结论" |
+
+对用户回传和追问默认使用阶段名；仅在 `value-decision-record.md.routing.target_step`、日志或调试说明中保留 Step 编号。
 
 ## 详细 spawn 指令
 

@@ -62,10 +62,11 @@ feature-proposal-baseline(Step 10-12, 内建 Gate) → value-ppt-gen(可选) →
 
 ## 流程
 
-1. 读取评审会议纪要。**如果用户未提供会议纪要，禁止凭空生成决策记录** — 追问用户。
-2. 按上表将结论映射为 Accepted / Rejected / PendingRe-review。遇歧义表述时追问用户明确。
-3. 提取评审意见：每条意见必须有**处理方式**和**负责人**。缺失时标记 `[待补充]` 并在自检环节提示。
-4. 根据 conclusions 路由：
+1. 读取 `04-feature.md` 的 `decision_gate.gate`。若 Gate 为 `Not Ready`，必须硬阻断 Accepted/评审完成状态，只允许生成 rollback 路由到 Feature/Proposal 基线（target_step=10，target_skill=`ohos-req-feature-proposal-baseline`），并停止读取会议结论。
+2. 读取评审会议纪要。**如果用户未提供会议纪要，禁止凭空生成决策记录** — 追问用户。
+3. 按上表将结论映射为 Accepted / Rejected / PendingRe-review。遇歧义表述时追问用户明确。
+4. 提取评审意见：每条意见必须有**处理方式**和**负责人**。缺失时标记 `[待补充]` 并在自检环节提示。
+5. 根据 conclusions 路由：
    - **Accepted**：生成 value-decision-record.md（status: Accepted），评审流程完成
    - **Rejected**：生成 value-decision-record.md（status: Rejected），关闭/归档
    - **PendingRe-review**：生成 value-decision-record.md（status: PendingRe-review），标注需退回的 Step 和修改要求
@@ -136,11 +137,12 @@ PendingRe-review 时需标注退回哪个 Step。判定依据：
 | 未提供评审会议纪要 | 追问用户："请提供评审会议纪要，我需要从中提取决策结论和评审意见。" |
 | 结论表述歧义（如"原则上同意"） | 追问用户："评审结论'原则上同意'是接纳（修改意见在后续阶段处理）还是下次重新上会（修改后重审）？" |
 | 评审意见缺少处理方式或负责人 | 该字段填 `[待补充]`，在自检环节提示用户补全 |
-| 04-feature.md Gate 结论为 Not Ready | 提示用户："Review Ready Gate 判定为 Not Ready，通常不应进入评审会议。请确认是否已通过 Gate。" |
+| 04-feature.md Gate 结论为 Not Ready | 硬阻断 Accepted/评审完成状态；生成或回传 rollback 到 Feature/Proposal 基线（target_step=10），提示用户先修复 Gate 阻塞项 |
 
 ## 自检
 
 - [ ] 决策结论明确（Accepted/Rejected/PendingRe-review），非歧义推断
+- [ ] Gate=Not Ready 时未生成 Accepted/流程完成状态，且 routing.target_step=10
 - [ ] 评审意见每条有处理方式和负责人（缺失标 [待补充]）
 - [ ] PendingRe-review 时有明确修改要求和退回 Step 编号
 - [ ] 退回 Step 为修改要求涉及的文档中最低编号

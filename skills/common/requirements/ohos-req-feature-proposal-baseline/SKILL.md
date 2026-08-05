@@ -64,7 +64,7 @@ metadata:
    - **降级规则**：若 02-feasibility.md 不含 §2.1 关键代码仓库分析表，则跳过模块覆盖校验并标注 `warn`（"模块覆盖校验未执行：02-feasibility.md 缺少 §2.1"），不 `fail`。
 8. **影响类型术语校验**：对比同一模块在 02-feasibility.md §2.1 和 §4中的影响类型标签。漂移（如"可复用"→"需扩展"）必须在 §4 补充变更理由备注，并在 §4 写入 **术语一致性检查结论**：pass（无漂移）或 warn（有漂移已补理由），供本 skill 的内建 Gate 判定读取。
 9. 判断是否拆分 proposal，并定义每个 proposal 的独立价值、边界、AC、**工作量估算**和依赖。拆分表必须包含每个 proposal 的估算工作量（人月）。**计算端到端总工作量**（= 各 proposal 工作量之和），按总人月推导复杂度（<5 简单 / 5-10 标准 / >10 复杂），填入 §5「端到端总工作量」与「复杂度」字段——此复杂度即 R3 拆分上限（简单≤5 / 标准≤8 / 复杂≤15 人月）的判定依据。
-10. **生成 proposal 文件草稿**：读取 `reference/proposal.md`（同步自 `platform_issues/template/proposal.md`），为 §5 拆分表中的每个 proposal 生成 `{docs_dir}/proposals/05-proposal-<slug>.md`。不拆分时也必须生成 1 份 proposal 文件。每份 proposal 必须按模板原有 H1/H2 结构填写，并包含：
+10. **生成 proposal 文件草稿**：读取 `reference/proposal.md`，为 §5 拆分表中的每个 proposal 生成 `{docs_dir}/proposals/05-proposal-<slug>.md`。不拆分时也必须生成 1 份 proposal 文件。每份 proposal 必须按模板原有 H1/H2 结构填写，并包含：
     - 从 04-feature.md 继承的 `feature_id`、`rr_id`、`target_release`
     - proposal 背景与问题、初始分级判断、目标/非目标
     - 用户故事与能力、成功标准、影响范围
@@ -72,7 +72,7 @@ metadata:
     - proposal 边界、Owner/SIG、工作量、依赖、开放条件项写入模板对应章节，不新增模板外 H1/H2
 11. **⭐ 拆分结果确认门禁**：向用户展示 04-feature.md 中的拆分方案以及已生成 proposal 文件列表（每个 proposal 的路径、边界、工作量、Owner、依赖），等待用户确认或调整后才允许执行 Review Ready Gate。AI 不自行定稿拆分方案。
 12. 保存 `{docs_dir}/04-feature.md` 和全部 `{docs_dir}/proposals/05-proposal-<slug>.md`。
-13. 执行内建 Review Ready Gate（读取刚保存且经用户确认的 04-feature.md 和 proposal 文件），写入 `04-feature.md` 的固定 `## Review Ready Gate` 章节：`decision_gate` YAML、13 项检查表、条件项、后续观测项、FR→AC 追溯表。
+13. 执行内建 Review Ready Gate（读取刚保存且经用户确认的 04-feature.md 和 proposal 文件），写入 `04-feature.md` 的固定 `## Review Ready Gate` 章节：`decision_gate` YAML、14 项检查表、条件项、后续观测项、FR→AC 追溯表。
 
 ## 职责边界
 
@@ -103,6 +103,7 @@ Gate 检查读取 01-04，不需要调用独立 skill。判定项为 9 项基础
 | 工作量约束 | 每个 proposal 不超过复杂度上限 | §5 每个 proposal 工作量不超过简单≤5/标准≤8/复杂≤15 人月 |
 | 技术方向 | 有选定方案 | 引用 03-arch-decision-record.md 选定方案 |
 | 影响性分析 | 5 方影响类型已分析 | 影响性分析章节 5 行均非占位符 |
+| GA 证据 | Proposal 若声明 GA-Approved 必须有 gate_a 证据 | 任一 proposal `status: GA-Approved` 且 `gate_a` 为空→fail；status 非 GA-Approved 且 gate_a 为空→warn 条件项，记录 Owner/动作/时点 |
 | 模块覆盖完整性 | 04 §4 声明覆盖所有涉及模块 | 读取 §4"模块覆盖检查结论"；pass→pass，warn/缺失→warn |
 | 影响类型术语一致性 | 04 §4 影响类型标签无漂移 | 读取 §4"术语一致性检查结论"；pass→pass，warn/缺失→warn |
 | 条件项传播完整性 | §5 前置条件覆盖 02 §6 和 03 §6 条件项 | 缺失→warn |
@@ -142,15 +143,19 @@ decision_gate:
       non_blocking_reason: "<不阻塞理由>"
 ```
 
-固定检查表必须包含 13 项检查项，列为 `检查项 | 结论 | 证据 | 条件项/阻塞项`，结论仅允许 `pass | warn | fail`。`decision_gate.gate` 由检查表推导：存在 fail 或缺 Owner/动作/时点的可关闭 warn → `Not Ready`；无 fail 且存在完整可关闭 warn → `Conditional Ready`；全部 pass 或仅后续观测项 → `Ready`。
+固定检查表必须包含 14 项检查项，列为 `检查项 | 结论 | 证据 | 条件项/阻塞项`，结论仅允许 `pass | warn | fail`。`decision_gate.gate` 由检查表推导：存在 fail 或缺 Owner/动作/时点的可关闭 warn → `Not Ready`；无 fail 且存在完整可关闭 warn → `Conditional Ready`；全部 pass 或仅后续观测项 → `Ready`。
 
 ### 旧 IR/SR/handoff 兼容边界
 
-本 requirements 流程不再生成 `IR.md`、`SR.md` 或 `handoff.md`，也不自动改名、删除或覆盖历史目录中的同名旧产物。旧 IR/SR/handoff 只读保留，用于历史追溯；新流程的正式评审输入以 `01-requirement.md`、`02-feasibility.md`、`03-arch-decision-record.md`、`04-feature.md`、`proposals/05-proposal-*.md`、`value-decision-record.md` 为准。下游交付若仍需要 SR/handoff，必须由下游交付流程基于本 skill 输出另行生成，不作为 requirements Step 1-14 前置条件。
+本 requirements 流程不再生成 `IR.md`、`SR.md` 或 `handoff.md`，也不自动改名、删除或覆盖历史目录中的同名旧产物。旧 IR/SR/handoff 只读保留，用于历史追溯；新流程的正式评审输入以 `01-requirement.md`、`02-feasibility.md`、`03-arch-decision-record.md`、`04-feature.md`、`proposals/05-proposal-*.md`、`value-decision-record.md` 为准。原 feature-to-ir 的 RR_MCP 写入、13 节平台评估、6 维人工确认、AC 编号继承在新版中分别由 `rr_id` 链路、`04-feature.md` 影响性分析/Gate、用户确认门禁和 FR→AC 追溯替代；原 proposal-to-sr/handoff 的 1:1 SR、责任人和 Phase 前置检查交由 ODK 交付阶段基于 `.codespec/changes/<change-id>/proposal.md` 继续处理，不作为 requirements Step 1-14 前置条件。
 
 ### ODK Handoff 规则
 
 `proposals/05-proposal-<slug>.md` 不是 ODK 的最终归档路径。进入 ODK 交付阶段时，必须为每个已确认 proposal 建立明确 change-id，并把该 proposal 转换或复制到 `.codespec/changes/<change-id>/proposal.md`，同时满足 ODK `artifacts.yaml` 的 required sections（含 `Agent Scope Guard`）。转换时字段来源固定为：`rr_id` 从 01→04→proposal 继承，`target_release` 从 04/proposal frontmatter 继承或由用户确认，`change_type`、`issue`、`author`、`date` 不得从历史 IR/SR/handoff 推断。
+
+### GA 证据规则
+
+`proposal.status` 仅允许 `Draft | GA-Approved`。当状态为 `GA-Approved` 时，`gate_a` 必须填写可访问的 GA 审视记录链接或归档路径；为空时 Gate 必须判定 `Not Ready` 并写入 `block_reasons`。当状态仍为 `Draft` 且 `gate_a` 为空时，Gate 至少生成一个当前评审可关闭条件项（Owner、补证动作、关闭时点），缺任一字段则升级为 `Not Ready`。不得在缺少 GA 证据时把 proposal 标为正式可交付。
 
 ### AC一致性校验
 
@@ -189,6 +194,7 @@ decision_gate:
 - [ ] 03-arch-decision-record.md §6 遗留问题由用户评审会议输入（非 AI 生成）
 - [ ] 03-arch-decision-record.md §6 每条遗留项负责人/解决动作/计划关闭时间齐全
 - [ ] `## Review Ready Gate` 章节按固定 schema 写入，`decision_gate` 与检查表一致
+- [ ] proposal 若为 GA-Approved，则 `gate_a` 非空且证据路径/链接已写入 Gate 检查表
 
 ## NEVER
 

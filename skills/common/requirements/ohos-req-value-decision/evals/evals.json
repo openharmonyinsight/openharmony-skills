@@ -113,19 +113,28 @@
       "id": 6,
       "name": "gate-not-ready-before-meeting",
       "prompt": "04-feature.md 的 Review Ready Gate 结论是 Not Ready，但用户要求你根据口头讨论生成评审接纳纪要。",
-      "expected_output": "必须提示 Not Ready 通常不应进入评审会议，要求用户确认是否已通过 Gate；不得直接生成 Accepted 决策记录。",
+      "expected_output": "必须硬阻断 Accepted/评审完成状态，只允许 rollback 到 Feature/Proposal 基线；routing.target_step=10，target_skill=ohos-req-feature-proposal-baseline。",
       "assertions": [
         {
           "text": "Not Ready",
           "type": "contains"
         },
         {
-          "text": "请确认是否已通过 Gate",
+          "text": "target_step",
+          "type": "contains"
+        },
+        {
+          "text": "10",
+          "type": "contains"
+        },
+        {
+          "text": "ohos-req-feature-proposal-baseline",
           "type": "contains"
         },
         {
           "text": "Accepted",
-          "type": "not_contains"
+          "type": "not_contains",
+          "tokens": ["status: Accepted", "\"decision\": \"Accepted\""]
         }
       ]
     }

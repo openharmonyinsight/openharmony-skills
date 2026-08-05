@@ -96,11 +96,11 @@ spec = {
     "delivery": {
         "takeaway": "结论：<子需求数 + 合计端到端工作量 + 管道/审核是否就绪>",
         "items": [
-            {"domain": "<xx 子系统>", "type": "<IR/SR>", "content": "<子需求1：简述>",
+            {"domain": "<xx 子系统>", "type": "<Feature/Proposal>", "content": "<子需求1：简述>",
              "version": "<OpenHarmony 6.0>", "designer": "<设计者>",
              "loc": "<行数(估算)>", "api": "<是/否>", "effort": "<人月(估算)>",
              "pm": "<领域PM>", "pipeline": "<是/否>", "reviewed": "<是/否>"},
-            {"domain": "<xx 子系统>", "type": "<IR/SR>", "content": "<子需求2：简述>",
+            {"domain": "<xx 子系统>", "type": "<Feature/Proposal>", "content": "<子需求2：简述>",
              "version": "<OpenHarmony 6.0>", "designer": "<设计者>",
              "loc": "<行数(估算)>", "api": "<是/否>", "effort": "<人月(估算)>",
              "pm": "<领域PM>", "pipeline": "<是/否>", "reviewed": "<是/否>"},

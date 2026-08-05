@@ -17,7 +17,8 @@
         },
         {
           "text": "不存在 推荐方案 或 建议选择 或 最优",
-          "type": "not_contains"
+          "type": "not_contains",
+          "tokens": ["推荐方案", "建议选择", "最优"]
         },
         {
           "text": "包含 mermaid 流程图(flowchart 或 sequenceDiagram)",
@@ -38,7 +39,8 @@
         },
         {
           "text": "不存在 源码已验证 或 接口已确认",
-          "type": "not_contains"
+          "type": "not_contains",
+          "tokens": ["源码已验证", "接口已确认"]
         },
         {
           "text": "包含 待 Phase 2 验证标注",
@@ -54,11 +56,13 @@
       "assertions": [
         {
           "text": "不存在 ROI 章节",
-          "type": "not_contains"
+          "type": "not_contains",
+          "tokens": ["## ROI", "ROI 分析"]
         },
         {
           "text": "不存在 推荐方案 或 建议选择",
-          "type": "not_contains"
+          "type": "not_contains",
+          "tokens": ["推荐方案", "建议选择"]
         },
         {
           "text": "回传说明禁止选型推荐的理由",

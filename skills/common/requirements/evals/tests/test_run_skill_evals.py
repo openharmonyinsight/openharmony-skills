@@ -7,6 +7,7 @@ from pathlib import Path
 
 
 RUNNER = Path(__file__).resolve().parents[1] / "run_skill_evals.py"
+USER_GUIDE_ROOT = RUNNER.parents[1]
 
 
 class RunSkillEvalsTest(unittest.TestCase):
@@ -140,6 +141,79 @@ class RunSkillEvalsTest(unittest.TestCase):
 
             data = json.loads(result.read_text(encoding="utf-8"))
             self.assertEqual(data["summary"]["failed"], 1)
+
+    def test_real_regex_assertion_uses_pattern_not_description_text(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            output = workspace / "output.txt"
+            result = workspace / "grading.json"
+            output.write_text("```mermaid\nflowchart TD\n  A --> B\n```\n", encoding="utf-8")
+
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(RUNNER),
+                    "grade",
+                    "--evals",
+                    str(USER_GUIDE_ROOT / "ohos-req-feasibility-analysis/evals/evals.json"),
+                    "--output",
+                    str(output),
+                    "--eval-id",
+                    "1",
+                    "--result",
+                    str(result),
+                ],
+                check=True,
+            )
+
+            data = json.loads(result.read_text(encoding="utf-8"))
+            regex_result = [item for item in data["expectations"] if item["type"] == "regex"][0]
+            self.assertEqual(regex_result["status"], "passed")
+
+    def test_real_not_contains_assertion_uses_tokens(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            output = workspace / "output.txt"
+            result = workspace / "grading.json"
+            output.write_text("status: Draft-NeedsClarification\n遗留字段：TBD\n", encoding="utf-8")
+
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(RUNNER),
+                    "grade",
+                    "--evals",
+                    str(USER_GUIDE_ROOT / "ohos-req-requirement-intake/evals/evals.json"),
+                    "--output",
+                    str(output),
+                    "--eval-id",
+                    "1",
+                    "--result",
+                    str(result),
+                ],
+                check=True,
+            )
+
+            data = json.loads(result.read_text(encoding="utf-8"))
+            not_contains_result = [item for item in data["expectations"] if item["type"] == "not_contains"][0]
+            self.assertEqual(not_contains_result["status"], "failed")
+
+    def test_all_repo_programmatic_assertions_have_machine_fields(self):
+        for evals_path in USER_GUIDE_ROOT.glob("ohos-req-*/evals/evals.json"):
+            data = json.loads(evals_path.read_text(encoding="utf-8"))
+            for case in data.get("evals", []):
+                for assertion in case.get("assertions", []) or []:
+                    kind = assertion.get("type", "llm_judge")
+                    if kind == "regex":
+                        self.assertTrue(
+                            assertion.get("pattern") or assertion.get("patterns"),
+                            f"{evals_path}:{case.get('id')} regex requires pattern(s)",
+                        )
+                    if kind == "not_contains":
+                        self.assertTrue(
+                            assertion.get("tokens") or assertion.get("patterns"),
+                            f"{evals_path}:{case.get('id')} not_contains requires tokens/patterns",
+                        )
 
 
 if __name__ == "__main__":

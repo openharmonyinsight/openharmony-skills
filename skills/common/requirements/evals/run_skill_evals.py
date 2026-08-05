@@ -40,17 +40,37 @@ def select_eval(evals_path, eval_id):
 
 def grade_assertion(assertion, output_text):
     kind = assertion.get("type", "llm_judge")
-    needle = assertion.get("text") or assertion.get("pattern") or ""
     if kind == "contains":
+        needle = assertion.get("text", "")
         passed = needle in output_text
         evidence = "found text" if passed else "missing text"
     elif kind == "not_contains":
-        needles = assertion.get("tokens") or assertion.get("patterns") or [needle]
+        needles = assertion.get("tokens") or assertion.get("patterns")
+        if not needles:
+            return {
+                "text": assertion.get("text", ""),
+                "type": kind,
+                "passed": None,
+                "status": "unsupported",
+                "evidence": "not_contains requires explicit tokens or patterns",
+            }
         unexpected = [item for item in needles if item and item in output_text]
         passed = not unexpected
         evidence = "text absent" if passed else "unexpected text present"
     elif kind == "regex":
-        passed = re.search(needle, output_text, re.M) is not None
+        patterns = assertion.get("patterns")
+        if patterns is None:
+            pattern = assertion.get("pattern")
+            patterns = [pattern] if pattern else []
+        if not patterns:
+            return {
+                "text": assertion.get("text", ""),
+                "type": kind,
+                "passed": None,
+                "status": "unsupported",
+                "evidence": "regex requires pattern or patterns",
+            }
+        passed = any(re.search(pattern, output_text, re.M) is not None for pattern in patterns)
         evidence = "regex matched" if passed else "regex did not match"
     elif kind == "file_exists":
         path = Path(assertion.get("path", ""))
@@ -70,7 +90,7 @@ def grade_assertion(assertion, output_text):
             evidence = "json field error: %s" % exc
     elif kind in MANUAL_TYPES:
         return {
-            "text": needle,
+            "text": assertion.get("text", ""),
             "type": kind,
             "passed": None,
             "status": "manual",
@@ -78,14 +98,14 @@ def grade_assertion(assertion, output_text):
         }
     else:
         return {
-            "text": needle,
+            "text": assertion.get("text", ""),
             "type": kind,
             "passed": None,
             "status": "unsupported",
             "evidence": "unsupported assertion type",
         }
     return {
-        "text": needle,
+        "text": assertion.get("text") or assertion.get("pattern") or "",
         "type": kind,
         "passed": passed,
         "status": "passed" if passed else "failed",

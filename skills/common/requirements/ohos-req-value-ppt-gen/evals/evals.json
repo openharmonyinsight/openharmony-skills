@@ -41,7 +41,8 @@
         },
         {
           "text": "bullet 要点列表",
-          "type": "not_contains"
+          "type": "not_contains",
+          "tokens": ["bullet 要点列表"]
         },
         {
           "text": "模块关系以框图而非纯文字表达",
@@ -69,7 +70,8 @@
         },
         {
           "text": "列宽写死英寸",
-          "type": "not_contains"
+          "type": "not_contains",
+          "tokens": ["列宽写死英寸"]
         }
       ]
     },
@@ -89,7 +91,8 @@
         },
         {
           "text": "PIL.UnidentifiedImageError",
-          "type": "not_contains"
+          "type": "not_contains",
+          "tokens": ["PIL.UnidentifiedImageError"]
         },
         {
           "text": "logo 失败降级不影响 PPTX 输出",

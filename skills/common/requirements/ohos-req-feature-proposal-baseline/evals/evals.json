@@ -259,6 +259,26 @@
       ]
     },
     {
+      "id": 16,
+      "name": "ga-evidence-required",
+      "prompt": "04-feature.md 的 proposal 表中有一个 proposal 标记 GA-Approved，但对应 proposals/05-proposal-xxx.md frontmatter 的 gate_a 为空。请执行内建 Review Ready Gate。",
+      "expected_output": "GA 证据检查必须判定 fail，decision_gate.gate 为 Not Ready，block_reasons 指向 GA-Approved 但 gate_a 缺失；不得把该 proposal 视为正式可交付。",
+      "assertions": [
+        {
+          "text": "GA 证据",
+          "type": "contains"
+        },
+        {
+          "text": "Not Ready",
+          "type": "contains"
+        },
+        {
+          "text": "gate_a",
+          "type": "contains"
+        }
+      ]
+    },
+    {
       "id": 11,
       "name": "legacy-ir-sr-handoff-readonly",
       "prompt": "历史目录中已有 IR.md、SR.md 和 handoff.md。请按新版 requirements 流程生成 04-feature.md 和 proposal。",
