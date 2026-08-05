@@ -5,11 +5,20 @@
       "id": 1,
       "name": "accept-and-proceed",
       "prompt": "评审会议结束，结论是接纳。评审意见3条：(1)补充性能基线数据，负责人李四，处理方式：Phase 2补充；(2)AC-04验证方式需细化，负责人王五，处理方式：当前版本补充；(3)兼容性分析需增加PC形态，负责人赵六，处理方式：当前版本补充。请生成决策纪要。",
-      "expected_output": "生成 value-decision-record.md（status: Accepted），评审意见表3条含处理方式和负责人。路由结论为'可进入 feature-to-ir'。",
+      "expected_output": "生成 value-decision-record.md（status: Accepted），评审意见表3条含处理方式和负责人。路由结论为需求导入评审流程完成。",
       "assertions": [
-        {"text": "status: Accepted", "type": "contains"},
-        {"text": "3条评审意见含处理方式和负责人", "type": "llm_judge"},
-        {"text": "路由结论包含 可进入 feature-to-ir", "type": "contains"}
+        {
+          "text": "status: Accepted",
+          "type": "contains"
+        },
+        {
+          "text": "3条评审意见含处理方式和负责人",
+          "type": "llm_judge"
+        },
+        {
+          "text": "路由结论包含 流程完成",
+          "type": "contains"
+        }
       ]
     },
     {
@@ -18,19 +27,54 @@
       "prompt": "评审会议结束，结论是不接纳。理由：需求价值不明确，目标场景覆盖不足。请生成决策纪要。",
       "expected_output": "生成 value-decision-record.md（status: Rejected），路由结论为关闭/归档。",
       "assertions": [
-        {"text": "status: Rejected", "type": "contains"},
-        {"text": "路由结论包含 关闭或归档", "type": "llm_judge"}
+        {
+          "text": "status: Rejected",
+          "type": "contains"
+        },
+        {
+          "text": "路由结论包含 关闭或归档",
+          "type": "llm_judge"
+        }
       ]
     },
     {
       "id": 3,
       "name": "re-review-and-rollback",
       "prompt": "评审会议结束，结论是下次重新上会。修改要求：(1)01-requirement.md 需补充用户场景量化数据；(2)02-feasibility.md 需增加竞品对标分析。请生成决策纪要。",
-      "expected_output": "生成 value-decision-record.md（status: PendingRe-review），修改要求2条，路由结论为退回 Step 0.1 和 0.2。",
+      "expected_output": "生成 value-decision-record.md（status: PendingRe-review），修改要求2条，路由结论为退回 Step 1 和 Step 5，最终取最低编号 Step 1。routing.target_step 枚举使用 null | 1 | 5 | 7 | 10。",
       "assertions": [
-        {"text": "status: PendingRe-review", "type": "contains"},
-        {"text": "修改要求2条", "type": "llm_judge"},
-        {"text": "路由结论包含 退回", "type": "contains"}
+        {
+          "text": "status: PendingRe-review",
+          "type": "contains"
+        },
+        {
+          "text": "修改要求2条",
+          "type": "llm_judge"
+        },
+        {
+          "text": "路由结论包含 退回",
+          "type": "contains"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "rollback-step-routing-map",
+      "prompt": "评审会议结束，结论是下次重新上会。修改要求：(1)02-feasibility.md 需补充兼容性分析；(2)04-feature.md 需补充 AC-04 验证方式。请生成决策纪要。",
+      "expected_output": "生成 value-decision-record.md（status: PendingRe-review），02-feasibility.md 对应 Step 5，04-feature.md 对应 Step 10，多个文档最终退回最低编号 Step 5；routing.target_skill 为 ohos-req-feasibility-analysis，target_step 为 5。",
+      "assertions": [
+        {
+          "text": "Step 5",
+          "type": "contains"
+        },
+        {
+          "text": "Step 10",
+          "type": "contains"
+        },
+        {
+          "text": "ohos-req-feasibility-analysis",
+          "type": "contains"
+        }
       ]
     },
     {
@@ -39,8 +83,14 @@
       "prompt": "评审会议结束，结论是'原则上同意'。请生成决策纪要。",
       "expected_output": "不直接映射为 Accepted，追问用户明确是接纳还是下次重新上会。",
       "assertions": [
-        {"text": "追问", "type": "contains"},
-        {"text": "原则上同意是歧义表述", "type": "llm_judge"}
+        {
+          "text": "追问",
+          "type": "contains"
+        },
+        {
+          "text": "原则上同意是歧义表述",
+          "type": "llm_judge"
+        }
       ]
     },
     {
@@ -49,8 +99,43 @@
       "prompt": "请生成决策纪要。",
       "expected_output": "追问用户：请提供评审会议纪要，需要从中提取决策结论和评审意见。不凭空生成。",
       "assertions": [
-        {"text": "请提供评审会议纪要", "type": "contains"},
-        {"text": "不凭空生成", "type": "llm_judge"}
+        {
+          "text": "请提供评审会议纪要",
+          "type": "contains"
+        },
+        {
+          "text": "不凭空生成",
+          "type": "llm_judge"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "gate-not-ready-before-meeting",
+      "prompt": "04-feature.md 的 Review Ready Gate 结论是 Not Ready，但用户要求你根据口头讨论生成评审接纳纪要。",
+      "expected_output": "必须硬阻断 Accepted/评审完成状态，只允许 rollback 到 Feature/Proposal 基线；routing.target_step=10，target_skill=ohos-req-feature-proposal-baseline。",
+      "assertions": [
+        {
+          "text": "Not Ready",
+          "type": "contains"
+        },
+        {
+          "text": "target_step",
+          "type": "contains"
+        },
+        {
+          "text": "10",
+          "type": "contains"
+        },
+        {
+          "text": "ohos-req-feature-proposal-baseline",
+          "type": "contains"
+        },
+        {
+          "text": "Accepted",
+          "type": "not_contains",
+          "tokens": ["status: Accepted", "\"decision\": \"Accepted\""]
+        }
       ]
     }
   ]

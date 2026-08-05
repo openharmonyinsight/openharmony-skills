@@ -7,10 +7,24 @@
       "prompt": "01-requirement.md 已就绪(status: Clarified)，需求是'在 OpenHarmony 中支持 USB HID 设备的多实例绑定'。feasibility-inputs.md 已存在，用户确认提供本地代码仓路径。代码证据包在 /tmp/ohos_kb_precheck_xxx.md。请生成 02-feasibility.md。",
       "expected_output": "生成 02-feasibility.md，至少识别2个候选技术路径，每个路径有独立工作量估算(500行~1人月)，含 Mermaid 流程图和时序图。结论为各方案可行性判断表，不含选型推荐。",
       "assertions": [
-        {"text": "至少包含2个候选方案", "type": "llm_judge"},
-        {"text": "包含 500行 或 1人月 工作量估算", "type": "contains"},
-        {"text": "不存在 推荐方案 或 建议选择 或 最优", "type": "not_contains"},
-        {"text": "包含 mermaid 流程图(flowchart 或 sequenceDiagram)", "type": "regex", "pattern": "flowchart|sequenceDiagram"}
+        {
+          "text": "至少包含2个候选方案",
+          "type": "llm_judge"
+        },
+        {
+          "text": "包含 500行 或 1人月 工作量估算",
+          "type": "contains"
+        },
+        {
+          "text": "不存在 推荐方案 或 建议选择 或 最优",
+          "type": "not_contains",
+          "tokens": ["推荐方案", "建议选择", "最优"]
+        },
+        {
+          "text": "包含 mermaid 流程图(flowchart 或 sequenceDiagram)",
+          "type": "regex",
+          "pattern": "flowchart|sequenceDiagram"
+        }
       ]
     },
     {
@@ -19,9 +33,19 @@
       "prompt": "01-requirement.md 已就绪。feasibility-inputs.md 记录用户确认不额外提供本地代码仓路径或接口文档。代码预检无可访问仓库。请生成 02-feasibility.md。",
       "expected_output": "02-feasibility.md 必须在输入证据状态和相关代码章节标注'证据受限'，不得写成'源码已验证'或'接口已确认'。未覆盖的代码路径标记'待 Phase 2 代码分析验证'。",
       "assertions": [
-        {"text": "包含 证据受限 标注", "type": "contains"},
-        {"text": "不存在 源码已验证 或 接口已确认", "type": "not_contains"},
-        {"text": "包含 待 Phase 2 验证标注", "type": "contains"}
+        {
+          "text": "包含 证据受限 标注",
+          "type": "contains"
+        },
+        {
+          "text": "不存在 源码已验证 或 接口已确认",
+          "type": "not_contains",
+          "tokens": ["源码已验证", "接口已确认"]
+        },
+        {
+          "text": "包含 待 Phase 2 验证标注",
+          "type": "contains"
+        }
       ]
     },
     {
@@ -30,9 +54,44 @@
       "prompt": "基于已就绪的 01-requirement.md(需求：优化分布式软总线连接延迟)，生成 02-feasibility.md。请确保包含 ROI 分析并推荐最优方案。",
       "expected_output": "skill 应拒绝生成 ROI 章节和不推荐方案。在回传中说明'feasibility 不生成 ROI 章节'和'方案选型属于 03-arch-decision-record.md'。",
       "assertions": [
-        {"text": "不存在 ROI 章节", "type": "not_contains"},
-        {"text": "不存在 推荐方案 或 建议选择", "type": "not_contains"},
-        {"text": "回传说明禁止选型推荐的理由", "type": "llm_judge"}
+        {
+          "text": "不存在 ROI 章节",
+          "type": "not_contains",
+          "tokens": ["## ROI", "ROI 分析"]
+        },
+        {
+          "text": "不存在 推荐方案 或 建议选择",
+          "type": "not_contains",
+          "tokens": ["推荐方案", "建议选择"]
+        },
+        {
+          "text": "回传说明禁止选型推荐的理由",
+          "type": "llm_judge"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "block-unclarified-requirement",
+      "prompt": "01-requirement.md 仍是 status: Draft-NeedsClarification，且 clarification-questions.md 还有 P0 未关闭项。请直接生成 02-feasibility.md。",
+      "expected_output": "必须阻断 feasibility 生成，要求先完成 requirement 澄清并将 status 更新为 Clarified。不得基于未澄清事实生成候选方案。",
+      "assertions": [
+        {
+          "text": "Draft-NeedsClarification",
+          "type": "contains"
+        },
+        {
+          "text": "Clarified",
+          "type": "contains"
+        },
+        {
+          "text": "阻断",
+          "type": "contains"
+        },
+        {
+          "text": "不得基于未澄清事实生成候选方案",
+          "type": "llm_judge"
+        }
       ]
     }
   ]

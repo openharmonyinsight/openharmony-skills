@@ -1,0 +1,104 @@
+{
+  "skill_name": "ohos-req-value-ppt-gen",
+  "evals": [
+    {
+      "id": 1,
+      "name": "req-review-template-structure",
+      "prompt": "基于 fixtures/04-feature.md 生成 OpenHarmony 需求变更评审 PPT。",
+      "expected_output": "使用 deckbuilder 的 Deck / requirement_review_deck 或等价 builder 组合，生成固定 8 页需求评审结构，包含第5页5类影响对象、第6页11列交付计划、第8页8行风险评估，并报告输出路径、页数和 overflow 检查结果。",
+      "assertions": [
+        {
+          "text": "requirement_review_deck",
+          "type": "contains"
+        },
+        {
+          "text": "8 页",
+          "type": "contains"
+        },
+        {
+          "text": "overflow",
+          "type": "contains"
+        },
+        {
+          "text": "不手搓 python-pptx 形状或英寸坐标",
+          "type": "llm_judge"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "architecture-diagram-not-bullets",
+      "prompt": "生成系统设计页，要求呈现模块交互关系。",
+      "expected_output": "系统设计页必须使用 architecture_slide、flow_slide 或 layered_diagram_slide 生成框图，包含节点、方向箭头、链路标签和变更标记，不得退化为 bullet 要点列表。",
+      "assertions": [
+        {
+          "text": "architecture_slide",
+          "type": "contains"
+        },
+        {
+          "text": "箭头",
+          "type": "contains"
+        },
+        {
+          "text": "bullet 要点列表",
+          "type": "not_contains",
+          "tokens": ["bullet 要点列表"]
+        },
+        {
+          "text": "模块关系以框图而非纯文字表达",
+          "type": "llm_judge"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "wide-table-layout-safe",
+      "prompt": "生成包含 11 列交付计划的宽表 PPT 页面。",
+      "expected_output": "使用 table_slide 和相对 col_widths 自动缩放宽表，highlight_last 标记合计行，字号自动收缩，overflow 边界检查为 0，不出现表格溢出 warning。",
+      "assertions": [
+        {
+          "text": "table_slide",
+          "type": "contains"
+        },
+        {
+          "text": "col_widths",
+          "type": "contains"
+        },
+        {
+          "text": "overflow 边界检查为 0",
+          "type": "contains"
+        },
+        {
+          "text": "列宽写死英寸",
+          "type": "not_contains",
+          "tokens": ["列宽写死英寸"]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "invalid-logo-fallback",
+      "prompt": "logo 文件存在但不是合法图片，请生成需求评审 PPT。",
+      "expected_output": "使用 Deck(logo=<invalid_png_path>).requirement_review_deck(spec).save(...)；logo 无法加载时输出 warning 并继续生成 PPTX，不因 PIL.UnidentifiedImageError 或 add_picture 异常失败。",
+      "assertions": [
+        {
+          "text": "warning",
+          "type": "contains"
+        },
+        {
+          "text": "继续生成",
+          "type": "contains"
+        },
+        {
+          "text": "PIL.UnidentifiedImageError",
+          "type": "not_contains",
+          "tokens": ["PIL.UnidentifiedImageError"]
+        },
+        {
+          "text": "logo 失败降级不影响 PPTX 输出",
+          "type": "llm_judge"
+        }
+      ]
+    }
+  ]
+}

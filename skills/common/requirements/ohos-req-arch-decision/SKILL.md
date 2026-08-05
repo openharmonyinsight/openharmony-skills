@@ -1,12 +1,12 @@
 ---
 name: ohos-req-arch-decision
-description: Use when selecting an OHOS solution direction in Phase 0.3, especially for 03-arch-decision-record.md, candidate options comparison, or when the main session needs structured ADR output with user-provided decision. Do NOT use for feasibility analysis (ohos-req-feasibility-analysis), feature baseline (ohos-req-feature-baseline), or review gate (ohos-req-review-gate).
+description: Use when selecting an OHOS solution direction in requirements Step 7-9, especially for 03-arch-decision-record.md, candidate options comparison, or when the main session needs structured ADR output with user-provided decision. Do NOT use for feasibility analysis (ohos-req-feasibility-analysis) or feature/proposal baseline and built-in gate (ohos-req-feature-proposal-baseline).
 metadata:
   author: openharmony
   scope: common
   stage: requirements
   capability: arch-decision
-  version: 0.3.0
+  version: 0.4.0
   status: draft
   tags:
     - sdd
@@ -51,7 +51,7 @@ metadata:
 
 ## 阶段 A：候选方案分析（subagent 执行）
 
-1. 读取 `reference/arch-decision-record.md` 和输入文件。模板文件不带 `03-` 阶段编号前缀；`03-arch-decision-record.md` 仅作为 `{docs_dir}` 下的产物文件名。模板只定义产物结构（6个章节），流程规则（两阶段写入、AI不代行决策等）全部由本 skill 控制，不在模板中呈现。
+1. 读取 `reference/arch-decision-record.md` 和输入文件。模板只定义产物结构（6个章节），流程规则（两阶段写入、AI不代行决策等）全部由本 skill 控制，不在模板中呈现。
 2. 定义决策问题和硬约束 → 写入 §1 背景与问题（约束条件写为一行简述，不展开为表格）。
 3. 从 feasibility 候选路径中提取方案，生成候选方案对比表（一句话描述 + 工作量 + 主要优势 + 主要劣势 + 主要风险 + AI 推荐倾向）→ 写入 §3 候选方案对比。
 4. §5 决策结论、§6 遗留问题 **留空占位**（标注 `[待用户评审会议决策后填写]`）。注意：§5和§6均由用户提供，AI不代行。§5来自用户方案选型决策，§6来自用户评审会议认定的遗留问题清单。模板中 §5/§6 无阶段提示注释，这些流程规则由本 skill 控制。
@@ -63,7 +63,7 @@ metadata:
 
 ## 阶段 B：决策定稿（subagent 执行）
 
-**前置条件：** 用户已在 Step 0.3.2 明确提供决策结论。
+**前置条件：** 用户已在 Step 8 明确提供决策结论。
 
 1. 读取 `{docs_dir}/03-arch-decision-record.md`（阶段 A 草稿）。
 2. 读取用户决策结论（由主 Session 注入 task 描述）：
@@ -84,15 +84,15 @@ metadata:
 
 | 阶段 | 触发条件 | status 值 | 产出 |
 |------|----------|-----------|------|
-| A | Step 0.3.1（requirement+feasibility 就绪） | `PendingDecision` | §1-§3 填充，§5-§6 占位 |
-| B | Step 0.3.3（用户提供决策结论 + 遗留问题清单） | `Accepted` | §5 填充（用户决策），§6 填充（用户遗留问题），全文定稿 |
+| A | Step 7（requirement+feasibility 就绪） | `PendingDecision` | §1-§3 填充，§5-§6 占位 |
+| B | Step 9（用户提供决策结论 + 遗留问题清单） | `Accepted` | §5 填充（用户决策），§6 填充（用户遗留问题），全文定稿 |
 
 **不允许在阶段 A 直接输出 `status: Accepted` 或自行填写 §5 决策结论。**
 **不允许在阶段 B 用户未提供遗留问题清单时输出 `status: Accepted` 或自行填充 §6。**
 
 ## 强制规则
 
-- **遗留问题闭环门禁**：§6 每条遗留项必须有负责人、解决动作、计划关闭时间。任一遗留项缺少这三字段 → 阻断 Phase 0→1-9 交接。
+- **遗留问题闭环门禁**：§6 每条遗留项必须有负责人、解决动作、计划关闭时间。任一遗留项缺少这三字段 → 阻断 Step 12 Review Ready Gate。
 - **AI 推荐倾向仅为参考**：§3候选方案对比表的"AI 推荐倾向"列仅供用户决策参考，不是最终结论。
 
 ## 单方案例外
@@ -113,7 +113,7 @@ metadata:
 
 ## 职责边界
 
-本 skill 只产出方案选型决策，不产出 Feature 评审基线（目标/非目标/AC/交付影响），这些由 `ohos-req-feature-baseline` skill 负责。
+本 skill 只产出方案选型决策，不产出 Feature/Proposal 评审基线（目标/非目标/AC/交付影响），这些由 `ohos-req-feature-proposal-baseline` skill 负责。
 
 ## NEVER
 
@@ -135,7 +135,7 @@ metadata:
 
 | 场景 | 行为 |
 |------|------|
-| 01-02 未就绪 | 提示用户先完成上游 Step 0.1-0.2，列出缺失文档 |
+| 01-02 未就绪 | 提示用户先完成上游 Step 1-6，列出缺失文档 |
 | 用户未提供候选方案 | 追问用户："请提供至少 2 个候选方案用于比较" |
 | 用户未做决策（阶段A后） | 保持 status: PendingDecision，追问："请提供评审会议决策结论" |
 | 遗留问题未提供 | §6 保留占位符 [待用户评审会议后填写]，不自行填充 |

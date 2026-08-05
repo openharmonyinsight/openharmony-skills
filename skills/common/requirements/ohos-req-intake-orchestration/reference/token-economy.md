@@ -17,7 +17,7 @@
 
 ## 2. 证据传路径不传内容
 
-代码证据包在 Step 0.1.9 **落盘一次**到 `{kb_precheck_path}`。后续所有 spawn 的 task 只传该**文件路径**，subagent 按需读取需要的段落。**禁止**把证据包内容嵌入 task 字符串。
+代码证据包在 Step 4 **落盘一次**到 `{kb_precheck_path}`。后续所有 spawn 的 task 只传该**文件路径**，subagent 按需读取需要的段落。**禁止**把证据包内容嵌入 task 字符串。
 
 ## 3. 摘要回传契约
 

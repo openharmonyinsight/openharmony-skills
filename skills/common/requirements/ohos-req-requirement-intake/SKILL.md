@@ -1,12 +1,12 @@
 ---
 name: ohos-req-requirement-intake
-description: Use when importing an OHOS requirement into Phase 0.1, especially for 01-requirement.md, requirement intake, background, user value, scenarios, scope, FR/NFR, affected modules, or priority. Triggers: 需求导入, 01-requirement, 需求基线, RR单号. Do NOT use for feasibility analysis (ohos-req-feasibility-analysis), architecture decision (ohos-req-arch-decision), or feature baseline (ohos-req-feature-baseline).
+description: Use when importing an OHOS requirement into requirements Step 1, especially for 01-requirement.md, requirement intake, background, user value, scenarios, scope, FR/NFR, affected modules, or priority. Triggers: 需求导入, 01-requirement, 需求基线, RR单号. Do NOT use for feasibility analysis (ohos-req-feasibility-analysis), architecture decision (ohos-req-arch-decision), or feature baseline (ohos-req-feature-proposal-baseline).
 metadata:
   author: openharmony
   scope: common
   stage: requirements
   capability: requirement-intake
-  version: 0.3.0
+  version: 0.4.0
   status: draft
   tags:
     - sdd
@@ -19,17 +19,15 @@ metadata:
 
 ## 定位
 
-OHOS 电子流需求管理系统的 RR单号（rr_id）是跨 Phase 0-9 的唯一追溯键，从 01-requirement.md frontmatter 继承到 IR/SR/handoff 全链路。requirement 阶段的澄清状态（Draft-NeedsClarification → Clarified）决定 feasibility 是否允许启动——电子流系统据此判定需求是否进入分析阶段。requirement 不得包含技术方案选型，确保 feasibility 的选型中立性。
+OHOS 电子流需求管理系统的 RR单号（rr_id）是需求导入评审流程的唯一追溯键，从 01-requirement.md frontmatter 继承到 04-feature.md 和 value-decision-record.md。requirement 阶段的澄清状态（Draft-NeedsClarification → Clarified）决定 feasibility 是否允许启动——电子流系统据此判定需求是否进入分析阶段。requirement 不得包含技术方案选型，确保 feasibility 的选型中立性。
 
 ## Do NOT Load
 
-本 skill 仅在 Phase 0.1（01-requirement.md 生成）时激活。以下场景不应加载：
+本 skill 仅在 requirements Step 1（01-requirement.md 生成）时激活。以下场景不应加载：
 
 - 可行性分析（02-feasibility.md）→ ohos-req-feasibility-analysis
 - 方案架构决策（03-arch-decision-record.md）→ ohos-req-arch-decision
-- Feature 评审基线（04-feature.md）→ ohos-req-feature-baseline
-- Review Ready Gate → ohos-req-review-gate
-- IR 生成 → ohos-req-feature-to-ir
+- Feature/Proposal 评审基线与 Review Ready Gate（04-feature.md）→ ohos-req-feature-proposal-baseline
 
 ## ⭐ 硬规则：禁止不确定项输出
 
@@ -65,11 +63,6 @@ Before 定稿, ask yourself: 每条 NFR 是否有基线值+目标值（而非"�
 - RR单号（如有）：需求管理系统中的追踪编号
 
 ## 流程（两阶段：草稿 → 澄清 → 定稿）
-
-## 模板与产物命名
-
-- 模板路径：`reference/requirement.md`（模板文件不带 `01-` 阶段编号前缀）
-- 产物路径：`{docs_dir}/01-requirement.md`
 
 ### 第一阶段：草稿生成
 
@@ -109,7 +102,7 @@ Before 定稿, ask yourself: 每条 NFR 是否有基线值+目标值（而非"�
 
 1. 主 Session 将「待澄清问题清单」逐条向用户提问
 2. 每轮提问 ≤5 个问题（按 P0→P1→P2 优先级排序）
-3. **批量确认已知答案（PIR #152 P2）**：对输入材料（Issue/PRD/会议纪要/设计方案）中已有明确答案的问题（如 RR 单号、交付版本、提出人等），一次性呈现全部已知答案让用户**批量确认**（✅确认/✏️修正），不逐条单独交互。仅真正不确定的问题才逐条澄清。
+3. **批量确认已知答案**：对输入材料（Issue/PRD/会议纪要/设计方案）中已有明确答案的问题（如 RR 单号、交付版本、提出人等），一次性呈现全部已知答案让用户**批量确认**（✅确认/✏️修正），不逐条单独交互。仅真正不确定的问题才逐条澄清。
 4. 用户回答后，更新 requirement.md 对应章节（替换为确认事实）
 5. **每轮澄清后立即回填结论到 `clarification-questions.md`**：在对应问题下方追加 `**澄清结论**` 段，标注 ✅（已关闭）或 ⚠️（条件待验证/P2延后），附结论摘要和影响的下游文档章节。不允许只更新 requirement.md 而不回填 clarification-questions.md。
 6. 每轮澄清后检查：
@@ -119,7 +112,7 @@ Before 定稿, ask yourself: 每条 NFR 是否有基线值+目标值（而非"�
 
 **定稿出口门禁（全部 ✅ 才可进入 feasibility）：**
 
-- [ ] 「必须包含字段」表中所有"定稿必填"字段均有确认事实（逐项对照表格自检）
+- [ ] `reference/requirement-fields.md` 中所有"定稿必填"字段均有确认事实（逐项对照字段明细表自检）
 - [ ] 正文中无任何占位符（"待确认""待分析""TBD""FIXME"等任何形式）
 - [ ] 正文中无模糊表述（"快速""稳定""尽可能""优化""提升"等无量化锚点）
 - [ ] RR单号已回填或合规标注"未立项"并附依据
@@ -144,20 +137,16 @@ Before 定稿, ask yourself: 每条 NFR 是否有基线值+目标值（而非"�
 
 ## 必须包含字段（草稿/定稿对照）
 
-| 字段 | 草稿必填 | 定稿必填 | 说明 |
-|------|---------|---------|------|
-| 需求方/提出时间/来源/触发场景/现状和问题 | ✅ | ✅ | 归入 §1 来源与背景 |
-| RR单号 | ✅ | ✅ | frontmatter `rr_id` + §1 表格；无 RR单号时标注"未立项"并附依据 |
-| 用户痛点 | ✅ | ✅ | 必须有影响描述和严重程度（不是笼统"体验差"） |
-| 功能点/用户场景/价值 | ✅ | ✅ | 归入 §4 期望 |
-| 可量化目标 | ✅ | ✅ | 必须有基线和目标值（"提升XX%"不算量化） |
-| 产品/地区/设备/开发者范围/期望版本 | ✅ | ✅ | 归入 §5 适用设备/产品形态 |
-| FR | ✅ | ✅ | 必须有来源依据 |
-| NFR | ✅ | ✅ | 必须有量化口径（基线+目标值） |
-| 受影响模块 | ✅ | ✅ | 必须有具体仓/路径（不是"待确定"） |
-| 约束 | ✅ | ✅ | 归入 §6 约束与期望 |
-| 优先级 | ✅ | ✅ | P0/P1/P2 每项有判定依据 |
-| 证据 | ✅ | ✅ | 归入 §9 附件与证据 |
+> **加载策略（Progressive Disclosure）**：字段级明细表（12 类字段 × 草稿/定稿对照 + 归节映射 + 模板保真门禁）见 [`reference/requirement-fields.md`](reference/requirement-fields.md)，**生成草稿和执行定稿检查时加载**。本节保留顶层归节规则。
+
+字段归入模板既有章节（明细见 reference）：
+
+- 功能点/用户场景/价值 → §4 期望
+- 产品/地区/设备/开发者范围/期望版本 → §5 适用设备/产品形态
+- NFR/约束/版本/性能功耗 → §6 约束与期望
+- 证据/来源/受影响仓路径 → §9 附件与证据
+- 缺失事实 → `{docs_dir}/_draft/clarification-questions.md`（不在正文占位）
+- RR单号 → frontmatter `rr_id` + §1 来源与背景 表格
 
 ## 禁止包含
 
