@@ -1,7 +1,7 @@
 ---
 name: ohos-design-arkui-knowledgebase-generator
 description: >-
-  Generate, update, repair, or migrate ArkUI ace_engine knowledge-base documents under docs/kb and their routing metadata. Use when the user asks for ArkUI/ace_engine 知识库, KB, knowledge base, 文档补齐, 索引修复, context registry, migration from old docs/pattern/common/layout/sdk KBs to the new lightweight docs/kb structure, or API 解析实现路径/组件化状态判定 for component KBs. Supports: (1) creating new KB context pages, (2) updating existing KBs, (3) migrating old KBs to new structure, (4) determining componentization status (组件化改造) and listing API parsing implementation paths (JSView/Bridge/node_modifier/C API), (5) updating docs/context_registry.json, (6) maintaining docs/knowledge_base_INDEX.json for not-yet-migrated old KBs only. Documentation-only: do not modify product source, specs/, generated files, CLAUDE/AGENTS files, or unrelated README files.
+  Generate, update, repair, or migrate ArkUI ace_engine code-based KB documents under docs/kb and routing metadata. Use when the user asks for 知识库, KB, knowledge base, 文档补齐, 索引修复, context registry, 组件化状态判定, or API 解析实现路径. For issue-type KBs use ohos-design-arkui-knowledgebase-issue-generator instead.
 metadata:
   author: openharmony
   scope: domain
@@ -20,11 +20,14 @@ metadata:
     - componentization
   related-skills:
     - ohos-design-arkui-spec-generator
+    - ohos-design-arkui-knowledgebase-issue-generator
 ---
 
 # ArkUI Knowledge Base Generator
 
-Use this skill to create, update, repair, or migrate ArkUI ace_engine KB context pages. The current KB model is lightweight and routing-oriented: a KB should help agents find stable source/API/test/spec entry points, not duplicate implementation details that drift.
+Use this skill to create, update, repair, or migrate ArkUI ace_engine **code-based** KB context pages (component, capability, architecture, API/SDK, syntax). The current KB model is lightweight and routing-oriented: a KB should help agents find stable source/API/test/spec entry points, not duplicate implementation details that drift.
+
+**For issue-type KBs** (problem patterns, root cause analysis, troubleshooting), use `ohos-design-arkui-knowledgebase-issue-generator` instead — this skill does NOT handle `docs/kb/issues/` content.
 
 ## Non-Negotiables
 
@@ -46,6 +49,7 @@ Use this skill to create, update, repair, or migrate ArkUI ace_engine KB context
 - NEVER add AC/FR/BR matrices to lightweight KBs — these belong in Specs, not routing pages; duplicating them creates two sources of truth that inevitably diverge.
 - NEVER create new KBs in old directories (`docs/pattern/`, `docs/common/`, `docs/layout/`, `docs/sdk/`) — these are legacy locations pending migration; adding new content there increases future migration debt.
 - NEVER bulk-convert old INDEX entries unless explicitly asked — each migration requires individual source verification; bulk conversion carries forward unverified claims at scale.
+- NEVER present deprecated APIs/components as recommended approaches — always check SDK `@deprecated` annotations; deprecated items must be marked with deprecation version and the recommended replacement must be listed as the primary approach.
 
 ## Workflow
 
@@ -58,6 +62,7 @@ Use this skill to create, update, repair, or migrate ArkUI ace_engine KB context
 - **Stability**: Will this path/claim still be true after 10 unrelated PRs land? If not, use a directory or type name instead of a file path or line reference.
 - **Routing value**: Does this help an agent find the right file, or does it duplicate what reading the file would tell them? KB pages are signposts, not copies.
 - **Verification**: Did I confirm this against current source/SDK/test, or am I echoing an old KB or my own assumption?
+- **Deprecation**: Is any referenced API or component deprecated? Check SDK `.d.ts` files for `@deprecated since <version>` annotations. Deprecated items should appear in KB pages only as historical context with explicit deprecation markers, not as recommended approaches. The recommended replacement must always be listed as the primary method.
 
 ### Quick Routing
 

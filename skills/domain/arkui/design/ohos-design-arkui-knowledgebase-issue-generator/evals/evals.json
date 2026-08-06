@@ -1,0 +1,101 @@
+{
+  "skill_name": "ohos-design-arkui-knowledgebase-issue-generator",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "create-issue-kb-from-bug-report",
+      "prompt": "帮我把 Navigation 返回时页面崩溃的问题沉淀为 issue KB。问题现象：Navigation 返回时偶现 SIGABRT，根因是 FrameNode 在 OnDetach 时未清理 GeometryTransition 互锁，修复在 PR #12345 中，修改了 frame_node.cpp 的 OnDetach 方法。",
+      "expected_output": "应按 CREATE 模式生成 issue KB，包含问题概述、关联模块、根因分类、排查路径、修复方案、关联变更、预防措施。关联变更表应使用 introduced/fixed 等关系字段。context_registry.json 条目使用 kind: issue、func_ids 数组。运行信息安全检查。",
+      "files": [],
+      "expectations": [
+        "运行 kb_search.py 确认目标是否已有 KB",
+        "进入 CREATE 模式",
+        "KB 页面包含问题概述、关联模块、根因分类、排查路径、修复方案、关联变更、预防措施等章节",
+        "关联变更表使用 introduced/fixed/related 等关系字段，而非平铺的「关联 PR / Issue」",
+        "结构化关联模块表包含 kind/role/name/evidence/confidence 字段",
+        "context_registry.json 条目使用 kind: issue",
+        "context_registry.json 条目使用 func_ids 数组（而非 func_id 单值）",
+        "context_registry.json 条目不包含 spec_status 字段",
+        "运行信息安全检查（public-safe/internal-only/blocked）",
+        "运行 validate_context.py 验证"
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "create-issue-kb-with-partner-info",
+      "prompt": "帮我把 XX伙伴在 MatePad Pro 上使用折叠态切换时出现的布局抖动问题沉淀为 issue KB。问题根因是 FoldStatus 监听回调中未对 SafeArea 做二次校验，修复 PR #67890。日志中包含伙伴应用名称「XX商城」和设备序列号。",
+      "expected_output": "信息安全检查应识别伙伴名称、设备序列号为敏感信息，分类为 blocked 或 internal-only。由于输出位置是公开仓库，internal-only 也应禁止写盘。应要求用户脱敏后重新提供输入，或由 Agent 将伙伴特征抽象为通用技术条件（如「特定窗口尺寸变化/折叠态切换场景」）。",
+      "files": [],
+      "expectations": [
+        "信息安全检查识别伙伴名称「XX伙伴」和设备序列号为敏感信息",
+        "不将伙伴名称、设备序列号直接写入 KB 草稿",
+        "将伙伴特征抽象为通用技术条件（如「特定窗口尺寸变化/折叠态切换场景」）",
+        "信息安全分类为 blocked 或 internal-only 时禁止写盘到公开仓库",
+        "要求用户脱敏后重新提供输入，或由 Agent 完成脱敏后重新检查"
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "update-existing-issue-kb",
+      "prompt": "docs/kb/issues/layout/measure-infinite-loop.md 这个问题 KB 已经存在，但缺少 GeometryTransition 互锁这个根因类别。请补充这个根因，参考 PR #12345 的修复。",
+      "expected_output": "应进入 UPDATE 模式：读取现有 KB 页面和 registry 条目，在根因分类表中追加新类别，不修改已有根因类别。不创建新 KB 文件，不追加重复 registry 条目，不增加 README 主题数。",
+      "files": [],
+      "expectations": [
+        "运行 kb_search.py 确认目标已有 KB",
+        "进入 UPDATE 模式（而非 CREATE）",
+        "读取现有 KB 文件和 registry 条目后再修改",
+        "在根因分类表中追加新类别，保留已有根因类别不变",
+        "不创建新 KB 文件——就地编辑现有文件",
+        "不追加重复 registry 条目——就地更新现有条目",
+        "不增加 README 主题数",
+        "运行信息安全检查和 validate_context.py 验证"
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "repair-registry-entry",
+      "prompt": "docs/context_registry.json 中 MeasureInfiniteLoop 条目的 keywords 数组缺少「布局死循环」这个关键词，请修复。",
+      "expected_output": "应进入 REPAIR 模式：读取现有 registry 条目，修复缺失关键词，不改变其他字段。不创建新 KB 文件，不增加 README 主题数。加载 workflow.md 执行验证。",
+      "files": [],
+      "expectations": [
+        "运行 kb_search.py 确认目标已有 KB",
+        "进入 REPAIR 模式",
+        "读取现有 registry 条目后再修改",
+        "只修复 keywords 字段，不改变其他字段",
+        "不创建新 KB 文件",
+        "不增加 README 主题数",
+        "加载 workflow.md 执行验证（不跳过）",
+        "运行 validate_context.py 验证"
+      ]
+    },
+    {
+      "id": 5,
+      "eval_name": "single-root-cause-kb",
+      "prompt": "帮我把 Flex 布局中子节点反复 Measure 的问题沉淀为 issue KB。我只知道一个根因：属性循环依赖导致 NeedAdditionalLayout 反复触发。没有 PR 参考，只有一个口头描述。",
+      "expected_output": "应接受单个根因生成初版 KB，标注覆盖范围（如「当前仅覆盖根因类别：属性循环依赖」）。不虚构额外根因或案例来凑数。Generation readiness criteria 应检查信息是否足以识别问题、理解成因、映射代码。",
+      "files": [],
+      "expectations": [
+        "不因只有一个根因而拒绝生成",
+        "不虚构额外根因或案例来凑数",
+        "在 KB 中标注覆盖范围（如「当前仅覆盖根因类别：属性循环依赖，后续补充」）",
+        "检查 Generation readiness criteria：识别问题、理解成因、复用方案、映射代码",
+        "从源码验证属性循环依赖的代码路径",
+        "信息安全检查通过后再写盘"
+      ]
+    },
+    {
+      "id": 6,
+      "eval_name": "change-relationship-taxonomy",
+      "prompt": "帮我把 Navigation 返回崩溃的问题沉淀为 issue KB。用户声称 PR #11111 引入了回归（在 OnDetach 中添加了 GeometryTransition 互锁但未处理清理），PR #12345 修复了这个问题。用户没有提供 PR diff 或 git blame 证据。",
+      "expected_output": "关联变更表中应使用变更关系字段区分引入和修复。由于用户只提供了口头声明而无 PR diff/git blame 等可验证证据，PR #11111 应标记为 related 或 unknown（confidence: user_claimed），PR #12345 同理。只有获取并核验真实变更后才能升级为 introduced/fixed（confidence: verified）。",
+      "files": [],
+      "expectations": [
+        "PR #11111 和 PR #12345 的 confidence 应为 user_claimed（用户口头声明，无独立验证）",
+        "在无 git blame/PR diff 等证据时，PR #11111 的关系应为 related 或 unknown，而非 introduced",
+        "在无 git blame/PR diff 等证据时，PR #12345 的关系应为 related 或 unknown，而非 fixed",
+        "每条引用包含 evidence 字段，标注证据来源为用户口头声明",
+        "不使用平铺的「关联 PR / Issue」列"
+      ]
+    }
+  ]
+}

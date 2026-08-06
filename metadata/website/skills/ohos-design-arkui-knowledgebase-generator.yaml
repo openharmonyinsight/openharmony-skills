@@ -2,7 +2,7 @@ schemaVersion: 1
 
 id: ohos-design-arkui-knowledgebase-generator
 title: ArkUI 知识库生成与迁移
-summary: 创建、更新、修复或迁移 ArkUI ace_engine 知识库文档及路由元数据，支持组件化状态判定和 API 解析路径生成。
+summary: 创建、更新、修复或迁移 ArkUI ace_engine 代码型知识库文档及路由元数据，支持组件化状态判定和 API 解析路径生成。仅处理代码型 KB（组件、能力、架构、API/SDK、语法），问题型 KB 请使用 ohos-design-arkui-knowledgebase-issue-generator。
 
 category:
   scope: domain
@@ -41,13 +41,15 @@ useCases:
     description: 判定组件是否已完成组件化改造，列出 JSView/Bridge/node_modifier/C API 等解析实现路径。
 
 whenToUse:
-  - 用户要求创建、更新或迁移 ArkUI/ace_engine 知识库文档。
+  - 用户要求创建、更新或迁移 ArkUI/ace_engine 代码型知识库文档（组件、能力、架构、API/SDK、语法）。
   - 需要补齐 docs/kb/ 下组件或能力的 KB 页面。
   - 需要修复 context_registry.json 或 knowledge_base_INDEX.json 路由错误。
   - 需要判定组件组件化状态并生成 API 解析实现路径表。
-  - 用户提到知识库、KB、文档补齐、索引修复、context registry 等关键词。
+  - 用户提到知识库、KB、文档补齐、索引修复、context registry 等关键词（但不是问题型 KB）。
 
 whenNotToUse:
+  - 需要生成、更新或修复问题型知识库（docs/kb/issues/）——使用 ohos-design-arkui-knowledgebase-issue-generator。
+  - 用户提到问题KB、issue KB、troubleshooting KB、问题经验沉淀——路由到 issue-generator。
   - 需要修改产品源码、Spec 文件或生成文件。
   - 需要创建 CLAUDE.md、AGENTS.md 或与知识库无关的 README。
   - 构建、编译或运行测试相关需求。
@@ -79,4 +81,5 @@ quickStart:
 related:
   skills:
     - ohos-design-arkui-spec-generator
+    - ohos-design-arkui-knowledgebase-issue-generator
   docs: []
