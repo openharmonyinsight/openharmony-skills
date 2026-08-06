@@ -72,7 +72,7 @@ Result: READY
 
 ## 评测与评分
 
-本目录按 `skill-judge` 8 维度完成质量评分，并按 Anthropic skill-creator 风格维护结构化 eval。当前评分结论：
+本目录按 `skill-judge` 8 维度完成质量评分，并按 Anthropic skill-creator 风格为每个 skill 保留结构化 eval 用例。顶层评测 runner 和评分明细不随 release skill 包发布，详细评分记录保留在 PR 描述中。当前评分结论：
 
 | 指标 | 结果 |
 |------|------|
@@ -84,18 +84,10 @@ Result: READY
 | Manual assertions | `44` |
 | Unsupported assertions | `0` |
 
-评分明细见 [evals/skill-judge-score.md](evals/skill-judge-score.md)。
-
 验证命令：
 
 ```bash
-python3 skills/common/requirements/evals/run_skill_evals.py collect \
-  --root skills/common/requirements \
-  --benchmark-json /tmp/ohos-req-skills-benchmark.json \
-  --benchmark-md /tmp/ohos-req-skills-benchmark.md
-
 bash skills/common/requirements/ohos-req-intake-orchestration/scripts/install_related_skills.sh --check-probes
 bash skills/common/requirements/ohos-req-intake-orchestration/scripts/test_related_skills_consistency.sh
-python3 -m unittest discover -s skills/common/requirements/evals/tests -p 'test_*.py'
 python3 -m unittest skills/common/requirements/ohos-req-value-ppt-gen/tests/test_deckbuilder_smoke.py
 ```
