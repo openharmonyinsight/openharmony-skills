@@ -1,0 +1,10 @@
+Reason:Signal:SIGSEGV(SEGV_MAPERR)@000000000000000000  probably caused by NULL pointer dereference
+Fault thread info:
+Tid:5653, Name:Trans_1_G
+#00 pc 0000000000138028 /system/lib64/media/libmedia_engine_histreamer.z.so(OHOS::Media::HiTransCoderImpl::OnEvent(OHOS::Media::Event const&)+80)(d3cacbf378137589017eaebd9f2c8162)
+#01 pc 000000000008a698 /system/lib64/platformsdk/libmedia_foundation.z.so(OHOS::Media::TaskInner::HandleJob()+1336)(b5eb92f79126f859afc5f8365fe13df2)
+#02 pc 0000000000085fb0 /system/lib64/platformsdk/libmedia_foundation.z.so(OHOS::Media::PipeLineThread::Run()+908)(b5eb92f79126f859afc5f8365fe13df2)
+#03 pc 000000000008b8f4 /system/lib64/platformsdk/libmedia_foundation.z.so(OHOS::Media::Thread::Run(void*) (.cfi)+360)(b5eb92f79126f859afc5f8365fe13df2)
+#04 pc 00000000001e2d94 /system/lib/ld-musl-aarch64.so.1(start+240)(4246509192596535a89208c7cce9641a)
+Timestamp: 2026-06-30 00:34:15.847
+Process Name: media_service

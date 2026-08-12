@@ -1,0 +1,6 @@
+{
+    "setenforce": "0",
+    "rerun": true,
+    "appfreeze.filter_bundle_name": "com.example.demo",
+    "description": "demo test config"
+}

@@ -1,0 +1,13 @@
+06-30 00:34:14.220 5462 5462 I C01330/com.avplayer.napitest/Delegator: OHOS_REPORT_STATUS: consuming=2
+06-30 00:34:15.847 5602 5653 E C02B22/media_service/HiTransCoder: (OnEvent(): transcoder init error)
+06-30 00:34:17.542 5462 5462 I A03D00/com.avplayer.napitest/JSAPP: [Hypium]start running case 'testOhAvTransCoderNdkPrepareError0007'
+06-30 00:34:17.543 5462 5462 I C02B2B/com.avplayer.napitest/NativeAVTranscoder: OH_AVTranscoder_Create enter.
+06-30 00:34:18.820 5744 5789 I C02B2B/media_service/TaskQueue: Instance thread started [TranscoderServer]
+06-30 00:34:18.859 5462 5462 I C02B2B/com.avplayer.napitest/NativeAVTranscoder: OH_AVTranscoder_Prepare enter.
+06-30 00:34:18.859 5744 5786 I C02B2B/media_service/TransCoderServiceStub: Stub: OnRemoteRequest of code: 10 is received
+06-30 00:34:18.900 5602 5653 E C02B22/media_service/HiTransCoder: (OnEvent(): SIGSEGV crash)
+06-30 00:34:18.996 5462 5462 I A03D00/com.avplayer.napitest/JSAPP: [Hypium][fail]testOhAvTransCoderNdkPrepareError0007 ; consuming 1454ms
+06-30 00:34:18.997 5462 5462 I A03D00/com.avplayer.napitest/JSAPP: [Hypium]testOhAvTransCoderNdkPrepareError0007 specDone end print success
+06-30 00:34:18.998 5462 5462 I A03D00/com.avplayer.napitest/JSAPP: [Hypium]start running case 'testOhAvTransCoderNdkPrepareError0008'
+06-30 00:34:23.005 5462 5462 I A03D00/com.avplayer.napitest/JSAPP: [Hypium][fail]testOhAvTransCoderNdkPrepareError0008 ; consuming 4007ms
+06-30 00:34:23.006 5462 5462 I A03D00/com.avplayer.napitest/JSAPP: [Hypium]testOhAvTransCoderNdkPrepareError0008 specDone end print success

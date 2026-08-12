@@ -1,0 +1,15 @@
+import("//build/ohos.gni")
+
+ohos_js_app_suite("ActsDemoHap") {
+  hap_name = "demo_normalized_test"
+  subsystem_name = "arkui"
+  part_name = "button"
+  testonly = true
+}
+
+ohos_js_app_suite("ActsOkHap") {
+  hap_name = "ActsDemoOkTest"
+  subsystem_name = "arkui"
+  part_name = "button"
+  testonly = true
+}

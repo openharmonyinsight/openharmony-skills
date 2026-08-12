@@ -1,0 +1,11 @@
+06-26 16:25:40.000 5602 5653 I A03D00/com.example.acectest/JSAPP: [Hypium]start running case 'textAreaLetterSpacing001'
+06-26 16:25:42.611 5602 5653 I A03D00/com.example.acectest/JSAPP: [textAreaLetterSpacing001] component obj3 is: {"$type":"Text","data":{"content":"test"},"style":{"letterSpacing":"1.0px"}}
+06-26 16:25:50.894 5602 5653 I A03D00/com.example.acectest/JSAPP: [textAreaLetterSpacing001] inspector get node attr letterSpacing: 0
+06-26 16:25:51.417 5602 5653 I A03D00/com.example.acectest/JSAPP: [Hypium]textAreaLetterSpacing001 specDone end print success
+06-26 16:25:51.418 5602 5653 I A03D00/com.example.acectest/JSAPP: [Hypium][fail]textAreaLetterSpacing001 ; consuming 8806ms
+06-26 16:25:51.419 5602 5653 I A03D00/com.example.acectest/JSAPP: [Hypium][failDetail]expect #00000000 equals #FFE31111
+06-26 16:25:51.420 5602 5653 I A03D00/com.example.acectest/JSAPP: [Hypium]start running case 'textAreaLetterSpacing002'
+06-26 25:51.421 5602 5653 I A03D00/com.example.acectest/JSAPP: [textAreaLetterSpacing002] component obj3 is: {"$type":"Text","data":{"content":"test"},"style":{"letterSpacing":"1.0px"}}
+06-26 25:51.500 5602 5653 I A03D00/com.example.acectest/JSAPP: [Hypium]textAreaLetterSpacing002 specDone end print success
+06-26 16:25:51.501 5602 5653 I A03D00/com.example.acectest/JSAPP: [Hypium][fail]textAreaLetterSpacing002 ; consuming 8806ms
+06-26 16:25:51.502 5602 5653 I A03D00/com.example.acectest/JSAPP: [Hypium][failDetail]expect #00000000 equals #FFE31111

@@ -1,0 +1,75 @@
+schemaVersion: 1
+
+id: ohos-issue-xts-log-analysis
+title: XTS 测试日志定界分析
+summary: 分析 XTS 测试日志并定界问题归属，支持 4 种输入形态自动识别、Shell 执行链判定、源码→领域证据链追溯、崩溃栈解析。
+
+category:
+  scope: domain
+  namespace: test
+  stage: troubleshooting
+  domain: xts
+  capability: log-analysis
+
+status:
+  maturity: beta
+  version: 0.2.0
+  owner: openharmony
+
+tags:
+  - xts
+  - log-analysis
+  - troubleshooting
+  - domain-tracing
+  - hilog
+  - crash-analysis
+
+audience:
+  - OpenHarmony XTS 测试问题定界人员
+  - 测试质量工程师
+  - 系统稳定性分析人员
+  - 故障排查工程师
+
+useCases:
+  - title: XTS 测试失败定界
+    description: 从测试日志目录提取失败用例、时间窗、崩溃栈，定界问题归属（测试侧/系统侧）。
+  - title: 崩溃+级联阻塞分析
+    description: 分析系统崩溃导致的 FAILED + 级联 BLOCKED，分别定界。
+  - title: 多根因场景分析
+    description: 一次执行中同时存在多个独立根因，分别分析、分别定界、分别流转。
+
+whenToUse:
+  - 用户提供 XTS 测试日志目录（含 summary_report.xml/module_run.log/hilog.*.gz）。
+  - 提到测试失败/App died/Blocked/SIGSEGV/cppcrash/jscrash。
+  - 需要 hilog 时间窗切片与 domain 定界。
+  - 需要 XTS log analysis, crash log analysis, domain tracing。
+
+whenNotToUse:
+  - 目标是检查 XTS 测试代码质量（用 ohos-test-xts-code-quality）。
+  - 只需要图形子系统崩溃分析（用 ohos-issue-graphics-cppcrash-analysis）。
+
+inputs:
+  required:
+    - XTS 测试日志目录
+  optional:
+    - OH 源码根路径（--root 或配置文件）
+    - 失败用例名（单用例分析）
+    - dict 文件（hilog 解密）
+
+outputs:
+  - XTS 定界分析报告（XTS_Analysis_Report_YYYYMMDD.md）
+
+quickStart:
+  steps:
+    - 提供日志目录路径。
+    - 执行 preflight_gate.py 检查解密状态。
+    - 按工作流程提取时间窗、domain 过滤、证据链追溯。
+    - 生成定界报告并用 validate_report.py 校验。
+  examplePrompt: |
+    请使用 ohos-issue-xts-log-analysis 分析 /path/to/xts_logs 日志目录。
+
+related:
+  skills:
+    - ohos-issue-graphics-cppcrash-analysis
+    - ohos-issue-graphics-sysfreeze-analysis
+    - ohos-test-xts-code-quality

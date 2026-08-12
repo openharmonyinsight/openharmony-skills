@@ -1,0 +1,12 @@
+06-30 00:34:15.847 5602 5653 E C02B22/media_service/HiTransCoder: (OnEvent(): transcoder init error)
+06-30 00:34:17.542 5462 5462 I A03D00/com.avplayer.napitest/JSAPP: [Hypium]start running case 'testOhAvTransCoderNdkPrepareError0007'
+06-30 00:34:17.543 5462 5462 I C02B2B/com.avplayer.napitest/NativeAVTranscoder: OH_AVTranscoder_Create enter.
+06-30 00:34:18.859 5462 5462 I C02B2B/com.avplayer.napitest/NativeAVTranscoder: OH_AVTranscoder_Prepare enter.
+06-30 00:34:18.900 5602 5653 E C02B22/media_service/HiTransCoder: (OnEvent(): SIGSEGV crash)
+06-30 00:34:18.996 5462 5462 I A03D00/com.avplayer.napitest/JSAPP: [Hypium][fail]testOhAvTransCoderNdkPrepareError0007 ; consuming 1454ms
+06-30 00:34:18.997 5462 5462 I A03D00/com.avplayer.napitest/JSAPP: [Hypium]testOhAvTransCoderNdkPrepareError0007 specDone end print success
+06-30 00:35:09.537 5462 5462 I A03D00/com.avplayer.napitest/JSAPP: [Hypium]start running case 'testOhAvPlayerSetPlaybackRateError001'
+06-30 00:35:11.586 5462 5462 I A03D00/com.avplayer.napitest/JSAPP: [Hypium][pass]testOhAvPlayerSetPlaybackRateError001 ; consuming 2049ms
+06-30 00:40:38.925 5462 5462 I A03D00/com.avplayer.napitest/JSAPP: [Hypium]start running case 'testOhAvPlayerGetVideoWidth002'
+06-30 00:40:38.930 5462 5462 I A03D00/com.avplayer.napitest/JSAPP: OH_AVPlayer_GetVideoWidth enter
+06-30 00:40:45.998 5462 5462 I A03D00/com.avplayer.napitest/JSAPP: End test suite [AVPlayerTest]

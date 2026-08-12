@@ -1,0 +1,10 @@
+<testsuites>
+  <testsuite name="TextAreaLetterSpacing" tests="2" failures="2" disabled="0" errors="0">
+    <testcase name="textAreaLetterSpacing001" status="run" result="false">
+      <failure message="expect #00000000 equals #FFE31111" type="AssertionError" />
+    </testcase>
+    <testcase name="textAreaLetterSpacing002" status="run" result="false">
+      <failure message="expect #00000000 equals #FFE31111" type="AssertionError" />
+    </testcase>
+  </testsuite>
+</testsuites>
