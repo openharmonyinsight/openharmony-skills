@@ -45,8 +45,10 @@ metadata:
 
 - 模板路径：`reference/feature.md`（模板文件不带 `04-` 阶段编号前缀）
 - Proposal 模板路径：`reference/proposal.md`
+- Proposal 审查矩阵路径：`reference/proposal-check-matrix.md`
 - 产物路径：`{docs_dir}/04-feature.md`
 - Proposal 产物路径：`{docs_dir}/proposals/05-proposal-<slug>.md`
+- Proposal 审查结果路径：`{docs_dir}/proposals/proposal-check-<slug>.md`
 - Proposal 文件命名：必须使用阶段号前缀 `05-proposal-` + 小写 kebab-case 语义短名，例如 `05-proposal-arkweb-file-drag-preview-control.md`；禁止使用 `P1-*.md`、`proposal-1.md` 或无 `05-` 阶段号的文件名。
 
 1. 读取 `reference/feature.md` 和全部输入。
@@ -67,16 +69,38 @@ metadata:
 10. **生成 proposal 文件草稿**：读取 `reference/proposal.md`，为 §5 拆分表中的每个 proposal 生成 `{docs_dir}/proposals/05-proposal-<slug>.md`。不拆分时也必须生成 1 份 proposal 文件。每份 proposal 必须按模板原有 H1/H2 结构填写，并包含：
     - 从 04-feature.md 继承的 `feature_id`、`rr_id`、`target_release`
     - proposal 背景与问题、初始分级判断、目标/非目标
-    - 用户故事与能力、成功标准、影响范围
-    - Agent Scope Guard、假设与开放问题、不涉及项确认（8 维）
+    - 1+8设备差异规格、DFX设计、用户故事与能力、成功标准、影响范围
+    - 可选的外部依赖；无依赖时显式填写"不涉及"
+    - 假设与开放问题、不涉及项确认（8 维）
     - proposal 边界、Owner/SIG、工作量、依赖、开放条件项写入模板对应章节，不新增模板外 H1/H2
-11. **⭐ 拆分结果确认门禁**：向用户展示 04-feature.md 中的拆分方案以及已生成 proposal 文件列表（每个 proposal 的路径、边界、工作量、Owner、依赖），等待用户确认或调整后才允许执行 Review Ready Gate。AI 不自行定稿拆分方案。
-12. 保存 `{docs_dir}/04-feature.md` 和全部 `{docs_dir}/proposals/05-proposal-<slug>.md`。
-13. 执行内建 Review Ready Gate（读取刚保存且经用户确认的 04-feature.md 和 proposal 文件），写入 `04-feature.md` 的固定 `## Review Ready Gate` 章节：`decision_gate` YAML、14 项检查表、条件项、后续观测项、FR→AC 追溯表。
+11. **Proposal 审查 subagent**：在 proposal 草稿保存后，为 proposal 审查创建隔离 subagent。task 只传 4 类路径/信息，不嵌入正文：`reference/proposal-check-matrix.md`、`04-feature.md`、全部 `proposals/05-proposal-<slug>.md`、输出目录 `{docs_dir}/proposals/`。subagent 必须按矩阵逐项检视并为每个 proposal 输出 `{docs_dir}/proposals/proposal-check-<slug>.md`，格式为"总览+明细表"，列包含 `检查域 | 检查维度 | 检查条目 | 结论 | 证据 | 待SE澄清 | TSE复核`；`待SE澄清` 和 `TSE复核` 两列必须留空。subagent 回传主 session 的摘要不超过 15 行：proposal 数、PASS/WARN/FAIL 计数、必改项列表和审查结果路径。
+12. **原 agent 回修 proposal**：主 session 读取审查结果，先修复所有可由 01-04/proposal 内部证据确定的 FAIL；对 AI 无法判定项保留 WARN 并在 proposal 对应章节标注待人工确认。回修后重新执行 Step 11，直到无可自动修复的 FAIL。禁止 subagent 直接修改 proposal 正文。
+13. **⭐ 拆分结果确认门禁**：向用户展示 04-feature.md 中的拆分方案、已生成 proposal 文件列表和 proposal-check 摘要（每个 proposal 的路径、边界、工作量、Owner、依赖、PASS/WARN/FAIL 计数），等待用户确认或调整后才允许执行 Review Ready Gate。AI 不自行定稿拆分方案。
+14. 保存 `{docs_dir}/04-feature.md`、全部 `{docs_dir}/proposals/05-proposal-<slug>.md` 和 `{docs_dir}/proposals/proposal-check-<slug>.md`。
+15. 执行内建 Review Ready Gate（读取刚保存且经用户确认的 04-feature.md 和 proposal 文件），写入 `04-feature.md` 的固定 `## Review Ready Gate` 章节：`decision_gate` YAML、14 项检查表、条件项、后续观测项、FR→AC 追溯表。
 
 ## 职责边界
 
 方案选型决策(ADR)由 `ohos-req-arch-decision` skill 负责，本 skill 只收敛 Feature/Proposal 评审基线。
+
+## Proposal 审查矩阵
+
+Proposal 审查使用 `reference/proposal-check-matrix.md` 作为唯一判据源。审查范围覆盖 4 个检查域：
+
+| 检查域 | 检查条目数 | 判定重点 |
+|--------|------------|----------|
+| 诉求 | 5 | 问题描述、feature 溯源、成功标准可测性、1+8设备差异规格、DFX设计 |
+| 场景 | 2 | US+AC 场景覆盖、AC 独立可测 |
+| N/A项 | 8 | 性能、安全与权限、兼容性、API/SDK、IPC/跨进程、构建与部件、国际化/无障碍、数据迁移 |
+| 交叉 | 4 | 非目标↔US、影响范围↔US、分级↔实际、多 proposal 一致性 |
+
+判定规则：
+
+- `PASS`：存在、完整、清晰、明确、无歧义；显式标注"不涉及"且有依据时视为 PASS。
+- `FAIL`：不存在、缺失、模糊、有歧义；未显式标注"不涉及"的空白项按 FAIL 处理；结构缺失时先 FAIL，不继续细判该结构内部质量。
+- `WARN`：AI 无法判定或需要人工二次判定；N/A 维度未发现明确矛盾但仍需人工确认时标 WARN，并在证据列追加"待确认是否准确"。
+- `待SE澄清` 和 `TSE复核` 两列永远由人工填写，subagent 和主 session 均不得代填。
+- 多 proposal 场景必须执行 proposal 间一致性检查；单 proposal 场景若无法验证整体溯源完整性，则 1.2 可标 WARN 并说明"当前仅检查单个proposal，建议放入多个proposal一起检查以验证溯源完整性"。
 
 ## 遗留问题闭环校验
 
@@ -147,11 +171,11 @@ decision_gate:
 
 ### 旧 IR/SR/handoff 兼容边界
 
-本 requirements 流程不再生成 `IR.md`、`SR.md` 或 `handoff.md`，也不自动改名、删除或覆盖历史目录中的同名旧产物。旧 IR/SR/handoff 只读保留，用于历史追溯；新流程的正式评审输入以 `01-requirement.md`、`02-feasibility.md`、`03-arch-decision-record.md`、`04-feature.md`、`proposals/05-proposal-*.md`、`value-decision-record.md` 为准。原 feature-to-ir 的 RR_MCP 写入、13 节平台评估、6 维人工确认、AC 编号继承在新版中分别由 `rr_id` 链路、`04-feature.md` 影响性分析/Gate、用户确认门禁和 FR→AC 追溯替代；原 proposal-to-sr/handoff 的 1:1 SR、责任人和 Phase 前置检查交由 ODK 交付阶段基于 `.codespec/changes/<change-id>/proposal.md` 继续处理，不作为 requirements Step 1-14 前置条件。
+本 requirements 流程不再生成 `IR.md`、`SR.md` 或 `handoff.md`，也不自动改名、删除或覆盖历史目录中的同名旧产物。旧 IR/SR/handoff 只读保留，用于历史追溯；新流程的正式评审输入以 `01-requirement.md`、`02-feasibility.md`、`03-arch-decision-record.md`、`04-feature.md`、`proposals/05-proposal-*.md`、`value-decision-record.md` 为准。原 feature-to-ir 的 RR_MCP 写入、13 节平台评估、6 维人工确认、AC 编号继承在新版中分别由 `rr_id` 链路、`04-feature.md` 影响性分析/Gate、用户确认门禁和 FR→AC 追溯替代；ODK 交付阶段的 proposal 归档路径、执行边界和交付前置检查由 ODK 自身流程处理，不作为 requirements Step 1-14 前置条件。
 
-### ODK Handoff 规则
+### ODK 边界
 
-`proposals/05-proposal-<slug>.md` 不是 ODK 的最终归档路径。进入 ODK 交付阶段时，必须为每个已确认 proposal 建立明确 change-id，并把该 proposal 转换或复制到 `.codespec/changes/<change-id>/proposal.md`，同时满足 ODK `artifacts.yaml` 的 required sections（含 `Agent Scope Guard`）。转换时字段来源固定为：`rr_id` 从 01→04→proposal 继承，`target_release` 从 04/proposal frontmatter 继承或由用户确认，`change_type`、`issue`、`author`、`date` 不得从历史 IR/SR/handoff 推断。
+`proposals/05-proposal-<slug>.md` 是 requirements 阶段的评审输入，不是 ODK 最终交付归档文件。本 skill 只要求 `rr_id` 从 01→04→proposal 继承、`target_release` 从 04/proposal frontmatter 继承或由用户确认；不推断 ODK `change-id`、不生成 `.codespec` 目录、也不补充 ODK 模板专有章节。
 
 ### GA 证据规则
 
@@ -168,7 +192,9 @@ decision_gate:
 | Not Ready (04-feature.md 内容不完整) | 告知用户缺失的具体章节，引导回本 skill 对应子步骤补全 |
 | Not Ready (01-03 未完成) | 告知用户需先完成上游 Step 1/5/7 对应文档，列出缺失文档 |
 | Conditional Ready | 列出条件项，引导用户确认是否接受条件放行或退回修改 |
-| 拆分未确认 (Step 11 gate) | 提示用户确认拆分方案，不可自行定稿 |
+| 拆分未确认 (Step 13 gate) | 提示用户确认拆分方案，不可自行定稿 |
+| proposal 审查存在可自动修复 FAIL | 原 agent 读取 `proposal-check-<slug>.md` 后回修 proposal，再重新执行 proposal 审查 |
+| proposal 审查存在无法自动判定 WARN | 保留 WARN，要求人工确认；不得自行把 WARN 改成 PASS |
 | proposal 文件缺失 | 回到本 skill Step 10 生成缺失的 `{docs_dir}/proposals/05-proposal-<slug>.md`，不可只保留 04-feature.md 表格 |
 | proposal 文件命名错误 | 重命名为 `05-proposal-<slug>.md` 并同步更新 04-feature.md §5、Gate 和回传路径 |
 
@@ -183,6 +209,10 @@ decision_gate:
 - [ ] 目标、非目标、AC 和范围可评审
 - [ ] 每条 AC 均有标准、可观察指标和验证方式；缺列已形成 warn 或 fail
 - [ ] 影响范围有 Owner/SIG 和交付物
+- [ ] proposal 模板已填写 `1+8设备差异规格` 和 `DFX设计` 独立章节；设备差异规格以三列表格填写，8类设备/差异项齐全；DFX 包含 `定位定界` 维度
+- [ ] proposal 的 `外部依赖（可选）` 章节已填写；无依赖时显式标注"不涉及"
+- [ ] 已使用 `reference/proposal-check-matrix.md` 通过 subagent 生成每个 proposal 的 `proposal-check-<slug>.md`
+- [ ] 原 agent 已基于 proposal-check 修复可自动修复的 FAIL；剩余 WARN 已标注待人工确认
 - [ ] Conditional 项有 Owner 和关闭时点
 - [ ] 拆分结论包含事实依据
 - [ ] 拆分表每个 proposal 有估算工作量（人月，不超过复杂度上限）
@@ -205,9 +235,12 @@ decision_gate:
 - **禁止 Not Ready 时生成正式需求 PPT 或进入评审会议**：存在失败项时禁止把未就绪 Feature/Proposal 基线提交评审（原因：未通过门禁的需求进入下游会导致返工和评审阻塞）
 - **禁止复制 01-03 详细论证**：04-feature.md 只收敛结论，不复制详细论证（原因：避免文档冗余和信息不一致）
 - **禁止在 requirements 流程重新生成 IR/SR/handoff**：历史 IR/SR/handoff 只读保留，新流程不把它们作为前置条件或输出（原因：本流程已收敛为 01-04 + proposal + value decision）
+- **禁止绕过 proposal 审查 subagent**：proposal 草稿生成后必须按 `reference/proposal-check-matrix.md` 审查并由原 agent 回修（原因：proposal 质量门禁与生成职责需要隔离）
+- **禁止 subagent 直接修改 proposal 正文**：审查 subagent 只产出 `proposal-check-<slug>.md` 和摘要，原 agent 负责回修（原因：避免审查者和作者职责混淆）
+- **禁止 AI 填写待SE澄清/TSE复核列**：两列必须留空交由人工审核（原因：该列代表人工审查职责）
 
 ## 输出
 
 - 路径：`{docs_dir}/04-feature.md` 和 `{docs_dir}/proposals/05-proposal-<slug>.md`
 - 方案摘要章节：改为一句话引用 03-arch-decision-record.md 选定方案，格式为 "选定方案: PATH-XX（参见 03-arch-decision-record.md）"，不重复决策细节
-- 回传：04-feature.md 路径、proposal 文件路径列表、RR单号、Gate 结论、评审建议、拆分结论、影响性分析结论和阻塞项
+- 回传：04-feature.md 路径、proposal 文件路径列表、proposal-check 文件路径列表、RR单号、Gate 结论、评审建议、拆分结论、影响性分析结论、proposal 审查 PASS/WARN/FAIL 计数和阻塞项
