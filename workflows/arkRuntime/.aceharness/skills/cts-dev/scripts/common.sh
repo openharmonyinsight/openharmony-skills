@@ -90,19 +90,7 @@ detect_build_dir() {
 
 detect_build_dir_name() {
     local static_core="$1"
-    if [[ -n "${ARK_BUILD_DIR:-}" ]]; then
-        BUILD_DIR_NAME="$(basename "$ARK_BUILD_DIR")"
-        BUILD_DIR="$ARK_BUILD_DIR"
-    elif [[ -d "$static_core/build_release/bin" ]]; then
-        BUILD_DIR_NAME="build_release"
-        BUILD_DIR="$static_core/build_release"
-    elif [[ -d "$static_core/out/bin" ]]; then
-        BUILD_DIR_NAME="out"
-        BUILD_DIR="$static_core/out"
-    else
-        _prompt_build_dir "$static_core"
-        BUILD_DIR="$static_core/$BUILD_DIR_NAME"
-    fi
+    detect_build_dir "$static_core"
 }
 
 init_common() {

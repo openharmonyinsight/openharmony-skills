@@ -5,6 +5,8 @@ SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=./common.sh
 source "$SCRIPT_DIR/common.sh"
 
+"$SCRIPT_DIR/check_docs_integrity.sh"
+
 cmd=(build "$DOCS_DIR" -o "$BUILD_ROOT" --mode sidecar-only)
 
 if [[ "${WIKI_AGENTIZER_FULL_BUILD:-0}" == "1" ]]; then

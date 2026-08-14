@@ -45,4 +45,4 @@ while [[ $# -gt 0 ]]; do
 done
 
 cd "$STATIC_CORE"
-tests/tests-u-runner/runner.sh --ets-cts --show-progress --build-dir "./$BUILD_DIR_NAME" --processes=all --es2panda-debug-info --force-generate --es2panda-args=--simultaneous=true "${EXTRA_RUNNER_ARGS[@]}"
+tests/tests-u-runner/runner.sh --ets-cts --show-progress --build-dir "$BUILD_DIR" --processes=all --es2panda-debug-info --force-generate --es2panda-args=--simultaneous=true "${EXTRA_RUNNER_ARGS[@]}"

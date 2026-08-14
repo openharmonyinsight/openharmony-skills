@@ -37,5 +37,5 @@ export PANDA_BUILD="$BUILD_DIR"
 export WORK_DIR="$ROOT_DIR/work_dir_astchecker"
 rm -rf "$WORK_DIR"
 "$ARKCOMPILER_RUNTIME_CORE_PATH/static_core/tests/tests-u-runner-2/runner.sh" \
-  declgen-ets2ts declgen-ets2ts-cts --declgen-timeout=120 --tsc-timeout=120 --skip-compile-only-neg --report-dir report --processes "$(nproc)" --groups 5 --group-number 2 \
+  es2panda-verifier astchecker --es2panda-timeout=120 --report-dir report-astchecker --processes "$(nproc)" \
   "${EXTRA_RUNNER_ARGS[@]}"

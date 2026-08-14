@@ -16,8 +16,10 @@ VENV_DIR="$TOOLING_DIR/wiki_agentizer-venv"
 BUILD_ROOT="$TOOLING_DIR/wiki_agentizer-build"
 BUILD_AGENT_DIR="$BUILD_ROOT/.agent"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
+GIT_BIN="${GIT_BIN:-$(command -v /usr/bin/git || command -v git)}"
 WIKI_AGENTIZER_REPO="${WIKI_AGENTIZER_REPO:-https://gitcode.com/anxuesm/wiki_agentizer}"
-WIKI_AGENTIZER_REF="${WIKI_AGENTIZER_REF:-}"
+DEFAULT_WIKI_AGENTIZER_REF="335fbd3144127e17d4763773ab280f8a7bb62d13"
+WIKI_AGENTIZER_REF="${WIKI_AGENTIZER_REF:-$DEFAULT_WIKI_AGENTIZER_REF}"
 
 fail() {
     printf 'error: %s\n' "$*" >&2
@@ -32,22 +34,36 @@ ensure_docs_dir() {
     [[ -d "$DOCS_DIR" ]] || fail "docs directory not found: $DOCS_DIR"
 }
 
-clone_wiki_agentizer() {
-    if [[ -d "$TOOL_REPO_DIR/.git" ]] || [[ -f "$TOOL_REPO_DIR/pyproject.toml" ]]; then
+verify_default_wiki_agentizer_ref() {
+    if [[ "$WIKI_AGENTIZER_REF" != "$DEFAULT_WIKI_AGENTIZER_REF" ]]; then
         return 0
     fi
 
-    mkdir -p "$TOOLING_DIR"
-    git clone "$WIKI_AGENTIZER_REPO" "$TOOL_REPO_DIR"
+    [[ -d "$TOOL_REPO_DIR/.git" ]] || \
+        fail "default wiki_agentizer path must be a verifiable git checkout: $TOOL_REPO_DIR"
 
-    if [[ -n "$WIKI_AGENTIZER_REF" ]]; then
-        git -C "$TOOL_REPO_DIR" checkout "$WIKI_AGENTIZER_REF"
+    local head
+    head=$("$GIT_BIN" -C "$TOOL_REPO_DIR" rev-parse HEAD)
+    [[ "$head" == "$DEFAULT_WIKI_AGENTIZER_REF" ]] || \
+        fail "wiki_agentizer HEAD mismatch: expected $DEFAULT_WIKI_AGENTIZER_REF, got $head"
+}
+
+clone_wiki_agentizer() {
+    if [[ ! -d "$TOOL_REPO_DIR/.git" && ! -f "$TOOL_REPO_DIR/pyproject.toml" ]]; then
+        mkdir -p "$TOOLING_DIR"
+        "$GIT_BIN" clone "$WIKI_AGENTIZER_REPO" "$TOOL_REPO_DIR"
     fi
+
+    if [[ -d "$TOOL_REPO_DIR/.git" ]]; then
+        "$GIT_BIN" -C "$TOOL_REPO_DIR" checkout "$WIKI_AGENTIZER_REF"
+    fi
+
+    verify_default_wiki_agentizer_ref
 }
 
 ensure_wiki_agentizer() {
     ensure_docs_dir
-    require_cmd git
+    require_cmd "$GIT_BIN"
     require_cmd "$PYTHON_BIN"
 
     clone_wiki_agentizer

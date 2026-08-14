@@ -1,14 +1,20 @@
 ---
 name: spec-test-analyzer
 description: "Analyze ArkTS code snippets or CTS test cases against the specification stored in ./docs. Prefer the generated ./.agent index when available, and fall back to raw docs when the index has not been built yet."
-version: 1.1.1
-author: Spec Test Analyzer maintainers
-compatibility:
-  tools: bash, git, python3, rg, grep, read, glob
-  dependencies:
-    - ./docs source markdown files (required)
-    - ./.agent generated retrieval index (optional, recommended)
-    - ./scripts/build_agent.sh for index generation
+metadata:
+  author: openharmony
+  scope: common
+  stage: analysis
+  domain: language-spec
+  capability: spec-test-analysis
+  version: 1.1.1
+  status: stable
+  compatibility:
+    tools: bash, git, python3, rg, grep, read, glob
+    dependencies:
+      - ./docs source markdown files (required)
+      - ./.agent generated retrieval index (optional, recommended)
+      - ./scripts/build_agent.sh for index generation
 ---
 
 # Spec Test Analyzer
@@ -36,7 +42,7 @@ Before analyzing any snippet or CTS failure:
 
 ## Build and Validate the Index
 
-`./scripts/build_agent.sh` bootstraps `wiki_agentizer` from `https://gitcode.com/anxuesm/wiki_agentizer` into `./.tooling/`, builds into an isolated temporary output root under `./.tooling/`, then syncs the resulting `./.agent/` back into the skill root.
+`./scripts/build_agent.sh` bootstraps `wiki_agentizer` from `https://gitcode.com/anxuesm/wiki_agentizer` into `./.tooling/`, checks out the pinned default commit, verifies `HEAD`, builds into an isolated temporary output root under `./.tooling/`, then syncs the resulting `./.agent/` back into the skill root.
 
 ```bash
 ./scripts/build_agent.sh
@@ -47,7 +53,8 @@ Useful environment overrides:
 
 - `WIKI_AGENTIZER_DIR`: use an already checked-out local tool directory instead of cloning.
 - `WIKI_AGENTIZER_REPO`: override the clone URL.
-- `WIKI_AGENTIZER_REF`: check out a specific branch, tag, or commit after cloning.
+- `WIKI_AGENTIZER_REF`: explicitly override the pinned default commit after auditing the new version.
+- `GIT_BIN`: choose the Git executable used for clone, checkout, and HEAD verification.
 - `WIKI_AGENTIZER_FULL_BUILD=1`: force a full rebuild instead of incremental mode.
 - `WIKI_AGENTIZER_CONFIG`: pass a config file to `wiki_agentizer`.
 - `WIKI_AGENTIZER_JOBS`: set build parallelism.

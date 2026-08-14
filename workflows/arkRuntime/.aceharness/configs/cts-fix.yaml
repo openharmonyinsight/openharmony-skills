@@ -20,12 +20,12 @@ workflow:
 
             请按以下顺序执行：
 
-            第一步（优先）：从 spec-test-analyzer 知识库召回相关spec规则 - 搜索
-            /home/tianwenkai/skill/CTS_Skill/spec-test-analyzer/.agent 目录下的索引文件
+            第一步（优先）：从 spec-test-analyzer 技能知识库召回相关spec规则 - 搜索该技能自带的 .agent 索引
+            - 如果 .agent 不存在，按 spec-test-analyzer 技能说明构建索引，或回退读取该技能 docs/ 下的规范文档
             - 根据失败用例涉及的语言特性关键词召回相关spec章节和规则 - 评估召回结果是否完整、清晰
 
             第二步（补充）：如果召回不全或不够清晰，直接阅读原始spec文档 - 读取
-            runtime_core/static_core/plugins/ets/doc/spec/ 中的相关规范文件 -
+            ARK_ROOT_DIR 指向的项目根目录下 runtime_core/static_core/plugins/ets/doc/spec/ 中的相关规范文件 -
             补充遗漏的spec章节和规则细节 - 确保spec规则召回的完整性和准确性
 
             第三步：差异分析 1. 分析spec期望行为与编译器实际行为的差异 2. 判定责任模块（parser/checker/lowering）
@@ -50,8 +50,8 @@ workflow:
 
 
             1. Spec规则召回是否完整？
-               - 是否已充分搜索 /home/tianwenkai/skill/CTS_Skill/spec-test-analyzer/.agent 中的索引？
-               - 如有遗漏，是否已回退阅读 runtime_core/static_core/plugins/ets/doc/spec/ 原始文档？
+               - 是否已充分搜索 spec-test-analyzer 技能自带 .agent 索引？
+               - 如有遗漏，是否已回退阅读 spec-test-analyzer/docs/ 或 ARK_ROOT_DIR 下 runtime_core/static_core/plugins/ets/doc/spec/ 原始文档？
             2. 行为差异分析是否准确？编译器实际行为是否描述正确？
 
             3. 责任模块判定是否合理？是否有其他模块也可能涉及？
@@ -108,19 +108,20 @@ workflow:
           task: >
             基于Spec分析报告，在项目目录中进行CTS用例修复。
 
-            请执行以下步骤： 1. 阅读Spec分析报告，确认责任模块和修复方向 2. 复现问题：使用 cts-dev 技能中的测试脚本运行失败用例
-               - 脚本路径：/home/tianwenkai/.aceharness/.opencode/skills/cts-dev/scripts/
-               - 例如：cts2.sh --test-file <用例路径>
-            3. 结合Spec报告定位根因，映射到具体代码位置：
+            请执行以下步骤： 1. 阅读Spec分析报告，确认责任模块和修复方向 2. 确认项目根目录来自运行上下文或用户输入，或设置 ARK_ROOT_DIR 指向包含 runtime_core/ 和 ets_frontend/ 的目录
+            3. 复现问题：使用 cts-dev 技能中的测试脚本运行失败用例
+               - 脚本路径：cts-dev/scripts/
+               - 例如：cts-dev/scripts/cts2.sh --test-file <用例路径>
+            4. 结合Spec报告定位根因，映射到具体代码位置：
                - Parser差异 → ets_frontend/ets2panda/parser/ETSParser*.cpp
                - Checker差异 → ets_frontend/ets2panda/checker/ETSAnalyzer*.cpp 和 checker/ets/*.cpp
                - Lowering差异 → ets_frontend/ets2panda/compiler/lowering/ets/*Lowering.cpp
-            4. 确定修改范围，明确需要修改的文件和函数 5. 修改代码，严格遵循代码规范：
+            5. 确定修改范围，明确需要修改的文件和函数 6. 修改代码，严格遵循代码规范：
                - 函数圈复杂度≤10，行数≤49行
                - 不使用魔术数字/字符串
                - Checker不改AST形状，Parser仅做语法解析，Lowering新建节点后必须re-bind/re-check
                - 使用TypeRelation API进行类型逻辑判断
-            6. 增量编译：build_diff.sh 7. 确认目标用例通过：反复修改+编译+测试
+            7. 增量编译：cts-dev/scripts/build_diff.sh 8. 确认目标用例通过：反复修改+编译+测试
 
             注意： - 如果因为本次修改，导致执行CTS用例失败，在十分确定修改是正确的前提下，可以直接修改CTS用例的结果，但必须在代码修改报告中详细说明理由和修改内容 - 其他任何情况下都不允许修改CTS用例
 
@@ -182,14 +183,14 @@ workflow:
           task: >
             执行定向回归验证，按顺序确保每步通过后才继续：
 
-            脚本路径：/home/tianwenkai/.aceharness/.opencode/skills/cts-dev/scripts/
+            脚本路径：cts-dev/scripts/。执行前确认项目根目录来自运行上下文或 ARK_ROOT_DIR。
 
             1. 目标CTS子类测试：
-               cts2.sh --filter "*<目标子类>*"
+               cts-dev/scripts/cts2.sh --filter "*<目标子类>*"
             2. ets-runtime测试（约8分钟）：
-               runtime.sh
+               cts-dev/scripts/runtime.sh
             3. astchecker测试（约10分钟）：
-               astcheck.sh
+               cts-dev/scripts/astcheck.sh
 
             注意： - 回归前需删除 ets-cts-7.0-ignored.txt 和 ets-cts-ignored.txt
             中对应Issue编号的屏蔽记录 - 每步通过后才继续下一步 - 如有失败需返回修复阶段
@@ -250,16 +251,16 @@ workflow:
           task: >
             执行全量回归测试，按顺序执行：
 
-            脚本路径：/home/tianwenkai/.aceharness/.opencode/skills/cts-dev/scripts/
+            脚本路径：cts-dev/scripts/。执行前确认项目根目录来自运行上下文或 ARK_ROOT_DIR。
 
             1. CTS全量测试（约136分钟）：
-               cts2.sh
+               cts-dev/scripts/cts2.sh
             2. ets-func-tests（约30分钟）：
                在 runtime_core/static_core 下执行：
                tests/tests-u-runner/runner.sh --ets-func-tests --show-progress --build-dir out --processes=all
 
             注意： - 与基线对比确认无新增失败 - 每步通过后才继续
-                  - 优先都使用cts-dev/scripts中的脚本进行测试，确保环境一致 - 如有失败需返回修复阶段
+                  - 优先都使用 cts-dev/scripts/ 中的脚本进行测试，确保环境一致 - 如有失败需返回修复阶段
 
             输出：全量回归测试报告
           skills:
@@ -320,9 +321,9 @@ workflow:
           role: defender
           task: |
             完成代码格式检查和代码修改报告生成。
-            脚本路径：/home/tianwenkai/.aceharness/.opencode/skills/cts-dev/scripts/
+            脚本路径：cts-dev/scripts/。执行前确认项目根目录来自运行上下文或 ARK_ROOT_DIR。
             1. 执行代码格式检查：
-               format.sh
+               cts-dev/scripts/format.sh
             2. 根据检查结果修正代码格式，反复执行直到通过 3. 生成代码修改报告，包含：
                - 问题根因分析（问题描述、根因定位、详细分析）
                - 架构设计（修改方案、修改文件列表、模块影响分析）
@@ -403,7 +404,8 @@ workflow:
 
                       ### 修改方案/Scheme
                       ```
-            输出：issue链接 + PR链接的md格式文本
+            输出 JSON：
+            {"verdict":"pass|fail","next_state":"完成|代码上库","issue_url":"<issue链接>","pr_urls":["<ets_frontend PR链接>","<runtime_core PR链接>"],"summary":"提交结果摘要"}
           skills:
             - gitcode-cli
       transitions:
@@ -430,10 +432,10 @@ workflow:
             {"verdict":"pass","next_state":"完成","summary":"CTS修复流程全部完成"}
       transitions: []
 context:
-  projectRoot: /home/tianwenkai/cts3
+  projectRoot: ${ARK_ROOT_DIR}
   workspaceMode: in-place
   requirements: >
-    ArkTS前端编译器(ets2panda)CTS测试用例修复。 基于 spec-test-analyzer
+    ArkTS前端编译器(ets2panda)CTS测试用例修复。项目根目录必须由运行上下文提供，或通过 ARK_ROOT_DIR 指向包含 runtime_core/ 和 ets_frontend/ 的目录。 基于 spec-test-analyzer
     输出的CTS缺陷Spec分析报告，进行问题定位、代码修复和回归验证。 验收标准： 1. 修复所有指定的失败CTS用例 2.
     parser/astchecker/recheck/ets-runtime测试套无新增失败 3. CTS全量测试无回归 4.
     编译构建无error无warning 5. 代码格式检查通过 6. 代码符合规范（圈复杂度≤10、函数≤49行、缩进≤5层） 7.

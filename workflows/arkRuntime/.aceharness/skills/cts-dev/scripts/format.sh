@@ -7,6 +7,7 @@ init_common
 detect_build_dir "$STATIC_CORE"
 
 REPO_TO_CHECK=""
+GIT_BIN="${GIT_BIN:-$(command -v /usr/bin/git || command -v git)}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -49,10 +50,14 @@ get_modified_files() {
     pushd "$repo_dir" > /dev/null
     if [[ -n "$use_log" ]]; then
         local latest_commit
-        latest_commit=$(git log -1 --pretty=format:"%H")
-        git diff-tree --no-commit-id --name-only -r "$latest_commit"
+        latest_commit=$("$GIT_BIN" log -1 --pretty=format:"%H")
+        "$GIT_BIN" diff-tree --no-commit-id --name-only -r -z --diff-filter=ACMR "$latest_commit"
     else
-        git status --porcelain | awk '/^[ M|A]/ {print $2}'
+        {
+            "$GIT_BIN" diff --name-only --diff-filter=ACMR -z
+            "$GIT_BIN" diff --cached --name-only --diff-filter=ACMR -z
+            "$GIT_BIN" ls-files --others --exclude-standard -z
+        }
     fi
     popd > /dev/null
 }
@@ -71,21 +76,16 @@ check_repo() {
 
     echo "=== Checking format for $repo_name ==="
 
-    local modified_files
-    modified_files=$(get_modified_files "$repo_dir" "${USE_LOG:-}")
-
-    if [[ -z "$modified_files" ]]; then
-        echo "No modified .cpp/.h files found in $repo_name."
-        return
-    fi
-
     local cpp_files=()
-    while IFS= read -r file; do
+    while IFS= read -r -d '' file; do
         if [[ "$file" == *".cpp" || "$file" == *".h" ]]; then
+            if [[ ! -f "$repo_dir/$file" ]]; then
+                continue
+            fi
             cpp_files+=("$file")
             all_cpp_files+=("$repo_dir/$file")
         fi
-    done <<< "$modified_files"
+    done < <(get_modified_files "$repo_dir" "${USE_LOG:-}" | sort -zu)
 
     if [[ ${#cpp_files[@]} -eq 0 ]]; then
         echo "No modified .cpp/.h files found in $repo_name."

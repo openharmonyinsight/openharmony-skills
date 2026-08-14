@@ -1,6 +1,14 @@
 ---
 name: cts-dev
 description: ArkTS前端编译器(ets2panda)CTS测试修复开发助手。用于CTS测试用例未通过时的缺陷定位、代码修复、测试验证全流程。适用场景：(1)CTS测试用例失败需要定位根因并修复 (2)前端编译器parser/checker/lowering模块的功能开发与缺陷修复 (3)编译构建、测试运行、回归验证 (4)代码评审与重构 (5)代码修改报告生成。涉及仓库为ets_frontend和runtime_core，编译器代码路径为ets_frontend/ets2panda。本技能是spec-test-analyzer的下游技能，接收spec分析报告后执行修复。当处理CTS用例失败时，必须先使用spec-test-analyzer技能生成spec分析报告，再使用本技能进行修复。
+metadata:
+  author: openharmony
+  scope: domain
+  stage: development
+  domain: compiler
+  capability: cts-development
+  version: 0.1.0
+  status: draft
 ---
 
 # CTS开发修复技能
@@ -61,7 +69,7 @@ cmake -B cmake-build-debug -DPANDA_ENABLE_ADDRESS_SANITIZER=true -DCMAKE_BUILD_T
 | `runtime_core/static_core/plugins/ets/tests/ets-templates/` | CTS测试用例模板 |
 | `runtime_core/static_core/plugins/ets/doc/spec/` | ArkTS语言规范文档 |
 | `runtime_core/static_core/tests/tests-u-runner/` | 测试运行器 |
-| `/tmp/ets` | 渲染后的CTS用例代码目录（WSL环境） |
+| `mktemp` 生成的临时目录 | 当前运行渲染后的CTS用例代码目录（由 `runtime.sh` 自动创建和清理） |
 
 ## 开发流程
 
@@ -364,7 +372,7 @@ Signed-off-by: <姓名> <邮箱>
 
 ## 参考资源
 
-- **前置技能**: `spec_md_agentized/SKILL.md` — Spec规则召回和分析，CTS修复的必经前置步骤
+- **前置技能**: [`../spec-test-analyzer/SKILL.md`](../spec-test-analyzer/SKILL.md) — Spec规则召回和分析，CTS修复的必经前置步骤
 - **模块架构**: `reference/architecture.md` — checker/parser/lowering三大模块的详细架构知识
 - **测试脚本**: `scripts/` — 所有可执行的测试和构建脚本（绝对路径，自动检测项目根目录）
 - **共享函数**: `scripts/common.sh` — 路径自动检测逻辑（`detect_root_dir`、`detect_build_dir`）
