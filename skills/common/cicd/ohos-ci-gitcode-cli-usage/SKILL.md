@@ -64,6 +64,10 @@ Load references only when needed:
 | Issue or PR operations: auth, repository flag, reviewer, tester, label, comment, diff, merge, and troubleshooting | Read `references/common-issue-pr-commands.md` only. Do NOT load `extended-commands.md` or `gitcode-pr-workflow.md`. |
 | Low-frequency operations: release, repository configuration, search, user, branch, commit, file, collaborator, milestone, webhook, tag, or organization | Read `references/extended-commands.md` only. Do NOT load `gitcode-pr-workflow.md`. |
 | Full local-to-upstream PR automation: commit local changes, push a fork branch, create required Issue, and open upstream PR | Read `references/gitcode-pr-workflow.md`; also read `references/common-issue-pr-commands.md` only if command syntax details are needed. |
+| Repo discovery (search by partial name, explore user/org repos) | Read `references/extended-commands.md` → "Repo Discovery Tips" section. Use `--json` + Python filtering — `oh-gc search repos` often fails. |
+| Adding/removing repo collaborators, checking permission levels | Read `references/extended-commands.md` → "Collaborators" section. **Critical: `--permission admin` grants Maintainer(40), NOT Owner(50)** — there is no oh-gc flag reaching Owner level; `collaborator list` also mislabels non-Owners as `none`. See the Collaborators pitfalls. |
+| Repo directory hygiene / merge planning (numbered report repos, e.g. ai-code-harness-7.0) | Read `references/repo-hygiene-merge-planning.md`. |
+| Skills-repo relocation / misplaced-skill fixes (openharmony-skills structure moves, website yaml registration, frontmatter YAML block scalar) | Read `references/skill-relocation-workflow.md`. |
 
 ## Default Workflow
 
@@ -117,6 +121,16 @@ NEVER report a PR URL with `/pulls/`; GitCode uses singular `/pull/`.
 
 NEVER merge, close, delete, archive, transfer, force approve, force test, or reset all assignees unless the user explicitly authorized that exact target and operation.
 
+## PR Creation & Merge Workflow Pitfalls
+
+**Pitfall: `--body` with backticks/`$()` gets shell-expanded.** When creating or updating a PR with a markdown body containing backtick-wrapped paths or `$(...)`, the shell interprets them BEFORE `oh-gc` sees them — backtick paths become commands (e.g. `skills/foo/` → "No such file or directory") and the body is silently truncated. Fix: write the body to a temp file with `write_file`, then pass `--body "$(cat /tmp/body.md)"`. The same applies to `oh-gc pr update N --body` when correcting a mangled body. Verified on PR 326: inline body lost all backtick paths; temp-file body preserved them.
+
+**Pitfall: `git add -A` / `git add skills/` sweeps untracked `__pycache__/*.pyc` into the commit.** In repos with untracked build artifacts (e.g. `skills/review-gitcode-pr/scripts/__pycache__/`), a broad `git add` commits them. This happened twice in one session (PR 326). Fix: after staging, check `git show --stat HEAD | grep -c pycache` == 0; if a commit already contains them, `git rm --cached` + `git commit --amend` (or `git reset --soft` + re-commit) before pushing. Prefer `git add <specific files>` over `git add -A`.
+
+**Pitfall: `oh-gc pr diff` has no `--stat` flag.** `oh-gc pr diff N --stat` fails with `Nonexistent flag: --stat` (verified on 0.8.2). Only `--json`, `--name-only`, `--color`, `--token`, `--repo` exist. For per-file change stats, fetch the head locally (`git fetch <fork-url> <branch>:prN-head`) and run `git diff <base>..prN-head --stat` / `--numstat`.
+
+**Merge approval sequence (GitCode):** `oh-gc pr review N` (marks approved) → `oh-gc pr test N` (marks test passed) → `oh-gc pr merge N`. User's "标记，检视通过，测试通过 并合入" maps 1:1 to this sequence. Verify after merge: `oh-gc pr view N --json` → `state: merged`.
+
 ## Error Handling
 
 Common errors:
@@ -131,3 +145,5 @@ Common errors:
 | `Rate limit exceeded` | Too many API calls | Wait and retry |
 | `API error 405` | CLI/API mismatch | Confirm `oh-gc` version and update if needed |
 | `Can not find the branch` | Cross-repo `--head` format is wrong | Use `owner:branch` |
+
+**Before documenting a workaround for unexpected CLI behavior**, check for a newer CLI version first: `npm view @oh-gc/cli version`, upgrade with `npm install -g @oh-gc/cli@latest`, then re-test. Record the versions the workaround was verified on (e.g. `verified on 0.7.4 and 0.8.2`). Example: `oh-gc org list` returns `No organizations found (API endpoint may not be available)` on both 0.7.4 and 0.8.2 — the workaround `oh-gc user orgs <username>` is still required.

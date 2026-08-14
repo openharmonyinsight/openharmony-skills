@@ -35,6 +35,20 @@ Use for OpenHarmony C++ system-service code, especially:
 
 Do not use for application-layer feature review, non-OpenHarmony C++ code, or pure performance/style review.
 
+## PR Triage: Scanning Open PRs for Security Relevance
+
+Before doing a deep review on a specific PR, you may need to scan a repo's open PR list and identify which ones warrant security attention. Use the workflow in [`references/pr-triage-patterns.md`](references/pr-triage-patterns.md).
+
+Quick command to fetch and filter:
+
+```bash
+oh-gc pr list --repo <owner>/<repo> --state open --limit 50 --json | python3 -c "
+# Filter by date and state, then classify by security-relevant title/area keywords
+"
+```
+
+Risk classification uses title keywords, changed file paths, and diff size signals documented in the reference. Always present the triage results to the user for prioritization before starting deep reviews.
+
 ## Review Route
 
 1. **Map entry points.** Start at `OnRemoteRequest`, Stub dispatchers, exported service methods, listener/callback registration, and network-facing parsers.
