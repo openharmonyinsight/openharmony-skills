@@ -239,22 +239,37 @@
     },
     {
       "id": 15,
-      "name": "odk-handoff-contract",
-      "prompt": "04-feature.md 和 proposals/05-proposal-arkweb-drag-preview.md 已经确认，用户要求进入 ODK 交付阶段。请说明 requirements proposal 如何交接给 ODK。",
-      "expected_output": "requirements 阶段保留 proposals/05-proposal-<slug>.md 索引产物；进入 ODK 时必须建立 change-id，并转换或复制到 .codespec/changes/<change-id>/proposal.md，且包含 Agent Scope Guard。rr_id 来源固定为 01→04→proposal，不从 IR/SR/handoff 推断。",
+      "name": "requirements-odk-boundary",
+      "prompt": "04-feature.md 和 proposals/05-proposal-arkweb-drag-preview.md 已经确认，用户询问 requirements proposal 与 ODK 交付 proposal 的关系。请说明边界。",
+      "expected_output": "requirements 阶段保留 proposals/05-proposal-<slug>.md 作为需求评审输入，不生成 .codespec 目录，不推断 ODK change-id，也不要求补充 ODK 模板专有章节。rr_id 来源固定为 01→04→proposal，不从 IR/SR/handoff 推断。ODK 交付 proposal 由 ODK 自身流程处理。",
       "assertions": [
         {
-          "text": ".codespec/changes/<change-id>/proposal.md",
+          "text": "proposals/05-proposal-<slug>.md",
+          "type": "contains"
+        },
+        {
+          "text": "不生成 .codespec 目录",
+          "type": "contains"
+        },
+        {
+          "text": "不推断 ODK change-id",
+          "type": "contains"
+        },
+        {
+          "text": "ODK 自身流程",
           "type": "contains"
         },
         {
           "text": "Agent Scope Guard",
-          "type": "contains"
+          "type": "not_contains"
         },
         {
           "text": "IR",
           "type": "not_contains",
-          "tokens": ["从 IR 继承", "从已废弃 IR 继承"]
+          "tokens": [
+            "从 IR 继承",
+            "从已废弃 IR 继承"
+          ]
         }
       ]
     },
@@ -338,6 +353,110 @@
         },
         {
           "text": "Not Ready",
+          "type": "contains"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "name": "proposal-check-subagent-required",
+      "prompt": "01-03已就绪，用户确认拆分为2个proposal。请生成04-feature.md和proposal文件。",
+      "expected_output": "生成每个 proposals/05-proposal-<slug>.md 后，必须使用 reference/proposal-check-matrix.md 创建隔离 proposal 审查 subagent。subagent 只输出 proposals/proposal-check-<slug>.md 和不超过15行摘要，不直接修改 proposal。原 agent 读取审查结果并回修可自动修复的 FAIL 后，再向用户展示拆分方案和 proposal-check 摘要。",
+      "assertions": [
+        {
+          "text": "reference/proposal-check-matrix.md",
+          "type": "contains"
+        },
+        {
+          "text": "proposal-check-",
+          "type": "contains"
+        },
+        {
+          "text": "subagent",
+          "type": "contains"
+        },
+        {
+          "text": "不直接修改 proposal",
+          "type": "contains"
+        },
+        {
+          "text": "原 agent",
+          "type": "contains"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "name": "proposal-template-1plus8-dfx-dependencies",
+      "prompt": "请基于 proposal 模板生成一个单 proposal，当前 proposal 外部依赖 arkui_ace_engine 仓和安全领域评审。",
+      "expected_output": "proposal 必须包含独立的 1+8设备差异规格 章节和 DFX设计 章节；1+8设备差异规格章节下只放一张表，表格仅包含设备/差异项、是否存在差异、差异说明三列，且是否存在差异默认留空，由生成时填写。表格包含手机(含折叠屏)、Pad、PC、穿戴、智慧屏、座舱、其他、功能差异（非品类划分）8类设备/差异项。DFX设计中包含定位定界维度。外部依赖（可选）章节需按子系统、仓库、模块/路径、依赖类型填写 arkui_ace_engine 和安全领域评审依赖。N/A 8维仍在不涉及项确认章节中填写是否涉及和依据。",
+      "assertions": [
+        {
+          "text": "1+8设备差异规格",
+          "type": "contains"
+        },
+        {
+          "text": "DFX设计",
+          "type": "contains"
+        },
+        {
+          "text": "外部依赖",
+          "type": "contains"
+        },
+        {
+          "text": "arkui_ace_engine",
+          "type": "contains"
+        },
+        {
+          "text": "安全领域",
+          "type": "contains"
+        },
+        {
+          "text": "功能差异（非品类划分）",
+          "type": "contains"
+        },
+        {
+          "text": "依赖类型",
+          "type": "contains"
+        },
+        {
+          "text": "定位定界",
+          "type": "contains"
+        },
+        {
+          "text": "设备/差异项",
+          "type": "contains"
+        },
+        {
+          "text": "是否存在差异",
+          "type": "contains"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "name": "proposal-check-matrix-fail-warn-rules",
+      "prompt": "proposal 中 1+8设备差异规格章节缺失，N/A 8维中性能行涉及？为空，兼容性行写“否”但依据包含具体兼容策略。请执行 proposal 审查。",
+      "expected_output": "审查结果按 proposal-check-matrix 输出总览+明细表。1+8设备差异规格独立章节缺失判 FAIL；性能 N/A 行涉及？未填判 FAIL；兼容性行涉及？=否但依据含具体机制判 FAIL；其余 AI 无法判定的 N/A 行标 WARN 并在证据列追加“待确认是否准确”。待SE澄清与TSE复核列保持空白。",
+      "assertions": [
+        {
+          "text": "FAIL",
+          "type": "contains"
+        },
+        {
+          "text": "WARN",
+          "type": "contains"
+        },
+        {
+          "text": "待确认是否准确",
+          "type": "contains"
+        },
+        {
+          "text": "待SE澄清",
+          "type": "contains"
+        },
+        {
+          "text": "TSE复核",
           "type": "contains"
         }
       ]
