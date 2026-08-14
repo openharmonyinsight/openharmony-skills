@@ -1,0 +1,7941 @@
+# Expressions {#Expressions}
+
+This Chapter describes the meanings of expressions and the rules for the
+evaluation of expressions, except the expressions described as experimental (see
+`Lambda Expressions with Receiver`{.interpreted-text role="ref"}).
+
+::: {.index}
+evaluation
+expression
+lambda expression with receiver
+:::
+
+The syntax of *expression* is presented below:
+
+``` {.abnf}
+expression:
+    primaryExpression
+    | instanceOfExpression
+    | castExpression
+    | typeOfExpression
+    | nullishCoalescingExpression
+    | spreadExpression
+    | unaryExpression
+    | binaryExpression
+    | assignmentExpression
+    | ternaryConditionalExpression
+    | stringInterpolation
+    | lambdaExpression
+    | lambdaExpressionWithReceiver
+    | awaitExpression
+    ;
+primaryExpression:
+    literal
+    | namedReference
+    | arrayLiteral
+    | objectLiteral
+    | recordLiteral
+    | thisExpression
+    | parenthesizedExpression
+    | methodCallExpression
+    | fieldAccessExpression
+    | indexingExpression
+    | functionCallExpression
+    | newExpression
+    | ensureNotNullishExpression
+    ;
+binaryExpression:
+    multiplicativeExpression
+    | exponentiationExpression
+    | additiveExpression
+    | shiftExpression
+    | relationalExpression
+    | equalityExpression
+    | bitwiseAndLogicalExpression
+    | conditionalAndExpression
+    | conditionalOrExpression
+    ;
+```
+
+::: {.index}
+expression
+coroutine
+lambda expression with receiver
+syntax
+:::
+
+The syntax below introduces several productions to be used by other
+expression syntax rules:
+
+``` {.abnf}
+objectReference:
+    typeReference
+    | 'super'
+    | primaryExpression
+    ;
+```
+
+`objectReference` refers to one of the following three options:
+
+-   Class that is to handle static members;
+-   `super` that is to access constructors declared in the
+    superclass, or the overridden method version of the superclass;
+-   *primaryExpression* that is to refer to a variable
+    after evaluation, unless the manner of the
+    evaluation is altered by the chaining operator `'?.'` (see
+    `Chaining Operator`{.interpreted-text role="ref"}).
+
+If the form of *primaryExpression* is *thisExpression*, then the pattern
+`this?.` is handled as a `compile-time error`{.interpreted-text role="index"}.
+
+If the form of *primaryExpression* is *super*, then the pattern `super?.`
+is handled as a `compile-time error`{.interpreted-text role="index"}.
+
+::: {.index}
+syntax
+expression
+static member
+class
+access constructor
+superclass
+method
+overriding
+variable
+evaluation
+chaining operator
+pattern
+super
+:::
+
+| 
+
+## Operators {#Operators}
+
+An expression is a composition of an operator with its operands. Parentheses
+are used to change the order of calculation.
+
+*Operators*, or *operator signs*, are tokens that denote various actions, i.e.,
+addition, subtraction, etc. (see `Operators and Punctuators`{.interpreted-text role="ref"}) to be
+performed on the values of *operands*. Depending on the number of operands,
+operators can be as follows:
+
+-   *Unary operator* has a single operand,
+-   *Binary operator* has two operands, and
+-   *Ternary operator* has three operands.
+
+Some operators can be both unary and binary.
+
+Each operator has *precedence* and *associativity* which are significant if
+an expression has several operators:
+
+-   *Precedence* defines operator priority, i.e., the order of evaluation of
+    operators with different precedence.
+-   *Associativity* defines the direction of evaluation (left-to-right or
+    right-to-left) if several operators have the same precedence.
+
+For example, the sum is calculated first due to the higher precedence of
+`'+'`, and then assignments are processed from right to left due to the right
+associativity of `'='` in the following chunk of code:
+
+``` {.typescript}
+let a: number = 1, b: number
+b = a = a+10
+console.log(b) // prints '11'
+```
+
+::: {.note}
+::: {.title}
+Note
+:::
+
+The parentheses `'( )'` are the *grouping operator* that has the highest
+precedence and allows changing the order of expression evaluation.
+:::
+
+The complete list of operators indicating their precedence and associativity
+is provided in `Operator Precedence`{.interpreted-text role="ref"}.
+
+| 
+
+### Operator Precedence {#Operator Precedence}
+
+The table below summarizes the entire information on the precedence and
+associativity of operators. Each section on a particular operator
+also contains detailed information.
+
+::: {.index}
+precedence
+operator precedence
+operator
+associativity
+:::
+
+  ---------------------------------------------------------------------------------------------------------------------------------------------------
+  Operator                                                            Precedence                                                      Associativity
+  ------------------------------------------------------------------- --------------------------------------------------------------- ---------------
+  Grouping                                                            `'()'`                                                          n/a
+
+  Member access and chaining                                          `'.'`, `'?.'`                                                   left-to-right
+
+  Access and call                                                     `'[]'`, `'.'`, `'()'`, `new`                                    n/a
+
+  Postfix increment and decrement                                     `'++'`, `'--'`                                                  n/a
+
+  Postfix `'!'` (ensure-not-nullish operator)                         `'!'`                                                           n/a
+
+  Prefix increment and decrement, unary plus and minus,               `'++'`, `'--'`, `'+'`, `'-'`, `'!'`, `'~'`, `typeof`, `await`   n/a
+  Prefix `'!'` (logical NOT), bitwise complement, `typeof`, `await`                                                                   
+
+  Exponentiation                                                      `'**'`                                                          right-to-left
+
+  Multiplicative                                                      `'*'`, `'/'`, `'%'`                                             left-to-right
+
+  Additive                                                            `'+'`, `'-'`                                                    left-to-right
+
+  Cast                                                                `as`                                                            left-to-right
+
+  Shift                                                               `'<<'`, `'>>'`, `'>>>'`                                         left-to-right
+
+  Relational                                                          `'< >'`, `'<='`, `'>='`, `instanceof`                           left-to-right
+
+  Equality                                                            `'=='`, `'!='`                                                  left-to-right
+
+  Bitwise AND                                                         `'&'`                                                           left-to-right
+
+  Bitwise exclusive OR                                                `'^'`                                                           left-to-right
+
+  Bitwise inclusive OR                                                `'|'`                                                           left-to-right
+
+  Logical AND                                                         `'&&'`                                                          left-to-right
+
+  Logical OR                                                          `'||'`                                                          left-to-right
+
+  Null-coalescing                                                     `'??'`                                                          left-to-right
+
+  Ternary                                                             `condition?whenTrue:whenFalse`                                  right-to-left
+
+  Assignment                                                          `'='`, `'+='`, `'-='`, `'%='`, `'*='`, `'/='`, `'&='`,          right-to-left
+                                                                      `'^='`, `'|='`, `'<<='`, `'>>='`, `'>>>='`                      
+  ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+::: {.index}
+precedence
+bitwise operator
+null-coalescing operator
+assignment
+shift operator
+cast operator
+equality operator
+postfix operator
+increment operator
+decrement operator
+prefix operator
+logical operator
+relational operator
+exponentiation
+member access
+chaining
+access
+call
+ternary operator
+bitwise operator
+unary operator
+typeof operator
+await operator
+:::
+
+| 
+
+## Evaluation of Expressions {#Evaluation of Expressions}
+
+The result of a program expression *evaluation* denotes the following:
+
+-   Variable (the term *variable* is used here in the general, non-terminological
+    sense to denote a modifiable lvalue in the left-hand side of an assignment);
+    or
+-   Value (results found elsewhere).
+
+::: {.index}
+evaluation
+expression
+variable
+lvalue
+value
+assignment
+:::
+
+A variable or a value are equally considered the *value of the expression*
+if such a value is required for further evaluation.
+
+The type of an expression is determined at compile time (see
+`Type of Expression`{.interpreted-text role="ref"}).
+
+::: {.note}
+::: {.title}
+Note
+:::
+
+An expression is a sequence of operators and
+operands that specifies a computation. The
+evaluation of an expression can produce side
+effects. Any expression can be a subexpression
+of a more complex expression. E.g., the function
+call in [f()\*3]{.title-ref} is in turn a subexpression of a
+multiplication expression.
+:::
+
+*Constant expressions* (see `Constant Expressions`{.interpreted-text role="ref"}) are the expressions
+with values that can be determined at compile time.
+
+::: {.index}
+variable
+value
+evaluation
+expression
+type
+assignment
+increment operator
+decrement operator
+method call
+function call
+side effect
+constant expression
+compile time
+:::
+
+| 
+
+### Type of Expression {#Type of Expression}
+
+Every expression in the programming language has a type. The type of an
+expression is determined at compile time.
+
+In most contexts, an expression must be *compatible* with the type expected in
+a context. This type is called *target type*. If no target type is available
+in a context, then the expression is called a *standalone expression*:
+
+``` {.typescript}
+let a = expr // no target type is available
+
+function foo() {
+    expr // no target type is available
+}
+```
+
+Otherwise, the expression is *non-standalone*:
+
+::: {.index}
+inferred type
+expression
+evaluation
+compile time
+compatibility
+type inference
+compatible expression
+standalone expression
+non-standalone expression
+context
+target type
+:::
+
+``` {.typescript}
+let a: number = expr // target type of 'expr' is number
+
+function foo(s: string) {}
+foo(expr) // target type of 'expr' is string
+```
+
+In some cases, the type of an expression cannot be inferred (see
+`Type Inference`{.interpreted-text role="ref"}) from the expression itself (see
+`Object Literal`{.interpreted-text role="ref"} as an example). If such an expression is used as a
+*standalone expression*, then a `compile-time error`{.interpreted-text role="index"} occurs:
+
+``` {.typescript}
+class P { x: number, y: number }
+
+let x = { x: 10, y: 10 } // standalone object literal - compile time error
+let y: P = { x: 10, y: 10 } // OK, type of object literal is inferred
+```
+
+The evaluation of an expression type requires completing the following steps:
+
+1.  Collect information for type inference (type annotation,
+    generic constraints, etc);
+2.  Perform `Type Inference`{.interpreted-text role="ref"};
+3.  If the expression type is not yet inferred at a previous step, and the
+    expression is a literal in the general sense, including `Array Literal`{.interpreted-text role="ref"},
+    then an attempt is made to evaluate the type from the expression itself.
+
+::: {.index}
+expression
+standalone expression
+expression type
+context
+evaluation
+array literal
+inferred type
+string
+type annotation
+generic
+constraint
+type inference
+object
+literal
+:::
+
+A `compile-time error`{.interpreted-text role="index"} occurs if none of these steps produces an
+appropriate expression type.
+
+If the expression type is `readonly`, then the target type must
+also be `readonly`. Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs:
+
+``` {.typescript}
+let readonly_array: readonly number[] = [1, 2, 3]
+
+foo1(readonly_array) // OK
+foo2(readonly_array) // Compile-time error
+
+function foo1 (p: readonly number[]) {}
+function foo2 (p: number[]) {}
+
+let writable_array: number [] = [1, 2, 3]
+foo1 (writable_array) // OK, as always safe
+```
+
+::: {.index}
+expression
+expression type
+readonly
+target type
+type
+:::
+
+| 
+
+### Normal and Abrupt Completion of Expression Evaluation {#Normal and Abrupt Completion of Expression Evaluation}
+
+The evaluation of an expression requires several
+steps of computation. An expression is said to
+be *evaluated normally* if all necessary steps of
+the evaluation complete with no error thrown.
+If an error thrown at any step stops the evaluation
+of an expression, then the situation is defined as an
+*abrupt completion*. The cause of an
+*abrupt completion* is explained in the value
+attached to the error object.
+
+::: {.index}
+normal completion
+abrupt completion
+evaluation
+expression
+error
+error object
+value
+:::
+
+The evaluation of an expression can result in a
+`runtime error`{.interpreted-text role="index"} as a result of as follows:
+
+-   If the value of an array index expression is negative, or greater than, or
+    equal to the length of the array, then an *array indexing expression* (see
+    `Array Indexing Expression`{.interpreted-text role="ref"}) throws `RangeError`.
+-   If the type of a value being assigned to a fixed-size array element is not
+    a subtype of an array element type, then an `Assignment`{.interpreted-text role="ref"} throws
+    *ArrayStoreError*.
+-   If a `Cast Expression`{.interpreted-text role="ref"} conversion cannot be performed at runtime, then
+    it throws `ClassCastError`.
+-   If a right-hand expression has the zero value, then the integer division or
+    integer remainder (see `Division`{.interpreted-text role="ref"} and `Remainder`{.interpreted-text role="ref"}) operator throws
+    `ArithmeticError`.
+
+::: {.index}
+predefined operator
+evaluation
+expression
+operator evaluation
+expression evaluation
+operator
+runtime error
+array reference expression
+value
+array access expression
+error
+array indexing expression
+array
+fixed-size array
+subtype
+array length
+runtime
+cast expression
+integer division
+integer remainder
+operator
+remainder operator
+array element
+array element type
+assignment
+:::
+
+An error during the evaluation of an expression can be caused by a possible
+hard-to-predict and hard-to-handle linkage and virtual machine error.
+
+Abrupt completion of the evaluation of a subexpression results in the following:
+
+-   Immediate abrupt completion of an expression that contains the subexpression
+    (if the evaluation of the contained subexpression is required
+    for the evaluation of the entire expression); and
+-   Cancellation of all subsequent steps of the normal mode of evaluation.
+
+The terms *complete normally* and *complete abruptly* can also denote
+normal and abrupt completion of the execution of a statement (see
+`Normal and Abrupt Statement Execution`{.interpreted-text role="ref"}). A statement can complete
+abruptly for many reasons in addition to an error being thrown.
+
+::: {.index}
+normal completion
+abrupt completion
+execution
+statement
+virtual machine
+error
+expression
+subexpression
+evaluation
+linkage
+:::
+
+| 
+
+### Order of Expression Evaluation {#Order of Expression Evaluation}
+
+Subexpressions of an expression are evaluated
+from left to right as represented in the examples
+below:
+
+-   Any right-hand-side expression of a
+    binary operator is evaluated only after
+    the left-hand-side expression is fully
+    evaluated:
+
+    ``` {.typescript}
+    function arg(s: string): int { console.log(s); return 1; }
+
+    arg("left") +  arg("right")
+    // Prints:
+    //    left
+    //    right
+    ```
+
+-   The *condition* of a ternary operator is evaluated first. Then,
+    either the subexpression *whenTrue* or the subexpression
+    *whenFalse* is evaluated depending on the *condition* value:
+
+    ``` {.typescript}
+    function arg(s: string): int { console.log(s); return 1; }
+
+    arg("condition True") ? arg("left 1") :  arg("right 1")
+    arg("condition False")*0 ? arg("left 2") :  arg("right 2")
+    // Prints:
+    //    condition True
+    //    left 1
+    //    condition False
+    //    right 2
+    ```
+
+-   Operands of `Conditional-And Expression`{.interpreted-text role="ref"} and
+    `Conditional-Or Expression`{.interpreted-text role="ref"} are evaluated from
+    left to right. Depending on the value of the left-hand-side
+    operands, the evaluation of the rightmost operand can
+    be skipped:
+
+    ``` {.typescript}
+    function arg(s: string): int { console.log(s); return 1; }
+
+    // Conditional And
+    arg("left And (true)") && arg("right And")
+    console.log("---")
+    arg("left And (false)")*0 && arg("right And")
+    console.log("---")
+
+    // Conditional Or
+    arg("left Or (true)") && arg("right Or")
+    console.log("---")
+    arg("left Or (false)")*0 && arg("right Or")
+    console.log("---")
+
+    // Print
+    //    left And (true)
+    //    right And
+    //    ---
+    //    left And (false)
+    //    ---
+    //    left Or (true)
+    //    ---
+    //    left Or (false)
+    //    right Or
+    ```
+
+-   Assignment operator behavior requires additional
+    clarification because the operator is right-associative.
+    An expression containing two assignments is
+    represented in the following example:
+
+    ``` {.typescript}
+    class A {
+       constructor(s:string) { console.log(s); this.tag = s; }
+       tag: string
+    }
+    function f(s: string) { return new A(s); }
+
+    console.log( f("left").tag = f("middle").tag = f("right").tag )
+    // print
+    //    left
+    //    middle
+    //    right
+    //    right
+    ```
+
+    The following evaluation steps are performed in the example above:
+
+    -   All three subexpressions (left-hand-side, middle, and
+        right-hand-side) are evaluated from left to right. The
+        evaluation of left-hand-side and middle subexpressions
+        results in *lhsExpression*.
+    -   After that, two assignments are performed
+        from right to left due to right associativity of
+        the assignment operator. The value of the
+        right-hand-side subexpression is assigned
+        to the middle *lhsExpression*, and then the
+        result of the middle expression is assigned
+        to the left *lhsExpression*.
+
+-   The programming language follows the order of evaluation as indicated
+    explicitly by parentheses, and implicitly by the precedence of operators.
+    This rule particularly applies for infinity and `NaN` values of
+    floating-point calculations.
+    considers integer addition and multiplication as provably associative.
+    However, floating-point calculations must not be naively reordered because
+    they are unlikely to be computationally associative (even though they appear
+    mathematically associative).
+
+::: {.index}
+operand
+operator
+assignment operator
+abrupt completion
+normal completion
+evaluation
+conditional operator
+integer division
+integer remainder
+expression
+binary operator
+compound-assignment operator
+simple assignment operator
+variable
+value
+operator
+error
+precedence
+operator precedence
+infinity
+NaN value
+floating-point calculation
+integer addition
+integer multiplication
+associativity
+parentheses
+:::
+
+| 
+
+### Evaluation of Arguments {#Evaluation of Arguments}
+
+An evaluation of arguments always progresses from left to right up to the first
+error, or through the end of the expression; i.e., any argument expression is
+evaluated after the evaluation of each argument expression to its left
+completes normally (including comma-separated argument expressions that appear
+within parentheses in method calls, constructor calls, class instance creation
+expressions, or function call expressions).
+
+If the left-hand argument expression completes abruptly, then no part of the
+right-hand argument expression is evaluated.
+
+``` {.typescript}
+function arg(s: string): int { console.log(s); return 1; }
+function errArg(s: string, v: int): int { console.log(s); return 1/v }
+function test(a: int, b: int, c: int) {}
+
+test(arg("left"), arg("middle"), arg("right"))
+test(errArg("errArg (left)", 0), arg("middle"), arg("right"))
+// Prints:
+//    left
+//    middle
+//    right
+//    errArg (left)
+//    ... divideByZero runtime error reported
+```
+
+::: {.index}
+evaluation
+argument
+error
+expression
+normal completion
+comma-separated argument expression
+parentheses
+method call
+constructor call
+class instance
+creation expression
+instance
+function call
+abrupt completion
+:::
+
+| 
+
+### Evaluation of Other Expressions {#Evaluation of Other Expressions}
+
+These general rules cannot cover the order of evaluation of certain expressions
+when they from time to time cause exceptional conditions. The order of
+evaluation of the following expressions requires specific explanation:
+
+-   Class instance creation expressions (see `New Expressions`{.interpreted-text role="ref"});
+-   `Resizable Array Creation Expressions`{.interpreted-text role="ref"};
+-   `Indexing Expressions`{.interpreted-text role="ref"};
+-   Method call expressions (see `Method Call Expression`{.interpreted-text role="ref"});
+-   Assignments involving indexing (see `Assignment`{.interpreted-text role="ref"});
+-   `Lambda Expressions`{.interpreted-text role="ref"}.
+
+::: {.index}
+evaluation
+expression
+method call expression
+class instance
+method call
+array
+indexing expression
+assignment
+indexing
+lambda
+lambda expression
+resizable array
+creation expression
+:::
+
+| 
+
+## Literal {#Literal}
+
+*Literals* (see `Literals`{.interpreted-text role="ref"}) denote fixed and unchanging values. Type of
+a literal is the type of an expression. For numeric literals, type of a literal
+is inferred using `Type Inference for Constant Expressions`{.interpreted-text role="ref"}.
+
+::: {.index}
+literal
+expression
+value
+literal
+type
+:::
+
+| 
+
+## Named Reference {#Named Reference}
+
+An expression can have the form of a *named reference* as described by the
+syntax rule as follows:
+
+``` {.abnf}
+namedReference:
+  qualifiedName typeArguments?
+  ;
+```
+
+Type of a *named reference* expression is the type of the entity to which a
+*named reference* refers.
+
+*QualifiedName* (see `Names`{.interpreted-text role="ref"}) is an expression that consists of
+dot-separated names. If *qualifiedName* consists of a single identifier, then
+it is called a *simple name*.
+
+::: {.index}
+expression
+named reference
+qualified name
+syntax
+entity
+dot-separated name
+simple name
+:::
+
+*Simple name* refers to the following:
+
+-   Entity declared in the current module, i.e.,
+    -   Variable name,
+    -   Constant name,
+    -   Function name,
+    -   Accessor name.
+-   Variable, constant, or parameter declared in a surrounding block, function,
+    method, or lambda body.
+
+If not a *simple name*, *qualifiedName* refers to the following:
+
+-   Entity imported from a module,
+-   Entity exported from a namespace,
+-   Member of some class or interface, or
+-   Special syntax form of `Record Indexing Expression`{.interpreted-text role="ref"}.
+
+If *typeArguments* are provided, then *qualifiedName* is a valid instantiation
+of the generic method or function. Otherwise, a `compile-time error`{.interpreted-text role="index"}
+occurs.
+
+A `compile-time error`{.interpreted-text role="index"} also occurs if a name referred by *qualifiedName*
+is undefined or inaccessible.
+
+Type of a *named reference* is the type of an expression.
+
+If a *named reference* refers to a function name, it is called `Function Reference`{.interpreted-text role="ref"}.
+If a *named reference* refers to a method name, it is called `Method Reference`{.interpreted-text role="ref"}.
+
+::: {.index}
+simple name
+entity
+declaration
+module
+variable
+constant declaration
+parameter
+function
+method
+qualified name
+imported entity
+exported entity
+namespace
+class
+interface
+record indexing expression
+instantiation
+generic method
+generic function
+named reference
+name
+function reference
+method reference
+:::
+
+| 
+
+### Function Reference {#Function Reference}
+
+A *function reference* refers to a declared or imported function.
+Type of a *function reference* is derived from the function signature:
+
+``` {.typescript}
+function foo(n: number): string { return n.toString() }
+let func = foo // type of func is '(n: number) => string'
+let x = func(1)  // foo() called via reference
+```
+
+A *function reference* can refer to a generic function but only
+if `Explicit Generic Instantiations`{.interpreted-text role="ref"} is present, otherwise
+a `compile-time error`{.interpreted-text role="index"} occurs:
+
+``` {.typescript}
+function gen<T> (x: T) {}
+
+let a = gen<string> // OK
+let b = gen // Compile-time error, no explicit type arguments
+```
+
+::: {.index}
+function reference
+function signature
+declared function
+imported function
+generic function
+generic instantiation
+type argument
+:::
+
+A `compile-time error`{.interpreted-text role="index"} occurs if the name of an *overloaded function*
+(see `Implicit Function Overloading`{.interpreted-text role="ref"}) or the name of an *explicit overload*
+(see `Explicit Function Overload`{.interpreted-text role="ref"}) is used as a function reference:
+
+``` {.typescript}
+function bar(n: number) {}
+function bar(s: string) {}
+
+let b = bar // Compile-time error, overloaded function name
+
+function foo1(n: number) {}
+function foo2(s: string) {}
+overload foo { foo1, foo2 }
+
+foo(1)          // OK, overload call
+let x = foo     // Compile-time error, explicit overload name
+let y = foo2    // OK, ref to foo2
+```
+
+| 
+
+### Method Reference {#Method Reference}
+
+A *method reference* refers to a *static* or *instance* method
+of a class or an interface.
+Type of a *method reference* is derived from the method signature:
+
+``` {.typescript}
+class C {
+  static foo(n: number) {}
+  bar (s: string): boolean { return true }
+}
+
+// Method reference to a static method
+const m1 = C.foo  // type of 'm1' is (n: number) => void
+
+// Method reference to an instance method
+const m2 = new C().bar // type of 'm1' is (s: string) => boolean
+```
+
+::: {.index}
+method reference
+static method
+instance method
+class
+interface
+method signature
+:::
+
+If *method reference* refers to an instance method, that the named reference
+is bounded with the used instance of that class or interface.
+
+``` {.typescript}
+class C {
+    field = 123
+    method(): number { return this.field }
+}
+let c1 = new C
+let c2 = new C
+let m1 = c1.method // 'c1' is bounded
+let m2 = c2.method // 'c2' is bounded
+c1.field = 42
+console.log (m1(), m2()) // Outputs: 42 123
+```
+
+A *method reference* can refer to a generic method only if a generic
+instantiation is explicitly present (see `Explicit Generic Instantiations`{.interpreted-text role="ref"}).
+Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs:
+
+::: {.index}
+method reference
+instance method
+named reference
+class
+interface
+generic method
+generic instantiation
+method signature
+:::
+
+``` {.typescript}
+class C {
+    gen<T> (x: T) {}
+}
+
+let a = new C().gen<string> // OK
+let b = new C().gen // Compile-time error, no explicit type arguments
+```
+
+A `compile-time error`{.interpreted-text role="index"} occurs if the name of an *overloaded method*
+(see `Implicit Method Overloading`{.interpreted-text role="ref"}, `Explicit Class Method Overload`{.interpreted-text role="ref"},
+and `Explicit Class Method Overload`{.interpreted-text role="ref"}) is used as a method reference:
+
+``` {.typescript}
+class C {
+    foo1(n: number) {}
+    foo2(s: string) {}
+    overload foo { foo1, foo2 }
+
+    function bar(n: number) {}
+    function bar(s: string) {}
+}
+
+let c = new C()
+let f = c.foo // Compile-time error
+let b = c.bar // Compile-time error
+```
+
+::: {.index}
+type argument
+method
+explicit overload
+named reference
+:::
+
+| 
+
+## Array Literal {#Array Literal}
+
+*Array literal* is an expression that can be used to create an array or tuple
+in some cases, with all element values explicitly defined.
+
+The syntax of *array literal* is presented below:
+
+``` {.abnf}
+arrayLiteral:
+    '[' expressionSequence? ']'
+    ;
+
+expressionSequence:
+    expression (',' expression)* ','?
+    ;
+```
+
+An *array literal* is a comma-separated list of *initializer expressions*
+enclosed in square brackets `'['` and `']'`. A trailing comma after the last
+expression in an array literal is ignored:
+
+::: {.index}
+array literal
+array
+tuple
+expression
+class
+value
+syntax
+initializer expression
+trailing comma
+bracket
+:::
+
+``` {.typescript}
+let x = [1, 2, 3] // OK
+let y = [1, 2, 3,] // OK, trailing comma is ignored
+```
+
+The number of initializer expressions enclosed in square brackets of the array
+initializer determines the length of the array to be constructed.
+
+If memory is allocated as required for an array literal, then an array of the
+specified length is created, and all elements of the array are initialized to
+the values specified by initializer expressions.
+
+::: {.index}
+initializer expression
+brace
+array length
+array initializer
+array
+array element
+initialization
+initializer expression
+value
+:::
+
+On the contrary, the evaluation of an *array literal* expression completes
+abruptly if:
+
+-   Not enough memory is available for a new array, and `OutOfMemoryError` is
+    thrown; or
+-   Some initialization expression completes abruptly.
+
+::: {.index}
+evaluation
+abrupt completion
+:::
+
+Initializer expressions are executed from left to right. The *n*'th expression
+specifies the value of the *n-1*'th element of the array.
+
+Array literals can be nested (i.e., the initializer expression that specifies
+an array element can be an array literal if that element is of array type).
+
+Type of an *array literal expression* is inferred by the following rules:
+
+::: {.index}
+initializer expression
+execution
+value
+nested literal
+array element
+array literal expression
+array literal
+array type
+type inference
+:::
+
+-   If a context is available, then type is inferred from the context. If
+    successful, then type of an array literal is the inferred type. Otherwise,
+    a `compile-time error`{.interpreted-text role="index"} occurs.
+-   If no context is available, then type is inferred from the types of array
+    literal elements (see `Array Type Inference from Types of Elements`{.interpreted-text role="ref"}).
+
+More details of both cases are presented below.
+
+::: {.index}
+type inference
+inferred type
+tuple
+context
+array literal
+array element
+:::
+
+| 
+
+### Array Literal Type Inference from Context {#Array Literal Type Inference from Context}
+
+Type of an array literal can be inferred from the *context* that can be
+specified as one of the following:
+
+-   Explicit type annotation of a variable declaration;
+-   Left-hand part type of an assignment;
+-   Explicit return type of a function, a method, or a lambda in a return statement;
+-   Parameter type in a call;
+-   Target type of a cast expression; or
+-   Type of an array element or a class field.
+
+Possible variants are represented in the following example:
+
+``` {.typescript}
+let a: number[] = [1, 2, 3] // OK, variable type in a declaration is used
+a = [4, 5] // OK, variable type is used
+
+let b = [1, 2, 3] as number[]    // OK, cast target type is used
+
+function min(x: number[]): number {
+  let m = x[0]
+  for (let v of x) {
+    if (v < m) m = v
+  }
+  return m
+}
+min([1., 3.14, 0.99]); // OK, parameter type is used
+
+// Array of array initialization
+type Matrix = number[][]
+let m: Matrix = [
+    [1, 2], [3, 4] // OK, element type is used
+]
+
+class aClass {}
+//
+let b1: Array <aClass> = [new aClass, new aClass]
+let b2: Array <number> = [1, 2, 3]
+let b3: FixedArray<number> = [1, 2]
+  /* Type of literal is inferred from the context
+     taken from b1, b2 and b3 declarations */
+```
+
+::: {.index}
+type
+inferred type
+type inference
+variable
+variable declaration
+assignment
+cast expression
+call parameter type
+array initialization
+array literal
+literal
+context
+array
+:::
+
+A `compile-time error`{.interpreted-text role="index"} occurs if the type specified by context
+is **not** one of the following:
+
+-   `Any`;
+-   `Object`;
+-   Tuple type;
+-   Fixed-size array type;
+-   Value array type;
+-   Resizable array type;
+-   Superinterface of a resizable array type;
+-   Union type that contains at least one constituent type from the above list.
+
+If type used in a context is `Any` or `Object`, then
+`Array Type Inference from Types of Elements`{.interpreted-text role="ref"} is used:
+
+``` {.typescript}
+let a: Object = [1, 2, 3] // OK, array literal is of int[] type
+```
+
+If type used in a context is a *tuple type* (see `Tuple Types`{.interpreted-text role="ref"}),
+then it is inferred as an array literal type on the following conditions:
+
+-   Number of expressions equals the number of constituent types;
+-   Type of each expression in the array literal is assignable (see
+    `Assignability`{.interpreted-text role="ref"}) to the constituent type at the respective position.
+
+Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+``` {.typescript}
+let tuple: [number, string] = [1, "hello"] // OK
+let incorrect: [number, string] = ["hello", 1] // Compile-time error
+```
+
+If type used in a context is a *fixed-size array type* (see
+`Fixed-size Array Types`{.interpreted-text role="ref"}), and type of each expression is
+assignable to an array element type, then an array literal is of
+the specified type. Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+``` {.typescript}
+let a: FixedArray<string> = ["hello", "world"] // OK
+let b: FixedArray<string> = [1, 2]             // Compile-time error
+let c: FixedArray<Object> = [1, "hello"]       // OK
+```
+
+If type used in a context is a *value array type* (see
+`Value Array Types`{.interpreted-text role="ref"}), and type of each expression is
+assignable to an array element type, then an array literal is of
+the specified type. Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+``` {.typescript}
+let a: ValueArray<int> = [1, 2]    // OK
+let b: ValueArray<double> = [1, 2] // OK
+let b: ValueArray<int> = [3.14]    // Compile-time error
+```
+
+If type used in a context is a *resizable array type* (see
+`Resizable Array Types`{.interpreted-text role="ref"} and including `Readonly Array Types`{.interpreted-text role="ref"}),
+and type of each expression is assignable to an array element type,
+then an array literal is of the specified type.
+Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+``` {.typescript}
+let a: Array<string> = ["aa", "bb"]     // OK
+let b: string[] = ["aa", "bb"]          // OK
+let c: readonly string[] = ["aa", "bb"] // OK
+
+let d: string[] = ["aa", 2]             // Compile-time error
+
+let o: Object[] = ["aa", 2]             // OK
+```
+
+If type used in a context is an interface `I`, and:
+
+-   If `I` is a generic superinterface of a resizable array type with
+    the single type parameter `I<T>`, then an array literal is considered
+    as an instance of `Array<T>`. If each expression is assignable
+    to `T`, then the array literal is of `I<T>`. Otherwise, a
+    `compile-time error`{.interpreted-text role="index"} occurs;
+-   If `I` is a non-generic superinterface of a resizable array type,
+    then an array literal type is evaluated by using
+    `Array Type Inference from Types of Elements`{.interpreted-text role="ref"}, and
+    then inferred as `I`;
+-   Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+This situation is represented in the following example:
+
+``` {.typescript}
+interface SomeI {}
+let a = [1, 2] as SomeI // Compile-time error, SomeI is not a superinterface of Array
+
+let b: ConcatArray<number> = [1, 2]  // OK, instance of Array<number>
+let c: ConcatArray<string> = [1, 2]  // Compile-time error, int is not assignable to string
+let d: ArrayLike<Object> = [1, "aa"] // OK, instance of Array<Object>
+```
+
+If a type used in a context is a *union type* (see `Union Types`{.interpreted-text role="ref"}),
+then the step `Array Literal Type Inference from Context`{.interpreted-text role="ref"} is taken
+repetitively trying to use each type of the *union type* as the context.
+If only a single type is inferred, then this single type is used as the
+type of the literal. Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs:
+
+``` {.typescript}
+let union_1: string[] | [int, int] = [1, 2]
+// OK, literal type is a tuple [int, int]
+
+let union_2: number[] | [number, number] = [1, 2]
+// Error, as both union types accept literal [1, 2] as valid values
+
+let union_3: (number | string )[] | [(number | string), number] = ["xxx", 2]
+// Error, as both union types accept literal ["xxx", 2] as valid values
+
+let union_4: (number | string )[] | [(number | string), number] | string = "xxx"
+// OK, as only type string matches the type of "xxx" literal
+
+let union_5: (number | string )[] | [(number | string), number, boolean] | string = [5, 5]
+ // OK, literal type is an array (number | string )[]
+```
+
+::: {.index}
+tuple
+type
+context
+literal expression
+compatibility
+context
+array literal
+expression
+union type
+type inference
+inferred type
+variable
+:::
+
+| 
+
+### Array Type Inference from Types of Elements {#Array Type Inference from Types of Elements}
+
+Where no context is set, and thus the type of an array literal cannot be
+inferred from the context (see `Type of Expression`{.interpreted-text role="ref"}), the type of array
+literal `[` `expr`~1~, `...` , `expr`~N~ `]` is inferred
+from the initialization expression instead by using the following algorithm:
+
+1.  If array literal (*N == 0*) includes no element, then the type of
+    the array literal cannot be inferred, and a `compile-time error`{.interpreted-text role="index"}
+    occurs.
+
+2.  If at least one element of an expression type cannot be determined, then
+    the type of the array literal cannot be inferred, and a
+    `compile-time error`{.interpreted-text role="index"} occurs.
+
+3.  If all initialization expressions are of the same type `T`,
+    then the array literal type is `T[]`.
+
+4.  If each initialization expression is of a numeric type (see
+    `Numeric Types`{.interpreted-text role="ref"}), then the array literal type is `number[]`.
+
+5.  Otherwise, the array literal type is constructed as the array of a union
+    type:
+    `(T`~1~ `| ... | T`~N~ `)[]`,
+    where `T`~i~ is the type of *expr*~i~, and then:
+
+    > -   If `T`~i~ is a literal type, then it is replaced for its
+    >     supertype;
+    > -   If `T`~i~ is a union type comprised of literal types, then each
+    >     constituent literal type is replaced for its supertype.
+    > -   `Union Types Normalization`{.interpreted-text role="ref"} is applied to the resultant union type
+    >     after the above replacements.
+
+::: {.index}
+context
+type inference
+inferred type
+array element
+array literal
+type
+context
+initialization expression
+expression
+numeric type
+union type normalization
+union type
+supertype
+:::
+
+``` {.typescript}
+type A = number
+let u : "A" | "B" = "A"
+
+let a = []                        // Compile-time error, type cannot be inferred
+let b = ["a"]                     // type is string[]
+let c = [1, 2, 3]                 // type is int[]
+let d = [1, 2.1, 3]               // type is number[]
+let e = ["a" + "b", 1, 3.14]      // type is (string | number)[]
+let f = [u]                       // type is string[]
+let g = [(): void => {}, new A()] // type is (() => void | A)[]
+```
+
+| 
+
+## Object Literal {#Object Literal}
+
+*Object literal* is an expression that can be used to create a class instance
+with methods and fields with initial values. In some cases it is more
+convenient to use an *object literal* in place of a class instance creation
+expression (see `New Expressions`{.interpreted-text role="ref"}).
+
+::: {.index}
+object literal
+expression
+instance
+class
+class instance
+instance creation expression
+:::
+
+The syntax of *object literal* is presented below:
+
+``` {.abnf}
+objectLiteral:
+   '{' objectLiteralMembers? '}'
+   ;
+
+objectLiteralMembers:
+   objectLiteralMember (',' objectLiteralMember)* ','?
+   ;
+
+objectLiteralMember:
+   objectLiteralField | objectLiteralMethod
+   ;
+
+objectLiteralField:
+   identifier ':' expression
+   ;
+
+objectLiteralMethod:
+   identifier typeParameters? signature block
+   ;
+```
+
+An *object literal* is written as a comma-separated list of
+*object literal members* enclosed in curly braces `'{'` and `'}'`. A
+trailing comma after the last member is ignored. Each *object literal member*
+can be either an *object literal field* or an *object literal method* in case
+when an *object literal* is of interface type.
+
+More details are here `Object Literal of Class Type`{.interpreted-text role="ref"} and
+`Object Literal of Interface Type`{.interpreted-text role="ref"}:
+
+An *object literal field* consists of an identifier and an expression as follows:
+
+::: {.index}
+object literal
+comma-separated list
+name-value pair
+curly brace
+trailing comma
+identifier
+expression
+:::
+
+``` {.typescript}
+class Person {
+  name: string = ""
+  age: number = 0
+}
+let b: Person = {name: "Bob", age: 25}
+let a: Person = {name: "Alice", age: 18, } // OK, trailing comma is ignored
+let c: Person | number = {name: "Mary", age: 17} // Literal is of type Person
+```
+
+An *object literal method* is a complete declaration of a public method.
+Examples of object literals with methods are provided in
+`Object Literal of Interface Type`{.interpreted-text role="ref"}.
+
+Type of an *object literal expression* is always some class `C` that is
+inferred from the context. A type inferred from the context can be either a
+class (see `Object Literal of Class Type`{.interpreted-text role="ref"}), or an anonymous class created
+for the inferred interface type (see `Object Literal of Interface Type`{.interpreted-text role="ref"}).
+
+::: {.index}
+object literal
+object literal expression
+class type
+inferred type
+context
+class
+:::
+
+A `compile-time error`{.interpreted-text role="index"} occurs if:
+
+-   Type of an *object literal* cannot be inferred from the context (see
+    `Type of Expression`{.interpreted-text role="ref"} for an example);
+-   Inferred type is not a class or interface type;
+-   Context is a union type, and an object literal can be treated
+    as a valid value of several union component types;
+-   New member in an *object literal* is declared;
+
+::: {.index}
+object literal expression
+type inference
+inferred type
+class type
+interface type
+context
+union type
+object literal
+union component type
+abstract method
+abstract class
+:::
+
+``` {.typescript}
+let p = {name: "Bob", age: 25}
+        // Compile-time error, type cannot be inferred
+
+class A { field = 1 }
+class B { field = 2 }
+
+let q: A | B = {field: 6}
+        // Compile-time error, type cannot be inferred as the literal
+        // fits both A and B
+
+let u: A = { field: 1, otherField: 2 }
+        // Compile-time error, cannot declare a new member in the literal
+```
+
+| 
+
+### Object Literal of Class Type {#Object Literal of Class Type}
+
+If class type `C` is inferred from the context, then type of an object
+literal is `C`:
+
+::: {.index}
+object literal
+class type
+type inference
+context
+:::
+
+``` {.typescript}
+class Person {
+  name: string = ""
+  age: number = 0
+}
+function foo(p: Person) { /*some code*/ }
+// ...
+let p: Person = {name: "Bob", age: 25} /* OK, variable type is
+     used */
+foo({name: "Alice", age: 18}) // OK, parameter type is used
+```
+
+An identifier in each *object literal field* must name a field of class `C`.
+
+A `compile-time error`{.interpreted-text role="index"} occurs if the identifier does not name an
+*accessible member field* (see `Accessible`{.interpreted-text role="ref"}) in type `C`:
+
+::: {.index}
+identifier
+field
+class
+compile-time error
+accessible member field
+type
+:::
+
+``` {.typescript}
+class Friend {
+  name: string = ""
+  protected soname: string = ""
+  private nick: string = ""
+  age: number
+  sex?: "male"|"female"
+}
+// Compile-time error, nick is private:
+let f: Friend = {name: "Alexander", age: 55, nick: "Alex"}
+// Compile-time error, soname is protected:
+let g: Friend = {name: "Alexander", age: 55, soname: "Reed"}
+```
+
+A `compile-time error`{.interpreted-text role="index"} occurs if type of an expression in an
+*object literal field* is not assignable (see `Assignability`{.interpreted-text role="ref"}) to the
+field type:
+
+``` {.typescript}
+let f: Friend = {name: 123} /* compile-time error, type of right hand-side
+is not assignable to the type of the left hand-side */
+```
+
+Only class fields that have default values (see `Default Values for Types`{.interpreted-text role="ref"})
+or explicit initializers (see `Variable and Constant Declarations`{.interpreted-text role="ref"}) can be
+skipped in an object literal. Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+``` {.typescript}
+let f: Friend = {} /* OK, as name, nick, age, and sex have either default
+                      value or explicit initializer */
+
+class C {
+    f1: number
+    f2: string
+    f3!: Object
+}
+let c1: C = {f2: "xyz", f3: new Object} // OK, f1 type has a default value
+let c2: C = {f2: "xyz"} // Compile-time error, f3 value is not provided
+```
+
+::: {.index}
+expression
+assignability
+type
+field type
+class field
+value
+default
+field
+object literal
+initializer
+:::
+
+If type of an object literal is class `C`, then class `C` must have an
+explicit or default *parameterless* constructor, or a constructor with all
+parameters of the second form of optional parameters (see
+`Optional Parameters`{.interpreted-text role="ref"}) that is *accessible* (see `Accessible`{.interpreted-text role="ref"}) in the
+class-composite context. Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+These situations are presented in the examples below:
+
+::: {.index}
+parameterless constructor
+class
+accessibility
+context
+class-composite context
+object literal
+:::
+
+``` {.typescript}
+class C {
+  constructor (p: number) {}
+}
+// ...
+let c: C = {} /* compile-time error, no parameterless
+       constructor */
+```
+
+``` {.typescript}
+class C {
+  private constructor () {}
+}
+// ...
+let c: C = {} /* compile-time error, constructor is not
+    accessible */
+```
+
+``` {.typescript}
+class C {
+  constructor (p?: number) {}
+}
+// ...
+let c: C = {} // OK as constructor of has an optional parameter
+```
+
+``` {.typescript}
+class C {
+}
+// ...
+let c: C = {} // OK as default constructor is added
+```
+
+A compile-time error occurs if an *object literal of class type* explicitly sets
+readonly fields of a class:
+
+``` {.typescript}
+class C {
+    field1 = 123
+    readonly field2: number
+    readonly field3: string
+    constructor () {
+        this.field3 = ""
+    }
+}
+
+// OK, type ``number`` has default value, field3 set in ctor
+let c: C = { field1: 654 }
+
+// Error: field2 and field3 are readonly, cannot be set explicitly
+let d: C = { field1: 654, field2: 3, field3: "text" }
+```
+
+If a class has accessor (see `Class Accessor Declarations`{.interpreted-text role="ref"}) in a form of
+setter then its name can be used as a part of an object literal.
+Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs:
+
+``` {.typescript}
+class OK {
+    set attr (attr: number) {}
+}
+const a: OK = {attr: 42} // OK, as the setter be called
+
+class Err {
+    get attr (): number { return 42 }
+}
+const b: Err = {attr: 42} // Compile-time error, no setter for 'attr'
+```
+
+::: {.index}
+accessor
+accessor declaration
+property
+setter
+object literal
+:::
+
+| 
+
+### Object Literal of Interface Type {#Object Literal of Interface Type}
+
+If an interface type `I` is inferred from the context, then type of an
+object literal is an anonymous class implicitly created for interface `I`:
+
+``` {.typescript}
+interface Person {
+  name: string
+  set surname(s: string)
+  get age(): number
+}
+let b: Person = {name: "Bob", surname: "Doe", age: 25}
+```
+
+In the example above, type of `b` is an anonymous class that contains the
+same fields as properties of interface `I`. An anonymous class created
+for the example above has the following fields:
+
+> -   `name: string`
+> -   `surname: string`
+> -   `age: number`
+
+If a property is defined as a getter, then the type of a field is the
+return type of the getter. If a property is defined as a setter,
+then the type of a field is the type of the parameter.
+If a property is defined as both a getter and a setter, then the parameter type
+of the setter and the return type of the getter must be the same. Otherwise, a
+`compile-time error`{.interpreted-text role="index"} occurs as described in
+`Implementing Required Interface Properties`{.interpreted-text role="ref"}.
+
+::: {.index}
+interface type
+type inference
+inferred type
+context
+object literal
+anonymous class
+interface
+field
+:::
+
+Any properties that are optional can be skipped in an object literal.
+The values of such optional properties are set to `undefined` as follows:
+
+``` {.typescript}
+interface Person {
+  name: string
+  age: number
+  sex?: "male"|"female"
+}
+let b: Person = {name: "Bob", age: 25}
+     // 'sex' field has the value 'undefined'
+```
+
+Properties that are non-optional cannot be skipped in an object literal,
+despite some property types having default values (see
+`Default Values for Types`{.interpreted-text role="ref"}). If a non-optional property (e.g., *age* in
+the example above) is skipped, then a `compile-time error`{.interpreted-text role="index"} occurs.
+
+An object literal of interface type must provide an implementation for all
+interface methods with no default implementation. All such methods are
+public as in the interface.
+
+``` {.typescript}
+interface I {
+  print_name (name: string): void
+  print_something() { console.log ("Something") }
+}
+let i: I = {
+  print_name (name: string) { console.log(name) }
+  // No need to implement print_something()
+}
+i.print_name ("Alice")
+i.print_something()
+```
+
+Any reference to `this` in an object literal method is a reference to
+an anonymous class (which is a subtype of the interface) created for the
+inferred interface type:
+
+*Object literal* can provide a method with an override-compatible signature
+(see `Override-Compatible Signatures`{.interpreted-text role="ref"}):
+
+``` {.typescript}
+class Base {}
+class Drv1 extends Base {}
+class Drv2 extends Base {}
+
+interface A {
+    foo (p: Drv1): Base
+    foo (p: Drv2): Base
+}
+const a1: A = { foo(p: Base): Drv1 {} }
+   /* OK, foo(p: Base) implements both foo (p: Drv1): base and foo (p: Drv2): Base */
+
+const a2: A = { // OK
+   foo(p: Drv1): Drv1 { return new Drv1 } // implements foo (p: Drv1): Base
+   foo(p: Drv2): Drv2 { return new Drv2 } // implements foo (p: Drv2): Base
+}
+```
+
+::: {.index}
+inferred interface type
+this
+anonymous class
+:::
+
+``` {.typescript}
+interface I { method(i: I): I }
+const i: I = { method(i: I): I { return this } }
+```
+
+A `compile-time error`{.interpreted-text role="index"} occurs if an object literal of interface type
+introduces a new method:
+
+``` {.typescript}
+interface I {}
+const i: I = { foo(): void {} } // Compile-time error
+```
+
+If an interface has a method implementation, then its object literal can
+optionally provide a new method implementation. Otherwise, the interface
+implementation is used:
+
+::: {.index}
+object literal
+interface
+method
+method implementation
+:::
+
+``` {.typescript}
+interface I {
+   method(): void { console.log ("method() from I is called") }
+}
+
+// Valid literal of anonymous class type using interface method
+const i1: I = {}
+i1.method()
+
+// Valid literal of anonymous class type using own method declaration
+const i2: I = {
+   method(): void { console.log ("method() from object literal is called") }
+}
+```
+
+::: {.index}
+object literal
+interface type
+optional property
+non-optional property
+default value
+value
+interface property
+undefined value
+union type
+inference type
+interface
+property
+method
+:::
+
+An interface property is set within an object literal by a value. It is
+independent of the form it is defined in (see `Interface Properties`{.interpreted-text role="ref"}).
+The definition within the interface determines how the the property is used:
+
+``` {.typescript}
+interface I1 {
+    set attr (attr: number)
+}
+const i1: I1 = {attr: 42} // OK, 'attr' is writable property
+console.log (i1.attr) // Compile-time error as attr has no getter
+
+interface I2 {
+    get attr (): number
+}
+const i2: I2 = {attr: 42} /* OK, 'attr' is in fact a getter which always returns 42 */
+i2.attr = 666 // Compile-time error as attr is readonly
+console.log (i2.attr) // OK, output is 42
+
+interface I3 {
+    readonly attr: number
+}
+const i3: I3 = {attr: 42} /* OK, same as above */
+i3.attr = 666 // Compile-time error as attr is readonly
+console.log (i3.attr) // OK, output is 42
+
+interface I4 {
+    attr: number
+}
+const i4: I4 = {attr: 42} /* OK, getter and setter work with object literal field */
+i4.attr = 666 // OK
+console.log (i4.attr) // OK
+```
+
+::: {.index}
+interface
+accessor
+property
+object literal
+:::
+
+| 
+
+### Object Literal of `Record` Type {#Object Literal of Record Type}
+
+Generic type `Record<Key, Value>` (see `Record Utility Type`{.interpreted-text role="ref"}) is used
+to map properties of a type (type `Key`) to another type (type `Value`).
+A special form of object literal is used to initialize the value of such
+type:
+
+::: {.index}
+object literal
+generic type
+utility type
+record type
+type property
+value type
+key type
+initialization
+value
+:::
+
+The syntax of *record literal* is presented below:
+
+``` {.abnf}
+recordLiteral:
+   '{' keyValueSequence? '}'
+   ;
+
+keyValueSequence:
+   keyValue (',' keyValue)* ','?
+   ;
+
+keyValue:
+   expression ':' expression
+   ;
+```
+
+The first expression in `keyValue` denotes a key and must be of type `Key`.
+The second expression denotes a value and must be of type `Value`:
+
+::: {.index}
+expression
+key
+value
+:::
+
+``` {.typescript}
+let map: Record<string, number> = {
+    "John": 25,
+    "Mary": 21,
+}
+
+console.log(map["John"]) // prints 25
+```
+
+``` {.typescript}
+interface PersonInfo {
+    age: number
+    salary: number
+}
+let map: Record<string, PersonInfo> = {
+    "John": { age: 25, salary: 10},
+    "Mary": { age: 21, salary: 20}
+}
+```
+
+If a key is a union of literal types, then all variants
+must be listed in the object literal. Otherwise, a `compile-time error`{.interpreted-text role="index"}
+occurs:
+
+::: {.index}
+syntax
+key type
+value
+union type
+literal
+object literal
+:::
+
+``` {.typescript}
+let map: Record<"aa" | "bb", number> = {
+    "aa": 1,
+} // Compile-time error, "bb" key is missing
+```
+
+| 
+
+### Object Literal Evaluation {#Object Literal Evaluation}
+
+The evaluation of an object literal of type `C` (where `C` is either
+a named class type or an anonymous class type created for the interface)
+is to be performed by the following steps:
+
+-   Call to class `C` constructor with no arguments is executed to initialize
+    an instance `x` of class `C`. The evaluation of the object literal
+    completes abruptly if so does the execution of the constructor.
+-   All *object literal fields* are then processed from left to right in the
+    textual order they occur in the source code. The following steps are
+    performed for every *object literal field*:
+    -   Evaluation of the expression; and
+    -   If successful, then an assignment of the expression value to the
+        corresponding field of `x` as its initial value. Otherwise, the
+        evaluation of the object literal completes abruptly.
+
+::: {.index}
+object literal
+evaluation
+named class
+class
+anonymous class
+interface
+parameterless constructor
+constructor
+instance
+execution
+abrupt completion
+field
+value
+initial value
+expression
+literal type
+:::
+
+The execution of an object literal completes abruptly if so does
+the execution of at least one of *object literal field* expression.
+
+The evaluation of an object literal completes normally if:
+
+-   Class instance was created successfully;
+-   Class constructor was executed successfully;
+-   All class instance fields mentioned in the object literal have initial
+    values resulting from the successful execution of all *object literal field*
+    expressions.
+
+::: {.index}
+execution
+object literal
+abrupt completion
+normal completion
+evaluation
+initialization
+class instance
+:::
+
+| 
+
+## Spread Expression {#Spread Expression}
+
+*Spread expression* can be used only within an array literal (see
+`Array Literal`{.interpreted-text role="ref"}) or argument passing (see `Rest Parameter`{.interpreted-text role="ref"}).
+The *expression* must be of an iterable type (see `Iterable Types`{.interpreted-text role="ref"})
+or of a tuple type (see `Tuple Types`{.interpreted-text role="ref"}).
+
+Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+The syntax of *spread expression* is presented below:
+
+``` {.abnf}
+spreadExpression:
+    '...' expression
+    ;
+```
+
+A *spread expression* is evaluated:
+
+-   At compile time by the compiler if *expression* is constant (see
+    `Constant Expressions`{.interpreted-text role="ref"});
+-   Otherwise, at runtime.
+
+Any iterable or tuple object referred by the *expression* is broken down
+into a sequence of values by the evaluation. This sequence is used where
+a *spread expression* is used. It can be an assignment, a call of a function,
+method, or constructor. A sequence of types of these values is the type of the
+*spread expression*.
+
+::: {.index}
+spread expression
+array literal
+argument
+expression
+array type
+tuple type
+iterator
+iterable type
+syntax
+runtime
+compiler
+evaluation
+constant
+value
+call
+function
+method
+constructor
+assignment
+:::
+
+*Spread expression* is one of the two concepts that use the `spread`
+operator `'...'` as a prefix. The difference between *spread expressions* and
+syntactically similar *rest parameters* is as follows:
+
+-   *Spread expression* **generates** a sequence of values. E.g., a sequence can
+    be generated from a type with an iterator.
+-   *Rest parameter* **receives** a sequence of values and stores the values in
+    an array or a tuple. A *rest parameter* knows nothing about the origin of the
+    values, i.e., the sequence can be a product of a spread operator, or the
+    values can be a result of a direct input.
+
+It is represented in the following example:
+
+``` {.typescript}
+function f(...a: number[]) {} // Rest, put caller values into an array
+
+f(1,2)    // Thanks to Rest, we can put some values directly ...
+let arglist: number[] = [1, 2, 3]
+f(...arglist)  // or  say that all values from 'arglist' must be substituted
+```
+
+*Spread expression* of array type supports both `Resizable array types`{.interpreted-text role="ref"}
+and `Fixed-size array types`{.interpreted-text role="ref"}. Any combination of *spread expressions*
+with fixed-size and resizable arrays can be used in an array literal or in
+a function call as illustrated in the following example:
+
+``` {.typescript}
+let array1: int[] = [1, 2, 3]
+let array2: FixedArray<int> = [4, 5]
+
+// A literal contains two spread expressions with arrays of variable and fixed size
+let array3: int[] = [...array1, ...array2] // spread array1 and array2 elements
+                                     // while building new array literal at compile time
+console.log(array3) // prints [1, 2, 3, 4, 5]
+
+function foo (...array: int[]) {
+   console.log (array)
+}
+
+// The next two calls are equivalent
+foo(...array2)
+foo (...[...array2])  // spread array2 elements into arguments of the foo() call
+
+// recall,  'array3 = [ ..array1, ..array2])' (see above)
+// next two calls are also equivalent
+foo(...array3)
+foo(...[...array1, ...array2])
+
+function run_time_spread_application1 (a1: int[], a2: FixedArray<int>) {
+   console.log ([...a1, 42, ...a2])
+   // Array literal is built at runtime
+}
+run_time_spread_application1 (array1, array2) // prints [1, 2, 3, 42, 4, 5]
+```
+
+*Spread expression* always copies values from original arrays. A callee
+changes elements of its own copy, but not elements of arrays used in the call:
+
+``` {.typescript}
+let a: int[] = [1, 2, 3]
+
+function foo (...p: int[]) {
+   p[1] = 4
+   console.log ("inside foo()", p)
+}
+foo(...a)  // prints 'inside foo() 1,4,3'
+console.log ("outside foo()", a) // prints 'outside foo() 1,2,3'
+```
+
+Since a *spread expression* copies values, the attribute `readonly` of the
+source array (see `Readonly Array Types`{.interpreted-text role="ref"}) does not affect an array created
+by the *spread expression*. If a *spread expression* is to create a readonly
+target array, then the attribute `readonly` must be used for the target array
+or for the *rest parameter*:
+
+``` {.typescript}
+let a: readonly int[] = [1, 2, 3]
+let b: int[] = [1, 2, 3]
+
+// 'readonly' array in spread expr, can modify target array Elements
+let rw: int[] = [...a]
+rw[1] = 1 // OK
+function foo(...p_rw: int[]) {
+   p_rw[1] = 1 // OK
+}
+
+// RW array in spread, readonly target
+let ro: readonly int[] = [...b]
+   ro[1] = 1 // Compile-time error
+function foo(...p_ro: readonly int[]) {
+   p_ro[1] = 1 // Compile-time error
+}
+```
+
+If a *spread expression* is used to pass arguments (see `Rest Parameter`{.interpreted-text role="ref"}),
+then the sequence of spread expressions passed as sequential arguments yields
+a single sequence of values.
+
+``` {.typescript}
+function accept_spreads_with_rest_parameter (...args: number[]) {
+    console.log (args)
+}
+let arr = [1, 2, 3]
+accept_spreads_with_rest_parameter (...arr, ...arr)
+   // Output: 1 2 3 1 2 3
+
+function g1() { return [1, 2] }
+function g2() { return [3, 4, 5] }
+accept_spreads_with_rest_parameter (...g1(), ...g2())
+   // Output: 1 2 3 4 5
+```
+
+A spread expression for tuples is represented in the example below:
+
+``` {.typescript}
+let tuple1: [number, string, boolean] = [1, "2", true]
+let tuple2: [number, string] = [4, "5"]
+ // spread tuple1 and tuple2 elements
+let tuple3: [number, string, boolean, number, string] = [...tuple1, ...tuple2]
+   // while building new tuple object at compile time
+console.log(tuple3) // prints [1, 2, true, 4, 5]
+
+function bar (...tuple: [number, string]) {
+  console.log (tuple)
+}
+bar (...tuple2)  // spread tuple2 elements into arguments of the foo() call
+
+function run_time_spread_application2 (a1: [number, string, boolean], a2: [number, string]) {
+  console.log ([...a1, 42, ...a2])
+    // Such an array literal is built at runtime
+}
+run_time_spread_application2 (tuple1, tuple2) // prints [1, 2, true, 42, 4, "5"]
+```
+
+A spread expression for a class that implements Iterable is represented in
+the example below:
+
+``` {.typescript}
+class A<T> implements Iterable<T|undefined> { // variables of type A can be spread
+    // To check code with TS, comment line with  `$_iterator()`
+    // and uncomment one with `[Symbol.iterator]()`
+    $_iterator(): Iterator<T|undefined>  {
+    // [Symbol.iterator](): Iterator<T|undefined>  {
+      return new MyIteratorResult<T|undefined>(this.data)
+    }
+    private data: T[]
+    constructor (...data: T[]) { this.data = data }
+}
+class MyIteratorResult <T> implements Iterator<T|undefined> {
+    private data: T[]
+    private index: number = 0
+    next(): IteratorResult<T|undefined> {
+        if (this.index >= this.data.length) {
+           return MyIteratorResult.end_of_sequence
+        } else {
+           this.current_element.value = this.data[this.index++]
+           return this.current_element
+        }
+    }
+    constructor (data: T[]) { this.data = data }
+    private static end_of_sequence: IteratorResult<undefined> = {done: true, value: undefined}
+    private current_element: IteratorResult<T|undefined> = {done: false, value: undefined}
+}
+function display<T> (...p: T[]) { console.log (p) }
+display (... new A<number> (1, 2, 3))        // Spread A with numbers
+display (... new A<string> ("aaa", "bbb"))   // Spread A with strings
+display (... new A<Object> (1, "aaa", true)) // Spread A with any objects
+display (... new A<undefined>)               // Spread A with no objects
+
+type UnionOfIterable = A<number> | new A<string>
+function show (...p: UnionOfIterable) { console.log (p) }
+show (... new A<number> (1, 2, 3))        // Spread A with numbers
+show (... new A<string> ("aaa", "bbb"))   // Spread A with strings
+```
+
+::: {.note}
+::: {.title}
+Note
+:::
+
+If an argument is spread at the call site, then an appropriate parameter
+must be of the rest kind (see `Rest Parameter`{.interpreted-text role="ref"}). A
+`compile-time error`{.interpreted-text role="index"} occurs if an argument is spread into a sequence
+of ordinary non-optional parameters as follows:
+
+``` {.typescript}
+function foo1 (n1: number, n2: number) // non-rest parameters
+   { ... }
+let an_array = [1, 2]
+foo1 (...an_array) // Compile-time error
+
+function foo2 (n1: number, n2: string)  // non-rest parameters
+   { ... }
+let a_tuple: [number, string] = [1, "2"]
+foo2 (...a_tuple) // Compile-time error
+```
+:::
+
+::: {.index}
+call site
+argument
+spread
+call site
+rest parameter
+parameter
+tuple
+array
+non-optional parameter
+:::
+
+| 
+
+## Parenthesized Expression {#Parenthesized Expression}
+
+The syntax of *parenthesized expression* is presented below:
+
+``` {.abnf}
+parenthesizedExpression:
+    '(' expression ')'
+    ;
+```
+
+Type and value of a parenthesized expression are the same as those of
+the contained expression.
+
+::: {.index}
+parenthesized expression
+type
+syntax
+value
+contained expression
+:::
+
+| 
+
+## `this` Expression {#this Expression}
+
+The syntax of *this expression* is presented below:
+
+``` {.abnf}
+thisExpression:
+    'this'
+    ;
+```
+
+The keyword `this` can be used as an expression in the body of an instance
+method of a class (see `Method Body`{.interpreted-text role="ref"}) or an interface (see
+`Default Interface Method Declarations`{.interpreted-text role="ref"}). A corresponding class or
+interface type is the type of *this* expression. If a method is declared in an
+object literal (see `Object Literal`{.interpreted-text role="ref"}), then the type of the object literal
+is the type of `this`. A class constructor body can also use `this`, and
+the exact semantics of such use are described in `Constructor Body`{.interpreted-text role="ref"}.
+
+The keyword `this` can also be used in the initializer of a class field (see
+`Field Initialization`{.interpreted-text role="ref"}).
+
+The keyword `this` can be used in a lambda expression only if it is allowed
+in the context in which the lambda expression occurs. The type of `this` is
+the type of a class or an interface in which it is declared, but not the type
+of the surrounding object literal type, if any.
+
+The keyword `this` in a *direct call* expression `this(` *arguments* `)`
+can only be used in an explicit constructor call statement (see
+`Explicit Constructor Call`{.interpreted-text role="ref"}).
+
+The keyword `this` can also be used in the body of a function with receiver
+(see `Functions with Receiver`{.interpreted-text role="ref"}). The type of *this* expression is the
+declared type of the parameter `this` in a function.
+
+A `compile-time error`{.interpreted-text role="index"} occurs if the keyword `this` appears elsewhere.
+
+::: {.index}
+syntax
+this keyword
+expression
+instance method
+method body
+class
+interface
+class type
+interface type
+lambda expression
+object literal
+direct call expression
+constructor
+context
+constructor call statement
+function with receiver
+parameter
+function
+declared type
+:::
+
+The keyword `this` used as a primary expression denotes a value that is a
+reference to the following:
+
+-   Object for which the instance method is called; or
+-   Object being constructed.
+
+The parameter `this` in a lambda body and in the surrounding context denote
+the same value.
+
+The class of the actual object referred to at runtime can be `T` if `T` is
+a class type, or a subclass of `T` (see `Subtyping`{.interpreted-text role="ref"}) .
+
+::: {.index}
+this keyword
+primary expression
+value
+instance method
+instance method call
+object
+parameter
+lambda body
+context
+subclass
+subtyping
+class
+runtime
+class type
+class
+:::
+
+The semantics of `this` in different contexts is represented in the example
+below:
+
+``` {.typescript}
+interface anInterface {
+    method() {
+       this // type of 'this' is anInterface
+    }
+}
+class aClass implements anInterface {
+    method() {
+       this // type of 'this' is aClass
+    }
+    field = (): void => {
+       this // type of 'this' is aClass
+    }
+}
+class AnotherClass {
+    anotherMethod() {
+        const obj: aClass = { // Object literal
+          method () {
+              this // type of 'this' is aClass
+          },
+          field: (): void => {
+              this // type of 'this' is AnotherClass
+          }
+        }
+    }
+}
+```
+
+| 
+
+## Field Access Expression {#Field Access Expression}
+
+*Field access expression* can access a class static field (see
+`Accessing Static Fields`{.interpreted-text role="ref"}) or a field of an object to which an object
+reference refers.
+An object reference can have different forms as described in detail in
+`Accessing Current Object Fields`{.interpreted-text role="ref"} and `Accessing SuperClass Accessors`{.interpreted-text role="ref"}.
+
+::: {.index}
+field access expression
+access
+field
+object reference
+superclass
+syntax
+:::
+
+The syntax of *field access expression* is presented below:
+
+``` {.abnf}
+fieldAccessExpression:
+    objectReference ('.' | '?.') identifier
+    ;
+```
+
+A *field access expression* that contains `'?.'` (see `Chaining Operator`{.interpreted-text role="ref"})
+is called *safe field access* because it handles nullish object references
+safely.
+
+If object reference evaluation completes abruptly, then so does the entire
+field access expression.
+
+An object reference used to access a field must be a non-nullish reference
+type `T`. Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+A field access expression is valid if the identifier refers to an accessible
+member field (see `Accessible`{.interpreted-text role="ref"}) in type `T`. Otherwise, a
+`compile-time error`{.interpreted-text role="index"} occurs.
+
+Type of a *field access expression* is the type of a member field.
+
+If the identifier in a *field access expression* denotes the accessor defined
+for a class or interface type, then either a getter or a setter is called
+depending on the position of the *field access expression* (see
+`Class Accessor Declarations`{.interpreted-text role="ref"} and `Interface Properties`{.interpreted-text role="ref"} for
+detail).
+
+::: {.index}
+access
+field access expression
+field
+safe field access
+nullish object reference
+object reference
+abrupt completion
+non-nullish type
+identifier
+reference type
+member field
+accessible member field
+accessibility
+:::
+
+| 
+
+### Accessing Static Fields {#Accessing Static Fields}
+
+When accessing a static field, *objectReference* takes the form *typeReference*.
+
+The result of a *field access expression* of a static field in a class is
+one of the following:
+
+-   `variable` if the field is not `readonly`. The resultant value can
+    be changed later.
+-   `value` if the field is `readonly`, except where *field access* occurs
+    in an initializer block (see `Static Initialization`{.interpreted-text role="ref"}).
+
+::: {.index}
+access
+runtime
+field access expression
+evaluation
+static field access
+static field
+field access
+initializer block
+field
+readonly field
+field access
+class
+:::
+
+| 
+
+### Accessing Current Object Fields {#Accessing Current Object Fields}
+
+When accessing a current object field, *objectReference* takes the form
+*primaryExpression*.
+
+The process of runtime evaluation of a field access expression starts from the
+evaluation of *primaryExpression*.
+
+The result of this evaluation can be an instance field or an accessor of a
+class, or a property of an interface. It is one of the following:
+
+-   `variable` if the field is not `readonly`. The resultant value can be
+    changed later;
+-   `value` if the field is `readonly`, except where *field access* occurs
+    in a constructor (see `Constructor Declaration`{.interpreted-text role="ref"});
+-   call to a proper getter if the *field access expression* is not assigned a
+    new expression; or
+-   call to a proper setter if the *field access expression* is in the
+    left-hand-side of the assignment.
+
+Only the *primaryExpression* type (not class type of an actual object
+referred at runtime) is used to determine the field or property to be accessed.
+
+::: {.index}
+instance field
+instance field access
+class
+field access
+field access expression
+readonly
+variable
+evaluation
+access
+runtime
+class type
+object
+constructor
+field access
+class type
+:::
+
+| 
+
+### Accessing SuperClass Accessors {#Accessing SuperClass Accessors}
+
+The form `super.identifier` is valid to access a superclass accessor (see
+`Class Accessor Declarations`{.interpreted-text role="ref"}).
+
+A `compile-time error`{.interpreted-text role="index"} occurs if identifier in \'super.identifier\'
+denotes a field.
+
+``` {.typescript}
+class Base {
+   get property(): number { return 1 }
+   set property(p: number) { }
+   field = 1234
+}
+class Derived extends Base {
+   get property(): number { return super.property } // OK
+   set property(p: number) { super.property = 42 }  // OK
+   foo () {
+      super.field = 42           // Compile-time error
+      console.log (super.field)  // Compile-time error
+   }
+}
+```
+
+::: {.index}
+access
+accessor
+accessor declaration
+superclass
+superclass accessor
+identifier
+field
+:::
+
+| 
+
+## Method Call Expression {#Method Call Expression}
+
+A *method call expression* calls
+
+-   a static class method;
+-   an instance method of a class or an interface; or
+-   a function with receiver (see `Functions with Receiver`{.interpreted-text role="ref"}).
+
+::: {.index}
+method call expression
+static method
+instance method
+function with receiver
+class
+interface
+call
+:::
+
+The syntax of *method call expression* is presented below:
+
+``` {.abnf}
+methodCallExpression:
+    objectReference ('.' | '?.') identifier typeArguments? callArguments
+    ;
+```
+
+*Call arguments* are described in `Call Arguments`{.interpreted-text role="ref"}.
+
+A method call with `'?.'` (see `Chaining Operator`{.interpreted-text role="ref"}) is called a
+*safe method call* because it handles nullish values safely.
+
+There are several steps that determine and check the entity to be called at
+compile time (see `Step 1 Selection of Type to Use`{.interpreted-text role="ref"},
+`Step 2 Selection of Entity to Call`{.interpreted-text role="ref"}, and
+`Step 3 Checking Modifiers`{.interpreted-text role="ref"}).
+
+::: {.index}
+syntax
+method call expression
+block
+trailing lambda call
+trailing lambda
+method call
+chaining operator
+safe method call
+nullish value
+compile time
+:::
+
+| 
+
+### Step 1: Selection of Type to Use {#Step 1 Selection of Type to Use}
+
+The *object reference* is used to determine the type in which to search for the
+method. Three forms of *object reference* are possible:
+
++-----------------------------+-----------------------------------------------------------------------+
+| Form of Object Reference    | Type to Use                                                           |
++=============================+=======================================================================+
+| `typeReference`             | > Type denoted by `typeReference` must refer to a class.              |
+|                             | > Otherwise, a `compile-time error`{.interpreted-text role="index"}   |
+|                             | > occurs.                                                             |
++-----------------------------+-----------------------------------------------------------------------+
+| `super`                     | > The superclass of the class that contains the method call.          |
++-----------------------------+-----------------------------------------------------------------------+
+| expression of type *T*      | > `T` if `T` is a class, interface, or union; `T`'s                   |
+|                             | > constraint (`Type Parameter Constraint`{.interpreted-text           |
+|                             | > role="ref"}) if `T` is a                                            |
+|                             | > type parameter. Otherwise, a `compile-time`{.interpreted-text       |
+|                             | > role="index"} error occurs.                                         |
++-----------------------------+-----------------------------------------------------------------------+
+
+::: {.index}
+type
+type parameter
+object reference
+method
+constraint
+superclass
+method call
+class
+interface
+union
+:::
+
+| 
+
+### Step 2: Selection of Entity to Call {#Step 2 Selection of Entity to Call}
+
+After the type to use is known (see `Step 1 Selection of Type to Use`{.interpreted-text role="ref"}),
+the set of candidates to call is determined by the form of *object reference*,
+*type to use* and the identifier:
+
++-----------------------------+-----------------------------------------------------------------------+
+| Form of Object Reference    | Set of Entities to Call                                               |
++=============================+=======================================================================+
+| `typeReference` of type *T* | > Static methods named `identifier` of class *T* .                    |
++-----------------------------+-----------------------------------------------------------------------+
+| `super`                     | > Instance methods named `identifier` of superclass of the class      |
+|                             | > that contains the call.                                             |
++-----------------------------+-----------------------------------------------------------------------+
+| expression with *T* type to | > Instance methods named `identifier` of class or interface *T*       |
+| use                         | > and `Functions with Receiver`{.interpreted-text role="ref"} named   |
+|                             | > `identifier`                                                        |
+|                             | > with receiver type *T*.                                             |
+|                             | > If *T* is a union type, common instance methods                     |
+|                             | > see `Access to Common Union Members`{.interpreted-text role="ref"}. |
++-----------------------------+-----------------------------------------------------------------------+
+
+A `compile-time error`{.interpreted-text role="index"} occurs set is empty, in other words,
+no entity is available to call.
+
+If a set contains more then one entity, then `Overload Resolution`{.interpreted-text role="ref"} is used
+to select the method or function to call (see `Overload Set at Method Call`{.interpreted-text role="ref"}
+for details).
+
+`Dynamic resolution of method calls`{.interpreted-text role="ref"} is used during program execution to resolve
+an actual method to be called in case of an instance method in accordance with the
+method resolved in the step.
+
+::: {.index}
+overload resolution
+call
+method call
+:::
+
+| 
+
+### Step 3: Checking Modifiers {#Step 3 Checking Modifiers}
+
+A single method to call is known at this step. A set of semantic checks for
+each form of method call must be performed as follows:
+
+-   `typeReference.identifier`
+
+    The method must be declared `static`. Otherwise,
+    a `compile-time error`{.interpreted-text role="index"} occurs.
+
+-   `expression.identifier`
+
+    The method must not be declared `static`. Otherwise,
+    a `compile-time error`{.interpreted-text role="index"} occurs.
+
+-   `super.identifier`
+
+    The method must not be declared `abstract` or `static`. Otherwise,
+    a `compile-time error`{.interpreted-text role="index"} occurs.
+
+Semantic check of a method call is performed in accordance with
+`Compatibility of Call Arguments`{.interpreted-text role="ref"}.
+
+::: {.index}
+method
+method modifier
+call
+class
+static method
+method call
+semantic check
+static method call
+abstract method
+abstract method call
+:::
+
+| 
+
+### Type of Method Call Expression {#Type of Method Call Expression}
+
+Type of a *method call expression* is the return type of the method.
+
+``` {.typescript}
+class A {
+   static method() { console.log ("Static method() is called") }
+   method()        { console.log ("Instance method() is called") }
+}
+
+
+let x = A.method()     // Compile-time error as void cannot be used as type annotation
+A.method ()            // OK
+let y = new A().method() // Compile-time error as void cannot be used as type annotation
+new A().method()         // OK
+```
+
+::: {.index}
+method call expression
+method return type
+return type
+static method
+instance method
+type annotation
+:::
+
+| 
+
+## Function Call Expression {#Function Call Expression}
+
+*Function call expression* is used to call a function (see
+`Function Declarations`{.interpreted-text role="ref"}), a variable of a function type
+(`Function Types`{.interpreted-text role="ref"}), or a lambda expression (see `Lambda Expressions`{.interpreted-text role="ref"}).
+
+The syntax of *function call expression* is presented below:
+
+``` {.abnf}
+functionCallExpression:
+    expression ('?.' | typeArguments)? callArguments
+    ;
+```
+
+*Call arguments* are described in `Call Arguments`{.interpreted-text role="ref"}.
+
+A `compile-time error`{.interpreted-text role="index"} occurs if the expression type is one of the
+following:
+
+-   Different than the function type;
+-   Nullish type without `'?.'` (see `Chaining Operator`{.interpreted-text role="ref"}).
+
+::: {.index}
+function call expression
+expression
+function call
+function type
+trailing lambda call
+lambda expression
+expression type
+function type
+syntax
+nullish type
+chaining operator
+block
+expression type
+chaining operator
+:::
+
+If the operator `'?.'` (see `Chaining Operator`{.interpreted-text role="ref"}) is present, and the
+*expression* evaluates to a nullish value, then:
+
+-   *Call arguments* are not evaluated;
+-   Call is not performed; and
+-   Result of *function call expression* is not produced as a consequence.
+
+The function call is *safe* because it handles nullish values properly.
+
+::: {.index}
+chaining operator
+expression
+evaluation
+nullish value
+call
+argument
+semantic correctness check
+undefined
+function call
+:::
+
+If the form of expression in the call is *qualifiedName*, and *qualifiedName*
+refers to an *overloaded function* (see `Implicit Function Overloading`{.interpreted-text role="ref"}
+and `Explicit Function Overload`{.interpreted-text role="ref"}), then `Overload Resolution`{.interpreted-text role="ref"}
+is used to select the function to call.
+
+A `compile-time error`{.interpreted-text role="index"} occurs if no function is available to call.
+
+Semantic check for a call is performed in accordance with
+`Compatibility of Call Arguments`{.interpreted-text role="ref"}.
+
+::: {.index}
+call
+expression
+qualified name
+overload resolution
+explicit overload declaration
+function
+call
+expression
+semantic check
+compatibility
+function call
+call argument
+:::
+
+Various forms of function calls are represented in the example below:
+
+``` {.typescript}
+function foo() { console.log ("Function foo() is called") }
+foo() // function call uses function name to call it
+
+call (foo)            // top-level function passed
+call ((): void => { console.log ("Lambda is called") }) // lambda is passed
+call (A.method)       // static method
+call ((new A).method) // instance method is passed
+
+class A {
+   static method() { console.log ("Static method() is called") }
+   method() { console.log ("Instance method() is called") }
+}
+
+function call (callee: () => void) {
+   callee() // function call uses parameter name to call any functional object passed as an argument
+}
+
+((): void => { console.log ("Lambda is called") }) () // function call uses lambda expression to call it
+
+let x = foo() // Compile-time error as void cannot be used as type annotation
+```
+
+Type of a *function call expression* is the return type of the function.
+
+::: {.index}
+function call
+function call expression
+call
+static method
+instance method
+return type
+function
+parameter
+functional object
+argument
+callee
+type annotation
+return type
+:::
+
+| 
+
+### Call Arguments {#Call Arguments}
+
+The syntax of a *call argument* is presented below:
+
+``` {.abnf}
+callArguments:
+    '(' argumentSequence? ')' trailingLambda?
+    ;
+
+argumentSequence:
+    expression (',' expression)* ','?
+    ;
+```
+
+The `callArguments` grammar rule refers to the list of call arguments. Only
+an argument that corresponds to a *rest parameter* can be a spread expression (see
+`Spread Expression`{.interpreted-text role="ref"}).
+
+*Trailing lambda call* is a special syntactic form of call arguments that
+contains a *trailing lambda* (see `Trailing Lambdas`{.interpreted-text role="ref"} for details).
+
+::: {.index}
+argument
+call argument
+syntax
+expression
+call
+spread expression
+:::
+
+| 
+
+## Indexing Expressions {#Indexing Expressions}
+
+*Indexing expressions* are used to access elements of arrays (see
+`Array Types`{.interpreted-text role="ref"}), strings (see `Type string`{.interpreted-text role="ref"}), and `Record` instances
+(see `Record Utility Type`{.interpreted-text role="ref"}). Indexing expressions can also be applied to
+instances of indexable types (see `Indexable Types`{.interpreted-text role="ref"}).
+
+The syntax of *indexing expression* is presented below:
+
+``` {.abnf}
+indexingExpression:
+    expression ('?.')? '[' expression ']'
+    ;
+```
+
+Any *indexing expression* has two subexpressions as follows:
+
+-   *Object reference expression* before the left bracket; and
+-   *Index expression* inside the brackets.
+
+::: {.index}
+indexing expression
+indexable type
+access
+array element
+string
+record
+utility type
+array type
+subexpression
+object reference expression
+index expression
+bracket
+:::
+
+If the operator `'?.'` (see `Chaining Operator`{.interpreted-text role="ref"}) is present in an
+indexing expression, then:
+
+-   If an object reference expression is not of a nullish type, then the
+    chaining operator has no effect.
+-   Otherwise, object reference expression must be checked against a nullish
+    value. If the value is `undefined` or `null`,
+    then the evaluation of the entire surrounding *primary expression* stops.
+    The result of the entire primary expression is then `undefined`.
+
+If no `'?.'` is present in an indexing expression, then object reference
+expression must be of array type or `Record` type. Otherwise, a
+`compile-time error`{.interpreted-text role="index"} occurs.
+
+::: {.index}
+chaining operator
+operator
+indexing expression
+object reference expression
+expression
+primary expression
+nullish type
+array type
+record type
+reference expression
+nullish value
+:::
+
+| 
+
+### Array Indexing Expression {#Array Indexing Expression}
+
+*Index expression* for array indexing must be one of integer types, namely
+`byte`, `short`, or `int`. Otherwise, a `compile-time error`{.interpreted-text role="index"}
+occurs.
+
+::: {.index}
+array indexing
+integer type
+index expression
+runtime error
+compilation
+:::
+
+The conversion of `byte` and `short` types (see
+`Widening Numeric Conversions`{.interpreted-text role="ref"}) is performed on an *index expression* to
+ensure that the resultant type is `int`. Otherwise, a
+`compile-time error`{.interpreted-text role="index"} occurs.
+
+Other numeric types (`long`, `float`, and `double`/`number`) must be
+converted explicitly by applying the methods defined in the classes of the
+`Standard Library`{.interpreted-text role="ref"}.
+
+``` {.typescript}
+const a = ["Alice", "Bob", "Carol"]
+function demo (l: long, f: float, d: double, n: number) {
+    console.log (
+       a[l.toInt()], a[f.toInt()],
+       a[d.toInt()], a[n.toInt()]
+    ) // OK to access array using index expression conversion methods
+}
+```
+
+If the chaining operator `'?.'` (see `Chaining Operator`{.interpreted-text role="ref"}) is present,
+and after its application the type of *object reference expression*
+is an *array type*,
+then it makes a valid *array reference expression*, and the type
+of the array indexing expression is `T`.
+
+The result of an array indexing expression is a variable of type `T` (i.e., an
+element of the array selected by the value of that *index expression*).
+
+It is essential that, if type `T` is a reference type, then the fields of
+array elements can be modified by changing the resultant variable fields:
+
+::: {.index}
+conversion
+type
+numeric types conversion
+widening conversion
+index expression
+chaining operator
+numeric type
+object reference expression
+method
+class
+array type
+array reference expression
+array indexing expression
+variable
+field
+reference type
+:::
+
+``` {.typescript}
+let names: string[] = ["Alice", "Bob", "Carol"]
+console.log(names[1]) // prints Bob
+names[1] = "Martin"
+console.log(names[1]) // prints Martin
+
+console.log (names["1"]) // Compile-time error as index of non-numeric type
+
+class RefType {
+    field: number = 42
+}
+const objects: RefType[] = [new RefType(), new RefType()]
+const obj = objects [1]
+obj.field = 777            // change the field in the array element
+console.log(objects[0].field) // prints 42
+console.log(objects[1].field) // prints 777
+
+let an_array = [1, 2, 3]
+let element = an_array [3.5] // Compile-time error as index is not integer
+function foo (index: number) {
+   let element = an_array [index] // Compile-time error as index is not integer
+}
+```
+
+An array indexing expression evaluated at runtime behaves as follows:
+
+-   Object reference expression is evaluated first.
+-   If the evaluation completes abruptly, then so does the indexing
+    expression, and the index expression is not evaluated.
+-   If the evaluation completes normally, then the index expression is evaluated.
+    The resultant value of the object reference expression refers to an array.
+-   If the index expression value of an array is less than zero, greater than
+    or equal to that array's *length*, then `RangeError` is thrown.
+-   Otherwise, the result of the array access is a type `T` variable within
+    the array selected by the value of the index expression.
+
+``` {.typescript}
+function setElement(names: string[], i: int, name: string) {
+    names[i] = name // runtime error, if 'i' is out of bounds
+}
+```
+
+::: {.index}
+non-numeric type
+integer type
+array indexing expression
+index expression
+evaluation
+runtime
+array
+object reference expression
+abrupt completion
+normal completion
+reference expression
+variable
+array access
+access
+array length
+:::
+
+| 
+
+### String Indexing Expression {#String Indexing Expression}
+
+*Index expression* for string indexing must be of one of integer types, namely
+`byte`, `short`, or `int`. The same rules apply as in
+`Array Indexing Expression`{.interpreted-text role="ref"}.
+
+If the index expression value of a string is less than zero, greater than
+or equal to that string's *length*, then `RangeError` is thrown.
+
+::: {.index}
+string indexing
+index expression
+integer type
+array indexing expression
+string
+string length
+value
+type
+:::
+
+``` {.typescript}
+console.log("abc"[1]]) // prints: b
+console.log("abc"[3]]) // runtime exception
+```
+
+The result of a string indexing expression is a value of `string` type.
+
+::: {.note}
+::: {.title}
+Note
+:::
+
+String value is immutable, and is not allowed to change a value of a string
+element by indexing.
+
+``` {.typescript}
+let x = "abc"
+x[1] = "d" // Compile-time error, string value is immutable
+```
+:::
+
+::: {.index}
+indexing expression
+value
+string type
+string value
+value
+string element
+indexing
+:::
+
+| 
+
+### Record Indexing Expression {#Record Indexing Expression}
+
+*Indexing expression* for a type `Record<Key, Value>` (see
+`Record Utility Type`{.interpreted-text role="ref"}) allows getting or setting a value of type `Value`
+at an index specified by the expression of type `Key`.
+
+The following two cases are to be considered separately:
+
+1.  Type `Key` is a union that contains literal types only;
+2.  Other cases.
+
+**Case 1.** If type `Key` is a union that contains literal types only, then
+an *index expression* can only be one of the literals listed in the type.
+The result of the indexing expression is of type `Value`.
+
+``` {.typescript}
+type Keys = 'key1' | 'key2' | 'key3'
+
+let x: Record<Keys, number> = {
+    'key1': 1,
+    'key2': 2,
+    'key3': 4,
+}
+let y = x['key2'] // y value is 2
+```
+
+::: {.index}
+index expression
+indexing expression
+record type
+utility type
+value
+key type
+union type
+literal type
+literal
+value
+type
+:::
+
+A `compile-time error`{.interpreted-text role="index"} occurs if an index expression is not a valid
+literal:
+
+``` {.typescript}
+console.log(x['key4']) // Compile-time error
+x['another key'] = 5 // Compile-time error
+```
+
+The compiler guarantees that an object of `Record<Key, Value>` for this type
+`Key` contains values for all `Key` keys.
+
+**Case 2.** An *index expression* has no restriction.
+The result of an indexing expression is of type `Value | undefined`.
+
+::: {.index}
+index expression
+key type
+indexing expression
+literal
+compiler
+restriction
+:::
+
+``` {.typescript}
+let x: Record<number, string> = {
+    1: "hello",
+    2: "buy",
+}
+
+function foo(n: number): string | undefined {
+    return x[n]
+}
+
+function bar(n: number): string {
+    let s = x[n]
+    if (s == undefined) { return "no" }
+    return s!
+}
+
+foo(3) // prints "undefined"
+bar(3) // prints "no"
+
+let y = x[3]
+```
+
+::: {.index}
+index expression
+literal
+key
+string
+compiler
+value
+:::
+
+Type of *y* in the code above is `string | undefined`. The value of
+*y* is `undefined`.
+
+An indexing expression evaluated at runtime behaves as follows:
+
+-   Object reference expression is evaluated first.
+-   If the evaluation completes abruptly, then so does the indexing
+    expression, and the index expression is not evaluated.
+-   If the evaluation completes normally, then the index expression is
+    evaluated.
+    The resultant value of the object reference expression refers to a `record`
+    instance.
+-   If the `record` instance contains a key defined by the index expression,
+    then the result is the value mapped to the key.
+-   Otherwise, the result is the literal `undefined`.
+
+Syntactically, the *record indexing expression* can be written by using a field
+access notation (see `Field Access Expression`{.interpreted-text role="ref"}) if its *index expression*
+is formed as an *identifier* of type *string*.
+
+``` {.typescript}
+type Keys = 'key1' | 'key2' | 'key3'
+
+let x: Record<Keys, number> = {
+    'key1': 1,
+    'key2': 2,
+    'key3': 4,
+}
+console.log(x.key2) // the same as console.log(x['key2'])
+x.key2 = 8          // the same as x['key2'] = 8
+console.log(x.key2) // the same as console.log(x['key2'])
+```
+
+::: {.index}
+string
+undefined
+evaluation
+expression
+type
+value
+reference type
+key
+indexing expression
+record indexing expression
+index expression
+object reference expression
+abrupt completion
+normal completion
+literal
+record instance
+mapped value
+field
+field access expression
+identifier
+string type
+identifier
+:::
+
+| 
+
+## Chaining Operator {#Chaining Operator}
+
+The *chaining operator* `'?.'` is used to effectively access values of
+nullish types. It can be used in the following contexts:
+
+-   `Field Access Expression`{.interpreted-text role="ref"},
+-   `Method Call Expression`{.interpreted-text role="ref"},
+-   `Function Call Expression`{.interpreted-text role="ref"},
+-   `Indexing Expressions`{.interpreted-text role="ref"}.
+
+If the value of `expr` in `expr?.` is of a *nullish type*,
+and is evaluated to `undefined` or `null`,
+then the evaluation of the entire surrounding *primary expression*
+stops. The result of the entire primary expression evaluation is then
+`undefined`. The entire primary expression is then of the union type
+`undefined | T`, where `T` is a *non-nullish type* of the entire
+primary expression:
+
+::: {.index}
+chaining operator
+field access
+access
+value
+nullish type
+context
+field access
+function call
+indexing expression
+expression
+undefined
+null
+method call
+primary expression
+non-nullish type
+:::
+
+``` {.typescript}
+class Person {
+    name: string
+    spouse?: Person = undefined
+    constructor(name: string) {
+        this.name = name
+    }
+}
+
+let bob = new Person("Bob")
+console.log(bob.spouse?.name) // prints "undefined"
+   // type of bob.spouse?.name is undefined|string
+
+bob.spouse = new Person("Alice")
+console.log(bob.spouse?.name) // prints "Alice"
+   // type of bob.spouse?.name is undefined|string
+```
+
+If the value of `expr` in `expr?.` is not of a *nullish type*,
+then the chaining operator has no effect, and does not
+influence the type of the entire primary expression:
+
+``` {.typescript}
+function foo(s1: string, s2: string | undefined) {
+    let a = s1?.[0] // 's' is of non-nullish type, type of 'a' is string
+    let b = s2?.[0] // type of 'b' is string | undefined
+}
+```
+
+The chaining operator is allowed in a method call expression for instance
+methods only. Attempting to use it with a static method is syntactically correct
+but causes a `compile-time error`{.interpreted-text role="index"}:
+
+``` {.typescript}
+class A {
+   static f(): string {return "" }
+   g(): string  { return "" }
+}
+
+let s: string|undefined
+
+s = A?.f()            // static method, compile-time error
+
+let b = new A
+s = b?.g()            // non-static method, OK
+```
+
+A `compile-time error`{.interpreted-text role="index"} occurs if a chaining operator is placed in the
+context where a variable is expected, e.g., in the left-hand-side expression of
+an assignment (see `Assignment`{.interpreted-text role="ref"}) or expression
+(see `Postfix Increment`{.interpreted-text role="ref"}, `Postfix Decrement`{.interpreted-text role="ref"},
+`Prefix Increment`{.interpreted-text role="ref"}, or `Prefix Decrement`{.interpreted-text role="ref"}).
+
+::: {.index}
+expression
+chaining operator
+nullish value
+nullish type
+context
+expression
+assignment
+postfix
+prefix
+decrement
+increment
+:::
+
+If an expression preceding a *chaining operator* is known at compile time to
+always evaluate to a nullish value (`undefined` or `null`) or a non-nullish
+value at runtime, then a `compile-time warning`{.interpreted-text role="index"} is issued:
+
+``` {.typescript}
+class C { f = 1}
+
+let c = new C()
+c?.f // warning, expression is always non-nullish
+
+let d: C | undefined = undefined
+d?.f // warning, expression is always evaluated as undefined
+```
+
+| 
+
+## `New` Expressions {#New Expressions}
+
+There are two syntactical forms of the *new expression*:
+
+``` {.abnf}
+newExpression:
+    newClassInstance
+    | newArrayInstance
+    ;
+```
+
+Type of a *new expression* is ether `class` or `array`.
+
+A *new class instance expression* creates a new object that is an instance
+of the specified class and it is described in full details below.
+
+The creation of array instances is an experimental feature discussed in
+`Resizable Array Creation Expressions`{.interpreted-text role="ref"}.
+
+::: {.index}
+syntactical form
+expression
+expression type
+class
+array
+instance
+instantiation
+class instance expression
+object
+array instance
+array creation expression
+resizable array
+:::
+
+The syntax of *new class instance expression* is presented below:
+
+``` {.abnf}
+newClassInstance:
+    'new' typeReference typeArguments? arguments?
+    ;
+```
+
+*Class instance creation expression* specifies a class to be instantiated.
+It optionally lists all actual arguments for the constructor.
+
+``` {.typescript}
+class A {
+   constructor(p: number) {}
+}
+
+new A(5) // create an instance and call constructor
+const a = new A(6) /* create an instance, call constructor and store
+                      created and initialized instance in 'a' */
+```
+
+*Class instance creation expression* can throw an error
+(see `Error Handling`{.interpreted-text role="ref"}, `Constructor Declaration`{.interpreted-text role="ref"}).
+
+::: {.index}
+class instance expression
+class instance creation expression
+syntax
+instantiation
+instance
+class
+constructor
+argument
+initialization
+:::
+
+A *class instance creation expression* that refers to classes `FixedArray`,
+`Array`, or classes derived from `Array`, instantiated with an array element
+type of some class type, is a special form of *array creation expression*.
+
+Attempting to create a *FixedArray* of elements of which the type is a type parameter
+causes a `compile-time error`{.interpreted-text role="index"}.
+
+``` {.typescript}
+class A<T> {
+   foo (element: T) {
+      const a1 = new T[5] (element)  // OK, resizable array with 5 elements
+                                     // is created
+      const a2 = new FixedArray<T> (5, element) // compile-time error, fixed-size
+                                     // array with 5 elements of type T cannot be
+                                     // created
+   }
+}
+```
+
+This situation is discussed in detail in `Fixed-Size Array Creation`{.interpreted-text role="ref"}
+and `Resizable Array Creation Expressions`{.interpreted-text role="ref"}.
+
+The execution of a class instance creation expression is performed as follows:
+
+-   New instance of class is created;
+-   Constructor of class is called to fully initialize the created
+    instance.
+
+The validity of the constructor call is similar to the validity of the method
+call as discussed in `Step 2 Selection of Entity to Call`{.interpreted-text role="ref"}, except the cases
+discussed in `Constructor Body`{.interpreted-text role="ref"}.
+
+A `compile-time error`{.interpreted-text role="index"} occurs if `typeReference` is a type parameter.
+
+::: {.note}
+::: {.title}
+Note
+:::
+
+If a *class instance creation expression* with no argument is used as object
+reference in a method call expression, then empty parentheses `'( )'` are
+to be used.
+
+``` {.typescript}
+class A {  method() {} }
+
+new A.method()   // Compile-time error
+new A().method() // OK
+(new A).method() // OK
+let a = new A    // OK
+```
+:::
+
+::: {.index}
+class instance creation expression
+instance
+instantiation
+constructor
+constructor call
+constructor body
+method
+class
+expression
+initialization
+type parameter
+method call expression
+parentheses
+:::
+
+| 
+
+## `instanceof` Expression {#instanceof Expression}
+
+The syntax of *instanceof expression* is presented below:
+
+``` {.abnf}
+instanceOfExpression:
+    expression 'instanceof' type
+    ;
+```
+
+Any `instanceof` expression in the form `expr instanceof T` is of type `boolean`.
+
+::: {.index}
+syntax
+instanceof expression
+boolean
+operand
+operator
+instanceof operator
+:::
+
+The result of an `instanceof` expression is `true` if the *actual type* of
+evaluated `expr` is a subtype of `T` (see `Subtyping`{.interpreted-text role="ref"}). Otherwise,
+the result is `false`.
+
+If type `T` is not *preserved up to undefined* by `Type Erasure`{.interpreted-text role="ref"}, then a
+`compile-time error`{.interpreted-text role="index"} occurs.
+
+*Generic type* (see `Generics`{.interpreted-text role="ref"}) in the form of *type name* (see
+`Type References`{.interpreted-text role="ref"}) can be used as the operand `T` of an `instanceof`
+expression. In this case, the check is performed against the *erased* type
+(see `Type Erasure`{.interpreted-text role="ref"}). The `type` of an `instanceof` expression
+is used for *smart cast* (see `Smart Casts and Smart Types`{.interpreted-text role="ref"}) if applicable.
+
+The approach is represented in the following example:
+
+``` {.typescript}
+class A<T> {}
+class B<T> extends A<T> {}
+
+function foo<T>(a: A<T>) {
+   let c = a as B<T>   // OK
+   let x = new B<string> // OK, explicit type parameter
+   console.log(x instanceof B)        // OK
+   console.log(x instanceof B<T>)     // Compile-time error, B<T> is not preserved up to undefined
+
+   if(a instanceof B) {  // OK, type of instanceof is used for smart
+                         // cast in `if` clause
+      let b = a as B<T>  // OK
+   }
+}
+
+let a = new B<string>()
+foo(a)
+```
+
+If an *instanceof expression* is known at compile time
+to always evaluate to `false` or `true` at runtime, then
+a `compile-time warning`{.interpreted-text role="index"} is issued:
+
+``` {.typescript}
+class C {}
+class D extends C{}
+class E {}
+
+function foo(d: D) {
+    console.log(d instanceof C) // warning, expression is always true
+    console.log(d instanceof E) // warning, expression is always false
+}
+```
+
+The `type` of an `instanceof` expression is used for *smart cast*
+(see `Smart Casts and Smart Types`{.interpreted-text role="ref"}) if applicable.
+
+::: {.index}
+instanceof expression
+subtype
+type
+evaluation
+subtyping
+type erasure
+type reference
+operand
+semantic check
+type cast
+smart cast
+instantiated generic type
+generic type
+type name
+type parameter
+generic instantiation
+:::
+
+| 
+
+## `Cast` Expression {#Cast Expression}
+
+The syntax of *cast expression* is as follows:
+
+``` {.abnf}
+castExpression:
+    expression 'as' type
+    ;
+```
+
+*Cast expression* in the form `expr as target` applies the *cast operator*
+`as` to `expr` by issuing the value of a specified `target` type. Thus,
+the type of a cast expression is always the `target` type.
+
+``` {.typescript}
+class X {}
+
+let x1 : X = new X()
+let ob : Object = x1 as Object // Object is the target type
+let x2 : X = ob as X // X is the target type
+```
+
+::: {.index}
+cast expression
+target type
+operand
+cast operator
+:::
+
+A `compile-time error`{.interpreted-text role="index"} occurs if the `target` type is type `never`:
+
+``` {.typescript}
+1 as never // Compile-time error
+```
+
+::: {.index}
+never type
+target type
+:::
+
+If `target` type is not *preserved up to undefined* by `Type Erasure`{.interpreted-text role="ref"},
+then a `compile-time warning`{.interpreted-text role="index"} occurs.
+
+``` {.typescript}
+class X<out T> { }
+function foo(p1: X<Object>) {
+    p1 as X<number> // Compile-time warning - such cast converison is type unsafe
+}
+```
+
+Two specific cases of a *cast expression* are described in the sections below:
+
+-   `Type Inference in Cast Expression`{.interpreted-text role="ref"} if `expr` is a numeric literal
+    (see `Numeric Literals`{.interpreted-text role="ref"}), an `Array literal`{.interpreted-text role="ref"}, or an
+    `Object Literal`{.interpreted-text role="ref"};
+-   `Runtime Checking in Cast Expression`{.interpreted-text role="ref"} otherwise.
+
+::: {.index}
+cast expression
+numeric literal
+object literal
+array literal
+type inference
+:::
+
+| 
+
+### Type Inference in Cast Expression {#Type Inference in Cast Expression}
+
+The following combinations of `expr` and `target` are considered for the
+`expr as target` expression:
+
+-   `expr` is a numeric literal, see `Type Inference for Constant Expressions`{.interpreted-text role="ref"}
+    for detail;
+-   `expr` is an `Array Literal`{.interpreted-text role="ref"}, and `target` is an *array type* or
+    a *tuple type* (see `Array Literal Type Inference from Context`{.interpreted-text role="ref"} for
+    detail);
+-   `expr` is an `Object Literal`{.interpreted-text role="ref"}, and `target` is *class type*,
+    *interface type*, or `Record Utility Type`{.interpreted-text role="ref"} (see the subsections of
+    `Object Literal`{.interpreted-text role="ref"} for detail).
+
+::: {.index}
+cast expression
+type inference
+expression
+numeric type
+value
+interface type
+record type
+utility type
+class type
+interface type
+object literal
+:::
+
+This kind of a *cast expression* results in inferring the target type for
+`expr`. This expression never causes a `runtime error`{.interpreted-text role="index"}
+by itself. However, the evaluation of array literal elements or
+object literal properties can cause a `runtime error`{.interpreted-text role="index"}.
+
+Casting for numeric literals is represented in the
+example below:
+
+``` {.typescript}
+let x = 1 as byte // OK
+let y = 128 as byte // Compile-time error
+```
+
+::: {.index}
+inferred type
+type inference
+evaluation
+runtime error
+array literal
+object literal
+cast
+:::
+
+Casting for array literals is represented in the example below:
+
+``` {.typescript}
+let a = [1, 2] as double[] // OK, [1.0, 2.0]
+let b = [1, 2] as double // Compile-time error, wrong target type
+let c = [1, "cc"] as double[] // Compile-time error, wrong element type
+let d = [1, "cc"] as [double, string] // OK, cast to the tuple type
+let e = [1.0, "cc"] as [int, string] // Compile-time error, wrong element type
+```
+
+::: {.note}
+::: {.title}
+Note
+:::
+
+*Assignability* check is applied to the elements of an array literal.
+:::
+
+::: {.index}
+array literal
+assignability
+:::
+
+Examples with object literals are provided in `Object literal`{.interpreted-text role="ref"}.
+
+| 
+
+### Runtime Checking in Cast Expression {#Runtime Checking in Cast Expression}
+
+If `Type Inference in Cast Expression`{.interpreted-text role="ref"} cannot be applied, then
+`expr as target` checks if the type of `expr` is a subtype of
+`target` (see `Subtyping`{.interpreted-text role="ref"}).
+
+If the *actual type* of `expr` is a subtype of `target` (see
+`Subtyping`{.interpreted-text role="ref"}), then the result of an `as` expression is the result of
+the evaluated `expr`. Otherwise, `ClassCastError` is thrown.
+
+If `target` type is not *preserved up to undefined* by `Type Erasure`{.interpreted-text role="ref"},
+then a check is performed against the *effective type* of the type. As the
+*effective type* is less specific than `target` in the case described,
+the usage of the resulting value can cause type violation, and `ClassCastError`
+is thrown as a consequence (see `Type Erasure`{.interpreted-text role="ref"} for detail).
+
+Semantically, a *cast expression* of this kind is coupled tightly with
+`instanceof Expression`{.interpreted-text role="ref"} as follows:
+
+::: {.index}
+runtime check
+cast expression
+target type
+type
+subtype
+subtyping
+type erasure
+check
+effective type
+:::
+
+-   If the result of `x instanceof T` is `true`, then `x as T` succeeds and
+    causes no `runtime error`{.interpreted-text role="index"};
+-   If the result of `x instanceof T` is `false`, then `x as T` causes
+    `ClassCastError` thrown at runtime.
+
+This situation is represented in the following example:
+
+::: {.index}
+runtime error
+type erasure
+runtime
+:::
+
+``` {.typescript}
+function foo (x: Object) {
+    x as string
+}
+
+foo("aa") // OK
+foo(1)    // runtime error is thrown in foo by 'as' operator application
+```
+
+`instanceof Expression`{.interpreted-text role="ref"} can be used to prevent a `runtime error`{.interpreted-text role="index"}.
+Moreover, the `instanceof Expression`{.interpreted-text role="ref"} makes *cast conversion* unnecessary
+in many cases as *smart cast* is applied (see `Smart Casts and Smart Types`{.interpreted-text role="ref"}):
+
+``` {.typescript}
+class Person {
+    name: string
+    constructor (name: string) { this.name = name }
+}
+
+function printName(x: Object) {
+    if (x instanceof Person) {
+        // no need to cast, type of 'x' is 'Person' here
+        console.log(x.name)
+    } else {
+        console.log("not a Person")
+    }
+}
+
+printName(new Person("Bob")) // output: Bob
+printName(1)                 // output: not a Person
+```
+
+::: {.index}
+runtime error
+operator
+expression
+cast conversion
+smart cast
+:::
+
+If the evaluation of a *cast expression* is known at compile time to
+always succeed or throw `ClassCastError` at runtime, then
+a `compile-time warning`{.interpreted-text role="index"} is issued:
+
+``` {.typescript}
+class C {}
+class D extends C {}
+class E extends C {}
+
+let a: C = new D()
+a as D // Compile-time warning, cast always succeeds
+a as E // Compile-time warning, cast always throws ClassCastError
+```
+
+| 
+
+## `typeof` Expression {#typeof Expression}
+
+The syntax of *typeof expression* is presented below:
+
+``` {.abnf}
+typeOfExpression:
+    'typeof' expression
+    ;
+```
+
+Any `typeof` expression is of type `string`.
+
+If *typeof expression* refers to a name of an overloaded function or method,
+then a `compile-time error`{.interpreted-text role="index"} occurs.
+
+The evaluation of a *typeof expression* starts with the `expression`
+evaluation. If this evaluation causes an error, then the `typeof` expression
+evaluation terminates abruptly. Otherwise, the value of a `typeof expression`
+is defined as follows:
+
+1.  The value of a `typeof` expression is known at compile time
+
+::: {.index}
+syntax
+typeof expression
+expression
+string type
+evaluation
+compile time
+value
+:::
+
++--------------------------+-------------------+-----------------------+
+| Expression Type          | typeof Result     | Code Example          |
++==========================+===================+=======================+
+| `string`                 | \"string\"        | ``` {.typescript}     |
+|                          |                   | let s: string = ...   |
+|                          |                   | typeof s              |
+|                          |                   | ```                   |
++--------------------------+-------------------+-----------------------+
+| `boolean`                | \"boolean\"       | ``` {.typescript}     |
+|                          |                   | let b: boolean = ...  |
+|                          |                   | typeof b              |
+|                          |                   | ```                   |
++--------------------------+-------------------+-----------------------+
+| `bigint`                 | \"bigint\"        | ``` {.typescript}     |
+|                          |                   | let b: bigint = ...   |
+|                          |                   | typeof b              |
+|                          |                   | ```                   |
++--------------------------+-------------------+-----------------------+
+| any class or interface   | \"object\"        | ``` {.typescript}     |
+|                          |                   | let a: Object = ...   |
+|                          |                   | typeof a              |
+|                          |                   | ```                   |
++--------------------------+-------------------+-----------------------+
+| any function type        | \"function\"      | ``` {.typescript}     |
+|                          |                   | le                    |
+|                          |                   | t f: () => void = ... |
+|                          |                   | typeof f              |
+|                          |                   | ```                   |
++--------------------------+-------------------+-----------------------+
+| `undefined`, `void`      | \"undefined\"     | ``` {.typescript}     |
+|                          |                   | typeof undefined      |
+|                          |                   | typeof void           |
+|                          |                   | ```                   |
++--------------------------+-------------------+-----------------------+
+| `null`                   | \"object\"        | ``` {.typescript}     |
+|                          |                   | typeof null           |
+|                          |                   | ```                   |
++--------------------------+-------------------+-----------------------+
+| `T|null`, when `T` is a  | \"object\"        | ``` {.typescript}     |
+| class (but not Object    |                   | class C {}            |
+| -see next table),        |                   | let x: C | null = ... |
+| interface or array       |                   | typeof x              |
+|                          |                   | ```                   |
++--------------------------+-------------------+-----------------------+
+| enumeration type         | name of           | ``` {.typescript}     |
+|                          | enumeration       | enum C {R, G, B}      |
+|                          | base type         | let c: C = ...        |
+|                          |                   | typeof c // "int"     |
+|                          |                   | ```                   |
++--------------------------+-------------------+-----------------------+
+| `number`, `double`       | \"number\"        | ``` {.typescript}     |
+|                          |                   | let n: number = ...   |
+|                          |                   | typeof n              |
+|                          |                   | ```                   |
++--------------------------+-------------------+-----------------------+
+| Other numeric types:     | \"byte\",         | ``` {.typescript}     |
+|                          | \"short\",        | let x: byte = ...     |
+| `byte`, `short`, `int`,  | \"int\",          | typeof x // "byte"    |
+| `long`, `float`          | \"long\" or       | ```                   |
+|                          | \"float\",        |                       |
+|                          | depending on type |                       |
+|                          | of                |                       |
+|                          | expression        |                       |
++--------------------------+-------------------+-----------------------+
+| `char`                   | \"char\"          | ``` {.typescript}     |
+|                          |                   | let x: char = ...     |
+|                          |                   | typeof x              |
+|                          |                   | ```                   |
++--------------------------+-------------------+-----------------------+
+
+2.  The value of a `typeof` expression is determined at runtime
+
+The result is the name of an actual type used at runtime for the following
+expression types:
+
++------------------------+-----------------------------+
+| Expression Type        | Code Example                |
++========================+=============================+
+| Object                 | ``` {.typescript}           |
+|                        | function f(o: Object) {     |
+|                        |   typeof o                  |
+|                        | }                           |
+|                        | ```                         |
++------------------------+-----------------------------+
+| union type             | ``` {.typescript}           |
+|                        | function f(p:A|B) {         |
+|                        |   typeof p                  |
+|                        | }                           |
+|                        | ```                         |
++------------------------+-----------------------------+
+| type parameter         | ``` {.typescript}           |
+|                        | class A<T|null|undefined> { |
+|                        |    f: T                     |
+|                        |    m() {                    |
+|                        |       typeof this.f         |
+|                        |    }                        |
+|                        |    constructor(p:T) {       |
+|                        |       this.f = p            |
+|                        |    }                        |
+|                        | }                           |
+|                        | ```                         |
++------------------------+-----------------------------+
+
+::: {.index}
+union type
+type parameter
+expression
+type
+constructor
+:::
+
+| 
+
+## Ensure-Not-Nullish Expression {#Ensure-Not-Nullish Expressions}
+
+*Ensure-not-nullish expression* is a postfix expression with the operator
+`'!'`. An *ensure-not-nullish expression* in the expression *e!* checks
+whether *e* of a nullish type (see `Nullish Types`{.interpreted-text role="ref"}) evaluates to a
+nullish value.
+
+The syntax of *ensure-not-nullish expression* is presented below:
+
+``` {.abnf}
+ensureNotNullishExpression:
+    expression '!'
+    ;
+```
+
+If the result of the evaluation of `expr` in `expr!` is not equal to
+`null` or `undefined`, then the result of *ensure-not-nullish expression*
+is the outcome of the evaluation of `expr`, otherwise
+`NullPointerError` is thrown.
+
+Type of `expr!` is the non-nullish variant of type of `expr`.
+
+::: {.index}
+ensure-not-nullish expression
+postfix
+prefix
+expression
+operator
+nullish type
+evaluation
+non-nullish variant
+nullish value
+null
+undefined
+:::
+
+If an *ensure-not-nullish expression* is known at compile time to always
+evaluate at runtime to a non-nullish or a nullish value (`undefined`
+or `null`), then a `compile-time warning`{.interpreted-text role="index"} is issued.
+The \'NullPointerError\' exception is always thrown at runtime in the latter
+case as represented below:
+
+``` {.typescript}
+class C { f = 1}
+
+let c = new C()
+c!.f // Compile-time warning, expression is always non-nullish, operator '!' is ignored
+
+let d: C | undefined = undefined
+d!.f // Compile-time warning, operator '!' always throws 'NullPointerError', as it is applied to nullish value
+     // runtime: throws 'NullPointerError'
+```
+
+| 
+
+## Nullish-Coalescing Expression {#Nullish-Coalescing Expression}
+
+*Nullish-coalescing expression* is a binary expression that uses the operator
+`'??'`.
+
+The syntax of *nullish-coalescing expression* is presented below:
+
+``` {.abnf}
+nullishCoalescingExpression:
+    expression '??' expression
+    ;
+```
+
+A *nullish-coalescing expression* checks whether the evaluation of the
+left-hand-side expression equals the *nullish* value:
+
+-   If so, then the right-hand-side expression evaluation is the result
+    of a nullish-coalescing expression.
+-   If not so, then the result of the left-hand-side expression evaluation is
+    the result of a nullish-coalescing expression, and the right-hand-side
+    expression is not evaluated (the operator `'??'` is thus *lazy*).
+
+::: {.index}
+nullish-coalescing expression
+binary expression
+operator
+evaluation
+expression
+nullish value
+lazy operator
+:::
+
+The type of a nullish-coalescing expression is a normalized *union type* (see
+`Union Types`{.interpreted-text role="ref"}) formed from the following:
+
+-   Non-nullish variant of the type of the left-hand-side expression; and
+-   Type of the right-hand-side expression.
+
+The semantics of a nullish-coalescing expression is represented in the
+following example:
+
+``` {.typescript}
+let x = lhs_expression ?? rhs_expression
+
+let x$ = lhs_expression
+if (x$ == null || x == undefined) {x = rhs_expression} else x = x$!
+
+// Type of x is NonNullishType(lhs_expression)|Type(rhs_expression)
+```
+
+If the *nullish-coalescing operator* is mixed with a conditional-and
+or a conditional-or operator without parentheses, then a
+`compile-time error`{.interpreted-text role="index"} occurs as follows:
+
+``` {.typescript}
+function  foo(n: boolean | undefined, a: boolean, b: boolean) {
+    n ?? a || b   // error, '??' and '||' operations cannot be mixed without parentheses
+    n ?? (a || b) // OK
+}
+```
+
+::: {.index}
+nullish type
+nullish-coalescing expression
+union type
+non-nullish type
+expression
+type
+nullish-coalescing operator
+conditional-and operator
+conditional-or operator
+:::
+
+If the result of a *nullish-coalescing expression* evaluation is known at
+compile time as a value of the left-hand-side or right-hand-side expression,
+then a `compile-time warning`{.interpreted-text role="index"} occurs:
+
+``` {.typescript}
+let a = 1
+let b = undefined
+
+a ?? 2 // warning, left-hand-side expression is always used
+b ?? 3 // warning, right-hand-side expression is always used
+```
+
+| 
+
+## Unary Expressions {#Unary Expressions}
+
+The syntax of *unary expression* is presented below:
+
+``` {.abnf}
+unaryExpression:
+    expression '++'
+    | expression '--'
+    | '++' expression
+    | '--' expression
+    | '+' expression
+    | '-' expression
+    | '~' expression
+    | '!' expression
+    ;
+```
+
+All expressions with *unary operators* (except postfix increment and postfix
+decrement operators) group right-to-left for `'~+x'` to have the same meaning
+as `'~(+x)'`.
+
+The type of *unaryExpression* is not necessarily the same as the type
+of the operand provided. The type of *unaryExpression* for each *unary operator*
+is stated explicitly in the following table:
+
++---------------------+----------------------+------------------------+
+| **Unary Operator**  | **Type of Operand**  | **Type of Result**     |
++=====================+======================+========================+
+| \'++\', \'\--\'     | > byte               | > byte                 |
+| (prefix or +        |                      |                        |
+| postfix)            | \-\-\-\-\-           | \-\-\-\-\-             |
+| +                   | \-\-\-\-\-\-\-\-\-\- | \-\-\-\-\-\-\-\-\-\-\- |
+|                     | \-\-\-\-\-\-\-\-\--+ | \-\-\-\-\-\-\-\-\-\--+ |
+| > -                 |                      |                        |
+| > -                 | :   short            | :   short              |
+| > -                 |                      |                        |
+| > -                 | \-\-\-\-\-           | \-\-\-\-\-             |
+|                     | \-\-\-\-\-\-\-\-\-\- | \-\-\-\-\-\-\-\-\-\-\- |
+|                     | \-\-\-\-\-\-\-\-\--+ | \-\-\-\-\-\-\-\-\-\--+ |
+|                     |                      |                        |
+|                     | :   int              | :   int                |
+|                     |                      |                        |
+|                     | \-\-\-\-\-           | \-\-\-\-\-             |
+|                     | \-\-\-\-\-\-\-\-\-\- | \-\-\-\-\-\-\-\-\-\-\- |
+|                     | \-\-\-\-\-\-\-\-\--+ | \-\-\-\-\-\-\-\-\-\--+ |
+|                     |                      |                        |
+|                     | :   long             | :   long               |
+|                     |                      |                        |
+|                     | \-\-\-\-\-           | \-\-\-\-\-             |
+|                     | \-\-\-\-\-\-\-\-\-\- | \-\-\-\-\-\-\-\-\-\-\- |
+|                     | \-\-\-\-\-\-\-\-\--+ | \-\-\-\-\-\-\-\-\-\--+ |
+|                     |                      |                        |
+|                     | :   float            | :   float              |
+|                     |                      |                        |
+|                     | \-\-\-\-\-           | \-\-\-\-\-             |
+|                     | \-\-\-\-\-\-\-\-\-\- | \-\-\-\-\-\-\-\-\-\-\- |
+|                     | \-\-\-\-\-\-\-\-\--+ | \-\-\-\-\-\-\-\-\-\--+ |
+|                     |                      |                        |
+|                     | :   double           | :   double             |
+|                     |                      |                        |
+|                     | \-\-\-\-\-           | \-\-\-\-\-             |
+|                     | \-\-\-\-\-\-\-\-\-\- | \-\-\-\-\-\-\-\-\-\-\- |
+|                     | \-\-\-\-\-\-\-\-\--+ | \-\-\-\-\-\-\-\-\-\--+ |
+|                     |                      |                        |
+|                     | :   bigint           | :   bigint             |
++---------------------+----------------------+------------------------+
+| \                   | > byte, short, int   | > int                  |
+| '+\', \'-\' (unary) |                      |                        |
+|                     | \-\-\-\-\-           | \-\-\-\-\-             |
+| :   -               | \-\-\-\-\-\-\-\-\-\- | \-\-\-\-\-\-\-\-\-\-\- |
+|     -               | \-\-\-\-\-\-\-\-\--+ | \-\-\-\-\-\-\-\-\-\--+ |
+|     -               |                      |                        |
+|     -               | :   long             | :   long               |
+|                     |                      |                        |
+|                     | \-\-\-\-\-           | \-\-\-\-\-             |
+|                     | \-\-\-\-\-\-\-\-\-\- | \-\-\-\-\-\-\-\-\-\-\- |
+|                     | \-\-\-\-\-\-\-\-\--+ | \-\-\-\-\-\-\-\-\-\--+ |
+|                     |                      |                        |
+|                     | :   float            | :   float              |
+|                     |                      |                        |
+|                     | \-\-\-\-\-           | \-\-\-\-\-             |
+|                     | \-\-\-\-\-\-\-\-\-\- | \-\-\-\-\-\-\-\-\-\-\- |
+|                     | \-\-\-\-\-\-\-\-\--+ | \-\-\-\-\-\-\-\-\-\--+ |
+|                     |                      |                        |
+|                     | :   double           | :   double             |
+|                     |                      |                        |
+|                     | \-\-\-\-\-           | \-\-\-\-\-             |
+|                     | \-\-\-\-\-\-\-\-\-\- | \-\-\-\-\-\-\-\-\-\-\- |
+|                     | \-\-\-\-\-\-\-\-\--+ | \-\-\-\-\-\-\-\-\-\--+ |
+|                     |                      |                        |
+|                     | :   bigint           | :   bigint             |
++---------------------+----------------------+------------------------+
+| \'\~\'              | > byte, short, int,  | > int                  |
+| (bitwise            | > float              |                        |
+| complement) +       |                      | \-\-\-\-\-             |
+|                     | \-\-\-\-\-           | \-\-\-\-\-\-\-\-\-\-\- |
+| > -                 | \-\-\-\-\-\-\-\-\-\- | \-\-\-\-\-\-\-\-\-\--+ |
+|                     | \-\-\-\-\-\-\-\-\--+ |                        |
+|                     |                      | :   long               |
+|                     | :   long, double     |                        |
+|                     |                      | \-\-\-\-\-             |
+|                     | \-\-\-\-\-           | \-\-\-\-\-\-\-\-\-\-\- |
+|                     | \-\-\-\-\-\-\-\-\-\- | \-\-\-\-\-\-\-\-\-\--+ |
+|                     | \-\-\-\-\-\-\-\-\--+ |                        |
+|                     |                      | :   bigint             |
+|                     | :   bigint           |                        |
++---------------------+----------------------+------------------------+
+| \'!\'               | boolean or see       | boolean                |
+| (logical            |                      |                        |
+| complement)         | `extended            |                        |
+|                     | conditional          |                        |
+|                     | expression           |                        |
+|                     | s`{.interpreted-text |                        |
+|                     | role="ref"}          |                        |
++---------------------+----------------------+------------------------+
+
+::: {.index}
+unary expression
+unary operator
+expression
+postfix
+increment operator
+decrement operator
+type
+:::
+
+| 
+
+### Postfix Increment {#Postfix Increment}
+
+*Postfix increment expression* is an *expression* followed by the increment
+operator `'++'`.
+
+The *expression* must be a *left-hand-side expression*
+(see `Left-Hand-Side Expressions`{.interpreted-text role="ref"}), and denotes a variable.
+
+A `compile-time error`{.interpreted-text role="index"} occurs if type of the
+the *expression* is not numeric (see `Numeric Types`{.interpreted-text role="ref"}) or `bigint`.
+
+Type of a *postfix increment expression* is the type of the variable. The
+result of a *postfix increment expression* is a value, not a variable.
+
+If the evaluation of the operand *expression* completes normally at runtime,
+then:
+
+-   Value *1* of the same type as a variable is added to the value of the
+    variable; and
+-   Result of addition is stored back into the variable.
+
+::: {.index}
+postfix
+expression
+increment expression
+increment operator
+expression
+conversion
+variable
+type
+evaluation
+numeric type
+value
+operand
+:::
+
+Otherwise, the *postfix increment expression* completes abruptly, and no
+incrementation occurs.
+
+The value of the *postfix increment expression* is the value of the variable
+*before* a new value is stored.
+
+The operation of postfix increment is represented in the following code example:
+
+``` {.typescript}
+let a: short  = 1
+let b: float  = 1.5f
+let c: bigint = 1n
+
+a++ // result '1', 'a' becomes '2' ('1 + 1')
+b++ // result '1.5f', 'b' becomes '2.5f'  ('1.5f + 1f')
+c++ // result '1n', 'c' becomes '2n' ('1n + 1n')
+```
+
+### Postfix Decrement {#Postfix Decrement}
+
+*Postfix decrement expression* is an expression followed by the decrement
+operator `'--'`. The expression must be a *left-hand-side expression* (see
+`Left-Hand-Side Expressions`{.interpreted-text role="ref"}). It denotes a variable.
+
+A `compile-time error`{.interpreted-text role="index"} occurs if type of the expression is not
+numeric (see `Numeric Types`{.interpreted-text role="ref"}) or `bigint`.
+
+Type of a postfix decrement expression is the type of the variable. The
+result of a postfix decrement expression is a value, not a variable.
+
+If evaluation of the operand expression completes at runtime, then:
+
+::: {.index}
+postfix
+decrement expression
+decrement operator
+numeric type
+variable
+value
+expression
+conversion
+runtime
+operand
+completion
+evaluation
+:::
+
+-   Value \'*1*\' of the same type as a variable is subtracted from the value
+    of the variable; and
+-   Result of the subtraction is stored back into the variable.
+
+Otherwise, the *postfix decrement expression* completes abruptly, and
+no decrementation occurs.
+
+The value of the *postfix decrement expression* is the value of the variable
+*before* a new value is stored.
+
+The operation of postfix decrement is represented in the following code example:
+
+``` {.typescript}
+let a: short  = 1
+let b: float  = 1.5f
+let c: bigint = 1n
+
+a-- // result '1', 'a' becomes '0' ('1 - 1')
+b-- // result '1.5f', 'b' becomes '0.5f'  ('1.5f - 1f')
+c-- // result '1n', 'c' becomes '0n' ('1n - 1n')
+```
+
+::: {.index}
+variable
+numeric types conversion
+postfix
+increment expression
+abrupt completion
+expression
+incrementation
+:::
+
+| 
+
+::: {.index}
+subtraction
+value
+variable
+conversion
+numeric casting
+abrupt completion
+numeric types conversion
+abrupt completion
+decrementation
+decrement expression
+postfix
+:::
+
+| 
+
+### Prefix Increment {#Prefix Increment}
+
+*Prefix increment expression* is an expression preceded by the operator
+`'++'`. The expression must be a *left-hand-side expression* (see
+`Left-Hand-Side Expressions`{.interpreted-text role="ref"}). It denotes a variable.
+
+A `compile-time error`{.interpreted-text role="index"} occurs if the type of the expression is not
+numeric (see `Numeric Types`{.interpreted-text role="ref"}) or `bigint`.
+
+Type of a prefix increment expression is the type of the variable. The
+result of a prefix increment expression is a value, not a variable.
+
+If evaluation of the operand *expression* completes normally at runtime, then:
+
+::: {.index}
+prefix
+increment operator
+increment expression
+expression
+operator
+variable
+expression
+normal completion
+conversion
+convertibility
+:::
+
+-   Value *1* of the same type as a variable is added to the value of the
+    variable; and
+-   Result of the addition is stored back into the variable.
+
+Otherwise, the *prefix increment expression* completes abruptly, and no
+incrementation occurs.
+
+The value of the *prefix increment expression* is the value of the variable
+*after* a new value is stored.
+
+The operation of prefix increment is represented in the following code example:
+
+``` {.typescript}
+let a: short  = 1
+let b: float  = 1.5f
+let c: bigint = 1n
+
+++a // result '2', 'a' becomes '2' ('1 + 1')
+++b // result '2.5f', 'b' becomes '2.5f'  ('1.5f + 1f')
+++c // result '2n', 'c' becomes '2n' ('1n + 1n')
+```
+
+::: {.index}
+value
+variable
+conversion
+predefined type
+conversion
+abrupt completion
+prefix
+increment expression
+:::
+
+| 
+
+### Prefix Decrement {#Prefix Decrement}
+
+*Prefix decrement expression* is an expression preceded by the operator
+`'--'`. The expression must be a *left-hand-side expression* (see
+`Left-Hand-Side Expressions`{.interpreted-text role="ref"}). It denotes a variable.
+
+A `compile-time error`{.interpreted-text role="index"} occurs if type of the expression is not
+numeric (see `Numeric Types`{.interpreted-text role="ref"}) or `bigint`.
+
+Type of a prefix decrement expression is the type of the variable. The
+result of a prefix decrement expression is a value, not a variable.
+
+::: {.index}
+prefix
+decrement operator
+decrement expression
+expression
+operator
+variable
+expression
+value
+:::
+
+If evaluation of the operand *expression* completes normally at runtime, then:
+
+-   Value *1* of the same type as a variable is subtracted from the value of the
+    variable; and
+-   Result of the subtraction is stored back into the variable.
+
+Otherwise, the *prefix decrement expression* completes abruptly, and no
+decrementation occurs.
+
+The value of a *prefix decrement expression* is the value of the variable
+*after* a new value is stored.
+
+The operation of prefix decrement is represented in the following code example:
+
+``` {.typescript}
+let a: short  = 1
+let b: float  = 1.5f
+let c: bigint = 1n
+
+--a // result '0', 'a' becomes '0' ('1 - 1')
+--b // result '0.5f', 'b' becomes '0.5f'  ('1.5f - 1f')
+--c // result '0n', 'c' becomes '0n' ('1n - 1n')
+```
+
+::: {.index}
+evaluation
+runtime
+expression
+subtraction
+prefix
+normal completion
+conversion
+decrement expression
+decrementation
+abrupt completion
+variable
+value
+prefix
+:::
+
+| 
+
+### Unary Plus {#Unary Plus}
+
+*Unary plus expression* is an expression preceded by the operator `'+'`.
+Type of the operand expression with the unary operator `'+'` must be
+either convertible (see `Implicit Conversions`{.interpreted-text role="ref"}) to a numeric type (see
+`Numeric Types`{.interpreted-text role="ref"}), or of `bigint` type. Otherwise,
+a `compile-time error`{.interpreted-text role="index"} occurs.
+
+The result of a unary plus expression is always a value, not a variable (even if
+the result of the operand expression is a variable).
+
+Numeric widening occurs on the *expression* before a *unary plus* operator
+is applied. The type of the *unary plus* is determined as follows:
+
+> -   Type of result is `int` for `byte`, `short`, and `int`;
+> -   Type of result is the same as that of the initial *expression* for `long`,
+>     `float`, `double`, and `bigint`.
+
+::: {.index}
+unary plus operator
+unary plus expression
+operator
+convertible type
+operand
+expression
+unary operator
+conversion
+numeric type
+numeric widening
+numeric types conversion
+unary plus
+operator
+value
+variable
+:::
+
+| 
+
+### Unary Minus {#Unary Minus}
+
+*Unary minus expression* is an expression preceded by the operator `'-'`.
+Type of an operand expression with the unary operator `'-'` must be either
+convertible (see `Widening Numeric Conversions`{.interpreted-text role="ref"}) to a numeric type (see
+`Numeric Types`{.interpreted-text role="ref"}), or of `bigint` type. Otherwise,
+a `compile-time error`{.interpreted-text role="index"} occurs.
+
+Numeric widening occurs on the *expression* before a *unary minus* operator is
+applied. The type of the *unary minus* is determined as follows:
+
+-   Type of result is [int]{.title-ref} for `byte`, `short`, and `int`;
+-   Type of result is the same as that of the initial *expression* for `long`,
+    `float`, `double`, and `bigint`.
+
+The result of a unary minus expression is a value, not a variable (even if the
+result of the operand expression is a variable).
+
+The unary negation operation is always performed on, and the result is drawn
+from the same value set as the promoted operand value.
+
+::: {.index}
+unary minus
+operand
+unary operator
+operator
+conversion
+convertibility
+numeric type
+numeric types conversion
+expression
+operand
+operand value
+normal completion
+value
+variable
+unary numeric promotion
+value set conversion
+unary negation operation
+promoted operand value
+:::
+
+Further value set conversions are then performed on the same result.
+
+The value of a unary minus expression at runtime is the arithmetic negation
+of the promoted value of the operand.
+
+The negation of integer values is the same as subtraction from zero. The
+programming language uses two's-complement representation for integers. The
+range of two's-complement value is not symmetric. The same maximum negative
+number results from the negation of the maximum negative *int* or *long*.
+In that case, an overflow occurs but throws no error. For any integer value
+*x*, *-x* is equal to *(\~x)+1*.
+
+The negation of bigint values and subtraction from the value [0n]{.title-ref} are the same.
+
+The negation of floating-point values is *not* the same as subtraction from
+zero (if *x* is *+0.0*, then *0.0-x* is *+0.0*, however *-x* is *-0.0*).
+
+A unary minus merely inverts the sign of a floating-point number. Special
+cases to consider are as follows:
+
+-   Operand `NaN` results in `NaN` (`NaN` has no sign).
+-   Operand infinity results in the infinity of the opposite sign.
+-   Operand zero results in zero of the opposite sign.
+
+::: {.index}
+value set conversion
+conversion
+unary minus
+negation
+promoted value
+promotion
+operand
+operation
+integer value
+subtraction
+two's-complement representation
+two's-complement value
+overflow
+floating-point value
+subtraction
+floating-point number
+infinity
+NaN
+:::
+
+| 
+
+### Bitwise Complement {#Bitwise Complement}
+
+*Bitwise complement* operator `'~'` is applied to an operand
+of a numeric type or type `bigint`.
+
+If the type of the operand is `double` or `float`, then it is truncated
+first to `long` or `int`, respectively.
+If the type of the operand is `byte` or `short`, then the operand is
+widened to `int`.
+If the type of the operand is `bigint`, then no conversion is required.
+Type of result is determined as follows:
+
+-   `int` for `byte`, `short`, `int`, and `float`.
+-   `long` for `long` and `double`.
+-   `bigint` for `bigint`.
+
+The result of a unary bitwise complement expression is a value, not a variable
+(even if the result of the operand expression is a variable).
+
+The value of a unary bitwise complement expression at runtime is the bitwise
+complement of the value of the operand. In all cases, *\~x* equals
+*(-x)-1*.
+
+It is represented by the following example:
+
+``` {.typescript}
+let b: byte  = 2
+let s: short  = 2
+let i: int = 2
+let f: float = 2.0f
+
+let l: long  = 2
+let d: double  = 2.0
+
+let B: bigint = 2n
+
+let rb = ~b
+console.log(rb, typeof rb) // prints '-3 int'
+let rs = ~s
+console.log(rs, typeof rs) // prints '-3 int'
+let ri = ~i
+console.log(ri, typeof ri) // prints '-3 int'
+let rf = ~f
+console.log(rf, typeof rf) // prints '-3 int'
+
+let rl = ~l
+console.log(rl, typeof rl) // prints '-3 long'
+let rd = ~d
+console.log(rd, typeof rd) // prints '-3 long'
+
+let rB = ~B
+console.log(rB, typeof rB) // prints '-3 bigint'
+```
+
+::: {.index}
+bitwise complement
+bitwise complement expression
+expression
+numeric type
+bigint type
+operator
+bitwise complement operator
+operand
+unary operator
+integer type
+unary bitwise complement expression
+variable
+runtime
+truncation
+conversion
+:::
+
+| 
+
+### Logical Complement {#Logical Complement}
+
+*Logical complement expression* is an expression preceded by the operator
+`'!'`. Type of the operand expression with the unary `'!'` operator must be
+`boolean` or type mentioned in `Extended Conditional Expressions`{.interpreted-text role="ref"}.
+Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+The unary logical complement expression type is `boolean`.
+
+The value of a unary logical complement expression is `true` if the (possibly
+converted) operand value is `false`, and `false` if the operand value
+(possibly converted) is `true`.
+
+::: {.index}
+logical complement operator
+logical complement
+logical complement expression
+conditional expression
+extended conditional expression
+expression
+operand
+operand value
+operator
+unary operator
+complement expression
+boolean type
+value
+unary logical complement expression
+predefined numeric types conversion
+:::
+
+| 
+
+## Binary Expressions {#Binary Expressions}
+
+The syntax of *binary expression* is presented below:
+
+``` {.abnf}
+binaryExpression:
+    multiplicativeExpression
+    | exponentiationExpression
+    | additiveExpression
+    | shiftExpression
+    | relationalExpression
+    | equalityExpression
+    | bitwiseAndLogicalExpression
+    | conditionalAndExpression
+    | conditionalOrExpression
+    ;
+```
+
+Every *binaryExpression* has the form *expression 1* `op` *expression 2*,
+where `op` is a binary operator (operator sign), and *expression 1* and
+*expression 2* are its operands.
+
+The subgroups of binary expressions are described further in this chapter.
+
+Possible combinations of types of *expression 1* and *expression 2*,
+as well as the type of the resulting *binaryExpression* are presented in the
+table below. Type combinations not listed in the table cause a
+`compile-time error`{.interpreted-text role="index"} if a combination is detected at compile time, or a
+`runtime error`{.interpreted-text role="index"} otherwise.
+
++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| **Operator** \| **Type of One Operand** \| **Type of Other Operand** \| **Type of Result** \|
++================+================================+===============================+=========================+
+\| \'*\', \'/\', \'%\' \| byte, short, int \| byte, short, int \| int \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| long \| any numeric except float \| long \|
+\| \| \| or double \| \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| float \| any numeric except double \| float \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| double \| any numeric \| double \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| bigint \| bigint \| bigint \|
++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \'*\*\' \| any numeric type \| any numeric type \| double \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| bigint \| bigint \| bigint \|
++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \'+\' \| string \| converted to a string \| string \|
++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \'+\', \'-\' \| byte, short, int \| byte, short, int \| int \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| long \| any numeric except float \| long \|
+\| \| \| or double \| \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| float \| any numeric except double \| float \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| double \| any numeric \| double \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| bigint \| bigint \| bigint \|
++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \'\<\<\', \'\>\>\' \| bigint \| bigint \| bigint \|
++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \'\<\<\', \'\>\>\', \| byte, short, int, \| any numeric \| int (see Note 2) \|
+\| and \'\>\>\>\' \| float \| \| \|
++ +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| long, double \| any numeric \| long (see Note 2) \|
+\| \| \| \| \|
++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \'\<\', \'\<=\', \| string, string literal \| string, string literal \| boolean \|
+\| \'\>\', \'\>=\' +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| boolean \| boolean \| boolean \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| numeric \| numeric \| boolean \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| enum (numeric value) \| enum (numeric value) \| boolean \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| enum (string value) \| enum (string value) \| boolean \|
++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \'==\', \'===\', \| string, string literal \| string, string literal \| boolean \|
+\| \'!=\', \'!==\' +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| boolean \| boolean \| boolean \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| numeric \| numeric \| boolean \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| bigint \| bigint \| boolean \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| char \| char \| boolean \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| enum \| enum \| boolean \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| function \| function \| boolean \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| null, undefined \| null, undefined \| boolean \|
++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \'&\', \'\^\', \' boolean \| boolean \| boolean \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| byte, short, int, float \| byte, short, int, float \| int \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| long, double \| long, double \| long \|
+\| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| bigint \| bigint \| bigint \|
++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \'&&\', \'\| boolean \| boolean \| boolean \|
++ +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+\| \| other types, see Note 5 \| other types, see Note 5 \| see Note 5 \|
++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--+
+
+::: {.note}
+::: {.title}
+Note
+:::
+
+The following applies to the table above.
+
+1.  For all operators, except shift operators, the order of operands does not influence
+    the type of result.
+2.  The type of result of shift operators \'`<<`\', \'`>>`\', \'`>>>`\' with
+    operands of numeric types depends on the type of the 1st (left-hand-side)
+    operand, and not on the type of the second (right-hand-side) operand.
+3.  Equality operators \'`==`\', \'`===`\', \'`!=`\', and \'`!==`\' are
+    defined for any type, but the combinations listed explicitly
+    in the table have specific behaviors.
+4.  Equality operators for the types that contain `null` or `undefined`
+    are described in `Extended Equality with null or undefined`{.interpreted-text role="ref"}.
+5.  Types of operands (other than `boolean`) and the resultant type for
+    logical operators \'`&&`\' and \'`||`\' are discussed in
+    `Extended Conditional Expressions`{.interpreted-text role="ref"}.
+:::
+
+| 
+
+## Multiplicative Expressions {#Multiplicative Expressions}
+
+Multiplicative expressions use *multiplicative operators* `'*'`, `'/'`,
+and `'%'`.
+
+The syntax of *multiplicative expression* is presented below:
+
+``` {.abnf}
+multiplicativeExpression:
+    expression '*' expression
+    | expression '/' expression
+    | expression '%' expression
+    ;
+```
+
+Multiplicative operators group left-to-right.
+
+Type of both operands in a multiplicative operator must be one of the following:
+
+-   `bigint`; or
+-   Convertible (see `Numeric Operator Contexts`{.interpreted-text role="ref"}) to a numeric type
+    (see `Numeric Types`{.interpreted-text role="ref"}).
+
+Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+::: {.index}
+multiplicative expression
+multiplicative operator
+syntax
+convertible type
+numeric type
+:::
+
+No implicit conversion is applied to a multiplicative expression with operands of
+type `bigint`, and the inferred type is always `bigint`.
+
+This behavior is represented by the following example:
+
+``` {.typescript}
+// OK, the inferred type of 'i' is ``bigint``
+let i = 1n * 2n
+// Compile-time error, one operand is not of 'bigint' type
+let i = 1n * 2
+```
+
+| 
+
+A numeric types conversion (see `Widening Numeric Conversions`{.interpreted-text role="ref"})
+of an expression with operands convertible (see `Numeric Operator Contexts`{.interpreted-text role="ref"})
+to a numeric type is performed on both operands to ensure
+that the resultant type is the type of the multiplicative expression.
+
+The resultant type of an expression with a numeric operand is inferred from
+the largest type after promoting `byte` and `short` operands to `int`:
+
+-   `double` if any operand is `double`;
+-   `float` if any operand is `float`, and no operand is `double`;
+-   `long` if any operand is `long`, and no operand is `double` or `float`;
+-   `int` if all operands are of type `byte`, `short`, or `int`.
+
+This situation is represented in the following example:
+
+::: {.index}
+numeric types conversion
+widening numeric conversion
+operand
+multiplicative expression
+inferred type
+type inference
+promotion
+:::
+
+``` {.typescript}
+// Code below prints true 4 times
+let byte1: byte = 1
+let byte2: byte = 1
+let long1: long = 1
+let float1: float = 1
+let double1: double = 1
+
+let res_byte = byte1 * byte2  // int
+console.log(res_byte instanceof int)
+
+let res_long = byte1 * long1  // long
+console.log(res_long instanceof long)
+
+let res_float = byte1 * float1 // float
+console.log(res_float instanceof float)
+
+let res_double = byte1 * double1 // double
+console.log(res_double instanceof double)
+```
+
+::: {.index}
+bitwise complement expression
+value
+variable
+operand expression
+:::
+
+| 
+
+### Multiplication {#Multiplication}
+
+The binary operator `'*'` performs multiplication, and returns the product of
+its operands.
+
+Multiplication is a commutative operation if operand expressions have no
+side effects.
+
+Bigint multiplication is associative.
+
+Integer multiplication is associative when all operands are of the same type.
+
+Floating-point multiplication is not associative.
+
+Type of a *multiplication expression* with numeric operands
+is the *largest* type (see `Numeric Types`{.interpreted-text role="ref"}) of its operands *after* applying
+`Widening numeric conversions`{.interpreted-text role="ref"}.
+
+If overflow occurs during integer multiplication, then:
+
+-   The result is the low-order bits of the mathematical product as represented
+    in some sufficiently large two's-complement format.
+-   The sign of the result can be other than the sign of the mathematical
+    product of the two operand values.
+
+A floating-point multiplication result is determined in compliance with the
+IEEE 754 arithmetic:
+
+::: {.index}
+multiplication
+binary operator
+multiplication
+operand
+commutative operation
+expression
+operand expression
+side effect
+integer
+integer multiplication
+associativity
+two's-complement format
+floating-type multiplication
+operand value
+low-order bit
+IEEE 754
+overflow
+:::
+
+-   The result is `NaN` if:
+
+    -   Either operand is `NaN`;
+    -   Infinity is multiplied by zero.
+
+-   If the result is not `NaN`, then the sign of the result is as follows:
+
+    -   Positive, where both operands have the same sign; and
+    -   Negative, where the operands have different signs.
+
+-   If infinity is multiplied by a finite value, then the multiplication results
+    in a signed infinity (the sign is determined by the rule above).
+
+-   If neither `NaN` nor infinity is involved, then the exact mathematical
+    product is computed.
+
+    The product is rounded to the nearest value in the chosen value set by
+    using the IEEE 754 *round-to-nearest* mode. The programming
+    language requires gradual underflow support as defined by IEEE 754
+    (see `Floating-Point Types and Operations`{.interpreted-text role="ref"}).
+
+    If the magnitude of the product is too large to represent, then the
+    operation overflows, and the result is an appropriately signed infinity.
+
+The evaluation of a multiplication operator `'*'` never throws an error
+despite possible overflow, underflow, or loss of information.
+
+::: {.index}
+NaN
+infinity
+operand
+finite value
+multiplication
+signed infinity
+round-to-nearest mode
+rounding
+underflow
+floating-point type
+floating-point operation
+overflow
+evaluation
+multiplication operator
+error
+loss of information
+IEEE 754
+:::
+
+| 
+
+### Division {#Division}
+
+The binary operator `'/'` performs division and returns the quotient of its
+left-hand-side and right-hand-side expressions (`dividend` and `divisor`
+respectively).
+
+Bigint division rounds toward *0*, i.e., the quotient of bigint operands
+*n* and *d* is the `bigint` value *q* with the largest possible magnitude that
+satisfies $|d\cdot{}q|\leq{}|n|$.
+
+If the divisor value of the `bigint` division operator is *0n*, then either
+a `compile-time error`{.interpreted-text role="index"} occurs if detected at compile time, or a
+`runtime error`{.interpreted-text role="index"} is thrown during execution.
+
+Integer division rounds toward *0*, i.e., the quotient of integer operands
+*n* and *d*, after a numeric types conversion on both (see
+`Widening Numeric Conversions`{.interpreted-text role="ref"} for details), is
+the integer value *q* with the largest possible magnitude that
+satisfies $|d\cdot{}q|\leq{}|n|$.
+
+::: {.note}
+::: {.title}
+Note
+:::
+
+The integer value *q* is:
+
+-   Positive, where \|n\| $\geq{}$ \|d\|, and *n* and *d* have the same
+    sign; but
+-   Negative, where \|n\| $\geq{}$ \|d\|, and *n* and *d* have opposite
+    signs.
+:::
+
+::: {.index}
+division
+division operator
+binary operator
+operand
+dividend
+divisor
+integer division
+integer operand
+numeric types conversion
+widening numeric conversion
+numeric type
+integer value
+:::
+
+The only special case that does not comply with this rule is where integer
+overflow occurs. The result equals the dividend if the dividend is a negative
+integer of the largest possible magnitude for its type, while the divisor
+is *-1*. No error is thrown in this case despite the overflow.
+
+However, if the divisor value of integer division is detected to be *0* during
+compilation, then a `compile-time error`{.interpreted-text role="index"} occurs. Otherwise, an
+`ArithmeticError` is thrown during execution.
+
+The result of a floating-point division is determined in compliance with the
+IEEE 754 arithmetic:
+
+-   The result is `NaN` if:
+    -   Either operand is NaN;
+    -   Both operands are infinity; or
+    -   Both operands are zero.
+
+::: {.index}
+integer overflow
+dividend
+negative integer
+floating-point division
+divisor
+overflow
+error
+integer division
+NaN
+infinity
+operand
+IEEE 754
+:::
+
+-   If the result is not `NaN`, then the sign of the result is:
+
+    -   Positive, where both operands have the same sign; or
+    -   Negative, where the operands have different signs.
+
+-   Division produces a signed infinity (the sign is determined by
+    the rule above) if:
+
+    -   Infinity is divided by a finite value; and
+    -   A nonzero finite value is divided by zero.
+
+-   Division produces a signed zero (the sign is determined by the
+    rule above) if:
+
+    -   A finite value is divided by infinity; and
+    -   Zero is divided by any other finite value.
+
+-   If neither `NaN` nor infinity is involved, then the exact mathematical
+    quotient is computed.
+
+    If the magnitude of the product is too large to represent, then the
+    operation overflows, and the result is an appropriately signed infinity.
+
+::: {.index}
+NaN
+operand
+division
+signed infinity
+finite value
+infinity
+NaN
+overflow
+magnitude
+:::
+
+The quotient is rounded to the nearest value in the chosen value set by
+using the IEEE 754 *round-to-nearest* mode. The programming
+language requires gradual underflow support as defined by IEEE 754 (see
+`Floating-Point Types and Operations`{.interpreted-text role="ref"}).
+
+The evaluation of a floating-point division operator `'/'` never throws an
+error despite possible overflow, underflow, division by zero, or loss of
+information.
+
+The type of a *division expression* with operands of numeric types is the
+*largest* numeric type (see `Numeric Types`{.interpreted-text role="ref"}) of its operands *after* applying
+`Widening numeric conversions`{.interpreted-text role="ref"}.
+
+::: {.index}
+infinity
+NaN
+overflow
+floating-point division
+round-to-nearest mode
+numeric type
+operand
+rounding
+underflow
+floating-point type
+floating-point operation
+loss of information
+division
+division operator
+IEEE 754
+:::
+
+| 
+
+### Remainder {#Remainder}
+
+The binary operator `'%'` yields the remainder of its operands (`dividend`
+as the left-hand-side, and `divisor` as the right-hand-side operand) from an
+implied division.
+
+The remainder operator in accepts floating-point operands (unlike in
+C and C++).
+
+A remainder operation $(a\%b)$ on `bigint` operands produces a result
+that makes $(a/b)*b+(a\%b)$ equal *a*. No implicit conversion is
+applied to an operand.
+
+If the divisor value of the `bigint` remainder operator is *0n*, then a
+`runtime error`{.interpreted-text role="index"} is thrown during execution.
+
+The remainder operation $(a\%b)$ on integer operands produces a result
+that makes $(a/b)*b+(a\%b)$ equal *a*. Numeric type conversion on remainder
+operation is discussed in `Widening Numeric Conversions`{.interpreted-text role="ref"}. A remainder
+operation produces a value of type `int` for `byte`, `short`, `int`,
+and `float` operands, or a value of type `long` for `long` or `double`
+operands.
+
+::: {.index}
+binary operator
+operand
+remainder operator
+dividend
+divisor
+division
+numeric types conversion
+conversion
+floating-point operand
+remainder operation
+value
+integer operand
+numeric type
+widening numeric conversion
+:::
+
+This equality holds even in the special case where the dividend is a negative
+integer of the largest possible magnitude of its type, and the divisor is *-1*
+(the remainder is then *0*). According to this rule, the result of the remainder
+operation can only be one of the following:
+
+-   Negative if the dividend is negative; or
+-   Positive if the dividend is positive.
+
+The magnitude of the result is always less than that of the divisor.
+
+If the divisor value of integer remainder operator is detected to be *0* during
+compilation, then a `compile-time error`{.interpreted-text role="index"} occurs. Otherwise, an
+`ArithmeticError` is thrown during execution.
+
+The result of a floating-point remainder operation as computed by the operator
+`'%'` is different than that produced by the remainder operation defined by
+IEEE 754. The IEEE 754 remainder operation computes the remainder from a rounding
+division (not a truncating division), and its behavior is different from that
+of the usual integer remainder operator. On the contrary, presumes that
+the operator `'%'` behaves on floating-point operations in the same manner as
+the integer remainder operator (comparable to the C library function *fmod*).
+The standard library (see `Standard Library`{.interpreted-text role="ref"}) routine `Math.IEEEremainder`
+can compute the IEEE 754 remainder operation.
+
+::: {.index}
+dividend
+equality
+magnitude
+negative integer
+divisor
+remainder operator
+remainder operation
+operator
+truncation
+integer remainder
+value
+floating-point remainder operation
+floating-point operation
+standard library
+division
+truncation
+rounding
+routine
+IEEE 754
+:::
+
+The result of a floating-point remainder operation is determined in compliance
+with the IEEE 754 arithmetic:
+
+-   The result is `NaN` if:
+    -   Either operand is `NaN`;
+    -   The dividend is infinity;
+    -   The divisor is zero; or
+    -   The dividend is infinity, and the divisor is zero.
+-   If the result is not `NaN`, then the sign of the result is the same as the
+    sign of the dividend.
+-   The result equals the dividend if:
+    -   The dividend is finite, and the divisor is infinity; or
+    -   If the dividend is zero, and the divisor is finite.
+
+::: {.index}
+floating-point remainder operation
+remainder operation
+operand
+NaN
+infinity
+divisor
+dividend
+IEEE 754
+:::
+
+-   If infinity, zero, or `NaN` are not involved, then the floating-point remainder
+    *r* from the division of the dividend *n* by the divisor *d* is determined
+    by the mathematical relation $r=n-(d\cdot{}q)$, where *q* is an
+    integer that is only:
+    -   Negative if $n/d$ is negative, or
+    -   Positive if $n/d$ is positive.
+-   The magnitude of *q* is the largest possible without exceeding the
+    magnitude of the true mathematical quotient of *n* and *d*.
+
+The evaluation of the floating-point remainder operator `'%'` never throws
+an error, even if the right-hand operand is zero. Overflow, underflow, or
+loss of precision cannot occur.
+
+The type of a *remainder expression* with numeric operands is the
+*largest* numeric type (see `Numeric Types`{.interpreted-text role="ref"}) of its operands *after* applying
+`Widening numeric conversions`{.interpreted-text role="ref"}.
+
+::: {.index}
+infinity
+NaN
+floating-point remainder
+remainder operator
+dividend
+integer
+loss of precision
+operand
+magnitude
+underflow
+error
+overflow
+loss of precision
+numeric type
+:::
+
+| 
+
+## Exponentiation Expression {#Exponentiation Expression}
+
+Exponentiation expression uses the binary *exponentiation operator* \'`**`\'.
+
+The binary operator \'`**`\' raises the first operand (base) to the power of
+the second operand (exponent).
+
+The syntax of an *exponentiation expression* is presented below:
+
+``` {.abnf}
+exponentiationExpression:
+    expression '**' expression
+    ;
+```
+
+The operator \'`**`\' has two variants distinguishable by operand types, i.e.,
+both operands are as follows:
+
+-   `Type bigint`{.interpreted-text role="ref"}; or
+-   `Numeric types`{.interpreted-text role="ref"}, in which case any operand that is not of type `double`
+    is converted to type `double`.
+
+Any other combination of operand types causes a `compile-time error`{.interpreted-text role="index"}.
+
+The result of raising to power *0n* is always *1n*, including the case
+*0n* `**` *0n*.
+
+If the second operand of type `bigint` is negative, then either a
+`compile-time error`{.interpreted-text role="index"} occurs if detected at compile time, or a
+`runtime error`{.interpreted-text role="index"} is thrown during execution.
+
+Both variants of the operator \'`**`\' are represented in example below:
+
+``` {.typescript}
+let a: bigint = 2n
+let b: double = 2
+let c: int = 2
+let d: int = 10
+
+let v = a ** 2n // OK 'bigint' ** 'bigint'
+let u = a ** 0n // OK 'bigint' ** 'bigint'
+let w = a ** -1n // Compile-time error, exponent must be non-negative
+
+let x = a ** c // Compile-time error, 'c' is not 'bigint'
+let y = b ** d // 'd' is converted to 'double'
+let z = c ** d // both 'c' and 'd' are converted to 'double'
+```
+
+The binary operator \'`**`\' with *numeric operands* is equivalent to
+[Math.pow()]{.title-ref}. It causes neither a `compile-time error`{.interpreted-text role="index"}, nor a
+`runtime error`{.interpreted-text role="index"}.
+
+Special cases of the binary operator \'`**`\' according to IEEE 754 are
+represented below.
+
+::: {.note}
+::: {.title}
+Note
+:::
+
+Since any numeric operand of \'`**`\' is implicitly converted to `double`,
+the term `integer` effectively means `double` with zero in the fractional
+part (for example *-2.0*) as listed below:
+
+-   [x \*\* +/-0]{.title-ref} returns *1* even if *x* is *NaN*;
+-   [+/-0 \*\* y]{.title-ref} returns *+/-Infinity* if *y* is a negative odd integer;
+-   [+/-0 \*\* -Infinity]{.title-ref} returns *+Infinity*;
+-   [+/-0 \*\* +Infinity]{.title-ref} returns *+0*;
+-   [+/-0 \*\* y]{.title-ref} returns *+0* if *y* is a finite positive odd integer;
+-   [-1 \*\* +Infinity]{.title-ref} returns *1*;
+-   [+1 \*\* y]{.title-ref} returns *1* for any *y* (even for *NaN*);
+-   [x, +Infinity]{.title-ref} returns *+0* for *-1 \< x \< 1*;
+-   [x, +Infinity]{.title-ref} returns *+Infinity* for *x \< -1 or for*1 \< x\*
+    (including *+/-Infinity*);
+-   [x, -Infinity]{.title-ref} returns *+Infinity* for *-1 \< x \< 1*;
+-   [x, -Infinity]{.title-ref} returns *+0* for *x \< -1* or for *1 \< x* (including +/-Infinity);
+-   [+Infinity, y]{.title-ref} returns *+0* for a number *y \< 0*;
+-   [+Infinity, y]{.title-ref} returns *+Infinity* for a number *y \> 0*;
+-   [-Infinity, y]{.title-ref} returns *-0* for a finite negative odd integer *y*;
+-   [-Infinity, y]{.title-ref} returns *-Infinity* for a finite positive odd integer *y*;
+-   [-Infinity, y]{.title-ref} returns *+0* if *y* for a finite *y \< 0* and not an odd integer;
+-   [-Infinity, y]{.title-ref} returns *+Infinity* for a finite *y \> 0* and not an odd integer;
+-   [+/-0, y]{.title-ref} returns *+Infinity* for a finite *y \< 0* and not an odd integer;
+-   [+/-0, y]{.title-ref} returns *+0* for a finite *y \> 0* and not an odd integer;
+-   [x, y]{.title-ref} returns *NaN* for a finite *x \< 0* and a finite non-integer *y*.
+:::
+
+::: {.index}
+exponentiation
+binary operator
+operand
+base
+exponent
+NaN
+Infinity
+:::
+
+| 
+
+## Additive Expressions {#Additive Expressions}
+
+Additive expressions use *additive operators* `'+'` and `'-'`.
+
+The syntax of *additive expression* is presented below:
+
+``` {.abnf}
+additiveExpression:
+    expression '+' expression
+    | expression '-' expression
+    ;
+```
+
+Additive operators group left-to-right.
+
+The following rules apply where the operator `'+'` is used:
+
+-   If either operand is of type `string`, then the operation
+    is a string concatenation (see `String Concatenation`{.interpreted-text role="ref"}).
+-   If both operands are of type `bigint`, then no implicit
+    conversion is applied, and the inferred type is `bigint`.
+-   In all other cases, type of each operand must be
+    convertible (see `Widening Numeric Conversions`{.interpreted-text role="ref"}) to
+    a numeric type (see `Numeric Types`{.interpreted-text role="ref"}).
+
+Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+The following rules apply where the operator `'-'` is used:
+
+-   Either both operands must be of type `bigint`; or
+-   Type of each operand of a binary operator must be convertible
+    (see `Widening Numeric Conversions`{.interpreted-text role="ref"}) to a numeric type (see
+    `Numeric Types`{.interpreted-text role="ref"}).
+
+Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+Type of an *additive expression* with a valid
+combination of types is determined as follows:
+
+-   If any operand is of type `string`, then `string`;
+-   If both operands are of type `bigint`, then `bigint`;
+-   If both operands are convertible to a numeric type, then the type inferred
+    after widening operands of numeric types by the rules explained in the example
+    in `Multiplicative Expressions`{.interpreted-text role="ref"}.
+
+::: {.index}
+additive expression
+additive operator
+syntax
+sting type
+operand
+sting concatenation
+convertible type
+operator
+widening numeric conversion
+numeric type
+binary operator
+:::
+
+| 
+
+### String Concatenation {#String Concatenation}
+
+If one operand of an expression is of type `string`, then the string
+conversion (see `String Operator Contexts`{.interpreted-text role="ref"}) is performed on the other
+operand at runtime to produce a string.
+
+String concatenation produces a reference to a `string` object that is a
+concatenation of two operand strings. The left-hand-side operand characters
+precede the right-hand-side operand characters in a newly created string.
+
+If the expression is not a constant expression (see `Constant Expressions`{.interpreted-text role="ref"}),
+then a new `string` object is created (see `New Expressions`{.interpreted-text role="ref"}).
+
+::: {.index}
+string concatenation
+string type
+string
+string object
+operand string
+operand
+string conversion
+operator context
+runtime
+operand string
+expression
+constant expression
+object
+:::
+
+| 
+
+### Additive Operators for Numeric Types {#Additive Operators for Numeric Types}
+
+A numeric types conversion (see `Widening Numeric Conversions`{.interpreted-text role="ref"})
+performed on a pair of operands ensures that both operands are of a numeric
+type. If the conversion fails, then a `compile-time error`{.interpreted-text role="index"} occurs.
+
+The binary operator `'+'` performs addition and produces the sum of such
+operands.
+
+The binary operator `'-'` performs subtraction and produces the difference
+of two numeric operands.
+
+Type of an additive expression performed on numeric operands is the
+largest type (see `Numeric Types`{.interpreted-text role="ref"}) to which operands of that
+expression are converted (see `Multiplicative Expressions`{.interpreted-text role="ref"} for an example).
+
+If the promoted type is `int` or `long`, then integer arithmetic is
+performed.
+If the promoted type is `float` or `double`, then floating-point arithmetic
+is performed.
+
+::: {.index}
+additive operator
+conversion
+numeric types conversion
+numeric widening conversion
+numeric type
+numeric operand
+binary operator
+operand
+addition
+additive expression
+promoted type
+promoting
+integer arithmetic
+floating-point arithmetic
+integer
+expression
+:::
+
+If operand expressions have no side effects, then addition is a commutative
+operation.
+
+If all operands are of the same type, then integer addition is associative.
+
+Floating-point addition is not associative.
+
+If overflow occurs on an integer addition, then:
+
+-   Result is the low-order bits of the mathematical sum as represented in
+    a sufficiently large two's-complement format.
+-   Sign of the result is opposite to that of the mathematical sum of
+    the operands' values.
+
+The result of a floating-point addition is determined in compliance with the
+IEEE 754 arithmetic as follows:
+
+::: {.index}
+operand expression
+expression
+side effect
+addition
+integer addition
+commutative operation
+operation
+low-order bit
+two's-complement format
+operand value
+overflow
+floating-point addition
+associativity
+IEEE 754
+:::
+
+-   The result is `NaN` if:
+    -   Either operand is `NaN`; or
+    -   The operands are two infinities of the opposite signs.
+-   The sum of two infinities of the same sign is the infinity of that sign.
+-   The sum of infinity and a finite value equals the infinite operand.
+-   The sum of two zeros of opposite sign is positive zero.
+-   The sum of two zeros of the same sign is zero of that sign.
+-   The sum of zero and a nonzero finite value is equal to the nonzero operand.
+-   The sum of two nonzero finite values of the same magnitude and opposite sign
+    is positive zero.
+-   If infinity, zero, or `NaN` are not involved, and the operands have the
+    same sign or different magnitudes, then the exact sum is computed
+    mathematically.
+
+If the magnitude of the sum is too large to represent, then the operation
+overflows. The result is an appropriately signed infinity.
+
+::: {.index}
+NaN
+infinity
+signed infinity
+magnitude
+operand
+infinite operand
+infinite value
+nonzero operand
+finite value
+positive zero
+negative zero
+overflow
+operation overflow
+:::
+
+Otherwise, the sum is rounded to the nearest value within the chosen value set
+by using the IEEE 754 *round-to-nearest* mode. The programming language
+requires gradual underflow support as defined by IEEE 754 (see
+`Floating-Point Types and Operations`{.interpreted-text role="ref"}).
+
+When applied to two numeric type operands (see `Numeric Types`{.interpreted-text role="ref"}), the
+binary operator `'-'` performs subtraction, and returns the difference of
+such operands (`minuend` as left-hand-side, and `subtrahend` as the
+right-hand-side operand).
+
+The result of *a-b* is always the same as that of *a+(-b)* in both integer and
+floating-point subtraction.
+
+The subtraction from zero for integer values is the same as negation. However,
+the subtraction from zero for floating-point operands and negation is *not*
+the same (if *x* is *+0.0*, then *0.0-x* is *+0.0*; however *-x* is *-0.0*).
+
+The evaluation of a numeric additive operator never throws an error despite
+possible overflow, underflow, or loss of information.
+
+::: {.index}
+round-to-nearest mode
+rounding
+value set
+underflow
+floating-point type
+floating-point operation
+floating-point subtraction
+floating-point operand
+subtraction
+integer subtraction
+integer value
+loss of information
+numeric type operand
+numeric type
+binary operator
+subtraction
+negation
+overflow
+additive operator
+error
+IEEE 754
+:::
+
+| 
+
+## Shift Expressions {#Shift Expressions}
+
+*Shift expressions* use *shift operators* `'<<'` (left shift), `'>>'`
+(signed right shift), and `'>>>'` (unsigned right shift). The value to be
+shifted is the left-hand-side operand in a shift operator, and the
+right-hand-side operand specifies the shift distance.
+
+The syntax of *shift expression* is presented below:
+
+``` {.abnf}
+shiftExpression:
+    expression '<<' expression
+    | expression '>>' expression
+    | expression '>>>' expression
+    ;
+```
+
+Shift operators group left-to-right.
+
+Both operands of a *shift expression* must be of numeric types
+or type `bigint`.
+
+If the type of one or both operands is `double` or `float`, then the
+operand or operands are truncated first to `long` or `int`, respectively.
+If the type of the left-hand-side operand is `byte` or `short`, then the
+operand is converted to `int`.
+If both operands are of type `bigint`, then no conversion is required.
+A `compile-time error`{.interpreted-text role="index"} occurs if one operand is type `bigint`, and the
+other one is a numeric type.
+Also, a `compile-time error`{.interpreted-text role="index"} occurs if `'>>>'` (unsigned right shift)
+is applied to operands of type `bigint`.
+
+The result of a *shift expression* is of the type to which its first operand
+converted.
+
+::: {.index}
+shift
+shift expression
+shift distance
+shift operator
+signed right shift
+unsigned right shift
+operand
+syntax
+shift distance
+numeric type
+bigint type
+truncation
+integer type
+bigint
+conversion
+:::
+
+If the left-hand-side operand is of the promoted type `int`, then only five
+lowest-order bits of the right-hand-side operand specify the shift distance
+(as if using a bitwise logical AND operator `'&'` with the mask value *0x1f*
+or *0b11111* on the right-hand-side operand). Thus, it is always within the
+inclusive range of *0* through *31*.
+
+If the left-hand-side operand is of the promoted type `long`, then only six
+lowest-order bits of the right-hand-side operand specify the shift distance
+(as if using a bitwise logical AND operator `'&'` with the mask value *0x3f*
+or *0b111111* the right-hand-side operand). Thus, it is always within the
+inclusive range of *0* through *63*.
+
+Shift operations are performed on the two's-complement integer
+representation of the value of the left-hand-side operand at runtime.
+
+The value of *n* `<<` *s* is *n* left-shifted by *s* bit positions. It is
+equivalent to multiplication by two to the power *s* even in case of an
+overflow.
+
+::: {.index}
+shift expression
+promoted type
+promotion
+lowest-order bit
+operand
+shift distance
+bitwise logical AND operator
+mask value
+value
+truncation
+integer division
+shift operation
+multiplication
+overflow
+two's-complement integer
+left shift
+runtime
+zero-extension
+shift
+:::
+
+The value of *n* `>>` *s* is *n* right-shifted by *s* bit positions with
+sign-extension. The resultant value is $floor(n / 2s)$. If *n* is
+non-negative, then it is equivalent to truncating integer division (as computed
+by the integer division operator by 2 to the power *s*).
+
+The value of *n* `>>>` *s* is *n* right-shifted by *s* bit positions with
+zero-extension, where:
+
+-   If *n* is positive, then the result is the same as that of *n* `>>` *s*.
+-   If *n* is negative, and type of the left-hand-side operand is `int`,
+    then the result is equal to that of the expression
+    (*n* `>>` *s*) `+ (2 << ~` *s*).
+-   If *n* is negative, and type of the left-hand-side operand is `long`,
+    then the result is equal to that of the expression
+    (*n* `>>` *s*) `+ ((2 as long) << ~` *s*).
+
+::: {.index}
+value
+sign-extension
+integer division
+right shift
+truncation
+integer division
+operator
+zero-extension
+operand
+operand type
+expression
+:::
+
+| 
+
+## Relational Expressions {#Relational Expressions}
+
+Relational expressions use *relational operators* `'<'`, `'>'`, `'<='`,
+and `'>='`.
+
+The syntax of *relational expression* is presented below:
+
+``` {.abnf}
+relationalExpression:
+    expression '<' expression
+    | expression '>' expression
+    | expression '<=' expression
+    | expression '>=' expression
+    ;
+```
+
+Relational operators group left-to-right.
+
+A relational expression is always of type `boolean`.
+
+Relational expressions can be of the kinds described below.
+The kind of a relational expression depends on types of operands. It is a
+`compile-time error`{.interpreted-text role="index"} if at least one type of operands is different from
+types described below.
+
+::: {.index}
+relational operator
+relational expression
+syntax
+boolean type
+expression
+operand
+operand type
+type
+:::
+
+| 
+
+### Numeric Relational Operators {#Numeric Relational Operators}
+
+Type of each operand in a `numeric relational operator` must be of a numeric type
+(see `Numeric Types`{.interpreted-text role="ref"}, `Numeric Conversions for Relational and Equality Operands`{.interpreted-text role="ref"}).
+Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+Depending on the converted type of operands, a comparison is performed as follows:
+
+-   Signed integer comparison, if the converted operand type is `int`
+    or `long`.
+-   Floating-point comparison, if the converted operand type is `float`
+    or `double`.
+
+::: {.index}
+numeric relational operator
+operand
+convertible type
+conversion
+numeric type
+numeric types conversion
+signed integer comparison
+floating-point comparison
+converted type
+:::
+
+The comparison of floating-point values drawn from any value set must be accurate.
+
+A floating-point comparison must be performed in accordance with the IEEE 754
+standard specification as follows:
+
+-   The result of a floating-point comparison is false if either operand is `NaN`.
+-   All values other than `NaN` must be ordered with the following:
+    -   Negative infinity less than all finite values; and
+    -   Positive infinity greater than all finite values.
+-   Positive zero equals negative zero.
+
+::: {.index}
+floating-point value
+floating-point comparison
+comparison
+NaN
+finite value
+infinity
+negative infinity
+positive infinity
+positive zero
+negative zero
+IEEE 754
+:::
+
+Based on the presumption above, the following rules apply to integer
+operands, floating-point operands other than `NaN`:
+
+-   The value produced by the operator `'<'` is `true` if the value of the
+    left-hand-side operand is less than that of the right-hand-side operand.
+    Otherwise, the value is `false`.
+-   The value produced by the operator `'<='` is `true` if the value of the
+    left-hand-side operand is less than or equal to that of the right-hand-side
+    operand. Otherwise, the value is `false`.
+-   The value produced by the operator `'>'` is `true` if the value of the
+    left-hand-side operand is greater than that of the right-hand-side operand.
+    Otherwise, the value is `false`.
+-   The value produced by the operator `'>='` is `true` if the value of the
+    left-hand-side operand is greater than or equal to that of the right-hand-side
+    operand. Otherwise, the value is `false`.
+
+The behavior of comparison of `numeric` type operands is represented
+in the example below:
+
+``` {.typescript}
+// integer comparisons
+console.log( 1 < -3) // false
+console.log(-1 as long >= -1 as short) // true
+
+// floating-point comparisons
+console.log(1 <= 1.0f)  // true
+console.log(2 <= 1.0)   // false
+```
+
+::: {.index}
+integer operand
+floating-point operand
+bigint operand
+NaN
+operator
+value
+:::
+
+| 
+
+### Bigint Relational Operators {#Bigint Relational Operators}
+
+Relational operators can be applied to `bigint` values
+(see `Type bigint`{.interpreted-text role="ref"}) if:
+
+-   both operands are of `bigint` type; or
+-   one operand is of `bigint` type and other is of a numeric type.
+
+::: {.index}
+relational operator
+operand
+numeric type
+numeric types conversion
+bigint type
+bigint comparison
+:::
+
+In the second case, a comparison is performed as follows:
+
+-   If a numeric type operand is of an integer type, it is converted to
+    `bigint` type and `bigint` comparison is performed;
+-   If a numeric type operand is of `double` type, the `bigint`
+    operand is converted to `double` and then floating-point comparison
+    is performed;
+-   If a numeric type operand is of `float` type, both operands are converted to
+    `double` and then floating-point comparison is performed.
+
+The behavior of comparison of `numeric` type operands and
+`bigint` type operands is represented in the example below:
+
+``` {.typescript}
+let b = 2n
+
+// bigint against bigint
+console.log(b < 3n)  // true
+console.log(b >= 3n) // false
+
+// bigint against an integer type
+console.log(b < 3)         // true, '2' is converted implicitly to bigint
+console.log(b < BigInt(3)) // true, the same with explicit conversion
+
+// bigint against double
+console.log(b < 3.0)               // true, 'b' is converted to double
+console.log(b.doubleValue() < 3.0) // the same with explicit conversion
+
+// bigint against float
+const f = 3.f
+console.log(b < f) // true, 'b' and 'f' are converted to bigint
+```
+
+| 
+
+### String Relational Operators {#String Relational Operators}
+
+Results of all string comparisons are defined as follows:
+
+-   Operator `'<'` delivers `true` if the string value of the left-hand-side
+    operand is lexicographically less than the string value of the right-hand-side
+    operand, or `false` otherwise.
+-   Operator `'<='` delivers `true` if the string value of the left-hand-side
+    operand is lexicographically less than or equal to the string value of the
+    right-hand-side operand, or `false` otherwise.
+-   Operator `'>'` delivers `true` if the string value of the left-hand-side
+    operand is lexicographically greater than the string value of the
+    right-hand-side operand, or `false` otherwise.
+-   Operator `'>='` delivers `true` if the string value of the left-hand-side
+    operand is lexicographically greater than or equal to the string value of
+    the right-hand operand, or `false` otherwise.
+
+::: {.index}
+operator
+string comparison
+string relational operator
+string value
+:::
+
+| 
+
+### Boolean Relational Operators {#Boolean Relational Operators}
+
+Results of all boolean comparisons are defined as follows:
+
+-   Operator `'<'` delivers `true` if the left-hand-side operand is `false`,
+    and the right-hand-side operand is true, or `false` otherwise.
+-   Operator `'<='` delivers:
+    -   `true` when both operands are `true`, or the left-hand-side operand
+        is `false` for any right-hand value;
+    -   `false` when the left-hand-side operand is `true`, and the
+        right-hand-side operand is `false`.
+-   Operator `'>'` delivers `true` if the left-hand-side operand is `true`,
+    and the right-hand-side operand is `false`, or `false` otherwise.
+-   Operator `'>='` delivers:
+    -   `true` when both operands are `false`, or the left-hand-side operand
+        is `true` for any right-hand-side value;
+    -   `false` when the left-hand-side operand is `false`, and the
+        right-hand-side operand is `true`.
+
+::: {.index}
+operator
+operand
+relational operator
+boolean comparison
+boolean relational operator
+:::
+
+| 
+
+### `char` Relational Operators {#char Relational Operators}
+
+See `char Operations`{.interpreted-text role="ref"}.
+
+| 
+
+### Enumeration Relational Operators {#Enumeration Relational Operators}
+
+If both operands are of the same enumeration type (see `Enumerations`{.interpreted-text role="ref"}),
+then `Numeric Relational Operators`{.interpreted-text role="ref"}
+or `String Relational Operators`{.interpreted-text role="ref"} are used depending on the type of enumeration
+base type. Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+::: {.index}
+enumeration relational operator
+enumeration type
+enumeration base type
+string value
+relational operator
+numeric relational operator
+string relational operator
+:::
+
+| 
+
+## Equality Expressions {#Equality Expressions}
+
+Equality expressions use *equality operators* `'=='`, `'==='`, `'!='`,
+and `'!=='`.
+
+The syntax of *equality expression* is presented below:
+
+``` {.abnf}
+equalityExpression:
+    expression ('==' | '===' | '!=' | '!==') expression
+    ;
+```
+
+Equality operators group left-to-right.
+Equality operators are commutative if operand expressions cause no side
+effects.
+
+Similarly to relational operators, equality operators return `true` or
+`false`. Equality operators have lower precedence than relational operators,
+for example, $a < b==c < d$ is [true]{.title-ref} when both $a < b$
+and $c < d$ are `true`.
+
+Any equality expression is of type `boolean`.
+
+::: {.index}
+equality operator
+equality expression
+syntax
+boolean type
+side effect
+commutative operator
+relational operator
+precedence
+:::
+
+The result produced by `a != b` and `!(a == b)` is the same in all cases.
+The result produced by `a !== b` and `!(a === b)` is the same.
+
+The result of the operators `'=='` and `'==='` is the same in all cases
+except when comparing the values `null` and `undefined` (see
+`Extended Equality with null or undefined`{.interpreted-text role="ref"}).
+
+A comparison that uses the operators `'=='` and `'==='` is evaluated to
+`true` if:
+
+::: {.index}
+operator
+comparison
+value
+evaluation
+:::
+
+-   Both operands are of `Type boolean`{.interpreted-text role="ref"} and have the same value;
+-   Both operands are of `Type string`{.interpreted-text role="ref"} or string literal type
+    (see `String Literal Types`{.interpreted-text role="ref"}) and have the same contents;
+-   Both operands are of `Type bigint`{.interpreted-text role="ref"} and have the same value;
+-   Both operands are of `Numeric Types`{.interpreted-text role="ref"} and have the same value except `NaN`
+    (see `Numeric Equality Operators`{.interpreted-text role="ref"} for detail) after a numeric conversion
+    (see `Widening numeric conversions`{.interpreted-text role="ref"},
+    `Numeric Conversions for Relational and Equality Operands`{.interpreted-text role="ref"});
+-   Both operands are of `Type char`{.interpreted-text role="ref"} and have the same value, i.e., both
+    operands represent the same 16-bit code unit (see `char Operations`{.interpreted-text role="ref"});
+-   One operand is of `Type char`{.interpreted-text role="ref"}, other is of a numeric type and
+    operand have the same numeric value (see `char Operations`{.interpreted-text role="ref"} and
+    `char Conversions for Relational and Equality Operands`{.interpreted-text role="ref"});
+-   Both operands are of enumeration types (see `Enumerations`{.interpreted-text role="ref"}) and
+    have the same numeric value or the same string value;
+-   Function references refer to the same functional object (see
+    `Function Type Equality Operators`{.interpreted-text role="ref"} for detail).
+-   Both operands are of the same type and refer to the same object.
+
+::: {.index}
+operand
+boolean type
+value
+string literal type
+numeric conversion
+bigint type
+NaN
+numeric equality operator
+enumeration type
+numeric value
+string
+equality operator
+function type
+:::
+
+An evaluation of equality expressions always uses the actual types of operands
+as in the example below:
+
+``` {.typescript}
+function equ(a: Object, b: Object): boolean {
+    return a == b
+}
+
+equ(1, 1) // true, values are compared
+equ(1, 2) // false, value are compared
+
+equ("aa", "aa") // true, string contexts are compared
+equ(1, "aa")    // false, not compatible types
+
+interface I1 {}
+interface I2 {}
+
+function equ1 (i1: I1, i2: I2) {
+   return i1 == i2 // to be resolved during program execution
+}
+class A implements I1, I2 {}
+const a = new A
+equ1 (a, a) // true, the same values
+```
+
+An equality with values of two union types is represented in the example below:
+
+``` {.typescript}
+function f1(x: number | string, y: boolean | undefined): boolean {
+    return x == y // Compile-time warning, always evaluates to false
+}
+
+function f2(x: number | string, y: boolean | "abc"): boolean {
+    // OK, can be evaluated as true
+    return x == y
+}
+```
+
+::: {.index}
+implementation
+resolution
+equality
+union type
+function
+:::
+
+If an *equality expression* is known at compile time to always evaluate
+to `false` or `true` at runtime, then a `compile-time warning`{.interpreted-text role="index"}
+is issued as follows:
+
+``` {.typescript}
+5 == 5  // Compile-time warning, always true
+5 != 5  // Compile-time warning, always false
+5 === 5 // Compile-time warning, always true
+5 !== 5 // Compile-time warning, always false
+
+function  foo(b: boolean | undefined) {
+    let n: number | boolean = 1
+    b == n // Compile-time warning, expression is always false due to smart cast
+           // (type of `n` is `number` and does not overlap with type of `b`)
+    n == 1 // Compile-time warning, expression is
+           // always true because `n` initialized with 1 and never modified
+}
+
+class B {
+    f(): B|undefined { return undefined }
+}
+class D extends B {
+    f(): D { return this }
+}
+
+function bar(c: B) {
+    if (c instanceof D) {
+        c.f() == undefined // warning, expression is always false
+    }
+}
+```
+
+If two operands are of different enumeration types, then a
+`compile-time warning`{.interpreted-text role="index"} occurs as follows:
+
+``` {.typescript}
+enum E1 {A, B}
+enum E2 {C, D}
+
+function test (e1: E1, e2: E2) {
+   e1 == e2 // Compile-time warning, appears to be unintentional
+}
+```
+
+::: {.index}
+comparison
+value
+type
+evaluation
+runtime
+semantics
+instance
+class
+string type
+overlapping
+equality expression
+operand
+:::
+
+| 
+
+### Numeric Equality Operators {#Numeric Equality Operators}
+
+Type of each operand in a `numeric equality operator` must be convertible
+to a numeric type (see `Numeric Types`{.interpreted-text role="ref"}) or to a `bigint` type
+(see `Type bigint`{.interpreted-text role="ref"}) as described in
+`Numeric Conversions for Relational and Equality Operands`{.interpreted-text role="ref"}.
+Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+A widening conversion can occur (see `Widening Numeric Conversions`{.interpreted-text role="ref"})
+if type of one operand is smaller than type of the other operand (see
+`Numeric Types`{.interpreted-text role="ref"}).
+
+If the converted type of the operands is `int` or `long`, then an
+integer equality test is performed.
+
+If the converted type is `float` or `double`, then a floating-point
+equality test is performed.
+
+The floating-point equality test must be performed in accordance with the
+following IEEE 754 standard rules:
+
+::: {.index}
+numeric equality
+numeric equality operator
+widening conversion
+convertible type
+conversion
+value equality
+operator
+numeric type
+numeric types conversion
+widening numeric conversion
+operand
+converted type
+floating-point equality test
+operand
+conversion
+integer equality test
+IEEE 754
+widening
+numeric conversion
+:::
+
+-   The result of `'=='` or `'==='` is `false` but the result of `'!='`
+    is `true` if either operand is `NaN`.
+
+    The test `x != x` or `x !== x` is `true` only if *x* is `NaN`.
+
+-   Positive zero equals negative zero.
+
+-   Equality operators consider two distinct floating-point values unequal
+    in any other situation.
+
+    For example, if one value represents positive infinity, and the other
+    represents negative infinity, then each compares equal to itself and
+    unequal to all other values.
+
+Based on the above presumptions, the following rules apply to integer operands
+or floating-point operands other than `NaN`:
+
+-   If the value of the left-hand-side operand is equal to that of the
+    right-hand-side operand, then the operator `'=='` or `'==='` produces
+    the value `true`. Otherwise, the result is `false`.
+-   If the value of the left-hand-side operand is not equal to that of the
+    right-hand-side operand, then the operator `'!='` or `'!=='` produces
+    the value `true`. Otherwise, the result is `false`.
+
+``` {.typescript}
+5 == 5 // true
+5 != 5 // false
+
+5 === 5 // true
+
+5 == new Number(5) // true
+5 === new Number(5) // true
+
+5 == 5.0 // true
+```
+
+::: {.index}
+NaN
+positive zero
+negative zero
+floating-point value
+equality operator
+value
+positive infinity
+negative infinity
+floating-point operand
+integer operand
+value equality
+numeric equality
+integer operand
+:::
+
+If *both* operands are of type `bigint` and have the same value, then the
+operators `'=='` or `'==='` produce the value `true`. Otherwise, the
+result is `false`. The result produced by `a != b` and `a !== b`
+is the same as the result of `!(a == b)` and `!(a === b)`, respectively.
+
+If one operand is of type `bigint`, and the other is of a numeric type, then
+the result is `false`.
+
+### Function Type Equality Operators {#Function Type Equality Operators}
+
+If both operands refer to the same function object, then the comparison
+returns `true`.
+When comparing method references, not only the same method must be used,
+but also its bounded instances must be equal.
+
+``` {.typescript}
+function foo() {}
+function bar() {}
+function goo(p: number) {}
+
+foo == foo // true, same function object
+foo == bar // false, different function objects
+foo == goo // false, different function objects
+
+class A {
+   method() {}
+   static method() {}
+   foo () {}
+}
+const a = new A
+a.method == a.method // true, same function object
+A.method == A.method // true, same function object
+
+const aa = new A
+a.method == aa.method /* false, different function objects
+     as 'a' and 'aa' are different bounded objects */
+a.method == a.foo // false, different function objects
+```
+
+::: {.index}
+function type equality operator
+equality operator
+function object
+instance
+bounded instance
+method reference
+function
+bounded object
+:::
+
+| 
+
+### Extended Equality with `null` or `undefined` {#Extended Equality with null or undefined}
+
+provides extended semantics for equalities with `null` and `undefined`
+to ensure better alignment with .
+
+If one operand in an equality expression is `null`, and other is `undefined`,
+then the operator `'!='` returns `true`, and the operator `'!=='` returns
+`false`:
+
+::: {.index}
+extended equality
+null
+undefined
+semantics
+alignment
+operand
+equality expression
+equality operator
+:::
+
+``` {.typescript}
+function foo(x: Object | null, y: Object | null | undefined) {
+    console.log(x == y, x === y)
+}
+
+foo(null, undefined) // output: true, false
+foo(null, null)      // output: true, true
+```
+
+Comparison the values `null` and `undefined` directly is also allowed:
+
+``` {.typescript}
+console.log(null == undefined)  // output: true
+console.log(null === undefined) // output: false
+```
+
+| 
+
+## Bitwise and Logical Expressions {#Bitwise and Logical Expressions}
+
+The *bitwise operators* and *logical operators* are as follows:
+
+-   AND operator `'&'`;
+-   Exclusive OR operator `'^'`; and
+-   Inclusive OR operator `'|'`.
+
+The syntax of *bitwise and logical expression* is presented below:
+
+``` {.abnf}
+bitwiseAndLogicalExpression:
+    expression '&' expression
+    | expression '^' expression
+    | expression '|' expression
+    ;
+```
+
+These operators have different precedence. The operator `'&'` has the highest,
+while `'|'` has the lowest precedence.
+
+Operators group left-to-right. Each operator is commutative if the
+operand expressions have no side effects, and associative.
+
+The bitwise and logical operators can compare two operands of a numeric
+type, or two operands of the `boolean` type. Otherwise, a
+`compile-time error`{.interpreted-text role="index"} occurs.
+
+::: {.index}
+bitwise operator
+logical operator
+bitwise expression
+logical expression
+type boolean
+operand expression
+syntax
+exclusive OR operator
+inclusive OR operator
+AND operator
+commutative operator
+operator
+commutative operator
+boolean type
+side effect
+numeric type
+associativity
+operator
+:::
+
+| 
+
+### Integer Bitwise Operators {#Integer Bitwise Operators}
+
+Integer bitwise operators are `'&'`, `'^'`, and `'|'` applied to operands
+of numeric types or type `bigint`.
+
+If the type of one or both operands is `double` or `float`, then the operand
+or operands are truncated first to the appropriate integer type.
+If the type of any operand is `byte` or `short`, then the operand is
+converted to `int`.
+If operands are of different integer types, then the operand of a smaller type
+is converted to a larger type (see `Numeric types`{.interpreted-text role="ref"}) by using
+`Widening Numeric Conversions`{.interpreted-text role="ref"}.
+If both operands are of type `bigint`, then no conversion is required.
+A `compile-time error`{.interpreted-text role="index"} occurs if one operand of type `bigint`, and the
+other operand is of a numeric type.
+
+The resultant type of the bitwise operator is the type of its operands.
+
+The resultant value of `'&'` is the bitwise AND of the operand values.
+
+The resultant value of `'^'` is the bitwise exclusive OR of the operand values.
+
+The resultant value of `'|'` is the bitwise inclusive OR of the operand values.
+
+::: {.index}
+integer bitwise operator
+numeric types conversion
+widening numeric conversion
+bigint type
+numeric type
+convertibility
+types conversion
+bitwise exclusive OR operand
+bitwise inclusive OR operand
+bitwise AND operand
+expression type
+operand value
+integer type
+conversion
+truncation
+:::
+
+| 
+
+### Boolean Logical Operators {#Boolean Logical Operators}
+
+Boolean logical operators are `'&'`, `'^'`, and `'|'` applied to operands
+of type `boolean`.
+
+If both operand values are `true`, then the resultant value of `'&'` is
+`true`. Otherwise, the result is `false`.
+
+If the operand values are different, then the resultant value of `'^'` is
+`true`. Otherwise, the result is `false`.
+
+If both operand values are `false`, then the resultant value of `'|'` is
+`false`. Otherwise, the result is `true`.
+
+Thus, *boolean logical expression* is of the boolean type.
+
+::: {.index}
+boolean operator
+logical operator
+operand value
+boolean logical expression
+boolean type
+:::
+
+| 
+
+## Conditional-And Expression {#Conditional-And Expression}
+
+The *conditional-and* operator `'&&'` is similar to `'&'` (see
+`Bitwise and Logical Expressions`{.interpreted-text role="ref"}) but evaluates its right-hand-side
+operand only if the value of the left-hand-side operand is `true`.
+
+The computation results of `'&&'` and `'&'` on `boolean` operands are
+the same. The right-hand-side operand of `'&&'` is not necessarily evaluated.
+
+The syntax of *conditional-and expression* is presented below:
+
+``` {.abnf}
+conditionalAndExpression:
+    expression '&&' expression
+    ;
+```
+
+A *conditional-and* operator groups left-to-right.
+
+A *conditional-and* operator is fully associative as regards both the result
+value and side effects (i.e., the evaluations of the expressions *((a)* `&&`
+*(b))* `&&` *(c)* and *(a)* `&&` *((b)* `&&` *(c))* produce the same
+result, and the same side effects occur in the same order for any *a*, *b*, and
+*c*).
+
+::: {.index}
+conditional-and operator
+conditional-and expression
+bitwise expression
+logical expression
+boolean operand
+syntax
+conditional evaluation
+evaluation
+expression
+side effect
+:::
+
+A *conditional-and* expression is always of type `boolean` except the
+extended semantics (see `Extended Conditional Expressions`{.interpreted-text role="ref"}).
+
+Each operand of the *conditional-and* operator must be of type `boolean`,
+or of a type mentioned in `Extended Conditional Expressions`{.interpreted-text role="ref"}.
+Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+The left-hand-side operand expression is first evaluated at runtime.
+
+If the resultant value is `false`, then the value of the *conditional-and*
+expression is `false`. The evaluation of the right-hand-side operand
+expression is omitted.
+
+If the value of the left-hand-side operand is `true`, then the
+right-hand-side expression is evaluated.
+The resultant value is the value of the *conditional-and*
+expression.
+
+::: {.index}
+conditional-and expression
+conditional-and operator
+boolean type
+runtime
+expression
+operand
+:::
+
+| 
+
+## Conditional-Or Expression {#Conditional-Or Expression}
+
+The *conditional-or* operator `'||'` is similar to `'|'` (see
+`Integer Bitwise Operators`{.interpreted-text role="ref"}) but evaluates its right-hand-side operand
+only if the value of its left-hand-side operand is `false`.
+
+The syntax of *conditional-or expression* is presented below:
+
+``` {.abnf}
+conditionalOrExpression:
+    expression '||' expression
+    ;
+```
+
+A *conditional-or* operator groups left-to-right.
+
+A *conditional-or* operator is fully associative as regards both the result
+value and side effects (i.e., the evaluations of the expressions *((a)* `||`
+*(b))* `||` *(c)* and *(a)* `||` *((b)* `||` *(c))* produce the same
+result, and the same side effects occur in the same order for any *a*, *b*,
+and *c*).
+
+A *conditional-or* expression is always of type `boolean` except the
+extended semantics (see `Extended Conditional Expressions`{.interpreted-text role="ref"}).
+
+::: {.index}
+conditional-or expression
+conditional-or operator
+operand
+syntax
+associativity
+expression
+side effect
+evaluation
+boolean type
+semantics
+boolean type
+extended semantics
+:::
+
+Each operand of the *conditional-or* operator must be of type `boolean`
+or type mentioned in `Extended Conditional Expressions`{.interpreted-text role="ref"}.
+Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+The left-hand-side operand expression is first evaluated at runtime.
+
+If the resultant value is `true`, then the value of the *conditional-or*
+expression is `true`, and the evaluation of the right-hand-side operand
+expression is omitted.
+
+If the resultant value is `false`, then the right-hand-side expression is
+evaluated.
+The resultant value is the value of the *conditional-or* expression.
+
+The computation results of `'||'` and `'|'` on `boolean` operands are
+the same, but the right-hand-side operand in `'||'` cannot be evaluated.
+
+::: {.index}
+conditional-or expression
+conditional-or operator
+runtime
+boolean type
+expression
+evaluation
+boolean operand
+:::
+
+| 
+
+## Assignment {#Assignment}
+
+All *assignment operators* group right-to-left (i.e., $a=b=c$ means
+$a=(b=c)$. The value of *c* is thus assigned to *b*, and then the value
+of *b* to *a*).
+
+The syntax of *assignment expression* is presented below:
+
+``` {.abnf}
+assignmentExpression
+    : lhsExpression assignmentOperator rhsExpression
+    | destructuringAssignment
+    ;
+
+assignmentOperator
+    : '='
+    | '+='  | '-='  | '*='   | '/='  | '%=' | '**='
+    | '<<=' | '>>=' | '>>>='
+    | '&='  | '|='  | '^=' | '&&=' | '||='
+    | '??='
+    ;
+
+lhsExpression:
+    expression
+    ;
+
+rhsExpression:
+    expression
+    ;
+```
+
+The first operand in an assignment operator represented by *lhsExpression* must
+be a *left-hand-side expression* (see `Left-Hand-Side Expressions`{.interpreted-text role="ref"}). This
+first operand denotes a variable.
+
+The `destructuringAssignment` expression is discussed in
+`Destructuring Assignment`{.interpreted-text role="ref"}.
+
+::: {.index}
+assignment
+assignment operator
+syntax
+assignment
+assignment expression
+operand
+variable
+expression
+:::
+
+Type of the variable is the type of the assignment expression.
+
+The result of the *assignment expression* at runtime is not a variable itself
+but the value of a variable after the assignment.
+
+::: {.index}
+variable
+assignment
+assignment expression
+variable
+value
+runtime
+:::
+
+| 
+
+### Simple Assignment Operator {#Simple Assignment Operator}
+
+The form of a simple assignment expression is `lhsExpression = rhsExpression`.
+
+A `compile-time error`{.interpreted-text role="index"} occurs in the following situations:
+
+> -   Type of *rhsExpression* is not assignable (see `Assignability`{.interpreted-text role="ref"}) to
+>     the type of a variable referred by the *lhsExpression*; or
+>
+> -   Type of *lhsExpression* is one of the following:
+>
+>     > -   `readonly` array (see `Readonly Parameters`{.interpreted-text role="ref"}), while the
+>     >     converted type of *rhsExpression* is a non-`readonly` array;
+>     > -   `readonly` tuple (see `Readonly Parameters`{.interpreted-text role="ref"}), while the
+>     >     converted type of *rhsExpression* is a non-`readonly` tuple.
+
+Otherwise, the assignment expression is evaluated at runtime in one of the
+following ways:
+
+1.  If *lhsExpression* is a field access expression in the form `e.f` (see
+    `Field Access Expression`{.interpreted-text role="ref"}), where *e* is an expression and *f* is
+    the name of the field, then:
+    1.  Expression *e* is evaluated: if the evaluation of *e* completes
+        abruptly, then so does the assignment expression.
+    2.  *rhsExpression* is evaluated: if the evaluation completes abruptly, then
+        so does the assignment expression.
+    3.  After both evaluations complete normally, the value of *rhsExpression*
+        is converted to the type of the field *f*, and the result of the
+        conversion is assigned to the field *f*.
+
+::: {.index}
+simple assignment operator
+assignment operator
+operator
+assignability
+readonly array
+array
+readonly tuple
+tuple
+access
+runtime
+abrupt completion
+normal completion
+field
+field type
+evaluation
+assignment expression
+variable
+:::
+
+2.  If the *lhsExpression* is an array reference expression (see
+    `Array Indexing Expression`{.interpreted-text role="ref"}) then:
+    1.  Array reference subexpression of *lhsExpression* is evaluated. If this
+        evaluation completes abruptly, then so does the assignment expression. In
+        that case, *rhsExpression* and the index subexpression are not evaluated,
+        and no assignment occurs.
+    2.  If the evaluation completes normally, then the index subexpression of
+        *lhsExpression* is evaluated. If this evaluation completes abruptly, then
+        so does the assignment expression. In that case, *rhsExpression* is not
+        evaluated, and no assignment occurs.
+    3.  If the evaluation completes normally, then *rhsExpression* is evaluated.
+        If this evaluation completes abruptly, then so does the assignment
+        expression, and no assignment occurs.
+    4.  If the evaluation completes normally, but the value of the index
+        subexpression is less than zero, or greater than, or equal to the
+        *length* of the array, then `RangeError` is thrown,
+        and no assignment occurs.
+    5.  If *lhsExpression* denotes indexing of *fixed-size array*, and
+        the type of *rhsExpression* is not a subtype of array element type,
+        then *ArrayStoreError* is thrown, and no assignment occurs.
+    6.  Otherwise, the value of the index subexpression is used to select an
+        element of the array referred to by the value of the array reference
+        subexpression and the value of *rhsExpression* is converted to the type
+        of the array element. In that case, the result of the conversion is
+        assigned to the array element.
+
+::: {.index}
+operand
+array reference expression
+parentheses
+array indexing expression
+reference subexpression
+assignment
+assignment expression
+abrupt completion
+normal completion
+subexpression
+evaluation
+array length
+variable
+conversion
+array element
+value set
+extended exponent
+reference type
+assignability
+runtime
+conversion
+:::
+
+3.  If *lhsExpression* is a record access expression (see
+    `Record Indexing Expression`{.interpreted-text role="ref"}) then:
+    1.  Object reference subexpression of *lhsExpression* is evaluated.
+        If this evaluation completes abruptly, then so does the assignment
+        expression. In that case, *rhsExpression* and the index subexpression are
+        not evaluated, and no assignment occurs.
+    2.  If the evaluation completes normally, the index subexpression of
+        *lhsExpression* is evaluated. If this evaluation completes abruptly,
+        then so does the assignment expression. In that case, *rhsExpression* is
+        not evaluated, and no assignment occurs.
+    3.  If the evaluation completes normally, *rhsExpression* is evaluated. If
+        this evaluation completes abruptly, then so does the assignment
+        expression. In that case, no assignment occurs.
+    4.  Otherwise, the value of the index subexpression is used as the `key`,
+        and the value of *rhsExpression* converted to the type of the record
+        value is used as the `value`. In that case, the assignment results in
+        storing the key-value pair in the record instance.
+
+::: {.index}
+operand
+record access expression
+record indexing expression
+indexing expression
+parentheses
+access expression
+reference subexpression
+index subexpression
+assignment
+assignment expression
+evaluation
+value
+key-value pair
+record instance
+normal completion
+abrupt completion
+key
+:::
+
+If none of the above is true, then the following three steps are performed:
+
+1.  *lhsExpression* is evaluated to produce a variable. If the evaluation
+    completes abruptly, then so does the assignment expression. In that case,
+    *rhsExpression* is not evaluated, and no assignment occurs.
+2.  If the evaluation completes normally, then *rhsExpression* is evaluated. If
+    the evaluation completes abruptly, then so does the assignment expression.
+    In that case, no assignment occurs.
+3.  If that evaluation completes normally, then the value of *rhsExpression*
+    is converted to the type of the left-hand-side variable. In that case, the
+    result of the conversion is assigned to the variable.
+
+Assignment expressions for different kinds of *lhsExpression* are represented
+in the example below:
+
+``` {.typescript}
+// Case 1: field access lhsExpression
+class A { f: double }
+new A().f = 1
+
+// Case 2: array indexing lhsExpression
+let b: double[] = [1, 1, 1 ]
+b[1] = 2
+
+// Case 3: record indexing lhsExpression
+type Keys = 'key1' | 'key2' | 'key3'
+let x: Record<Keys, number> = { 'key1': 1, 'key2': 2, 'key3': 3 }
+x['key2'] = 8
+
+// None of {field access|array indexing|record indexing}
+let c: double
+c = 1
+c += 2
+```
+
+::: {.index}
+evaluation
+operand
+assignment expression
+assignment
+abrupt completion
+normal completion
+conversion
+variable
+readonly array
+readonly tuple
+:::
+
+| 
+
+### Compound Assignment Operators {#Compound Assignment Operators}
+
+A compound assignment expression in the form `lhsExpression op= rhsExpression`
+is equivalent to `lhsExpression = ((lhsExpression) op (rhsExpression)) as T`,
+where `T` is the type of *lhsExpression*, except that *lhsExpression*
+is evaluated only once.
+
+While the nullish-coalescing assignment (`??=`) only evaluates the right
+operand, and assigns to the left operand if the left operand is `null` or
+`undefined`.
+
+An assignment expression can be evaluated at runtime in one
+of the following ways:
+
+1.  Where *lhsExpression* is not an indexing expression:
+    -   *lhsExpression* is evaluated to produce a variable. If the
+        evaluation completes abruptly, then so does the assignment expression.
+        In that case, *rhsExpression* is not evaluated, and no
+        assignment occurs.
+    -   If the evaluation completes normally, then the value of *lhsExpression*
+        is saved, and *rhsExpression* is evaluated. If the
+        evaluation completes abruptly, then so does the assignment expression.
+        In that case, no assignment occurs.
+    -   If the evaluation completes normally, then the saved value of the
+        left-hand-side variable, and the value of *rhsExpression* are
+        used to perform the binary operation as indicated by the compound
+        assignment operator. If the operation completes abruptly, then so does
+        the assignment expression. In that case, no assignment occurs.
+    -   If the evaluation completes normally, then the result of the binary
+        operation converts to the type of the left-hand-side variable.
+        The result of such conversion is stored into the variable.
+
+::: {.index}
+compound assignment operator
+compound assignment expression
+nullish-coalescing assignment
+assignment operator
+indexing expression
+evaluation
+expression
+runtime
+operand
+variable
+assignment
+abrupt completion
+normal completion
+assignment expression
+binary operation
+conversion
+:::
+
+2.  Where *lhsExpression* is an array reference expression (see
+    `Array Indexing Expression`{.interpreted-text role="ref"}), then:
+    -   Array reference subexpression of *lhsExpression* is evaluated.
+        If the evaluation completes abruptly, then so does the assignment
+        expression. In that case, the index
+        subexpression, and *rhsExpression* are not evaluated,
+        and no assignment occurs.
+    -   If the evaluation completes normally, then the index subexpression of
+        *lhsExpression* is evaluated. If the evaluation completes abruptly,
+        then so does the assignment expression. In that case, *rhsExpression*
+        is not evaluated, and no assignment occurs.
+    -   If the evaluation completes normally, the value of the array
+        reference subexpression refers to an array, and the value of the
+        index subexpression is less than zero, greater than, or equal to
+        the *length* of the array, then `RangeError` is
+        thrown. In that case, no assignment occurs.
+    -   If the evaluation completes normally, then the value of the index
+        subexpression is used to select an array element referred to by
+        the value of the array reference subexpression. The value of this
+        element is saved, and then *rhsExpression* is evaluated.
+        If the evaluation completes abruptly, then so does the assignment
+        expression. In that case, no assignment occurs.
+    -   If the evaluation completes normally, consideration must be given
+        to the saved value of the array element selected in the previous
+        step. While this element is a variable of type `S`, and `T` is
+        type of *lhsExpression* of the assignment operator
+        determined at compile time:
+        -   If `T` is a predefined value type, then `S` is the same as `T`.
+
+            The saved value of the array element, and the value of
+            *rhsExpression* are used to perform the binary operation of the
+            compound assignment operator.
+
+            If this operation completes abruptly, then so does the assignment
+            expression. In that case, no assignment occurs.
+
+            If this evaluation completes normally, then the result of the binary
+            operation converts to the type of the selected array element.
+            The result of the conversion is stored into the array element.
+
+        -   If `T` is a reference type, then it must be `string`.
+
+            `S` must also be a `string` because the class `string` is the
+            *final* class. The saved value of the array element, and the value of
+            *rhsExpression* are used to perform the binary operation (string
+            concatenation) of the compound assignment operator `'+='`. If
+            this operation completes abruptly, then so does the assignment
+            expression. In that case, no assignment occurs.
+
+        -   If the evaluation completes normally, then the `string` result of
+            the binary operation is stored into the array element.
+
+::: {.index}
+value
+array element
+operand
+expression
+array reference subexpression
+array indexing expression
+evaluation
+index subexpression
+normal completion
+abrupt completion
+array length
+assignment
+subexpression
+variable
+assignment operator
+predefined value type
+array element
+value
+operand
+binary operation
+assignment expression
+assignment
+conversion
+array element
+compound assignment operator
+reference type
+string
+evaluation
+array
+string concatenation
+:::
+
+3.  If *lhsExpression* is a record access expression (see
+    `Record Indexing Expression`{.interpreted-text role="ref"}):
+
+    -   The object reference subexpression of *lhsExpression* is
+        evaluated. If this evaluation completes abruptly, then so does the
+        assignment expression. In that case, the index subexpression
+        and *rhsExpression* are not evaluated, and no assignment occurs.
+    -   If this evaluation completes normally, then the index subexpression of
+        *lhsExpression* is evaluated. If the evaluation completes abruptly,
+        then so does the assignment expression. In that case, *rhsExpression*
+        is not evaluated, and no assignment occurs.
+    -   If this evaluation completes normally, the value of the object reference
+        subexpression and the value of index subexpression are saved, then
+        *rhsExpression* is evaluated. If the evaluation completes
+        abruptly, then so does the assignment expression. In that case, no
+        assignment occurs.
+    -   If this evaluation completes normally, the saved values of the object
+        reference subexpression and index subexpression (as the *key*) are used
+        to get the *value* that is mapped to the *key* (see
+        `Record Indexing Expression`{.interpreted-text role="ref"}), then this *value* and the value of
+        *rhsExpression* are used to perform the binary operation as
+        indicated by the compound assignment operator. If the operation
+        completes abruptly, then so does the assignment expression. In that case,
+        no assignment occurs.
+
+    > -   If the evaluation completes normally, then the result of the binary
+    >     operation is stored as the key-value pair in the record instance
+    >     (as in `Simple Assignment Operator`{.interpreted-text role="ref"}).
+
+::: {.index}
+record access expression
+operand expression
+record indexing expression
+object reference subexpression
+operand
+index subexpression
+evaluation
+assignment expression
+abrupt completion
+normal completion
+assignment
+key
+key-value pair
+indexing expression
+record instance
+value
+compound assignment operator
+binary operation
+:::
+
+| 
+
+### Left-Hand-Side Expressions {#Left-Hand-Side Expressions}
+
+A *left-hand-side expression* is an *expression* that refers to one of the
+following:
+
+-   Variable (see `Named Reference`{.interpreted-text role="ref"});
+-   Parameter, except any parameter named `this`
+    (see `Named Reference`{.interpreted-text role="ref"});
+-   Field or setter resultant from a field access (see
+    `Field Access Expression`{.interpreted-text role="ref"}); or
+-   Array or record element access (see `Indexing Expressions`{.interpreted-text role="ref"}).
+
+Otherwise, a `compile-time error`{.interpreted-text role="index"} occurs.
+
+A `compile-time error`{.interpreted-text role="index"} occurs if an *expression*:
+
+-   Contains the chaining operator `'?.'` (see `Chaining Operator`{.interpreted-text role="ref"}); or
+-   Refers to a readonly entity.
+
+::: {.index}
+expression
+named variable
+field
+setter
+field access
+array element
+record element
+access
+indexing expression
+chaining operator
+variable
+parameter
+:::
+
+| 
+
+## Ternary Conditional Expressions {#Ternary Conditional Expressions}
+
+The ternary conditional expression `condition?whenTrue:whenFalse`
+uses the boolean value of the first expression (`condition`) to
+decide which of other two expressions to evaluate:
+
+``` {.abnf}
+ternaryConditionalExpression:
+    expression '?' expression ':' expression
+    ;
+```
+
+The ternary conditional operator groups
+right-to-left (i.e., the meaning of
+$a?b:c?d:e?f:g$ and $a?b:(c?d:(e?f:g))$ is the same).
+
+The ternary conditional operator `condition?whenTrue:whenFalse` consists
+of three operand expressions
+with the separators `'?'` between the first and the second expression, and
+`':'` between the second and the third expression.
+
+::: {.index}
+ternary conditional expression
+boolean value
+expression
+ternary conditional operator
+operand
+operand expression
+separator
+boolean type
+extended conditional expression
+:::
+
+Type of an expression `condition?whenTrue:whenFalse` is determined as follows:
+
+-   If the value of `condition` is evaluated as `true` at compile time, then
+    the expression has the type of `whenTrue`.
+-   If the value of `condition` is evaluated as `false` at compile time, then
+    the expression has the type of `whenFalse`.
+-   If the value of `condition` is unknown at compile time, then the expression
+    type is a union of types `whenTrue` and `whenFalse` further normalized
+    in accordance with the process discussed in `Union Types Normalization`{.interpreted-text role="ref"}.
+
+The following steps are performed as the evaluation of a ternary
+conditional expression occurs at runtime:
+
+1.  The first operand (`condition`) of a ternary conditional
+    expression is evaluated first.
+2.  If the value of the first operand is `true`, then the second operand
+    expression (`whenTrue`) is evaluated. Otherwise, the third operand
+    expression (`whenFalse`) is evaluated. The result of successful
+    evaluation is the result of the ternary conditional expression.
+
+The examples below represent different scenarios with standalone expressions:
+
+``` {.typescript}
+class A {}
+class B extends A {}
+
+// Assuming value of `condition` is unknown at compile time
+condition ? new A() : new B() // A | B => A
+
+condition ? 5 : 6             // int
+
+condition ? "5" : 6           // "5" | int
+true      ? "5" : 6           // "5"
+false     ? "5" : 6           // int
+```
+
+::: {.index}
+ternary conditional expression
+union type normalization
+evaluation
+operand expression
+expression
+conversion
+standalone expression
+:::
+
+| 
+
+## String Interpolation Expressions {#String Interpolation Expressions}
+
+\'*String interpolation expression*\' is a multiline string literal, i.e., a
+string literal delimited with backticks (see `Multiline String Literal`{.interpreted-text role="ref"} for
+detail) that contains at least one *embedded expression*.
+
+The syntax of *string interpolation expression* is presented below:
+
+``` {.abnf}
+stringInterpolation:
+    '`' (BackticksContentCharacter | embeddedExpression)* '`'
+    ;
+
+embeddedExpression:
+    '${' expression '}'
+    ;
+```
+
+An \'*embedded expression*\' is an expression specified inside curly braces
+preceded by the *dollar sign* `'$'`. A string interpolation expression is of
+type `string` (see `Type String`{.interpreted-text role="ref"}).
+
+When evaluating a *string interpolation expression*, the result of each
+embedded expression substitutes that embedded expression. An embedded
+expression must be of type `string`. Otherwise, the implicit conversion
+to `string` takes place in the same way as with the string concatenation
+operator (see `String Concatenation`{.interpreted-text role="ref"}):
+
+::: {.index}
+string interpolation expression
+multiline string
+string literal
+backtick
+string type
+syntax
+expression
+string
+curly brace
+concatenation
+embedded expression
+string concatenation operator
+implicit conversion
+curly brace
+:::
+
+``` {.typescript}
+let a = 2
+let b = 2
+console.log(`The result of ${a} * ${b} is ${a * b}`)
+// prints: The result of 2 * 2 is 4
+```
+
+The string concatenation operator can be used to rewrite the above example
+as follows:
+
+``` {.typescript}
+let a = 2
+let b = 2
+console.log("The result of " + a + " * " + b + " is " + a * b)
+```
+
+An embedded expression can contain nested multiline strings.
+
+::: {.index}
+string concatenation operator
+nested multiline string
+multiline string
+embedded expression
+:::
+
+| 
+
+## Lambda Expressions {#Lambda Expressions}
+
+*Lambda expression* fully defines an instance of a function type (see
+`Function Types`{.interpreted-text role="ref"}) by providing optional annotation usage
+(see `Using Annotations`{.interpreted-text role="ref"}), optional `async` mark
+(see `Async Lambdas`{.interpreted-text role="ref"}), mandatory lambda signature, and its body. The
+declaration of *lambda expression* is generally similar to that of a function
+declaration (see `Function Declarations`{.interpreted-text role="ref"}), except that a lambda expression
+has no function name specified, and can have types of parameters omitted.
+
+The syntax of *lambda expression* is presented below:
+
+``` {.abnf}
+lambdaExpression:
+    annotationUsage? 'async'? lambdaSignature '=>' lambdaBody
+    ;
+
+lambdaBody:
+    expression | block
+    ;
+
+lambdaSignature:
+    '(' lambdaParameterList? ')' returnType?
+    | identifier
+    ;
+
+lambdaParameterList:
+    lambdaParameter (',' lambdaParameter)* (',' restParameter)? ','?
+    | restParameter ','?
+    ;
+
+lambdaParameter:
+    annotationUsage? (lambdaRequiredParameter | lambdaOptionalParameter)
+    ;
+
+lambdaRequiredParameter:
+    identifier (':' type)?
+    ;
+
+lambdaOptionalParameter:
+    identifier '?' (':' type)?
+    ;
+
+lambdaRestParameter:
+    '...' lambdaRequiredParameter
+    ;
+```
+
+::: {.index}
+lambda expression
+instance
+function type
+async mark
+type parameter
+lambda signature
+lambda body
+function declaration
+optional annotation
+annotation
+:::
+
+The usage of annotations is represented in the examples below and further
+discussed in `Using Annotations`{.interpreted-text role="ref"}:
+
+``` {.typescript}
+(x: number): number => { return Math.sin(x) } // block as lambda body
+(x: number) => Math.sin(x)                    // expression as lambda body
+e => e                                        // shortest form of lambda
+```
+
+A *lambda expression* evaluation creates an instance of a function type (see
+`Function Types`{.interpreted-text role="ref"}) as described in detail in
+`Runtime Evaluation of Lambda Expressions`{.interpreted-text role="ref"}.
+
+::: {.index}
+lambda expression
+function type
+instance
+:::
+
+| 
+
+### Lambda Signature {#Lambda Signature}
+
+Similarly to function declarations (see `Function Declarations`{.interpreted-text role="ref"}),
+a *lambda signature* is composed of formal parameters and
+optional return types. Type inference (see `Type Inference`{.interpreted-text role="ref"}) allows to
+omit type annotations of formal parameters in some cases.
+
+``` {.typescript}
+// Lambda expressions has no type annotations
+
+const func: (p: Object) => Object = e => e
+
+function foo<T>(p: (p: T) => T) {}
+foo <Object> (e => e)
+```
+
+The specification of scope is discussed in `Scopes`{.interpreted-text role="ref"}, and shadowing details
+of formal parameter declarations in `Shadowing by Parameter`{.interpreted-text role="ref"}.
+
+A `compile-time error`{.interpreted-text role="index"} occurs if:
+
+-   Lambda expression declares two formal parameters with the same name.
+-   Formal parameter contains no type provided, and type cannot be derived
+    by `Type Inference`{.interpreted-text role="ref"}.
+
+::: {.index}
+lambda signature
+return type
+lambda expression
+function declaration
+type annotation
+formal parameter
+optional parameter
+type inference
+annotation
+scope
+shadow parameter
+shadowing
+parameter declaration
+evaluation
+type inference
+:::
+
+| 
+
+### Lambda Body {#Lambda Body}
+
+*Lambda body* can be a single expression or a block (see `Block`{.interpreted-text role="ref"}).
+Similarly to the body of a method or a function, a lambda body describes the
+code to be executed when a lambda expression call occurs (see
+`Function Call Expression`{.interpreted-text role="ref"}).
+
+The meanings of names, and of the keywords `this` and `super` (along with
+the accessibility of the referred declarations) are the same as in the
+surrounding context. However, lambda parameters introduce new names.
+
+If any local variable or formal parameter of the surrounding context is
+used but not declared in a lambda body, then the local variable or formal
+parameter is *captured* by the lambda.
+
+If an instance member of the surrounding type is used in the lambda body
+defined in a method, then `this` is *captured* by the lambda.
+
+A `compile-time error`{.interpreted-text role="index"} occurs if a local variable is used in a lambda
+body but is neither declared in nor assigned before it.
+
+If a *lambda body* is a single `expression`, then it is handled as follows:
+
+-   If the expression is a *call expression* with return type `void`, then
+    the body is equivalent to the block: `{ expression }`.
+-   Otherwise, the body is equivalent to the block: `{ return expression }`.
+
+If *lambda signature* return type is neither `void` (see
+`Type void or undefined`{.interpreted-text role="ref"}) nor `never` (see `Type never`{.interpreted-text role="ref"}), and the
+execution path of the lambda body has neither a return statement (see
+`Return Statements`{.interpreted-text role="ref"}) nor a single expression as a body, then a
+`compile-time error`{.interpreted-text role="index"} occurs.
+
+::: {.index}
+lambda body
+lambda
+expression
+block
+method body
+function body
+lambda expression
+lambda expression call
+this keyword
+super keyword
+runtime
+evaluation
+method body
+function body
+lambda call
+call expression
+return type
+captured by lambda
+context
+accessibility
+lambda body
+lambda signature
+surrounding type
+return statement
+:::
+
+| 
+
+### Lambda Expression Type {#Lambda Expression Type}
+
+*Lambda expression type* is a function type (see `Function Types`{.interpreted-text role="ref"})
+that has the following:
+
+-   Lambda parameters (if any) as parameters of the function type; and
+-   Lambda return type as the return type of the function type.
+
+::: {.note}
+::: {.title}
+Note
+:::
+
+Lambda return type can be inferred from the *lambda body* and thus the return
+type can be dropped off.
+
+``` {.typescript}
+const lambda = () => { return 123 }  // Type of the lambda is () => int
+const int_var: int = lambda()
+```
+:::
+
+::: {.index}
+lambda expression type
+function type
+lambda parameter
+parameter
+return type
+lambda return type
+type inference
+inferred type
+lambda body
+:::
+
+| 
+
+### Runtime Evaluation of Lambda Expressions {#Runtime Evaluation of Lambda Expressions}
+
+The evaluation of a lambda expression itself never causes the execution of the
+lambda body. If completing normally at runtime, the evaluation of a lambda
+expression produces a new instance of a function type (see
+`Function Types`{.interpreted-text role="ref"}) that corresponds to the lambda signature. In that case,
+it is similar to the evaluation of a class instance creation expression (see
+`New Expressions`{.interpreted-text role="ref"}).
+
+If the available space is not sufficient for a new instance to be created,
+then the evaluation of the lambda expression completes abruptly, and
+`OutOfMemoryError` is thrown.
+
+Every time a lambda expression is evaluated, the outer variables referred to by
+the lambda expression are captured as follows:
+
+::: {.index}
+runtime evaluation
+lambda expression
+lambda body
+execution
+initialization
+function type
+lambda signature
+normal completion
+instance creation expression
+allocation
+class instance
+instance
+abrupt completion
+error
+captured variable
+evaluation
+:::
+
+``` {.typescript}
+function foo() {
+   let y: int = 1
+   let x = () => { return y+1 } // 'y' is *captured*.
+   console.log(x())             // Output: 2
+}
+```
+
+The captured variable is not a copy of the original variable. If the
+value of the variable captured by the lambda changes, then the original
+variable is implied to change:
+
+::: {.index}
+captured by lambda
+lambda
+variable
+captured variable
+original variable
+:::
+
+``` {.typescript}
+function foo() {
+  let y: int = 1
+  let x = () => { y++ } // 'y' is *captured*.
+  console.log(y) // Output: 1
+  x()
+  console.log(y) // Output: 2
+}
+```
+
+Capturing within the function scope is highlighted by the following example:
+
+``` {.typescript}
+function capturingFunction() { // Function scope
+  let v: number = 0 // A captured variable
+  return  (p: number) => {
+      console.log ("Previous value: ", v, " new value: ", p)
+      v = p
+  }
+}
+
+const func1 = capturingFunction ()
+const func2 = capturingFunction ()
+// Note: func1 and func2 are two different function type instances
+
+func1(11) // Previous value: 0 new value: 11
+func2(22) // Previous value: 0 new value: 22
+func1(33) // Previous value: 11 new value: 33
+func2(44) // Previous value: 22 new value: 44
+/* Note:
+      func1 calls work with their own version of variable 'v'
+      func2 calls work with their own version of variable 'v'
+*/
+```
+
+Capturing within the loop scope is highlighted by the following example:
+
+``` {.typescript}
+const l = () => {}
+const storage = [l, l, l, l, l]  // fill array with some lambdas
+
+for (let index = 0; index < 5; index++) {
+   storage [index] = () => { console.log ("Index ", index) }
+   // Every lambda captures loop index variable
+}
+for (let index = 0; index < 5; index++) {
+   storage[index]() // Captured indices printed
+}
+```
+
+::: {.index}
+runtime
+evaluation
+lambda
+lambda expression
+:::
+
+| 
+
+## Constant Expressions {#Constant Expressions}
+
+*Constant expressions* are expressions with values that can be evaluated at
+compile time. If the evaluation *completes abruptly*, then a
+`compile-time error`{.interpreted-text role="index"} occurs.
+
+The syntax of *constant expression* is presented below:
+
+``` {.abnf}
+constantExpression:
+    expression
+    ;
+```
+
+A *constant expression* can be either of a value type (see
+`Value Types`{.interpreted-text role="ref"}) or of type `string`, while being composed only of the
+following:
+
+-   Literals of a predefined value types, and literals of type `string` (see
+    `Literals`{.interpreted-text role="ref"});
+-   Simple names that refer to constants declared in a surrounding block,
+    function, method, or lambda body, if the initializer of the referenced
+    constant declaration is itself a constant expression;
+-   Unary operators `'+'`, `'-'`, `'~'`, and `'!'`, but not `'++'`
+    or `'--'` (see `Unary Plus`{.interpreted-text role="ref"}, `Unary Minus`{.interpreted-text role="ref"},
+    `Prefix Increment`{.interpreted-text role="ref"}, and `Prefix Decrement`{.interpreted-text role="ref"});
+-   Casting conversions to numeric types (see `Cast Expression`{.interpreted-text role="ref"});
+-   Multiplicative operators `'*'`, `'/'`, and `'%'` (see
+    `Multiplicative Expressions`{.interpreted-text role="ref"});
+-   Additive operators `'+'` and `'-'` (see `Additive Expressions`{.interpreted-text role="ref"});
+-   Shift operators `'<<'`, `'>>'`, and `'>>>'` (see
+    `Shift Expressions`{.interpreted-text role="ref"});
+-   Relational operators `'<'`, `'<='`, `'>'`, and `'>='` (see
+    `Relational Expressions`{.interpreted-text role="ref"});
+-   Equality operators `'=='` and `'!='` (see `Equality Expressions`{.interpreted-text role="ref"});
+-   Bitwise and logical operators `'&'`, `'^'`, and `'|'` (see
+    `Bitwise and Logical Expressions`{.interpreted-text role="ref"});
+-   Conditional-and operator `'&&'` (see `Conditional-And Expression`{.interpreted-text role="ref"}),
+    and conditional-or operator `'||'` (see `Conditional-Or Expression`{.interpreted-text role="ref"});
+-   Ternary conditional operator `condition?whenTrue:whenFalse`
+    (see `Ternary Conditional Expressions`{.interpreted-text role="ref"});
+-   Parenthesized expressions (see `Parenthesized Expression`{.interpreted-text role="ref"}) that contain
+    constant expressions.
+
+::: {.index}
+constant expression
+expression
+evaluation
+compile time
+syntax
+constant expression
+constant declaration
+value type
+normal completion
+literal
+string type
+unary operator
+unary plus
+unary minus
+prefix
+increment
+decrement
+casting conversion
+multiplicative expression
+additive operator
+additive expression
+relational operator
+shift expression
+shift operator
+equality operator
+equality expression
+literal
+cast expression
+unary operator
+increment operator
+decrement operator
+bitwise operator
+logical operator
+conditional operator
+conditional-and operator
+conditional-or operator
+ternary conditional operator
+parenthesized expression
+multiplicative operator
+multiplicative expression
+relational operator
+equality operator
+constant expression
+:::
+
+| 
+
+### Specifics of Constant Expressions Evaluation {#Specifics of Constant Expressions Evaluation}
+
+If a constant expression contains an unary or a binary operator applied
+to numeric operands, the operator is evaluated as follows:
+
+-   If any of operands are of type `double` or the operator is
+    *exponentiation operator*, other operands are converted to type `double`
+    before operator evaluation and the result type is `double`;
+-   If any of operands are of type `float`, other operands are converted
+    to type `float` before operator evaluation and the result type is
+    `float`; or
+-   Otherwise, all operands are converted to *some big integer type* that allows
+    handling arbitrary-precision integers (like `bigint` type) or integers
+    larger than the maximum value of type `long`.
+
+If a constant expression consists of a single integer literal or
+a constant of an integer type, it is also converted to the same big integer type.
+
+`Type Inference for Constant Expressions`{.interpreted-text role="ref"} is always used to infer the
+type of constant expression. In other words, *big integer type* is an
+internal compiler type and values of this type cannot occur during execution.
+
+In case of mixed constant expression, each numeric subexpression is evaluated
+as described above:
+
+``` {.typescript}
+const c = 3
+
+c > 1 && c*2 < 8 // numeric subexpressions: (c > 1) and (c*2 < 8)
+```
+
+```{=pdf}
+PageBreak
+```
