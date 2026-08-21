@@ -241,7 +241,7 @@
       "id": 15,
       "name": "requirements-odk-boundary",
       "prompt": "04-feature.md 和 proposals/05-proposal-arkweb-drag-preview.md 已经确认，用户询问 requirements proposal 与 ODK 交付 proposal 的关系。请说明边界。",
-      "expected_output": "requirements 阶段保留 proposals/05-proposal-<slug>.md 作为需求评审输入，不生成 .codespec 目录，不推断 ODK change-id，也不要求补充 ODK 模板专有章节。rr_id 来源固定为 01→04→proposal，不从 IR/SR/handoff 推断。ODK 交付 proposal 由 ODK 自身流程处理。",
+      "expected_output": "requirements 阶段保留 proposals/05-proposal-<slug>.md 作为需求评审输入，不生成 .codespec 目录，不推断 ODK change-id，也不要求补充 ODK 模板专有章节。rr_id 保留在 01-requirement.md 和 04-feature.md 中，不写入 proposal frontmatter，也不从 IR/SR/handoff 推断。ODK 交付 proposal 由 ODK 自身流程处理。",
       "assertions": [
         {
           "text": "proposals/05-proposal-<slug>.md",
@@ -275,20 +275,24 @@
     },
     {
       "id": 16,
-      "name": "ga-evidence-required",
-      "prompt": "04-feature.md 的 proposal 表中有一个 proposal 标记 GA-Approved，但对应 proposals/05-proposal-xxx.md frontmatter 的 gate_a 为空。请执行内建 Review Ready Gate。",
-      "expected_output": "GA 证据检查必须判定 fail，decision_gate.gate 为 Not Ready，block_reasons 指向 GA-Approved 但 gate_a 缺失；不得把该 proposal 视为正式可交付。",
+      "name": "proposal-frontmatter-not-generated",
+      "prompt": "请基于 reference/proposal.md 生成一个 proposals/05-proposal-xxx.md 文件，并说明 metadata 的处理方式。",
+      "expected_output": "proposal 文件必须按模板 H1/H2 正文结构生成，不生成 YAML frontmatter；不得写入 target_release、feature_id、rr_id、issue、author、date、status 或 gate_a。需求编号、RR单号、目标版本和 Gate 状态以 04-feature.md 及 Review Ready Gate 为唯一事实源。",
       "assertions": [
         {
-          "text": "GA 证据",
+          "text": "不生成 YAML frontmatter",
           "type": "contains"
         },
         {
-          "text": "Not Ready",
+          "text": "04-feature.md",
           "type": "contains"
         },
         {
-          "text": "gate_a",
+          "text": "不得写入 target_release、feature_id、rr_id、issue、author、date、status 或 gate_a",
+          "type": "contains"
+        },
+        {
+          "text": "唯一事实源",
           "type": "contains"
         }
       ]
