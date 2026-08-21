@@ -121,6 +121,17 @@ When generating ODK artifacts for a specific OpenHarmony module, apply subsystem
 
 Profiles compose additively — they add required sections and constraints, never remove from the base template. When multiple profiles match, lower `priority` values take precedence for dimension conflicts, while sections and instructions are merged by union. See `{{ASSET_ROOT}}/profiles/README.md` for available profiles and their activation rules.
 
+## Bypass Documents (Design Phase)
+
+ODK supports bypass documents that supplement main artifacts for complex scenarios:
+
+| Bypass Document | Trigger Condition | Relation to Main Artifact | Production Skill |
+|----------------|-------------------|---------------------------|-------------------|
+| `threat-model.md` | High-risk security/privacy/compliance (see `odk-security-threat-model` trigger conditions) | `design.md` 基础检查 → 深度分析独立存档 | `odk-security-threat-model` |
+| `spec-for-validation.md` | Integration/system scenarios needed for validation | Derived from `spec.md`; parallel bypass, does not block main flow | `odk-spec-for-validation` |
+
+**Drift direction rule**: When upstream proposal/spec content changes, re-run the bypass skill to sync (e.g., `threat-model.md` security triggers expand → re-run `odk-security-threat-model` to refresh analysis).
+
 When using bridge commands, `using-odk-bridge` is loaded automatically and provides output mode selection and redirection rules.
 
 ## Template Reference

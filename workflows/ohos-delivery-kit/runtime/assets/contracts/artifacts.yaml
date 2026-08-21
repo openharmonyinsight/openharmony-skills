@@ -18,6 +18,35 @@ minimum_contract:
     - code
     - review
 
+# Thin resource trigger contract (security-like). Measurement/rules/evidence schemas
+# are owned by subsystem gates declared as odk_resource_gate in AGENTS.md.
+resource_contract:
+  # Base default set only and required in every proposal table. Adding a label here
+  # expands the mandatory set for all proposals (templates/skills/examples must sync).
+  # Profile-dynamic extra dimensions are not implemented; unknown labels fail validation.
+  dimension_labels:
+    - "performance=性能"
+    - "ram=内存(RAM)"
+    - "storage=存储(ROM)"
+  impact_states:
+    - "required"
+    - "review-required"
+    - "not-applicable"
+    - "waived"
+  proposal_section: "资源开销审视"
+  proposal_columns:
+    - "维度"
+    - "状态"
+    - "信号/依据"
+    - "确认人/理由/范围"
+  active_when_states:
+    - "required"
+  evidence_root: "evidence/resource"
+  conditional_sections:
+    - "spec.md=资源验收契约"
+    - "design.md=资源设计"
+    - "execution-plan.md=资源验证矩阵"
+
 artifacts:
   proposal:
     file: "proposal.md"
@@ -39,7 +68,9 @@ artifacts:
       - "成功标准"
       - "影响范围"
       - "假设与开放问题"
+      - "资源开销审视"
       - "不涉及项确认"
+      - "API 设计属性"
     conditional_sections:
       - section: "用户场景与业务触发"
         required_when: "The change has end-user-facing behavior or upstream business-trigger scenarios that downstream test design relies on."
@@ -67,6 +98,10 @@ artifacts:
       - "兼容性声明"
       - "验证映射"
       - "测试设计提示"
+      - "API 规格定义"
+    conditional_sections:
+      - section: "资源验收契约"
+        required_when: "resource chain active (any dimension impact state in active_when_states)."
 
   design:
     file: "design.md"
@@ -91,6 +126,7 @@ artifacts:
       - "模块影响"
       - "实现入口"
       - "关键设计决策"
+      - "DFX 设计"
       - "时序设计"
       - "风险与缓解"
       - "验证思路"
@@ -105,6 +141,8 @@ artifacts:
         required_when: "The change involves class inheritance hierarchies, interface implementation layers (e.g. IPC interface/proxy/stub/impl), or cross-module composition relationships."
       - section: "安全基础检查"
         required_when: "The proposal 8-dimension eval marks 安全/权限 as 是 — the single trigger source. propose sets 安全/权限=是 when the change crosses trust boundaries (IPC/Binder/shared-mem/socket), crosses security layers (user↔kernel, sandbox, SELinux domains), handles sensitive data, or uses crypto/auth/authorization; those are the judgment basis at propose, not separate triggers (see odk-propose)."
+      - section: "资源设计"
+        required_when: "resource chain active (any dimension impact state in active_when_states)."
 
   execution-plan:
     file: "execution-plan.md"
@@ -133,6 +171,9 @@ artifacts:
       - "Task 详情"
       - "Review Gates"
       - "代码范围映射"
+    conditional_sections:
+      - section: "资源验证矩阵"
+        required_when: "resource chain active (any dimension impact state in active_when_states)."
 
   spec-for-validation:
     file: "spec-for-validation.md"

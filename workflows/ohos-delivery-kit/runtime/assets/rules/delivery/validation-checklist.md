@@ -31,3 +31,6 @@
 - [ ] 如存在可选 verification 证据，应有明确的「代码与规格一致性结论」
 - [ ] 追溯链完整 (AC → Task → code → commit → review)
 - [ ] 实现的 commit message 包含关联的 issue 编号
+- [ ] **API 设计校验**：
+  - 校验 `proposal.md` 的 `## API 设计属性` 与 `spec.md` 的 `## API 规格定义` 已填写（`API/SDK` = 否时均标注"不涉及"）。API 仓库路径/commit、既有声明格式参考为过程信息，不要求体现在 spec.md 中。
+  - 如 `API/SDK` = 是，校验声明文件修改 diff 已归档到 `.codespec/changes/<id>/`（声明文件 PR 由开发者自行管理）。

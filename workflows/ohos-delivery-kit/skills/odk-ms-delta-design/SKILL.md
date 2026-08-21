@@ -22,7 +22,9 @@ Invoke MatrixSpec `/matspec.delta-design` for design delta generation. Redirect 
 1. Invoke MatrixSpec `/matspec.delta-design` for design generation (background, decisions, data model, interfaces, flows, risks).
 2. When MatrixSpec tries to write to `matspec/changes/`, apply `using-odk-bridge` Output Redirection Rules instead.
 3. Process output per active mode:
-   - strict: Transform to ODK design template at `{{ASSET_ROOT}}/templates/ai/design.md` format. Add module impact table, verification approach section; inherit `odk-design` security trigger (proposal 安全/权限=是 → expand 安全基础检查, high-risk → `threat-model.md`).
+   - strict: Transform to ODK design template at `{{ASSET_ROOT}}/templates/ai/design.md` format. Add module impact table, verification approach section; inherit `odk-design` DFX design and security steps:
+     - DFX 设计（必填，Step 6）：执行 3 步故障模式分析流程（识别涉及仓库 → 构造变更检索摘要 + 仓内匹配 → 填故障模式分析表），详见 `odk-design/SKILL.md` Step 6 和 `{{ASSET_ROOT}}/contracts/dfx-fmea-matcher.yaml`。
+     - Security baseline check (conditional, Step 7): when `proposal.md`「安全/权限」=「是」, expand `design.md`「安全基础检查」; if high-risk criteria are hit, produce `threat-model.md` (see `odk-security-threat-model`).
    - passthrough: Copy to `.codespec/changes/<id>/design.md` unchanged.
    - merge: Use MatrixSpec format, append ODK verification approach section.
 4. Confirm with user.

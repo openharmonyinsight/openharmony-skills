@@ -89,6 +89,143 @@ def parse_contract_artifacts(path: str) -> dict[str, dict[str, object]]:
     return artifacts
 
 
+def parse_resource_contract(path: str) -> dict[str, str | list[str]]:
+    """Parse the flat scalar/list resource_contract block."""
+
+    result: dict[str, str | list[str]] = {}
+    current_list: str | None = None
+    in_contract = False
+    for raw in _lines(path):
+        line = raw.rstrip()
+        if not line or line.lstrip().startswith("#"):
+            continue
+        if line == "resource_contract:":
+            in_contract = True
+            continue
+        if in_contract and re.match(r"^\S", line):
+            break
+        if not in_contract:
+            continue
+
+        list_key = re.match(r"^  ([A-Za-z0-9_]+):$", line)
+        if list_key:
+            current_list = list_key.group(1)
+            result[current_list] = []
+            continue
+        scalar = re.match(r"^  ([A-Za-z0-9_]+):\s*(.+)$", line)
+        if scalar:
+            current_list = None
+            result[scalar.group(1)] = _unquote(scalar.group(2))
+            continue
+        item = re.match(r"^    -\s*(.+)$", line)
+        if item and current_list:
+            values = result[current_list]
+            if isinstance(values, list):
+                values.append(_unquote(item.group(1)))
+
+    if not result:
+        raise ValueError(f"{path}: missing or empty resource_contract block")
+    return result
+
+
+def validate_resource_contract_schema(contract: dict[str, str | list[str]]) -> list[str]:
+    """Validate the executable shape of the thin resource contract."""
+
+    issues: list[str] = []
+    scalar_keys = ("proposal_section", "evidence_root")
+    list_keys = (
+        "dimension_labels",
+        "impact_states",
+        "proposal_columns",
+        "active_when_states",
+        "conditional_sections",
+    )
+    for key in scalar_keys:
+        if not isinstance(contract.get(key), str) or not str(contract.get(key)).strip():
+            issues.append(f"resource_contract.{key} must be a non-empty scalar")
+    for key in list_keys:
+        value = contract.get(key)
+        if not isinstance(value, list) or not value:
+            issues.append(f"resource_contract.{key} must be a non-empty list")
+        elif len(value) != len(set(value)):
+            issues.append(f"resource_contract.{key} contains duplicate values")
+
+    dimensions = contract.get("dimension_labels")
+    dimension_keys: set[str] = set()
+    dimension_names: set[str] = set()
+    if isinstance(dimensions, list):
+        for item in dimensions:
+            if item.count("=") != 1:
+                issues.append(f"invalid resource dimension mapping: {item}")
+                continue
+            key, label = (part.strip() for part in item.split("=", 1))
+            if not re.fullmatch(r"[a-z][a-z0-9_-]*", key) or not label:
+                issues.append(f"invalid resource dimension mapping: {item}")
+                continue
+            if key in dimension_keys or label in dimension_names:
+                issues.append(f"duplicate resource dimension key or label: {item}")
+            dimension_keys.add(key)
+            dimension_names.add(label)
+
+    states = contract.get("impact_states")
+    active_states = contract.get("active_when_states")
+    if isinstance(states, list) and isinstance(active_states, list):
+        unknown = set(active_states) - set(states)
+        if unknown:
+            issues.append(
+                "resource_contract.active_when_states contains unknown states: "
+                + ", ".join(sorted(unknown))
+            )
+
+    sections = contract.get("conditional_sections")
+    section_files: set[str] = set()
+    section_headings: set[str] = set()
+    if isinstance(sections, list):
+        for item in sections:
+            if item.count("=") != 1:
+                issues.append(f"invalid resource conditional section mapping: {item}")
+                continue
+            file_name, heading = (part.strip() for part in item.split("=", 1))
+            if not file_name.endswith(".md") or not heading:
+                issues.append(f"invalid resource conditional section mapping: {item}")
+                continue
+            if file_name in section_files or heading in section_headings:
+                issues.append(f"duplicate resource conditional section mapping: {item}")
+            section_files.add(file_name)
+            section_headings.add(heading)
+
+    evidence_root = contract.get("evidence_root")
+    if isinstance(evidence_root, str):
+        evidence_path = Path(evidence_root)
+        if evidence_path.is_absolute() or ".." in evidence_path.parts:
+            issues.append("resource_contract.evidence_root must be a repo-relative path")
+    return issues
+
+
+def _markdown_table_headers(text: str) -> list[list[str]]:
+    lines = text.splitlines()
+    result: list[list[str]] = []
+    for index in range(len(lines) - 1):
+        if not lines[index].lstrip().startswith("|"):
+            continue
+        header = [cell.strip() for cell in lines[index].strip().strip("|").split("|")]
+        separator = [cell.strip() for cell in lines[index + 1].strip().strip("|").split("|")]
+        if len(header) == len(separator) and separator and all(
+            re.fullmatch(r":?-{3,}:?", cell) for cell in separator
+        ):
+            result.append(header)
+    return result
+
+
+def _heading_section(text: str, heading: str) -> str:
+    match = re.search(
+        rf"^##\s+{re.escape(heading)}\s*$([\s\S]*?)(?=^##\s+|\Z)",
+        text,
+        flags=re.MULTILINE,
+    )
+    return match.group(1) if match else ""
+
+
 def contract_artifacts(path: str) -> None:
     artifacts = parse_contract_artifacts(path)
     for name, data in artifacts.items():
@@ -111,6 +248,78 @@ def conditional_section_keys(path: str) -> None:
         template_base = Path(template).name if template else ""
         for section in data["conditional_sections"]:  # type: ignore[index]
             print(f"{template_base}|{section}")
+
+
+def validate_resource_templates(path: str, templates_root: str) -> list[str]:
+    """Ensure resource conditional headings stay aligned (no column/schema drift)."""
+
+    contract = parse_resource_contract(path)
+    artifacts = parse_contract_artifacts(path)
+    issues = validate_resource_contract_schema(contract)
+    if issues:
+        return issues
+
+    def values(key: str) -> list[str]:
+        value = contract.get(key)
+        return value if isinstance(value, list) else []
+
+    sections: dict[str, str] = {}
+    for item in values("conditional_sections"):
+        if "=" in item:
+            file_name, heading = item.split("=", 1)
+            sections[file_name] = heading
+
+    root = Path(templates_root)
+    for file_name, heading in sections.items():
+        artifact = next(
+            (data for data in artifacts.values() if data.get("file") == file_name),
+            None,
+        )
+        declared_sections = artifact.get("conditional_sections", []) if artifact else []
+        if heading not in declared_sections:
+            issues.append(f"{file_name} resource section differs between contract declarations")
+        template = root / file_name
+        if not template.is_file():
+            issues.append(f"missing resource template: {file_name}")
+            continue
+        text = template.read_text(encoding="utf-8")
+        if f"## {heading}" not in text:
+            issues.append(f"{file_name} resource heading differs from contract")
+    proposal_section = contract.get("proposal_section")
+    if isinstance(proposal_section, str) and proposal_section:
+        proposal = root / "proposal.md"
+        if not proposal.is_file():
+            issues.append("missing resource template: proposal.md")
+        else:
+            proposal_text = proposal.read_text(encoding="utf-8")
+            section_text = _heading_section(proposal_text, proposal_section)
+            if not section_text:
+                issues.append("proposal.md resource heading differs from contract")
+            expected_columns = values("proposal_columns")
+            if expected_columns not in _markdown_table_headers(section_text):
+                issues.append("proposal.md resource table columns differ from contract")
+            expected_labels = {
+                item.split("=", 1)[1] for item in values("dimension_labels")
+            }
+            first_cells = {
+                line.strip().strip("|").split("|", 1)[0].strip()
+                for line in section_text.splitlines()
+                if line.lstrip().startswith("|")
+            }
+            missing_labels = expected_labels - first_cells
+            if missing_labels:
+                issues.append(
+                    "proposal.md resource table missing dimensions: "
+                    + ", ".join(sorted(missing_labels))
+                )
+    return issues
+
+
+def resource_template_check(path: str, templates_root: str) -> int:
+    issues = validate_resource_templates(path, templates_root)
+    for issue in issues:
+        print(issue)
+    return 1 if issues else 0
 
 
 def adapter_commands(path: str) -> None:
@@ -153,7 +362,7 @@ def adapter_commands(path: str) -> None:
         print(f"{command['name']}\t{command['source_capability']}\t{fallbacks}")
 
 
-def main() -> None:
+def main() -> int:
     parser = argparse.ArgumentParser()
     subcommands = parser.add_subparsers(dest="command", required=True)
 
@@ -166,6 +375,10 @@ def main() -> None:
     conditional = subcommands.add_parser("conditional-section-keys")
     conditional.add_argument("path")
 
+    resource_templates = subcommands.add_parser("validate-resource-templates")
+    resource_templates.add_argument("path")
+    resource_templates.add_argument("templates_root")
+
     args = parser.parse_args()
     if args.command == "contract-artifacts":
         contract_artifacts(args.path)
@@ -173,7 +386,10 @@ def main() -> None:
         adapter_commands(args.path)
     elif args.command == "conditional-section-keys":
         conditional_section_keys(args.path)
+    elif args.command == "validate-resource-templates":
+        return resource_template_check(args.path, args.templates_root)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

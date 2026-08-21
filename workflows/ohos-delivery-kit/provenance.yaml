@@ -5,18 +5,18 @@ id: ohos-delivery-kit
 source:
   repository: https://gitcode.com/oshunter/ohos-delivery-kit.git
   branch: dev
-  commit: 1e80b781e96e15219a47be0462b515fa85fe92bf
-  sourceVersion: 0.6.5
-  commitDate: 2026-07-27T16:56:07+08:00
-  importedAt: 2026-07-27
+  commit: 913f3f72d56f30314b2f5d37233b88fd1b9ec835
+  sourceVersion: 0.7.0
+  commitDate: 2026-08-21T20:10:14+08:00
+  importedAt: 2026-08-21
 
 license:
   declared: MIT
   evidence:
+    - LICENSE
     - packaging/claude/.claude-plugin/plugin.json
     - packaging/opencode/package.json
-  sourceLicenseFileFound: false
-  note: Source repository did not contain a root LICENSE file at the imported commit.
+  sourceLicenseFileFound: true
 
 included:
   skills: core/skills
