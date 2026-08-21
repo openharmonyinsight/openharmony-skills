@@ -8,7 +8,7 @@
       "expected_output": "04-feature.md 从01继承 rr_id。按R1仓库隔离规则拆分为3个proposal。拆分表含每个proposal的边界、估算工作量(<=5人月)、Owner、依赖，并生成3个 proposals/05-proposal-*.md 文件。触发拆分确认门禁。含模块覆盖完整性校验和5方影响性分析。",
       "assertions": [
         {
-          "text": "frontmatter rr_id: RR-2026-0512-003",
+          "text": "04-feature.md frontmatter rr_id: RR-2026-0512-003",
           "type": "contains"
         },
         {
