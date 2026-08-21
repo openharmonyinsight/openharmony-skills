@@ -66,7 +66,7 @@ metadata:
    - **降级规则**：若 02-feasibility.md 不含 §2.1 关键代码仓库分析表，则跳过模块覆盖校验并标注 `warn`（"模块覆盖校验未执行：02-feasibility.md 缺少 §2.1"），不 `fail`。
 8. **影响类型术语校验**：对比同一模块在 02-feasibility.md §2.1 和 §4中的影响类型标签。漂移（如"可复用"→"需扩展"）必须在 §4 补充变更理由备注，并在 §4 写入 **术语一致性检查结论**：pass（无漂移）或 warn（有漂移已补理由），供本 skill 的内建 Gate 判定读取。
 9. 判断是否拆分 proposal，并定义每个 proposal 的独立价值、边界、AC、**工作量估算**和依赖。拆分表必须包含每个 proposal 的估算工作量（人月）。**计算端到端总工作量**（= 各 proposal 工作量之和），按总人月推导复杂度（<5 简单 / 5-10 标准 / >10 复杂），填入 §5「端到端总工作量」与「复杂度」字段——此复杂度即 R3 拆分上限（简单≤5 / 标准≤8 / 复杂≤15 人月）的判定依据。
-10. **生成 proposal 文件草稿**：读取 `reference/proposal.md`，为 §5 拆分表中的每个 proposal 生成 `{docs_dir}/proposals/05-proposal-<slug>.md`。不拆分时也必须生成 1 份 proposal 文件。每份 proposal 必须按模板原有 H1/H2 结构填写，不生成 proposal YAML frontmatter，并包含：
+10. **生成 proposal 文件草稿**：读取 `reference/proposal.md`，为 §5 拆分表中的每个 proposal 生成 `{docs_dir}/proposals/05-proposal-<slug>.md`。不拆分时也必须生成 1 份 proposal 文件。每份 proposal 必须按模板原有 H1/H2 结构填写，不生成 proposal YAML frontmatter，proposal 末尾按模板 §12 填写元数据表（feature_id 从 04-feature.md 继承、status 默认 Draft、gate_a 按需填写、仓 取自 git remote origin basename 去掉 .git 后缀），并包含：
     - proposal 背景与问题、初始分级判断、目标/非目标
     - 1+8设备差异规格、DFX设计、用户故事与能力、成功标准、影响范围
     - 可选的外部依赖；无依赖时显式填写"不涉及"
@@ -76,7 +76,7 @@ metadata:
 12. **原 agent 回修 proposal**：主 session 读取审查结果，先修复所有可由 01-04/proposal 内部证据确定的 FAIL；对 AI 无法判定项保留 WARN 并在 proposal 对应章节标注待人工确认。回修后重新执行 Step 11，直到无可自动修复的 FAIL。禁止 subagent 直接修改 proposal 正文。
 13. **⭐ 拆分结果确认门禁**：向用户展示 04-feature.md 中的拆分方案、已生成 proposal 文件列表和 proposal-check 摘要（每个 proposal 的路径、边界、工作量、Owner、依赖、PASS/WARN/FAIL 计数），等待用户确认或调整后才允许执行 Review Ready Gate。AI 不自行定稿拆分方案。
 14. 保存 `{docs_dir}/04-feature.md`、全部 `{docs_dir}/proposals/05-proposal-<slug>.md` 和 `{docs_dir}/proposals/proposal-check-<slug>.md`。
-15. 执行内建 Review Ready Gate（读取刚保存且经用户确认的 04-feature.md 和 proposal 文件），写入 `04-feature.md` 的固定 `## Review Ready Gate` 章节：`decision_gate` YAML、13 项检查表、条件项、后续观测项、FR→AC 追溯表。
+15. 执行内建 Review Ready Gate（读取刚保存且经用户确认的 04-feature.md 和 proposal 文件），写入 `04-feature.md` 的固定 `## Review Ready Gate` 章节：`decision_gate` YAML、14 项检查表、条件项、后续观测项、FR→AC 追溯表。
 
 ## 职责边界
 
@@ -113,7 +113,7 @@ Proposal 审查使用 `reference/proposal-check-matrix.md` 作为唯一判据源
 
 ## Review Ready Gate（内建）
 
-Gate 检查读取 01-04，不需要调用独立 skill。判定项为 9 项基础检查 + 3 项结构一致性 + 1 项遗留问题闭环：
+Gate 检查读取 01-04，不需要调用独立 skill。判定项为 9 项基础检查 + 1 项 GA 证据 + 3 项结构一致性 + 1 项遗留问题闭环：
 
 | 检查项 | 要求 | 判定方法 |
 |--------|------|----------|
@@ -126,6 +126,7 @@ Gate 检查读取 01-04，不需要调用独立 skill。判定项为 9 项基础
 | 工作量约束 | 每个 proposal 不超过复杂度上限 | §5 每个 proposal 工作量不超过简单≤5/标准≤8/复杂≤15 人月 |
 | 技术方向 | 有选定方案 | 引用 03-arch-decision-record.md 选定方案 |
 | 影响性分析 | 5 方影响类型已分析 | 影响性分析章节 5 行均非占位符 |
+| GA 证据 | Proposal §12 元数据表若声明 GA-Approved 必须有 gate_a 证据 | 任一 proposal `status: GA-Approved` 且 `gate_a` 为空→fail；status 非 GA-Approved 且 gate_a 为空→warn 条件项，记录 Owner/动作/时点 |
 | 模块覆盖完整性 | 04 §4 声明覆盖所有涉及模块 | 读取 §4"模块覆盖检查结论"；pass→pass，warn/缺失→warn |
 | 影响类型术语一致性 | 04 §4 影响类型标签无漂移 | 读取 §4"术语一致性检查结论"；pass→pass，warn/缺失→warn |
 | 条件项传播完整性 | §5 前置条件覆盖 02 §6 和 03 §6 条件项 | 缺失→warn |
@@ -165,7 +166,7 @@ decision_gate:
       non_blocking_reason: "<不阻塞理由>"
 ```
 
-固定检查表必须包含 13 项检查项，列为 `检查项 | 结论 | 证据 | 条件项/阻塞项`，结论仅允许 `pass | warn | fail`。`decision_gate.gate` 由检查表推导：存在 fail 或缺 Owner/动作/时点的可关闭 warn → `Not Ready`；无 fail 且存在完整可关闭 warn → `Conditional Ready`；全部 pass 或仅后续观测项 → `Ready`。
+固定检查表必须包含 14 项检查项，列为 `检查项 | 结论 | 证据 | 条件项/阻塞项`，结论仅允许 `pass | warn | fail`。`decision_gate.gate` 由检查表推导：存在 fail 或缺 Owner/动作/时点的可关闭 warn → `Not Ready`；无 fail 且存在完整可关闭 warn → `Conditional Ready`；全部 pass 或仅后续观测项 → `Ready`。
 
 ### 旧 IR/SR/handoff 兼容边界
 
@@ -173,7 +174,11 @@ decision_gate:
 
 ### ODK 边界
 
-`proposals/05-proposal-<slug>.md` 是 requirements 阶段的评审输入，不是 ODK 最终交付归档文件。本 skill 不在 proposal 文件中生成或依赖 YAML frontmatter；需求编号、RR 单号、目标版本和 Gate 状态以 `04-feature.md` 及其 `Review Ready Gate` 为唯一事实源。不推断 ODK `change-id`、不生成 `.codespec` 目录、也不补充 ODK 模板专有章节。
+`proposals/05-proposal-<slug>.md` 是 requirements 阶段的评审输入，不是 ODK 最终交付归档文件。本 skill 不在 proposal 文件中生成 YAML frontmatter；proposal 末尾 §12 元数据表承载 feature_id、status、gate_a、仓，RR 单号、目标版本以 `04-feature.md` 为唯一事实源。不推断 ODK `change-id`、不生成 `.codespec` 目录、也不补充 ODK 模板专有章节。
+
+### GA 证据规则
+
+`proposal §12 元数据表` 的 `status` 仅允许 `Draft | GA-Approved`。当状态为 `GA-Approved` 时，`gate_a` 必须填写可访问的 GA 审视记录链接或归档路径；为空时 Gate 必须判定 `Not Ready` 并写入 `block_reasons`。当状态仍为 `Draft` 且 `gate_a` 为空时，Gate 至少生成一个当前评审可关闭条件项（Owner、补证动作、关闭时点），缺任一字段则升级为 `Not Ready`。不得在缺少 GA 证据时把 proposal 标为正式可交付。
 
 ### AC一致性校验
 
@@ -218,6 +223,7 @@ decision_gate:
 - [ ] 03-arch-decision-record.md §6 遗留问题由用户评审会议输入（非 AI 生成）
 - [ ] 03-arch-decision-record.md §6 每条遗留项负责人/解决动作/计划关闭时间齐全
 - [ ] `## Review Ready Gate` 章节按固定 schema 写入，`decision_gate` 与检查表一致
+- [ ] proposal 若为 GA-Approved，则 `gate_a` 非空且证据路径/链接已写入 Gate 检查表
 
 ## NEVER
 

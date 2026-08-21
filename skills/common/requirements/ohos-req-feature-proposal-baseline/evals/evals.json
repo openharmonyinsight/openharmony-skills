@@ -93,7 +93,7 @@
       "id": 7,
       "name": "gate-output-contract-required",
       "prompt": "01-03已就绪。用户确认不拆分proposal，请生成04-feature.md、proposal文件并执行内建 Review Ready Gate。",
-      "expected_output": "04-feature.md 必须包含固定 ## Review Ready Gate 章节，含 decision_gate YAML(schema_version/gate/summary/block_reasons/conditions/observations)、13项检查表、条件项、后续观测项和 FR→AC 追溯表。value-decision 后续可稳定消费该契约。",
+      "expected_output": "04-feature.md 必须包含固定 ## Review Ready Gate 章节，含 decision_gate YAML(schema_version/gate/summary/block_reasons/conditions/observations)、14项检查表、条件项、后续观测项和 FR→AC 追溯表。value-decision 后续可稳定消费该契约。",
       "assertions": [
         {
           "text": "decision_gate",
@@ -181,14 +181,14 @@
       "id": 12,
       "name": "gate-all-pass-ready",
       "prompt": "01-04均完整，proposal文件存在，AC逐列完整，受影响模块均有Owner/SIG，02/03条件项已覆盖，无遗留阻塞，仅需执行内建 Review Ready Gate。",
-      "expected_output": "13项检查均为pass，decision_gate.gate 为 Ready；无 block_reasons、conditions 为空，允许进入正式评审。",
+      "expected_output": "14项检查均为pass，decision_gate.gate 为 Ready；无 block_reasons、conditions 为空，允许进入正式评审。",
       "assertions": [
         {
           "text": "Ready",
           "type": "contains"
         },
         {
-          "text": "13项检查均为pass",
+          "text": "14项检查均为pass",
           "type": "llm_judge"
         },
         {
@@ -241,7 +241,7 @@
       "id": 15,
       "name": "requirements-odk-boundary",
       "prompt": "04-feature.md 和 proposals/05-proposal-arkweb-drag-preview.md 已经确认，用户询问 requirements proposal 与 ODK 交付 proposal 的关系。请说明边界。",
-      "expected_output": "requirements 阶段保留 proposals/05-proposal-<slug>.md 作为需求评审输入，不生成 .codespec 目录，不推断 ODK change-id，也不要求补充 ODK 模板专有章节。rr_id 保留在 01-requirement.md 和 04-feature.md 中，不写入 proposal frontmatter，也不从 IR/SR/handoff 推断。ODK 交付 proposal 由 ODK 自身流程处理。",
+      "expected_output": "requirements 阶段保留 proposals/05-proposal-<slug>.md 作为需求评审输入，不生成 .codespec 目录，不推断 ODK change-id，也不要求补充 ODK 模板专有章节。rr_id 保留在 01-requirement.md 和 04-feature.md 中，不写入 proposal §12 元数据表，也不从 IR/SR/handoff 推断。ODK 交付 proposal 由 ODK 自身流程处理。",
       "assertions": [
         {
           "text": "proposals/05-proposal-<slug>.md",
@@ -275,24 +275,24 @@
     },
     {
       "id": 16,
-      "name": "proposal-frontmatter-not-generated",
+      "name": "proposal-metadata-table-not-frontmatter",
       "prompt": "请基于 reference/proposal.md 生成一个 proposals/05-proposal-xxx.md 文件，并说明 metadata 的处理方式。",
-      "expected_output": "proposal 文件必须按模板 H1/H2 正文结构生成，不生成 YAML frontmatter；不得写入 target_release、feature_id、rr_id、issue、author、date、status 或 gate_a。需求编号、RR单号、目标版本和 Gate 状态以 04-feature.md 及 Review Ready Gate 为唯一事实源。",
+      "expected_output": "proposal 文件必须按模板 H1/H2 正文结构生成，不生成 YAML frontmatter；proposal 末尾 §12 元数据表填写 feature_id、status、gate_a、仓（git remote origin basename 去掉 .git）。不得写入 target_release、rr_id、issue、author、date；这些以 04-feature.md 为唯一事实源。status 为 GA-Approved 时 gate_a 必须非空。",
       "assertions": [
         {
           "text": "不生成 YAML frontmatter",
           "type": "contains"
         },
         {
-          "text": "04-feature.md",
+          "text": "§12",
           "type": "contains"
         },
         {
-          "text": "不得写入 target_release、feature_id、rr_id、issue、author、date、status 或 gate_a",
+          "text": "feature_id、status、gate_a、仓",
           "type": "contains"
         },
         {
-          "text": "唯一事实源",
+          "text": "不得写入 target_release、rr_id、issue、author、date",
           "type": "contains"
         }
       ]
