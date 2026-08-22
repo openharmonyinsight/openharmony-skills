@@ -1,17 +1,11 @@
 # Proposal
 
 > 模板定位：requirements 阶段 proposal 基线，用于需求评审中的 proposal 拆分、边界和验收确认。
-> 融合 OpenSpec(Why) + MatrixSpec(User Stories/DFX)。
 > requirements 阶段落盘为 `proposals/05-proposal-<slug>.md`；ODK 交付阶段使用自身 proposal 模板和归档契约，不由本模板约束。
 > GA 证据规则：`status: GA-Approved` 时 `gate_a` 必须非空；缺失时 Review Ready Gate 判定 Not Ready。
 
 ## 1. 背景与问题（Why）
-<!-- 动机、问题陈述、当前痛点（OpenSpec Why 风格） -->
-
-| 字段 | 内容 |
-|------|------|
-| 需求ID | {feature_id} |
-| RR单号 | {从 04-feature.md 继承} |
+<!-- 动机、问题陈述、当前痛点 -->
 
 ## 2. 初始分级判断
 > L0/简单变更：非目标等章节可简化为一句话；L1+ 建议完整填写。
@@ -89,7 +83,7 @@
 | 国际化/无障碍 | | |
 | 数据迁移 | | |
 
-## 12. 元数据
+## 12. 附录
 
 | 字段 | 内容 |
 |------|------|

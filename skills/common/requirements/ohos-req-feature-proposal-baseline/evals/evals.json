@@ -241,7 +241,7 @@
       "id": 15,
       "name": "requirements-odk-boundary",
       "prompt": "04-feature.md 和 proposals/05-proposal-arkweb-drag-preview.md 已经确认，用户询问 requirements proposal 与 ODK 交付 proposal 的关系。请说明边界。",
-      "expected_output": "requirements 阶段保留 proposals/05-proposal-<slug>.md 作为需求评审输入，不生成 .codespec 目录，不推断 ODK change-id，也不要求补充 ODK 模板专有章节。rr_id 保留在 01-requirement.md 和 04-feature.md 中，不写入 proposal §12 元数据表，也不从 IR/SR/handoff 推断。ODK 交付 proposal 由 ODK 自身流程处理。",
+      "expected_output": "requirements 阶段保留 proposals/05-proposal-<slug>.md 作为需求评审输入，不生成 .codespec 目录，不推断 ODK change-id，也不要求补充 ODK 模板专有章节。rr_id 保留在 01-requirement.md 和 04-feature.md 中，不写入 proposal §12 附录，也不从 IR/SR/handoff 推断。ODK 交付 proposal 由 ODK 自身流程处理。",
       "assertions": [
         {
           "text": "proposals/05-proposal-<slug>.md",
@@ -277,7 +277,7 @@
       "id": 16,
       "name": "proposal-metadata-table-not-frontmatter",
       "prompt": "请基于 reference/proposal.md 生成一个 proposals/05-proposal-xxx.md 文件，并说明 metadata 的处理方式。",
-      "expected_output": "proposal 文件必须按模板 H1/H2 正文结构生成，不生成 YAML frontmatter；proposal 末尾 §12 元数据表填写 feature_id、status、gate_a、仓（git remote origin basename 去掉 .git）。不得写入 target_release、rr_id、issue、author、date；这些以 04-feature.md 为唯一事实源。status 为 GA-Approved 时 gate_a 必须非空。",
+      "expected_output": "proposal 文件必须按模板 H1/H2 正文结构生成，不生成 YAML frontmatter；proposal 末尾 §12 附录填写 feature_id、status、gate_a、仓（git remote origin basename 去掉 .git）。不得写入 target_release、rr_id、issue、author、date；这些以 04-feature.md 为唯一事实源。status 为 GA-Approved 时 gate_a 必须非空。",
       "assertions": [
         {
           "text": "不生成 YAML frontmatter",
