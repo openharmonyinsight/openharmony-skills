@@ -66,7 +66,7 @@ metadata:
    - **降级规则**：若 02-feasibility.md 不含 §2.1 关键代码仓库分析表，则跳过模块覆盖校验并标注 `warn`（"模块覆盖校验未执行：02-feasibility.md 缺少 §2.1"），不 `fail`。
 8. **影响类型术语校验**：对比同一模块在 02-feasibility.md §2.1 和 §4中的影响类型标签。漂移（如"可复用"→"需扩展"）必须在 §4 补充变更理由备注，并在 §4 写入 **术语一致性检查结论**：pass（无漂移）或 warn（有漂移已补理由），供本 skill 的内建 Gate 判定读取。
 9. 判断是否拆分 proposal，并定义每个 proposal 的独立价值、边界、AC、**工作量估算**和依赖。拆分表必须包含每个 proposal 的估算工作量（人月）。**计算端到端总工作量**（= 各 proposal 工作量之和），按总人月推导复杂度（<5 简单 / 5-10 标准 / >10 复杂），填入 §5「端到端总工作量」与「复杂度」字段——此复杂度即 R3 拆分上限（简单≤5 / 标准≤8 / 复杂≤15 人月）的判定依据。
-10. **生成 proposal 文件草稿**：读取 `reference/proposal.md`，为 §5 拆分表中的每个 proposal 生成 `{docs_dir}/proposals/05-proposal-<slug>.md`。不拆分时也必须生成 1 份 proposal 文件。每份 proposal 必须按模板原有 H1/H2 结构填写，不生成 proposal YAML frontmatter，proposal 末尾按模板 §12 附录填写追溯表（feature_id 从 04-feature.md 继承、status 默认 Draft、gate_a 按需填写、仓 取自 git remote origin basename 去掉 .git 后缀），并包含：
+10. **生成 proposal 文件草稿**：读取 `reference/proposal.md`，为 §5 拆分表中的每个 proposal 生成 `{docs_dir}/proposals/05-proposal-<slug>.md`。不拆分时也必须生成 1 份 proposal 文件。每份 proposal 必须按模板原有 H1/H2 结构填写，不生成 proposal YAML frontmatter，proposal 末尾按模板 §12 附录填写追溯表（feature_id 从 04-feature.md 继承、status 默认 Draft、gate_a 按需填写、仓 按下方「仓名归一化规则」填写），并包含：
     - proposal 背景与问题、初始分级判断、目标/非目标
     - 1+8设备差异规格、DFX设计、用户故事与能力、成功标准、影响范围
     - 可选的外部依赖；无依赖时显式填写"不涉及"
@@ -179,6 +179,23 @@ decision_gate:
 ### GA 证据规则
 
 `proposal §12 附录` 的 `status` 仅允许 `Draft | GA-Approved`。当状态为 `GA-Approved` 时，`gate_a` 必须填写可访问的 GA 审视记录链接或归档路径；为空时 Gate 必须判定 `Not Ready` 并写入 `block_reasons`。当状态仍为 `Draft` 且 `gate_a` 为空时，Gate 至少生成一个当前评审可关闭条件项（Owner、补证动作、关闭时点），缺任一字段则升级为 `Not Ready`。不得在缺少 GA 证据时把 proposal 标为正式可交付。
+
+### 仓名归一化规则
+
+Proposal §12 附录的 `仓` 字段必须填写带组织名的规范仓名，不得只写 basename（如 `arkui_ace_engine`）。
+
+取值顺序：
+
+1. 若当前工作区存在 repo manifest，优先读取当前仓对应 project 的 `name` 属性。
+2. 若无 repo manifest（例如用户只 `git clone` 单仓），则从当前仓 `git remote get-url origin` 解析路径。
+
+归一化规则：
+
+- 去掉协议、域名、`.git` 后缀和首尾斜杠。
+- 若 manifest project name 含平台前缀 `OpenSourceCenter_CR/`，去掉该前缀后保留后续组织/仓名，例如 `OpenSourceCenter_CR/openharmony/arkui_ace_engine` → `openharmony/arkui_ace_engine`。
+- 若 remote URL 为 `https://gitcode.com/openharmony/arkui_ace_engine.git`，取 `openharmony/arkui_ace_engine`。
+- 若 manifest 或 remote 已是 `openharmony-tpc/oh-chromium`，保持 `openharmony-tpc/oh-chromium`。
+- 若解析结果只剩单段仓名，必须标记为待人工确认，不得直接写入正式 proposal。
 
 ### AC一致性校验
 

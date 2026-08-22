@@ -90,4 +90,4 @@
 | feature_id | {FEAT-NNNNN，关联 platform_issues} |
 | status | Draft \| GA-Approved；GA-Approved 必须填写 gate_a |
 | gate_a | {GA 审视记录链接或归档路径；为空时不得视为正式可交付} |
-| 仓 | {git remote origin basename，去掉 .git 后缀} |
+| 仓 | {规范仓名，如 openharmony/arkui_ace_engine 或 openharmony-tpc/oh-chromium} |

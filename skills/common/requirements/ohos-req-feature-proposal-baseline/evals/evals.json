@@ -277,7 +277,7 @@
       "id": 16,
       "name": "proposal-metadata-table-not-frontmatter",
       "prompt": "请基于 reference/proposal.md 生成一个 proposals/05-proposal-xxx.md 文件，并说明 metadata 的处理方式。",
-      "expected_output": "proposal 文件必须按模板 H1/H2 正文结构生成，不生成 YAML frontmatter；proposal 末尾 §12 附录填写 feature_id、status、gate_a、仓（git remote origin basename 去掉 .git）。不得写入 target_release、rr_id、issue、author、date；这些以 04-feature.md 为唯一事实源。status 为 GA-Approved 时 gate_a 必须非空。",
+      "expected_output": "proposal 文件必须按模板 H1/H2 正文结构生成，不生成 YAML frontmatter；proposal 末尾 §12 附录填写 feature_id、status、gate_a、仓。仓必须是带组织名的规范仓名：优先从 repo manifest project name 归一化，OpenSourceCenter_CR/openharmony/arkui_ace_engine 取 openharmony/arkui_ace_engine；无 manifest 时从 git remote origin 解析 owner/repo，例如 https://gitcode.com/openharmony/arkui_ace_engine.git 取 openharmony/arkui_ace_engine；不得只写 arkui_ace_engine。不得写入 target_release、rr_id、issue、author、date；这些以 04-feature.md 为唯一事实源。status 为 GA-Approved 时 gate_a 必须非空。",
       "assertions": [
         {
           "text": "不生成 YAML frontmatter",
@@ -289,6 +289,10 @@
         },
         {
           "text": "feature_id、status、gate_a、仓",
+          "type": "contains"
+        },
+        {
+          "text": "openharmony/arkui_ace_engine",
           "type": "contains"
         },
         {
