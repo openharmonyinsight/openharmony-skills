@@ -32,8 +32,12 @@ echo "新增规则行(allow/allowxperm/neverallow): $(echo "$DIFF" | grep -cE '^
 emit "S1 敏感词（非 license 行的 + 行；无输出=通过）"
 echo "$DIFF" | grep '^+' | grep -viE 'apache|license' | grep -iE 'password|passwd|secret|token|private[ _-]?key|backdoor|debug_backdoor' || true
 
-emit "S2-A 向 sepolicy/base 新增策略（有输出=违反）"
+emit "S2-A 向 sepolicy/base 新增策略（含 attributes；修改既有行可豁免）"
 echo "$DIFF" | grep -E '^\+\+\+ b/sepolicy/base/' || true
+echo "--- base/ 新增行（无对应-行=纯新增=违反） ---"
+echo "$DIFF" | awk '/^\+\+\+ b.*sepolicy\/base\//{p=1;next} /^\+\+\+ b/{p=0} p && /^\+[^+]/' || true
+echo "--- base/ 修改行（有对应-行=修改=可豁免） ---"
+echo "$DIFF" | awk '/^\+\+\+ b.*sepolicy\/base\//{p=1;next} /^\+\+\+ b/{p=0} p && /^-[^-]/{print}' || true
 emit "S2-B 涉及的 ohos_policy/<子系统>/<部件> 目录（≥2 行=建议集中/拆分 MR）"
 echo "$DIFF" | grep -E '^\+\+\+ b/sepolicy/ohos_policy/' | sed -E 's#^\+\+\+ b/sepolicy/ohos_policy/##' | sed -E 's#/(public|system|vendor)/.*##' | sort -u || true
 

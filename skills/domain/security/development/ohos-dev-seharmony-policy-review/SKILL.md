@@ -91,7 +91,7 @@ metadata:
 
 以下为硬性违规，命中即 ❌。每条附**非显然原因**——这些是 SELinux 评审中踩过的坑，非直觉可推断：
 
-1. **NEVER 向 `sepolicy/base/` 新增组件策略**（S2-A）— base 编入所有系统/芯片构建，组件策略塞入 base 会绕过 `ohos_policy` 的责任田评审，且一处改动污染全部镜像。实际案例：某子系统将 `allow xxx_service sa_yyy:samgr_class { get };` 塞入 `sepolicy/base/public/`，导致**所有芯片厂商**的 vendor 镜像均编入此策略，即便芯片不提供 `xxx_service`，无法按厂商裁剪。
+1. **NEVER 向 `sepolicy/base/` 新增策略或 attribute 定义**（S2-A）— base 编入所有系统/芯片构建，组件策略或 attribute 定义塞入 base 会绕过 `ohos_policy` 的责任田评审，且一处改动污染全部镜像。包括 `.te`/`file_contexts`/`attributes` 等所有策略文件的**纯新增行**。实际案例：某子系统将 `allow xxx_service sa_yyy:samgr_class { get };` 塞入 `sepolicy/base/public/`，导致**所有芯片厂商**的 vendor 镜像均编入此策略，即便芯片不提供 `xxx_service`，无法按厂商裁剪。**例外**：修改既有行（+行与−行对应、非纯新增）可豁免。
 2. **NEVER 在 `public/` 下新增 `allow`**（S18-A）— `public/` 同时编入 system 与 vendor 镜像，allow 落此等于对所有芯片厂商的组件放行，破坏最小特权。实际案例：某厂商组件的 `allow vendor_xxx data_file:file { read };` 落在 `ohos_policy/<子系统>/<部件>/public/`，导致 system 侧进程也获得了该数据文件的读权限，引发跨域越权。
 3. **NEVER 使用 `default_param`/`default_service`/`default_hdf_service`/`limit_domain` 作为 allow 目标**（S16）— 默认标签对所有域生效，allow 此类标签等于授予全域权限，使 SELinux 形同虚设。实际案例：`allow xxx_service default_service:service_manager { add };` 意在访问某个 SA 服务，但 `default_service` 是所有 SA 服务的兜底标签，结果 `xxx_service` 获得了注册/管理**任意 SA 服务**的能力。
 4. **NEVER 新增 `ioctl` 权限而无配套 `allowxperm` 限命令字**（S14）— 未限命令字的 ioctl 等于放行全部 ioctl 接口，攻击面不可控。实际案例：`allow xxx_service dev_node:chr_file { ioctl };` 无 `allowxperm`，意味着该服务可对设备节点执行**任意 ioctl 命令字**（包括 `TIOCMSET` 串口控制、`HDIO_DRIVE_CMD` 磁盘命令等），攻击面从单接口扩大到设备全部 ioctl。
@@ -105,10 +105,11 @@ metadata:
 - **违反**：任一新增行（非 license 头部）含敏感词。
 
 ### S2 — 策略不新增到 sepolicy/base，应放 sepolicy/ohos_policy；同一 MR 策略宜集中同目录
-- **检测 A（base 落点）**：diff 中 `+++ b/sepolicy/base/` 路径下出现新增策略内容（`.te`/`file_contexts` 新增行，非纯删除）。
+- **检测 A（base 落点）**：diff 中 `+++ b/sepolicy/base/` 路径下出现**新增**策略内容（`.te`/`file_contexts`/`attributes` 等策略文件的**纯新增行**，非修改既有行）。`attributes` 文件不豁免——新增 attribute 定义到 `base/public/attributes` 同属违规，应改为在 `ohos_policy` 对应部件目录下定义。
+- **豁免**：若 diff 对 `base/` 下文件的变更为**修改既有行**（+行与−行一一对应、仅内容变更非纯新增），可豁免——标注「修改既有语句，非新增」并降级为 ⏭️。
 - **检测 B（目录集中）**：统计本次 diff 涉及的 `sepolicy/ohos_policy/<子系统>/<部件>` 目录组合数量（仅看 `<子系统>/<部件>` 一级，**忽略 `public`/`system`/`vendor` 子目录差异**——同一 `<子系统>/<部件>` 下分散在 `system/`、`public/`、`vendor/` 不算分散）。若新增策略分散在**多个不同** `<子系统>/<部件>` 目录下，提示「一个 MR/commit 的策略变更宜集中在同一子系统/部件目录」，便于责任田评审与追溯。
 - **符合**：新增策略落在 `sepolicy/ohos_policy/<子系统>/<部件>/{public,system}/` 下；若子系统/部件目录不存在，应新建目录而非塞入 base；同一 MR 的策略变更集中在同一 `<子系统>/<部件>` 目录下。
-- **违反**：向 `sepolicy/base/` 新增策略内容（检测 A）。
+- **违反**：向 `sepolicy/base/` **新增**策略内容（检测 A，含 `.te`/`file_contexts`/`attributes` 等所有策略文件的纯新增行）。
 - **需确认**：同一 diff 涉及 ≥2 个不同 `<子系统>/<部件>` 目录（检测 B），建议确认是否为同一特性；若是不同特性应拆分为独立 MR；若确属同一特性跨部件，说明关联性（→ ⚠️需确认）。
 
 ### S3 — 新增参数标签需以 parameter_attr 结尾并与 init 责任田达成一致
