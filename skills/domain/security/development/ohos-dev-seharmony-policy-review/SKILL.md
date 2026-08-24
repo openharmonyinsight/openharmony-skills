@@ -31,10 +31,11 @@ metadata:
 - `allowxperm A B:C ioctl { 0xXXXX };` 为 ioctl 命令字限制。
 - neverallow 放松写法：`neverallow { domain -violator_xxx } ...`、`-rgm_violater_xxx`。
 - su 作为主体 `allow su ...` 默认放行；su 作为客体 `... su:... { ... }` 需 `debug_only` 隔离。
-
 ## 2. 工作流
 
 ### 步骤 1：确定扫描目标
+**先问自己**：用户要检视的是单 commit、区间、还是工作区未提交改动？diff 是否仅涉及 `sepolicy/` 下的文件——若 diff 同时含大量非 sepolicy 变更（如 C++ 代码），是否需先过滤？
+
 根据用户输入确定 diff 来源（用 git 命令获取，仅关注 `sepolicy/` 下文件）：
 
 - 单个 commit：`git show <sha> -- sepolicy/`
@@ -56,6 +57,8 @@ metadata:
 
 ### 步骤 3：提取新增的策略行
 
+**先问自己**：本次 diff 涉及哪些文件类型——`.te`？`file_contexts`？`attributes`？不同类型触发的自检项不同（如 `file_contexts` 主要触发 S8，`.te` 触发 S1–S20 全覆盖）。
+
 聚焦 diff 中 `+` 开头的行（新增内容），忽略 `-` 行与 license 头部。识别涉及的文件类型：`.te`（策略规则）、`file_contexts`（路径标签）、`attributes`（属性/宏定义）、`*.cil` 等。
 
 ### 步骤 4：逐条规则扫描
@@ -63,6 +66,9 @@ metadata:
 对第 4 节的 20 条规则逐条执行。先用第 5 节的「快速扫描脚本」跑一遍自动可检项（自动项：S1/S2-A/S3/S5/S6/S8/S12/S13/S14/S15/S16/S17/S18-A/S20 及 S2-B 目录计数）；再对需人工/专家判断的项（S2-B 集中度定性、S4 type 定义位置、S5/S7 neverallow 看护、S9/S10 隔离宏包裹、S11 评审记录、S18-B/C 落点）给出判定依据。
 
 ### 步骤 5：输出报告
+
+**先问自己**：报告的读者是谁——提交者自己（需知道怎么修）还是评审者（需知道是否批准）？若是提交者，⚠️/❌ 项必须附带修改建议而非仅指出问题。
+
 按第 6 节模板生成报告。每条给出：状态（✅通过 / ⚠️需确认 / ❌违反 / ⏭️不适用）、涉及位置 `文件:行号`、依据与建议。
 
 ## 3. 状态定义
@@ -83,14 +89,14 @@ metadata:
 
 以下为硬性违规，命中即 ❌。每条附**非显然原因**——这些是 SELinux 评审中踩过的坑，非直觉可推断：
 
-1. **NEVER 向 `sepolicy/base/` 新增组件策略**（S2-A）— base 编入所有系统/芯片构建，组件策略塞入 base 会绕过 `ohos_policy` 的责任田评审，且一处改动污染全部镜像。
-2. **NEVER 在 `public/` 下新增 `allow`**（S18-A）— `public/` 同时编入 system 与 vendor 镜像，allow 落此等于对所有芯片厂商的组件放行，破坏最小特权。
-3. **NEVER 使用 `default_param`/`default_service`/`default_hdf_service`/`limit_domain` 作为 allow 目标**（S16）— 默认标签对所有域生效，allow 此类标签等于授予全域权限，使 SELinux 形同虚设。
-4. **NEVER 新增 `ioctl` 权限而无配套 `allowxperm` 限命令字**（S14）— 未限命令字的 ioctl 等于放行全部 ioctl 接口，攻击面不可控。
-5. **NEVER su 作为客体未用 `debug_only` 隔离**（S13）— su 客体 allow 在商用态放行会授予任意域 root 等价权限。
-6. **NEVER 同一 neverallow 出现多个同类 `-violator`/`-rgm_violater` 豁免**（S11a）— 多豁免使看护形同虚设，每次只允许精确单点放行，多重放行需拆多次评审。
+1. **NEVER 向 `sepolicy/base/` 新增组件策略**（S2-A）— base 编入所有系统/芯片构建，组件策略塞入 base 会绕过 `ohos_policy` 的责任田评审，且一处改动污染全部镜像。实际案例：某子系统将 `allow xxx_service sa_yyy:samgr_class { get };` 塞入 `sepolicy/base/public/`，导致**所有芯片厂商**的 vendor 镜像均编入此策略，即便芯片不提供 `xxx_service`，无法按厂商裁剪。
+2. **NEVER 在 `public/` 下新增 `allow`**（S18-A）— `public/` 同时编入 system 与 vendor 镜像，allow 落此等于对所有芯片厂商的组件放行，破坏最小特权。实际案例：某厂商组件的 `allow vendor_xxx data_file:file { read };` 落在 `ohos_policy/<子系统>/<部件>/public/`，导致 system 侧进程也获得了该数据文件的读权限，引发跨域越权。
+3. **NEVER 使用 `default_param`/`default_service`/`default_hdf_service`/`limit_domain` 作为 allow 目标**（S16）— 默认标签对所有域生效，allow 此类标签等于授予全域权限，使 SELinux 形同虚设。实际案例：`allow xxx_service default_service:service_manager { add };` 意在访问某个 SA 服务，但 `default_service` 是所有 SA 服务的兜底标签，结果 `xxx_service` 获得了注册/管理**任意 SA 服务**的能力。
+4. **NEVER 新增 `ioctl` 权限而无配套 `allowxperm` 限命令字**（S14）— 未限命令字的 ioctl 等于放行全部 ioctl 接口，攻击面不可控。实际案例：`allow xxx_service dev_node:chr_file { ioctl };` 无 `allowxperm`，意味着该服务可对设备节点执行**任意 ioctl 命令字**（包括 `TIOCMSET` 串口控制、`HDIO_DRIVE_CMD` 磁盘命令等），攻击面从单接口扩大到设备全部 ioctl。
+5. **NEVER su 作为客体未用 `debug_only` 隔离**（S13）— su 客体 allow 在商用态放行会授予任意域 root 等价权限。实际案例：`allow xxx_service su:process { transition };` 未用 `debug_only` 包裹，商用 release 中 `xxx_service` 可直接切 su 提权，绕过 SELinux 域隔离。
+6. **NEVER 同一 neverallow 出现多个同类 `-violator`/`-rgm_violater` 豁免**（S11a）— 多豁免使看护形同虚设，每次只允许精确单点放行，多重放行需拆多次评审。实际案例：`neverallow { domain -violator_a -violator_b } xxx:file { write };` 同时豁免 `violator_a` 和 `violator_b`，两个进程同时获得写权限但只评审了一次，各自的风险未被独立评估。
 7. **NEVER 新增 `allow`/`allowxperm` 而全文无对应 `#avc:` 日志注释**（S17）— 无 avc 来源的权限无法追溯触发场景，评审无法核实必要性，合入后无法排查回归。注意：diff hunk 内未见 `#avc:` 不等于缺失——大文件 hunk 之外可能已有注释，先标 ⚠️ 要求补查全文，确认全文缺失后才升 ❌。
-8. **NEVER debug/开发者模式权限未用 `debug_only`/`developer_only` 隔离**（S9/S10）— 商用 release 构建不应存在调试通道，未隔离会在 release 中留后门。
+8. **NEVER debug/开发者模式权限未用 `debug_only`/`developer_only` 隔离**（S9/S10）— 商用 release 构建不应存在调试通道，未隔离会在 release 中留后门。实际案例：某调试服务的 `allow xxx_service debug_socket:sock_file { create };` 未用 `debug_only` 包裹，release 版本仍可连接调试端口，形成生产环境后门。
 
 ### S1 — 策略、注释不出现敏感词
 - **检测**：新增行（含注释 `#`）匹配敏感词表：口令/密码/密钥/token/secret/私钥/IP 内网地址/调试后门类词（如 `password`、`passwd`、`secret`、`token`、`private key`、`backdoor`、`debug_backdoor`、疑似内网 IP `10./172.16-31./192.168.` 出现在非 license 行）。
@@ -110,7 +116,11 @@ metadata:
 
 ### S4 — neverallow 落点建议：type 全为 public 定义放 public，含非 public type 可放非 public
 - **建议（非硬性）**：neverallow 的落点依据其引用的 type 定义位置决定。
-- **检测**：新增 `neverallow` 语句中引用的所有 type（源 type 集合与客体 type），逐一确认其定义所在目录：
+- **检测**：新增 `neverallow` 语句中引用的所有 type（源 type 集合与客体 type），逐一确认其定义所在目录。**定位 type 定义**：
+  ```bash
+  # 提取 neverallow 中引用的所有 type 名，逐一查找定义位置
+  grep -rn "^type <typename>" sepolicy/ | grep -v '\.bak'
+  ```
   - 若**所有**引用的 type 均定义在 `public/`（`sepolicy/.../public/*.te` 或 `sepolicy/base/public/*`）→ 建议该 neverallow 写在相应目录的 `public/` 下，保证系统与芯片组件同时管控。
   - 若**存在**引用的 type 定义在非 public 路径（如 `system/`、`vendor/`）→ 该 neverallow 可放在对应的非 public 路径下（`system/` 或 `vendor/`）。
 - **状态**：⚠️建议（type 全为 public 定义却落在非 public，提示移至 public；含非 public type 落在非 public 视为合理）。
@@ -141,9 +151,14 @@ metadata:
 - **违反**：开发者模式权限未用 `developer_only` 隔离。
 
 ### S11 — 修改 neverallow 需通过安全评审（含两条子项）
-- **检测**：diff 是否新增/修改 `neverallow` 语句（尤其通过 `-violator_xx` 放松）。
-- **S11a**：每条 neverallow 语句中仅允许出现**唯一的** `-violator_xxx` 和**唯一的** `-rgm_violater_xxx`。同一 neverallow 出现多个同类豁免 → ❌。
-- **S11b**：每新增 `attribute violator_xx` / `typeattribute ... violator_xx`，需有对应的 `neverallow violater_xxx ...` 看护策略（注意该对应策略可能不在本仓库，需 ⚠️需确认）。
+- **检测**：diff 是否新增/修改 `neverallow` 语句（尤其通过 `-violator_xx` 放松）。**核查豁免一致性**：
+  ```bash
+  # 查找 diff 中新增的 violator attribute/typeattribute，确认有对应 neverallow 看护
+  grep -n "violator_\|rgm_violater" <changed-files>
+  grep -rn "neverallow.*violator_<name>" sepolicy/
+  ```
+  - **S11a**：每条 neverallow 语句中仅允许出现**唯一的** `-violator_xxx` 和**唯一的** `-rgm_violater_xxx`。同一 neverallow 出现多个同类豁免 → ❌。
+  - **S11b**：每新增 `attribute violator_xx` / `typeattribute ... violator_xx`，需有对应的 `neverallow violater_xxx ...` 看护策略（注意该对应策略可能不在本仓库，需 ⚠️需确认）。用上述 grep 确认 diff 内或仓库内存在对应看护；若 grep 无结果，标注「对应看护策略不在本仓库，需跨仓确认」。
 - **判定**：涉及修改 neverallow → ⚠️需确认是否已通过安全评审；违反 S11a 唯一性 → ❌。
 
 ### S12 — 新增 sh 作为主体的权限需 DFX + 安全评审
@@ -218,6 +233,8 @@ metadata:
 ## 5. 自动扫描脚本
 
 **MANDATORY — 运行脚本**：在步骤 4 的逐条判定前，**必须**执行 [`scripts/scan.sh`](scripts/scan.sh) 跑一遍所有自动可检项。该脚本汇总 S1–S20 中可自动化的检测，并输出 ROM 估算。
+
+**Do NOT Load**：若步骤 1 获取的 diff 为空（`git diff -- sepolicy/` 无输出），**禁止运行 scan.sh**——直接输出全项 ⏭️不适用报告，避免空 diff 触发脚本报错。
 
 ```bash
 # 用法（在仓库根目录运行）：
