@@ -1,0 +1,48 @@
+{
+  "skill_name": "ohos-dev-seharmony-policy-review",
+  "evals": [
+    {
+      "id": 1,
+      "name": "pr-scan-avc-gap",
+      "prompt": "扫描这个 PR 的 sepolicy diff（输入文件 evals/files/mr8170_pr_scan.diff），按 20 条自检项跑自检并输出报告。用 scan.sh 脚本跑自动项，再做人工判定项。",
+      "expected_output": "一份中文自检报告：S17 标记 init.te 的 allow 缺 #avc 注释为 ⚠️；S2 提示两文件分散在不同子系统目录为 ⚠️；ROM 增量 200B；多数项 ⏭️ 不适用。",
+      "files": ["evals/files/mr8170_pr_scan.diff"],
+      "assertions": [
+        "报告将 S17 标记为 ⚠️ 需确认，并指出 init.te 的 `allow init proc_file:dir { getattr open setattr }` 缺少 #avc: 日志注释",
+        "报告将 S2 标记为 ⚠️，说明两文件分属 busmanager/serial_manager 与 startup/init 两个不同子系统目录",
+        "报告 ROM 增量估算结果为 200 B",
+        "报告将 S14（ioctl）标记为 ⏭️ 不适用",
+        "报告确认 serial_service.te 的 allow 已配 #avc: 注释（作为符合范例）"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "rename-refactor-edge-case",
+      "prompt": "hey 帮我扫一下这个 commit 的 selinux 策略改动，文件在 evals/files/rename_refactor_commit.diff，看看有没有问题",
+      "expected_output": "报告应识别本次 diff 为 rename 重构性质（debug_hap→debug_hap_attr），非新增权限；ROM 增量约 0B；S17/S19 的缺失应标注为 pre-existing（重构未改变包裹状态）而非硬报 ❌ 违规。",
+      "files": ["evals/files/rename_refactor_commit.diff"],
+      "assertions": [
+        "报告在开头或判定中识别出本次 diff 为 rename 重构性质（非新增权限），而非机械报违规",
+        "报告 ROM 增量估算为 0 B（A≈D，规则净增为零）",
+        "报告未将 S17 的 rename allow 行硬报为 ❌ 违规，而是标注 pre-existing 或说明重构未改变包裹状态",
+        "报告提及 debug_hap 与 debug_hap_attr 的 rename（属性化）关系",
+        "报告对 S18-A 的 public/ 下 allow（如 sh.te、input_isolate_debug_hap.te）标注为 pre-existing 而非本次新引入"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "violation-heavy-hard-fail",
+      "prompt": "扫描 evals/files/violation_heavy.diff 中的 sepolicy 变更，按自检项判定违规情况",
+      "expected_output": "报告应硬报多个 ❌：S2（base 新增）、S18（public 放 allow）、S16（default_service）、S14（ioctl 无 allowxperm）；并 ⚠️ 提示 S20 appdat 建议改 normal_app_data；ROM 600B。",
+      "files": ["evals/files/violation_heavy.diff"],
+      "assertions": [
+        "报告将 S2 标记为 ❌ 违规，指出 sepolicy/base/public/some_base_file.te 下新增了 allow 策略",
+        "报告将 S18（或 S18-A）标记为 ❌ 违规，指出 public/ 目录下新增了 allow（demo.te 或 some_base_file.te）",
+        "报告将 S16 标记为 ❌ 违规，指出使用了 default_service 作为 allow 目标",
+        "报告将 S14 标记为 ❌ 违规，指出 `allow my_service dev_node:chr_file { ioctl read }` 缺少配套 allowxperm",
+        "报告将 S20 标记为 ⚠️ 建议，提示 appdat 改用 normal_app_data 宏",
+        "报告 ROM 增量估算为 600 B"
+      ]
+    }
+  ]
+}

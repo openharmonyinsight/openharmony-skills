@@ -1,0 +1,25 @@
+diff --git a/sepolicy/ohos_policy/busmanager/serial_manager/system/serial_service.te b/sepolicy/ohos_policy/busmanager/serial_manager/system/serial_service.te
+index 874a611fc..96febf825 100644
+--- a/sepolicy/ohos_policy/busmanager/serial_manager/system/serial_service.te
++++ b/sepolicy/ohos_policy/busmanager/serial_manager/system/serial_service.te
+@@ -168,3 +168,8 @@ allow serial_service sa_foundation_abilityms:samgr_class { get };
+ 
+ # avc:  denied  { get } for service=401 sid=u:r:serial_service:s0 scontext=u:r:serial_service:s0 tcontext=u:object_r:sa_foundation_bms:s0 tclass=samgr_class permissive=1
+ allow serial_service sa_foundation_bms:samgr_class { get };
++
++# avc: denied { open } for path="/proc/devhost/root/tty/driver/serial" scontext=u:r:serial_service:s0 tcontext=u:object_r:proc_file:s0 tclass=file permissive=1
++# avc: denied { read } for path="/proc/devhost/root/tty/driver/serial" scontext=u:r:serial_service:s0 tcontext=u:object_r:proc_file:s0 tclass=file permissive=1
++# avc: denied { getattr } for path="/proc/devhost/root/tty/driver/serial" scontext=u:r:serial_service:s0 tcontext=u:object_r:proc_file:s0 tclass=file permissive=1
++allow serial_service proc_file:file { open read getattr };
+diff --git a/sepolicy/ohos_policy/startup/init/system/init.te b/sepolicy/ohos_policy/startup/init/system/init.te
+index 5d177bbcc..097d21b17 100644
+--- a/sepolicy/ohos_policy/startup/init/system/init.te
++++ b/sepolicy/ohos_policy/startup/init/system/init.te
+@@ -405,6 +405,7 @@ allow init persist_sys_param:file { map open read relabelto };
+ allow init power_host:process { rlimitinh siginh transition };
+ allow init proc_cmdline_file:file { getattr open read setattr };
+ allow init proc_file:file { getattr open setattr write };
++allow init proc_file:dir { getattr open setattr };
+ allow init proc_interrupts_file:file { setattr };
+ allow init proc_kmsg_file:file { setattr };
+ allow init proc_net:file { setattr };

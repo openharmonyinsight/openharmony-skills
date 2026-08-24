@@ -1,0 +1,463 @@
+commit 9c1468adc38f7e720c02483111dda942b2e724b4
+Author: lihehe <lihehao@huawei.com>
+Date:   Thu Jul 23 14:56:06 2026 +0800
+
+    support consistency check for scontext
+    
+    Signed-off-by: lihehe <lihehao@huawei.com>
+    
+    🤖‍ AI[0%] 👌 AI Adopted[0%] 🧑 Human[100%]
+    
+    Change-Id: Ie29d69fda3976ee45637d8a8a0ac09a69c295090
+
+diff --git a/sepolicy/base/public/attributes b/sepolicy/base/public/attributes
+index 0c5cbf52b..9e8cf7b75 100644
+--- a/sepolicy/base/public/attributes
++++ b/sepolicy/base/public/attributes
+@@ -1,4 +1,4 @@
+-# Copyright (c) 2021-2023 Huawei Device Co., Ltd.
++# Copyright (c) 2021-2026 Huawei Device Co., Ltd.
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+ # You may obtain a copy of the License at
+@@ -89,32 +89,6 @@ attribute sa_service_attr;
+ # i.e. camera_service
+ attribute hdf_service_attr;
+ 
+-# Type of all processes in the hap format.
+-# i.e. com.ohos.setting
+-attribute hap_domain;
+-
+-# Type of all haps in apl normal.
+-attribute normal_hap_attr;
+-
+-# Type of all haps in apl system_basic.
+-attribute system_basic_hap_attr;
+-
+-# Type of all haps in apl system_core.
+-attribute system_core_hap_attr;
+-
+-# File type of all processes in the hap format.
+-# i.e. com.ohos.setting
+-attribute hap_file_attr;
+-
+-# File type of all haps in apl normal.
+-attribute normal_hap_data_file_attr;
+-
+-# File type of all haps in apl system_basic.
+-attribute system_basic_hap_data_file_attr;
+-
+-# File type of all haps in apl system_core.
+-attribute system_core_hap_data_file_attr;
+-
+ # Type of hdf processes.
+ # i.e. hdv_devmgr,
+ attribute hdfdomain;
+diff --git a/sepolicy/base/public/attributes_for_hap b/sepolicy/base/public/attributes_for_hap
+new file mode 100644
+index 000000000..a2d52ad54
+--- /dev/null
++++ b/sepolicy/base/public/attributes_for_hap
+@@ -0,0 +1,42 @@
++# Copyright (c) 2026 Huawei Device Co., Ltd.
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#     http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
++
++# Type of all processes in the hap format.
++# i.e. com.ohos.setting
++attribute hap_domain;
++
++# Type of all haps in apl normal.
++attribute normal_hap_attr;
++
++# Type of all debuggable haps in apl normal.
++attribute debug_hap_attr;
++
++# Type of all haps in apl system_basic.
++attribute system_basic_hap_attr;
++
++# Type of all haps in apl system_core.
++attribute system_core_hap_attr;
++
++# File type of all processes in the hap format.
++# i.e. com.ohos.setting
++attribute hap_file_attr;
++
++# File type of all haps in apl normal.
++attribute normal_hap_data_file_attr;
++
++# File type of all haps in apl system_basic.
++attribute system_basic_hap_data_file_attr;
++
++# File type of all haps in apl system_core.
++attribute system_core_hap_data_file_attr;
+diff --git a/sepolicy/base/public/domain.te b/sepolicy/base/public/domain.te
+index 01d5ea9ea..a08cb7f4e 100644
+--- a/sepolicy/base/public/domain.te
++++ b/sepolicy/base/public/domain.te
+@@ -347,8 +347,8 @@ neverallow * self:{ capability2 cap2_userns } checkpoint_restore;
+ neverallow { domain -hiperf -cap_violator_perfmon debug_only(`-hiebpf') } self:{ capability2 cap2_userns } perfmon;
+ 
+ #limit domain has exec_no_sign and exec_anon_mem permission
+-neverallow { domain developer_only(`-debug_hap -normal_hap -input_hap -input_debug_hap') debug_only(`-su') -rgm_violator_exec_no_sign } self:xpm { exec_no_sign };
+-neverallow { domain developer_only(`-debug_hap -input_debug_hap') debug_only(`-su') -isolated_render } self:xpm { exec_anon_mem };
++neverallow { domain developer_only(`-debug_hap_attr -normal_hap -input_hap -input_debug_hap') debug_only(`-su') -rgm_violator_exec_no_sign } self:xpm { exec_no_sign };
++neverallow { domain developer_only(`-debug_hap_attr -input_debug_hap') debug_only(`-su') -isolated_render } self:xpm { exec_anon_mem };
+ 
+ neverallow { domain } data_local_tmp:file execute_no_trans;
+ 
+diff --git a/sepolicy/base/public/hap_domain.te b/sepolicy/base/public/hap_domain.te
+index 174ea0793..6c8bb8a9b 100644
+--- a/sepolicy/base/public/hap_domain.te
++++ b/sepolicy/base/public/hap_domain.te
+@@ -14,10 +14,12 @@
+ type system_core_hap, domain;
+ type system_basic_hap, domain;
+ type normal_hap, domain;
+-type debug_hap, domain, hap_domain, normal_hap_attr;
++type debug_hap, domain, hap_domain;
+ 
+ typeattribute normal_hap hap_domain;
+ typeattribute normal_hap normal_hap_attr;
++typeattribute debug_hap normal_hap_attr;
++typeattribute debug_hap debug_hap_attr;
+ 
+ neverallow { normal_hap_attr -hap_domain_kernel_violators } { domain -normal_hap_attr }:file never_rw_file;
+ neverallow { hap_domain -normal_hap_attr } normal_hap_attr:file never_rw_file;
+diff --git a/sepolicy/base/te/debug_hap.te b/sepolicy/base/te/debug_hap.te
+index 0a25e88bd..f07a68534 100644
+--- a/sepolicy/base/te/debug_hap.te
++++ b/sepolicy/base/te/debug_hap.te
+@@ -12,5 +12,5 @@
+ # limitations under the License.
+ 
+ developer_only(`
+-    allow debug_hap normal_hap_attr:process { ptrace };
++    allow debug_hap_attr normal_hap_attr:process { ptrace };
+ ')
+diff --git a/sepolicy/ohos_policy/ability/ability_runtime/system/aa.te b/sepolicy/ohos_policy/ability/ability_runtime/system/aa.te
+index 1f74b39e5..2af12c7d5 100644
+--- a/sepolicy/ohos_policy/ability/ability_runtime/system/aa.te
++++ b/sepolicy/ohos_policy/ability/ability_runtime/system/aa.te
+@@ -138,7 +138,7 @@ developer_only(`
+     allow aa toybox_exec:lnk_file { read };
+     allow aa tracefs:dir { search };
+     allow aa tty_device:chr_file { read write open ioctl };
+-    allow debug_hap aa:binder { call };
++    allow debug_hap_attr aa:binder { call };
+     allow foundation aa:binder { call transfer };
+     allow hdcd aa:process { signal };
+     allow hidumper_service aa:dir { search };
+diff --git a/sepolicy/ohos_policy/arkXtest/perftest/system/test_server.te b/sepolicy/ohos_policy/arkXtest/perftest/system/test_server.te
+index 6c5ff2385..66b1192e7 100644
+--- a/sepolicy/ohos_policy/arkXtest/perftest/system/test_server.te
++++ b/sepolicy/ohos_policy/arkXtest/perftest/system/test_server.te
+@@ -17,11 +17,11 @@ developer_only(`
+     allow test_server dev_ucollection:chr_file { ioctl read open write };
+     allowxperm test_server dev_ucollection:chr_file ioctl { 0x1 0x2 0x4 };
+     allow test_server normal_hap:file { getattr read open };
+-    allow test_server debug_hap:file { getattr read open };
++    allow test_server debug_hap_attr:file { getattr read open };
+     allow test_server system_basic_hap:file { getattr read open };
+     allow test_server system_core_hap:file { getattr read open };
+     allow test_server normal_hap:dir { getattr search };
+-    allow test_server debug_hap:dir { getattr search };
++    allow test_server debug_hap_attr:dir { getattr search };
+     allow test_server system_basic_hap:dir { getattr search };
+     allow test_server system_core_hap:dir { getattr search };
+     allow test_server test_server:capability { sys_ptrace };
+diff --git a/sepolicy/ohos_policy/arkXtest/perftest/system/type.te b/sepolicy/ohos_policy/arkXtest/perftest/system/type.te
+index 4e2ade439..268e492ff 100644
+--- a/sepolicy/ohos_policy/arkXtest/perftest/system/type.te
++++ b/sepolicy/ohos_policy/arkXtest/perftest/system/type.te
+@@ -61,9 +61,9 @@ developer_only(`
+     allow perftest system_core_hap:binder { call transfer };
+     allow perftest system_core_hap:file { read open getattr };
+     allow perftest system_core_hap:dir { search getattr open read };
+-    allow perftest debug_hap:binder { call transfer };
+-    allow perftest debug_hap:file { read open getattr };
+-    allow perftest debug_hap:dir { search getattr open read };
++    allow perftest debug_hap_attr:binder { call transfer };
++    allow perftest debug_hap_attr:file { read open getattr };
++    allow perftest debug_hap_attr:dir { search getattr open read };
+ 
+     allow perftest hisysevent:file { read open };
+     allow perftest hisysevent:dir { search getattr };
+diff --git a/sepolicy/ohos_policy/bundlemanager/ecological_rule_manager/system/ecological_rule_mgr_service.te b/sepolicy/ohos_policy/bundlemanager/ecological_rule_manager/system/ecological_rule_mgr_service.te
+index 6fa345a12..6e2bfb36b 100644
+--- a/sepolicy/ohos_policy/bundlemanager/ecological_rule_manager/system/ecological_rule_mgr_service.te
++++ b/sepolicy/ohos_policy/bundlemanager/ecological_rule_manager/system/ecological_rule_mgr_service.te
+@@ -14,6 +14,6 @@
+ type sa_ecological_rule_mgr_service, sa_service_attr;
+ allow foundation sa_ecological_rule_mgr_service:samgr_class { add get };
+ allow normal_hap sa_ecological_rule_mgr_service:samgr_class { get };
+-allow debug_hap sa_ecological_rule_mgr_service:samgr_class { get };
++allow debug_hap_attr sa_ecological_rule_mgr_service:samgr_class { get };
+ allow system_core_hap sa_ecological_rule_mgr_service:samgr_class { get };
+ allow system_basic_hap sa_ecological_rule_mgr_service:samgr_class { get };
+diff --git a/sepolicy/ohos_policy/communication/netstack/system/netstack.te b/sepolicy/ohos_policy/communication/netstack/system/netstack.te
+index 540a98f8d..7d14f8119 100644
+--- a/sepolicy/ohos_policy/communication/netstack/system/netstack.te
++++ b/sepolicy/ohos_policy/communication/netstack/system/netstack.te
+@@ -12,7 +12,7 @@
+ # limitations under the License.
+ 
+ developer_only(`
+-    allow debug_hap debug_hap_data_file:sock_file { append create getattr lock map open read rename setattr unlink watch watch_reads write };
++    allow debug_hap_attr debug_hap_data_file:sock_file { append create getattr lock map open read rename setattr unlink watch watch_reads write };
+     allow installs debug_hap_data_file:sock_file { unlink }; 
+ ')
+ allow normal_hap_attr normal_hap_data_file_attr:sock_file { append create getattr lock map open read rename setattr unlink watch watch_reads write };
+diff --git a/sepolicy/ohos_policy/developtools/hiperf/system/hiperf.te b/sepolicy/ohos_policy/developtools/hiperf/system/hiperf.te
+index 300fafbdb..5937f73af 100644
+--- a/sepolicy/ohos_policy/developtools/hiperf/system/hiperf.te
++++ b/sepolicy/ohos_policy/developtools/hiperf/system/hiperf.te
+@@ -195,10 +195,10 @@ developer_only(`
+     allow hiperf sh:fifo_file { read write };
+     allow hiperf sh:process signull;
+     allow hiperf data_log:fifo_file { create open read unlink write };
+-    allow hiperf debug_hap:process { ptrace };
++    allow hiperf debug_hap_attr:process { ptrace };
+ ')
+ 
+-neverallow hiperf { domain debug_only(`-hap_domain') developer_only(`-debug_hap -input_debug_hap') }:process ptrace;
++neverallow hiperf { domain debug_only(`-hap_domain') developer_only(`-debug_hap_attr -input_debug_hap') }:process ptrace;
+ allow hiperf data_local_tmp:file { create getattr ioctl map open read rename unlink write };
+ allow hiperf data_local_tmp:dir { open read add_name remove_name search write };
+ allow hiperf self:capability2 perfmon;
+diff --git a/sepolicy/ohos_policy/developtools/lldb/system/lldb.te b/sepolicy/ohos_policy/developtools/lldb/system/lldb.te
+index b07bea1ab..78ccfe009 100644
+--- a/sepolicy/ohos_policy/developtools/lldb/system/lldb.te
++++ b/sepolicy/ohos_policy/developtools/lldb/system/lldb.te
+@@ -32,9 +32,9 @@ allow lldb_server lldb_server:process { fork getsched setsched };
+ # lldb-server needs to read the procfs of a debuggable app to know runtime
+ # information such as what the binary is and the runtime vm address the binary
+ # is loaded at.
+-allow lldb_server debug_hap:dir { search read open };
+-allow lldb_server debug_hap:file { read open };
+-allow lldb_server debug_hap:lnk_file { read };
++allow lldb_server debug_hap_attr:dir { search read open };
++allow lldb_server debug_hap_attr:file { read open };
++allow lldb_server debug_hap_attr:lnk_file { read };
+ 
+ # lldb-server needs to read system libraries and the Appspawn/CJAppspawn binary so that it
+ # can compare these with local module caches which are used for symbol resolving
+@@ -45,7 +45,7 @@ allow lldb_server cjappspawn_exec:file { getattr read open map };
+ 
+ # Debugging functionalities like breakpoints and stepping are accomplished by
+ # sending ptrace syscalls.
+-allow lldb_server debug_hap:process { ptrace sigkill signal sigstop };
++allow lldb_server debug_hap_attr:process { ptrace sigkill signal sigstop };
+ 
+ # For fs-verify(signature checking) of lldb-server. lldb-server will execute lldb-server.
+ allow lldb_server key_enable:key { search };
+@@ -54,7 +54,7 @@ allow lldb_server key_enable:key { search };
+ 
+ # Forbid lldb-server to debug other processes except debuggable applications and
+ # even child processes launched by lldb-server.
+-neverallow lldb_server { domain developer_only(`-debug_hap -input_debug_hap') -violator_ptrace_debug_hap }:process {
++neverallow lldb_server { domain developer_only(`-debug_hap_attr -input_debug_hap') -violator_ptrace_debug_hap }:process {
+     ptrace sigkill signal sigstop };
+ neverallow lldb_server self:process { ptrace sigkill signal sigstop };
+ # Only processes of Appspawn/CJAppspawn and lldb-server can execute lldb-server.
+diff --git a/sepolicy/ohos_policy/developtools/profiler/system/native_daemon.te b/sepolicy/ohos_policy/developtools/profiler/system/native_daemon.te
+index 2a1e96d54..afa90dde0 100644
+--- a/sepolicy/ohos_policy/developtools/profiler/system/native_daemon.te
++++ b/sepolicy/ohos_policy/developtools/profiler/system/native_daemon.te
+@@ -12,11 +12,11 @@
+ # limitations under the License
+ 
+ developer_only(`
+-    allow native_daemon debug_hap:process { ptrace };
++    allow native_daemon debug_hap_attr:process { ptrace };
+     allow native_daemon native_daemon:hmcap { code_protect };
+ ')
+ 
+-neverallow native_daemon { domain debug_only(`-hap_domain') developer_only(`-debug_hap -input_debug_hap') }:process ptrace;
++neverallow native_daemon { domain debug_only(`-hap_domain') developer_only(`-debug_hap_attr -input_debug_hap') }:process ptrace;
+ neverallow { domain -hiprofiler_cmd -hiprofilerd -hiprofiler_plugins -native_daemon -hitrace -hiview -bytrace -hiperf -hiviewdfx_profiler_param_violator } hiviewdfx_profiler_param:parameter_service { set };
+ 
+ debug_only(`
+diff --git a/sepolicy/ohos_policy/game/game_controller_service/system/debug_hap.te b/sepolicy/ohos_policy/game/game_controller_service/system/debug_hap.te
+index 6351dbe4f..bef66ebb6 100644
+--- a/sepolicy/ohos_policy/game/game_controller_service/system/debug_hap.te
++++ b/sepolicy/ohos_policy/game/game_controller_service/system/debug_hap.te
+@@ -11,8 +11,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-allow debug_hap gamecontroller_server:binder { call transfer };
+-allow debug_hap sa_gamecontroller_server:samgr_class { get };
+-
++allow debug_hap_attr gamecontroller_server:binder { call transfer };
++allow debug_hap_attr sa_gamecontroller_server:samgr_class { get };
+ 
+ 
+diff --git a/sepolicy/ohos_policy/global/i18n/system/debug_hap.te b/sepolicy/ohos_policy/global/i18n/system/debug_hap.te
+index 0018250ed..2633694c4 100644
+--- a/sepolicy/ohos_policy/global/i18n/system/debug_hap.te
++++ b/sepolicy/ohos_policy/global/i18n/system/debug_hap.te
+@@ -11,11 +11,11 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-allow debug_hap system_usr_file:file { open read getattr };
+-allow debug_hap system_usr_file:dir { open read getattr };
+-allow debug_hap sysfs_devices_system_cpu:file { getattr };
+-allow debug_hap sa_i18n_service:samgr_class { get };
+-allow debug_hap i18n_service:binder { call };
+-allow debug_hap i18n_service:fd { use };
++allow debug_hap_attr system_usr_file:file { open read getattr };
++allow debug_hap_attr system_usr_file:dir { open read getattr };
++allow debug_hap_attr sysfs_devices_system_cpu:file { getattr };
++allow debug_hap_attr sa_i18n_service:samgr_class { get };
++allow debug_hap_attr i18n_service:binder { call };
++allow debug_hap_attr i18n_service:fd { use };
+ # avc: denied { getattr } for pid=51567, comm="/system/bin/chrome_crashpad_handler"  path="/dev" dev="" ino=0 scontext=u:r:debug_hap:s0 tcontext=u:object_r:dev_file:s0 tclass=dir permissive=1
+-allow debug_hap dev_file:dir { getattr };
++allow debug_hap_attr dev_file:dir { getattr };
+diff --git a/sepolicy/ohos_policy/liteos/toybox/public/sh.te b/sepolicy/ohos_policy/liteos/toybox/public/sh.te
+index 371473139..141838781 100644
+--- a/sepolicy/ohos_policy/liteos/toybox/public/sh.te
++++ b/sepolicy/ohos_policy/liteos/toybox/public/sh.te
+@@ -39,7 +39,7 @@ allow sh devpts:chr_file { ioctl };
+ allowxperm sh devpts:chr_file ioctl { 0x5401 0x5404 };
+ 
+ # avc: denied { read open } for pid=6685, comm="/bin/top" path="/proc/6052/task" scontext=u:r:sh:s0 tcontext=u:r:debug_hap:s0 tclass=dir permissive=0
+-allow sh debug_hap:dir { read open };
++allow sh debug_hap_attr:dir { read open };
+ 
+ # avc: denied { read open } for pid=6685, comm="/bin/top" path="/proc/stat" scontext=u:r:sh:s0 tcontext=u:object_r:proc_stat_file:s0 tclass=file permissive=0
+ allow sh proc_stat_file:file { read open };
+diff --git a/sepolicy/ohos_policy/miscservices/inputmethod_native/public/input_isolate_debug_hap.te b/sepolicy/ohos_policy/miscservices/inputmethod_native/public/input_isolate_debug_hap.te
+index a17d3c50b..1d7cb2bae 100644
+--- a/sepolicy/ohos_policy/miscservices/inputmethod_native/public/input_isolate_debug_hap.te
++++ b/sepolicy/ohos_policy/miscservices/inputmethod_native/public/input_isolate_debug_hap.te
+@@ -47,9 +47,9 @@ developer_only(`
+     allow accessibility input_isolate_debug_hap:binder { call };
+ 
+     #avc:  denied { call } for pid=13933, comm="/system/bin/appspawn" scontext=u:r:debug_hap:s0 tcontext=u:r:input_isolate_debug_hap:s0 tclass=binder permissive=1
+-    allow debug_hap input_isolate_debug_hap:binder { call };
++    allow debug_hap_attr input_isolate_debug_hap:binder { call };
+     #avc:  denied { call } for pid=13826, comm="/system/bin/appspawn" scontext=u:r:input_isolate_debug_hap:s0 tcontext=u:r:debug_hap:s0 tclass=binder permissive=1
+-    allow input_isolate_debug_hap debug_hap:binder { call };
++    allow input_isolate_debug_hap debug_hap_attr:binder { call };
+ 
+     #avc:  denied { getopt } for pid=13826, comm="/system/bin/appspawn" scontext=u:r:input_isolate_debug_hap:s0 tcontext=u:r:input_isolate_debug_hap:s0 tclass=unix_dgram_socket permissive=1
+     #avc:  denied { setopt } for pid=13826, comm="/system/bin/appspawn" scontext=u:r:input_isolate_debug_hap:s0 tcontext=u:r:input_isolate_debug_hap:s0 tclass=unix_dgram_socket permissive=1
+diff --git a/sepolicy/ohos_policy/miscservices/inputmethod_native/system/input_isolate_hap.te b/sepolicy/ohos_policy/miscservices/inputmethod_native/system/input_isolate_hap.te
+index 190f44c43..354ebc5a9 100644
+--- a/sepolicy/ohos_policy/miscservices/inputmethod_native/system/input_isolate_hap.te
++++ b/sepolicy/ohos_policy/miscservices/inputmethod_native/system/input_isolate_hap.te
+@@ -14,8 +14,8 @@
+ binder_call(input_isolate_hap, hap_domain);
+ binder_call(hap_domain, input_isolate_hap);
+ developer_only(`
+-    binder_call(input_isolate_hap, debug_hap);
+-    binder_call(debug_hap, input_isolate_hap);
++    binder_call(input_isolate_hap, debug_hap_attr);
++    binder_call(debug_hap_attr, input_isolate_hap);
+ ')
+ 
+ allow input_isolate_hap system_file:file { open read getattr map };
+diff --git a/sepolicy/ohos_policy/print/print_service/system/scan_service.te b/sepolicy/ohos_policy/print/print_service/system/scan_service.te
+index 89fcfc218..495d75520 100644
+--- a/sepolicy/ohos_policy/print/print_service/system/scan_service.te
++++ b/sepolicy/ohos_policy/print/print_service/system/scan_service.te
+@@ -29,7 +29,7 @@ allow scan_service data_service_el1_public_print_service_file:dir { search remov
+ allow scan_service data_service_el1_public_print_service_file:file { read unlink create ioctl write getattr open };
+ allow scan_service data_service_el1_public_print_service_file:lnk_file { read };
+ allow scan_service data_service_file:dir { search };
+-allow scan_service debug_hap:binder { call };
++allow scan_service debug_hap_attr:binder { call };
+ allow scan_service scan_service:udp_socket { ioctl read write create setopt bind getattr };
+ allow scan_service sysfs_devices_system_cpu:file { getattr open read };
+ allow scan_service dev_bus:dir { search };
+@@ -70,7 +70,7 @@ allow installs data_service_scan_service_driver_file:dir { write add_name search
+ allow scan_service dev_bus_usb_file:file { open read };
+ allow scan_service sa_sane_service:samgr_class { get };
+ allow scan_service sane_service:binder { call };
+-allow debug_hap scan_service:fd { use };
++allow debug_hap_attr scan_service:fd { use };
+ allow scan_service data_service_sane_service_config_file:dir { write add_name search getattr };
+ allow scan_service data_service_sane_service_config_file:file { create open read write setattr getattr ioctl };
+ allowxperm scan_service data_service_sane_service_config_file:file ioctl 0x5413;
+diff --git a/sepolicy/ohos_policy/startup/appspawn/system/cjappspawn.te b/sepolicy/ohos_policy/startup/appspawn/system/cjappspawn.te
+index 219e4f69e..83a47ba47 100644
+--- a/sepolicy/ohos_policy/startup/appspawn/system/cjappspawn.te
++++ b/sepolicy/ohos_policy/startup/appspawn/system/cjappspawn.te
+@@ -18,9 +18,9 @@ allow cjappspawn appspawn_socket:sock_file { setattr };
+ allow normal_hap_attr cjappspawn_exec:file { getattr map open read };
+ allow foundation cjappspawn:fd { use };
+ 
+-allow debug_hap cjappspawn:unix_dgram_socket { write };
+-allow debug_hap cjappspawn:fd { use };
+-allow debug_hap cjappspawn:fifo_file { write };
++allow debug_hap_attr cjappspawn:unix_dgram_socket { write };
++allow debug_hap_attr cjappspawn:fd { use };
++allow debug_hap_attr cjappspawn:fifo_file { write };
+ allow hap_domain cjappspawn:fifo_file write;
+ allow hap_domain cjappspawn:fd use;
+ allow hap_domain cjappspawn:fifo_file write;
+@@ -112,9 +112,9 @@ allow cjappspawn tmpfs:lnk_file { create };
+ allow cjappspawn vendor_etc_file:file { read open getattr };
+ allow cjappspawn selinuxfs:file { read write open };
+ allow cjappspawn security:security { check_context };
+-allow cjappspawn debug_hap:process { dyntransition };
++allow cjappspawn debug_hap_attr:process { dyntransition };
+ allow cjappspawn dev_file:dir { write add_name search create };
+-allow cjappspawn debug_hap:binder { call };
++allow cjappspawn debug_hap_attr:binder { call };
+ allow cjappspawn cgroup:dir { search };
+ allow cjappspawn cgroup:file { read open getattr };
+ allow cjappspawn limit_domain:unix_dgram_socket { getopt setopt write };
+diff --git a/sepolicy/ohos_policy/usb/usb_manager/system/usb_service.te b/sepolicy/ohos_policy/usb/usb_manager/system/usb_service.te
+index 0cdc8111a..e1fe43187 100644
+--- a/sepolicy/ohos_policy/usb/usb_manager/system/usb_service.te
++++ b/sepolicy/ohos_policy/usb/usb_manager/system/usb_service.te
+@@ -108,16 +108,16 @@ allow usb_service memmgrservice:binder { call };
+ allow usb_service usb_host:fd { use };
+ allow usb_service dev_bus_usb_file:chr_file { read write };
+ allow normal_hap dev_bus_usb_file:chr_file { ioctl read write };
+-allow debug_hap dev_bus_usb_file:chr_file { ioctl read write };
++allow debug_hap_attr dev_bus_usb_file:chr_file { ioctl read write };
+ allowxperm normal_hap dev_bus_usb_file:chr_file ioctl { 0x5500 0x5504 0x5505 0x5508 0x550a 0x550b 0x550d 0x550f 0x5510 0x5511 0x5512 0x5514 0x5515 0x5516 0x5517 0x551a 0x551b 0x551c 0x551d 0x551e 0x551f };
+-allowxperm debug_hap dev_bus_usb_file:chr_file ioctl { 0x5500 0x5504 0x5505 0x5508 0x550a 0x550b 0x550d 0x550f 0x5510 0x5511 0x5512 0x5514 0x5515 0x5516 0x5517 0x551a 0x551b 0x551c 0x551d 0x551e 0x551f };
++allowxperm debug_hap_attr dev_bus_usb_file:chr_file ioctl { 0x5500 0x5504 0x5505 0x5508 0x550a 0x550b 0x550d 0x550f 0x5510 0x5511 0x5512 0x5514 0x5515 0x5516 0x5517 0x551a 0x551b 0x551c 0x551d 0x551e 0x551f };
+ allow normal_hap dev_usb_accessory_file:chr_file { read write };
+-allow debug_hap dev_usb_accessory_file:chr_file { read write };
++allow debug_hap_attr dev_usb_accessory_file:chr_file { read write };
+ allow usb_service distributeddata:fd { use };
+-allow usb_service debug_hap:binder { call transfer };
++allow usb_service debug_hap_attr:binder { call transfer };
+ allow usb_service usb_service:binder { call transfer };
+-allow debug_hap usb_service:binder { call transfer };
+-allow usb_service debug_hap:fd { use };
++allow debug_hap_attr usb_service:binder { call transfer };
++allow usb_service debug_hap_attr:fd { use };
+ allow usb_service sysfs_devices_system_cpu:file { getattr open read };
+ allow usb_service usb_service:netlink_kobject_uevent_socket { bind create read setopt };
+ allow usb_service sys_file:file { read open read };
+diff --git a/sepolicy/ohos_policy/web/webview/system/hap_domain.te b/sepolicy/ohos_policy/web/webview/system/hap_domain.te
+index d3cdef973..7e7a581d8 100644
+--- a/sepolicy/ohos_policy/web/webview/system/hap_domain.te
++++ b/sepolicy/ohos_policy/web/webview/system/hap_domain.te
+@@ -18,7 +18,7 @@ allow hap_domain isolated_render:unix_stream_socket { read write shutdown };
+ # avc_audit_slow:260] avc: denied { getattr } for pid=4594, comm="/system/bin/appspawn"  path="/data/storage/el2/log/crashpad" dev="/dev/block/platform/fa500000.ufs/by-name/userdata" ino=5159 scontext=u:r:debug_hap:s0 tcontext=u:object_r:data_app_el2_file:s0 tclass=dir permissive=1
+ allow hap_domain data_app_el2_file:dir { getattr };
+ 
+-allow debug_hap arkweb_crashpad_handler_exec:file { execute open read execute_no_trans map };
++allow debug_hap_attr arkweb_crashpad_handler_exec:file { execute open read execute_no_trans map };
+ 
+ allow hap_domain isolated_render:unix_stream_socket { getopt };
+ 

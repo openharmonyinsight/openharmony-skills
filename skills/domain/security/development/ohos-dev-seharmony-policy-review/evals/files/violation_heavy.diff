@@ -1,0 +1,35 @@
+diff --git a/sepolicy/base/public/some_base_file.te b/sepolicy/base/public/some_base_file.te
+index abc1234..def5678 100644
+--- a/sepolicy/base/public/some_base_file.te
++++ b/sepolicy/base/public/some_base_file.te
+@@ -10,3 +10,8 @@ allow foo bar:file { read };
+ 
+ allow existing_service existing_target:binder { call };
+ 
++allow my_service default_service:binder { call };
++#avc: denied { call } for pid=100 scontext=u:r:my_service:s0 tcontext=u:r:default_service:s0 tclass=binder permissive=1
++allow my_service dev_node:chr_file { ioctl read };
++
++allow my_service sa_foundation_bms:samgr_class { get };
+diff --git a/sepolicy/ohos_policy/demo/demo_comp/public/demo.te b/sepolicy/ohos_policy/demo/demo_comp/public/demo.te
+index 1111111..2222222 100644
+--- a/sepolicy/ohos_policy/demo/demo_comp/public/demo.te
++++ b/sepolicy/ohos_policy/demo/demo_comp/public/demo.te
+@@ -5,3 +5,6 @@ neverallow { domain } self:process ptrace;
+ 
+ allow existing_domain existing_obj:file { read };
+ 
++#avc: denied { get } for pid=200 scontext=u:r:demo_service:s0 tcontext=u:object_r:sa_demo:s0 tclass=samgr_class permissive=1
++allow demo_service sa_demo:samgr_class { get };
++
+diff --git a/sepolicy/ohos_policy/demo/demo_comp/system/type.te b/sepolicy/ohos_policy/demo/demo_comp/system/type.te
+index 3333333..4444444 100644
+--- a/sepolicy/ohos_policy/demo/demo_comp/system/type.te
++++ b/sepolicy/ohos_policy/demo/demo_comp/system/type.te
+@@ -3,3 +3,6 @@ type demo_data_file, file_type;
+ 
+ allow demo_service demo_data_file:file { create read write };
++
++allow demo_service appdat:file { read };
++#avc: denied { getattr } for scontext=u:r:demo_service:s0 tcontext=u:object_r:appdat:s0 tclass=file permissive=0
++allow demo_service appdat:dir { getattr };
