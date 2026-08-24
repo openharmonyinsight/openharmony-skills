@@ -55,10 +55,10 @@ echo "$DIFF" | grep -nE 'debug_only\(|developer_only\(' || true
 emit "S11a 单条 neverallow 多个同类 violator 豁免（有输出=可能违反唯一性，人工核验语义）"
 echo "$DIFF" | grep '^+' | grep -E 'neverallow' | grep -E '(-[a-z0-9_]*violator_).*(-[a-z0-9_]*violator_)|(-rgm_violater_).*(-rgm_violater_)' || true
 
-emit "S11c 非 flex 白名单文件修改（有输出=需安全评审确认）"
-echo "$DIFF" | grep -E '^\+\+\+ b/.*whitelist/' | grep -v 'whitelist/flex/' || true
+emit "S11c 非 flex 白名单文件修改（排除 perm_group_whitelist.json；有输出=需安全评审确认）"
+echo "$DIFF" | grep -E '^\+\+\+ b/.*whitelist/' | grep -v 'whitelist/flex/' | grep -v 'perm_group_whitelist' || true
 echo "--- 非 flex 白名单新增行 ---"
-echo "$DIFF" | awk '/^\+\+\+ b.*whitelist\//{if($0 ~ /whitelist\/flex\//){p=0}else{p=1};next} /^\+\+\+ b/{p=0} p && /^\+[^+]/{print}' || true
+echo "$DIFF" | awk '/^\+\+\+ b.*whitelist\//{p=1; if($0 ~ /whitelist\/flex\//) p=0; if($0 ~ /perm_group_whitelist/) p=0; next} /^\+\+\+ b/{p=0} p && /^\+[^+]/{print}' || true
 
 emit "S12 sh 作为主体（有输出=需 DFX + 安全评审）"
 echo "$DIFF" | grep '^+' | grep -E '^\+allow[[:space:]]+sh[[:space:]]' || true

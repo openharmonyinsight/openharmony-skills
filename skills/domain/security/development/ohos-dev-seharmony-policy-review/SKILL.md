@@ -161,7 +161,7 @@ metadata:
   ```
   - **S11a**：每条 neverallow 语句中仅允许出现**唯一的** `-violator_xxx` 和**唯一的** `-rgm_violater_xxx`。同一 neverallow 出现多个同类豁免 → ❌。
   - **S11b**：每新增 `attribute violator_xx` / `typeattribute ... violator_xx`，需有对应的 `neverallow violater_xxx ...` 看护策略（注意该对应策略可能不在本仓库，需 ⚠️需确认）。用上述 grep 确认 diff 内或仓库内存在对应看护；若 grep 无结果，标注「对应看护策略不在本仓库，需跨仓确认」。
-  - **S11c**：diff 涉及 `whitelist/` 目录下**非 flex** 的白名单文件（即 `whitelist/` 路径但不在 `whitelist/flex/` 下的 `*_whitelist.json` 或其他白名单配置文件），需通过安全评审确认白名单条目的必要性与最小化。
+  - **S11c**：diff 涉及 `whitelist/` 目录下**非 flex** 的白名单文件（即 `whitelist/` 路径但不在 `whitelist/flex/` 下的 `*_whitelist.json` 或其他白名单配置文件），需通过安全评审确认白名单条目的必要性与最小化。**排除** `perm_group_whitelist.json`（该文件无需评审）。
 - **判定**：涉及修改 neverallow 或非 flex 白名单 → ⚠️需确认是否已通过安全评审；违反 S11a 唯一性 → ❌。
 
 ### S12 — 新增 sh 作为主体的权限需 DFX + 安全评审
