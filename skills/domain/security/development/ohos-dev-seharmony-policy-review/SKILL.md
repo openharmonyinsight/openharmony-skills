@@ -1,6 +1,6 @@
 ---
 name: ohos-dev-seharmony-policy-review
-description: OpenHarmony SELinux 策略提交自检扫描。依据 selinux_adapter 仓库的 16 条策略合入自检项，并补充 avc 日志注释、allow 落点（system/vendor/public）、allow 块间空行分隔、appdat→normal_app_data 建议 4 条扩展项，共 20 条自检项，扫描 commit/PR diff 中新增的 .te、file_contexts、attributes 等策略文件，逐条判定是否符合自检要求并输出报告（含 ROM 增量估算）。触发场景：扫描 commit 自检、SELinux 策略 PR 自检、commit selfcheck、策略合入检查、selinux policy review、扫描 PR diff、策略变更检查、提交前自检、avc 日志注释检查、allow 落点检查、allow 空行分隔检查、ROM 估算。
+description: OpenHarmony SELinux 策略提交自检扫描。依据 selinux_adapter 仓库的 16 条策略合入自检项，并补充 avc 日志注释、allow 落点（system/vendor/public）、allow 块间空行分隔、appdat→normal_app_data 建议、service_contexts 需 samgr 责任田评审、whitelist/flex 下 *_whitelist.json 需 flex 专项评审 6 条扩展项，共 22 条自检项，扫描 commit/PR diff 中新增的 .te、file_contexts、service_contexts、attributes、*_whitelist.json 等策略文件，逐条判定是否符合自检要求并输出报告（含 ROM 增量估算）。触发场景：扫描 commit 自检、SELinux 策略 PR 自检、commit selfcheck、策略合入检查、selinux policy review、扫描 PR diff、策略变更检查、提交前自检、avc 日志注释检查、allow 落点检查、allow 空行分隔检查、service_contexts 评审检查、whitelist flex 评审检查、ROM 估算。
 metadata:
   author: openharmony
   scope: selinux_adapter
@@ -13,7 +13,7 @@ metadata:
 
 # SELinux 策略提交自检扫描 (selinux_adapter commit selfcheck)
 
-你是一位 OpenHarmony SELinux 策略评审专家。任务：对指定 commit / commit 区间 / 工作区 diff，依据 selinux_adapter 仓库的 **16 条策略合入自检项**，并补充 **4 条扩展自检项**（avc 日志注释、allow 落点、allow 块间空行、appdat→normal_app_data），共 **20 条**，进行扫描，逐条判定，输出结构化报告（含 ROM 增量估算）。
+你是一位 OpenHarmony SELinux 策略评审专家。任务：对指定 commit / commit 区间 / 工作区 diff，依据 selinux_adapter 仓库的 **16 条策略合入自检项**，并补充 **6 条扩展自检项**（avc 日志注释、allow 落点、allow 块间空行、appdat→normal_app_data、service_contexts 需 samgr 评审、whitelist/flex 需 flex 评审），共 **22 条**，进行扫描，逐条判定，输出结构化报告（含 ROM 增量估算）。
 
 ## 1. 仓库路径约定（判定依赖）
 
@@ -25,6 +25,8 @@ metadata:
 - `sepolicy/base/public/attributes` — attribute 定义集中地（如 `parameter_attr`、`system_parameter_attr`）。
 - `sepolicy/base/public/parameter.te`、`service.te`、`domain.te` — 含 `default_param`/`default_service`/`default_hdf_service` 等默认标签的管控点。
 - 芯片/厂商组件进程 type 常见特征：含 `hdf`/`vendor`/`chipset` 字样（如 `hdfdomain`、`chipset_init`、`vendor_xxx`）；其余多为系统组件进程（如 `xxx_service`、`appspawn`、`init` 等）。
+- `service_contexts`（含 `sepolicy/.../service_contexts` 及根目录 `service_contexts`）— SA 服务名到 SELinux type 的映射文件，修改需经 **samgr 责任田**评审（S21）。
+- `whitelist/flex/*_whitelist.json` — flex 白名单配置文件，修改需经 **flex 专项评审**（S22）。
 
 宏与属性范例（判定参照）：
 - `debug_only(\`...\`)`、`developer_only(\`...\`)` 为隔离宏，成对反引号闭合。
@@ -57,13 +59,13 @@ metadata:
 
 ### 步骤 3：提取新增的策略行
 
-**先问自己**：本次 diff 涉及哪些文件类型——`.te`？`file_contexts`？`attributes`？不同类型触发的自检项不同（如 `file_contexts` 主要触发 S8，`.te` 触发 S1–S20 全覆盖）。
+**先问自己**：本次 diff 涉及哪些文件类型——`.te`？`file_contexts`？`service_contexts`？`attributes`？`*_whitelist.json`？不同类型触发的自检项不同（如 `file_contexts` 主要触发 S8，`service_contexts` 触发 S21，`*_whitelist.json` 触发 S22，`.te` 触发 S1–S22 全覆盖）。
 
-聚焦 diff 中 `+` 开头的行（新增内容），忽略 `-` 行与 license 头部。识别涉及的文件类型：`.te`（策略规则）、`file_contexts`（路径标签）、`attributes`（属性/宏定义）、`*.cil` 等。
+聚焦 diff 中 `+` 开头的行（新增内容），忽略 `-` 行与 license 头部。识别涉及的文件类型：`.te`（策略规则）、`file_contexts`（路径标签）、`service_contexts`（SA 服务映射）、`attributes`（属性/宏定义）、`*_whitelist.json`（flex 白名单）、`*.cil` 等。
 
 ### 步骤 4：逐条规则扫描
 
-对第 4 节的 20 条规则逐条执行。先用第 5 节的「快速扫描脚本」跑一遍自动可检项（自动项：S1/S2-A/S3/S5/S6/S8/S12/S13/S14/S15/S16/S17/S18-A/S20 及 S2-B 目录计数）；再对需人工/专家判断的项（S2-B 集中度定性、S4 type 定义位置、S5/S7 neverallow 看护、S9/S10 隔离宏包裹、S11 评审记录、S18-B/C 落点）给出判定依据。
+对第 4 节的 22 条规则逐条执行。先用第 5 节的「快速扫描脚本」跑一遍自动可检项（自动项：S1/S2-A/S3/S5/S6/S8/S12/S13/S14/S15/S16/S17/S18-A/S20/S21/S22 及 S2-B 目录计数）；再对需人工/专家判断的项（S2-B 集中度定性、S4 type 定义位置、S5/S7 neverallow 看护、S9/S10 隔离宏包裹、S11 评审记录、S18-B/C 落点）给出判定依据。
 
 ### 步骤 5：输出报告
 
@@ -80,10 +82,10 @@ metadata:
 | ❌违反 | diff 中存在明确违规 |
 | ⏭️不适用 | diff 未涉及本项（如本次未新增 ioctl） |
 
-## 4. 自检规则清单（20 条）
+## 4. 自检规则清单（22 条）
 
 > 判定时只看 diff 新增行（`+` 行）。`file:行号` 指向 **diff 后的目标文件行号**。
-> S1–S16 为策略合入自检项；S17–S20 为补充扩展项。
+> S1–S16 为策略合入自检项；S17–S22 为补充扩展项。
 
 ### NEVER — 绝对禁止项（合并速查，含深层原因）
 
@@ -230,9 +232,21 @@ metadata:
 - **建议**：改用 `normal_app_data` 宏（`allow <主体> normal_app_data:<class> { ... }`），覆盖 `normal_hap_data_file` 与 `appdat`，与既有策略保持一致、便于统一管控。
 - **状态**：⚠️建议（非硬性违规，作为优化提示）。
 
+### S21 — service_contexts 文件修改需通过 samgr 责任田评审
+- **背景**：`service_contexts` 是 SA 服务名到 SELinux type 的映射文件（如 `"serviceName" u:object_r:sa_xxx_service:s0`），决定 SA 注册时的标签绑定。修改此文件相当于变更 SA 的安全上下文，直接影响 samgr 的服务注册与访问控制。常见路径：`sepolicy/.../service_contexts`、根目录 `service_contexts`。
+- **检测**：diff 中涉及 `service_contexts` 文件的**任何**新增/修改行（含新增服务映射、修改已有映射的 type）。
+- **判定**：涉及 → ⚠️需确认（需 samgr 责任田评审确认服务名与 type 的映射关系正确、新增服务已注册、type 已在 `.te` 中定义）。
+- **常见问题**：新增了 `service_contexts` 映射但未同步在 `.te` 中定义对应 `sa_xxx_service` type → 导致 SA 注册时标签无法解析；修改已有映射的 type 但未评估对已注册 SA 的影响。
+
+### S22 — whitelist/flex 目录下 *_whitelist.json 需 flex 专项评审
+- **背景**：`whitelist/flex/*_whitelist.json` 是 flex 白名单配置文件，定义了 flex 框架的豁免/放行策略。修改白名单等价于调整 SELinux 策略的例外范围，直接改变安全边界。白名单的新增条目意味着对应域获得额外权限豁免，需专项评审确认必要性与最小化。
+- **检测**：diff 中涉及 `whitelist/flex/` 路径下 `*_whitelist.json` 文件的**任何**新增/修改行。
+- **判定**：涉及 → ⚠️需确认（需 flex 专项评审确认白名单条目的必要性、范围最小化、无过度放行）。
+- **常见问题**：白名单新增条目范围过大（如对全域放行而非精确域）、新增条目无对应的需求说明或 avc 来源。
+
 ## 5. 自动扫描脚本
 
-**MANDATORY — 运行脚本**：在步骤 4 的逐条判定前，**必须**执行 [`scripts/scan.sh`](scripts/scan.sh) 跑一遍所有自动可检项。该脚本汇总 S1–S20 中可自动化的检测，并输出 ROM 估算。
+**MANDATORY — 运行脚本**：在步骤 4 的逐条判定前，**必须**执行 [`scripts/scan.sh`](scripts/scan.sh) 跑一遍所有自动可检项。该脚本汇总 S1–S22 中可自动化的检测，并输出 ROM 估算。
 
 **Do NOT Load**：若步骤 1 获取的 diff 为空（`git diff -- sepolicy/` 无输出），**禁止运行 scan.sh**——直接输出全项 ⏭️不适用报告，避免空 diff 触发脚本报错。
 
@@ -258,6 +272,8 @@ echo "$DIFF" | bash scripts/scan.sh -   # 从 stdin 读 diff
 | S17 | allow 行数 vs #avc 行数 | 一一对应关系 |
 | S19 | 相邻 allow 缺空行 | rename 重构按步骤 2 基调判定 |
 | S20 | appdat 客体 | —（建议项） |
+| S21 | service_contexts 文件变更 | samgr 责任田评审确认 |
+| S22 | whitelist/flex *_whitelist.json 变更 | flex 专项评审确认 |
 
 > 脚本无输出（某段为空）表示该规则在本次 diff 中未涉及（⏭️不适用）。S17 的 `#avc:` 正则已兼容代码库 `# avc:`（带空格）写法；diff hunk 内无 `#avc:` 时先标 ⚠️ 要求补查全文（hunk 之外可能已有注释），确认全文缺失后再升 ❌。S18-A 的 public/ allow 与 S19 的空行在 rename 重构 diff 中若为 pre-existing（原 −allow 行已在 public/ 或本就缺空行），按步骤 2「判定 diff 性质」基调处理（标注 pre-existing 而非硬报违规）。S19 的 awk 跨文件边界已重置不误报。ROM 估算中 `M`（access_vector 变更）由同主体客体的 +/- 配对识别，配对跨多行或写法特殊时需人工核校。
 
@@ -293,6 +309,8 @@ echo "$DIFF" | bash scripts/scan.sh -   # 从 stdin 读 diff
 | S18 | allow 落点 system/vendor、public 不放 allow | ... | ... |
 | S19 | allow 块间空行分隔 | ... | ... |
 | S20 | appdat 建议改用 normal_app_data | ... | ... |
+| S21 | service_contexts 需 samgr 责任田评审 | ... | ... |
+| S22 | whitelist/flex *_whitelist.json 需 flex 专项评审 | ... | ... |
 
 ## ROM 增量估算
 - 新增策略规则行（A）：<N> 条 × 100B

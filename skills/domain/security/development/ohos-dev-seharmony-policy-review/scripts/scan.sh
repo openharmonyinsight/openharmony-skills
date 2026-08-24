@@ -98,6 +98,16 @@ echo "$DIFF" | awk '
 emit "S20 allow 客体为 appdat（有输出=建议改用 normal_app_data）"
 echo "$DIFF" | grep '^+' | grep -E '^\+[[:space:]]*allow[[:space:]]+[a-z0-9_]+[[:space:]]+appdat:' || true
 
+emit "S21 service_contexts 文件修改（有输出=需 samgr 责任田评审）"
+echo "$DIFF" | grep -E '^\+\+\+ b/.*service_contexts' || true
+echo "--- service_contexts 新增行 ---"
+echo "$DIFF" | awk '/^\+\+\+ b.*service_contexts/{p=1;next} /^\+\+\+ b/{if(p)p=0} p && /^\+[^+]/{print}' || true
+
+emit "S22 whitelist/flex 下 *_whitelist.json 修改（有输出=需 flex 专项评审）"
+echo "$DIFF" | grep -E '^\+\+\+ b/.*whitelist/flex/.*_whitelist\.json' || true
+echo "--- whitelist/flex 新增行 ---"
+echo "$DIFF" | awk '/^\+\+\+ b.*whitelist\/flex.*_whitelist\.json/{p=1;next} /^\+\+\+ b/{if(p)p=0} p && /^\+[^+]/{print}' || true
+
 emit "ROM 增量估算（A=新增规则行 D=删减规则行 M=access_vector变更）"
 added=$(echo "$DIFF" | grep -cE '^\+(allow|allowxperm|neverallow)[[:space:]]' || true)
 removed=$(echo "$DIFF" | grep -cE '^-(allow|allowxperm|neverallow)[[:space:]]' || true)
@@ -106,4 +116,4 @@ echo "A=$added  D=$removed  M=$modcnt"
 echo "ROM 增量估算 = (A - D + M) × 100B = $(( (added - removed + modcnt) * 100 )) B"
 
 echo
-echo "=== 自动检测完成。以上需人工判定项：S2-B定性 / S4落点 / S5看护 / S6范围 / S7写执行 / S9-S10隔离 / S11评审 / S18-B/C落点 / S17一一对应 ==="
+echo "=== 自动检测完成。以上需人工判定项：S2-B定性 / S4落点 / S5看护 / S6范围 / S7写执行 / S9-S10隔离 / S11评审 / S18-B/C落点 / S17一一对应 / S21-samgr评审 / S22-flex评审 ==="
