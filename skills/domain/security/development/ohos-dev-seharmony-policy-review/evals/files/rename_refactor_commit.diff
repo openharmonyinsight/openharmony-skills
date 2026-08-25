@@ -1,15 +1,3 @@
-commit 9c1468adc38f7e720c02483111dda942b2e724b4
-Author: lihehe <lihehao@huawei.com>
-Date:   Thu Jul 23 14:56:06 2026 +0800
-
-    support consistency check for scontext
-    
-    Signed-off-by: lihehe <lihehao@huawei.com>
-    
-    🤖‍ AI[0%] 👌 AI Adopted[0%] 🧑 Human[100%]
-    
-    Change-Id: Ie29d69fda3976ee45637d8a8a0ac09a69c295090
-
 diff --git a/sepolicy/base/public/attributes b/sepolicy/base/public/attributes
 index 0c5cbf52b..9e8cf7b75 100644
 --- a/sepolicy/base/public/attributes

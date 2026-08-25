@@ -1,0 +1,24 @@
+diff --git a/sepolicy/base/public/domain.te b/sepolicy/base/public/domain.te
+index 1234567..abcdefg 100644
+--- a/sepolicy/base/public/domain.te
++++ b/sepolicy/base/public/domain.te
+@@ -216,7 +216,11 @@ neverallow * self:process { execstack execheap };
+-neverallow { domain -init -ueventd -riladapter_host debug_only(`-softbus_server') -dev_file_violator -rgm_violator_ohos_dev_char_file } dev_file:{ file chr_file blk_file } *;
++neverallow { domain -init -ueventd -riladapter_host debug_only(`-softbus_server') -dev_file_violator -rgm_violator_ohos_dev_char_file } dev_file:{ file chr_file } *;
++neverallow { domain -init -ueventd -riladapter_host debug_only(`-softbus_server') pc_only(`-storage_daemon') -dev_file_violator -rgm_violator_ohos_dev_char_file } dev_file:blk_file *;
++pc_only(`
++neverallow storage_daemon dev_file:blk_file { append relabelfrom relabelto map unlink link rename };
++')
+diff --git a/sepolicy/ohos_policy/filemanagement/storage_service/system/storage_daemon.te b/sepolicy/ohos_policy/filemanagement/storage_service/system/storage_daemon.te
+index 1234567..abcdefg 100644
+--- a/sepolicy/ohos_policy/filemanagement/storage_service/system/storage_daemon.te
++++ b/sepolicy/ohos_policy/filemanagement/storage_service/system/storage_daemon.te
+@@ -635,3 +635,10 @@ allowxperm storage_daemon dev_mapper_control_file:chr_file ioctl { 0xfd03 0xfd06
+ 
++pc_only(`
++    # avc: denied { ioctl } for pid=9244 scontext=u:r:storage_daemon:s0 tcontext=u:object_r:dev_block_file:s0 tclass=blk_file permissive=1
++    allow storage_daemon dev_block_file:blk_file { ioctl };
++    # avc: denied { ioctl } for pid=9175 scontext=u:r:storage_daemon:s0 tcontext=u:object_r:dev_block_file:s0 tclass=blk_file permissive=1
++    allowxperm storage_daemon dev_block_file:blk_file ioctl { 0x4c00 0x4c01 0x1263 };
++')
++

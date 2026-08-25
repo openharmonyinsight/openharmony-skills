@@ -1,0 +1,19 @@
+diff --git a/sepolicy/ohos_policy/test/test_wrap/system/wrap.te b/sepolicy/ohos_policy/test/test_wrap/system/wrap.te
+index 1111111..2222222 100644
+--- a/sepolicy/ohos_policy/test/test_wrap/system/wrap.te
++++ b/sepolicy/ohos_policy/test/test_wrap/system/wrap.te
+@@ -10,13 +10,15 @@ allow base_line base_target:file { read };
+ # F5 core: existing wrapper (context open/close), only the rule inside is added
+ pc_only(`
++allow wrap_service secret_data:file { read };
+ ')
+ 
+ # F5 boundary: new wrapper (added open/close) wraps pre-existing context rules
++pc_only(`
+ allow existing_service existing_target:file { read };
++')
+ 
+ # F5 control: existing wrapper around pre-existing context rules only -> no violation
+ watch_only(`
+ allow other_service other_target:file { read };
+ ')

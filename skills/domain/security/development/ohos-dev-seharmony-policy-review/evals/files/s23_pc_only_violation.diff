@@ -1,0 +1,17 @@
+diff --git a/sepolicy/ohos_policy/test/test/system/test.te b/sepolicy/ohos_policy/test/test/system/test.te
+index abc1234..def5678 100644
+--- a/sepolicy/ohos_policy/test/test/system/test.te
++++ b/sepolicy/ohos_policy/test/test/system/test.te
+@@ -5,3 +5,8 @@ allow test_service data_file:file { read };
+ 
++pc_only(`
++allow test_service secret_data:file { read write };
++')
++
++tablet_only(`
++neverallow { domain -test_service } secret_data:file { write };
++')
++
++watch_only(`
++allow test_service watch_data:file { read };
++')

@@ -1,0 +1,37 @@
+diff --git a/sepolicy/base/te/probe.te b/sepolicy/base/te/probe.te
+index 1111111..2222222 100644
+--- a/sepolicy/base/te/probe.te
++++ b/sepolicy/base/te/probe.te
+@@ -3,3 +3,6 @@
+ # Copyright (c) 2026 Huawei Device Co., Ltd.
+ # Licensed under the Apache License, Version 2.0
++allow license_service data_file:file { read };
++allow android_licensed_dev data_file:file { read };
+diff --git a/sepolicy/ohos_policy/test/tc/system/sh.te b/sepolicy/ohos_policy/test/tc/system/sh.te
+index 3333333..4444444 100644
+--- a/sepolicy/ohos_policy/test/tc/system/sh.te
++++ b/sepolicy/ohos_policy/test/tc/system/sh.te
+@@ -6,4 +6,11 @@ allow base_rule base_target:file { read };
+ 
++    allow sh data_file:file { read };
++
++allowxperm sh dev_node:chr_file ioctl { 0x5401 };
++
++    allow demo_service su:process { signal };
++
++neverallow { domain -sh } secret_data:file { write };
+diff --git a/sepolicy/ohos_policy/test/tc/system/adj.te b/sepolicy/ohos_policy/test/tc/system/adj.te
+index 5555555..6666666 100644
+--- a/sepolicy/ohos_policy/test/tc/system/adj.te
++++ b/sepolicy/ohos_policy/test/tc/system/adj.te
+@@ -4,6 +4,10 @@ allow file_header base_target:file { read };
+ allow adj_base adj_target:file { read };
++# avc: denied { read } for pid=100 scontext=u:r:adj_new:s0 tcontext=u:object_r:data_file:s0 tclass=file permissive=1
++allow adj_new data_file:file { read };
++
+ allow ctrl_base ctrl_target:file { read };
++
++allow ctrl_new data_file:file { read };
++
+ allow old_pair_a old_target:file { read };
+ allow old_pair_b old_target:file { read };

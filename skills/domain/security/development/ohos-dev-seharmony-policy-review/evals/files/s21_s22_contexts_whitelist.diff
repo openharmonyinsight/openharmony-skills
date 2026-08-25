@@ -1,0 +1,23 @@
+diff --git a/sepolicy/ohos_policy/startup/init/system/service_contexts b/sepolicy/ohos_policy/startup/init/system/service_contexts
+index abc1234..def5678 100644
+--- a/sepolicy/ohos_policy/startup/init/system/service_contexts
++++ b/sepolicy/ohos_policy/startup/init/system/service_contexts
+@@ -10,3 +10,4 @@
+ "existing_service" u:object_r:sa_existing_service:s0
++"new_service" u:object_r:sa_new_service:s0
+diff --git a/whitelist/flex/test_whitelist.json b/whitelist/flex/test_whitelist.json
+index 1111111..2222222 100644
+--- a/whitelist/flex/test_whitelist.json
++++ b/whitelist/flex/test_whitelist.json
+@@ -5,3 +5,6 @@
+     "domain": "test_service",
++    "rule": "allow",
++    "target": "data_file"
+diff --git a/whitelist/other/perm_whitelist.json b/whitelist/other/perm_whitelist.json
+index 3333333..4444444 100644
+--- a/whitelist/other/perm_whitelist.json
++++ b/whitelist/other/perm_whitelist.json
+@@ -3,3 +3,5 @@
+     "name": "existing_perm",
++    "name": "new_perm",
++    "scope": "global"

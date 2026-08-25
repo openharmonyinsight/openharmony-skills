@@ -4,44 +4,1901 @@
     {
       "id": 1,
       "name": "pr-scan-avc-gap",
-      "prompt": "扫描这个 PR 的 sepolicy diff（输入文件 evals/files/mr8170_pr_scan.diff），按 23 条自检项跑自检并输出报告。用 scan.sh 脚本跑自动项，再做人工判定项。",
-      "expected_output": "一份中文自检报告：S17 标记 init.te 的 allow 缺 #avc 注释为 ⚠️；S2 提示两文件分散在不同子系统目录为 ⚠️；ROM 增量 200B；多数项 ⏭️ 不适用。",
-      "files": ["evals/files/mr8170_pr_scan.diff"],
+      "prompt": "扫描这个 PR 的 sepolicy diff（输入文件 evals/files/mr8170_pr_scan.diff），跑 scan.py 并按自检项输出报告。",
+      "files": [
+        "evals/files/mr8170_pr_scan.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "busmanager/serial_manager",
+          "startup/init",
+          "allow init proc_file:dir",
+          "ROM increment estimate = (A - D + M) × 100B = 200 B",
+          "missing blank line: +allow init proc_file:dir { getattr open setattr };"
+        ],
+        "scan_output_not_contains": [
+          "[public violation]",
+          "binder_call("
+        ],
+        "rom_value": "200 B"
+      },
       "assertions": [
-        "报告将 S17 标记为 ⚠️ 需确认，并指出 init.te 的 `allow init proc_file:dir { getattr open setattr }` 缺少 #avc: 日志注释",
-        "报告将 S2 标记为 ⚠️，说明两文件分属 busmanager/serial_manager 与 startup/init 两个不同子系统目录",
-        "报告 ROM 增量估算结果为 200 B",
-        "报告将 S14（ioctl）标记为 ⏭️ 不适用",
-        "报告确认 serial_service.te 的 allow 已配 #avc: 注释（作为符合范例）"
+        {
+          "text": "报告包含 S2 标记且状态为 WARNING，且提及 busmanager/serial_manager 与 startup/init",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S2",
+              "expect": "WARNING"
+            },
+            {
+              "type": "mentions",
+              "text": "busmanager/serial_manager"
+            },
+            {
+              "type": "mentions",
+              "text": "startup/init"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 S17 标记且状态为 WARNING，且提及 init.te 的 allow init proc_file:dir（hunk 内未见 #avc:，需补查全文后定级）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S17",
+              "expect": "WARNING"
+            },
+            {
+              "type": "mentions",
+              "text": "allow init proc_file:dir"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 serial_service.te 的 allow 已配 #avc: 注释的确认",
+          "grader": [
+            {
+              "type": "mentions",
+              "text": "serial_service"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 ROM 增量估算且数值为 200 B",
+          "grader": [
+            {
+              "type": "rom",
+              "value": "200 B"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        },
+        {
+          "text": "报告将 init.te 中紧贴既有 allow 插入的新增 allow init proc_file:dir 判为 S19 FAIL（上下文 allow 与新增 allow 的相邻也计入缺空行判定）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S19",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "allow init proc_file:dir"
+            }
+          ]
+        }
       ]
     },
     {
       "id": 2,
       "name": "rename-refactor-edge-case",
-      "prompt": "hey 帮我扫一下这个 commit 的 selinux 策略改动，文件在 evals/files/rename_refactor_commit.diff，看看有没有问题",
-      "expected_output": "报告应识别本次 diff 为 rename 重构性质（debug_hap→debug_hap_attr），非新增权限；ROM 增量约 0B；S17/S19 的缺失应标注为 pre-existing（重构未改变包裹状态）而非硬报 ❌ 违规。",
-      "files": ["evals/files/rename_refactor_commit.diff"],
+      "prompt": "扫描 evals/files/rename_refactor_commit.diff 的 selinux 策略改动，输出自检报告。",
+      "files": [
+        "evals/files/rename_refactor_commit.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "ROM increment estimate = (A - D + M) × 100B = 300 B"
+        ],
+        "scan_output_not_contains": [
+          "[pure-addition violation] +allow"
+        ],
+        "rom_value": "300 B"
+      },
       "assertions": [
-        "报告在开头或判定中识别出本次 diff 为 rename 重构性质（非新增权限），而非机械报违规",
-        "报告 ROM 增量估算为 0 B（A≈D，规则净增为零）",
-        "报告未将 S17 的 rename allow 行硬报为 ❌ 违规，而是标注 pre-existing 或说明重构未改变包裹状态",
-        "报告提及 debug_hap 与 debug_hap_attr 的 rename（属性化）关系",
-        "报告对 S18-A 的 public/ 下 allow（如 sh.te、input_isolate_debug_hap.te）标注为 pre-existing 而非本次新引入"
+        {
+          "text": "报告在开头或判定中识别出本次 diff 为 rename 重构性质（非新增权限），而非机械报违规",
+          "grader": [
+            {
+              "type": "mentions",
+              "text": "rename 重构"
+            }
+          ]
+        },
+        {
+          "text": "报告提及 debug_hap 与 debug_hap_attr 的 rename（属性化）关系",
+          "grader": [
+            {
+              "type": "mentions",
+              "text": "debug_hap_attr"
+            },
+            {
+              "type": "mentions",
+              "text": "属性化"
+            }
+          ]
+        },
+        {
+          "text": "报告未将 S17 的 rename allow 行硬报为 FAIL 违规，而是标注 pre-existing 或说明重构未改变包裹状态",
+          "grader": [
+            {
+              "type": "status_not",
+              "check": "S17",
+              "reject": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "pre-existing"
+            }
+          ]
+        },
+        {
+          "text": "报告对 S18-A 的 public/ 下 allow 标注为 pre-existing 而非本次新引入",
+          "grader": [
+            {
+              "type": "status_not",
+              "check": "S18",
+              "reject": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "pre-existing"
+            },
+            {
+              "type": "mentions",
+              "text": "public"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 ROM 增量估算且数值为 300 B",
+          "grader": [
+            {
+              "type": "rom",
+              "value": "300 B"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        }
       ]
     },
     {
       "id": 3,
       "name": "violation-heavy-hard-fail",
-      "prompt": "扫描 evals/files/violation_heavy.diff 中的 sepolicy 变更，按自检项判定违规情况",
-      "expected_output": "报告应硬报多个 ❌：S2（base 新增）、S18（public 放 allow）、S16（default_service）、S14（ioctl 无 allowxperm）；并 ⚠️ 提示 S20 appdat 建议改 normal_app_data；ROM 600B。",
-      "files": ["evals/files/violation_heavy.diff"],
+      "prompt": "扫描 evals/files/violation_heavy.diff 中的 sepolicy 变更，输出自检报告。",
+      "files": [
+        "evals/files/violation_heavy.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "sepolicy/base/public/some_base_file.te",
+          "[public violation]",
+          "default_service",
+          "allow my_service dev_node:chr_file",
+          "normal_app_data",
+          "ROM increment estimate = (A - D + M) × 100B = 600 B",
+          "missing blank line: +allow my_service dev_node:chr_file { ioctl read };"
+        ],
+        "scan_output_not_contains": [
+          "[modifiable-exempt]"
+        ],
+        "rom_value": "600 B"
+      },
       "assertions": [
-        "报告将 S2 标记为 ❌ 违规，指出 sepolicy/base/public/some_base_file.te 下新增了 allow 策略",
-        "报告将 S18（或 S18-A）标记为 ❌ 违规，指出 public/ 目录下新增了 allow（demo.te 或 some_base_file.te）",
-        "报告将 S16 标记为 ❌ 违规，指出使用了 default_service 作为 allow 目标",
-        "报告将 S14 标记为 ❌ 违规，指出 `allow my_service dev_node:chr_file { ioctl read }` 缺少配套 allowxperm",
-        "报告将 S20 标记为 ⚠️ 建议，提示 appdat 改用 normal_app_data 宏",
-        "报告 ROM 增量估算为 600 B"
+        {
+          "text": "报告包含 S2 标记且状态为 FAIL，且提及 sepolicy/base/public/some_base_file.te",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S2",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "some_base_file.te"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 S18 标记且状态为 FAIL，且提及 public/ 目录下新增了 allow",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S18",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "public"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 S16 标记且状态为 FAIL，且提及 default_service",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S16",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "default_service"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 S20 标记且状态为 SUGGESTION，且提及 normal_app_data",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S20",
+              "expect": "SUGGESTION"
+            },
+            {
+              "type": "mentions",
+              "text": "normal_app_data"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 ROM 增量估算且数值为 600 B",
+          "grader": [
+            {
+              "type": "rom",
+              "value": "600 B"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        },
+        {
+          "text": "报告将 some_base_file.te 与 type.te 中相邻无空行的新增 allow 判为 S19 FAIL（共 2 处）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S19",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "allow my_service dev_node:chr_file { ioctl read }"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "s21-s22-contexts-whitelist",
+      "prompt": "扫描 evals/files/s21_s22_contexts_whitelist.diff 的 sepolicy 及白名单变更，输出自检报告。",
+      "files": [
+        "evals/files/s21_s22_contexts_whitelist.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "service_contexts",
+          "whitelist/flex",
+          "test_whitelist.json",
+          "perm_whitelist.json",
+          "Policy files involved: 3"
+        ],
+        "scan_output_not_contains": [
+          "[violation]"
+        ],
+        "rom_value": "0 B"
+      },
+      "assertions": [
+        {
+          "text": "报告包含 S21 标记且状态为 WARNING，且提及 service_contexts",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S21",
+              "expect": "WARNING"
+            },
+            {
+              "type": "mentions",
+              "text": "service_contexts"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 S22 标记且状态为 WARNING，且提及 whitelist/flex 或 test_whitelist.json",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S22",
+              "expect": "WARNING"
+            },
+            {
+              "type": "mentions",
+              "text": "test_whitelist.json"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 S11c 标记且状态为 WARNING，且提及 perm_whitelist.json 或非 flex 白名单（排除 perm_group_whitelist.json）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S11",
+              "expect": "WARNING"
+            },
+            {
+              "type": "mentions",
+              "text": "perm_whitelist.json"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "s23-pc-only-violation",
+      "prompt": "扫描 evals/files/s23_pc_only_violation.diff 的 sepolicy 变更，输出自检报告。",
+      "files": [
+        "evals/files/s23_pc_only_violation.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "[violation]",
+          "pc_only",
+          "tablet_only",
+          "watch_only"
+        ],
+        "scan_output_contains_count": {
+          "pattern": "\\[violation\\]",
+          "min": 3
+        },
+        "rom_value": "300 B"
+      },
+      "assertions": [
+        {
+          "text": "报告包含 S23 标记且状态为 FAIL，且提及 pc_only 或产品宏包裹 allow",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S23",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "pc_only"
+            }
+          ]
+        },
+        {
+          "text": "报告将 tablet_only 包裹 neverallow 也标记为 FAIL 违规（产品宏不应包裹 neverallow 语句）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S23",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "tablet_only"
+            },
+            {
+              "type": "mentions",
+              "text": "neverallow"
+            }
+          ]
+        },
+        {
+          "text": "报告将 watch_only 包裹 allow 判为 FAIL（产品宏检查覆盖全部 11 个宏，非仅 pc/tablet）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S23",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "watch_only"
+            }
+          ]
+        },
+        {
+          "text": "报告 S1 标记为 NA 不适用（S1 仅检测品牌类词，secret_data 不触发）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S1",
+              "expect": "NA"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "clean-positive-no-violation",
+      "prompt": "扫描 evals/files/clean_positive.diff 的 sepolicy 变更，输出自检报告。",
+      "files": [
+        "evals/files/clean_positive.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_not_contains": [
+          "[violation]",
+          "[public violation]",
+          "missing blank line: ",
+          "default_service"
+        ],
+        "scan_output_contains": [
+          "ROM increment estimate = (A - D + M) × 100B = 100 B"
+        ],
+        "rom_value": "100 B"
+      },
+      "assertions": [
+        {
+          "text": "报告所有自检项无 FAIL 违规标记",
+          "grader": [
+            {
+              "type": "no_status",
+              "status": "FAIL"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 S17 标记且状态为 PASS or NA（新增 allow 有 #avc: 注释）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S17",
+              "expect": [
+                "PASS",
+                "NA"
+              ]
+            }
+          ]
+        },
+        {
+          "text": "报告包含 S18 标记且状态为 PASS（allow 落在 system/ 目录，主体 init 属系统组件）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S18",
+              "expect": "PASS"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 S19 标记且状态为 PASS or NA（allow 块间有空行分隔）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S19",
+              "expect": [
+                "PASS",
+                "NA"
+              ]
+            }
+          ]
+        },
+        {
+          "text": "报告包含 ROM 增量估算且数值为 100 B",
+          "grader": [
+            {
+              "type": "rom",
+              "value": "100 B"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "file-contexts-only-no-exit-crash",
+      "prompt": "扫描 evals/files/file_contexts_only.diff 的 sepolicy 变更，输出自检报告。",
+      "files": [
+        "evals/files/file_contexts_only.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "ROM increment estimate = (A - D + M) × 100B = 0 B",
+          "Auto-check complete"
+        ],
+        "rom_value": "0 B"
+      },
+      "assertions": [
+        {
+          "text": "报告包含 ROM 增量估算且数值为 0 B",
+          "grader": [
+            {
+              "type": "rom",
+              "value": "0 B"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        },
+        {
+          "text": "scan.py 正常完成不中断（无 exit 1），报告完整产出",
+          "grader": [
+            {
+              "type": "report_present"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "real-pr-pc-only-wrapping-neverallow-and-allow",
+      "prompt": "扫描 evals/files/real_pr8186_pc_only.diff 的 sepolicy 变更，输出自检报告。",
+      "files": [
+        "evals/files/real_pr8186_pc_only.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "[violation]",
+          "pc_only",
+          "base/public/domain.te",
+          "# avc:",
+          "neverallow",
+          "no target tree bound"
+        ],
+        "scan_output_contains_count": {
+          "pattern": "\\[violation\\]",
+          "min": 3
+        },
+        "rom_value": "400 B"
+      },
+      "assertions": [
+        {
+          "text": "报告包含 S23 标记且状态为 FAIL，且提及 pc_only 包裹 allow 或 neverallow",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S23",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "pc_only"
+            }
+          ]
+        },
+        {
+          "text": "报告识别出 pc_only(`-storage_daemon') 作为 neverallow 例外项为符合用法（不报违规）",
+          "grader": [
+            {
+              "type": "mentions",
+              "text": "-storage_daemon"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 S2 标记且提及 base/public/domain.te",
+          "grader": [
+            {
+              "type": "mentions",
+              "text": "base/public/domain.te"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 S17 标记且提及 #avc 或 avc 注释",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S17",
+              "expect": [
+                "PASS",
+                "NA"
+              ]
+            },
+            {
+              "type": "mentions",
+              "text": "avc"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 S11 标记且状态为 WARNING（修改 neverallow 需安全评审）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S11",
+              "expect": "WARNING"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        },
+        {
+          "text": "报告将 storage_daemon.te 宏内 allow→allowxperm 相邻无空行判为 S19 FAIL",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S19",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "allowxperm storage_daemon dev_block_file"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "mixed-sepolicy-whitelist-contexts-git-ref",
+      "prompt": "扫描 evals/files/mixed_sepolicy_whitelist_contexts.diff 的变更（含 sepolicy + whitelist/flex + service_contexts），输出自检报告。验证 scan.py 能同时检测到三类文件。",
+      "files": [
+        "evals/files/mixed_sepolicy_whitelist_contexts.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "service_contexts",
+          "whitelist/flex",
+          "test_whitelist.json",
+          "allow test_service data_file:file",
+          "Policy files involved: 3"
+        ],
+        "scan_output_not_contains": [
+          "missing blank line: ",
+          "[violation]",
+          "[avc gap]"
+        ]
+      },
+      "assertions": [
+        {
+          "text": "报告同时检出 sepolicy allow、whitelist/flex 白名单、service_contexts 三类变更",
+          "grader": [
+            {
+              "type": "mentions",
+              "text": "allow test_service data_file:file"
+            },
+            {
+              "type": "mentions",
+              "text": "test_whitelist.json"
+            },
+            {
+              "type": "mentions",
+              "text": "service_contexts"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 S21 标记且状态为 WARNING（service_contexts 需 samgr 评审）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S21",
+              "expect": "WARNING"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 S22 标记且状态为 WARNING（whitelist/flex 需 flex 评审）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S22",
+              "expect": "WARNING"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "edge-cases-s23-close-s19-hunk-s1-indented",
+      "prompt": "扫描 evals/files/edge_cases_s23_close_s19_hunk_s1_indented.diff 的 sepolicy 变更，输出自检报告。此 diff 包含多个边界场景：pc_only 宏闭合后的普通 allow 不应误报违规、allow 块间有空行不应报缺空行、缩进的 allow/allowxperm 应被 ROM 计入。",
+      "files": [
+        "evals/files/edge_cases_s23_close_s19_hunk_s1_indented.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "[violation]",
+          "pc_only"
+        ],
+        "scan_output_not_contains": [
+          "missing blank line: "
+        ],
+        "scan_output_contains_count": {
+          "pattern": "\\[violation\\]",
+          "exact": 1
+        }
+      },
+      "assertions": [
+        {
+          "text": "报告包含 S23 标记且仅 1 条违规（pc_only 包裹的 allow），宏闭合后的普通 allow 不被误报",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S23",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "secret_data"
+            }
+          ]
+        },
+        {
+          "text": "报告未报 S19 缺空行（allow 块间有空行分隔）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S19",
+              "expect": [
+                "PASS",
+                "NA"
+              ]
+            }
+          ]
+        },
+        {
+          "text": "报告 ROM 估算包含缩进的 allow/allowxperm（A 值应含缩进行）",
+          "grader": [
+            {
+              "type": "rom",
+              "value": "400 B"
+            }
+          ]
+        },
+        {
+          "text": "报告 S1 标记为 NA 不适用（S1 仅检测品牌类词，secret_data 不触发）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S1",
+              "expect": "NA"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "s1-mixed-sensitive-line",
+      "prompt": "扫描 evals/files/s1_mixed_sensitive_line.diff 的 sepolicy 变更，输出自检报告。此 diff 的注释行包含 android 品牌词（另一行含 password/access_token 等技术词，S1 已不检测技术词），验证 S1 仅对品牌类词匿名化。",
+      "files": [
+        "evals/files/s1_mixed_sensitive_line.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "***"
+        ],
+        "scan_output_not_contains": [
+          "android"
+        ]
+      },
+      "assertions": [
+        {
+          "text": "报告包含 S1 标记且状态为 FAIL",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S1",
+              "expect": "FAIL"
+            }
+          ]
+        },
+        {
+          "text": "报告对品牌类敏感词（android）进行匿名化输出，技术词（password、内网 IP）不再检测",
+          "grader": [
+            {
+              "type": "mentions",
+              "text": "***"
+            },
+            {
+              "type": "not_contains",
+              "text": "android"
+            },
+            {
+              "type": "not_contains",
+              "text": "supersecret"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "s20b-binder-call-transfer-both-forms",
+      "prompt": "扫描 evals/files/s20b_binder_call_transfer.diff 的 sepolicy 变更，输出自检报告。此 diff 同时包含两种 binder 授权写法：test_service 对 sa_target 分两条 allow 授予 call 与 transfer（分离写法），other_service 对 sa_target 一条 allow 合并授予 { call transfer }（合并写法）。验证 S20b 对两种形式均能检测并建议用 binder_call 宏补全 binder 通信权限。",
+      "files": [
+        "evals/files/s20b_binder_call_transfer.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "binder_call",
+          "ROM +~300B",
+          "[suggestion] test_service→sa_target",
+          "[suggestion] other_service→sa_target",
+          "call transfer"
+        ],
+        "scan_output_not_contains": [
+          "[violation]"
+        ],
+        "rom_value": "300 B"
+      },
+      "assertions": [
+        {
+          "text": "报告将分离写法（两条 allow 分别授予 call 与 transfer）判为 S20b SUGGESTION，建议 binder_call 宏",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S20b",
+              "expect": "SUGGESTION"
+            },
+            {
+              "type": "mentions",
+              "text": "test_service"
+            }
+          ]
+        },
+        {
+          "text": "报告将合并写法（单条 allow { call transfer }）判为 S20b SUGGESTION",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S20b",
+              "expect": "SUGGESTION"
+            },
+            {
+              "type": "mentions",
+              "text": "other_service"
+            }
+          ]
+        },
+        {
+          "text": "报告提及宏展开含反向 transfer 与 fd use（非等价替换）、ROM 增加约 300B",
+          "grader": [
+            {
+              "type": "mentions",
+              "text": "300B"
+            },
+            {
+              "type": "mentions",
+              "text": "非等价替换"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 S17 标记且三条 allow 均有 #avc: 注释",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S17",
+              "expect": "PASS"
+            },
+            {
+              "type": "mentions",
+              "text": "avc"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "name": "s1-safe-identifiers-no-false-positive",
+      "prompt": "扫描 evals/files/s1_token_medial.diff 的 sepolicy 变更，输出自检报告。此 diff 仅含 access_token 相关安全标识符（后缀型 access_token_data、token 居中型 sa_access_token_check/access_token_service/my_access_token_type，无其他真实敏感词），验证 S1 不误报；同时两条相邻 allow（foo_service/bar_service）锁定 S19 缺空行判定，type 定义行不计入 ROM A 值。",
+      "files": [
+        "evals/files/s1_token_medial.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "missing blank line: +allow bar_service access_token_service:samgr_class { get };"
+        ],
+        "scan_output_not_contains": [
+          "***",
+          "[violation]"
+        ],
+        "rom_value": "200 B"
+      },
+      "assertions": [
+        {
+          "text": "报告 S1 标记为 PASS 通过或 NA 不适用（后缀型与 token 居中型的安全标识符均不触发敏感词）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S1",
+              "expect": [
+                "PASS",
+                "NA"
+              ]
+            }
+          ]
+        },
+        {
+          "text": "报告不输出 *** 匿名化内容（无真实敏感词）",
+          "grader": [
+            {
+              "type": "not_contains",
+              "text": "***"
+            }
+          ]
+        },
+        {
+          "text": "报告将相邻无空行的两条新增 allow（foo_service/bar_service）判为 S19 FAIL",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S19",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "bar_service"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 ROM 增量估算且数值为 200 B（type 定义行不计入 A 值）",
+          "grader": [
+            {
+              "type": "rom",
+              "value": "200 B"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "name": "r4-regressions-s2a-s11d-s23-s16-s20b-s17",
+      "prompt": "扫描 evals/files/r4_regressions.diff 的 sepolicy 变更，输出自检报告。此 diff 覆盖 R3/R4 评审反例：S2-A 跨 hunk 纯新增不因前 hunk 删除而豁免、S11d 分区前缀覆盖 attribute/typeattribute 两种形式、S23 合法/非法产品宏混排逐实例判定、S16 注释中提及默认标签不误报、S20b neverallow 不建议宏、S17 跨 hunk/跨文件 avc 判定不复位误关联。",
+      "files": [
+        "evals/files/r4_regressions.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "[pure-addition violation] +allow fresh_domain data_file:file { read };",
+          "[partition violation] rgm_violator_bad",
+          "[partition violation] violator_bad",
+          "product macro pc_only(`bad_domain') not a - exception item",
+          "[avc gap] +allow hunk1_service data_file:file { write };",
+          "Policy files involved: 3",
+          "New rule lines (allow/allowxperm/neverallow, indented included): 6"
+        ],
+        "scan_output_not_contains": [
+          "default_service here",
+          "binder_call(foo",
+          "[modifiable-exempt] +allow fresh_domain"
+        ],
+        "rom_value": "800 B"
+      },
+      "assertions": [
+        {
+          "text": "报告将 multi_hunk.te 中跨 hunk 的纯新增 allow fresh_domain 判为 FAIL（S2-A：前一 hunk 的删除行不豁免后一 hunk 的新增）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S2",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "fresh_domain"
+            }
+          ]
+        },
+        {
+          "text": "报告将 system 分区定义的 rgm_violator_bad 与 violator_bad 判为 FAIL 分区前缀违反（定义位置即作用分区，脚本确定性检查）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S11",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "rgm_violator_bad"
+            },
+            {
+              "type": "mentions",
+              "text": "violator_bad"
+            }
+          ]
+        },
+        {
+          "text": "报告将 S23 混排行中 pc_only(`bad_domain') 判为 FAIL 违规，tablet_only(`-good_domain') 合法例外项不判违规",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S23",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "bad_domain"
+            },
+            {
+              "type": "mentions",
+              "text": "-good_domain"
+            }
+          ]
+        },
+        {
+          "text": "报告不将注释行「# Do not use default_service here」判为 S16 违规",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S16",
+              "expect": [
+                "PASS",
+                "NA"
+              ]
+            },
+            {
+              "type": "not_contains",
+              "text": "Do not use default_service"
+            }
+          ]
+        },
+        {
+          "text": "报告不将 neverallow foo bar:binder { call transfer } 建议为 binder_call 宏（S20b 仅针对 allow 语句）",
+          "grader": [
+            {
+              "type": "not_contains",
+              "text": "binder_call(foo"
+            }
+          ]
+        },
+        {
+          "text": "报告将 y.te 的新增 allow 判为缺 #avc: 注释（S17 跨 hunk/跨文件不误关联）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S17",
+              "expect": "WARNING"
+            },
+            {
+              "type": "mentions",
+              "text": "y.te"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "name": "s11d-violater-variant-s4-exception-exclusion",
+      "prompt": "扫描 evals/files/s11d_violater_s4_exception.diff 的 sepolicy 变更，输出自检报告。此 diff 锁定两处修正的回归：S11d 检测 violater 拼写变体（rgm_violater_bar 无文档规定前缀判 FAIL、system_violator_ok 前缀与分区匹配不判违规、bad_violator_x 仍判 FAIL）、S4 引用收集排除 - 例外项（violator_foo 不进入引用列表，foo_type 正常收集）。",
+      "files": [
+        "evals/files/s11d_violater_s4_exception.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "[naming violation] violator must be a prefix: rgm_violater_bar",
+          "[naming violation] violator must be a prefix: bad_violator_x",
+          "referenced type/attribute: dev_file, domain (rerun",
+          "referenced type/attribute: dev_file, domain, foo_type (rerun"
+        ],
+        "scan_output_not_contains": [
+          "system_violator_ok",
+          "referenced type/attribute: dev_file, domain, violator_foo"
+        ],
+        "rom_value": "500 B"
+      },
+      "assertions": [
+        {
+          "text": "报告将 rgm_violater_bar 判为 S11d 命名前缀 FAIL（violater 为上游真实拼写变体，S11d 同样检测，但命名必须使用文档规定前缀）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S11",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "rgm_violater_bar"
+            }
+          ]
+        },
+        {
+          "text": "报告不将 system_violator_ok 判为违规（system 分区定义且 system_violator_ 前缀匹配）",
+          "grader": [
+            {
+              "type": "not_contains",
+              "text": "system_violator_ok"
+            }
+          ]
+        },
+        {
+          "text": "报告将 bad_violator_x 判为 S11d 命名前缀 FAIL（violator 出现在名称中部）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S11",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "bad_violator_x"
+            }
+          ]
+        },
+        {
+          "text": "报告 S4 引用类型列表不含 violator_foo（- 例外项不进入引用收集），foo_type 正常收集",
+          "grader": [
+            {
+              "type": "not_contains",
+              "text": "violator_foo"
+            },
+            {
+              "type": "mentions",
+              "text": "foo_type"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "name": "s2a-pairing-negative-comment-attribute-count",
+      "prompt": "扫描 evals/files/s2a_pairing_negative.diff 的 sepolicy 变更，输出自检报告。此 diff 锁定 F4 评审反例：注释删除不得为新增 allow 提供修改豁免（comment→allow）、attribute 删除不得豁免 allow（attribute→allow）、一条删除最多豁免一条同类新增（1 删除+2 新增）、同 object:class 的主体 rename 仍配对豁免、不同 object:class 的删除不豁免。",
+      "files": [
+        "evals/files/s2a_pairing_negative.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "[pure-addition violation] +allow fresh_one data_file:file { read };",
+          "[pure-addition violation] +allow fresh_two data_file:file { read };",
+          "[pure-addition violation] +allow fresh_three data_file:file { read };",
+          "[pure-addition violation] +allow fresh_four data_file:file { read };",
+          "[modifiable-exempt] +allow mod_domain target_file:file { read open };",
+          "[modifiable-exempt] +allow renamed_domain target_file:file { read };",
+          "missing blank line: +allow fresh_three data_file:file { read };"
+        ],
+        "scan_output_not_contains": [
+          "[modifiable-exempt] +allow fresh_one",
+          "[modifiable-exempt] +allow fresh_two",
+          "[modifiable-exempt] +allow fresh_three",
+          "[modifiable-exempt] +allow fresh_four"
+        ],
+        "rom_value": "300 B"
+      },
+      "assertions": [
+        {
+          "text": "报告将 S2 判为 FAIL：注释删除不得豁免新增 allow（fresh_one）、属性删除不得豁免新增 allow（fresh_two），二者均为纯新增违规",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S2",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "fresh_one"
+            },
+            {
+              "type": "mentions",
+              "text": "fresh_two"
+            }
+          ]
+        },
+        {
+          "text": "报告体现一条删除最多豁免一条同签名新增：mod_domain（修改权限集）为修改豁免、fresh_three 为纯新增违规",
+          "grader": [
+            {
+              "type": "mentions",
+              "text": "mod_domain"
+            },
+            {
+              "type": "mentions",
+              "text": "fresh_three"
+            },
+            {
+              "type": "status",
+              "check": "S2",
+              "expect": "FAIL"
+            }
+          ]
+        },
+        {
+          "text": "报告体现同 object:class 的主体 rename（renamed_domain）仍配对为修改豁免",
+          "grader": [
+            {
+              "type": "mentions",
+              "text": "renamed_domain"
+            }
+          ]
+        },
+        {
+          "text": "报告体现不同 object:class 的删除（other_domain other_target）不豁免 fresh_four",
+          "grader": [
+            {
+              "type": "mentions",
+              "text": "fresh_four"
+            },
+            {
+              "type": "mentions",
+              "text": "other_domain"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 ROM 增量估算且数值为 300 B",
+          "grader": [
+            {
+              "type": "rom",
+              "value": "300 B"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        },
+        {
+          "text": "报告将同块相邻无空行的 mod_domain 与 fresh_three 判为 S19 FAIL",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S19",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "fresh_three"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "name": "s23-context-wrapper-scope-tracking",
+      "prompt": "扫描 evals/files/s23_context_wrapper.diff 的 sepolicy 变更，输出自检报告。此 diff 锁定 F5 评审反例：宏开闭为 context 行、仅内部 allow 为新增行时必须报违规（既有 wrapper 内新增规则）；新增 pc_only wrapper 包住既有 context 规则同样报违规；既有 wrapper 仅包裹既有规则不误报（对照组）。",
+      "files": [
+        "evals/files/s23_context_wrapper.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "[violation] sepolicy/ohos_policy/test/test_wrap/system/wrap.te: multi-line product macro wrap: +allow wrap_service secret_data:file { read };",
+          "new multi-line product macro wraps pre-existing rule: +pc_only(`"
+        ],
+        "scan_output_not_contains": [
+          "existing_service existing_target",
+          "other_service"
+        ],
+        "scan_output_contains_count": {
+          "pattern": "\\[violation\\]",
+          "exact": 2
+        },
+        "rom_value": "100 B"
+      },
+      "assertions": [
+        {
+          "text": "报告将既有 pc_only wrapper 内新增的 allow wrap_service 判为 S23 FAIL（宏开闭为 context 行也必须追踪作用域）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S23",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "wrap_service"
+            }
+          ]
+        },
+        {
+          "text": "报告将新增 pc_only wrapper 包住既有规则判为 S23 FAIL（新增 wrapper 使既有规则变为形态隔离）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S23",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "existing_service"
+            }
+          ]
+        },
+        {
+          "text": "报告不将既有 watch_only wrapper 包裹既有规则的对照组判为违规",
+          "grader": [
+            {
+              "type": "not_contains",
+              "text": "other_service"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 ROM 增量估算且数值为 100 B",
+          "grader": [
+            {
+              "type": "rom",
+              "value": "100 B"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "name": "s23-nested-macro-comments",
+      "prompt": "扫描 evals/files/s23_nested_macro_comments.diff 的 sepolicy 变更，输出自检报告。此 diff 锁定 R5-F2 反例：pc_only 内嵌 debug_only 时内层闭合不得清除外层产品宏作用域（内层闭合后新增的 allow 仍在 pc_only 内，必须报违规）；`# pc_only(` 注释行不得开启作用域（其后的普通 allow 不误报）；闭合行带尾注释（`') # end`）仍正确闭合；新增 watch_only wrapper 包住既有规则仍报违规。",
+      "files": [
+        "evals/files/s23_nested_macro_comments.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "[violation] sepolicy/ohos_policy/test/nest/system/nest.te: multi-line product macro wrap: +allow nest_service secret_data:file { read };",
+          "new multi-line product macro wraps pre-existing rule: +watch_only(`"
+        ],
+        "scan_output_not_contains": [
+          "wrap: +allow plain_service",
+          "wrap: +allow pre_service"
+        ],
+        "scan_output_contains_count": {
+          "pattern": "\\[violation\\]",
+          "exact": 2
+        },
+        "rom_value": "200 B"
+      },
+      "assertions": [
+        {
+          "text": "报告将内层 debug_only 闭合后仍处于 pc_only 作用域内的新增 allow nest_service 判为 S23 FAIL（嵌套宏栈：内层闭合只弹出内层）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S23",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "nest_service"
+            }
+          ]
+        },
+        {
+          "text": "报告将新增 watch_only wrapper 包住既有规则（闭合行带尾注释 `') # end`）判为 S23 FAIL",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S23",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "pre_service"
+            }
+          ]
+        },
+        {
+          "text": "报告不将 `# pc_only(` 注释行后的普通 allow plain_service 判为产品宏包裹（注释不开启作用域）",
+          "grader": [
+            {
+              "type": "not_contains",
+              "text": "macro wrap: +allow plain_service"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 ROM 增量估算且数值为 200 B",
+          "grader": [
+            {
+              "type": "rom",
+              "value": "200 B"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "name": "r5-regressions-license-substring-indent-adjacency",
+      "prompt": "扫描 evals/files/r5_regressions.diff 的 sepolicy 变更，输出自检报告。此 diff 锁定 R5-F3/F5/F6 反例：license/copyright 子串出现在真实策略语句（license_service 主体、android_licensed_dev）中不得按 license 头跳过（S2-A 纯新增仍报、S1 品牌词仍匿名化）；缩进的 allow sh 与 allow demo_service su: 语句必须命中 S12/S13（与宏体缩进输入一致）；上下文 allow 与新增 allow 紧贴（中间仅有 #avc: 注释）判 S19 缺空行，而空行分隔的对照与双上下文相邻对照不报。",
+      "files": [
+        "evals/files/r5_regressions.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "[pure-addition violation] +allow license_service data_file:file { read };",
+          "allow ***_licensed_dev data_file:file { read };",
+          "    allow sh data_file:file { read };",
+          "    allow demo_service su:process { signal };",
+          "missing blank line: +allow adj_new data_file:file { read };",
+          "Policy files involved: 3",
+          "New rule lines (allow/allowxperm/neverallow, indented included): 8"
+        ],
+        "scan_output_not_contains": [
+          "missing blank line: +allow ctrl_new",
+          "missing blank line: +allow old_pair"
+        ],
+        "rom_value": "800 B"
+      },
+      "assertions": [
+        {
+          "text": "报告将 base/te/probe.te 中的 license_service 纯新增判为 S2 FAIL（license 子串不构成 license 头豁免）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S2",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "license_service"
+            }
+          ]
+        },
+        {
+          "text": "报告将 android_licensed_dev 中的品牌词匿名化输出（S1 FAIL，技术词与 license 子串不影响品牌词检测）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S1",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "***_licensed_dev"
+            },
+            {
+              "type": "not_contains",
+              "text": "android"
+            }
+          ]
+        },
+        {
+          "text": "报告将缩进的 allow sh 判为 S12 WARNING（宏体缩进语句同样检测）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S12",
+              "expect": "WARNING"
+            },
+            {
+              "type": "mentions",
+              "text": "allow sh data_file"
+            }
+          ]
+        },
+        {
+          "text": "报告将缩进的 allow demo_service su:process 判为 S13 FAIL（su 客体未用 debug_only 隔离）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S13",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "demo_service su:process"
+            }
+          ]
+        },
+        {
+          "text": "报告将紧贴上下文 allow（中间仅 #avc: 注释）新增的 adj_new 判为 S19 FAIL；空行分隔的 ctrl_new 与双上下文相邻的 old_pair 不报",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S19",
+              "expect": "FAIL"
+            },
+            {
+              "type": "mentions",
+              "text": "adj_new"
+            },
+            {
+              "type": "not_contains",
+              "text": "missing blank line: +allow ctrl_new"
+            },
+            {
+              "type": "not_contains",
+              "text": "missing blank line: +allow old_pair"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 ROM 增量估算且数值为 800 B",
+          "grader": [
+            {
+              "type": "rom",
+              "value": "800 B"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "name": "ohgc-format-stdin-normalization",
+      "prompt": "扫描 evals/files/mixed_ohgc_format.diff 的变更（与 mixed fixture 同内容，但按 oh-gc CLI 真实渲染格式：diff --git / status: / --- / @@，无 +++ b/ 行），输出自检报告。验证 stdin 规范化后文件统计与 S21/S22 等文件级检查全部命中。",
+      "files": [
+        "evals/files/mixed_ohgc_format.diff"
+      ],
+      "machine_checks": {
+        "exit_code": 0,
+        "scan_output_contains": [
+          "Policy files involved: 3",
+          "service_contexts",
+          "whitelist/flex",
+          "test_whitelist.json",
+          "allow test_service data_file:file",
+          "ROM increment estimate = (A - D + M) × 100B = 200 B"
+        ],
+        "rom_value": "200 B"
+      },
+      "assertions": [
+        {
+          "text": "报告同时检出 sepolicy allow、whitelist/flex 白名单、service_contexts 三类变更（oh-gc 渲染格式经 stdin 规范化后文件级检查不丢失）",
+          "grader": [
+            {
+              "type": "mentions",
+              "text": "allow test_service data_file:file"
+            },
+            {
+              "type": "mentions",
+              "text": "test_whitelist.json"
+            },
+            {
+              "type": "mentions",
+              "text": "service_contexts"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 S21 标记且状态为 WARNING（service_contexts 需 samgr 评审）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S21",
+              "expect": "WARNING"
+            }
+          ]
+        },
+        {
+          "text": "报告包含 S22 标记且状态为 WARNING（whitelist/flex 需 flex 评审）",
+          "grader": [
+            {
+              "type": "status",
+              "check": "S22",
+              "expect": "WARNING"
+            }
+          ]
+        },
+        {
+          "text": "报告包含完整的结果表（S1 至 S23，不含已移除的 S8/S14）",
+          "grader": [
+            {
+              "type": "table_complete"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S8 |"
+            },
+            {
+              "type": "not_contains",
+              "text": "| S14 |"
+            }
+          ]
+        }
       ]
     }
   ]

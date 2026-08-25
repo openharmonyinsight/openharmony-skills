@@ -1,0 +1,10 @@
+diff --git a/sepolicy/ohos_policy/test/comp/system/probe.te b/sepolicy/ohos_policy/test/comp/system/probe.te
+index 1111111..2222222 100644
+--- a/sepolicy/ohos_policy/test/comp/system/probe.te
++++ b/sepolicy/ohos_policy/test/comp/system/probe.te
+@@ -5,3 +5,8 @@ allow base_rule base_target:file { read };
++typeattribute foo rgm_violater_bar;
++attribute system_violator_ok;
++attribute bad_violator_x;
++neverallow { domain -violator_foo } dev_file:blk_file *;
++neverallow { domain foo_type } dev_file:blk_file *;

@@ -1,0 +1,8 @@
+diff --git a/sepolicy/ohos_policy/test/test/system/file_contexts b/sepolicy/ohos_policy/test/test/system/file_contexts
+index abc1234..def5678 100644
+--- a/sepolicy/ohos_policy/test/test/system/file_contexts
++++ b/sepolicy/ohos_policy/test/test/system/file_contexts
+@@ -5,3 +5,5 @@
+ /system/bin/existing_binary u:object_r:existing_exec:s0
++/system/bin/new_binary    u:object_r:test_exec:s0
++/vendor/bin/test_vendor   u:object_r:vendor_test_exec:s0
