@@ -4,7 +4,7 @@
     {
       "id": 1,
       "name": "pr-scan-avc-gap",
-      "prompt": "扫描这个 PR 的 sepolicy diff（输入文件 evals/files/mr8170_pr_scan.diff），按 22 条自检项跑自检并输出报告。用 scan.sh 脚本跑自动项，再做人工判定项。",
+      "prompt": "扫描这个 PR 的 sepolicy diff（输入文件 evals/files/mr8170_pr_scan.diff），按 23 条自检项跑自检并输出报告。用 scan.sh 脚本跑自动项，再做人工判定项。",
       "expected_output": "一份中文自检报告：S17 标记 init.te 的 allow 缺 #avc 注释为 ⚠️；S2 提示两文件分散在不同子系统目录为 ⚠️；ROM 增量 200B；多数项 ⏭️ 不适用。",
       "files": ["evals/files/mr8170_pr_scan.diff"],
       "assertions": [

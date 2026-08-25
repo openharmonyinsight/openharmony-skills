@@ -120,6 +120,17 @@ echo "$DIFF" | grep -E '^\+\+\+ b/.*whitelist/flex/.*_whitelist\.json' || true
 echo "--- whitelist/flex 新增行 ---"
 echo "$DIFF" | awk '/^\+\+\+ b.*whitelist\/flex.*_whitelist\.json/{p=1;next} /^\+\+\+ b/{if(p)p=0} p && /^\+[^+]/{print}' || true
 
+emit "S23 pc_only/tablet_only/tablet_hybrid_only 包裹 allow（有输出=违反）"
+echo "--- 设备形态宏位置（辅助定位） ---"
+echo "$DIFF" | grep -nE 'pc_only\(|tablet_only\(|tablet_hybrid_only\(' || true
+echo "--- 违规：设备形态宏内出现 allow（非 neverallow）---"
+echo "$DIFF" | awk '
+  /pc_only\(|tablet_only\(|tablet_hybrid_only\(/ { in_macro=1; next }
+  /`/ { in_macro=0 }
+  in_macro && /^\+[[:space:]]*(allow|allowxperm)[[:space:]]/ { print "[违规] " FILENAME ": " $0 }
+  in_macro && /^\+[[:space:]]*neverallow[[:space:]]/ { next }
+' || true
+
 emit "ROM 增量估算（A=新增规则行 D=删减规则行 M=access_vector变更）"
 added=$(echo "$DIFF" | grep -cE '^\+(allow|allowxperm|neverallow)[[:space:]]' || true)
 removed=$(echo "$DIFF" | grep -cE '^-(allow|allowxperm|neverallow)[[:space:]]' || true)
@@ -128,4 +139,4 @@ echo "A=$added  D=$removed  M=$modcnt"
 echo "ROM 增量估算 = (A - D + M) × 100B = $(( (added - removed + modcnt) * 100 )) B"
 
 echo
-echo "=== 自动检测完成。以上需人工判定项：S2-B定性 / S4落点 / S5看护 / S6范围 / S7写执行 / S9-S10隔离 / S11评审 / S18-B/C落点 / S17一一对应 / S21-samgr评审 / S22-flex评审 ==="
+echo "=== 自动检测完成。以上需人工判定项：S2-B定性 / S4落点 / S5看护 / S6范围 / S7写执行 / S9-S10隔离 / S11评审 / S18-B/C落点 / S17一一对应 / S21-samgr评审 / S22-flex评审 / S23-设备形态宏内allow违规 ==="

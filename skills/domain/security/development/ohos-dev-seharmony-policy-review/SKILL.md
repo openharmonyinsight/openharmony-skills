@@ -1,6 +1,6 @@
 ---
 name: ohos-dev-seharmony-policy-review
-description: OpenHarmony SELinux 策略提交自检扫描。依据 selinux_adapter 仓库的 16 条策略合入自检项，并补充 avc 日志注释、allow 落点（system/vendor/public）、allow 块间空行分隔、appdat→normal_app_data 建议、service_contexts 需 samgr 责任田评审、whitelist/flex 下 *_whitelist.json 需 flex 专项评审 6 条扩展项，共 22 条自检项，扫描 commit/PR diff 中新增的 .te、file_contexts、service_contexts、attributes、*_whitelist.json 等策略文件，逐条判定是否符合自检要求并输出报告（含 ROM 增量估算）。触发场景：扫描 commit 自检、SELinux 策略 PR 自检、commit selfcheck、策略合入检查、selinux policy review、扫描 PR diff、策略变更检查、提交前自检、avc 日志注释检查、allow 落点检查、allow 空行分隔检查、service_contexts 评审检查、whitelist flex 评审检查、ROM 估算。
+description: OpenHarmony SELinux 策略提交自检扫描。依据 selinux_adapter 仓库的 16 条策略合入自检项，并补充 avc 日志注释、allow 落点（system/vendor/public）、allow 块间空行分隔、appdat→normal_app_data 建议、service_contexts 需 samgr 责任田评审、whitelist/flex 下 *_whitelist.json 需 flex 专项评审、pc_only/tablet_only/tablet_hybrid_only 仅用于 neverallow 不允许包裹 allow 7 条扩展项，共 23 条自检项，扫描 commit/PR diff 中新增的 .te、file_contexts、service_contexts、attributes、*_whitelist.json 等策略文件，逐条判定是否符合自检要求并输出报告（含 ROM 增量估算）。触发场景：扫描 commit 自检、SELinux 策略 PR 自检、commit selfcheck、策略合入检查、selinux policy review、扫描 PR diff、策略变更检查、提交前自检、avc 日志注释检查、allow 落点检查、allow 空行分隔检查、service_contexts 评审检查、whitelist flex 评审检查、pc_only tablet_only 违规检查、ROM 估算。
 metadata:
   author: openharmony
   scope: selinux_adapter
@@ -13,7 +13,7 @@ metadata:
 
 # SELinux 策略提交自检扫描 (selinux_adapter commit selfcheck)
 
-你是一位 OpenHarmony SELinux 策略评审专家。任务：对指定 commit / commit 区间 / 工作区 diff，依据 selinux_adapter 仓库的 **16 条策略合入自检项**，并补充 **6 条扩展自检项**（avc 日志注释、allow 落点、allow 块间空行、appdat→normal_app_data、service_contexts 需 samgr 评审、whitelist/flex 需 flex 评审），共 **22 条**，进行扫描，逐条判定，输出结构化报告（含 ROM 增量估算）。
+你是一位 OpenHarmony SELinux 策略评审专家。任务：对指定 commit / commit 区间 / 工作区 diff，依据 selinux_adapter 仓库的 **16 条策略合入自检项**，并补充 **7 条扩展自检项**（avc 日志注释、allow 落点、allow 块间空行、appdat→normal_app_data、service_contexts 需 samgr 评审、whitelist/flex 需 flex 评审、pc_only/tablet_only/tablet_hybrid_only 仅用于 neverallow），共 **23 条**，进行扫描，逐条判定，输出结构化报告（含 ROM 增量估算）。
 
 ## 1. 仓库路径约定（判定依赖）
 
@@ -30,6 +30,7 @@ metadata:
 
 宏与属性范例（判定参照）：
 - `debug_only(\`...\`)`、`developer_only(\`...\`)` 为隔离宏，成对反引号闭合。
+- `pc_only(\`...\`)`、`tablet_only(\`...\`)`、`tablet_hybrid_only(\`...\`)` 为设备形态隔离宏，仅用于包裹 **neverallow** 语句，**不允许包裹 allow/allowxperm** 策略。
 - `allowxperm A B:C ioctl { 0xXXXX };` 为 ioctl 命令字限制。
 - neverallow 放松写法：`neverallow { domain -violator_xxx } ...`、`-rgm_violater_xxx`。
 - su 作为主体 `allow su ...` 默认放行；su 作为客体 `... su:... { ... }` 需 `debug_only` 隔离。
@@ -65,7 +66,7 @@ metadata:
 
 ### 步骤 4：逐条规则扫描
 
-对第 4 节的 22 条规则逐条执行。先用第 5 节的「快速扫描脚本」跑一遍自动可检项（自动项：S1/S2-A/S3/S5/S6/S8/S12/S13/S14/S15/S16/S17/S18-A/S20/S21/S22 及 S2-B 目录计数）；再对需人工/专家判断的项（S2-B 集中度定性、S4 type 定义位置、S5/S7 neverallow 看护、S9/S10 隔离宏包裹、S11 评审记录、S18-B/C 落点）给出判定依据。
+对第 4 节的 23 条规则逐条执行。先用第 5 节的「快速扫描脚本」跑一遍自动可检项（自动项：S1/S2-A/S3/S5/S6/S8/S12/S13/S14/S15/S16/S17/S18-A/S20/S21/S22/S23 及 S2-B 目录计数）；再对需人工/专家判断的项（S2-B 集中度定性、S4 type 定义位置、S5/S7 neverallow 看护、S9/S10 隔离宏包裹、S11 评审记录、S18-B/C 落点）给出判定依据。
 
 ### 步骤 5：输出报告
 
@@ -82,10 +83,10 @@ metadata:
 | ❌违反 | diff 中存在明确违规 |
 | ⏭️不适用 | diff 未涉及本项（如本次未新增 ioctl） |
 
-## 4. 自检规则清单（22 条）
+## 4. 自检规则清单（23 条）
 
 > 判定时只看 diff 新增行（`+` 行）。`file:行号` 指向 **diff 后的目标文件行号**。
-> S1–S16 为策略合入自检项；S17–S22 为补充扩展项。
+> S1–S16 为策略合入自检项；S17–S23 为补充扩展项。
 
 ### NEVER — 绝对禁止项（合并速查，含深层原因）
 
@@ -248,9 +249,15 @@ metadata:
 - **判定**：涉及 → ⚠️需确认（需 flex 专项评审确认白名单条目的必要性、范围最小化、无过度放行）。
 - **常见问题**：白名单新增条目范围过大（如对全域放行而非精确域）、新增条目无对应的需求说明或 avc 来源。
 
+### S23 — pc_only/tablet_only/tablet_hybrid_only 仅用于 neverallow，不允许包裹 allow
+- **背景**：`pc_only`、`tablet_only`、`tablet_hybrid_only` 为设备形态隔离宏，用于限定 neverallow 仅在特定设备形态生效。这些宏**仅允许包裹 neverallow 语句**——若包裹 `allow`/`allowxperm`，会导致其他设备形态（如手机）缺失该权限，产生设备间权限不一致的隐性漏洞。
+- **检测**：diff 新增行中 `pc_only(`、`tablet_only(`、`tablet_hybrid_only(` 宏包裹范围内出现 `allow` 或 `allowxperm` 语句。
+- **违反**：上述设备形态隔离宏内出现 `allow`/`allowxperm`（而非 `neverallow`）。
+- **符合**：上述宏仅包裹 `neverallow` 语句；`allow`/`allowxperm` 不受设备形态隔离宏限制。
+
 ## 5. 自动扫描脚本
 
-**MANDATORY — 运行脚本**：在步骤 4 的逐条判定前，**必须**执行 [`scripts/scan.sh`](scripts/scan.sh) 跑一遍所有自动可检项。该脚本汇总 S1–S22 中可自动化的检测，并输出 ROM 估算。
+**MANDATORY — 运行脚本**：在步骤 4 的逐条判定前，**必须**执行 [`scripts/scan.sh`](scripts/scan.sh) 跑一遍所有自动可检项。该脚本汇总 S1–S23 中可自动化的检测，并输出 ROM 估算。
 
 **Do NOT Load**：若步骤 1 获取的 diff 为空（`git diff -- sepolicy/` 无输出），**禁止运行 scan.sh**——直接输出全项 ⏭️不适用报告，避免空 diff 触发脚本报错。
 
@@ -278,6 +285,7 @@ echo "$DIFF" | bash scripts/scan.sh -   # 从 stdin 读 diff
 | S20 | appdat 客体 | —（建议项） |
 | S21 | service_contexts 文件变更 | samgr 责任田评审确认 |
 | S22 | whitelist/flex *_whitelist.json 变更 | flex 专项评审确认 |
+| S23 | pc_only/tablet_only/tablet_hybrid_only 包裹 allow | 违反即报 |
 
 > 脚本无输出（某段为空）表示该规则在本次 diff 中未涉及（⏭️不适用）。S17 的 `#avc:` 正则已兼容代码库 `# avc:`（带空格）写法；diff hunk 内无 `#avc:` 时先标 ⚠️ 要求补查全文（hunk 之外可能已有注释），确认全文缺失后再升 ❌。S18-A 的 public/ allow 与 S19 的空行在 rename 重构 diff 中若为 pre-existing（原 −allow 行已在 public/ 或本就缺空行），按步骤 2「判定 diff 性质」基调处理（标注 pre-existing 而非硬报违规）。S19 的 awk 跨文件边界已重置不误报。ROM 估算中 `M`（access_vector 变更）由同主体客体的 +/- 配对识别，配对跨多行或写法特殊时需人工核校。
 
@@ -315,6 +323,7 @@ echo "$DIFF" | bash scripts/scan.sh -   # 从 stdin 读 diff
 | S20 | appdat 建议改用 normal_app_data | ... | ... |
 | S21 | service_contexts 需 samgr 责任田评审 | ... | ... |
 | S22 | whitelist/flex *_whitelist.json 需 flex 专项评审 | ... | ... |
+| S23 | pc_only/tablet_only/tablet_hybrid_only 仅用于 neverallow | ... | ... |
 
 ## ROM 增量估算
 - 新增策略规则行（A）：<N> 条 × 100B
