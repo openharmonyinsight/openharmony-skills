@@ -76,7 +76,7 @@ metadata:
 12. **原 agent 回修 proposal**：主 session 读取审查结果，先修复所有可由 01-04/proposal 内部证据确定的 FAIL；对 AI 无法判定项保留 WARN 并在 proposal 对应章节标注待人工确认。回修后重新执行 Step 11，直到无可自动修复的 FAIL。禁止 subagent 直接修改 proposal 正文。
 13. **⭐ 拆分结果确认门禁**：向用户展示 04-feature.md 中的拆分方案、已生成 proposal 文件列表和 proposal-check 摘要（每个 proposal 的路径、边界、工作量、Owner、依赖、PASS/WARN/FAIL 计数），等待用户确认或调整后才允许执行 Review Ready Gate。AI 不自行定稿拆分方案。
 14. 保存 `{docs_dir}/04-feature.md`、全部 `{docs_dir}/proposals/05-proposal-<slug>.md` 和 `{docs_dir}/proposals/proposal-check-<slug>.md`。
-15. 执行内建 Review Ready Gate（读取刚保存且经用户确认的 04-feature.md 和 proposal 文件），写入 `04-feature.md` 的固定 `## Review Ready Gate` 章节：`decision_gate` YAML、14 项检查表、条件项、后续观测项、FR→AC 追溯表。
+15. 执行内建 Review Ready Gate（读取刚保存且经用户确认的 04-feature.md 和 proposal 文件），写入 `04-feature.md` 的固定 `## Review Ready Gate` 章节：`decision_gate` YAML、15 项检查表、条件项、后续观测项、FR→AC 追溯表。
 
 ## 职责边界
 
@@ -84,13 +84,14 @@ metadata:
 
 ## Proposal 审查矩阵
 
-Proposal 审查使用 `reference/proposal-check-matrix.md` 作为唯一判据源。审查范围覆盖 4 个检查域：
+Proposal 审查使用 `reference/proposal-check-matrix.md` 作为唯一判据源。审查范围覆盖 5 个检查域：
 
 | 检查域 | 检查条目数 | 判定重点 |
 |--------|------------|----------|
 | 诉求 | 5 | 问题描述、feature 溯源、成功标准可测性、1+8设备差异规格、DFX设计 |
 | 场景 | 2 | US+AC 场景覆盖、AC 独立可测 |
 | N/A项 | 8 | 性能、安全与权限、兼容性、API/SDK、IPC/跨进程、构建与部件、国际化/无障碍、数据迁移 |
+| 附录 | 5 | §12附录结构、feature_id 溯源、status 枚举、GA证据、仓名归一化 |
 | 交叉 | 4 | 非目标↔US、影响范围↔US、分级↔实际、多 proposal 一致性 |
 
 判定规则：
@@ -113,7 +114,7 @@ Proposal 审查使用 `reference/proposal-check-matrix.md` 作为唯一判据源
 
 ## Review Ready Gate（内建）
 
-Gate 检查读取 01-04，不需要调用独立 skill。判定项为 9 项基础检查 + 1 项 GA 证据 + 3 项结构一致性 + 1 项遗留问题闭环：
+Gate 检查读取 01-04，不需要调用独立 skill。判定项为 9 项基础检查 + 1 项 Proposal 附录 + 1 项 GA 证据 + 3 项结构一致性 + 1 项遗留问题闭环：
 
 | 检查项 | 要求 | 判定方法 |
 |--------|------|----------|
@@ -126,7 +127,8 @@ Gate 检查读取 01-04，不需要调用独立 skill。判定项为 9 项基础
 | 工作量约束 | 每个 proposal 不超过复杂度上限 | §5 每个 proposal 工作量不超过简单≤5/标准≤8/复杂≤15 人月 |
 | 技术方向 | 有选定方案 | 引用 03-arch-decision-record.md 选定方案 |
 | 影响性分析 | 5 方影响类型已分析 | 影响性分析章节 5 行均非占位符 |
-| GA 证据 | Proposal §12 附录若声明 GA-Approved 必须有 gate_a 证据 | 任一 proposal `status: GA-Approved` 且 `gate_a` 为空→fail；status 非 GA-Approved 且 gate_a 为空→warn 条件项，记录 Owner/动作/时点 |
+| Proposal 附录 | 每个 proposal §12 附录完整且与事实源一致 | 缺少§12或`feature_id/status/gate_a/仓`任一行→fail；`feature_id`与04不一致→fail；`status`非`Draft/GA-Approved`→fail；`仓`为空/占位/仅basename/未按归一化规则处理→fail |
+| GA 证据 | Proposal §12 附录是 GA 状态唯一事实源，GA-Approved 必须有 gate_a 证据 | 任一 proposal `status: GA-Approved` 且 `gate_a` 为空→fail并写入`block_reasons`；status=Draft 且 gate_a 为空→warn条件项，记录Owner/动作/时点；若历史04 §5仍含GA状态/证据列且与§12冲突→fail |
 | 模块覆盖完整性 | 04 §4 声明覆盖所有涉及模块 | 读取 §4"模块覆盖检查结论"；pass→pass，warn/缺失→warn |
 | 影响类型术语一致性 | 04 §4 影响类型标签无漂移 | 读取 §4"术语一致性检查结论"；pass→pass，warn/缺失→warn |
 | 条件项传播完整性 | §5 前置条件覆盖 02 §6 和 03 §6 条件项 | 缺失→warn |
@@ -166,7 +168,7 @@ decision_gate:
       non_blocking_reason: "<不阻塞理由>"
 ```
 
-固定检查表必须包含 14 项检查项，列为 `检查项 | 结论 | 证据 | 条件项/阻塞项`，结论仅允许 `pass | warn | fail`。`decision_gate.gate` 由检查表推导：存在 fail 或缺 Owner/动作/时点的可关闭 warn → `Not Ready`；无 fail 且存在完整可关闭 warn → `Conditional Ready`；全部 pass 或仅后续观测项 → `Ready`。
+固定检查表必须包含 15 项检查项，列为 `检查项 | 结论 | 证据 | 条件项/阻塞项`，结论仅允许 `pass | warn | fail`。`decision_gate.gate` 由检查表推导：存在 fail 或缺 Owner/动作/时点的可关闭 warn → `Not Ready`；无 fail 且存在完整可关闭 warn → `Conditional Ready`；全部 pass 或仅后续观测项 → `Ready`。
 
 ### 旧 IR/SR/handoff 兼容边界
 
@@ -174,7 +176,7 @@ decision_gate:
 
 ### ODK 边界
 
-`proposals/05-proposal-<slug>.md` 是 requirements 阶段的评审输入，不是 ODK 最终交付归档文件。本 skill 不在 proposal 文件中生成 YAML frontmatter；proposal 末尾 §12 附录承载 feature_id、status、gate_a、仓，RR 单号、目标版本以 `04-feature.md` 为唯一事实源。不推断 ODK `change-id`、不生成 `.codespec` 目录、也不补充 ODK 模板专有章节。
+`proposals/05-proposal-<slug>.md` 是 requirements 阶段的评审输入，不是 ODK 最终交付归档文件。本 skill 不在 proposal 文件中生成 YAML frontmatter；proposal 末尾 §12 附录承载 feature_id、status、gate_a、仓，RR 单号以 `04-feature.md` 为事实源；目标版本以 `01-requirement.md` 的 `expected_release` 为事实源，不写入 requirements proposal；`target_release/issue/author/date` 不属于 requirements proposal 契约。不推断 ODK `change-id`、不生成 `.codespec` 目录、也不补充 ODK 模板专有章节。
 
 ### GA 证据规则
 

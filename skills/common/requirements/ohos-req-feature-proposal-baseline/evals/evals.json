@@ -93,7 +93,7 @@
       "id": 7,
       "name": "gate-output-contract-required",
       "prompt": "01-03已就绪。用户确认不拆分proposal，请生成04-feature.md、proposal文件并执行内建 Review Ready Gate。",
-      "expected_output": "04-feature.md 必须包含固定 ## Review Ready Gate 章节，含 decision_gate YAML(schema_version/gate/summary/block_reasons/conditions/observations)、14项检查表、条件项、后续观测项和 FR→AC 追溯表。value-decision 后续可稳定消费该契约。",
+      "expected_output": "04-feature.md 必须包含固定 ## Review Ready Gate 章节，含 decision_gate YAML(schema_version/gate/summary/block_reasons/conditions/observations)、15项检查表、条件项、后续观测项和 FR→AC 追溯表。value-decision 后续可稳定消费该契约。",
       "assertions": [
         {
           "text": "decision_gate",
@@ -181,14 +181,14 @@
       "id": 12,
       "name": "gate-all-pass-ready",
       "prompt": "01-04均完整，proposal文件存在，AC逐列完整，受影响模块均有Owner/SIG，02/03条件项已覆盖，无遗留阻塞，仅需执行内建 Review Ready Gate。",
-      "expected_output": "14项检查均为pass，decision_gate.gate 为 Ready；无 block_reasons、conditions 为空，允许进入正式评审。",
+      "expected_output": "15项检查均为pass，decision_gate.gate 为 Ready；无 block_reasons、conditions 为空，允许进入正式评审。",
       "assertions": [
         {
           "text": "Ready",
           "type": "contains"
         },
         {
-          "text": "14项检查均为pass",
+          "text": "15项检查均为pass",
           "type": "llm_judge"
         },
         {
@@ -241,7 +241,7 @@
       "id": 15,
       "name": "requirements-odk-boundary",
       "prompt": "04-feature.md 和 proposals/05-proposal-arkweb-drag-preview.md 已经确认，用户询问 requirements proposal 与 ODK 交付 proposal 的关系。请说明边界。",
-      "expected_output": "requirements 阶段保留 proposals/05-proposal-<slug>.md 作为需求评审输入，不生成 .codespec 目录，不推断 ODK change-id，也不要求补充 ODK 模板专有章节。rr_id 保留在 01-requirement.md 和 04-feature.md 中，不写入 proposal §12 附录，也不从 IR/SR/handoff 推断。ODK 交付 proposal 由 ODK 自身流程处理。",
+      "expected_output": "requirements 阶段保留 proposals/05-proposal-<slug>.md 作为需求评审输入，不生成 .codespec 目录，不推断 ODK change-id，也不要求补充 ODK 模板专有章节。rr_id 保留在 01-requirement.md 和 04-feature.md 中；目标版本以 01-requirement.md 的 expected_release 为事实源；target_release、issue、author、date 不属于 requirements proposal 契约，均不写入 proposal §12 附录，也不从 IR/SR/handoff 推断。ODK 交付 proposal 由 ODK 自身流程处理。",
       "assertions": [
         {
           "text": "proposals/05-proposal-<slug>.md",
@@ -275,28 +275,93 @@
     },
     {
       "id": 16,
-      "name": "proposal-metadata-table-not-frontmatter",
-      "prompt": "请基于 reference/proposal.md 生成一个 proposals/05-proposal-xxx.md 文件，并说明 metadata 的处理方式。",
-      "expected_output": "proposal 文件必须按模板 H1/H2 正文结构生成，不生成 YAML frontmatter；proposal 末尾 §12 附录填写 feature_id、status、gate_a、仓。仓必须是带组织名的规范仓名：优先从 repo manifest project name 归一化，OpenSourceCenter_CR/openharmony/arkui_ace_engine 取 openharmony/arkui_ace_engine；无 manifest 时从 git remote origin 解析 owner/repo，例如 https://gitcode.com/openharmony/arkui_ace_engine.git 取 openharmony/arkui_ace_engine；不得只写 arkui_ace_engine。不得写入 target_release、rr_id、issue、author、date；这些以 04-feature.md 为唯一事实源。status 为 GA-Approved 时 gate_a 必须非空。",
+      "name": "proposal-appendix-not-frontmatter",
+      "prompt": "04-feature.md frontmatter feature_id=FEAT-12345。当前仓 repo manifest project name 为 OpenSourceCenter_CR/openharmony/arkui_ace_engine。请基于 reference/proposal.md 生成 proposals/05-proposal-arkui-button-state-feedback.md，并填写 §12 附录。",
+      "expected_output": "必须生成完整 proposal 正文，不得只复述规则或原样输出模板；文件不得包含 YAML frontmatter。§12 附录必须填写实际表格行：`| feature_id | FEAT-12345 |`、`| status | Draft |`、`| gate_a |  |`、`| 仓 | openharmony/arkui_ace_engine |`。不得保留 `{FEAT-NNNNN...}`、`{规范仓名...}` 等占位符，不得写 `OpenSourceCenter_CR/openharmony/arkui_ace_engine` 或仅写 `arkui_ace_engine`；不得写入 target_release、rr_id、issue、author、date。",
       "assertions": [
         {
           "text": "不生成 YAML frontmatter",
           "type": "contains"
         },
         {
-          "text": "§12",
+          "text": "| feature_id | FEAT-12345 |",
           "type": "contains"
         },
         {
-          "text": "feature_id、status、gate_a、仓",
+          "text": "| 仓 | openharmony/arkui_ace_engine |",
           "type": "contains"
         },
         {
-          "text": "openharmony/arkui_ace_engine",
+          "text": "错误仓字段",
+          "type": "not_contains",
+          "tokens": [
+            "| 仓 | OpenSourceCenter_CR/openharmony/arkui_ace_engine |",
+            "| 仓 | arkui_ace_engine |",
+            "| 仓 | {规范仓名，如 openharmony/arkui_ace_engine 或 openharmony-tpc/oh-chromium} |"
+          ]
+        },
+        {
+          "text": "proposal metadata fields",
+          "type": "not_contains",
+          "tokens": [
+            "target_release:",
+            "| target_release |",
+            "rr_id:",
+            "| rr_id |",
+            "issue:",
+            "| issue |",
+            "author:",
+            "| author |",
+            "date:",
+            "| date |"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "name": "ga-approved-missing-gate-a-not-ready",
+      "prompt": "04-feature.md 已确认，proposal §12 附录中 status=GA-Approved，但 gate_a 为空；04 §5 若存在历史 GA 状态/证据列，也不得作为覆盖 §12 的事实源。请执行内建 Review Ready Gate。",
+      "expected_output": "GA 证据检查必须以 proposal §12 附录为唯一事实源。status=GA-Approved 且 gate_a 为空必须判 fail，decision_gate.gate 为 Not Ready，并在 block_reasons 中写明 GA-Approved 缺少 gate_a 证据；不得降级为 warn 或 Conditional Ready。",
+      "assertions": [
+        {
+          "text": "GA 证据",
           "type": "contains"
         },
         {
-          "text": "不得写入 target_release、rr_id、issue、author、date",
+          "text": "Not Ready",
+          "type": "contains"
+        },
+        {
+          "text": "block_reasons",
+          "type": "contains"
+        },
+        {
+          "text": "gate_a",
+          "type": "contains"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "name": "draft-missing-gate-a-conditional-warning",
+      "prompt": "04-feature.md 已确认，proposal §12 附录完整，status=Draft，gate_a 为空，其他 Gate 检查均 pass。请执行内建 Review Ready Gate。",
+      "expected_output": "Draft 且 gate_a 为空时，GA 证据检查为 warn 当前评审可关闭条件项；必须记录 Owner、补证动作和关闭时点。若三字段齐全，decision_gate.gate 为 Conditional Ready；若任一字段缺失则为 Not Ready。",
+      "assertions": [
+        {
+          "text": "warn",
+          "type": "contains"
+        },
+        {
+          "text": "conditions",
+          "type": "contains"
+        },
+        {
+          "text": "Owner",
+          "type": "contains"
+        },
+        {
+          "text": "Conditional Ready",
           "type": "contains"
         }
       ]
