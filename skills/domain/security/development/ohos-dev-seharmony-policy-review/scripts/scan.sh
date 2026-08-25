@@ -29,8 +29,8 @@ echo "扫描目标: $REF_DESC"
 echo "涉及 sepolicy 文件: $(echo "$DIFF" | grep -cE '^\+\+\+ b/sepolicy/')"
 echo "新增规则行(allow/allowxperm/neverallow): $(echo "$DIFF" | grep -cE '^\+(allow|allowxperm|neverallow)[[:space:]]')"
 
-emit "S1 敏感词（非 license 行的 + 行；无输出=通过）"
-echo "$DIFF" | grep '^+' | grep -viE 'apache|license' | grep -iE 'password|passwd|secret|token|private[ _-]?key|backdoor|debug_backdoor' || true
+emit "S1 敏感词（非 license 行的 + 行；输出已用***匿名化；无输出=通过）"
+echo "$DIFF" | grep '^+' | grep -viE 'apache|license' | grep -iE 'password|passwd|secret|token|private[ _-]?key|backdoor|debug_backdoor|android|google|aosp|huawei|harmonyos' | sed -E 's/(password|passwd|secret|token|private[ _-]?key|backdoor|debug_backdoor|android|google|aosp|huawei|harmonyos)/***/Ig' || true
 
 emit "S2-A 向 sepolicy/base 新增策略（含 attributes；修改既有行可豁免）"
 echo "$DIFF" | grep -E '^\+\+\+ b/sepolicy/base/' || true

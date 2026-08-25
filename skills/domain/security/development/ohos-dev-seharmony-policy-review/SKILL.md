@@ -101,8 +101,9 @@ metadata:
 8. **NEVER debug/开发者模式权限未用 `debug_only`/`developer_only` 隔离**（S9/S10）— 商用 release 构建不应存在调试通道，未隔离会在 release 中留后门。实际案例：某调试服务的 `allow xxx_service debug_socket:sock_file { create };` 未用 `debug_only` 包裹，release 版本仍可连接调试端口，形成生产环境后门。
 
 ### S1 — 策略、注释不出现敏感词
-- **检测**：新增行（含注释 `#`）匹配敏感词表：口令/密码/密钥/token/secret/私钥/IP 内网地址/调试后门类词（如 `password`、`passwd`、`secret`、`token`、`private key`、`backdoor`、`debug_backdoor`、疑似内网 IP `10./172.16-31./192.168.` 出现在非 license 行）。
+- **检测**：新增行（含注释 `#`）匹配敏感词表：口令/密码/密钥/token/secret/私钥/IP 内网地址/调试后门类词（如 `password`、`passwd`、`secret`、`token`、`private key`、`backdoor`、`debug_backdoor`、疑似内网 IP `10./172.16-31./192.168.` 出现在非 license 行），以及厂商/竞品/平台品牌类词（`android`、`google`、`aosp`、`huawei`、`harmonyos` 等，不区分大小写）。
 - **违反**：任一新增行（非 license 头部）含敏感词。
+- **报告匿名化**：报告中**不得体现具体敏感词**，统一用 `***` 匿名化替代。仅标注「命中敏感词（已匿名）」及所在 `文件:行号`，不输出敏感词原文。
 
 ### S2 — 策略不新增到 sepolicy/base，应放 sepolicy/ohos_policy；同一 MR 策略宜集中同目录
 - **检测 A（base 落点）**：diff 中 `+++ b/sepolicy/base/` 路径下出现**新增**策略内容（`.te`/`file_contexts`/`attributes` 等策略文件的**纯新增行**，非修改既有行）。`attributes` 文件不豁免——新增 attribute 定义到 `base/public/attributes` 同属违规，应改为在 `ohos_policy` 对应部件目录下定义。
@@ -291,7 +292,7 @@ echo "$DIFF" | bash scripts/scan.sh -   # 从 stdin 读 diff
 
 | 编号 | 自检项 | 状态 | 位置/依据 |
 |------|--------|------|-----------|
-| S1 | 策略、注释不出现敏感词 | ✅/⚠️/❌/⏭️ | <文件:行> 或 说明 |
+| S1 | 策略、注释不出现敏感词 | ✅/⚠️/❌/⏭️ | <文件:行> 命中敏感词（已匿名 ***） |
 | S2 | 策略不放 base、同一 MR 宜集中同目录 | ... | ... |
 | S3 | 新增参数标签 parameter_attr | ... | ... |
 | S4 | neverallow 落点（type 全 public→public） | ... | ... |
