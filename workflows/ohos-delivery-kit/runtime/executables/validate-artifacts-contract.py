@@ -276,7 +276,7 @@ def _parse_not_applicable_reason(subsection_text: str) -> str:
     return match.group(1).strip() if match else ""
 
 
-def resource_gap(reporter: Reporter, archive: bool, message: str) -> None:
+def draft_warn_archive_fail(reporter: Reporter, archive: bool, message: str) -> None:
     reporter.fail(message) if archive else reporter.warn(message)
 
 
@@ -379,7 +379,7 @@ def check_performance_summary_vs_impact(
     performance_state = states.get("performance")
     expected = "是" if performance_state in {"required", "review-required"} else "否"
     if actual != expected:
-        resource_gap(
+        draft_warn_archive_fail(
             reporter,
             archive,
             "不涉及项确认「性能」must be "
@@ -513,7 +513,7 @@ def validate_resource_constraints(
     proposal = read_text(proposal_path)
     states, state_issues = parse_resource_impact_states(proposal)
     if state_issues:
-        resource_gap(
+        draft_warn_archive_fail(
             reporter,
             archive,
             "resource impact states missing or invalid: " + "; ".join(state_issues),
@@ -541,7 +541,7 @@ def validate_resource_constraints(
         if evidence.exists():
             conflicts.append(EVIDENCE_ROOT)
         if conflicts:
-            resource_gap(
+            draft_warn_archive_fail(
                 reporter,
                 archive,
                 "resource content conflicts with inactive trigger: " + ", ".join(conflicts),
@@ -560,13 +560,13 @@ def validate_resource_constraints(
         if not resource_section_has_meaningful_content(read_text(path), section):
             incomplete.append(section)
     if missing:
-        resource_gap(
+        draft_warn_archive_fail(
             reporter,
             archive,
             "resource chain active but missing sections: " + ", ".join(missing),
         )
     if incomplete:
-        resource_gap(
+        draft_warn_archive_fail(
             reporter,
             archive,
             "resource chain active but sections are empty or placeholder-only: "
@@ -916,7 +916,9 @@ def validate_dfx_constraints(change_dir: Path, reporter: Reporter, archive_mode:
         # Try legacy format
         constraint_subsection = section_text(dfx_section, "DFX 约束清单")
         if constraint_subsection:
-            reporter.warn(
+            draft_warn_archive_fail(
+                reporter,
+                archive_mode,
                 "design.md: uses legacy format with '### DFX 约束清单' — "
                 "migrate to '### DFX 故障模式分析' (9-column table)"
             )
@@ -988,16 +990,22 @@ def validate_dfx_constraints(change_dir: Path, reporter: Reporter, archive_mode:
                         "design.md: DFX 故障模式分析 不涉及（知识库无匹配命中，可归档）"
                     )
                 else:
-                    reporter.warn(
+                    draft_warn_archive_fail(
+                        reporter,
+                        archive_mode,
                         f"design.md: DFX 故障模式分析 不涉及（理由：{reason}）"
                     )
             else:
-                reporter.warn(
+                draft_warn_archive_fail(
+                    reporter,
+                    archive_mode,
                     "design.md: DFX 故障模式分析 不涉及 but missing reason annotation — "
                     "请添加理由注解（如：仓不可达、仓无 DFX 知识、知识库无命中）"
                 )
         else:
-            reporter.warn(
+            draft_warn_archive_fail(
+                reporter,
+                archive_mode,
                 "design.md: DFX 故障模式分析 has no data rows and no 不涉及 — "
                 "请填写不涉及并附理由"
             )

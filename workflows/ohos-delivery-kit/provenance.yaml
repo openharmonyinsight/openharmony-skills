@@ -5,10 +5,10 @@ id: ohos-delivery-kit
 source:
   repository: https://gitcode.com/oshunter/ohos-delivery-kit.git
   branch: dev
-  commit: 913f3f72d56f30314b2f5d37233b88fd1b9ec835
+  commit: a9fc35b395657f81e1b176fcfbcf23163dfaa959
   sourceVersion: 0.7.0
-  commitDate: 2026-08-21T20:10:14+08:00
-  importedAt: 2026-08-21
+  commitDate: 2026-08-25T17:07:25+08:00
+  importedAt: 2026-08-25
 
 license:
   declared: MIT
