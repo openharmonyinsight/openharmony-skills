@@ -154,17 +154,18 @@ metadata:
 - **检测**：新增 allow 若服务于开发者模式功能（如 `devicedebug`、`hnp`、开发者选项相关），是否包裹在 `developer_only(\`...\`)` 宏内。
 - **违反**：开发者模式权限未用 `developer_only` 隔离。
 
-### S11 — 修改 neverallow 及其他白名单需通过安全评审（含三条子项）
+### S11 — 修改 neverallow 及其他白名单需通过安全评审（含四条子项）
 - **检测**：diff 是否新增/修改 `neverallow` 语句（尤其通过 `-violator_xx` 放松），或涉及非 flex 的白名单文件。**核查豁免一致性**：
   ```bash
   # 查找 diff 中新增的 violator attribute/typeattribute，确认有对应 neverallow 看护
-  grep -n "violator_\|rgm_violater" <changed-files>
+  grep -n "violator_\|rgm_violator_\|rgm_violater_" <changed-files>
   grep -rn "neverallow.*violator_<name>" sepolicy/
   ```
   - **S11a**：每条 neverallow 语句中仅允许出现**唯一的** `-violator_xxx` 和**唯一的** `-rgm_violater_xxx`。同一 neverallow 出现多个同类豁免 → ❌。
   - **S11b**：每新增 `attribute violator_xx` / `typeattribute ... violator_xx`，需有对应的 `neverallow violater_xxx ...` 看护策略（注意该对应策略可能不在本仓库，需 ⚠️需确认）。用上述 grep 确认 diff 内或仓库内存在对应看护；若 grep 无结果，标注「对应看护策略不在本仓库，需跨仓确认」。
   - **S11c**：diff 涉及 `whitelist/` 目录下**非 flex** 的白名单文件（即 `whitelist/` 路径但不在 `whitelist/flex/` 下的 `*_whitelist.json` 或其他白名单配置文件），需通过安全评审确认白名单条目的必要性与最小化。**排除** `perm_group_whitelist.json`（该文件无需评审）。
-- **判定**：涉及修改 neverallow 或非 flex 白名单 → ⚠️需确认是否已通过安全评审；违反 S11a 唯一性 → ❌。
+  - **S11d**：新增 `attribute` / `typeattribute` 名称含 `violator` 时，命名必须以 `violator_` 或 `rgm_violator_` **开头**——`violator` 不得出现在名称中间（如 `xxx_violator_xxx` → ❌ 违反命名规范）。正确示例：`violator_xpm_exec_allow_ownerid`、`rgm_violator_foo`；错误示例：`xpm_violator_exec`、`debug_violator_hap`。
+- **判定**：涉及修改 neverallow 或非 flex 白名单 → ⚠️需确认是否已通过安全评审；违反 S11a 唯一性 → ❌；违反 S11d 命名规范 → ❌。
 
 ### S12 — 新增 sh 作为主体的权限需 DFX + 安全评审
 - **检测**：新增 `allow sh ...`（sh 为 subject）。
@@ -267,7 +268,7 @@ echo "$DIFF" | bash scripts/scan.sh -   # 从 stdin 读 diff
 | S1/S2-A/S16 | 违反即报 | — |
 | S2-B | 目录计数 | ≥2 时定性（同特性？拆分？） |
 | S3/S5/S6/S12 | 命中即 ⚠️ | 责任田/安全评审确认 |
-| S4/S11 | neverallow 行 / 非 flex 白名单 | S4 落点（type 定义位置）、S11 评审记录、S11c 白名单评审 |
+| S4/S11 | neverallow 行 / 非 flex 白名单 | S4 落点（type 定义位置）、S11 评审记录、S11c 白名单评审、S11d 命名规范 |
 | S8/S18-B/C | allow 行+路径 | 独立标签？系统/芯片组件落点？ |
 | S9/S10/S13 | 隔离宏位置 | 包裹范围是否覆盖 debug/开发者权限 |
 | S14 | ioctl+allowxperm | 二者是否配对 |
@@ -302,7 +303,7 @@ echo "$DIFF" | bash scripts/scan.sh -   # 从 stdin 读 diff
 | S8 | bin 文件独立标签 | ... | ... |
 | S9 | debug 功能 debug_only 隔离 | ... | ... |
 | S10 | 开发者模式 developer_only 隔离 | ... | ... |
-| S11 | 修改 neverallow/非flex白名单需安全评审 | ... | ... |
+| S11 | 修改 neverallow/非flex白名单需安全评审/命名规范 | ... | ... |
 | S12 | sh 主体权限需 DFX+安全评审 | ... | ... |
 | S13 | su 主体放行/客体 debug_only | ... | ... |
 | S14 | ioctl 需配套 allowxperm | ... | ... |

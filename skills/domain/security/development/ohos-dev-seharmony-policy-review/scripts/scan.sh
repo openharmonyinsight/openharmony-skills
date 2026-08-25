@@ -59,6 +59,9 @@ echo "$DIFF" | grep -nE 'debug_only\(|developer_only\(' || true
 emit "S11a 单条 neverallow 多个同类 violator 豁免（有输出=可能违反唯一性，人工核验语义）"
 echo "$DIFF" | grep '^+' | grep -E 'neverallow' | grep -E '(-[a-z0-9_]*violator_).*(-[a-z0-9_]*violator_)|(-rgm_violater_).*(-rgm_violater_)' || true
 
+emit "S11d violator 命名规范（violator 不在开头=违反；正确前缀: violator_ 或 rgm_violator_）"
+echo "$DIFF" | grep '^+' | grep -iE 'attribute|typeattribute' | grep -i 'violator' | grep -ivE 'attribute[[:space:]]+(violator_|rgm_violator_)|typeattribute[[:space:]]+[a-z0-9_.]+[[:space:]]+(violator_|rgm_violator_)' || true
+
 emit "S11c 非 flex 白名单文件修改（排除 perm_group_whitelist.json；有输出=需安全评审确认）"
 echo "$DIFF" | grep -E '^\+\+\+ b/.*whitelist/' | grep -v 'whitelist/flex/' | grep -v 'perm_group_whitelist' || true
 echo "--- 非 flex 白名单新增行 ---"
