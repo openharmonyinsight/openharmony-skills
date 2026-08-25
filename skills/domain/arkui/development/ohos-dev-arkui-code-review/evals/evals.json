@@ -85,6 +85,20 @@
         "The review notes that JsColor handles both string and number color formats (positive pattern) but doesn't handle the case where colorValue is neither string nor number (silently does nothing, which is acceptable but could log a warning).",
         "The review recognizes this as bridge layer code and applies bridge-layer checks (ArkTS property setter correctly calls ModelNG methods, parameter type matching)."
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "review 这段 ArkTS bridge 层代码，关注稳定性问题。\n\n文件路径：bridge/declarative_frontend/ng/components/plugin_adapter.ets\n\n```typescript\nabstract class PluginAdapter {\n  abstract initialize(): void;\n  abstract getName(): string;\n}\n\nclass LocalPluginAdapter extends PluginAdapter {\n  initialize(): void {\n    console.info('Local init');\n  }\n  getName(): string {\n    return 'local';\n  }\n}\n\nclass RemotePluginAdapter extends PluginAdapter {\n  initialize(): void {\n    console.info('Remote init');\n  }\n  getName(): string {\n    return 'remote';\n  }\n}\n\nfunction loadPluginFromBundle(bundleData: Object): PluginAdapter {\n  return bundleData as PluginAdapter;\n}\n\nfunction activatePlugin(adapter: PluginAdapter): void {\n  adapter.initialize();\n  let name: string = adapter.getName();\n  console.info('Plugin: ' + name);\n}\n\nfunction handleBundleEvent(bundle: Object): void {\n  let adapter: PluginAdapter = loadPluginFromBundle(bundle);\n  activatePlugin(adapter);\n}\n```",
+      "expected_output": "Flags the unsafe 'as' cast from Object to PluginAdapter in loadPluginFromBundle and the resulting unguarded abstract method calls in activatePlugin as HIGH severity. The fix must use typeof guards or a typed adapter/factory, and must NOT recommend the 'in' operator.",
+      "files": [],
+      "expectations": [
+        "The review flags loadPluginFromBundle as the root cause: bundleData as PluginAdapter is an unsafe cast from a dynamic source (Object) that bypasses the type system — the runtime object may lack initialize() or getName().",
+        "The review flags adapter.initialize() and adapter.getName() in activatePlugin as HIGH severity because the adapter value originates from an unsafe boundary and lacks a runtime guard before abstract method dispatch.",
+        "The review recommends guarding with typeof adapter.initialize === 'function' before dispatch. The review does NOT suggest using 'methodName' in adapter because 'in' is banned in ArkTS (ESY105822).",
+        "The review does NOT suggest optional-call syntax (adapter.initialize?.()) to mask the missing required method.",
+        "The review prefers a structural fix: use a strong-typed factory or adapter pattern at the entry boundary (loadPluginFromBundle) to validate the object shape once, rather than guarding at every call site.",
+        "The review does NOT flag the direct calls on LocalPluginAdapter or RemotePluginAdapter instances as needing runtime guards — those are concrete classes constructed within the type system."
+      ]
     }
   ]
 }

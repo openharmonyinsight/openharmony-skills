@@ -103,6 +103,13 @@ Not every dimension applies to every file.
 | 2 | Stability | Unchecked DynamicCast return, OnModifyDone not handling property == nullptr, constructor accessing not-yet-attached FrameNode |
 | 3 | Threading | `[this]` in PostTask/PostDelayedTask lambda, shared mutable state accessed from UI + render threads, WeakClaim missing in async callback |
 
+**Always check for TS/ArkTS files (dynamic ArkTS syntax):**
+
+| Priority | Dimension | ACE Engine-Specific Focus |
+|----------|-----------|---------------------------|
+| 1 | Stability | Abstract method call on base-class-typed variable without runtime guard — only applicable to dynamic ArkTS |
+| 2 | Type safety | `as` cast that hides a type mismatch; `any` usage; unchecked type narrowing |
+
 **Check when relevant:**
 
 | Condition | Dimension | Why |
@@ -165,6 +172,7 @@ Fix: Change to `WeakPtr<Menu> parent_menu_;` and use `Upgrade()` before access.
 | Initializing component state in constructor instead of `OnAttachToFrameNode()` | Frame node not yet attached; crashes or wrong values | HIGH | Move initialization to `OnAttachToFrameNode()` |
 | `dynamic_cast` / `static_cast` on `RefPtr` types instead of `AceType::DynamicCast` | Bypasses ACE Engine type system; wrong pointer or leak on cross-module boundaries | HIGH | Use `AceType::DynamicCast<T>(ptr)` and check for null |
 | Throwing C++ exceptions for error flow | May be caught by unexpected handlers; ACE uses error codes and `LOGE` + return | HIGH | Return error code or use `LOGE` + early return; use `CHECK_NULL_VOID` / `CHECK_NULL_RETURN` |
+| Calling `abstract` method on base-class-typed variable without runtime guard (dynamic ArkTS only) | Runtime TypeError if concrete subclass lacks implementation | HIGH | **ArkTS (dynamic syntax)**: guard with `typeof obj.methodName === 'function'` before dispatch. |
 
 # Exceptions and Fallbacks
 
@@ -188,6 +196,7 @@ When reviewing `.ets` / `.ts` files in ACE Engine context:
 - **Type safety**: Ensure `@Component` structs use proper types, not `any` or unchecked casts
 - **Resource handling**: Verify `ResourceType` usage — raw strings should go through `$r()` or `Resource` wrapper
 - **Lifecycle**: ArkTS `aboutToAppear`/`aboutToDisappear` map to C++ Pattern lifecycle; verify alignment
+- **Abstract method dispatch (Dynamic ArkTS only)**: When calling `abstract` methods on variables typed as the base class, verify the call site has a runtime guard (`typeof obj.methodName === 'function'`). This is especially critical for object paths where the concrete subclass implementation cannot be statically guaranteed. Flag as HIGH severity. For static ArkTS, the compiler enforces implementation via ESE0190, so normal polymorphic calls need no guard.
 - For non-bridge ArkTS code (application-level), apply general TypeScript/ArkTS best practices
 
 ## Conflicting Rules
