@@ -260,6 +260,34 @@
           "type": "contains"
         },
         {
+          "text": "目标版本以 01-requirement.md 的 expected_release 为事实源",
+          "type": "contains"
+        },
+        {
+          "text": "proposal 禁写字段",
+          "type": "not_contains",
+          "tokens": [
+            "rr_id:",
+            "| rr_id |",
+            "target_release:",
+            "| target_release |",
+            "issue:",
+            "| issue |",
+            "author:",
+            "| author |",
+            "date:",
+            "| date |"
+          ]
+        },
+        {
+          "text": "错误目标版本事实源",
+          "type": "not_contains",
+          "tokens": [
+            "目标版本以 04-feature.md",
+            "目标版本以 proposal"
+          ]
+        },
+        {
           "text": "Agent Scope Guard",
           "type": "not_contains"
         },
@@ -280,7 +308,21 @@
       "expected_output": "必须生成完整 proposal 正文，不得只复述规则或原样输出模板；文件不得包含 YAML frontmatter。§12 附录必须填写实际表格行：`| feature_id | FEAT-12345 |`、`| status | Draft |`、`| gate_a |  |`、`| 仓 | openharmony/arkui_ace_engine |`。不得保留 `{FEAT-NNNNN...}`、`{规范仓名...}` 等占位符，不得写 `OpenSourceCenter_CR/openharmony/arkui_ace_engine` 或仅写 `arkui_ace_engine`；不得写入 target_release、rr_id、issue、author、date。",
       "assertions": [
         {
-          "text": "不生成 YAML frontmatter",
+          "text": "完整 proposal 以一级标题开始",
+          "type": "regex",
+          "pattern": "\\A#\\s+\\S+"
+        },
+        {
+          "text": "文件开头无 YAML frontmatter",
+          "type": "regex",
+          "pattern": "\\A(?!\\s*---)"
+        },
+        {
+          "text": "## 1. 背景与问题",
+          "type": "contains"
+        },
+        {
+          "text": "## 12. 附录",
           "type": "contains"
         },
         {
@@ -288,8 +330,24 @@
           "type": "contains"
         },
         {
+          "text": "| status | Draft |",
+          "type": "contains"
+        },
+        {
+          "text": "| gate_a |  |",
+          "type": "contains"
+        },
+        {
           "text": "| 仓 | openharmony/arkui_ace_engine |",
           "type": "contains"
+        },
+        {
+          "text": "proposal 占位符",
+          "type": "not_contains",
+          "tokens": [
+            "{FEAT-NNNNN",
+            "{规范仓名"
+          ]
         },
         {
           "text": "错误仓字段",
@@ -325,44 +383,53 @@
       "expected_output": "GA 证据检查必须以 proposal §12 附录为唯一事实源。status=GA-Approved 且 gate_a 为空必须判 fail，decision_gate.gate 为 Not Ready，并在 block_reasons 中写明 GA-Approved 缺少 gate_a 证据；不得降级为 warn 或 Conditional Ready。",
       "assertions": [
         {
-          "text": "GA 证据",
+          "text": "| GA 证据 | fail |",
           "type": "contains"
         },
         {
-          "text": "Not Ready",
+          "text": "gate: \"Not Ready\"",
           "type": "contains"
         },
         {
-          "text": "block_reasons",
-          "type": "contains"
+          "text": "block_reasons 非空且包含缺失证据原因",
+          "type": "regex",
+          "pattern": "block_reasons:\\s*\\n\\s*-\\s*.+gate_a"
         },
         {
-          "text": "gate_a",
-          "type": "contains"
+          "text": "禁止相反 Gate 结论",
+          "type": "not_contains",
+          "tokens": [
+            "gate: \"Conditional Ready\"",
+            "| GA 证据 | warn |"
+          ]
         }
       ]
     },
     {
       "id": 21,
       "name": "draft-missing-gate-a-conditional-warning",
-      "prompt": "04-feature.md 已确认，proposal §12 附录完整，status=Draft，gate_a 为空，其他 Gate 检查均 pass。请执行内建 Review Ready Gate。",
+      "prompt": "04-feature.md 已确认，proposal §12 附录完整，status=Draft，gate_a 为空，其他 Gate 检查均 pass。已确认条件项输入：Owner=proposal-owner@example.com，动作=补齐 gate_a 证据，时点=GA 评审前。请执行内建 Review Ready Gate。",
       "expected_output": "Draft 且 gate_a 为空时，GA 证据检查为 warn 当前评审可关闭条件项；必须记录 Owner、补证动作和关闭时点。若三字段齐全，decision_gate.gate 为 Conditional Ready；若任一字段缺失则为 Not Ready。",
       "assertions": [
         {
-          "text": "warn",
+          "text": "| GA 证据 | warn |",
           "type": "contains"
         },
         {
-          "text": "conditions",
+          "text": "gate: \"Conditional Ready\"",
           "type": "contains"
         },
         {
-          "text": "Owner",
-          "type": "contains"
+          "text": "conditions 包含完整 owner/action/due",
+          "type": "regex",
+          "pattern": "conditions:\\s*\\n(?:\\s+.*\\n)*?\\s+owner:\\s*proposal-owner@example\\.com\\s*\\n\\s+action:\\s*补齐 gate_a 证据\\s*\\n\\s+due:\\s*GA 评审前"
         },
         {
-          "text": "Conditional Ready",
-          "type": "contains"
+          "text": "禁止相反 Gate 结论",
+          "type": "not_contains",
+          "tokens": [
+            "gate: \"Not Ready\""
+          ]
         }
       ]
     },

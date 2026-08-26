@@ -176,7 +176,7 @@ decision_gate:
 
 ### ODK 边界
 
-`proposals/05-proposal-<slug>.md` 是 requirements 阶段的评审输入，不是 ODK 最终交付归档文件。本 skill 不在 proposal 文件中生成 YAML frontmatter；proposal 末尾 §12 附录承载 feature_id、status、gate_a、仓，RR 单号以 `04-feature.md` 为事实源；目标版本以 `01-requirement.md` 的 `expected_release` 为事实源，不写入 requirements proposal；`target_release/issue/author/date` 不属于 requirements proposal 契约。不推断 ODK `change-id`、不生成 `.codespec` 目录、也不补充 ODK 模板专有章节。
+`proposals/05-proposal-<slug>.md` 是 requirements 阶段的评审输入，不是 ODK 最终交付归档文件。本 skill 不在 proposal 文件中生成 YAML frontmatter；proposal 末尾 §12 附录承载 feature_id、status、gate_a、仓；rr_id 仅保留在 `01-requirement.md` 和 `04-feature.md`，不属于 requirements proposal 契约；目标版本以 `01-requirement.md` 的 `expected_release` 为事实源，不写入 requirements proposal；`target_release/issue/author/date` 不属于 requirements proposal 契约。不推断 ODK `change-id`、不生成 `.codespec` 目录、也不补充 ODK 模板专有章节。
 
 ### GA 证据规则
 
