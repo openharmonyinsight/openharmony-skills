@@ -38,7 +38,7 @@ profiles:
 ## 目录结构
 
 ```
-core/profiles/
+profiles/                         # 当前资源根下；安装态为 runtime/assets/profiles/
 ├── README.md
 ├── arkui.yaml
 ├── arkgraphic.yaml

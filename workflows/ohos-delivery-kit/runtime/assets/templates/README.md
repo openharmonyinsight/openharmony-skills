@@ -11,10 +11,10 @@
 
 | 模板 | 用途 | 必需章节数 |
 |------|------|-----------|
-| `proposal.md` | 需求提案 | 8 章节 |
-| `design.md` | 架构设计 | 10 必需章节 + 2 条件章节（代码事实基线 / 状态归属与不变量） |
-| `spec.md` | 功能规格 | 9 章节（含验证映射；代码映射在 execution-plan） |
-| `execution-plan.md` | 执行计划 | 10 章节 + per-Task 详情 + Review Gates + 代码范围映射 |
+| `proposal.md` | 需求提案 | 11 必需章节（含资源开销审视、API 设计属性）+ 1 条件章节 |
+| `design.md` | 架构设计 | 12 必需章节（含 DFX 设计）+ 6 条件章节（含资源设计等） |
+| `spec.md` | 功能规格 | 10 必需章节（含 API 规格定义）+ 1 条件章节（资源验收契约） |
+| `execution-plan.md` | 执行计划 | 10 必需章节 + 1 条件章节（资源验证矩阵）+ per-Task 详情 + Review Gates + 代码范围映射 |
 | `spec-for-validation.md` | 验证规格（旁路） | 7 章节（从 spec/design 派生，不参与主流程） |
 
 ## review/ — 人工审核

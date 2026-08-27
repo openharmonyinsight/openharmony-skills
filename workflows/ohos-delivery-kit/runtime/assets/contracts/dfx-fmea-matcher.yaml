@@ -1,0 +1,63 @@
+version: 2
+kind: "odk-dfx-fmea-matcher"
+description: "DFX FMEA knowledge discovery, matching, provenance, and output contract."
+
+knowledge_source:
+  relative_path: "docs/dfx/fmea.yaml"
+  authority: "repository knowledge only"
+  record_identity: "record_id"
+
+discovery:
+  order:
+    - "workspace checkout"
+    - "developer supplied local path"
+    - "confirmed remote repository"
+  remote_access_requires_user_confirmation: true
+  network_failure_status: "UNREACHABLE"
+
+execution:
+  subagent: "optional"
+  fallback: "current agent sequential scan"
+  semantic_match_inputs:
+    - "modules_and_symbols"
+    - "business_process_tags"
+  max_hits: 20
+
+output:
+  hit_fields:
+    - "matched_object"
+    - "fault_mode"
+    - "fault_effect"
+    - "fault_cause"
+    - "severity"
+    - "recovery"
+    - "key_log"
+    - "big_data_event"
+    - "source_ref"
+  source_ref_format: "<repo>@<commit>:docs/dfx/fmea.yaml#<record-id>"
+  repo_status:
+    - "READ"
+    - "UNREACHABLE"
+    - "NO_DFX_KNOWLEDGE"
+  no_hit_closure_fields:
+    - "repository"
+    - "status"
+    - "reason"
+  statistics:
+    - "total_scanned"
+    - "hit_count"
+
+matching_rules:
+  - "Interpret trigger conditions semantically; do not use string equality alone."
+  - "matched_object is the changed module, class, or API that performs the triggering behavior."
+  - "Do not force a match when the relationship cannot be established."
+  - "Copy FMEA fields from the source record; do not invent repository knowledge."
+  - "When hits exceed max_hits, return counts grouped by repository and dimension before requesting a narrower selection."
+
+no_hit_rules:
+  - "UNREACHABLE is a retrieval failure and must not be treated as a business-level no-match."
+  - "NO_DFX_KNOWLEDGE means the repository was readable but the knowledge file did not exist."
+  - "A no-match conclusion requires every involved repository to have a resolved status and a recorded reason."
+  - "The declared involved repository set and per-repository closure rows must match exactly."
+  - "The module impact repository column is the canonical involved repository set for Archive validation."
+  - "Archive rejects UNREACHABLE, unknown, missing, duplicate, or unanalyzed repository states."

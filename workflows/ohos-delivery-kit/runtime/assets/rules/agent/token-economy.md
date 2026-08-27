@@ -4,7 +4,7 @@ ODK 桥接 subagent、跨阶段传证据、扇出检索时遵守的上下文经�
 
 适用范围：spawn 子 Agent、跨阶段/跨产物传证据、并行检索扇出的所有场景。
 
-> 本文件为仓库内参考规范（`core/rules/` 不随插件分发）。运行时生效副本在 `using-odk` 的 Context Loading（随插件分发、运行时加载）；运行时 skill 不直接引用本文件。
+> 本文件在源仓位于 `core/rules/`，发布后位于 `runtime/assets/rules/`。`using-odk` 的 Context Loading 按需加载运行时副本；其他 skill 不直接引用源仓路径。
 
 ## 约束
 

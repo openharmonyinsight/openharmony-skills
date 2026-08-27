@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate one ODK change directory against core/contracts/artifacts.yaml.
+"""Validate one ODK change directory against the active artifacts contract.
 
 This is stricter than validate-artifacts-structural.sh:
 - required artifacts must exist
@@ -13,7 +13,9 @@ It intentionally avoids external dependencies.
 
 from __future__ import annotations
 
+import os
 import re
+import subprocess
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
@@ -30,7 +32,7 @@ _SOURCE_LIB = SCRIPT_DIR.parent / "scripts" / "lib"
 _PUBLISHED_LIB = SCRIPT_DIR / "lib"
 sys.path.insert(0, str(_SOURCE_LIB if _SOURCE_LIB.is_dir() else _PUBLISHED_LIB))
 
-from odk_yaml import parse_contract_artifacts  # noqa: E402
+from odk_yaml import parse_contract_artifacts, parse_resource_contract  # noqa: E402
 
 
 AC_RE = re.compile(r"\bAC-\d+(?:\.\d+)?\b")
@@ -55,7 +57,7 @@ ARCHIVE_MARKER_RE = re.compile(
     re.IGNORECASE,
 )
 BRACKET_PLACEHOLDER_RE = re.compile(
-    r"\[(?:[^\]\n]*(?:引用|标题|角色|功能|价值|条件|填写|描述|说明|编号|名称|路径|模块|文件|命令|证据|结果|待|TBD|TODO)[^\]\n]*)\]",
+    r"\[(?:[^\]\n]*(?:引用|标题|角色|功能|价值|条件|填写|描述|说明|编号|名称|路径|模块|文件|命令|证据|结果|对象|模式|策略|事件|待|TBD|TODO)[^\]\n]*)\]",
     re.IGNORECASE,
 )
 ARCHIVE_READY_CLAIM_RE = re.compile(r"\b(?:PASS|Ready)\b|通过|可归档|归档就绪", re.IGNORECASE)
@@ -64,6 +66,47 @@ LEGACY_TARGET_RELEASE_RE = re.compile(
     re.IGNORECASE,
 )
 TARGET_RELEASE_RE = re.compile(r"^\d+\.\d+(?:-(?:Release|Beta|Alpha|Dev))?$", re.IGNORECASE)
+_NOT_APPLICABLE_RE = re.compile(r"不涉及")
+_NOT_APPLICABLE_REASON_RE = re.compile(r"不涉及理由[：:]\s*(.+)", re.MULTILINE)
+_DFX_INVOLVED_REPOS_RE = re.compile(r"涉及仓库[：:]\s*(.+)", re.MULTILINE)
+_DFX_REPO_NAME_RE = re.compile(r"[A-Za-z0-9_./-]+")
+_DFX_REPO_STATUS_COLUMNS = ["仓库", "状态", "理由"]
+_DFX_REPO_STATUSES = {"READ", "UNREACHABLE", "NO_DFX_KNOWLEDGE"}
+_DFX_READ_NO_HIT_REASONS = {"知识库无命中", "知识库无匹配命中"}
+DFX_SOURCE_REF_RE = re.compile(
+    r"^[^@\s|]+@[0-9a-fA-F]{7,40}:docs/dfx/fmea\.yaml#[^#\s|]+$"
+)
+
+
+RESOURCE_CONTRACT = parse_resource_contract(str(CONTRACT_PATH))
+
+
+def contract_scalar(key: str) -> str:
+    value = RESOURCE_CONTRACT.get(key)
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{CONTRACT_PATH}: resource_contract.{key} must be a scalar")
+    return value
+
+
+def contract_list(key: str) -> list[str]:
+    value = RESOURCE_CONTRACT.get(key)
+    if not isinstance(value, list) or not value:
+        raise ValueError(f"{CONTRACT_PATH}: resource_contract.{key} must be a non-empty list")
+    return value
+
+
+RESOURCE_SECTIONS = dict(item.split("=", 1) for item in contract_list("conditional_sections"))
+IMPACT_STATES = set(contract_list("impact_states"))
+ACTIVE_WHEN_STATES = set(contract_list("active_when_states"))
+DIMENSION_LABELS = dict(item.split("=", 1) for item in contract_list("dimension_labels"))
+LABEL_TO_DIMENSION: dict[str, str] = {}
+for dim_key, dim_label in DIMENSION_LABELS.items():
+    LABEL_TO_DIMENSION[dim_label] = dim_key
+    LABEL_TO_DIMENSION[dim_key] = dim_key
+PROPOSAL_SECTION = contract_scalar("proposal_section")
+PROPOSAL_COLUMNS = contract_list("proposal_columns")
+EVIDENCE_ROOT = contract_scalar("evidence_root")
+
 
 
 class Reporter:
@@ -192,6 +235,23 @@ def markdown_tables(text: str) -> list[list[dict[str, str]]]:
     return tables
 
 
+def table_has_columns(text: str, required_columns: list[str]) -> bool:
+    """Check if text contains a markdown table with the required column names (even if no data rows)."""
+    for table in markdown_tables(text):
+        if table:
+            columns = set(table[0].keys())
+            if all(column in columns for column in required_columns):
+                return True
+        else:
+            # Header-only table: parse the header line directly
+            for line in text.splitlines():
+                if line.lstrip().startswith("|"):
+                    header = split_table_row(line)
+                    if all(col in header for col in required_columns):
+                        return True
+    return False
+
+
 def table_with_columns(text: str, required_columns: list[str]) -> list[dict[str, str]]:
     for table in markdown_tables(text):
         if not table:
@@ -204,6 +264,469 @@ def table_with_columns(text: str, required_columns: list[str]) -> list[dict[str,
 
 def meaningful(value: str) -> bool:
     return bool(value.strip()) and not PLACEHOLDER_RE.match(value)
+
+
+def _parse_not_applicable(subsection_text: str) -> bool:
+    """Check if the subsection contains '不涉及' text."""
+    return bool(_NOT_APPLICABLE_RE.search(subsection_text))
+
+
+def _parse_not_applicable_reason(subsection_text: str) -> str:
+    """Parse the reason annotation from a 不涉及 DFX section.
+
+    Looks for a block-quote line like: > 不涉及理由：仓不可达（arkui_ace_engine）
+    Also matches non-block-quote format: 不涉及理由：仓无 DFX 知识
+    """
+    match = _NOT_APPLICABLE_REASON_RE.search(subsection_text)
+    return match.group(1).strip() if match else ""
+
+
+def _visible_markdown(text: str) -> str:
+    """Remove template guidance that must not count as user-supplied evidence."""
+    return re.sub(r"<!--[\s\S]*?-->", "", text)
+
+
+def _parse_dfx_involved_repos(subsection_text: str) -> list[str]:
+    """Parse the canonical repository set from ``> 涉及仓库：repo-a, repo-b``."""
+    match = _DFX_INVOLVED_REPOS_RE.search(subsection_text)
+    if not match:
+        return []
+    return [
+        item.strip().strip("`")
+        for item in re.split(r"[,，、;；+]", match.group(1))
+        if item.strip().strip("`")
+    ]
+
+
+def _parse_module_impact_repos(design_text: str) -> list[str]:
+    """Read the canonical involved repository set from ``## 模块影响``."""
+    module_section = section_text(design_text, "模块影响")
+    rows = table_with_columns(module_section, ["仓库"])
+    repos: list[str] = []
+    for row in rows:
+        for item in re.split(r"[,，、;；+]", row.get("仓库", "")):
+            repo = item.strip().strip("`")
+            if repo and repo not in repos:
+                repos.append(repo)
+    return repos
+
+
+def validate_dfx_no_hit_closure(
+    subsection_text: str,
+    module_repos: list[str],
+    reporter: Reporter,
+    archive_mode: bool,
+) -> bool:
+    """Validate per-repository closure for a DFX ``不涉及`` conclusion.
+
+    Returns True when the structured contract was handled. Draft keeps legacy
+    free-text reasons as a compatibility path; Archive requires this contract.
+    """
+    involved_repos = _parse_dfx_involved_repos(subsection_text)
+    status_rows = table_with_columns(subsection_text, _DFX_REPO_STATUS_COLUMNS)
+    structured_present = bool(involved_repos or status_rows)
+    if not structured_present and not archive_mode:
+        return False
+
+    issues: list[str] = []
+    if not involved_repos:
+        issues.append("missing 涉及仓库 declaration")
+    if not module_repos:
+        issues.append("模块影响 table has no repositories")
+    if not status_rows:
+        issues.append("missing 仓库/状态/理由 closure table")
+
+    invalid_repo_names = [repo for repo in involved_repos if not _DFX_REPO_NAME_RE.fullmatch(repo)]
+    if invalid_repo_names:
+        issues.append("invalid involved repository names: " + ", ".join(invalid_repo_names))
+    duplicate_involved = sorted({repo for repo in involved_repos if involved_repos.count(repo) > 1})
+    if duplicate_involved:
+        issues.append("duplicate involved repositories: " + ", ".join(duplicate_involved))
+
+    row_repos: list[str] = []
+    for index, row in enumerate(status_rows, start=1):
+        repo = row.get("仓库", "").strip().strip("`")
+        status = row.get("状态", "").strip()
+        reason = row.get("理由", "").strip()
+        label = repo or f"row {index}"
+        if not meaningful(repo) or not _DFX_REPO_NAME_RE.fullmatch(repo):
+            issues.append(f"{label}: invalid or missing 仓库")
+            continue
+        row_repos.append(repo)
+        if status not in _DFX_REPO_STATUSES:
+            issues.append(f"{repo}: unknown 状态 '{status}'")
+        elif status == "UNREACHABLE":
+            issues.append(f"{repo}: UNREACHABLE cannot close Archive")
+        elif status == "READ" and reason not in _DFX_READ_NO_HIT_REASONS:
+            issues.append(f"{repo}: READ no-hit closure has non-canonical reason '{reason}'")
+        elif status == "NO_DFX_KNOWLEDGE" and reason != "仓无 DFX 知识":
+            issues.append(f"{repo}: NO_DFX_KNOWLEDGE requires a 仓无 DFX 知识 reason")
+        if not meaningful(reason):
+            issues.append(f"{repo}: missing 理由")
+
+    duplicate_rows = sorted({repo for repo in row_repos if row_repos.count(repo) > 1})
+    if duplicate_rows:
+        issues.append("duplicate repository closure rows: " + ", ".join(duplicate_rows))
+
+    declared = set(involved_repos)
+    canonical = set(module_repos)
+    undeclared = sorted(canonical - declared)
+    wrongly_declared = sorted(declared - canonical)
+    if undeclared:
+        issues.append("模块影响 repositories missing from 涉及仓库: " + ", ".join(undeclared))
+    if wrongly_declared:
+        issues.append("涉及仓库 entries absent from 模块影响: " + ", ".join(wrongly_declared))
+
+    expected = canonical or declared
+    actual = set(row_repos)
+    missing = sorted(expected - actual)
+    extra = sorted(actual - expected)
+    if missing:
+        issues.append("repositories missing closure: " + ", ".join(missing))
+    if extra:
+        issues.append("closure rows not declared in 涉及仓库: " + ", ".join(extra))
+
+    if issues:
+        draft_warn_archive_fail(
+            reporter,
+            archive_mode,
+            "design.md: incomplete DFX per-repository no-hit closure: " + "; ".join(issues),
+        )
+    else:
+        reporter.pass_("DFX no-hit conclusion has complete per-repository closure")
+    return True
+
+
+def draft_warn_archive_fail(reporter: Reporter, archive: bool, message: str) -> None:
+    reporter.fail(message) if archive else reporter.warn(message)
+
+
+def resource_decision_fields(value: str) -> dict[str, str]:
+    """Parse ``确认人=...; 理由=...; 范围=...`` from one table cell."""
+
+    fields: dict[str, str] = {}
+    for part in re.split(r"[;；]", value):
+        match = re.fullmatch(r"\s*(确认人|理由|范围)\s*[:=：]\s*(.+?)\s*", part)
+        if match and meaningful(match.group(2)):
+            fields[match.group(1)] = match.group(2).strip()
+    return fields
+
+
+def resource_decisions(value: str) -> list[dict[str, str]]:
+    chunks = re.split(r"\s*<br\s*/?>\s*|\n+", value, flags=re.IGNORECASE)
+    return [fields for chunk in chunks if (fields := resource_decision_fields(chunk))]
+
+
+def complete_resource_decision(decision: dict[str, str]) -> bool:
+    return set(decision) == {"确认人", "理由", "范围"}
+
+
+def parse_resource_impact_states(proposal: str) -> tuple[dict[str, str], list[str]]:
+    """Return (dimension_key -> state, issues) from proposal 资源开销审视."""
+
+    section = section_text(proposal, PROPOSAL_SECTION)
+    rows = table_with_columns(section, PROPOSAL_COLUMNS)
+    issues: list[str] = []
+    states: dict[str, str] = {}
+    if not rows:
+        return {}, [f"proposal section {PROPOSAL_SECTION} missing or incomplete impact table"]
+
+    for row in rows:
+        label = row.get("维度", "").strip()
+        dim_key = LABEL_TO_DIMENSION.get(label)
+        if dim_key is None:
+            issues.append(f"unknown resource impact dimension: {label or '<empty>'}")
+            continue
+        if dim_key in states:
+            issues.append(f"duplicate resource impact dimension: {label}")
+            continue
+        state = row.get("状态", "").strip()
+        if state not in IMPACT_STATES:
+            issues.append(f"{label} has invalid impact state: {state or '<empty>'}")
+            continue
+        states[dim_key] = state
+        if not meaningful(row.get("信号/依据", "")):
+            issues.append(f"{label} {state} requires 信号/依据")
+        decisions = resource_decisions(row.get("确认人/理由/范围", ""))
+        if state in {"not-applicable", "waived"} and (
+            not decisions or not all(complete_resource_decision(item) for item in decisions)
+        ):
+            issues.append(f"{label} {state} requires 确认人/理由/范围")
+
+    expected = set(DIMENSION_LABELS.keys())
+    missing = expected - set(states)
+    if missing:
+        issues.append(
+            "resource impact table missing dimensions: "
+            + ", ".join(DIMENSION_LABELS[key] for key in sorted(missing))
+        )
+    return states, issues
+
+
+def parse_eight_dim_performance_involvement(proposal: str) -> str | None:
+    """Return 是/否 from 不涉及项确认「性能」row, or None if the row is absent."""
+
+    section = section_text(proposal, "不涉及项确认")
+    if not section:
+        return None
+    rows = table_with_columns(section, ["维度", "是否涉及"])
+    for row in rows:
+        if row.get("维度", "").strip() != "性能":
+            continue
+        cell = row.get("是否涉及", "").strip()
+        if not cell:
+            return None
+        first = cell.split()[0] if cell.split() else cell
+        if first.startswith("是"):
+            return "是"
+        if first.startswith("否"):
+            return "否"
+        return first
+    return None
+
+
+def check_performance_summary_vs_impact(
+    proposal: str,
+    states: dict[str, str],
+    reporter: Reporter,
+    *,
+    archive: bool,
+) -> None:
+    """Cross-check 8-dim 性能 against the performance resource state only."""
+
+    actual = parse_eight_dim_performance_involvement(proposal)
+    if actual is None:
+        return
+    performance_state = states.get("performance")
+    expected = "是" if performance_state in {"required", "review-required"} else "否"
+    if actual != expected:
+        draft_warn_archive_fail(
+            reporter,
+            archive,
+            "不涉及项确认「性能」must be "
+            f"{expected} when 性能 state is {performance_state} (got {actual})",
+        )
+
+
+def resource_section_has_meaningful_content(document: str, section: str) -> bool:
+    """Accept subsystem-owned schemas while rejecting empty/placeholder sections."""
+
+    body = section_text(document, section)
+    if not body.strip():
+        return False
+    for table in markdown_tables(body):
+        for row in table:
+            values = list(row.values())
+            if values and all(meaningful(value) for value in values):
+                return True
+    prose = re.sub(r"<!--[\s\S]*?-->", "", body)
+    for line in prose.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith(("|", "#", ">")):
+            continue
+        if meaningful(stripped):
+            return True
+    return False
+
+
+AGENTS_RESOURCE_GATE_KEY = "odk_resource_gate"
+
+
+def discover_resource_gate(repository: Path) -> Path | None:
+    """Return AGENTS.md-declared resource gate path, or None if undeclared."""
+
+    agents = repository / "AGENTS.md"
+    if not agents.is_file():
+        return None
+    try:
+        text = agents.read_text(encoding="utf-8")
+    except OSError:
+        return None
+    pattern = re.compile(
+        rf"^\s*{AGENTS_RESOURCE_GATE_KEY}\s*[:=]\s*([^\s#]+)\s*(?:#.*)?$",
+        re.MULTILINE,
+    )
+    matches = pattern.findall(text)
+    if not matches:
+        return None
+    if len(matches) > 1:
+        raise ValueError(f"{agents}: duplicate {AGENTS_RESOURCE_GATE_KEY} declarations")
+    raw = matches[0].strip().strip("`'\"")
+    relative = Path(raw)
+    if relative.is_absolute() or ".." in relative.parts or not relative.parts:
+        raise ValueError(f"{agents}: {AGENTS_RESOURCE_GATE_KEY} must be a repo-relative path")
+    candidate = (repository / relative).resolve()
+    try:
+        candidate.relative_to(repository.resolve())
+    except ValueError as exc:
+        raise ValueError(
+            f"{agents}: {AGENTS_RESOURCE_GATE_KEY} escapes the workspace"
+        ) from exc
+    return candidate
+
+
+def find_repository_root(start: Path) -> Path | None:
+    current = start.resolve()
+    for candidate in (current, *current.parents):
+        if (candidate / ".git").exists():
+            return candidate
+    return None
+
+
+RESOURCE_GATE_TIMEOUT_SEC = 300
+
+
+def run_resource_gate(
+    repository: Path,
+    gate: Path,
+    change_dir: Path,
+    *,
+    timeout_sec: int = RESOURCE_GATE_TIMEOUT_SEC,
+) -> tuple[int, str]:
+    """Execute subsystem archive gate; return (exit_code, combined_output).
+
+    Always invoked as: ``<gate> <change-dir> --archive`` with cwd = repository root.
+    ``.py`` gates run via the current Python interpreter; non-executable scripts via bash.
+    Times out after ``timeout_sec`` (default 300s) and returns exit code 124.
+    """
+
+    cmd = [str(gate), str(change_dir), "--archive"]
+    if gate.suffix == ".py":
+        cmd = [sys.executable, *cmd]
+    elif not os.access(gate, os.X_OK):
+        cmd = ["bash", *cmd]
+    try:
+        result = subprocess.run(
+            cmd,
+            cwd=str(repository),
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=timeout_sec,
+        )
+    except subprocess.TimeoutExpired as exc:
+        partial = ""
+        if exc.stdout:
+            partial += exc.stdout if isinstance(exc.stdout, str) else exc.stdout.decode()
+        if exc.stderr:
+            partial += exc.stderr if isinstance(exc.stderr, str) else exc.stderr.decode()
+        msg = (
+            f"resource gate timed out after {timeout_sec}s: "
+            f"{gate.name} (raise timeout or fix hung gate)\n"
+        )
+        return 124, partial + msg
+    output = (result.stdout or "") + (result.stderr or "")
+    return result.returncode, output
+
+
+def validate_resource_constraints(
+    change_dir: Path,
+    reporter: Reporter,
+    *,
+    archive: bool,
+) -> None:
+    """Thin resource checks: impact states, section presence, external archive gate."""
+
+    proposal_path = change_dir / "proposal.md"
+    if not proposal_path.is_file():
+        return
+
+    proposal = read_text(proposal_path)
+    states, state_issues = parse_resource_impact_states(proposal)
+    if state_issues:
+        draft_warn_archive_fail(
+            reporter,
+            archive,
+            "resource impact states missing or invalid: " + "; ".join(state_issues),
+        )
+        return
+
+    check_performance_summary_vs_impact(proposal, states, reporter, archive=archive)
+
+    if archive and any(state == "review-required" for state in states.values()):
+        reporter.fail(
+            "resource archive blocked: review-required dimensions must resolve to "
+            "required/waived/not-applicable with rationale"
+        )
+        return
+
+    active = any(state in ACTIVE_WHEN_STATES for state in states.values())
+
+    if not active:
+        conflicts: list[str] = []
+        for file_name, section in RESOURCE_SECTIONS.items():
+            path = change_dir / file_name
+            if path.is_file() and section in headings(read_text(path)):
+                conflicts.append(file_name)
+        evidence = change_dir / EVIDENCE_ROOT
+        if evidence.exists():
+            conflicts.append(EVIDENCE_ROOT)
+        if conflicts:
+            draft_warn_archive_fail(
+                reporter,
+                archive,
+                "resource content conflicts with inactive trigger: " + ", ".join(conflicts),
+            )
+        else:
+            reporter.pass_("resource constraints not triggered")
+        return
+
+    missing: list[str] = []
+    incomplete: list[str] = []
+    for file_name, section in RESOURCE_SECTIONS.items():
+        path = change_dir / file_name
+        if not path.is_file() or section not in headings(read_text(path)):
+            missing.append(section)
+            continue
+        if not resource_section_has_meaningful_content(read_text(path), section):
+            incomplete.append(section)
+    if missing:
+        draft_warn_archive_fail(
+            reporter,
+            archive,
+            "resource chain active but missing sections: " + ", ".join(missing),
+        )
+    if incomplete:
+        draft_warn_archive_fail(
+            reporter,
+            archive,
+            "resource chain active but sections are empty or placeholder-only: "
+            + ", ".join(incomplete),
+        )
+    if not missing and not incomplete:
+        reporter.pass_("resource conditional sections contain meaningful content")
+
+    if not archive:
+        return
+    if missing or incomplete:
+        return
+
+    repository = find_repository_root(change_dir)
+    if repository is None:
+        reporter.fail("resource archive requires a git repository to resolve odk_resource_gate")
+        return
+    try:
+        gate = discover_resource_gate(repository)
+    except ValueError as exc:
+        reporter.fail(str(exc))
+        return
+    if gate is None:
+        reporter.fail(
+            "resource archive blocked: any dimension is required but AGENTS.md does not "
+            f"declare {AGENTS_RESOURCE_GATE_KEY}: <repo-relative-path>"
+        )
+        return
+    if not gate.is_file():
+        reporter.fail(f"resource archive blocked: gate file missing: {gate}")
+        return
+
+    code, output = run_resource_gate(repository, gate, change_dir)
+    if output.strip():
+        print(output, end="" if output.endswith("\n") else "\n")
+    if code != 0:
+        reporter.fail(f"resource gate failed: {gate.relative_to(repository)} exit {code}")
+    else:
+        reporter.pass_(f"resource gate passed: {gate.relative_to(repository)}")
 
 
 def unresolved_markers(text: str) -> list[str]:
@@ -318,6 +841,8 @@ def validate_sections(
 
         conditional = artifacts[name].get("conditional_sections", [])
         for section in conditional:  # type: ignore[assignment]
+            if section in RESOURCE_SECTIONS.values():
+                continue  # trigger-aware checks live in validate_resource_constraints
             if section in present:
                 reporter.pass_(f"{file_name}: conditional section present: {section}")
             else:
@@ -342,10 +867,22 @@ def validate_present_optional_sections(
         required = data.get("required_sections", [])
         if not required:
             continue
-        present = headings(read_text(path))
+        text = read_text(path)
+        present = headings(text)
         for section in required:  # type: ignore[assignment]
             if section in present:
                 reporter.pass_(f"{file_name} (present optional): section present: {section}")
+                # Also check that section's tables have non-placeholder data rows
+                body = section_text(text, str(section))
+                all_tables = markdown_tables(body)
+                if all_tables:
+                    for table in all_tables:
+                        non_placeholder_rows = [
+                            row for row in table
+                            if any(meaningful(v) for v in row.values())
+                        ]
+                        if not non_placeholder_rows:
+                            reporter.warn(f"{file_name} (present optional): section '{section}' table has no non-placeholder data rows")
             else:
                 reporter.fail(f"{file_name} (present optional): required section missing: {section}")
 
@@ -481,6 +1018,131 @@ def validate_traceability(change_dir: Path, reporter: Reporter) -> None:
         reporter.pass_("execution-plan.md Task details include file scopes and expected verification")
 
 
+def validate_dfx_constraints(change_dir: Path, reporter: Reporter, archive_mode: bool) -> None:
+    design_path = change_dir / "design.md"
+    if not design_path.is_file():
+        return
+
+    print("\nLevel C2: DFX Fault Mode Coverage")
+
+    design = read_text(design_path)
+    dfx_section = section_text(design, "DFX 设计")
+    if not dfx_section:
+        # design.md missing the DFX H2 is reported by the section validator.
+        return
+
+    # Try new format (DFX 故障模式分析) first; fall back to legacy format (DFX 约束清单)
+    fault_subsection = section_text(dfx_section, "DFX 故障模式分析")
+    if not fault_subsection:
+        # Try legacy format
+        constraint_subsection = section_text(dfx_section, "DFX 约束清单")
+        if constraint_subsection:
+            draft_warn_archive_fail(
+                reporter,
+                archive_mode,
+                "design.md: uses legacy format with '### DFX 约束清单' — "
+                "migrate to '### DFX 故障模式分析' (9-column table)"
+            )
+            return
+        reporter.fail("design.md: ### DFX 故障模式分析 subsection missing under ## DFX 设计")
+        return
+
+    # Every hit must include a pinned repository/commit/path/record provenance.
+    required_dfx_columns = [
+        "分析对象", "故障模式", "故障影响", "故障原因",
+        "严酷度", "恢复措施", "关键日志", "大数据打点事件", "来源",
+    ]
+    visible_fault_subsection = _visible_markdown(fault_subsection)
+    if not table_has_columns(visible_fault_subsection, required_dfx_columns):
+        missing = [
+            c for c in required_dfx_columns
+            if not table_has_columns(visible_fault_subsection, [c])
+        ]
+        reporter.fail(
+            f"design.md: DFX 故障模式分析 table missing required columns: {', '.join(missing)}"
+        )
+        return
+
+    fault_rows = table_with_columns(visible_fault_subsection, required_dfx_columns)
+
+    has_data_rows = False
+    invalid_rows: list[str] = []
+    for row in fault_rows:
+        analysis_obj = row.get("分析对象", "").strip()
+        if meaningful(analysis_obj):
+            has_data_rows = True
+            missing_values = [
+                column for column in required_dfx_columns
+                if not meaningful(row.get(column, ""))
+            ]
+            if missing_values:
+                invalid_rows.append(f"{analysis_obj}: missing {', '.join(missing_values)}")
+                continue
+            source_ref = row.get("来源", "").strip()
+            if not DFX_SOURCE_REF_RE.fullmatch(source_ref):
+                invalid_rows.append(
+                    f"{analysis_obj}: invalid 来源 '{source_ref}' "
+                    "(expected <repo>@<commit>:docs/dfx/fmea.yaml#<record-id>)"
+                )
+
+    if has_data_rows:
+        if invalid_rows:
+            reporter.fail("design.md: invalid DFX rows: " + "; ".join(invalid_rows))
+        else:
+            reporter.pass_("DFX fault mode analysis has complete, traceable data rows")
+    else:
+        # 检查是否有"不涉及"文本
+        if _parse_not_applicable(visible_fault_subsection):
+            module_repos = _parse_module_impact_repos(design)
+            if validate_dfx_no_hit_closure(
+                visible_fault_subsection, module_repos, reporter, archive_mode
+            ):
+                return
+            reason = _parse_not_applicable_reason(visible_fault_subsection)
+            if reason:
+                if "仓不可达" in reason:
+                    if archive_mode:
+                        reporter.fail(
+                            "design.md: DFX 故障模式分析 不涉及（仓不可达）— "
+                            "归档时不允许仓不可达，请确认非网络问题后重新分析"
+                        )
+                    else:
+                        reporter.warn(
+                            "design.md: DFX 故障模式分析 不涉及（仓不可达）— "
+                            "归档前请确认非网络临时问题导致漏查"
+                        )
+                elif "仓无 DFX 知识" in reason or "仓无FMEA知识" in reason:
+                    reporter.pass_(
+                        "design.md: DFX 故障模式分析 不涉及（仓无 DFX 知识；"
+                        "Draft 兼容，Archive 需逐仓闭包）"
+                    )
+                elif "无命中" in reason:
+                    reporter.pass_(
+                        "design.md: DFX 故障模式分析 不涉及（知识库无匹配命中；"
+                        "Draft 兼容，Archive 需逐仓闭包）"
+                    )
+                else:
+                    draft_warn_archive_fail(
+                        reporter,
+                        archive_mode,
+                        f"design.md: DFX 故障模式分析 不涉及（理由：{reason}）"
+                    )
+            else:
+                draft_warn_archive_fail(
+                    reporter,
+                    archive_mode,
+                    "design.md: DFX 故障模式分析 不涉及 but missing reason annotation — "
+                    "请添加理由注解（如：仓不可达、仓无 DFX 知识、知识库无命中）"
+                )
+        else:
+            draft_warn_archive_fail(
+                reporter,
+                archive_mode,
+                "design.md: DFX 故障模式分析 has no data rows and no 不涉及 — "
+                "请填写不涉及并附理由"
+            )
+
+
 def validate_optional_evidence(change_dir: Path, reporter: Reporter) -> None:
     print("\nOptional Evidence")
     for rel in ("evidence/reviews", "evidence/gates"):
@@ -507,6 +1169,7 @@ def validate_archive_placeholders(
     print("\nLevel D: Archive Readiness")
     unresolved = False
 
+    # Check required artifacts
     for name, file_name in files.items():
         path = change_dir / file_name
         if not path.is_file():
@@ -524,6 +1187,30 @@ def validate_archive_placeholders(
             reporter.fail(f"{file_name}: unresolved archive placeholders: " + "; ".join(file_markers[:8]))
         else:
             reporter.pass_(f"{file_name}: no unresolved placeholders in required sections")
+
+    # Also check optional (bypass) artifacts when they exist
+    for name, data in artifacts.items():
+        if data.get("required") != "false":
+            continue
+        file_name = str(data.get("file", ""))
+        if not file_name:
+            continue
+        path = change_dir / file_name
+        if not path.is_file():
+            continue  # optional: absence allowed
+
+        text = read_text(path)
+        sections = list(data.get("required_sections", []))  # type: ignore[arg-type]
+        file_markers: list[str] = []
+        for section in sections:
+            body = section_text(text, str(section))
+            file_markers.extend(unresolved_markers(body))
+
+        if file_markers:
+            unresolved = True
+            reporter.fail(f"{file_name} (optional): unresolved archive placeholders: " + "; ".join(file_markers[:8]))
+        else:
+            reporter.pass_(f"{file_name} (optional): no unresolved placeholders in required sections")
 
     return unresolved
 
@@ -641,7 +1328,7 @@ def validate_archive_readiness(
 
 
 def main(argv: list[str]) -> int:
-    parser = ArgumentParser(description="Validate one ODK change directory against core/contracts/artifacts.yaml.")
+    parser = ArgumentParser(description="Validate one ODK change directory against the active artifacts contract.")
     parser.add_argument("change_dir", help="ODK change directory, for example .codespec/changes/issue-123-demo")
     parser.add_argument(
         "--archive",
@@ -668,7 +1355,10 @@ def main(argv: list[str]) -> int:
     validate_sections(change_dir, artifacts, files, reporter)
     validate_present_optional_sections(change_dir, artifacts, reporter)
     validate_traceability(change_dir, reporter)
+    validate_dfx_constraints(change_dir, reporter, args.archive)
     validate_optional_evidence(change_dir, reporter)
+    print("\nResource Constraints")
+    validate_resource_constraints(change_dir, reporter, archive=args.archive)
     if args.archive:
         validate_archive_readiness(change_dir, artifacts, files, reporter)
 
