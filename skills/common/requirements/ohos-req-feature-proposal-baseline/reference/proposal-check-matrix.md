@@ -54,7 +54,7 @@ proposal-check 的审查判据，按"总览+明细表"组织。待SE澄清与TSE
 | 附录 | 5.2 feature_id溯源 | feature_id一致性（5.2-a） | PASS：proposal §12 `feature_id` 与04-feature.md frontmatter `feature_id`一致且非占位符；FAIL：为空、占位符、与04不一致或无法溯源 | | |
 | 附录 | 5.3 status枚举 | 状态合法性（5.3-a） | PASS：`status`仅为`Draft`或`GA-Approved`；FAIL：为空、占位符或非枚举值 | | |
 | 附录 | 5.4 GA证据 | gate_a证据（5.4-a） | PASS：status=GA-Approved时`gate_a`非空且为可访问链接或归档路径；FAIL：GA-Approved但`gate_a`为空/占位符；WARN：status=Draft且`gate_a`为空，需形成当前评审可关闭条件项 | | |
-| 附录 | 5.5 仓名归一化 | 仓字段规范性（5.5-a） | PASS：`仓`为带组织名的规范仓名，如`openharmony/arkui_ace_engine`或`openharmony-tpc/oh-chromium`；FAIL：为空、占位符、仅basename、未剥离`OpenSourceCenter_CR/`前缀或与manifest/remote解析结果不一致 | | |
+| 附录 | 5.5 仓名归一化 | 仓字段规范性（5.5-a） | PASS：`仓`为带组织名的规范仓名，如`openharmony/arkui_ace_engine`或`openharmony-tpc/oh-chromium`，且manifest与git remote的`owner/repo`后缀一致；FAIL：为空、占位符、仅basename、未剥离已确认的托管平台命名空间前缀、与manifest/remote解析结果不一致，或在无法交叉确认时猜测剥离 | | |
 | 交叉 | 非目标↔US | 非目标与US一致性（4.1-a） | PASS：非目标排除项与US描述无矛盾；FAIL：非目标排除项与US描述矛盾 | | |
 | 交叉 | 影响范围↔US | 影响范围仓与场景映射（4.2-a） | PASS：影响范围中每个仓/模块在场景中有对应US覆盖；FAIL：影响范围仓无对应US覆盖 | | |
 | 交叉 | 分级↔实际 | 分级与实际范围一致性（4.3-a） | PASS：分级（复杂度/涉及仓数/跨SIG/安全）与影响范围与N/A判定一致；FAIL：分级与影响范围或N/A判定矛盾；注：影响范围中列出的仓均计入涉及仓数 | | |

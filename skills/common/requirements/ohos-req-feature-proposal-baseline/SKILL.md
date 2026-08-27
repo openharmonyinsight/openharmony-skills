@@ -188,16 +188,17 @@ Proposal §12 附录的 `仓` 字段必须填写带组织名的规范仓名，�
 
 取值顺序：
 
-1. 若当前工作区存在 repo manifest，优先读取当前仓对应 project 的 `name` 属性。
-2. 若无 repo manifest（例如用户只 `git clone` 单仓），则从当前仓 `git remote get-url origin` 解析路径。
+1. 若当前工作区同时存在 repo manifest 和 git remote，分别解析 manifest project name 与 remote 的 `owner/repo`；仅当 manifest 值等于该 `owner/repo`，或以 `/<owner/repo>` 结尾时，采用 remote 的规范 `owner/repo`。此前的路径段视为托管平台命名空间前缀。
+2. 若无 repo manifest（例如用户只 `git clone` 单仓），则从当前仓 `git remote get-url origin` 解析 `owner/repo`。
+3. 若只有 manifest、无法用 git remote 交叉确认，保留可验证的 project name；存在额外路径段或解析歧义时标记为待人工确认，不得猜测剥离。
 
 归一化规则：
 
 - 去掉协议、域名、`.git` 后缀和首尾斜杠。
-- 若 manifest project name 含平台前缀 `OpenSourceCenter_CR/`，去掉该前缀后保留后续组织/仓名，例如 `OpenSourceCenter_CR/openharmony/arkui_ace_engine` → `openharmony/arkui_ace_engine`。
+- manifest project name 与 git remote 解析结果后缀一致时，去掉已确认的托管平台命名空间前缀。例如 manifest 为 `mirror_namespace/openharmony/arkui_ace_engine`，remote 为 `https://gitcode.com/openharmony/arkui_ace_engine.git`，规范结果为 `openharmony/arkui_ace_engine`。
 - 若 remote URL 为 `https://gitcode.com/openharmony/arkui_ace_engine.git`，取 `openharmony/arkui_ace_engine`。
 - 若 manifest 或 remote 已是 `openharmony-tpc/oh-chromium`，保持 `openharmony-tpc/oh-chromium`。
-- 若解析结果只剩单段仓名，必须标记为待人工确认，不得直接写入正式 proposal。
+- 若解析结果只剩单段仓名，或 manifest 的额外路径段无法通过 remote 的 `owner/repo` 后缀一致性确认，必须标记为待人工确认，不得直接写入正式 proposal。
 
 ### AC一致性校验
 

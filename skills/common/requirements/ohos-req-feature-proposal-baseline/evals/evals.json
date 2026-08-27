@@ -304,8 +304,8 @@
     {
       "id": 16,
       "name": "proposal-appendix-not-frontmatter",
-      "prompt": "04-feature.md frontmatter feature_id=FEAT-12345。当前仓 repo manifest project name 为 OpenSourceCenter_CR/openharmony/arkui_ace_engine。请基于 reference/proposal.md 生成 proposals/05-proposal-arkui-button-state-feedback.md，并填写 §12 附录。",
-      "expected_output": "必须生成完整 proposal 正文，不得只复述规则或原样输出模板；文件不得包含 YAML frontmatter。§12 附录必须填写实际表格行：`| feature_id | FEAT-12345 |`、`| status | Draft |`、`| gate_a |  |`、`| 仓 | openharmony/arkui_ace_engine |`。不得保留 `{FEAT-NNNNN...}`、`{规范仓名...}` 等占位符，不得写 `OpenSourceCenter_CR/openharmony/arkui_ace_engine` 或仅写 `arkui_ace_engine`；不得写入 target_release、rr_id、issue、author、date。",
+      "prompt": "04-feature.md frontmatter feature_id=FEAT-12345。当前仓 repo manifest project name 为 mirror_namespace/openharmony/arkui_ace_engine，git remote origin 为 https://gitcode.com/openharmony/arkui_ace_engine.git。请基于 reference/proposal.md 生成 proposals/05-proposal-arkui-button-state-feedback.md，并填写 §12 附录。",
+      "expected_output": "必须生成完整 proposal 正文，不得只复述规则或原样输出模板；文件不得包含 YAML frontmatter。manifest project name 与 git remote 的 owner/repo 后缀一致，§12 附录必须填写实际表格行：`| feature_id | FEAT-12345 |`、`| status | Draft |`、`| gate_a |  |`、`| 仓 | openharmony/arkui_ace_engine |`。不得保留 `{FEAT-NNNNN...}`、`{规范仓名...}` 等占位符，不得写 `mirror_namespace/openharmony/arkui_ace_engine` 或仅写 `arkui_ace_engine`；不得写入 target_release、rr_id、issue、author、date。",
       "assertions": [
         {
           "text": "完整 proposal 以一级标题开始",
@@ -353,7 +353,7 @@
           "text": "错误仓字段",
           "type": "not_contains",
           "tokens": [
-            "| 仓 | OpenSourceCenter_CR/openharmony/arkui_ace_engine |",
+            "| 仓 | mirror_namespace/openharmony/arkui_ace_engine |",
             "| 仓 | arkui_ace_engine |",
             "| 仓 | {规范仓名，如 openharmony/arkui_ace_engine 或 openharmony-tpc/oh-chromium} |"
           ]
