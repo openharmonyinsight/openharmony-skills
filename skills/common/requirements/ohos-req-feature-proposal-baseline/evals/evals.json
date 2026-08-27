@@ -529,10 +529,38 @@
       "id": 18,
       "name": "proposal-template-1plus8-dfx-dependencies",
       "prompt": "请基于 proposal 模板生成一个单 proposal，当前 proposal 外部依赖 arkui_ace_engine 仓和安全领域评审。",
-      "expected_output": "proposal 必须包含独立的 1+8设备差异规格 章节和 DFX设计 章节；1+8设备差异规格章节下只放一张表，表格仅包含设备/差异项、是否存在差异、差异说明三列，且是否存在差异默认留空，由生成时填写。表格包含手机(含折叠屏)、Pad、PC、穿戴、智慧屏、座舱、其他、功能差异（非品类划分）8类设备/差异项。DFX设计中包含定位定界维度。外部依赖（可选）章节需按子系统、仓库、模块/路径、依赖类型填写 arkui_ace_engine 和安全领域评审依赖。N/A 8维仍在不涉及项确认章节中填写是否涉及和依据。",
+      "expected_output": "proposal 必须包含独立的 1+8设备差异规格 章节和 DFX设计 章节；1+8设备差异规格章节下只放一张表，表格仅包含设备/差异项、是否存在差异、差异说明三列，且是否存在差异默认留空，由生成时填写。表格包含 phone、tablet、pc/2in1、wearable、tv、car、deafult、功能差异（非品类划分）8类设备/差异项。DFX设计中包含定位定界维度。外部依赖（可选）章节需按子系统、仓库、模块/路径、依赖类型填写 arkui_ace_engine 和安全领域评审依赖。N/A 8维仍在不涉及项确认章节中填写是否涉及和依据。",
       "assertions": [
         {
           "text": "1+8设备差异规格",
+          "type": "contains"
+        },
+        {
+          "text": "| phone |",
+          "type": "contains"
+        },
+        {
+          "text": "| tablet |",
+          "type": "contains"
+        },
+        {
+          "text": "| pc/2in1 |",
+          "type": "contains"
+        },
+        {
+          "text": "| wearable |",
+          "type": "contains"
+        },
+        {
+          "text": "| tv |",
+          "type": "contains"
+        },
+        {
+          "text": "| car |",
+          "type": "contains"
+        },
+        {
+          "text": "| deafult |",
           "type": "contains"
         },
         {
