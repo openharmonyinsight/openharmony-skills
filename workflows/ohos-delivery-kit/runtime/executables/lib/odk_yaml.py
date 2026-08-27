@@ -2,8 +2,8 @@
 """Small YAML readers for ODK's constrained contract files.
 
 This intentionally avoids PyYAML so validation works in clean shell
-environments. It only parses the small YAML subset used by
-core/contracts/*.yaml and core/adapters/*.yaml.
+environments. It only parses the small YAML subset used by ODK contract and
+adapter files, independent of source or installed layout.
 """
 
 from __future__ import annotations

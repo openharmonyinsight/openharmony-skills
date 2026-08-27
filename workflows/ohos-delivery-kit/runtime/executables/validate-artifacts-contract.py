@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate one ODK change directory against core/contracts/artifacts.yaml.
+"""Validate one ODK change directory against the active artifacts contract.
 
 This is stricter than validate-artifacts-structural.sh:
 - required artifacts must exist
@@ -68,6 +68,11 @@ LEGACY_TARGET_RELEASE_RE = re.compile(
 TARGET_RELEASE_RE = re.compile(r"^\d+\.\d+(?:-(?:Release|Beta|Alpha|Dev))?$", re.IGNORECASE)
 _NOT_APPLICABLE_RE = re.compile(r"不涉及")
 _NOT_APPLICABLE_REASON_RE = re.compile(r"不涉及理由[：:]\s*(.+)", re.MULTILINE)
+_DFX_INVOLVED_REPOS_RE = re.compile(r"涉及仓库[：:]\s*(.+)", re.MULTILINE)
+_DFX_REPO_NAME_RE = re.compile(r"[A-Za-z0-9_./-]+")
+_DFX_REPO_STATUS_COLUMNS = ["仓库", "状态", "理由"]
+_DFX_REPO_STATUSES = {"READ", "UNREACHABLE", "NO_DFX_KNOWLEDGE"}
+_DFX_READ_NO_HIT_REASONS = {"知识库无命中", "知识库无匹配命中"}
 DFX_SOURCE_REF_RE = re.compile(
     r"^[^@\s|]+@[0-9a-fA-F]{7,40}:docs/dfx/fmea\.yaml#[^#\s|]+$"
 )
@@ -274,6 +279,122 @@ def _parse_not_applicable_reason(subsection_text: str) -> str:
     """
     match = _NOT_APPLICABLE_REASON_RE.search(subsection_text)
     return match.group(1).strip() if match else ""
+
+
+def _visible_markdown(text: str) -> str:
+    """Remove template guidance that must not count as user-supplied evidence."""
+    return re.sub(r"<!--[\s\S]*?-->", "", text)
+
+
+def _parse_dfx_involved_repos(subsection_text: str) -> list[str]:
+    """Parse the canonical repository set from ``> 涉及仓库：repo-a, repo-b``."""
+    match = _DFX_INVOLVED_REPOS_RE.search(subsection_text)
+    if not match:
+        return []
+    return [
+        item.strip().strip("`")
+        for item in re.split(r"[,，、;；+]", match.group(1))
+        if item.strip().strip("`")
+    ]
+
+
+def _parse_module_impact_repos(design_text: str) -> list[str]:
+    """Read the canonical involved repository set from ``## 模块影响``."""
+    module_section = section_text(design_text, "模块影响")
+    rows = table_with_columns(module_section, ["仓库"])
+    repos: list[str] = []
+    for row in rows:
+        for item in re.split(r"[,，、;；+]", row.get("仓库", "")):
+            repo = item.strip().strip("`")
+            if repo and repo not in repos:
+                repos.append(repo)
+    return repos
+
+
+def validate_dfx_no_hit_closure(
+    subsection_text: str,
+    module_repos: list[str],
+    reporter: Reporter,
+    archive_mode: bool,
+) -> bool:
+    """Validate per-repository closure for a DFX ``不涉及`` conclusion.
+
+    Returns True when the structured contract was handled. Draft keeps legacy
+    free-text reasons as a compatibility path; Archive requires this contract.
+    """
+    involved_repos = _parse_dfx_involved_repos(subsection_text)
+    status_rows = table_with_columns(subsection_text, _DFX_REPO_STATUS_COLUMNS)
+    structured_present = bool(involved_repos or status_rows)
+    if not structured_present and not archive_mode:
+        return False
+
+    issues: list[str] = []
+    if not involved_repos:
+        issues.append("missing 涉及仓库 declaration")
+    if not module_repos:
+        issues.append("模块影响 table has no repositories")
+    if not status_rows:
+        issues.append("missing 仓库/状态/理由 closure table")
+
+    invalid_repo_names = [repo for repo in involved_repos if not _DFX_REPO_NAME_RE.fullmatch(repo)]
+    if invalid_repo_names:
+        issues.append("invalid involved repository names: " + ", ".join(invalid_repo_names))
+    duplicate_involved = sorted({repo for repo in involved_repos if involved_repos.count(repo) > 1})
+    if duplicate_involved:
+        issues.append("duplicate involved repositories: " + ", ".join(duplicate_involved))
+
+    row_repos: list[str] = []
+    for index, row in enumerate(status_rows, start=1):
+        repo = row.get("仓库", "").strip().strip("`")
+        status = row.get("状态", "").strip()
+        reason = row.get("理由", "").strip()
+        label = repo or f"row {index}"
+        if not meaningful(repo) or not _DFX_REPO_NAME_RE.fullmatch(repo):
+            issues.append(f"{label}: invalid or missing 仓库")
+            continue
+        row_repos.append(repo)
+        if status not in _DFX_REPO_STATUSES:
+            issues.append(f"{repo}: unknown 状态 '{status}'")
+        elif status == "UNREACHABLE":
+            issues.append(f"{repo}: UNREACHABLE cannot close Archive")
+        elif status == "READ" and reason not in _DFX_READ_NO_HIT_REASONS:
+            issues.append(f"{repo}: READ no-hit closure has non-canonical reason '{reason}'")
+        elif status == "NO_DFX_KNOWLEDGE" and reason != "仓无 DFX 知识":
+            issues.append(f"{repo}: NO_DFX_KNOWLEDGE requires a 仓无 DFX 知识 reason")
+        if not meaningful(reason):
+            issues.append(f"{repo}: missing 理由")
+
+    duplicate_rows = sorted({repo for repo in row_repos if row_repos.count(repo) > 1})
+    if duplicate_rows:
+        issues.append("duplicate repository closure rows: " + ", ".join(duplicate_rows))
+
+    declared = set(involved_repos)
+    canonical = set(module_repos)
+    undeclared = sorted(canonical - declared)
+    wrongly_declared = sorted(declared - canonical)
+    if undeclared:
+        issues.append("模块影响 repositories missing from 涉及仓库: " + ", ".join(undeclared))
+    if wrongly_declared:
+        issues.append("涉及仓库 entries absent from 模块影响: " + ", ".join(wrongly_declared))
+
+    expected = canonical or declared
+    actual = set(row_repos)
+    missing = sorted(expected - actual)
+    extra = sorted(actual - expected)
+    if missing:
+        issues.append("repositories missing closure: " + ", ".join(missing))
+    if extra:
+        issues.append("closure rows not declared in 涉及仓库: " + ", ".join(extra))
+
+    if issues:
+        draft_warn_archive_fail(
+            reporter,
+            archive_mode,
+            "design.md: incomplete DFX per-repository no-hit closure: " + "; ".join(issues),
+        )
+    else:
+        reporter.pass_("DFX no-hit conclusion has complete per-repository closure")
+    return True
 
 
 def draft_warn_archive_fail(reporter: Reporter, archive: bool, message: str) -> None:
@@ -931,14 +1052,18 @@ def validate_dfx_constraints(change_dir: Path, reporter: Reporter, archive_mode:
         "分析对象", "故障模式", "故障影响", "故障原因",
         "严酷度", "恢复措施", "关键日志", "大数据打点事件", "来源",
     ]
-    if not table_has_columns(fault_subsection, required_dfx_columns):
-        missing = [c for c in required_dfx_columns if not table_has_columns(fault_subsection, [c])]
+    visible_fault_subsection = _visible_markdown(fault_subsection)
+    if not table_has_columns(visible_fault_subsection, required_dfx_columns):
+        missing = [
+            c for c in required_dfx_columns
+            if not table_has_columns(visible_fault_subsection, [c])
+        ]
         reporter.fail(
             f"design.md: DFX 故障模式分析 table missing required columns: {', '.join(missing)}"
         )
         return
 
-    fault_rows = table_with_columns(fault_subsection, required_dfx_columns)
+    fault_rows = table_with_columns(visible_fault_subsection, required_dfx_columns)
 
     has_data_rows = False
     invalid_rows: list[str] = []
@@ -967,8 +1092,13 @@ def validate_dfx_constraints(change_dir: Path, reporter: Reporter, archive_mode:
             reporter.pass_("DFX fault mode analysis has complete, traceable data rows")
     else:
         # 检查是否有"不涉及"文本
-        if _parse_not_applicable(fault_subsection):
-            reason = _parse_not_applicable_reason(fault_subsection)
+        if _parse_not_applicable(visible_fault_subsection):
+            module_repos = _parse_module_impact_repos(design)
+            if validate_dfx_no_hit_closure(
+                visible_fault_subsection, module_repos, reporter, archive_mode
+            ):
+                return
+            reason = _parse_not_applicable_reason(visible_fault_subsection)
             if reason:
                 if "仓不可达" in reason:
                     if archive_mode:
@@ -983,11 +1113,13 @@ def validate_dfx_constraints(change_dir: Path, reporter: Reporter, archive_mode:
                         )
                 elif "仓无 DFX 知识" in reason or "仓无FMEA知识" in reason:
                     reporter.pass_(
-                        "design.md: DFX 故障模式分析 不涉及（仓无 DFX 知识，可归档）"
+                        "design.md: DFX 故障模式分析 不涉及（仓无 DFX 知识；"
+                        "Draft 兼容，Archive 需逐仓闭包）"
                     )
                 elif "无命中" in reason:
                     reporter.pass_(
-                        "design.md: DFX 故障模式分析 不涉及（知识库无匹配命中，可归档）"
+                        "design.md: DFX 故障模式分析 不涉及（知识库无匹配命中；"
+                        "Draft 兼容，Archive 需逐仓闭包）"
                     )
                 else:
                     draft_warn_archive_fail(
@@ -1196,7 +1328,7 @@ def validate_archive_readiness(
 
 
 def main(argv: list[str]) -> int:
-    parser = ArgumentParser(description="Validate one ODK change directory against core/contracts/artifacts.yaml.")
+    parser = ArgumentParser(description="Validate one ODK change directory against the active artifacts contract.")
     parser.add_argument("change_dir", help="ODK change directory, for example .codespec/changes/issue-123-demo")
     parser.add_argument(
         "--archive",

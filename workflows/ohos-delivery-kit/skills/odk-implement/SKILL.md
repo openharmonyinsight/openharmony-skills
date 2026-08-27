@@ -43,12 +43,10 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
        - ArkTS 声明写入 `interface_sdk-js/api/@ohos.{kit}.{module}.d.ts`
        - C 声明写入 `interface_sdk_c/api/{kit}/{module}.h`
        - 声明文件须包含 Apache 2.0 版权声明头和完整 JSDoc 注释
-     - **调用 oh-api-definition 质量检查（必选，阻塞）**：
-       - 检查 oh-api-definition 是否可用（由开发者自行获取并安装）
-       - 如不可用，提示开发者安装后继续
-       - 对新修改的声明文件进行格式、命名、注释、语法检查
-       - 不通过时必须修改直到所有检查项通过，不得跳过
-     - **生成 diff 文件**：质量检查通过后，生成声明文件修改前后的 diff 文件，归档到 `.codespec/changes/<id>/` 目录下，作为变更证据
+     - **按需调用 oh-api-definition 质量检查（可选，不阻塞）**：
+       - 若开发环境已提供 oh-api-definition，则对新修改的声明文件执行其格式、命名、注释和语法检查；发现问题时修复后重跑
+       - 若工具不可用时在 Task `Actual Result` 记录未执行并继续，不要求安装，也不得因此阻塞 Task-1
+     - **生成 diff 文件**：完成适用的质量检查后，生成声明文件修改前后的 diff 文件，归档到 `.codespec/changes/<id>/` 目录下，作为变更证据
    - Run the verification command and confirm it matches the Task's expected result.
    - After each Task, update `execution-plan.md` 代码范围映射 with actual files, tests, and commit references.
    - Backfill the Task's `Actual Result` and anti-fake completion evidence.
