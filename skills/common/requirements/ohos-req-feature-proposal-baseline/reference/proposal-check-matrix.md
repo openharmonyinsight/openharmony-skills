@@ -23,6 +23,7 @@ proposal-check 的审查判据，按"总览+明细表"组织。待SE澄清与TSE
 | 诉求 | 5 | 需求描述符合feature文档且可测试+1+8设备差异/DFX独立章节存在性 |
 | 场景 | 2 | 用户故事与AC覆盖场景且可独立测试 |
 | N/A项 | 8 | 8维全部填写+依据充分 |
+| 附录 | 5 | §12附录结构、feature_id溯源、status/gate_a、仓名归一化 |
 | 交叉 | 4 | 跨条目一致性校验+多proposal交叉一致性 |
 
 ## 检查点明细表
@@ -49,6 +50,11 @@ proposal-check 的审查判据，按"总览+明细表"组织。待SE澄清与TSE
 | N/A | 逐维度 | 构建与部件（3.x-a） | FAIL：涉及？未填/依据不清晰或歧义/依据自身矛盾（含涉及？=否但依据含具体指标/机制=行内矛盾/AI识别出其他具体问题并附证据）；WARN：其余所有N/A行（证据列追加"待确认是否准确"） | | |
 | N/A | 逐维度 | 国际化/无障碍（3.x-a） | FAIL：涉及？未填/依据不清晰或歧义/依据自身矛盾（含涉及？=否但依据含具体指标/机制=行内矛盾/AI识别出其他具体问题并附证据）；WARN：其余所有N/A行（证据列追加"待确认是否准确"） | | |
 | N/A | 逐维度 | 数据迁移（3.x-a） | FAIL：涉及？未填/依据不清晰或歧义/依据自身矛盾（含涉及？=否但依据含具体指标/机制=行内矛盾/AI识别出其他具体问题并附证据）；WARN：其余所有N/A行（证据列追加"待确认是否准确"） | | |
+| 附录 | 5.1 结构完整性 | §12附录存在性（5.1-a） | PASS：存在`## 12. 附录`且表格包含`feature_id/status/gate_a/仓`四行；FAIL：章节缺失、表格缺失或任一字段行缺失 | | |
+| 附录 | 5.2 feature_id溯源 | feature_id一致性（5.2-a） | PASS：proposal §12 `feature_id` 与04-feature.md frontmatter `feature_id`一致且非占位符；FAIL：为空、占位符、与04不一致或无法溯源 | | |
+| 附录 | 5.3 status枚举 | 状态合法性（5.3-a） | PASS：`status`仅为`Draft`或`GA-Approved`；FAIL：为空、占位符或非枚举值 | | |
+| 附录 | 5.4 GA证据 | gate_a证据（5.4-a） | PASS：status=GA-Approved时`gate_a`非空且为可访问链接或归档路径；FAIL：GA-Approved但`gate_a`为空/占位符；WARN：status=Draft且`gate_a`为空，需形成当前评审可关闭条件项 | | |
+| 附录 | 5.5 仓名归一化 | 仓字段规范性（5.5-a） | PASS：`仓`为带组织名的规范仓名，如`openharmony/arkui_ace_engine`或`openharmony-tpc/oh-chromium`，且manifest与git remote的`owner/repo`后缀一致；FAIL：为空、占位符、仅basename、未剥离已确认的托管平台命名空间前缀、与manifest/remote解析结果不一致，或在无法交叉确认时猜测剥离 | | |
 | 交叉 | 非目标↔US | 非目标与US一致性（4.1-a） | PASS：非目标排除项与US描述无矛盾；FAIL：非目标排除项与US描述矛盾 | | |
 | 交叉 | 影响范围↔US | 影响范围仓与场景映射（4.2-a） | PASS：影响范围中每个仓/模块在场景中有对应US覆盖；FAIL：影响范围仓无对应US覆盖 | | |
 | 交叉 | 分级↔实际 | 分级与实际范围一致性（4.3-a） | PASS：分级（复杂度/涉及仓数/跨SIG/安全）与影响范围与N/A判定一致；FAIL：分级与影响范围或N/A判定矛盾；注：影响范围中列出的仓均计入涉及仓数 | | |
