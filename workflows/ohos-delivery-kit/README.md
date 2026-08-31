@@ -12,7 +12,8 @@ keep the draft at `codespec/changes/draft-<yyyymmdd>-<english-slug>/`; after obt
 the ID, run `odk-link-req` to rename the directory and update `proposal.md`.
 
 `req-id` may contain letters, digits, and internal hyphens. Existing repositories
-must migrate old archive directories and references before running strict validation.
+must follow the executable [0.8.0 migration guide](MIGRATION-0.8.0.md) before running
+strict validation. `odk-link-req` only links new drafts; it is not a legacy archive migrator.
 
 ## Source
 

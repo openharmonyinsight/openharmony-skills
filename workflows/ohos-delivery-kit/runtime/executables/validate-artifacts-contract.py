@@ -299,14 +299,20 @@ def table_has_columns(text: str, required_columns: list[str]) -> bool:
     return False
 
 
-def table_with_columns(text: str, required_columns: list[str]) -> list[dict[str, str]]:
+def tables_with_columns(text: str, required_columns: list[str]) -> list[list[dict[str, str]]]:
+    matches: list[list[dict[str, str]]] = []
     for table in markdown_tables(text):
         if not table:
             continue
         columns = set(table[0].keys())
         if all(column in columns for column in required_columns):
-            return table
-    return []
+            matches.append(table)
+    return matches
+
+
+def table_with_columns(text: str, required_columns: list[str]) -> list[dict[str, str]]:
+    tables = tables_with_columns(text, required_columns)
+    return tables[0] if tables else []
 
 
 def meaningful(value: str) -> bool:
@@ -333,16 +339,16 @@ def _visible_markdown(text: str) -> str:
     return re.sub(r"<!--[\s\S]*?-->", "", text)
 
 
-def _parse_dfx_involved_repos(subsection_text: str) -> list[str]:
-    """Parse the canonical repository set from ``> 涉及仓库：repo-a, repo-b``."""
-    match = _DFX_INVOLVED_REPOS_RE.search(subsection_text)
-    if not match:
-        return []
-    return [
-        item.strip().strip("`")
-        for item in re.split(r"[,，、;；+]", match.group(1))
-        if item.strip().strip("`")
-    ]
+def _parse_dfx_involved_repo_declarations(subsection_text: str) -> list[list[str]]:
+    """Parse every structured ``涉及仓库`` declaration in the subsection."""
+    declarations: list[list[str]] = []
+    for match in _DFX_INVOLVED_REPOS_RE.finditer(subsection_text):
+        declarations.append([
+            item.strip().strip("`")
+            for item in re.split(r"[,，、;；+]", match.group(1))
+            if item.strip().strip("`")
+        ])
+    return declarations
 
 
 def _parse_module_impact_repos(design_text: str) -> list[str]:
@@ -369,11 +375,32 @@ def validate_dfx_no_hit_closure(
     Returns True when the structured contract was handled. Draft keeps legacy
     free-text reasons as a compatibility path; Archive requires this contract.
     """
-    involved_repos = _parse_dfx_involved_repos(subsection_text)
-    status_rows = table_with_columns(subsection_text, _DFX_REPO_STATUS_COLUMNS)
-    structured_present = bool(involved_repos or status_rows)
+    involved_declarations = _parse_dfx_involved_repo_declarations(subsection_text)
+    status_tables = tables_with_columns(subsection_text, _DFX_REPO_STATUS_COLUMNS)
+    involved_repos = involved_declarations[0] if involved_declarations else []
+    status_rows = status_tables[0] if status_tables else []
+    structured_present = bool(involved_declarations or status_tables)
     if not structured_present and not archive_mode:
         return False
+
+    # Conflicting structured evidence is never a Draft compatibility warning:
+    # accepting only the first declaration/table would let later UNKNOWN or
+    # extra-repository evidence bypass both Draft and Archive validation.
+    multiplicity_issues: list[str] = []
+    if len(involved_declarations) > 1:
+        multiplicity_issues.append(
+            f"multiple 涉及仓库 declarations ({len(involved_declarations)})"
+        )
+    if len(status_tables) > 1:
+        multiplicity_issues.append(
+            f"multiple 仓库/状态/理由 closure tables ({len(status_tables)})"
+        )
+    if multiplicity_issues:
+        reporter.fail(
+            "design.md: conflicting DFX per-repository no-hit evidence: "
+            + "; ".join(multiplicity_issues)
+        )
+        return True
 
     issues: list[str] = []
     if not involved_repos:
