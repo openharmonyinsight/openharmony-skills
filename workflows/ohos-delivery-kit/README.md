@@ -3,9 +3,21 @@
 Neutral-source plugin providing OpenHarmony delivery artifact specification skills,
 session routing, validator executable, and runtime assets.
 
+## 0.8.0 archive migration
+
+**Breaking change:** the former hidden archive root and issue-number directory naming
+are no longer supported. Formal delivery artifacts now use
+`codespec/changes/<req-id>-<english-slug>/`. Before a requirement ID is available,
+keep the draft at `codespec/changes/draft-<yyyymmdd>-<english-slug>/`; after obtaining
+the ID, run `odk-link-req` to rename the directory and update `proposal.md`.
+
+`req-id` may contain letters, digits, and internal hyphens. Existing repositories
+must migrate old archive directories and references before running strict validation.
+
 ## Source
 
-Synced from `oshunter/ohos-delivery-kit` dev branch via
+Synced from `oshunter/ohos-delivery-kit` branch
+`release/req-archive-dev-integration` via
 `ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills`.
 
 ## Structure
