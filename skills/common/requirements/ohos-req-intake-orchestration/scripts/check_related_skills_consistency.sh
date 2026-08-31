@@ -6,7 +6,8 @@ set -euo pipefail
 #   A. 编排器 frontmatter metadata.related-skills
 #   B. install_related_skills.sh REQUIRED_SKILLS
 #   C. 全部幸存 SKILL.md/reference(s) 中的 ohos-* skill 引用
-# 任一悬空引用、三方清单漂移或旧别名残留即失败。
+#   D. requirements bundle 中不得残留 ODK 0.8 已废弃的归档根或 link 命令
+# 任一悬空引用、三方清单漂移、旧别名或旧 ODK 路径残留即失败。
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ORCH_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -79,9 +80,23 @@ while IFS= read -r declared; do
   fi
 done < "$tmp/declared.txt"
 
+legacy_odk_root=".codespec""/changes"
+legacy_link_command="odk-link""-issue"
+for token in "$legacy_odk_root" "$legacy_link_command"; do
+  stale_matches="$(
+    grep -RFn --include='*.md' --exclude-dir=evals --exclude-dir=examples \
+      -- "$token" "$SKILLS_DIR" || true
+  )"
+  if [[ -n "$stale_matches" ]]; then
+    rc=1
+    echo "STALE ODK archive token: $token"
+    echo "$stale_matches"
+  fi
+done
+
 if [[ "$rc" -eq 0 ]]; then
   echo "Result: CONSISTENT"
 else
-  echo "Result: INCONSISTENT — 修正 related-skills、install 数组、目录名或 SKILL/reference 中的 ohos-* 引用"
+  echo "Result: INCONSISTENT — 修正 related-skills、install 数组、目录名、SKILL/reference 引用或旧 ODK 归档 token"
 fi
 exit "$rc"

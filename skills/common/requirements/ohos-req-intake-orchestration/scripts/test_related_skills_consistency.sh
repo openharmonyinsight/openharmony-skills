@@ -86,6 +86,15 @@ out="$(bash "$(sbx_install "$sbx6")" --check || true)"
 echo "$out" | grep -q 'Version mismatch: 0' && echo "$out" | grep -q 'Result: READY' \
   && ok "S8 semver 0.10.0 >= 0.4.0" || { bad "S8 期望 semver READY"; echo "$out"; }
 
+# --- 场景9：requirements bundle 残留 ODK 旧归档根 → consistency INCONSISTENT ---
+sbx7="$(setup_sandbox)"
+legacy_odk_root=".codespec""/changes"
+printf '\n旧 ODK 路径 `%s/{change-id}` 不应再出现。\n' "$legacy_odk_root" \
+  >> "$sbx7/skills/common/requirements/ohos-req-requirement-intake/reference/requirement-fields.md"
+cout="$(bash "$(sbx_check "$sbx7")" || true)"
+echo "$cout" | grep -q 'STALE ODK archive token' && echo "$cout" | grep -q 'Result: INCONSISTENT' \
+  && ok "S9 requirements bundle 中 ODK 旧路径被本地检查检出" || { bad "S9 期望旧 ODK 路径 INCONSISTENT"; echo "$cout"; }
+
 echo ""
 echo "Summary: $pass passed, $fail failed"
 [ "$fail" -eq 0 ]

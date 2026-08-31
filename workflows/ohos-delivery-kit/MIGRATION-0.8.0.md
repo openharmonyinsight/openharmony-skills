@@ -16,9 +16,14 @@ find .codespec/changes -mindepth 1 -maxdepth 1 -type d \
   -name 'issue-[0-9]*-*' -print | LC_ALL=C sort
 ```
 
-Create `archive-map.tsv` with the complete old relative path in column one and
-the developer-confirmed requirement ID in column two. Do not infer a requirement
-ID from the issue number.
+Create a TSV outside the worktree with the complete old relative path in column
+one and the developer-confirmed requirement ID in column two. Keeping it outside
+the worktree prevents its legacy paths from appearing in the residue scan or a
+commit. Do not infer a requirement ID from the issue number.
+
+```bash
+map_file=../odk-0.8-archive-map.tsv
+```
 
 ```text
 .codespec/changes/issue-12345-arkui-focus	REQ-12345
@@ -27,21 +32,17 @@ ID from the issue number.
 
 ## 2. Dry-run collision checks
 
-This command prints the plan and stops before any move if a source, ID, slug, or
-target is invalid:
+Use the local validator distributed with ODK. It prints the plan without moving
+files and rejects an in-worktree map, invalid legacy paths, missing/extra or
+duplicate sources, duplicate planned targets, invalid IDs/slugs, and existing
+targets:
 
 ```bash
-while IFS=$'\t' read -r old_path req_id; do
-  old_name=${old_path##*/}
-  slug=$(printf '%s\n' "$old_name" | sed -E 's/^issue-[0-9]+-//')
-  new_path="codespec/changes/${req_id}-${slug}"
-  test -d "$old_path" || { echo "missing source: $old_path" >&2; exit 1; }
-  printf '%s' "$req_id" | grep -Eq '^[A-Za-z0-9]+([A-Za-z0-9-]*[A-Za-z0-9])?$' || exit 1
-  printf '%s' "$slug" | grep -Eq '^[a-z0-9]+(-[a-z0-9]+)*$' || exit 1
-  test ! -e "$new_path" || { echo "target exists: $new_path" >&2; exit 1; }
-  printf 'PLAN\t%s\t%s\n' "$old_path" "$new_path"
-done < archive-map.tsv
+python3 /path/to/validate-archive-migration.py \
+  plan --map "$map_file" --repo .
 ```
+
+Review every `PLAN` line before moving anything.
 
 ## 3. Move and update metadata
 
@@ -62,6 +63,14 @@ rg -n --hidden --glob '!.git/**' \
   '\.codespec/changes|odk-link-issue|^[[:space:]]*issue:' .
 ```
 
+Stage only the migration roots and each explicitly reviewed reference file. Do
+not use an unbounded `git add .`:
+
+```bash
+git add -A -- .codespec/changes codespec/changes
+git add -- path/to/updated-registry.md path/to/updated-script.sh
+```
+
 ## 4. Validate and roll back
 
 Validate each migrated directory in Draft mode, then in Archive mode when it is
@@ -72,9 +81,13 @@ python3 /path/to/validate-artifacts-contract.py \
   codespec/changes/REQ-12345-arkui-focus
 python3 /path/to/validate-artifacts-contract.py \
   codespec/changes/REQ-12345-arkui-focus --archive
-git diff --check
+python3 /path/to/validate-archive-migration.py check-staged --repo .
 git diff --cached --name-status
 ```
+
+`check-staged` rejects unstaged tracked edits, untracked files, staged whitespace
+errors, legacy `issue:` frontmatter, missing/duplicate `req:`, and directory/ID
+mismatches. Commit only after it passes.
 
 If migration must be abandoned, only from the dedicated branch that started
 clean, restore its uncommitted changes with:

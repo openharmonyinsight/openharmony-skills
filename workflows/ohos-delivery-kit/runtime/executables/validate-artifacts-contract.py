@@ -248,19 +248,20 @@ def is_separator_row(cells: list[str]) -> bool:
     return bool(cells) and all(re.match(r"^:?-{3,}:?$", cell.strip()) for cell in cells)
 
 
-def markdown_tables(text: str) -> list[list[dict[str, str]]]:
-    """Return Markdown pipe tables as row dictionaries.
+def parsed_markdown_tables(text: str) -> list[tuple[list[str], list[dict[str, str]]]]:
+    """Return Markdown pipe-table headers and row dictionaries.
 
     The parser intentionally supports the simple pipe-table shape used by ODK
-    templates. It does not attempt to handle escaped pipes inside cells.
+    templates, including the valid form without leading/trailing pipes. It does
+    not attempt to handle escaped pipes inside cells.
     """
 
     lines = text.splitlines()
-    tables: list[list[dict[str, str]]] = []
+    tables: list[tuple[list[str], list[dict[str, str]]]] = []
     idx = 0
 
     while idx < len(lines) - 1:
-        if not lines[idx].lstrip().startswith("|"):
+        if "|" not in lines[idx] or "|" not in lines[idx + 1]:
             idx += 1
             continue
 
@@ -272,41 +273,34 @@ def markdown_tables(text: str) -> list[list[dict[str, str]]]:
 
         idx += 2
         rows: list[dict[str, str]] = []
-        while idx < len(lines) and lines[idx].lstrip().startswith("|"):
+        while idx < len(lines) and "|" in lines[idx]:
             cells = split_table_row(lines[idx])
             if len(cells) == len(header) and not is_separator_row(cells):
                 rows.append(dict(zip(header, cells)))
             idx += 1
-        tables.append(rows)
+        tables.append((header, rows))
 
     return tables
 
 
+def markdown_tables(text: str) -> list[list[dict[str, str]]]:
+    """Return Markdown pipe tables as row dictionaries."""
+    return [rows for _, rows in parsed_markdown_tables(text)]
+
+
 def table_has_columns(text: str, required_columns: list[str]) -> bool:
     """Check if text contains a markdown table with the required column names (even if no data rows)."""
-    for table in markdown_tables(text):
-        if table:
-            columns = set(table[0].keys())
-            if all(column in columns for column in required_columns):
-                return True
-        else:
-            # Header-only table: parse the header line directly
-            for line in text.splitlines():
-                if line.lstrip().startswith("|"):
-                    header = split_table_row(line)
-                    if all(col in header for col in required_columns):
-                        return True
+    for header, _ in parsed_markdown_tables(text):
+        if all(column in header for column in required_columns):
+            return True
     return False
 
 
 def tables_with_columns(text: str, required_columns: list[str]) -> list[list[dict[str, str]]]:
     matches: list[list[dict[str, str]]] = []
-    for table in markdown_tables(text):
-        if not table:
-            continue
-        columns = set(table[0].keys())
-        if all(column in columns for column in required_columns):
-            matches.append(table)
+    for header, rows in parsed_markdown_tables(text):
+        if all(column in header for column in required_columns):
+            matches.append(rows)
     return matches
 
 

@@ -14,6 +14,8 @@ the ID, run `odk-link-req` to rename the directory and update `proposal.md`.
 `req-id` may contain letters, digits, and internal hyphens. Existing repositories
 must follow the executable [0.8.0 migration guide](MIGRATION-0.8.0.md) before running
 strict validation. `odk-link-req` only links new drafts; it is not a legacy archive migrator.
+The installed `runtime/executables/validate-archive-migration.py` provides local
+`plan` and `check-staged` gates for legacy migrations.
 
 ## Source
 

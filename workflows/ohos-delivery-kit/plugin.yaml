@@ -118,6 +118,12 @@ components:
       entrypoint: validate-artifacts-contract.py
       usedBy:
         - odk-validate
+    - id: archive-migration-validator
+      path: runtime/executables/validate-archive-migration.py
+      runtime: python3
+      entrypoint: validate-archive-migration.py
+      usedBy:
+        - odk-validate
 
   agents: []
   tools: []

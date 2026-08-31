@@ -16,6 +16,7 @@ license: MIT
 - Artifact contract: installed `contracts/artifacts.yaml` (OpenCode: `{{ASSET_ROOT}}/contracts/artifacts.yaml`)
 - Templates: installed `templates/ai/` (OpenCode: `{{ASSET_ROOT}}/templates/ai/`)
 - Strict validator: `{{EXECUTABLE_ROOT}}/validate-artifacts-contract.py`. It is installed with ODK on every supported platform; use this skill to explain and remediate its findings.
+- Archive migration validator: `{{EXECUTABLE_ROOT}}/validate-archive-migration.py`. Use `plan` before moving legacy archives and `check-staged` before committing the migration.
 
 ## Steps
 
