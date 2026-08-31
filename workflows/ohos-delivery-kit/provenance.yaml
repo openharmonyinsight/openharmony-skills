@@ -4,10 +4,10 @@ id: ohos-delivery-kit
 
 source:
   repository: https://gitcode.com/oshunter/ohos-delivery-kit.git
-  branch: release/req-archive-dev-integration
-  commit: 41d7f0808cb84d2109c683c8e3f7665718575f94
+  branch: dev
+  commit: 6a09513f1993092e54a647e1220316809e4802c5
   sourceVersion: 0.8.0
-  commitDate: 2026-08-31T10:44:23+08:00
+  commitDate: 2026-08-31T11:08:27+08:00
   importedAt: 2026-08-31
 
 license:

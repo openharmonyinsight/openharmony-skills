@@ -16,8 +16,7 @@ must migrate old archive directories and references before running strict valida
 
 ## Source
 
-Synced from `oshunter/ohos-delivery-kit` branch
-`release/req-archive-dev-integration` via
+Synced from `oshunter/ohos-delivery-kit` branch `dev` via
 `ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills`.
 
 ## Structure
