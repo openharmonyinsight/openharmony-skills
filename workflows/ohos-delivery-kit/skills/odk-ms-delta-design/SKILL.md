@@ -8,13 +8,13 @@ license: MIT
 
 ## Purpose
 
-Invoke MatrixSpec `/matspec.delta-design` for design delta generation. Redirect output to ODK archive format in `.codespec/changes/<id>/`.
+Invoke MatrixSpec `/matspec.delta-design` for design delta generation. Redirect output to ODK archive format in `codespec/changes/<id>/`.
 
 ## Preconditions
 
 - Load `using-odk` first.
 - Load `using-odk-bridge` for output redirection and mode selection.
-- `.codespec/changes/<id>/spec.md` must exist (run `{{CMD_PREFIX}}ms-delta-spec` first).
+- `codespec/changes/<id>/spec.md` must exist (run `{{CMD_PREFIX}}ms-delta-spec` first).
 - If MatrixSpec is unavailable, use the fallback chain declared in `adapters/matrixspec.yaml` and clearly report the degradation.
 
 ## Steps
@@ -25,11 +25,11 @@ Invoke MatrixSpec `/matspec.delta-design` for design delta generation. Redirect 
    - strict: Transform to ODK design template at `{{ASSET_ROOT}}/templates/ai/design.md` format. Add module impact table, verification approach section; inherit `odk-design` DFX design and security steps:
      - DFX 设计（必填，Step 6）：执行 3 步故障模式分析流程（识别涉及仓库 → 构造变更检索摘要 + 仓内匹配 → 填故障模式分析表），详见 `odk-design/SKILL.md` Step 6 和 `{{ASSET_ROOT}}/contracts/dfx-fmea-matcher.yaml`。
      - Security baseline check (conditional, Step 7): when `proposal.md`「安全/权限」=「是」, expand `design.md`「安全基础检查」; if high-risk criteria are hit, produce `threat-model.md` (see `odk-security-threat-model`).
-   - passthrough: Copy to `.codespec/changes/<id>/design.md` unchanged.
+   - passthrough: Copy to `codespec/changes/<id>/design.md` unchanged.
    - merge: Use MatrixSpec format, append ODK verification approach section.
 4. Confirm with user.
 
 ## Output
 
-- Written to `.codespec/changes/<id>/design.md`
+- Written to `codespec/changes/<id>/design.md`
 - Report any fields needing human approval

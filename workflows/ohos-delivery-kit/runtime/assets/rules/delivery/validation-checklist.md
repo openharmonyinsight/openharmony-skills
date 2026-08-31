@@ -6,8 +6,10 @@
 
 ## Level A: Init (初始化后)
 
-- [ ] `.codespec/changes/` 目录存在
-- [ ] 变更目录名格式正确（`issue-<number>-<slug>` 或 `draft-<yyyymmdd>-<slug>`）
+- [ ] `codespec/changes/` 目录存在
+- [ ] 正式变更目录名格式正确（`<req-id>-<english-slug>`）；`proposal.md` frontmatter 的 `req:` 必须有效、不是保留旧格式 `issue-<digits>`，且与目录精确前缀一致
+- [ ] 草稿目录名格式正确（`draft-<yyyymmdd>-<english-slug>`）
+- [ ] `english-slug` 仅含小写字母、数字和分隔非空片段的连字符，长度不超过 40；目录名在 `codespec/` 下唯一
 - [ ] 必需归档文件列表存在 (proposal.md + spec.md + design.md + execution-plan.md)
 - [ ] 文件可为空或含模板占位符
 
@@ -30,7 +32,7 @@
 - [ ] 如存在可选 review/verification 证据，应包含 spec-compliance + code-quality + verification
 - [ ] 如存在可选 verification 证据，应有明确的「代码与规格一致性结论」
 - [ ] 追溯链完整 (AC → Task → code → commit → review)
-- [ ] 实现的 commit message 包含关联的 issue 编号
+- [ ] 实现的 commit message 包含关联的 `req-id`
 - [ ] **API 设计校验**：
   - 校验 `proposal.md` 的 `## API 设计属性` 与 `spec.md` 的 `## API 规格定义` 已填写（`API/SDK` = 否时均标注"不涉及"）。API 仓库路径/commit、既有声明格式参考为过程信息，不要求体现在 spec.md 中。
-  - 如 `API/SDK` = 是，校验声明文件修改 diff 已归档到 `.codespec/changes/<id>/`（声明文件 PR 由开发者自行管理）。
+  - 如 `API/SDK` = 是，校验声明文件修改 diff 已归档到 `codespec/changes/<req-id>-<english-slug>/`（声明文件 PR 由开发者自行管理）。

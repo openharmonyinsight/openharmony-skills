@@ -1,5 +1,5 @@
 version: 1
-archive_root: ".codespec/changes/<change-id>/"
+archive_root: "codespec/changes/<req-id>-<english-slug>/"
 minimum_contract:
   required_artifacts:
     - proposal

@@ -92,7 +92,7 @@ license: MIT
 
 ## Output
 
-Write to `.codespec/changes/<id>/spec.md`.
+Write to `codespec/changes/<id>/spec.md`.
 
 spec.md 固定包含 `## API 规格定义` 章节；若 `API/SDK` = 否，填写"不涉及"并说明理由。API 仓库路径/commit 与既有声明格式参考为 spec 阶段的过程信息，不写入 spec.md；支持属性（跨平台/元服务/卡片/FA-Stage 模型）作为规格表行写入 `## API 规格定义`。
 

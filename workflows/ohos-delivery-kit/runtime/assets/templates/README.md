@@ -30,7 +30,7 @@
 模板即普通 Markdown 文件。可通过以下方式调整：
 
 1. **直接修改** — 编辑对应 `.md` 文件，增删改章节标题
-2. **项目级覆盖** — 在业务仓 `.codespec/shared/templates/` 下放置同名文件
+2. **项目级覆盖** — 在业务仓 `codespec/shared/templates/` 下放置同名文件
 
 > `spec-for-validation.md` 是旁路模板——仅在用户显式调用 `odk-spec-for-validation` 时加载，不污染主上下文。
 > 该模板位于 `ai/` 目录下，独立于主流程四件套。

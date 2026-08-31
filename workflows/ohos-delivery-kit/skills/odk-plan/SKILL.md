@@ -39,6 +39,6 @@ license: MIT
 
 ## Output
 
-Write to `.codespec/changes/<id>/execution-plan.md`
+Write to `codespec/changes/<id>/execution-plan.md`
 
 Suggest next step: run `{{CMD_PREFIX}}implement` to begin Task-by-Task implementation.

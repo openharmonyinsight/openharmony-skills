@@ -13,11 +13,11 @@ license: MIT
 | 模式 | 标识 | 行为 | 适用场景 |
 |------|------|------|---------|
 | 严格 | `strict` | 产出件完全按 ODK 模板格式输出 | 需通过 odk-validate 归档检查 |
-| 透传 | `passthrough` | 产出件按源插件原始格式，仅归档到 .codespec/ 目录 | 临时使用，不做格式转换 |
+| 透传 | `passthrough` | 产出件按源插件原始格式，仅归档到 codespec/ 目录 | 临时使用，不做格式转换 |
 | 融合 | `merge` | 以源插件格式为基础，追加 ODK 缺失章节 | 对比审视用 |
 
 默认 strict。切换方式：
-- 在 `.codespec/profile.yaml` 中设置 `output_mode: merge`
+- 在 `codespec/profile.yaml` 中设置 `output_mode: merge`
 - 或在调用桥接命令时声明 "使用融合模式"
 
 桥接命令读取此设置后决定输出处理方式。
@@ -25,7 +25,7 @@ license: MIT
 <!-- SYNC: phase-mapping -->
 ## Phase-Artifact Mapping
 
-You are the bridge between ODK artifact requirements and implementation tools. Use whatever tools are available to produce quality outputs, then write results back into `.codespec/` in ODK format. Do not force the user to manually coordinate commands across plugins.
+You are the bridge between ODK artifact requirements and implementation tools. Use whatever tools are available to produce quality outputs, then write results back into `codespec/` in ODK format. Do not force the user to manually coordinate commands across plugins.
 
 When any tool (ODK skill, Superpowers, OpenSpec, MatrixSpec, or other) drives a phase, output must conform to the corresponding ODK template below. Identify the current phase by user intent (priority) or artifact being produced.
 
@@ -42,7 +42,7 @@ When any tool (ODK skill, Superpowers, OpenSpec, MatrixSpec, or other) drives a 
 
 > "design" without qualification → clarify: architecture (design.md) or behavior rules (spec.md)?
 
-When `.codespec/` does not exist but the user produces content that matches an ODK phase, suggest (do not force): "This can be archived to ODK — shall I initialize `.codespec/`?"
+When `codespec/` does not exist but the user produces content that matches an ODK phase, suggest (do not force): "This can be archived to ODK — shall I initialize `codespec/`?"
 
 When multiple plugins cover the same phase: prefer the user's explicit invocation; otherwise prefer the tool whose output matches the ODK template; stay consistent within a session.
 
@@ -61,16 +61,16 @@ When you encounter any instruction (checklist item, documentation step, or comma
 When triggered, execute these steps **instead of** the plugin's default write:
 
 1. **STOP** — Do not write to the plugin's default path (e.g., `docs/superpowers/specs/`, `docs/plans/`, `openspec/changes/`, `matspec/changes/`). Do not commit (ODK manages its own commit cadence per phase, not per-artifact commits).
-2. **REDIRECT** — Write to the corresponding `.codespec/changes/<id>/` file:
-   - behavior rules / spec → `.codespec/changes/<id>/spec.md`
-   - design/architecture doc → `.codespec/changes/<id>/design.md`
-   - implementation plan → `.codespec/changes/<id>/execution-plan.md`
-   - requirements / proposal → `.codespec/changes/<id>/proposal.md`
+2. **REDIRECT** — Write to the corresponding `codespec/changes/<id>/` file:
+   - behavior rules / spec → `codespec/changes/<id>/spec.md`
+   - design/architecture doc → `codespec/changes/<id>/design.md`
+   - implementation plan → `codespec/changes/<id>/execution-plan.md`
+   - requirements / proposal → `codespec/changes/<id>/proposal.md`
 3. **TRANSFORM** — Ensure output conforms to the active output mode (strict/passthrough/merge):
    - strict: conform to ODK template structure (read from `{{ASSET_ROOT}}/templates/ai/<phase>.md`)
    - passthrough: use original plugin format unchanged
    - merge: use plugin format as base, append ODK-required sections
-4. **CONFIRM** — Inform the user: "Written to `.codespec/changes/<id>/<artifact>` (ODK <mode> mode, overriding <plugin> default path)"
+4. **CONFIRM** — Inform the user: "Written to `codespec/changes/<id>/<artifact>` (ODK <mode> mode, overriding <plugin> default path)"
 
 This is a **hard override** — it takes priority over any other plugin's default output path.
 

@@ -27,8 +27,8 @@ Invoke Superpowers `requesting-code-review` and `verification-before-completion`
    - **spec-compliance-YYYYMMDD.md** — Check every AC against implementation
    - **code-review-YYYYMMDD.md** — Code quality review; verify code scope matches execution-plan boundaries
    - **verification-YYYYMMDD.md** — Verification evidence; explicit code-vs-spec consistency conclusion
-4. Persist to `.codespec/changes/<id>/evidence/reviews/`.
+4. Persist to `codespec/changes/<id>/evidence/reviews/`.
 
 ## Output
 
-Written to `.codespec/changes/<id>/evidence/reviews/`. Confirm all ACs are covered with no unresolved deviations.
+Written to `codespec/changes/<id>/evidence/reviews/`. Confirm all ACs are covered with no unresolved deviations.

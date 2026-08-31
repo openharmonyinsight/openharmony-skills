@@ -14,7 +14,7 @@ Invoke OpenSpec `/opsx:apply` to implement tasks from the execution plan, apply 
 
 - Load `using-odk` first.
 - Load `using-odk-bridge` for output redirection and mode selection.
-- `spec.md` and `execution-plan.md` must exist in `.codespec/changes/<id>/`.
+- `spec.md` and `execution-plan.md` must exist in `codespec/changes/<id>/`.
 - `execution-plan.md` must be approved by the user — do NOT implement before plan approval. If the plan is not yet approved, stop and ask the user to review and approve it first.
 - If OpenSpec is unavailable, use the fallback chain declared in `adapters/openspec.yaml` and clearly report the degradation.
 

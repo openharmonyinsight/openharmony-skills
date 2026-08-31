@@ -3,7 +3,7 @@
 target_release: ""
 # change_type: 变更类型（new-feature/enhancement/optimization/bugfix/refactor/deprecation）
 change_type: ""
-issue: ""
+req: ""
 author: ""
 date: ""
 status: Draft
@@ -121,6 +121,8 @@ status: Draft
 > - **ArkTS 静态类型 API**：静态类型 API 使用 `@ohos.*` 模块导入，动态类型使用命名空间导入
 >
 > **注**：跨平台支持、元服务支持、卡片支持等属性在 spec.md `## API 规格定义` 中填写。
+
+> 归档根在本次变更的**主仓**（通常是实现仓），只创建一个 proposal；interface 仓的声明文件 PR 是本次变更的交付物之一，不另起流程。interface 仓在「影响范围」表列一行即可。纯声明变更（无实现改动）时，interface 仓即主仓。
 
 ### API 使用场景探索（可选）
 

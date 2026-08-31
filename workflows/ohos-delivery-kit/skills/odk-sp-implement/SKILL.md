@@ -21,9 +21,9 @@ Use after `execution-plan.md` has been approved and the user wants implementatio
 
 ## Steps
 
-0. Read `.codespec/changes/<id>/execution-plan.md` Task list and list all Tasks as an explicit inventory before starting implementation. All task types — code modification, test writing, configuration update, and verification — are equally mandatory. No task type may be skipped without explicit user consent.
-1. Read the active `.codespec/changes/<id>/spec.md` AC list and `execution-plan.md` 代码范围映射.
-2. Read `.codespec/changes/<id>/execution-plan.md` Task list, file scope, and each Task's「任务间接口」（Produces/Consumes）—align cross-task naming and signatures to it.
+0. Read `codespec/changes/<id>/execution-plan.md` Task list and list all Tasks as an explicit inventory before starting implementation. All task types — code modification, test writing, configuration update, and verification — are equally mandatory. No task type may be skipped without explicit user consent.
+1. Read the active `codespec/changes/<id>/spec.md` AC list and `execution-plan.md` 代码范围映射.
+2. Read `codespec/changes/<id>/execution-plan.md` Task list, file scope, and each Task's「任务间接口」（Produces/Consumes）—align cross-task naming and signatures to it.
 3. Invoke Superpowers `test-driven-development` before editing implementation code.
 4. Execute the approved Task list using Superpowers `subagent-driven-development` when available; otherwise use `executing-plans`.
 5. For each Task:

@@ -107,6 +107,26 @@ PROPOSAL_SECTION = contract_scalar("proposal_section")
 PROPOSAL_COLUMNS = contract_list("proposal_columns")
 EVIDENCE_ROOT = contract_scalar("evidence_root")
 
+REQ_ID_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$")
+LEGACY_ISSUE_REQ_RE = re.compile(r"^issue-\d+$", re.IGNORECASE)
+SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+DRAFT_RE = re.compile(r"^draft-\d{8}-(.+)$")
+MAX_SLUG_LENGTH = 40
+INVALID_REQ_SCALAR = "__invalid_req_scalar__"
+ASCII_YAML_WHITESPACE = " \t\r\n"
+
+
+class Frontmatter(dict[str, str]):
+    """Parsed user fields plus out-of-band parser validity state."""
+
+    def __init__(self, invalid_reason: str | None = None) -> None:
+        super().__init__()
+        self.invalid_reason = invalid_reason
+
+
+def trim_yaml_whitespace(value: str) -> str:
+    """Trim ASCII/YAML separation whitespace, never Unicode lookalikes."""
+    return value.strip(ASCII_YAML_WHITESPACE)
 
 
 class Reporter:
@@ -132,25 +152,52 @@ def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def read_frontmatter(path: Path) -> dict[str, str]:
+def parse_simple_yaml_scalar(raw: str) -> str | None:
+    """Parse the simple scalar forms accepted in ODK frontmatter."""
+    value = trim_yaml_whitespace(raw)
+    if not value or value[0] not in {'"', "'"}:
+        if value.startswith("#"):
+            return ""
+        return trim_yaml_whitespace(re.sub(r"[ \t\r\n]+#.*$", "", value))
+
+    quote = value[0]
+    closing = value.find(quote, 1)
+    if closing == -1:
+        return None
+    suffix = trim_yaml_whitespace(value[closing + 1 :])
+    if suffix and not suffix.startswith("#"):
+        return None
+    return trim_yaml_whitespace(value[1:closing])
+
+
+def read_frontmatter(path: Path) -> Frontmatter:
     """Read simple YAML frontmatter key:value pairs (no external deps)."""
     if not path.is_file():
-        return {}
-    lines = read_text(path).splitlines()
-    if not lines or lines[0].strip() != "---":
-        return {}
-    result: dict[str, str] = {}
+        return Frontmatter()
+    # Split only on LF. str.splitlines() also treats VT, FF, NEL and Unicode
+    # separators as line boundaries, which would silently normalize invalid
+    # frontmatter differently from the shell validator.
+    lines = read_text(path).split("\n")
+    if not lines or trim_yaml_whitespace(lines[0]) != "---":
+        return Frontmatter("invalid opening delimiter")
+    result = Frontmatter()
+    closed = False
     for line in lines[1:]:
-        if line.strip() == "---":
+        if trim_yaml_whitespace(line) == "---":
+            closed = True
             break
-        match = re.match(r"^([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(.*)$", line)
+        if "\x00" in line:
+            return Frontmatter("frontmatter contains NUL")
+        match = re.match(r"^([A-Za-z_][A-Za-z0-9_]*)[ \t\r]*:[ \t\r]*(.*)$", line)
         if match:
+            key = match.group(1)
+            if key == "req" and key in result:
+                result[key] = INVALID_REQ_SCALAR
+                continue
             raw = match.group(2)
-            # strip inline YAML comment ("value # comment" -> "value"); unquoted values only
-            if not (raw.lstrip().startswith('"') or raw.lstrip().startswith("'")):
-                raw = re.sub(r"\s+#.*$", "", raw)
-            result[match.group(1)] = raw.strip().strip('"').strip("'")
-    return result
+            value = parse_simple_yaml_scalar(raw)
+            result[key] = value if value is not None else trim_yaml_whitespace(raw)
+    return result if closed else Frontmatter("missing closing delimiter")
 
 
 def headings(text: str) -> set[str]:
@@ -763,12 +810,55 @@ def sorted_ids(ids: set[str]) -> list[str]:
     return sorted(ids, key=key)
 
 
+def validate_slug(slug: str, reporter: Reporter) -> bool:
+    """Validate the English slug component shared by formal and draft paths."""
+    if len(slug) > MAX_SLUG_LENGTH:
+        reporter.fail(f"change directory slug exceeds {MAX_SLUG_LENGTH} characters: {slug}")
+        return False
+    if not SLUG_RE.fullmatch(slug):
+        reporter.fail(
+            "change directory slug is invalid (use lowercase letters/digits and single hyphens): "
+            f"{slug}"
+        )
+        return False
+    return True
+
+
 def validate_dir_name(change_dir: Path, reporter: Reporter) -> None:
+    if change_dir.parent.name != "changes" or change_dir.parent.parent.name != "codespec":
+        reporter.fail("change directory parent must end exactly with codespec/changes")
+        return
     name = change_dir.name
-    if re.match(r"^(issue-\d+-[a-z0-9-]+|draft-\d{8}-[a-z0-9-]+)$", name):
-        reporter.pass_(f"change directory name is valid: {name}")
-    else:
-        reporter.fail(f"change directory name is invalid: {name}")
+    proposal = change_dir / "proposal.md"
+    frontmatter = read_frontmatter(proposal)
+    if frontmatter.invalid_reason is not None:
+        reporter.fail(f"proposal.md: invalid frontmatter ({frontmatter.invalid_reason})")
+        return
+    req = trim_yaml_whitespace(frontmatter.get("req", ""))
+    draft_match = DRAFT_RE.fullmatch(name)
+    if draft_match and not req:
+        if validate_slug(draft_match.group(1), reporter):
+            reporter.pass_(f"change directory name is valid draft path: {name}")
+        return
+
+    if not req:
+        reporter.fail("proposal.md: req frontmatter is required for a formal change directory")
+        return
+    if not REQ_ID_RE.fullmatch(req):
+        reporter.fail(f"proposal.md: req '{req}' is invalid (letters, digits, and internal hyphens only)")
+        return
+    if LEGACY_ISSUE_REQ_RE.fullmatch(req):
+        reporter.fail(f"proposal.md: req '{req}' uses reserved legacy issue-<digits> format")
+        return
+
+    prefix = f"{req}-"
+    if not name.startswith(prefix):
+        reporter.fail(f"change directory name must start with exact proposal.md req prefix '{prefix}': {name}")
+        return
+
+    slug = name[len(prefix) :]
+    if validate_slug(slug, reporter):
+        reporter.pass_(f"change directory name is valid formal path: {name}")
 
 
 def validate_target_release(change_dir: Path, reporter: Reporter) -> None:
@@ -1329,7 +1419,7 @@ def validate_archive_readiness(
 
 def main(argv: list[str]) -> int:
     parser = ArgumentParser(description="Validate one ODK change directory against the active artifacts contract.")
-    parser.add_argument("change_dir", help="ODK change directory, for example .codespec/changes/issue-123-demo")
+    parser.add_argument("change_dir", help="ODK change directory, for example codespec/changes/REQ-123-arkui-focus")
     parser.add_argument(
         "--archive",
         action="store_true",

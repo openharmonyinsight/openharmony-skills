@@ -8,13 +8,13 @@ license: MIT
 
 ## Purpose
 
-One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta specs + design + tasks, then redirect output to `.codespec/changes/<id>/`.
+One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta specs + design + tasks, then redirect output to `codespec/changes/<id>/`.
 
 ## Preconditions
 
 - Load `using-odk` first.
 - Load `using-odk-bridge` for output redirection and mode selection.
-- `.codespec/changes/<id>/` skeleton must exist (run `{{CMD_PREFIX}}init` first).
+- `codespec/changes/<id>/` skeleton must exist (run `{{CMD_PREFIX}}init` first).
 - If OpenSpec is unavailable, use the fallback chain declared in `adapters/openspec.yaml` and clearly report the degradation.
 
 ## Steps
@@ -23,7 +23,7 @@ One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta s
 2. When OpenSpec tries to write to `openspec/changes/`, apply `using-odk-bridge` Output Redirection Rules instead.
 3. Process output per the active output mode (strict/passthrough/merge, default strict):
    - **strict**: Transform each artifact to conform to ODK templates at `{{ASSET_ROOT}}/templates/ai/`.
-   - **passthrough**: Copy original format to `.codespec/changes/<id>/` unchanged.
+   - **passthrough**: Copy original format to `codespec/changes/<id>/` unchanged.
    - **merge**: Use OpenSpec format as base, append ODK-required sections.
 4. In strict mode, ensure ODK-required fields are present:
    - proposal: target_release, non-goals, 8-dimension N/A table, success criteria.
@@ -35,5 +35,5 @@ One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta s
 
 ## Output
 
-- Written to `.codespec/changes/<id>/proposal.md`, `spec.md`, `design.md`, `execution-plan.md`.
+- Written to `codespec/changes/<id>/proposal.md`, `spec.md`, `design.md`, `execution-plan.md`.
 - Report any fields needing human approval.

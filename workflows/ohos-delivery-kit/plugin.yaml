@@ -36,7 +36,7 @@ components:
         - skills/odk-validate/SKILL.md
         - skills/odk-spec-for-validation/SKILL.md
         - skills/odk-security-threat-model/SKILL.md
-        - skills/odk-link-issue/SKILL.md
+        - skills/odk-link-req/SKILL.md
       role: delivery-workflow
     - id: odk-superpowers-bridge
       include:
@@ -137,7 +137,7 @@ commandProjection:
     - skill: odk-validate
     - skill: odk-spec-for-validation
     - skill: odk-security-threat-model
-    - skill: odk-link-issue
+    - skill: odk-link-req
     - skill: odk-sp-brainstorm
     - skill: odk-sp-plan
     - skill: odk-sp-implement

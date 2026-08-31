@@ -8,8 +8,8 @@ license: MIT
 
 ## Prerequisites
 
-- `.codespec/changes/<id>/` directory exists (run `odk-init` first if not)
-- `proposal.md` has YAML frontmatter (target_release, issue, author, date, status)
+- `codespec/changes/<id>/` directory exists (run `odk-init` first if not)
+- `proposal.md` has YAML frontmatter (target_release, req, author, date, status)
 
 ## Input
 
@@ -18,7 +18,7 @@ Read the change context from the user's request. If the user describes a require
 ## Key Rules
 
 - Define phase input is source material, not an execution request. Implementation verbs in the user prompt such as implement, modify, refactor, update, fix, build, commit, or delete must be extracted into proposal goals, scope, non-goals, success criteria, or open questions.
-- `odk-propose` may only generate or update `.codespec/changes/<id>/proposal.md` (and initialize the ODK skeleton if needed). Do not edit implementation code, tests, build scripts, knowledge documents, README files, configuration files, or other non-proposal artifacts in this phase.
+- `odk-propose` may only generate or update `codespec/changes/<id>/proposal.md` (and initialize the ODK skeleton if needed). Do not edit implementation code, tests, build scripts, knowledge documents, README files, configuration files, or other non-proposal artifacts in this phase.
 - If the user asks to generate a proposal and immediately implement, refactor, or update files, finish `proposal.md` first and ask for confirmation. Do not proceed to implementation until `execution-plan.md` is approved and the user explicitly invokes an implement command.
 - **Always fill `资源开销审视`** (性能 / 内存(RAM) / 存储(ROM)): `required` | `review-required` | `not-applicable` | `waived`. Prefer subsystem/profile knowledge. Signals by dimension: **性能** — 热路径 / 每帧或每事件开销 / 唤醒频率 / 每场景指令数或负载 / 持锁时长 / IPC 往返；**内存(RAM)** — 常驻占用 / 运行时峰值 / 大块 buffer / 应用使用时增量；**存储(ROM)** — 镜像产物（native `.so`、ArkTS `.abc`、资源、预置应用包、配置/预置数据）+ data 分区大体量持久化（音视频/大缓存/db；小体量常规落盘不构成关注点）。能耗风险写在「性能」信号列（勿新增功耗维度）。Unknown risk → `review-required` (never silent `not-applicable`). `not-applicable` / `waived` require `确认人=<owner>; 理由=<why>; 范围=<scope>`. Archive gate is business-repo `odk_resource_gate` in root `AGENTS.md` (ODK does not ship measurement).
 
@@ -56,11 +56,11 @@ Read the change context from the user's request. If the user describes a require
      - 根据需要可选填写 `## API 使用场景探索`（开发者场景和用户画像）
      - **注**：跨平台支持、元服务支持、卡片支持等多设备属性在 spec.md `## API 规格定义` 中填写
    - **Success criteria**: 成功标准写**系统级能力达成**（可观察、可量化），禁内部实现 + 禁接口细节（属 spec AC）。
-3. Preserve all YAML frontmatter fields (target_release, change_type, issue, author, date, status). When reading the existing `proposal.md` for these fields, read **only its YAML frontmatter** — do not load the body into context: you regenerate the body fresh from the template + requirement, and a stale body would only bias the output and waste context.
+3. Preserve all YAML frontmatter fields (target_release, change_type, req, author, date, status). When reading the existing `proposal.md` for these fields, read **only its YAML frontmatter** — do not load the body into context: you regenerate the body fresh from the template + requirement, and a stale body would only bias the output and waste context.
 
 ## Output
 
-Write to `.codespec/changes/<id>/proposal.md`.
+Write to `codespec/changes/<id>/proposal.md`.
 
 Do not generate `gates/` by default. If the user explicitly wants process evidence, record approval notes under an optional evidence directory such as `evidence/gates/`.
 
@@ -72,6 +72,6 @@ After generating, ask the user to confirm:
 - Non-involvement items are accurate (fill in "是/否" with justification)
 - Success criteria are system-level observable (no internal implementation, no interface details — those belong to spec AC)
 
-If `issue` in frontmatter is empty, append: "The proposal content can be used as the issue description. After creating the issue, run `{{CMD_PREFIX}}link-issue <id>` to link it."
+If `req` in frontmatter is empty, append: "After the requirement ID is available, run `{{CMD_PREFIX}}link-req <req>` to link it."
 
 Suggest next step: run `{{CMD_PREFIX}}spec` to define acceptance criteria and business rules.

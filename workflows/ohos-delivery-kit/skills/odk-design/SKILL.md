@@ -72,7 +72,7 @@ license: MIT
 
 ## Output
 
-Write to `.codespec/changes/<id>/design.md`
+Write to `codespec/changes/<id>/design.md`
 
 Confirm with the user that design decisions are aligned with requirements.
 

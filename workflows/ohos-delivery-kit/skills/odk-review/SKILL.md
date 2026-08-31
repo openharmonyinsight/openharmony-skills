@@ -26,7 +26,7 @@ license: MIT
 
 ## Output
 
-Write optional process evidence to `.codespec/changes/<id>/evidence/reviews/`.
+Write optional process evidence to `codespec/changes/<id>/evidence/reviews/`.
 
 Do not generate `reviews/` or `gates/` in the minimal archive root by default. These records are process evidence, not formal archive artifacts.
 
