@@ -94,21 +94,51 @@ for token in "$legacy_odk_root" "$legacy_link_command"; do
   fi
 done
 
-legacy_flat_paths=(
-  "codespec/changes/<req-id>""-<english-slug>"
-  "codespec/changes/draft-<yyyymmdd>""-<english-slug>"
+review_handoff="$SKILLS_DIR/../development/ohos-dev-gitcode-pr-review/references/reviewing-skill-prs.md"
+flat_matches="$(python3 - "$SKILLS_DIR" "$review_handoff" <<'PY'
+import pathlib
+import re
+import sys
+
+roots = [pathlib.Path(raw) for raw in sys.argv[1:] if pathlib.Path(raw).exists()]
+patterns = (
+    re.compile(
+        r"codespec/changes/(?:<req-id>|\{req-id\}|\$\{req_id\})-"
+        r"(?:<english-slug>|\{english-slug\}|\$\{slug\})"
+    ),
+    re.compile(
+        r"codespec/changes/draft-(?:<yyyymmdd>|\{yyyymmdd\}|\$\{yyyymmdd\})-"
+        r"(?:<english-slug>|\{english-slug\}|\$\{slug\})"
+    ),
+    # A proposal immediately below changes/ has only the old 0.8 archive layer;
+    # ODK 0.9 always has <repo-name>/<req-id-or-draft>/proposal.md.
+    re.compile(r"codespec/changes/[^/\s`]+/proposal\.md"),
 )
-for token in "${legacy_flat_paths[@]}"; do
-  stale_matches="$(
-    grep -RFn --include='*.md' --exclude-dir=evals --exclude-dir=examples \
-      -- "$token" "$SKILLS_DIR" || true
-  )"
-  if [[ -n "$stale_matches" ]]; then
-    rc=1
-    echo "STALE ODK 0.8 flat archive path: $token"
-    echo "$stale_matches"
-  fi
-done
+
+for root in roots:
+    files = [root] if root.is_file() else root.rglob("*.md")
+    for path in files:
+        if any(part in {"evals", "examples"} for part in path.parts):
+            continue
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except (OSError, UnicodeError) as error:
+            print(f"SCAN ERROR {path}: {error}")
+            raise SystemExit(2)
+        for number, line in enumerate(lines, 1):
+            if any(pattern.search(line) for pattern in patterns):
+                print(f"{path}:{number}:{line}")
+PY
+)" || {
+  rc=1
+  echo "ODK archive path semantic scan failed"
+}
+if [[ -n "$flat_matches" ]]; then
+  rc=1
+  while IFS= read -r match; do
+    echo "STALE ODK 0.8 flat archive path: $match"
+  done <<< "$flat_matches"
+fi
 
 if [[ "$rc" -eq 0 ]]; then
   echo "Result: CONSISTENT"

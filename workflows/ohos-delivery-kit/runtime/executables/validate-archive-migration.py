@@ -15,6 +15,7 @@ LEGACY_PATH_RE = re.compile(
 )
 REQ_ID_RE = re.compile(r"^[A-Za-z0-9]+(?:[A-Za-z0-9-]*[A-Za-z0-9])?$")
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+DRAFT_RE = re.compile(r"^draft-[0-9]{8}-[a-z0-9]+(?:-[a-z0-9]+)*$")
 REPOSITORY_NAME_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 
 
@@ -94,43 +95,53 @@ def repository_name(root: Path) -> str:
     return name
 
 
-def plan_migration(root: Path, map_path: Path) -> None:
-    root = root.resolve()
-    map_path = map_path.resolve()
-    if is_within(map_path, root):
-        fail("mapping file must be outside the worktree")
-
-    discovered = discover_legacy_archives(root)
-    rows = read_mapping(map_path)
+def build_plans(
+    root: Path,
+    rows: list[tuple[str, str]],
+    discovered: set[str],
+    *,
+    require_sources_in_worktree: bool,
+    require_targets_absent: bool,
+) -> list[tuple[str, str]]:
     seen_sources: set[str] = set()
     seen_targets: set[str] = set()
     plans: list[tuple[str, str]] = []
     repo_name = repository_name(root)
 
-    for old_path, req_id in rows:
+    for old_path, identity in rows:
         issue_match = LEGACY_PATH_RE.fullmatch(old_path)
-        flat_prefix = f"codespec/changes/{req_id}-"
-        if not issue_match and not old_path.startswith(flat_prefix):
-            fail(f"invalid legacy path or req identity: {old_path}")
+        flat_draft = old_path.removeprefix("codespec/changes/")
+        is_flat_draft = (
+            old_path == f"codespec/changes/{flat_draft}"
+            and DRAFT_RE.fullmatch(flat_draft) is not None
+        )
+
+        if is_flat_draft:
+            if identity != "-":
+                fail(f"draft mapping must use '-' instead of a req-id: {old_path}")
+            new_leaf = flat_draft
+        else:
+            if not REQ_ID_RE.fullmatch(identity):
+                fail(f"invalid req-id: {identity}")
+            flat_prefix = f"codespec/changes/{identity}-"
+            if not issue_match and not old_path.startswith(flat_prefix):
+                fail(f"invalid legacy path or req identity: {old_path}")
+            slug = issue_match.group(1) if issue_match else old_path[len(flat_prefix):]
+            if not SLUG_RE.fullmatch(slug):
+                fail(f"invalid slug: {slug}")
+            new_leaf = identity
+
         if old_path in seen_sources:
             fail(f"duplicate source mapping: {old_path}")
         if old_path not in discovered:
             fail(f"mapped source was not discovered: {old_path}")
-        if not (root / PurePosixPath(old_path)).is_dir():
+        if require_sources_in_worktree and not (root / PurePosixPath(old_path)).is_dir():
             fail(f"missing source: {old_path}")
-        if not REQ_ID_RE.fullmatch(req_id):
-            fail(f"invalid req-id: {req_id}")
 
-        if issue_match:
-            slug = issue_match.group(1)
-        else:
-            slug = old_path[len(flat_prefix):]
-        if not SLUG_RE.fullmatch(slug):
-            fail(f"invalid slug: {slug}")
-        new_path = f"codespec/changes/{repo_name}/{req_id}"
+        new_path = f"codespec/changes/{repo_name}/{new_leaf}"
         if new_path in seen_targets:
             fail(f"duplicate planned target: {new_path}")
-        if (root / PurePosixPath(new_path)).exists():
+        if require_targets_absent and (root / PurePosixPath(new_path)).exists():
             fail(f"target exists: {new_path}")
 
         seen_sources.add(old_path)
@@ -143,6 +154,24 @@ def plan_migration(root: Path, map_path: Path) -> None:
     extras = sorted(seen_sources - discovered)
     if extras:
         fail("mapping contains undiscovered archives: " + ", ".join(extras))
+    return plans
+
+
+def plan_migration(root: Path, map_path: Path) -> None:
+    root = root.resolve()
+    map_path = map_path.resolve()
+    if is_within(map_path, root):
+        fail("mapping file must be outside the worktree")
+
+    discovered = discover_legacy_archives(root)
+    rows = read_mapping(map_path)
+    plans = build_plans(
+        root,
+        rows,
+        discovered,
+        require_sources_in_worktree=True,
+        require_targets_absent=True,
+    )
 
     for old_path, new_path in plans:
         print(f"PLAN\t{old_path}\t{new_path}")
@@ -173,8 +202,41 @@ def proposal_frontmatter(text: str, path: str) -> str:
     return ""  # Unreachable; keeps static analyzers satisfied.
 
 
-def check_staged(root: Path) -> None:
+def discover_legacy_archives_in_head(root: Path) -> set[str]:
+    paths = git(root, "ls-tree", "-r", "--name-only", "HEAD").stdout.splitlines()
+    discovered: set[str] = set()
+    for path in paths:
+        if not path.endswith("/proposal.md"):
+            continue
+        parent = PurePosixPath(path).parent.as_posix()
+        if parent.startswith(".codespec/changes/issue-"):
+            if not LEGACY_PATH_RE.fullmatch(parent):
+                fail(f"invalid legacy archive directory in HEAD: {parent}")
+            discovered.add(parent)
+            continue
+        parts = PurePosixPath(parent).parts
+        if len(parts) == 3 and parts[:2] == ("codespec", "changes"):
+            discovered.add(parent)
+    if not discovered:
+        fail("no legacy flat or issue-* archives discovered in HEAD")
+    return discovered
+
+
+def frontmatter_req_values(frontmatter: str) -> list[str]:
+    values: list[str] = []
+    for match in re.finditer(r"(?m)^\s*req\s*:\s*(.*)$", frontmatter):
+        value = re.sub(r"\s+#.*$", "", match.group(1)).strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1].strip()
+        values.append(value)
+    return values
+
+
+def check_staged(root: Path, map_path: Path) -> None:
     root = root.resolve()
+    map_path = map_path.resolve()
+    if is_within(map_path, root):
+        fail("mapping file must be outside the worktree")
     if git(root, "rev-parse", "--is-inside-work-tree").stdout.strip() != "true":
         fail(f"not a git worktree: {root}")
     if git(root, "diff", "--quiet", "--", check=False).returncode != 0:
@@ -189,6 +251,23 @@ def check_staged(root: Path) -> None:
     if whitespace.returncode != 0:
         fail("staged diff check failed: " + (whitespace.stdout or whitespace.stderr).strip())
 
+    discovered = discover_legacy_archives_in_head(root)
+    plans = build_plans(
+        root,
+        read_mapping(map_path),
+        discovered,
+        require_sources_in_worktree=False,
+        require_targets_absent=False,
+    )
+    expected_targets = {f"{target}/proposal.md" for _, target in plans}
+    for source, target in plans:
+        source_proposal = f"{source}/proposal.md"
+        target_proposal = f"{target}/proposal.md"
+        if git(root, "cat-file", "-e", f":{source_proposal}", check=False).returncode == 0:
+            fail(f"legacy source remains in staged index: {source}")
+        if git(root, "cat-file", "-e", f":{target_proposal}", check=False).returncode != 0:
+            fail(f"planned target missing from staged index: {target}")
+
     staged_paths = git(
         root, "diff", "--cached", "--name-only", "--diff-filter=ACMR"
     ).stdout.splitlines()
@@ -198,6 +277,15 @@ def check_staged(root: Path) -> None:
     ]
     if not proposals:
         fail("no staged migrated proposal under codespec/changes")
+    unexpected = sorted(set(proposals) - expected_targets)
+    missing = sorted(expected_targets - set(proposals))
+    if unexpected or missing:
+        details = []
+        if unexpected:
+            details.append("unexpected targets: " + ", ".join(unexpected))
+        if missing:
+            details.append("missing targets: " + ", ".join(missing))
+        fail("staged proposals do not match migration mapping: " + "; ".join(details))
 
     repo_name = repository_name(root)
     for path in proposals:
@@ -205,17 +293,26 @@ def check_staged(root: Path) -> None:
         frontmatter = proposal_frontmatter(staged_text, path)
         if re.search(r"(?m)^\s*issue\s*:", frontmatter):
             fail(f"{path}: staged proposal still contains legacy issue frontmatter")
-        req_matches = re.findall(r"(?m)^\s*req\s*:\s*[\"']?([^\s\"']+)", frontmatter)
-        if len(req_matches) != 1:
-            fail(f"{path}: staged proposal must contain exactly one non-empty req field")
-        req_id = req_matches[0]
-        if not REQ_ID_RE.fullmatch(req_id):
-            fail(f"{path}: invalid staged req-id: {req_id}")
+        req_values = frontmatter_req_values(frontmatter)
+        if len(req_values) > 1:
+            fail(f"{path}: staged proposal contains duplicate req fields")
         parts = PurePosixPath(path).parts
         if len(parts) != 5 or parts[:2] != ("codespec", "changes"):
             fail(f"{path}: staged archive path must be codespec/changes/<repo-name>/<req-id>/proposal.md")
-        if parts[2] != repo_name or parts[3] != req_id:
-            fail(f"{path}: staged req field does not match directory identity")
+        if parts[2] != repo_name:
+            fail(f"{path}: staged repository layer does not match repository identity")
+        leaf = parts[3]
+        if DRAFT_RE.fullmatch(leaf):
+            if req_values and req_values[0]:
+                fail(f"{path}: staged draft proposal req must be empty or absent")
+        else:
+            if len(req_values) != 1 or not req_values[0]:
+                fail(f"{path}: staged proposal must contain exactly one non-empty req field")
+            req_id = req_values[0]
+            if not REQ_ID_RE.fullmatch(req_id):
+                fail(f"{path}: invalid staged req-id: {req_id}")
+            if leaf != req_id:
+                fail(f"{path}: staged req field does not match directory identity")
 
     print(
         f"PASS staged migration: {len(proposals)} proposal(s), no unstaged/untracked edits, "
@@ -230,6 +327,7 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--map", required=True, type=Path, dest="map_path")
     plan.add_argument("--repo", type=Path, default=Path.cwd())
     staged = subparsers.add_parser("check-staged", help="verify staged migration content")
+    staged.add_argument("--map", required=True, type=Path, dest="map_path")
     staged.add_argument("--repo", type=Path, default=Path.cwd())
     return parser
 
@@ -240,7 +338,7 @@ def main() -> int:
         if args.command == "plan":
             plan_migration(args.repo, args.map_path)
         else:
-            check_staged(args.repo)
+            check_staged(args.repo, args.map_path)
     except MigrationError as exc:
         print(f"FAIL: {exc}", file=sys.stderr)
         return 1

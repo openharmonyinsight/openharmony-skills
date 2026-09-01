@@ -103,6 +103,25 @@ cout="$(bash "$(sbx_check "$sbx8")" || true)"
 echo "$cout" | grep -q 'STALE ODK 0.8 flat archive path' && echo "$cout" | grep -q 'Result: INCONSISTENT' \
   && ok "S10 requirements bundle 中 ODK 0.8 扁平路径被本地检查检出" || { bad "S10 期望 ODK 0.8 扁平路径 INCONSISTENT"; echo "$cout"; }
 
+# --- 场景11：等价占位符/具体路径变体同样不得绕过语义扫描 ---
+sbx9="$(setup_sandbox)"
+variant_file="$sbx9/skills/common/requirements/ohos-req-requirement-intake/reference/requirement-fields.md"
+printf '\n`codespec/changes/{req-id}-{english-slug}/`\n`codespec/changes/${req_id}-${slug}/`\n`codespec/changes/REQ-123-demo/proposal.md`\n' \
+  >> "$variant_file"
+cout="$(bash "$(sbx_check "$sbx9")" || true)"
+count="$(printf '%s\n' "$cout" | grep -c 'STALE ODK 0.8 flat archive path' || true)"
+[[ "$count" -ge 3 ]] && echo "$cout" | grep -q 'Result: INCONSISTENT' \
+  && ok "S11 ODK 0.8 扁平路径变体被语义检查检出" || { bad "S11 期望三个路径变体均 INCONSISTENT"; echo "$cout"; }
+
+# --- 场景12：requirements 外的关联 review handoff 文档也属于扫描范围 ---
+sbx10="$(setup_sandbox)"
+review_ref="$sbx10/skills/common/development/ohos-dev-gitcode-pr-review/references/reviewing-skill-prs.md"
+mkdir -p "$(dirname "$review_ref")"
+printf 'Legacy `codespec/changes/<req-id>-<english-slug>/proposal.md`.\n' > "$review_ref"
+cout="$(bash "$(sbx_check "$sbx10")" || true)"
+echo "$cout" | grep -q 'reviewing-skill-prs.md' && echo "$cout" | grep -q 'Result: INCONSISTENT' \
+  && ok "S12 requirements 外关联 handoff 文档旧路径被检出" || { bad "S12 期望关联 review 文档 INCONSISTENT"; echo "$cout"; }
+
 echo ""
 echo "Summary: $pass passed, $fail failed"
 [ "$fail" -eq 0 ]

@@ -1,5 +1,11 @@
 # ODK 0.8.0 archive path migration
 
+> **Frozen historical guide for ODK 0.8.0 tooling only.** Do not use the target
+> layout below or run these commands with an ODK 0.9.0+ installation. Use the
+> [0.9.0 repository-scoped migration](MIGRATION-0.9.0.md) to migrate hidden
+> `issue-*`, flat formal archives, or flat drafts directly into
+> `codespec/changes/<repo-name>/...`.
+
 ODK 0.8.0 replaces `.codespec/changes/issue-<issue-number>-<english-slug>/`
 with `codespec/changes/<req-id>-<english-slug>/`. This is a breaking change.
 `odk-link-req` only links a new `draft-*` directory and is not a legacy archive
@@ -32,13 +38,13 @@ map_file=../odk-0.8-archive-map.tsv
 
 ## 2. Dry-run collision checks
 
-Use the local validator distributed with ODK. It prints the plan without moving
+Use the validator from a pinned ODK 0.8.0 source tree or installation. It prints the plan without moving
 files and rejects an in-worktree map, invalid legacy paths, missing/extra or
 duplicate sources, duplicate planned targets, invalid IDs/slugs, and existing
 targets:
 
 ```bash
-python3 /path/to/validate-archive-migration.py \
+python3 /path/to/ohos-delivery-kit-0.8.0/scripts/validate-archive-migration.py \
   plan --map "$map_file" --repo .
 ```
 
@@ -77,11 +83,12 @@ Validate each migrated directory in Draft mode, then in Archive mode when it is
 ready for formal archive:
 
 ```bash
-python3 /path/to/validate-artifacts-contract.py \
+python3 /path/to/ohos-delivery-kit-0.8.0/scripts/validate-artifacts-contract.py \
   codespec/changes/REQ-12345-arkui-focus
-python3 /path/to/validate-artifacts-contract.py \
+python3 /path/to/ohos-delivery-kit-0.8.0/scripts/validate-artifacts-contract.py \
   codespec/changes/REQ-12345-arkui-focus --archive
-python3 /path/to/validate-archive-migration.py check-staged --repo .
+python3 /path/to/ohos-delivery-kit-0.8.0/scripts/validate-archive-migration.py \
+  check-staged --repo .
 git diff --cached --name-status
 ```
 

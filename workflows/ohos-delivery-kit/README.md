@@ -28,9 +28,11 @@ are no longer supported. Formal delivery artifacts now use
 keep the draft at `codespec/changes/draft-<yyyymmdd>-<english-slug>/`; after obtaining
 the ID, run `odk-link-req` to rename the directory and update `proposal.md`.
 
-`req-id` may contain letters, digits, and internal hyphens. Existing repositories
-must follow the executable [0.8.0 migration guide](MIGRATION-0.8.0.md) before running
-strict validation. `odk-link-req` only links new drafts; it is not a legacy archive migrator.
+`req-id` may contain letters, digits, and internal hyphens. The
+[0.8.0 migration guide](MIGRATION-0.8.0.md) is frozen historical documentation
+and must only be used with pinned 0.8.0 tools; current users must follow the
+[0.9.0 migration guide](MIGRATION-0.9.0.md). `odk-link-req` only links new drafts;
+it is not a legacy archive migrator.
 The 0.8.0 rules above are historical; 0.9.0 repositories must use the new
 repository-scoped layout.
 
