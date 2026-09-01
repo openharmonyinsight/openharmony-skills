@@ -122,6 +122,16 @@ cout="$(bash "$(sbx_check "$sbx10")" || true)"
 echo "$cout" | grep -q 'reviewing-skill-prs.md' && echo "$cout" | grep -q 'Result: INCONSISTENT' \
   && ok "S12 requirements 外关联 handoff 文档旧路径被检出" || { bad "S12 期望关联 review 文档 INCONSISTENT"; echo "$cout"; }
 
+# --- 场景13：不带文件名的具体 formal/draft 扁平目录也不得绕过 ---
+sbx11="$(setup_sandbox)"
+concrete_file="$sbx11/skills/common/requirements/ohos-req-requirement-intake/reference/requirement-fields.md"
+printf '\n`codespec/changes/REQ-123-demo/`\n`codespec/changes/draft-20260831-demo/`\n' \
+  >> "$concrete_file"
+cout="$(bash "$(sbx_check "$sbx11")" || true)"
+count="$(printf '%s\n' "$cout" | grep -c 'STALE ODK 0.8 flat archive path' || true)"
+[[ "$count" -ge 2 ]] && echo "$cout" | grep -q 'Result: INCONSISTENT' \
+  && ok "S13 具体 formal/draft 扁平目录被语义检查检出" || { bad "S13 期望两个具体扁平目录均 INCONSISTENT"; echo "$cout"; }
+
 echo ""
 echo "Summary: $pass passed, $fail failed"
 [ "$fail" -eq 0 ]

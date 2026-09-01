@@ -261,10 +261,19 @@ def check_staged(root: Path, map_path: Path) -> None:
     )
     expected_targets = {f"{target}/proposal.md" for _, target in plans}
     for source, target in plans:
-        source_proposal = f"{source}/proposal.md"
         target_proposal = f"{target}/proposal.md"
-        if git(root, "cat-file", "-e", f":{source_proposal}", check=False).returncode == 0:
-            fail(f"legacy source remains in staged index: {source}")
+        source_files = git(
+            root, "ls-tree", "-r", "--name-only", "HEAD", "--", source
+        ).stdout.splitlines()
+        if not source_files:
+            fail(f"legacy source has no tracked files in HEAD: {source}")
+        for source_file in source_files:
+            if git(root, "cat-file", "-e", f":{source_file}", check=False).returncode == 0:
+                fail(f"legacy source remains in staged index: {source_file}")
+            relative = PurePosixPath(source_file).relative_to(PurePosixPath(source))
+            target_file = (PurePosixPath(target) / relative).as_posix()
+            if git(root, "cat-file", "-e", f":{target_file}", check=False).returncode != 0:
+                fail(f"planned target is missing migrated file: {target_file}")
         if git(root, "cat-file", "-e", f":{target_proposal}", check=False).returncode != 0:
             fail(f"planned target missing from staged index: {target}")
 

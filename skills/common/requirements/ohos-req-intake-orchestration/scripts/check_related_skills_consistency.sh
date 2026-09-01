@@ -110,6 +110,16 @@ patterns = (
         r"codespec/changes/draft-(?:<yyyymmdd>|\{yyyymmdd\}|\$\{yyyymmdd\})-"
         r"(?:<english-slug>|\{english-slug\}|\$\{slug\})"
     ),
+    re.compile(
+        r"codespec/changes/draft-[0-9]{8}-[a-z0-9]+(?:-[a-z0-9]+)*/"
+        r"(?=$|[\s`'\"\)\]\}.,;:])"
+    ),
+    # Concrete formal examples conventionally use an uppercase/numeric req-id
+    # followed by a lowercase English slug in the old single archive layer.
+    re.compile(
+        r"codespec/changes/(?:[A-Z0-9][A-Z0-9-]*[A-Z0-9]|[0-9]+)-"
+        r"[a-z0-9]+(?:-[a-z0-9]+)*/(?=$|[\s`'\"\)\]\}.,;:])"
+    ),
     # A proposal immediately below changes/ has only the old 0.8 archive layer;
     # ODK 0.9 always has <repo-name>/<req-id-or-draft>/proposal.md.
     re.compile(r"codespec/changes/[^/\s`]+/proposal\.md"),
