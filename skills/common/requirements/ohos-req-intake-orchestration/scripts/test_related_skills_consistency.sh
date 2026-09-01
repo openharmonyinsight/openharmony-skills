@@ -95,6 +95,14 @@ cout="$(bash "$(sbx_check "$sbx7")" || true)"
 echo "$cout" | grep -q 'STALE ODK archive token' && echo "$cout" | grep -q 'Result: INCONSISTENT' \
   && ok "S9 requirements bundle 中 ODK 旧路径被本地检查检出" || { bad "S9 期望旧 ODK 路径 INCONSISTENT"; echo "$cout"; }
 
+# --- 场景10：requirements bundle 残留 ODK 0.8 扁平路径 → consistency INCONSISTENT ---
+sbx8="$(setup_sandbox)"
+printf '\n旧 ODK 0.8 路径 `codespec/changes/<req-id>-<english-slug>/` 不应再出现。\n' \
+  >> "$sbx8/skills/common/requirements/ohos-req-requirement-intake/reference/requirement-fields.md"
+cout="$(bash "$(sbx_check "$sbx8")" || true)"
+echo "$cout" | grep -q 'STALE ODK 0.8 flat archive path' && echo "$cout" | grep -q 'Result: INCONSISTENT' \
+  && ok "S10 requirements bundle 中 ODK 0.8 扁平路径被本地检查检出" || { bad "S10 期望 ODK 0.8 扁平路径 INCONSISTENT"; echo "$cout"; }
+
 echo ""
 echo "Summary: $pass passed, $fail failed"
 [ "$fail" -eq 0 ]

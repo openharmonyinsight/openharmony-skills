@@ -6,7 +6,7 @@ set -euo pipefail
 #   A. 编排器 frontmatter metadata.related-skills
 #   B. install_related_skills.sh REQUIRED_SKILLS
 #   C. 全部幸存 SKILL.md/reference(s) 中的 ohos-* skill 引用
-#   D. requirements bundle 中不得残留 ODK 0.8 已废弃的归档根或 link 命令
+#   D. requirements bundle 中不得残留 ODK 已废弃的归档根、扁平路径或 link 命令
 # 任一悬空引用、三方清单漂移、旧别名或旧 ODK 路径残留即失败。
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -90,6 +90,22 @@ for token in "$legacy_odk_root" "$legacy_link_command"; do
   if [[ -n "$stale_matches" ]]; then
     rc=1
     echo "STALE ODK archive token: $token"
+    echo "$stale_matches"
+  fi
+done
+
+legacy_flat_paths=(
+  "codespec/changes/<req-id>""-<english-slug>"
+  "codespec/changes/draft-<yyyymmdd>""-<english-slug>"
+)
+for token in "${legacy_flat_paths[@]}"; do
+  stale_matches="$(
+    grep -RFn --include='*.md' --exclude-dir=evals --exclude-dir=examples \
+      -- "$token" "$SKILLS_DIR" || true
+  )"
+  if [[ -n "$stale_matches" ]]; then
+    rc=1
+    echo "STALE ODK 0.8 flat archive path: $token"
     echo "$stale_matches"
   fi
 done

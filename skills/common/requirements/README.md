@@ -42,7 +42,7 @@ flowchart TD
 | 可行性结论 | `02-feasibility.md` | Step 3-6 | 各方案独立工作量估算，禁止替用户做选型 |
 | 方案决策 | `03-arch-decision-record.md` | Step 7-9 | 阶段 A 候选分析，阶段 B 根据用户决策定稿 |
 | Feature/Proposal 基线 | `04-feature.md` | Step 10-12 | Feature/Proposal 基线、拆分策略、影响性分析和内建 Gate 结论 |
-| Feature/Proposal 基线 | `proposals/05-proposal-<slug>.md` | Step 10-12 | requirements 阶段 proposal 索引产物，进入 ODK 前转换为 `codespec/changes/<req-id>-<english-slug>/proposal.md`；未取得编号时使用 `draft-<yyyymmdd>-<english-slug>` |
+| Feature/Proposal 基线 | `proposals/05-proposal-<slug>.md` | Step 10-12 | requirements 阶段 proposal 索引产物，进入 ODK 前转换为 `codespec/changes/<repo-name>/<req-id>/proposal.md`；未取得编号时使用 `<repo-name>/draft-<yyyymmdd>-<english-slug>` |
 | Feature/Proposal 基线 | `proposals/proposal-check-<slug>.md` | Step 10-12 | proposal 生成后的矩阵审查结果，由审查 subagent 产出，待SE澄清/TSE复核列留空 |
 | 评审闭环 | `value-decision-record.md` | Step 14 | 评审接纳/不接纳/下次重新上会的决策记录 |
 
