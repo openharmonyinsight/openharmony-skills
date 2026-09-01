@@ -51,10 +51,12 @@ Phase 4: 计划      → execution-plan.md + task.md
 
 | 复杂度 | 定义 | 设计 | Spec | 实现 | 审查 |
 |--------|------|------|------|------|------|
-| **简单** (单仓小修) | proposal.md (核心字段) | 跳过 | spec.md (核心 AC) | task.md (1-2 Tasks) | review.md (仅决策) |
-| **标准** (单/双仓特性) | proposal.md (全量) | design.md (关键决策) | spec.md (全量) | execution-plan + task.md | review.md (规范+质量) |
-| **复杂** (多仓/SIG) | proposal.md + epic.md | design.md (全量+扩展) | spec.md (全量+场景库) | 全量 Plan + 多 task.md | review.md (全量) |
-| **关键** (安全/性能) | 同复杂 | design.md (全量+安全/性能专项) | spec.md (全量+合规) | 全量 Plan + 专家 | review.md (全量+专项) |
+| **简单** (单仓小修) | proposal.md (核心字段) | design.md (简写约束/N/A) | spec.md (核心 AC) | execution-plan (1-2 Tasks) | 按实际范围触发 Review Evidence |
+| **标准** (单/双仓特性) | proposal.md (全量) | design.md (关键决策) | spec.md (全量) | execution-plan + 可选 task.md | 按实际范围触发 Review Evidence |
+| **复杂** (多仓/SIG) | proposal.md + epic.md | design.md (全量+扩展) | spec.md (全量+场景库) | 全量 Plan + 多 task.md | 按实际范围触发 Review Evidence |
+| **关键** (安全/性能) | 同复杂 | design.md (全量+安全/性能专项) | spec.md (全量+合规) | 全量 Plan + 专家 | 按实际范围触发 Review Evidence + 专项 |
+
+> 四件套（proposal/spec/design/execution-plan）在所有复杂度下都必须存在，复杂度只控制内容深度，不参与任何归档门禁。Evidence 门禁状态触发：代码范围映射实际范围含代码文件即需三份 Approved Review Evidence；纯文档变更可选（存在即严校验）。
 
 公共模板位于 `templates/`：proposal.md, spec.md, design.md, execution-plan.md, task.md, epic.md, bugfix.md, test-spec.md, regression-test.md, review.md, scenario-library.md, gate-checklist.md。Profile 专属模板位于 `profiles/<name>/templates/`。
 

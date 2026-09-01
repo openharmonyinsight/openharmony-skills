@@ -1,7 +1,7 @@
 # 业务代码仓 Spec 目录结构
 
 > 目标：在不干扰源码目录的前提下，让每个变更的交付件、过程证据和提交记录都能长期追溯。
-> 目录结构与 ohos-delivery-kit 对齐，采用 `.codespec/changes/issue-<number>-<slug>/` 作为统一归档路径。
+> 采用 `.codespec/changes/issue-<number>-<slug>/` 作为统一归档路径。
 > 仓内最小真实样例见源仓 `examples/archive-shape/.codespec/`。
 
 ## 顶层目录
@@ -35,7 +35,7 @@
 
 ## 变更目录
 
-> 与 ODK 契约一致：每条变更对应一个 `issue-<number>-<slug>` 目录，交付件 name 和最小章节见 ohos-delivery-kit 的 `docs/contracts.md`。
+> 每条变更对应一个 `issue-<number>-<slug>` 目录，交付件名称和最小章节以本仓合同与模板为准。
 
 ### 标准变更目录（Feature / 存量补规格 / 增强）
 
@@ -54,7 +54,7 @@
     └── evidence/                 # [可选] 过程证据
         ├── reviews/
         │   ├── spec-compliance-YYYYMMDD.md
-        │   ├── code-review-YYYYMMDD.md
+        │   ├── code-quality-YYYYMMDD.md
         │   └── verification-YYYYMMDD.md
         ├── checks/
         │   ├── check-proposal.md
@@ -67,7 +67,7 @@
 
 最小归档文件（必须）：
 
-| 文件 | 作用 | ODK 契约 |
+| 文件 | 作用 | 核心合同 |
 |------|------|---------|
 | `proposal.md` | 需求输入、澄清与基线，YAML frontmatter 承载 `target_release` | ✅ 必需 |
 | `design.md` | Feature 级设计 | ✅ 必需（简单变更可标记简化） |
@@ -123,9 +123,9 @@ Feature 侧也必须在 `manifest.md` 或 `lineage.md` 反向记录该 bugfix，
 
 规则：
 
-- **目录命名与 ODK ID 规则一致**：`issue-number` 为源码平台（GitCode 等）的 issue ID；`short-slug` 使用小写英文、数字和连字符，不超过 40 字符。
+- **目录命名规则**：`issue-number` 为源码平台（GitCode 等）的 issue ID；`short-slug` 使用小写英文、数字和连字符，不超过 40 字符。
 - 变更目录名不包含目标发行版本，避免交付版本变更导致路径大规模移动。
-- `draft-<yyyymmdd>-<slug>` 用于尚未关联 issue 的草稿，关联后通过 `odk-link-issue` 重命名为 `issue-<number>-<slug>`。
+- `draft-<yyyymmdd>-<slug>` 用于尚未关联 issue 的草稿，关联后重命名为 `issue-<number>-<slug>`。
 - 目标发行版本写入 `proposal.md` 的 YAML frontmatter `target_release` 字段。
 - 审批状态只写在 `evidence/checks/` 和 frontmatter 中。
 - 变更类型（feature/bugfix）由 `manifest.md` 的 `type` 字段承载，不在目录路径中区分。
@@ -316,6 +316,7 @@ issue-67890: fix sleep notification regression
 合入前要求：
 
 - `manifest.md` 记录相关 commit。
+- `execution-plan.md` 已回填全部 Task 状态、实际文件、Actual Result、Commit 和 Review Evidence，且 `manifest.status` 至少为 `verifying`。
 - `registry.md` 状态更新。
 - `evidence/checks/check-execution-plan.md` 已通过，且最终验证证据挂在 `review.md` 或 `evidence/reviews/` 中。
 - bugfix 已在关联 Feature 侧反向记录。

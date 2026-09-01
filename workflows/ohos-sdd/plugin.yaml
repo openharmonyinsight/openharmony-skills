@@ -2,7 +2,7 @@ schemaVersion: 1
 kind: Plugin
 id: ohos-sdd
 name: ohos-sdd
-version: 0.4.0
+version: 0.5.1
 description: OpenHarmony SDD workflow plugin with skills, profiles, and runtime assets.
 license: MIT
 provenance: provenance.yaml

@@ -1,10 +1,26 @@
 #!/usr/bin/env bash
 # ohos-sdd — OpenHarmony SDD 机器层 CLI(shell 入口 + python 引擎调度)
-# 设计:docs/superpowers/specs/2026-06-14-spec-for-ai-standalone-architecture-design.md 第七节(D3)
 set -euo pipefail
 
 CLI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENGINE="${CLI_DIR}/ohos_sdd_engine.py"
+
+# Resolve a Python 3.8+ interpreter once (python3 → python → py -3).
+# Exported as OHOS_SDD_PYTHON so child processes (run_engine) reuse it.
+# Keep in sync with packaging/lib/platform-env.sh::detect_python (CLI is a
+# runtime dispatch artifact and cannot source the build-time lib).
+_resolve_python() {
+  [ -n "${OHOS_SDD_PYTHON:-}" ] && return 0
+  local cand first
+  for cand in python3 python "py -3"; do
+    first="${cand%% *}"
+    command -v "$first" >/dev/null 2>&1 || continue
+    if $cand -c 'import sys;sys.exit(0 if sys.version_info>=(3,8) else 1)' 2>/dev/null; then
+      OHOS_SDD_PYTHON="$cand"; return 0
+    fi
+  done
+  return 1
+}
 
 resolve_contract() {
   local d="${CLI_DIR}"
@@ -53,16 +69,17 @@ resolve_profiles() {
 
 have_python() {
   [[ "${OHOS_SDD_NO_PYTHON:-0}" == "1" ]] && return 1   # 可测钩子
-  command -v python3 >/dev/null 2>&1
+  _resolve_python
 }
 
 warn_no_python() {
-  echo "[ohos-sdd] 深度校验需 python3;未装则跳过 Level B/C/D/E,仅 Level A required 存在性校验仍生效。" >&2
+  echo "[ohos-sdd] 深度校验需 Python 3.8+;无 Python 时仅显式 --level A 可执行 shell fallback。" >&2
+  echo "  (tried python3, python, 'py -3'; install from python.org on Windows)" >&2
 }
 
 run_engine() {
-  # invoke the python engine; exit code propagates (0 pass / 1 validate-fail / 2 error)
-  python3 "${ENGINE}" "$@"
+  # shellcheck disable=SC2086  # OHOS_SDD_PYTHON may be multi-word ("py -3")
+  $OHOS_SDD_PYTHON "${ENGINE}" "$@"
 }
 
 usage() {
@@ -72,6 +89,7 @@ ohos-sdd — OpenHarmony SDD 机器层 CLI
 用法:
   ohos-sdd status [<change>]
   ohos-sdd validate [<change>] [--level A|B|C|D|E|all] [--json]
+  ohos-sdd approval-digest <change>
   ohos-sdd archive <change>
   ohos-sdd init <id>
   ohos-sdd registry
@@ -87,20 +105,45 @@ _validate_shell_fallback() {
   local change="$1"
   if [[ -z "$change" ]]; then echo "validate: 需要 <change-dir>" >&2; return 2; fi
   [[ -d "$change" ]] || { echo "validate: change dir not found: $change" >&2; return 2; }
-  # proposal/spec 是 required;execution-plan 是 conditional(简单变更可用 task.md 替代)
-  local required=(proposal.md spec.md)
+  # 最小交付合同固定为四件套；简单变更通过内容简写裁剪。
+  local required=(proposal.md spec.md design.md execution-plan.md)
   local broken=0 f
   echo "[FALLBACK] 结构校验(无 python,仅 Level A required 存在性)"
   for f in "${required[@]}"; do
     if [[ -f "${change}/${f}" ]]; then echo "[OK]   ${f}"
     else echo "[MISS] ${f} (required)"; broken=$((broken+1)); fi
   done
-  # execution-plan 或 task.md 至少有一个(简单变更只需 task.md)
-  if [[ ! -f "${change}/execution-plan.md" && ! -f "${change}/task.md" ]]; then
-    echo "[MISS] execution-plan.md 或 task.md (至少需要一个)"; broken=$((broken+1))
-  fi
   echo "fallback: required-missing=${broken}"
   [[ "$broken" -eq 0 ]]
+}
+
+valid_change_id() {
+  local id="$1"
+  [[ "$id" =~ ^issue-[0-9]+-[a-z0-9][a-z0-9-]*$ ||
+     "$id" =~ ^draft-[0-9]{8}-[a-z0-9][a-z0-9-]*$ ]]
+}
+
+workspace_change_root() {
+  printf '%s/.codespec/changes\n' "$(pwd -P)"
+}
+
+resolve_archive_change() {
+  local requested="$1"
+  [[ -d "$requested" ]] || { echo "archive: change 目录不存在: $requested" >&2; return 2; }
+  [[ ! -L "$requested" ]] || { echo "archive: 拒绝 symlink change 目录: $requested" >&2; return 2; }
+
+  local root canonical id
+  root="$(workspace_change_root)"
+  [[ -d "$root" ]] || { echo "archive: 当前工作区缺少 .codespec/changes" >&2; return 2; }
+  root="$(cd "$root" && pwd -P)"
+  canonical="$(cd "$requested" && pwd -P)"
+  [[ "$(dirname "$canonical")" == "$root" ]] || {
+    echo "archive: change 必须是当前工作区 .codespec/changes 的直接子目录: $requested" >&2
+    return 2
+  }
+  id="$(basename "$canonical")"
+  valid_change_id "$id" || { echo "archive: 非法 change id: $id" >&2; return 2; }
+  printf '%s\n' "$canonical"
 }
 
 cmd_status() {
@@ -116,14 +159,14 @@ cmd_status() {
       return 1
     fi
   else
-    echo "[ohos-sdd] status 未执行 legacy 迁移检查：需要 python3" >&2
+    echo "[ohos-sdd] status 未执行 legacy 迁移检查：需要 Python 3.8+" >&2
   fi
 
   local rows=(
     "proposal|proposal.md|required"
     "spec|spec.md|required"
-    "design|design.md|conditional"
-    "execution-plan|execution-plan.md|conditional"
+    "design|design.md|required"
+    "execution-plan|execution-plan.md|required"
     "review|review.md|reference"
     "manifest|manifest.md|recommended"
     "test-spec|test-spec.md|conditional"
@@ -151,7 +194,7 @@ cmd_status() {
   local gaps=0
   if [[ -f "${change}/spec.md" && ! -f "${change}/proposal.md" ]]; then echo "[GAP] spec 存在但缺 proposal"; gaps=$((gaps+1)); fi
   if [[ -f "${change}/design.md" && ! -f "${change}/spec.md" ]]; then echo "[GAP] design 存在但缺 spec"; gaps=$((gaps+1)); fi
-  if [[ -f "${change}/execution-plan.md" && ! -f "${change}/spec.md" ]]; then echo "[GAP] execution-plan 存在但缺 spec"; gaps=$((gaps+1)); fi
+  if [[ -f "${change}/execution-plan.md" && ! -f "${change}/design.md" ]]; then echo "[GAP] execution-plan 存在但缺 design"; gaps=$((gaps+1)); fi
   if [[ -f "${change}/spec-for-validation.md" && ! -f "${change}/design.md" ]]; then echo "[GAP] spec-for-validation 存在但缺 design"; gaps=$((gaps+1)); fi
 
   echo "--- summary ---"
@@ -159,51 +202,97 @@ cmd_status() {
   [[ "$missing_required" -eq 0 ]]
 }
 cmd_validate() {
-  local has_source=0 has_c=0 change="" a skip_next=0
-  for a in "$@"; do
-    if [[ $skip_next -eq 1 ]]; then
-      skip_next=0
-      continue
-    fi
-    case "$a" in
-      --source) has_source=1 ;;
-      --contract) has_c=1; skip_next=1 ;;
-      --level) skip_next=1 ;;
-      --json) ;;
-      -*) ;;
-      *) [[ -z "$change" ]] && change="$a" ;;
+  local original=("$@")
+  local has_source=0 has_c=0 wants_json=0 change="" level="all" level_explicit=0
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --source)
+        [[ $has_source -eq 0 ]] || { echo "validate: --source 不得重复" >&2; return 2; }
+        has_source=1
+        ;;
+      --contract)
+        [[ $# -ge 2 && "$2" != --* ]] || { echo "validate: --contract 缺少路径" >&2; return 2; }
+        has_c=1
+        shift
+        ;;
+      --level)
+        [[ $# -ge 2 && "$2" != --* ]] || { echo "validate: --level 缺少值" >&2; return 2; }
+        [[ $level_explicit -eq 0 ]] || { echo "validate: --level 不得重复" >&2; return 2; }
+        level="$2"
+        level_explicit=1
+        shift
+        ;;
+      --json)
+        [[ $wants_json -eq 0 ]] || { echo "validate: --json 不得重复" >&2; return 2; }
+        wants_json=1
+        ;;
+      -*)
+        echo "validate: 未知参数 $1" >&2
+        return 2
+        ;;
+      *)
+        [[ -z "$change" ]] || { echo "validate: 只能指定一个 change/source 目录" >&2; return 2; }
+        change="$1"
+        ;;
     esac
+    shift
   done
+
+  if [[ $has_source -eq 1 ]]; then
+    if [[ $level_explicit -eq 1 && "$level" != "contract" ]]; then
+      echo "validate --source: --level 仅允许 contract" >&2
+      return 2
+    fi
+  else
+    case "$level" in
+      A|B|C|D|E|all) ;;
+      *) echo "validate: 未知 level '$level',允许 A/B/C/D/E/all" >&2; return 2 ;;
+    esac
+  fi
+
   if ! have_python; then
     if [[ $has_source -eq 1 ]]; then
-      echo "validate --source 需 python3" >&2; return 2
+      echo "validate --source 需 Python 3.8+" >&2; return 2
+    fi
+    if [[ $has_c -eq 1 || $wants_json -eq 1 ]]; then
+      echo "validate: 无 Python 时无法执行 --contract/--json" >&2; return 2
+    fi
+    if [[ $level_explicit -ne 1 || "$level" != "A" ]]; then
+      echo "validate: 无 Python 时仅允许显式 --level A；请求级别 '$level' 未执行" >&2
+      return 2
     fi
     warn_no_python
-    _validate_shell_fallback "$change"
+    _validate_shell_fallback "${change:-$(pwd -P)}"
     return
   fi
   if [[ $has_source -eq 1 ]]; then
-    run_engine validate "$@"
+    run_engine validate "${original[@]}"
     return
   fi
   local contract
   contract="$(resolve_contract)" || { echo "validate: 找不到 artifacts.yaml 契约" >&2; return 2; }
-  local args=("$@")
-  [[ $has_c -eq 0 ]] && args=(--contract "$contract" "$@")
+  local args=("${original[@]}")
+  [[ $has_c -eq 0 ]] && args=(--contract "$contract" "${original[@]}")
   run_engine validate "${args[@]}"
 }
 cmd_init() {
   local id="${1:-}"
   [[ -n "$id" ]] || { echo "usage: ohos-sdd init <change-id>" >&2; return 2; }
+  valid_change_id "$id" || { echo "init: 非法 change id: $id" >&2; return 2; }
   local tmpl_dir
   tmpl_dir="$(resolve_templates)" || { echo "init: 找不到模板目录" >&2; return 2; }
-  local target=".codespec/changes/${id}"
-  mkdir -p "$target/evidence/reviews" || { echo "init: 无法创建 $target" >&2; return 2; }
+  local root target
+  root="$(workspace_change_root)"
+  mkdir -p "$root" || { echo "init: 无法创建 $root" >&2; return 2; }
+  root="$(cd "$root" && pwd -P)"
+  target="${root}/${id}"
+  [[ ! -e "$target" ]] || { echo "init: change 已存在: $target" >&2; return 2; }
+  mkdir -p "$target" || { echo "init: 无法创建 $target" >&2; return 2; }
   local f
-  for f in proposal.md spec.md manifest.md; do
+  for f in proposal.md spec.md design.md execution-plan.md; do
     [[ -f "${tmpl_dir}/${f}" ]] && cp "${tmpl_dir}/${f}" "${target}/${f}"
   done
-  echo "已脚手架:${target}(proposal/spec/manifest + evidence/reviews/)"
+  echo "已脚手架:.codespec/changes/${id}(proposal/spec/design/execution-plan 核心四件套)"
 }
 
 cmd_registry() {
@@ -213,29 +302,56 @@ cmd_registry() {
   return 1
 }
 
+cmd_approval_digest() {
+  [[ $# -eq 1 ]] || { echo "usage: ohos-sdd approval-digest <change-dir>" >&2; return 2; }
+  local change="$1"
+  [[ -d "$change" ]] || { echo "approval-digest: change dir not found: $change" >&2; return 2; }
+  have_python || { echo "approval-digest 需 Python 3.8+" >&2; return 2; }
+  run_engine approval-digest "$change"
+}
+
 cmd_archive() {
-  local change="${1:-}"
-  [[ -d "$change" ]] || { echo "archive: change 目录不存在: $change" >&2; return 2; }
-  have_python || { echo "archive: legacy 迁移检查需要 python3，拒绝归档" >&2; return 2; }
-  if ! run_engine legacy-check "$change"; then
-    echo "archive: 请先完成 legacy 迁移" >&2
+  local requested="${1:-}" change
+  [[ -n "$requested" ]] || { echo "usage: ohos-sdd archive <change-dir>" >&2; return 2; }
+  change="$(resolve_archive_change "$requested")" || return $?
+  have_python || { echo "archive: 归档就绪硬门禁需要 Python 3.8+，拒绝归档" >&2; return 2; }
+  local contract
+  contract="$(resolve_contract)" || { echo "archive: 找不到 artifacts.yaml 契约" >&2; return 2; }
+  local workspace_root reg first_line=""
+  workspace_root="$(pwd -P)"
+  reg="${workspace_root}/.codespec/registry.md"
+  if [[ -e "$reg" ]]; then
+    [[ -f "$reg" && ! -L "$reg" ]] || { echo "archive: registry 必须是普通文件: $reg" >&2; return 2; }
+    IFS= read -r first_line <"$reg" || true
+    [[ "$first_line" == "# Registry" ]] || {
+      echo "archive: 拒绝修改非 ohos-sdd registry: $reg" >&2
+      return 2
+    }
+  fi
+  if ! run_engine archive-ready "$change" --contract "$contract"; then
+    echo "archive: 归档就绪硬门禁未通过，registry 未修改" >&2
     return 1
   fi
   local id; id="$(basename "$change")"
-  local parent; parent="$(cd "$change/.." && pwd)"            # .codespec/changes
-  local codespec_dir; codespec_dir="$(cd "$parent/.." && pwd)" # .codespec
-  local reg="${codespec_dir}/registry.md"
+  local codespec_dir="${workspace_root}/.codespec"
   mkdir -p "$codespec_dir"
-  [[ -f "$reg" ]] || printf '# Registry\n\n' > "$reg"
-  if ! grep -q -- "- ${id} " "$reg" 2>/dev/null; then
-    printf -- '- %s archived\n' "$id" >> "$reg"
+  if ! grep -Fq -- "- ${id} " "$reg" 2>/dev/null &&
+     ! grep -Fq -- "| ${id} |" "$reg" 2>/dev/null; then
+    local tmp="${reg}.tmp.$$"
+    if [[ -f "$reg" ]]; then
+      cp "$reg" "$tmp"
+    else
+      printf '# Registry\n\n' > "$tmp"
+    fi
+    printf -- '- %s archived\n' "$id" >> "$tmp"
+    mv "$tmp" "$reg"
   fi
   echo "已归档:${id} → ${reg}"
   echo "(长期 specs/ 回灌在 P5/后续 batch 实现)"
 }
 
 cmd_spec_for_validation() {
-  have_python || { echo "spec-for-validation 需 python3" >&2; return 2; }
+  have_python || { echo "spec-for-validation 需 Python 3.8+" >&2; return 2; }
   local profiles_dir
   profiles_dir="$(resolve_profiles)" || { echo "spec-for-validation: 找不到 Profile 目录" >&2; return 2; }
   run_engine spec-for-validation "$@" --profiles "$profiles_dir"
@@ -247,6 +363,7 @@ main() {
   case "$sub" in
     status)    cmd_status "$@" ;;
     validate)  cmd_validate "$@" ;;
+    approval-digest) cmd_approval_digest "$@" ;;
     archive)   cmd_archive "$@" ;;
     init)      cmd_init "$@" ;;
     registry)  cmd_registry "$@" ;;
@@ -255,7 +372,7 @@ main() {
       echo "spec-for-test 已重命名为 spec-for-validation；请迁移旧文件和 Profile 配置后使用新命令" >&2
       exit 2
       ;;
-    version|--version) echo "ohos-sdd 0.4.0 (machine-layer skeleton)" ;;
+    version|--version) echo "ohos-sdd 0.5.1 (machine-layer skeleton)" ;;
     help|--help|-h)    usage ;;
     "")                usage; exit 0 ;;
     *) echo "unknown subcommand: $sub" >&2; usage >&2; exit 2 ;;
