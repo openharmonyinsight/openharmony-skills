@@ -111,6 +111,7 @@ REQ_ID_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$")
 LEGACY_ISSUE_REQ_RE = re.compile(r"^issue-\d+$", re.IGNORECASE)
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 DRAFT_RE = re.compile(r"^draft-\d{8}-(.+)$")
+REPOSITORY_NAME_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 MAX_SLUG_LENGTH = 40
 INVALID_REQ_SCALAR = "__invalid_req_scalar__"
 ASCII_YAML_WHITESPACE = " \t\r\n"
@@ -845,10 +846,62 @@ def validate_slug(slug: str, reporter: Reporter) -> bool:
     return True
 
 
+def expected_repository_name(repository_root: Path) -> str:
+    """Return the origin repository name, falling back to the checkout basename."""
+    try:
+        top_level = subprocess.run(
+            ["git", "-C", str(repository_root), "rev-parse", "--show-toplevel"],
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=5,
+        )
+        if top_level.returncode != 0 or Path(top_level.stdout.strip()).resolve() != repository_root.resolve():
+            return repository_root.name
+        result = subprocess.run(
+            ["git", "-C", str(repository_root), "remote", "get-url", "origin"],
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        result = None
+
+    if result is not None and result.returncode == 0:
+        remote = result.stdout.strip().rstrip("/")
+        if remote:
+            name = remote.rsplit("/", 1)[-1].rsplit(":", 1)[-1]
+            if name.endswith(".git"):
+                name = name[:-4]
+            if REPOSITORY_NAME_RE.fullmatch(name):
+                return name
+    return repository_root.name
+
+
 def validate_dir_name(change_dir: Path, reporter: Reporter) -> None:
-    if change_dir.parent.name != "changes" or change_dir.parent.parent.name != "codespec":
-        reporter.fail("change directory parent must end exactly with codespec/changes")
+    change_dir = change_dir.resolve()
+    repository_segment = change_dir.parent
+    changes_dir = repository_segment.parent
+    codespec_dir = changes_dir.parent
+    repository_root = codespec_dir.parent
+    if changes_dir.name != "changes" or codespec_dir.name != "codespec":
+        reporter.fail(
+            "change directory layout must be exactly codespec/changes/<repo-name>/<req-id-or-draft>"
+        )
         return
+
+    expected_repo = expected_repository_name(repository_root)
+    if repository_segment.name in {".", ".."} or not REPOSITORY_NAME_RE.fullmatch(repository_segment.name):
+        reporter.fail(f"repository path segment is invalid: {repository_segment.name}")
+        return
+    if repository_segment.name != expected_repo:
+        reporter.fail(
+            "repository path segment must match the current repository name "
+            f"'{expected_repo}': {repository_segment.name}"
+        )
+        return
+    reporter.pass_(f"archive repository path is valid: codespec/changes/{expected_repo}")
     name = change_dir.name
     proposal = change_dir / "proposal.md"
     frontmatter = read_frontmatter(proposal)
@@ -872,14 +925,10 @@ def validate_dir_name(change_dir: Path, reporter: Reporter) -> None:
         reporter.fail(f"proposal.md: req '{req}' uses reserved legacy issue-<digits> format")
         return
 
-    prefix = f"{req}-"
-    if not name.startswith(prefix):
-        reporter.fail(f"change directory name must start with exact proposal.md req prefix '{prefix}': {name}")
+    if name != req:
+        reporter.fail(f"change directory name must exactly match proposal.md req '{req}': {name}")
         return
-
-    slug = name[len(prefix) :]
-    if validate_slug(slug, reporter):
-        reporter.pass_(f"change directory name is valid formal path: {name}")
+    reporter.pass_(f"change directory name is valid formal req path: {name}")
 
 
 def validate_target_release(change_dir: Path, reporter: Reporter) -> None:
@@ -1440,7 +1489,7 @@ def validate_archive_readiness(
 
 def main(argv: list[str]) -> int:
     parser = ArgumentParser(description="Validate one ODK change directory against the active artifacts contract.")
-    parser.add_argument("change_dir", help="ODK change directory, for example codespec/changes/REQ-123-arkui-focus")
+    parser.add_argument("change_dir", help="ODK change directory, for example codespec/changes/arkui/REQ-123")
     parser.add_argument(
         "--archive",
         action="store_true",

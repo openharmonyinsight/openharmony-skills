@@ -8,8 +8,8 @@ license: MIT
 
 ## Input
 
-- Change directory path (e.g. `codespec/changes/REQ-12345-arkui-focus/`)
-- If not specified, auto-detect from `codespec/changes/` (fail if multiple exist)
+- Change directory path (e.g. `codespec/changes/arkui/REQ-12345/`)
+- If not specified, resolve the current repository name and auto-detect from `codespec/changes/<repo-name>/` (fail if multiple exist)
 
 ## Sources
 
@@ -21,7 +21,7 @@ license: MIT
 ## Steps
 
 1. Resolve the target change directory and load the artifact contract.
-2. Check Level A/B: directory name (must match `<req>-<slug>` or `draft-<yyyymmdd>-<slug>`, e.g. `REQ-12345-arkui-focus`), required files, required sections, and conditional-section warnings per `artifacts.yaml`.
+2. Check Level A/B: repository segment and directory name (formal leaf exactly matches `<req>`, or draft matches `draft-<yyyymmdd>-<slug>`), required files, required sections, and conditional-section warnings per `artifacts.yaml`.
 3. Check Level C traceability:
    - every `spec.md` AC appears in the verification mapping with a non-empty verification method
    - every AC appears in `execution-plan.md` AC-to-Task traceability with a Task and verification method

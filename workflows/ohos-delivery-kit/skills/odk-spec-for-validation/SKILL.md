@@ -69,6 +69,6 @@ Inputs are `proposal.md` and `spec.md` (no code dependency).
 
 ## Output
 
-Write to `codespec/changes/<id>/spec-for-validation.md`
+Write to `codespec/changes/<repo-name>/<req-id>/spec-for-validation.md`
 
 Suggest next step: run `{{CMD_PREFIX}}plan` to generate the execution plan (spec-for-validation does not block the main flow).

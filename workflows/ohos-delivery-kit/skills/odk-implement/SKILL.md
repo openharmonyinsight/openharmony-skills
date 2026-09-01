@@ -19,9 +19,9 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
 
 ## Steps
 
-0. Read `codespec/changes/<id>/execution-plan.md` Task list and list all Tasks as an explicit inventory before starting implementation. All task types — code modification, test writing, configuration update, and verification — are equally mandatory. No task type may be skipped without explicit user consent.
-1. Read the active `codespec/changes/<id>/spec.md` AC list and `execution-plan.md` 代码范围映射 (Task → file).
-2. Read `codespec/changes/<id>/execution-plan.md` Task list, dependency graph, file scope, and each Task's「任务间接口」（Produces/Consumes）—align cross-task naming and signatures to it.
+0. Read `codespec/changes/<repo-name>/<req-id>/execution-plan.md` Task list and list all Tasks as an explicit inventory before starting implementation. All task types — code modification, test writing, configuration update, and verification — are equally mandatory. No task type may be skipped without explicit user consent.
+1. Read the active `codespec/changes/<repo-name>/<req-id>/spec.md` AC list and `execution-plan.md` 代码范围映射 (Task → file).
+2. Read `codespec/changes/<repo-name>/<req-id>/execution-plan.md` Task list, dependency graph, file scope, and each Task's「任务间接口」（Produces/Consumes）—align cross-task naming and signatures to it.
    Treat the `spec.md` ACs and the execution principles in `execution-plan.md` as authoritative, then proceed in Task order.
 3. For each Task (respecting dependency order):
    - Present the Task description and planned file scope.
@@ -46,7 +46,7 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
      - **按需调用 oh-api-definition 质量检查（可选，不阻塞）**：
        - 若开发环境已提供 oh-api-definition，则对新修改的声明文件执行其格式、命名、注释和语法检查；发现问题时修复后重跑
        - 若工具不可用时在 Task `Actual Result` 记录未执行并继续，不要求安装，也不得因此阻塞 Task-1
-    - **生成 diff 文件**：完成适用的质量检查后，生成声明文件修改前后的 diff 文件，归档到 `codespec/changes/<req-id>-<english-slug>/` 目录下，作为变更证据
+    - **生成 diff 文件**：完成适用的质量检查后，生成声明文件修改前后的 diff 文件，归档到 `codespec/changes/<repo-name>/<req-id>/` 目录下，作为变更证据
    - Run the verification command and confirm it matches the Task's expected result.
    - After each Task, update `execution-plan.md` 代码范围映射 with actual files, tests, and commit references.
    - Backfill the Task's `Actual Result` and anti-fake completion evidence.

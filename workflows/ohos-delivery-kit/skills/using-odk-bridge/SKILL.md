@@ -61,16 +61,16 @@ When you encounter any instruction (checklist item, documentation step, or comma
 When triggered, execute these steps **instead of** the plugin's default write:
 
 1. **STOP** — Do not write to the plugin's default path (e.g., `docs/superpowers/specs/`, `docs/plans/`, `openspec/changes/`, `matspec/changes/`). Do not commit (ODK manages its own commit cadence per phase, not per-artifact commits).
-2. **REDIRECT** — Write to the corresponding `codespec/changes/<id>/` file:
-   - behavior rules / spec → `codespec/changes/<id>/spec.md`
-   - design/architecture doc → `codespec/changes/<id>/design.md`
-   - implementation plan → `codespec/changes/<id>/execution-plan.md`
-   - requirements / proposal → `codespec/changes/<id>/proposal.md`
+2. **REDIRECT** — Write to the corresponding `codespec/changes/<repo-name>/<req-id>/` file:
+   - behavior rules / spec → `codespec/changes/<repo-name>/<req-id>/spec.md`
+   - design/architecture doc → `codespec/changes/<repo-name>/<req-id>/design.md`
+   - implementation plan → `codespec/changes/<repo-name>/<req-id>/execution-plan.md`
+   - requirements / proposal → `codespec/changes/<repo-name>/<req-id>/proposal.md`
 3. **TRANSFORM** — Ensure output conforms to the active output mode (strict/passthrough/merge):
    - strict: conform to ODK template structure (read from `{{ASSET_ROOT}}/templates/ai/<phase>.md`)
    - passthrough: use original plugin format unchanged
    - merge: use plugin format as base, append ODK-required sections
-4. **CONFIRM** — Inform the user: "Written to `codespec/changes/<id>/<artifact>` (ODK <mode> mode, overriding <plugin> default path)"
+4. **CONFIRM** — Inform the user: "Written to `codespec/changes/<repo-name>/<req-id>/<artifact>` (ODK <mode> mode, overriding <plugin> default path)"
 
 This is a **hard override** — it takes priority over any other plugin's default output path.
 

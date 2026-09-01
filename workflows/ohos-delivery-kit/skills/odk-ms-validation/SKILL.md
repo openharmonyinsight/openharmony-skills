@@ -8,13 +8,13 @@ license: MIT
 
 ## Purpose
 
-Invoke MatrixSpec `/matspec.validation` for validation execution. Redirect output to ODK archive format in `codespec/changes/<id>/`.
+Invoke MatrixSpec `/matspec.validation` for validation execution. Redirect output to ODK archive format in `codespec/changes/<repo-name>/<req-id>/`.
 
 ## Preconditions
 
 - Load `using-odk` first.
 - Load `using-odk-bridge` for output redirection and mode selection.
-- `codespec/changes/<id>/execution-plan.md` must exist (run `{{CMD_PREFIX}}ms-tasks` first).
+- `codespec/changes/<repo-name>/<req-id>/execution-plan.md` must exist (run `{{CMD_PREFIX}}ms-tasks` first).
 - If MatrixSpec is unavailable, use the fallback chain declared in `adapters/matrixspec.yaml` and clearly report the degradation.
 
 ## Steps
@@ -22,12 +22,12 @@ Invoke MatrixSpec `/matspec.validation` for validation execution. Redirect outpu
 1. Invoke MatrixSpec `/matspec.validation` for 6-dimension validation execution.
 2. When MatrixSpec tries to write to `matspec/changes/`, apply `using-odk-bridge` Output Redirection Rules instead.
 3. Process output per active mode:
-   - strict: Transform to ODK review format. Add ODK consistency check dimension (spec-compliance, code-quality, verification mapping). Write validation results as evidence to `codespec/changes/<id>/evidence/reviews/`.
-   - passthrough: Copy to `codespec/changes/<id>/validation.md` unchanged.
+   - strict: Transform to ODK review format. Add ODK consistency check dimension (spec-compliance, code-quality, verification mapping). Write validation results as evidence to `codespec/changes/<repo-name>/<req-id>/evidence/reviews/`.
+   - passthrough: Copy to `codespec/changes/<repo-name>/<req-id>/validation.md` unchanged.
    - merge: Use MatrixSpec 6-dimension format, append ODK consistency check dimension.
 4. Confirm with user.
 
 ## Output
 
-- Written to `codespec/changes/<id>/validation.md` and `codespec/changes/<id>/evidence/reviews/`
+- Written to `codespec/changes/<repo-name>/<req-id>/validation.md` and `codespec/changes/<repo-name>/<req-id>/evidence/reviews/`
 - Report any findings requiring human attention

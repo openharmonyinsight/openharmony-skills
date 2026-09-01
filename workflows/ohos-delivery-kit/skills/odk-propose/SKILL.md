@@ -8,7 +8,7 @@ license: MIT
 
 ## Prerequisites
 
-- `codespec/changes/<id>/` directory exists (run `odk-init` first if not)
+- `codespec/changes/<repo-name>/<req-id>/` directory exists (run `odk-init` first if not)
 - `proposal.md` has YAML frontmatter (target_release, req, author, date, status)
 
 ## Input
@@ -18,7 +18,7 @@ Read the change context from the user's request. If the user describes a require
 ## Key Rules
 
 - Define phase input is source material, not an execution request. Implementation verbs in the user prompt such as implement, modify, refactor, update, fix, build, commit, or delete must be extracted into proposal goals, scope, non-goals, success criteria, or open questions.
-- `odk-propose` may only generate or update `codespec/changes/<id>/proposal.md` (and initialize the ODK skeleton if needed). Do not edit implementation code, tests, build scripts, knowledge documents, README files, configuration files, or other non-proposal artifacts in this phase.
+- `odk-propose` may only generate or update `codespec/changes/<repo-name>/<req-id>/proposal.md` (and initialize the ODK skeleton if needed). Do not edit implementation code, tests, build scripts, knowledge documents, README files, configuration files, or other non-proposal artifacts in this phase.
 - If the user asks to generate a proposal and immediately implement, refactor, or update files, finish `proposal.md` first and ask for confirmation. Do not proceed to implementation until `execution-plan.md` is approved and the user explicitly invokes an implement command.
 - **Always fill `资源开销审视`** (性能 / 内存(RAM) / 存储(ROM)): `required` | `review-required` | `not-applicable` | `waived`. Prefer subsystem/profile knowledge. Signals by dimension: **性能** — 热路径 / 每帧或每事件开销 / 唤醒频率 / 每场景指令数或负载 / 持锁时长 / IPC 往返；**内存(RAM)** — 常驻占用 / 运行时峰值 / 大块 buffer / 应用使用时增量；**存储(ROM)** — 镜像产物（native `.so`、ArkTS `.abc`、资源、预置应用包、配置/预置数据）+ data 分区大体量持久化（音视频/大缓存/db；小体量常规落盘不构成关注点）。能耗风险写在「性能」信号列（勿新增功耗维度）。Unknown risk → `review-required` (never silent `not-applicable`). `not-applicable` / `waived` require `确认人=<owner>; 理由=<why>; 范围=<scope>`. Archive gate is business-repo `odk_resource_gate` in root `AGENTS.md` (ODK does not ship measurement).
 
@@ -60,7 +60,7 @@ Read the change context from the user's request. If the user describes a require
 
 ## Output
 
-Write to `codespec/changes/<id>/proposal.md`.
+Write to `codespec/changes/<repo-name>/<req-id>/proposal.md`.
 
 Do not generate `gates/` by default. If the user explicitly wants process evidence, record approval notes under an optional evidence directory such as `evidence/gates/`.
 

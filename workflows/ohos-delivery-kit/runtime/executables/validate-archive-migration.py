@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Plan and verify an ODK 0.8 legacy archive migration."""
+"""Plan and verify migration to repository-scoped ODK archive paths."""
 
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ LEGACY_PATH_RE = re.compile(
 )
 REQ_ID_RE = re.compile(r"^[A-Za-z0-9]+(?:[A-Za-z0-9-]*[A-Za-z0-9])?$")
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+REPOSITORY_NAME_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 
 
 class MigrationError(RuntimeError):
@@ -52,20 +53,45 @@ def read_mapping(path: Path) -> list[tuple[str, str]]:
 
 
 def discover_legacy_archives(root: Path) -> set[str]:
-    changes = root / ".codespec" / "changes"
-    if not changes.is_dir():
-        fail("legacy root .codespec/changes does not exist")
     discovered: set[str] = set()
-    for entry in changes.iterdir():
-        if not entry.is_dir() or not entry.name.startswith("issue-"):
-            continue
-        relative = entry.relative_to(root).as_posix()
-        if not LEGACY_PATH_RE.fullmatch(relative):
-            fail(f"invalid legacy archive directory: {relative}")
-        discovered.add(relative)
+    issue_changes = root / ".codespec" / "changes"
+    if issue_changes.is_dir():
+        for entry in issue_changes.iterdir():
+            if not entry.is_dir() or not entry.name.startswith("issue-"):
+                continue
+            relative = entry.relative_to(root).as_posix()
+            if not LEGACY_PATH_RE.fullmatch(relative):
+                fail(f"invalid legacy archive directory: {relative}")
+            discovered.add(relative)
+
+    flat_changes = root / "codespec" / "changes"
+    if flat_changes.is_dir():
+        for entry in flat_changes.iterdir():
+            if entry.is_dir() and (entry / "proposal.md").is_file():
+                discovered.add(entry.relative_to(root).as_posix())
     if not discovered:
-        fail("no legacy issue-* archives discovered")
+        fail("no legacy flat or issue-* archives discovered")
     return discovered
+
+
+def repository_name(root: Path) -> str:
+    result = subprocess.run(
+        ["git", "-C", str(root), "remote", "get-url", "origin"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode == 0 and result.stdout.strip():
+        remote = result.stdout.strip().rstrip("/")
+        name = remote.rsplit("/", 1)[-1].rsplit(":", 1)[-1]
+        if name.endswith(".git"):
+            name = name[:-4]
+        if name and name not in {".", ".."} and REPOSITORY_NAME_RE.fullmatch(name):
+            return name
+    name = root.name
+    if name in {".", ".."} or not REPOSITORY_NAME_RE.fullmatch(name):
+        fail(f"invalid repository name: {name}")
+    return name
 
 
 def plan_migration(root: Path, map_path: Path) -> None:
@@ -79,11 +105,13 @@ def plan_migration(root: Path, map_path: Path) -> None:
     seen_sources: set[str] = set()
     seen_targets: set[str] = set()
     plans: list[tuple[str, str]] = []
+    repo_name = repository_name(root)
 
     for old_path, req_id in rows:
-        match = LEGACY_PATH_RE.fullmatch(old_path)
-        if not match:
-            fail(f"invalid legacy path: {old_path}")
+        issue_match = LEGACY_PATH_RE.fullmatch(old_path)
+        flat_prefix = f"codespec/changes/{req_id}-"
+        if not issue_match and not old_path.startswith(flat_prefix):
+            fail(f"invalid legacy path or req identity: {old_path}")
         if old_path in seen_sources:
             fail(f"duplicate source mapping: {old_path}")
         if old_path not in discovered:
@@ -93,10 +121,13 @@ def plan_migration(root: Path, map_path: Path) -> None:
         if not REQ_ID_RE.fullmatch(req_id):
             fail(f"invalid req-id: {req_id}")
 
-        slug = match.group(1)
+        if issue_match:
+            slug = issue_match.group(1)
+        else:
+            slug = old_path[len(flat_prefix):]
         if not SLUG_RE.fullmatch(slug):
             fail(f"invalid slug: {slug}")
-        new_path = f"codespec/changes/{req_id}-{slug}"
+        new_path = f"codespec/changes/{repo_name}/{req_id}"
         if new_path in seen_targets:
             fail(f"duplicate planned target: {new_path}")
         if (root / PurePosixPath(new_path)).exists():
@@ -168,6 +199,7 @@ def check_staged(root: Path) -> None:
     if not proposals:
         fail("no staged migrated proposal under codespec/changes")
 
+    repo_name = repository_name(root)
     for path in proposals:
         staged_text = git(root, "show", f":{path}").stdout
         frontmatter = proposal_frontmatter(staged_text, path)
@@ -179,9 +211,10 @@ def check_staged(root: Path) -> None:
         req_id = req_matches[0]
         if not REQ_ID_RE.fullmatch(req_id):
             fail(f"{path}: invalid staged req-id: {req_id}")
-        directory = PurePosixPath(path).parent.name
-        prefix = f"{req_id}-"
-        if not directory.startswith(prefix) or not SLUG_RE.fullmatch(directory[len(prefix):]):
+        parts = PurePosixPath(path).parts
+        if len(parts) != 5 or parts[:2] != ("codespec", "changes"):
+            fail(f"{path}: staged archive path must be codespec/changes/<repo-name>/<req-id>/proposal.md")
+        if parts[2] != repo_name or parts[3] != req_id:
             fail(f"{path}: staged req field does not match directory identity")
 
     print(

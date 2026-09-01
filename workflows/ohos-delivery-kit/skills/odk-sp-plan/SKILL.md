@@ -26,5 +26,5 @@ Invoke Superpowers `writing-plans` for task decomposition and file-level boundar
 
 ## Output
 
-- Written to `codespec/changes/<id>/execution-plan.md`
+- Written to `codespec/changes/<repo-name>/<req-id>/execution-plan.md`
 - Report Task count, dependency structure, and any scope gaps

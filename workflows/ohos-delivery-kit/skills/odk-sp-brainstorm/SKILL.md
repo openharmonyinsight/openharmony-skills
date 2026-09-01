@@ -8,13 +8,13 @@ license: MIT
 
 ## Purpose
 
-Invoke Superpowers `brainstorming` for requirement clarification and approach selection. Redirect output to ODK archive format in `codespec/changes/<id>/`.
+Invoke Superpowers `brainstorming` for requirement clarification and approach selection. Redirect output to ODK archive format in `codespec/changes/<repo-name>/<req-id>/`.
 
 ## Preconditions
 
 - Load `using-odk` first.
 - Load `using-odk-bridge` for output redirection and mode selection.
-- `codespec/changes/<id>/` skeleton must exist (run `{{CMD_PREFIX}}init` first).
+- `codespec/changes/<repo-name>/<req-id>/` skeleton must exist (run `{{CMD_PREFIX}}init` first).
 - If Superpowers skills are unavailable, use the fallback chain declared in `adapters/superpowers.yaml` and clearly report the degradation.
 
 ## Steps
@@ -27,5 +27,5 @@ Invoke Superpowers `brainstorming` for requirement clarification and approach se
 
 ## Output
 
-- Written to `codespec/changes/<id>/proposal.md`, `spec.md`, `design.md`
+- Written to `codespec/changes/<repo-name>/<req-id>/proposal.md`, `spec.md`, `design.md`
 - Report any fields that still need human approval

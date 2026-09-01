@@ -30,9 +30,11 @@ After activation, follow the Context Loading rules below to determine the active
 All delivery artifacts are archived under:
 
 ```
-codespec/changes/<req-id>-<english-slug>/
-codespec/changes/draft-<yyyymmdd>-<english-slug>/
+codespec/changes/<repo-name>/<req-id>/
+codespec/changes/<repo-name>/draft-<yyyymmdd>-<english-slug>/
 ```
+
+Resolve `<repo-name>` from the Git `origin` URL basename without `.git`; if `origin` is unavailable, use the Git worktree root directory name. A formal directory leaf is exactly `req-id`; the English slug exists only while the change is a draft.
 
 Each change directory is **populated by phase** — `odk-init` only seeds `proposal.md` as a frontmatter stub; the other main docs appear when their phase first runs (a missing main doc before its phase is expected, not an error):
 - `proposal.md` — (`odk-init` stub → `odk-propose` fills) requirements proposal with triage, success criteria, and impact scope (YAML frontmatter with `target_release`)
@@ -91,8 +93,9 @@ Bridge commands load `using-odk-bridge` automatically for output redirection and
 ## Context Loading
 
 - If `codespec/` does not exist, the project is not yet initialized — guide the user to run `odk-init`
-- If `codespec/changes/` has exactly one change directory, treat it as the active change
-- If `codespec/changes/` has multiple directories, ask the user which one to operate on before proceeding
+- Resolve the current `<repo-name>` and inspect only `codespec/changes/<repo-name>/`
+- If that repository directory has exactly one change directory, treat it as the active change
+- If it has multiple change directories, ask the user which one to operate on before proceeding
 - Once determined, read `target_release` from the active change's `proposal.md` frontmatter
 - Do not load full documents into context — use summaries (≤15 lines) when passing between phases
 - Two distinct read cases, do not conflate them:
