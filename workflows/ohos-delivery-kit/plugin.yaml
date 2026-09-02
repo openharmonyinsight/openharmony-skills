@@ -2,7 +2,7 @@ schemaVersion: 1
 kind: Plugin
 id: ohos-delivery-kit
 name: ohos-delivery-kit
-version: 0.9.0
+version: 0.10.0
 description: OpenHarmony delivery artifact specification layer with ODK skills, session routing, validator executable, and passive runtime assets.
 license: MIT
 provenance: provenance.yaml

@@ -37,7 +37,7 @@ codespec/changes/<repo-name>/draft-<yyyymmdd>-<english-slug>/
 Resolve `<repo-name>` from the Git `origin` URL basename without `.git`; if `origin` is unavailable, use the Git worktree root directory name. A formal directory leaf is exactly `req-id`; the English slug exists only while the change is a draft.
 
 Each change directory is **populated by phase** — `odk-init` only seeds `proposal.md` as a frontmatter stub; the other main docs appear when their phase first runs (a missing main doc before its phase is expected, not an error):
-- `proposal.md` — (`odk-init` stub → `odk-propose` fills) requirements proposal with triage, success criteria, and impact scope (YAML frontmatter with `target_release`)
+- `proposal.md` — (`odk-init` stub → `odk-propose` fills) requirements proposal with triage, 1+8 device variation, external dependencies, success criteria, and impact scope (YAML frontmatter with `target_release`)
 - `spec.md` — (`odk-spec`) functional specification with WHEN/THEN AC, error codes, and verification mapping
 - `design.md` — (`odk-design`) architecture design with Mermaid diagrams and decision comparison (references spec ACs)
 - `execution-plan.md` — (`odk-plan`) implementation plan with AC-Task traceability and task details
@@ -88,6 +88,7 @@ Bridge commands load `using-odk-bridge` automatically for output redirection and
 
 - **target_release** is the single source of truth for version, stored in `proposal.md` YAML frontmatter
 - Traceability chain: `proposal → spec AC → execution-plan Task → code → commit → review`. Any broken link fails validation.
+- **GitCode submission reminder**: when implementation is complete and the user is about to commit, push, or open a GitCode PR, remind them that documents under `codespec/` must be submitted to the separate design-docs repository. Read its address from developer-owned `codespec/profile.yaml` key `design_docs_repository`. If the key is absent or empty, show it as “待开发者填写” and ask the developer to provide it; never guess a repository or automatically push across repositories. This reminder does not by itself block the business-code submission.
 - **Phase Gate**: Artifact phases (propose, spec, design, plan) produce documents for approval. When the user confirms an artifact ("没问题", "looks good", etc.), it means the document is approved — it does NOT authorize skipping to implementation. After each artifact is approved, suggest the next phase command explicitly and wait for the user to invoke it. Do not write implementation code until `execution-plan.md` is approved and the user explicitly invokes an implement command (`{{CMD_PREFIX}}implement`, `{{CMD_PREFIX}}sp-implement`, etc.). This applies regardless of perceived simplicity.
 
 ## Context Loading

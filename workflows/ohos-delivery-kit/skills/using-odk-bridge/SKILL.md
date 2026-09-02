@@ -31,7 +31,7 @@ When any tool (ODK skill, Superpowers, OpenSpec, MatrixSpec, or other) drives a 
 
 | Phase | Intent Signals | Artifact | Template | Key Constraints |
 |-------|---------------|----------|----------|-----------------|
-| Define | Goals, scope, non-goals | proposal.md | `ai/proposal.md` | target_release, non-goals, 8-dim N/A |
+| Define | Goals, scope, non-goals | proposal.md | `ai/proposal.md` | target_release, non-goals, `1+8 设备差异规格`, `外部依赖`, 8-dim N/A |
 | Specify | Behaviors, AC, error codes | spec.md | `ai/spec.md` | AC numbering, verification mapping |
 | Design | Architecture, decisions | design.md | `ai/design.md` | module impact, decision comparison, state ownership/invariants when complex state is involved |
 | Plan | Task breakdown, sequencing | execution-plan.md | `ai/execution-plan.md` | AC-Task trace, read-only context, file-level scope, anti-fake checks, expected/actual verification, state ownership fields when declared in design, inter-task interface contracts |

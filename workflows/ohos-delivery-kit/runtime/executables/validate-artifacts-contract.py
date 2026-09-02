@@ -366,7 +366,17 @@ def validate_proposal_tables(proposal: str, reporter: Reporter, *, archive: bool
     if not dependency_tables or not dependency_tables[0]:
         issues.append(f"{EXTERNAL_DEPENDENCIES_SECTION} requires at least one dependency or 不涉及 row")
     else:
-        for index, row in enumerate(dependency_tables[0], start=1):
+        dependency_rows = dependency_tables[0]
+        not_applicable_rows = [
+            index
+            for index, row in enumerate(dependency_rows, start=1)
+            if row.get("子系统", "").strip() == "不涉及"
+        ]
+        if not_applicable_rows and len(dependency_rows) != 1:
+            issues.append(
+                f"{EXTERNAL_DEPENDENCIES_SECTION} 不涉及 row is mutually exclusive with dependency rows"
+            )
+        for index, row in enumerate(dependency_rows, start=1):
             subsystem = row.get("子系统", "").strip()
             dependency_type = row.get("依赖类型", "").strip()
             if subsystem == "不涉及":

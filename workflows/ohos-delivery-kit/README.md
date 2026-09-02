@@ -3,6 +3,25 @@
 Neutral-source plugin providing OpenHarmony delivery artifact specification skills,
 session routing, validator executable, and runtime assets.
 
+## 0.10.0 proposal contract change
+
+**Breaking change:** archived `proposal.md` documents now require 13 sections. The two
+new required sections are `1+8 Device Variation Specification` and `External
+Dependencies`. Each device row must explicitly state whether a difference exists and
+explain it. The dependency table must either list complete dependencies or contain one
+explicit not-applicable row; it cannot contain both.
+
+The archive validator enforces these requirements for native ODK artifacts and for
+strict/merge output produced through OpenSpec, MatrixSpec, or Superpowers bridges.
+Existing proposals must follow the [0.10.0 migration guide](MIGRATION-0.10.0.md)
+before archival.
+
+When code development is complete and a GitCode commit, push, or PR is about to be
+created, ODK reminds the developer to submit `codespec/` documents separately to the
+design-docs repository configured by the developer as `design_docs_repository` in
+`codespec/profile.yaml`. If the address is missing, ODK reports that it is pending
+developer input; it does not guess the repository or push across repositories.
+
 ## 0.9.0 archive path change
 
 **Breaking change:** formal delivery artifacts now use two repository-scoped levels:

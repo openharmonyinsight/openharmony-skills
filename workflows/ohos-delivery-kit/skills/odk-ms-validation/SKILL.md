@@ -26,8 +26,10 @@ Invoke MatrixSpec `/matspec.validation` for validation execution. Redirect outpu
    - passthrough: Copy to `codespec/changes/<repo-name>/<req-id>/validation.md` unchanged.
    - merge: Use MatrixSpec 6-dimension format, append ODK consistency check dimension.
 4. Confirm with user.
+5. If the next action is a GitCode commit, push, or PR, read `design_docs_repository` from `codespec/profile.yaml` and remind the user to submit `codespec/` documents to that separate design-docs repository. If absent, report “待开发者填写”; never guess or automatically push across repositories.
 
 ## Output
 
 - Written to `codespec/changes/<repo-name>/<req-id>/validation.md` and `codespec/changes/<repo-name>/<req-id>/evidence/reviews/`
 - Report any findings requiring human attention
+- Include the GitCode design-docs reminder and developer-provided `design_docs_repository` address or “待开发者填写”

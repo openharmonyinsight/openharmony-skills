@@ -29,6 +29,8 @@ mapping:
     required_backfill:
       - target_release
       - non_goals
+      - device_variation
+      - external_dependencies
       - eight_dimension_na_confirmation
       - success_criteria
   spec:

@@ -22,9 +22,9 @@ Invoke MatrixSpec `/matspec.proposal` for requirement clarification. Redirect ou
 1. Invoke MatrixSpec `/matspec.proposal` for requirement clarification and proposal generation.
 2. When MatrixSpec tries to write to `matspec/changes/`, apply `using-odk-bridge` Output Redirection Rules instead.
 3. Process output per active mode:
-   - strict: Transform to ODK proposal template at `{{ASSET_ROOT}}/templates/ai/proposal.md` format. Ensure ODK-required fields: target_release frontmatter, non-goals, 8-dimension N/A table, success criteria.
+   - strict: Transform to ODK proposal template at `{{ASSET_ROOT}}/templates/ai/proposal.md` format. Ensure ODK-required fields: target_release frontmatter, non-goals, `1+8 设备差异规格`, `外部依赖`, 8-dimension N/A table, success criteria.
    - passthrough: Copy to `codespec/changes/<repo-name>/<req-id>/proposal.md` unchanged.
-   - merge: Use MatrixSpec format, append ODK 8-dimension N/A table and target_release.
+   - merge: Use MatrixSpec format, append ODK `1+8 设备差异规格`, `外部依赖`, 8-dimension N/A table, and target_release.
 4. Confirm with user.
 
 ## Output

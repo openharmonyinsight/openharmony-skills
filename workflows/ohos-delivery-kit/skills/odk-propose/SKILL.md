@@ -1,6 +1,6 @@
 ---
 name: odk-propose
-description: "Use when writing ODK proposal.md (requirements, 8-dim N/A triage, success criteria, target_release). Default template-driven, zero plugin dependencies — use unless a bridge plugin is requested."
+description: "Use when writing ODK proposal.md (requirements, 1+8 device variation, external dependencies, 8-dim N/A triage, success criteria, target_release). Default template-driven, zero plugin dependencies — use unless a bridge plugin is requested."
 license: MIT
 ---
 

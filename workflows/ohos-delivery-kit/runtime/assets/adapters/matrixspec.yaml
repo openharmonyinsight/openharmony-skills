@@ -38,6 +38,8 @@ mapping:
     source: "MatrixSpec proposal template"
     required_backfill:
       - target_release
+      - device_variation
+      - external_dependencies
       - eight_dimension_na_confirmation
   spec:
     source: "MatrixSpec delta spec or recovered SPEC.md"

@@ -57,6 +57,7 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
 5. If implementation reveals missing ACs or changed scope, pause and update `spec.md` / `execution-plan.md` before continuing.
 6. Keep changes within the Task file scope unless the user approves an execution-plan update.
 7. When any `资源开销审视` dimension is `required` (`contracts/artifacts.yaml#resource_contract`), complete subsystem measurement/evidence Tasks and the business-repo `odk_resource_gate` (commonly under `evidence/resource/`).
+8. When all code Tasks are complete and the user is preparing a GitCode commit, push, or PR, read `design_docs_repository` from `codespec/profile.yaml` and remind the user that `codespec/` documents must be submitted to that separate design-docs repository. If the address is absent or empty, report “design-docs 仓地址：待开发者填写”; never infer the address or push across repositories without explicit authorization.
 
 ## Output
 
@@ -68,5 +69,6 @@ Report:
 - Verification results per Task
 - Code mapping rows updated in `execution-plan.md` 代码范围映射
 - Any deviations from `execution-plan.md` or reference patterns (with justification)
+- Before GitCode submission, the separate `codespec/` publication reminder and the developer-provided `design_docs_repository` address (or “待开发者填写”)
 
 If all Tasks are ✅ Done, suggest next step: run `{{CMD_PREFIX}}review` to generate review records. If any Task is incomplete, do NOT suggest moving to review — report the gaps and wait for user direction.
