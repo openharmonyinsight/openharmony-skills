@@ -38,24 +38,28 @@ Read the change context from the user's request. If the user describes a require
      - `deprecation`: marks or removes an existing feature/API
      - When multiple types apply, choose the **primary driver** and note secondary types in the 目标 section
    - **资源开销审视**: fill the three-dimension table per Key Rules. Any dim `required` activates Spec/Design/Plan resource sections and archive `odk_resource_gate`. The transitional 不涉及项确认「性能」row reflects only the 性能 state: `required` / `review-required` →「是」, `not-applicable` / `waived` →「否」; RAM/ROM do not rewrite its semantics.
-   - **8-dimension non-involvement confirmation**: actively evaluate each of the 8 dimensions (性能 / 安全/权限 / 兼容性 / API·SDK / IPC·跨进程 / 构建·组件 / 国际化·无障碍 / 数据迁移) and fill `是否涉及` with concrete `依据` — no blanks; a `不涉及` mark must state why. If a profile matched, pre-fill from its `required_dimensions`, then still confirm every remaining dimension individually (do not leave blanks or uniformly mark `视情况`).
+   - **8-dimension non-involvement confirmation**: actively evaluate each of the 8 dimensions (性能 / 安全/权限 / 兼容性 / API·SDK / IPC·跨进程 / 构建·组件 / 国际化·无障碍 / 数据迁移) and fill `是否涉及` with concrete `依据` — no blanks; a `不涉及` mark must state why. If a profile matched, pre-fill from its `required_dimensions`, then still confirm every remaining dimension individually (do not leave blanks or uniformly mark `视情况`). **API/SDK 维度特殊：无论是否可以从需求描述中推断，都必须先与开发者确认是否涉及 API/SDK，不得自行填写。**
    - **1+8 device variation**: fill every device row and the non-category functional-difference row. State the shared baseline when there is no difference; when there is a difference, describe the business capability, interaction class, resource, or platform constraint without duplicating detailed spec behavior.
    - **External dependencies**: distinguish dependencies from affected implementation scope. List producer/consumer delivery ordering, cross-repository artifacts, system services, third-party components, or remote services in the structured table; use an explicit `不涉及` row when empty.
    - **Security trigger declaration**: the `安全/权限` verdict is the single downstream trigger — 若 `安全/权限` 判定为「是」，design 阶段必须产出 `安全基础检查` 条件章节；命中高风险判据（敏感数据/网络暴露面/认证授权变更/合规/关键安全组件）时进一步产出 `threat-model.md`。`安全/权限` 判「是」的依据：变更跨信任边界（IPC/Binder/共享内存/Socket）、跨安全层级（用户态↔内核态、沙箱、不同 SELinux 域）、处理敏感数据、或使用加密/认证/授权/权限——命中任一即标「是」，它是 design 安全基础检查 与 threat-model 的唯一上游信号。
    - **User scenario (conditional)**: 若变更有终端用户/业务触发场景，展开 `## 用户场景与业务触发` 条件章节，每条 US 只写**业务上下文**（角色/业务触发/业务价值）——**不写可操作动作序列**（那些在 spec.md 用户故事或场景）。
    - **API 设计属性（固定章节）**：`## API 设计属性` 始终生成；若 `API/SDK` 维度 = 「是」，填写下列属性；若 = 「否」，填写"不涉及"并说明理由。
-     - **重要：若无法从需求描述中明确推断以下属性，必须先询问开发者确认，不得猜测或自行填写默认值**：
+     - **重要：无论是否可以从需求描述中推断，是否涉及 API/SDK 必须先与开发者确认后再填写。若开发者确认涉及，以下属性同样必须与开发者确认，不得猜测或自行填写默认值**：
        - **涉及 Kit**：涉及的 Kit（如 ArkUI、Multimedia、Network 等），多个 Kit 用逗号分隔
        - **API 类型**：public API（对应用开发者开放）/ system API（仅对系统应用开放）
        - **编程语言**：ArkTS / C / 两者
        - **ArkTS 静态类型 API**：是 / 否（仅 ArkTS API 需填写）
-     - 询问模板（当缺少信息时使用）：
+     - 询问模板（始终使用，无论是否可推断）：
        ```
-       以下 API 设计属性信息不足，需要您确认：
-       1. 涉及的 Kit 是哪个？（如 ArkUI、ArkTS、AbilityKit 等）
-       2. API 类型是 Public API 还是 System API？
-       3. 提供的 API 是 ArkTS、C 还是两者？
-       4. 如果是 ArkTS API，是否需要支持 ArkTS 静态类型？
+       本次变更需要确认 API/SDK 相关信息：
+
+       1. 本次变更是否涉及 API/SDK？（即是否需要新增、修改或废弃 API 声明文件 .d.ts / .h）
+
+       如果涉及，请进一步确认：
+       2. 涉及的 Kit 是哪个？（如 ArkUI、ArkTS、AbilityKit 等）
+       3. API 类型是 Public API 还是 System API？
+       4. 提供的 API 是 ArkTS、C 还是两者？
+       5. 如果是 ArkTS API，是否需要支持 ArkTS 静态类型？
        ```
      - 根据需要可选填写 `## API 使用场景探索`（开发者场景和用户画像）
      - **注**：跨平台支持、元服务支持、卡片支持等多设备属性在 spec.md `## API 规格定义` 中填写

@@ -38,6 +38,8 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
    - **API 声明文件修改（条件触发 — Task-1）**：如果当前是 plan 中的第一个 Task（API 声明文件 Task-1）且 `API/SDK` = 是：
      - 读取 `spec.md` 的 `## API 规格定义`（完整规格表：命名、入参、返回值、权限、@syscap、@since、错误码、支持标记等）
      - 获取 API 声明仓库路径（spec 阶段过程信息不落盘）：若本会话已有 spec 阶段确认的 `interface_sdk-js` / `interface_sdk_c` 本地路径，直接使用；否则询问开发者提供（不一定是绝对路径，只要能定位到即可）
+     - **切分支（必须）**：API 声明仓库通常被多个需求共享，必须在修改声明文件前切出专用分支，避免多个需求的改动互相覆盖、diff 混淆。分支名建议关联需求编号，如 `feature/REQ-12345-arkui-focus`；询问开发者确认分支名或由开发者手动切好后告知分支名
+     - **阅读仓库根目录的 `AGENTS.md`（若存在）**：学习该仓库的 API 设计规范、命名约定、目录结构约定、声明文件格式要求等知识，作为修改声明文件的参照。AGENTS.md 中的内容与既有声明文件的实际格式共同构成格式参考，二者冲突时以 AGENTS.md 为准
      - 阅读仓库中与变更最相关的既有声明文件（≤10 个），提取格式规范（版权头、JSDoc 结构、命名风格），作为修改声明文件的参照
      - 参照既有声明文件的格式规范，根据规格表在 API 仓库中修改或新增声明文件：
        - ArkTS 声明写入 `interface_sdk-js/api/@ohos.{kit}.{module}.d.ts`
