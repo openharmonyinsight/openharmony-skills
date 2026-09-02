@@ -107,6 +107,21 @@ PROPOSAL_SECTION = contract_scalar("proposal_section")
 PROPOSAL_COLUMNS = contract_list("proposal_columns")
 EVIDENCE_ROOT = contract_scalar("evidence_root")
 
+DEVICE_VARIATION_SECTION = "1+8 设备差异规格"
+DEVICE_VARIATION_COLUMNS = ["设备/差异项", "是否存在差异", "差异说明"]
+DEVICE_VARIATION_ROWS = (
+    "phone",
+    "tablet",
+    "pc/2in1",
+    "wearable",
+    "tv",
+    "car",
+    "default（其他设备）",
+    "功能差异（非品类划分）",
+)
+EXTERNAL_DEPENDENCIES_SECTION = "外部依赖"
+EXTERNAL_DEPENDENCIES_COLUMNS = ["子系统", "仓库", "模块/路径", "依赖类型"]
+
 REQ_ID_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$")
 LEGACY_ISSUE_REQ_RE = re.compile(r"^issue-\d+$", re.IGNORECASE)
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -312,6 +327,60 @@ def table_with_columns(text: str, required_columns: list[str]) -> list[dict[str,
 
 def meaningful(value: str) -> bool:
     return bool(value.strip()) and not PLACEHOLDER_RE.match(value)
+
+
+def validate_proposal_tables(proposal: str, reporter: Reporter, *, archive: bool) -> None:
+    """Validate required device-variation and external-dependency proposal tables."""
+
+    issues: list[str] = []
+    device_section = section_text(proposal, DEVICE_VARIATION_SECTION)
+    device_tables = tables_with_columns(device_section, DEVICE_VARIATION_COLUMNS)
+    if not device_tables:
+        issues.append(f"{DEVICE_VARIATION_SECTION} table missing required columns")
+    else:
+        rows = device_tables[0]
+        by_label: dict[str, list[dict[str, str]]] = {}
+        for row in rows:
+            label = row.get("设备/差异项", "").strip()
+            by_label.setdefault(label, []).append(row)
+        for label in DEVICE_VARIATION_ROWS:
+            matches = by_label.get(label, [])
+            if not matches:
+                issues.append(f"{DEVICE_VARIATION_SECTION} missing row: {label}")
+                continue
+            if len(matches) > 1:
+                issues.append(f"{DEVICE_VARIATION_SECTION} duplicate row: {label}")
+                continue
+            row = matches[0]
+            verdict = row.get("是否存在差异", "").strip()
+            if verdict not in {"是", "否"}:
+                issues.append(f"{DEVICE_VARIATION_SECTION} {label} must state 是 or 否")
+            if not meaningful(row.get("差异说明", "")):
+                issues.append(f"{DEVICE_VARIATION_SECTION} {label} requires 差异说明")
+        unknown = sorted(label for label in by_label if label and label not in DEVICE_VARIATION_ROWS)
+        if unknown:
+            issues.append(f"{DEVICE_VARIATION_SECTION} has unknown rows: {', '.join(unknown)}")
+
+    dependency_section = section_text(proposal, EXTERNAL_DEPENDENCIES_SECTION)
+    dependency_tables = tables_with_columns(dependency_section, EXTERNAL_DEPENDENCIES_COLUMNS)
+    if not dependency_tables or not dependency_tables[0]:
+        issues.append(f"{EXTERNAL_DEPENDENCIES_SECTION} requires at least one dependency or 不涉及 row")
+    else:
+        for index, row in enumerate(dependency_tables[0], start=1):
+            subsystem = row.get("子系统", "").strip()
+            dependency_type = row.get("依赖类型", "").strip()
+            if subsystem == "不涉及":
+                if not meaningful(dependency_type) or dependency_type in {"不涉及", "无", "无依赖", "无外部依赖"}:
+                    issues.append(f"{EXTERNAL_DEPENDENCIES_SECTION} row {index} 不涉及 requires a concrete reason in 依赖类型")
+                continue
+            for column in EXTERNAL_DEPENDENCIES_COLUMNS:
+                if not meaningful(row.get(column, "")):
+                    issues.append(f"{EXTERNAL_DEPENDENCIES_SECTION} row {index} requires {column}")
+
+    if issues:
+        draft_warn_archive_fail(reporter, archive, "proposal structured tables incomplete: " + "; ".join(issues))
+    else:
+        reporter.pass_("proposal device-variation and external-dependency tables are complete")
 
 
 def _parse_not_applicable(subsection_text: str) -> bool:
@@ -1513,6 +1582,9 @@ def main(argv: list[str]) -> int:
     validate_target_release(change_dir, reporter)
     files = validate_required_artifacts(change_dir, artifacts, reporter)
     validate_sections(change_dir, artifacts, files, reporter)
+    proposal_path = change_dir / "proposal.md"
+    if proposal_path.is_file():
+        validate_proposal_tables(read_text(proposal_path), reporter, archive=args.archive)
     validate_present_optional_sections(change_dir, artifacts, reporter)
     validate_traceability(change_dir, reporter)
     validate_dfx_constraints(change_dir, reporter, args.archive)

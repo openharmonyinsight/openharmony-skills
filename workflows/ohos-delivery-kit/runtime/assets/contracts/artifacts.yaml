@@ -57,6 +57,8 @@ artifacts:
       - target_release
       - change_type
       - triage
+      - device_variation
+      - external_dependencies
       - eight_dimension_na_confirmation
     requires: []
     required_sections:
@@ -64,9 +66,11 @@ artifacts:
       - "初始分级判断"
       - "目标"
       - "非目标"
+      - "1+8 设备差异规格"
       - "Agent Scope Guard"
       - "成功标准"
       - "影响范围"
+      - "外部依赖"
       - "假设与开放问题"
       - "资源开销审视"
       - "不涉及项确认"
