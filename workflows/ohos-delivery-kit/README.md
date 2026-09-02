@@ -57,7 +57,7 @@ repository-scoped layout.
 
 ## Source
 
-Synced from `oshunter/ohos-delivery-kit` branch `dev` via
+Synced from `oshunter/ohos-delivery-kit` branch `main` via
 `ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills`.
 
 ## Structure
