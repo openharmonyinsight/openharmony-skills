@@ -12,6 +12,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ORCH_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 SKILLS_DIR="$(cd "$ORCH_DIR/.." && pwd)"
+SKILLS_ROOT="$(cd "$SKILLS_DIR/../.." && pwd)"
 ORCH_SKILL="$ORCH_DIR/SKILL.md"
 INSTALL_SH="$SCRIPT_DIR/install_related_skills.sh"
 
@@ -85,7 +86,7 @@ legacy_link_command="odk-link""-issue"
 for token in "$legacy_odk_root" "$legacy_link_command"; do
   stale_matches="$(
     grep -RFn --include='*.md' --exclude-dir=evals --exclude-dir=examples \
-      -- "$token" "$SKILLS_DIR" || true
+      -- "$token" "$SKILLS_ROOT" || true
   )"
   if [[ -n "$stale_matches" ]]; then
     rc=1
@@ -94,8 +95,7 @@ for token in "$legacy_odk_root" "$legacy_link_command"; do
   fi
 done
 
-review_handoff="$SKILLS_DIR/../development/ohos-dev-gitcode-pr-review/references/reviewing-skill-prs.md"
-flat_matches="$(python3 - "$SKILLS_DIR" "$review_handoff" <<'PY'
+flat_matches="$(python3 - "$SKILLS_ROOT" <<'PY'
 import pathlib
 import re
 import sys
@@ -111,14 +111,22 @@ patterns = (
         r"(?:<english-slug>|\{english-slug\}|\$\{slug\})"
     ),
     re.compile(
-        r"codespec/changes/draft-[0-9]{8}-[a-z0-9]+(?:-[a-z0-9]+)*/"
+        r"codespec/changes/draft-[0-9]{8}-[a-z0-9]+(?:-[a-z0-9]+)*(?:/)?"
         r"(?=$|[\s`'\"\)\]\}.,;:])"
     ),
     # Concrete formal examples conventionally use an uppercase/numeric req-id
     # followed by a lowercase English slug in the old single archive layer.
     re.compile(
         r"codespec/changes/(?:[A-Z0-9][A-Z0-9-]*[A-Z0-9]|[0-9]+)-"
-        r"[a-z0-9]+(?:-[a-z0-9]+)*/(?=$|[\s`'\"\)\]\}.,;:])"
+        r"[a-z0-9]+(?:-[a-z0-9]+)*(?:/)?(?=$|[\s`'\"\)\]\}.,;:])"
+    ),
+    re.compile(
+        r"codespec/changes/(?i:issue-[0-9]+-[a-z0-9]+(?:-[a-z0-9]+)*)"
+        r"(?:/)?(?=$|[\s`'\"\)\]\}.,;:])"
+    ),
+    re.compile(
+        r"codespec/changes/(?i:req-[a-z0-9-]*[0-9][a-z0-9-]*-"
+        r"[a-z0-9]+(?:-[a-z0-9]+)*)(?:/)?(?=$|[\s`'\"\)\]\}.,;:])"
     ),
     # A proposal immediately below changes/ has only the old 0.8 archive layer;
     # ODK 0.9 always has <repo-name>/<req-id-or-draft>/proposal.md.

@@ -274,6 +274,9 @@ def check_staged(root: Path, map_path: Path) -> None:
             target_file = (PurePosixPath(target) / relative).as_posix()
             if git(root, "cat-file", "-e", f":{target_file}", check=False).returncode != 0:
                 fail(f"planned target is missing migrated file: {target_file}")
+        source_path = root / PurePosixPath(source)
+        if source_path.exists() or source_path.is_symlink():
+            fail(f"legacy source remains in worktree: {source}")
         if git(root, "cat-file", "-e", f":{target_proposal}", check=False).returncode != 0:
             fail(f"planned target missing from staged index: {target}")
 

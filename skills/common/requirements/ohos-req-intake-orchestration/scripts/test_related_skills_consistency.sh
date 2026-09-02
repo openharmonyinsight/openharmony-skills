@@ -122,15 +122,24 @@ cout="$(bash "$(sbx_check "$sbx10")" || true)"
 echo "$cout" | grep -q 'reviewing-skill-prs.md' && echo "$cout" | grep -q 'Result: INCONSISTENT' \
   && ok "S12 requirements 外关联 handoff 文档旧路径被检出" || { bad "S12 期望关联 review 文档 INCONSISTENT"; echo "$cout"; }
 
-# --- 场景13：不带文件名的具体 formal/draft 扁平目录也不得绕过 ---
+# --- 场景13：具体 formal/draft、大小写和无尾斜杠变体也不得绕过 ---
 sbx11="$(setup_sandbox)"
 concrete_file="$sbx11/skills/common/requirements/ohos-req-requirement-intake/reference/requirement-fields.md"
-printf '\n`codespec/changes/REQ-123-demo/`\n`codespec/changes/draft-20260831-demo/`\n' \
+printf '\n`codespec/changes/REQ-123-demo/`\n`codespec/changes/REQ-123-demo`\n`codespec/changes/req-123-demo/`\n`codespec/changes/issue-123-demo/`\n`codespec/changes/draft-20260831-demo/`\n`codespec/changes/draft-20260831-demo`\n' \
   >> "$concrete_file"
 cout="$(bash "$(sbx_check "$sbx11")" || true)"
 count="$(printf '%s\n' "$cout" | grep -c 'STALE ODK 0.8 flat archive path' || true)"
-[[ "$count" -ge 2 ]] && echo "$cout" | grep -q 'Result: INCONSISTENT' \
-  && ok "S13 具体 formal/draft 扁平目录被语义检查检出" || { bad "S13 期望两个具体扁平目录均 INCONSISTENT"; echo "$cout"; }
+[[ "$count" -ge 6 ]] && echo "$cout" | grep -q 'Result: INCONSISTENT' \
+  && ok "S13 具体 formal/draft 全部变体被语义检查检出" || { bad "S13 期望六个具体扁平目录均 INCONSISTENT"; echo "$cout"; }
+
+# --- 场景14：任意其他 skill 文档中的旧路径也属于全 skills 扫描范围 ---
+sbx12="$(setup_sandbox)"
+external_ref="$sbx12/skills/community/custom-skill/references/handoff.md"
+mkdir -p "$(dirname "$external_ref")"
+printf 'Legacy `codespec/changes/req-321-custom/`.\n' > "$external_ref"
+cout="$(bash "$(sbx_check "$sbx12")" || true)"
+echo "$cout" | grep -q 'custom-skill/references/handoff.md' && echo "$cout" | grep -q 'Result: INCONSISTENT' \
+  && ok "S14 全 skills 范围内的旧路径被检出" || { bad "S14 期望任意 skill 旧路径 INCONSISTENT"; echo "$cout"; }
 
 echo ""
 echo "Summary: $pass passed, $fail failed"

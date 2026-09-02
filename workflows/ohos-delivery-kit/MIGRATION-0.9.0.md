@@ -48,8 +48,9 @@ python3 runtime/executables/validate-artifacts-contract.py \
 ```
 
 `check-staged` verifies conservation against `HEAD`: every mapped legacy source
-must be deleted from the staged index, every planned target must exist exactly
-once, and the staged proposal set must exactly match the map. Run Archive
+must be deleted from the staged index and its worktree directory must be gone,
+including ignored leftovers. Every planned target must exist exactly once, and
+the staged proposal set must exactly match the map. Run Archive
 validation for formal targets and Draft validation for draft targets. Do not
 commit until the applicable commands pass. The planner blocks duplicate targets,
 existing targets, incomplete mappings, invalid requirement IDs, and
