@@ -32,7 +32,7 @@ Define 阶段澄清以及 Specify / Design 编写 `spec.md` / `design.md` 时，
 | 优先级 | 手段 | 适用场景 | 使用方式 |
 |--------|------|----------|----------|
 | 1 | 仓内知识库检索 `docs/kb_search.py` | 涉及组件、布局、渲染、SDK API 等已有知识库覆盖的领域 | 按关键字检索，定位到具体知识库 `.md` 文件。禁止直接读取 `knowledge_base_INDEX.json` 全文件 |
-| 2 | 历史特性规格 `specs/index.md` | 涉及已有功能域或存量特性的上下文收集 | 读取 index.md 查找 FuncID，再读取对应的 `specs/<func-domain>/Feat-XX-*-spec.md` 和 `design.md` |
+| 2 | 历史特性规格注册表 `specs/registry/functions.yaml` + `specs/registry/features.yaml` | 涉及已有功能域或存量特性的上下文收集 | 从 `functions.yaml` 查找 FuncID/功能域，从 `features.yaml` 查找已注册 FeatID 及 spec 路径，再读取对应的 `specs/<func-domain>/Feat-XX-*-spec.md` 和 `design.md`；`specs/index.md` 如存在仅作为生成的浏览视图，不直接维护 |
 | 3 | DeepWiki MCP 工具 | 需要 GitHub 仓库级别的架构、设计模式、模块关系等宏观信息 | 使用 `ask_question` 提问，或 `read_wiki_structure` + `read_wiki_contents` 获取结构化文档 |
 | 4 | AI 自行探索 | 以上手段无法覆盖的具体实现细节 | 使用 grep/find/Read 等工具直接探索源码 |
 
@@ -41,7 +41,7 @@ Define 阶段澄清以及 Specify / Design 编写 `spec.md` / `design.md` 时，
 | 场景 | 推荐手段 | 限制 |
 |------|----------|------|
 | 快速定位模块/组件 | 知识库检索 | 通过 `kb_search.py` 按关键字检索，按需读 1-2 个知识库文件 |
-| 了解存量特性设计 | 历史特性规格 | 只读 index.md + 目标 Feat spec，不读整个 specs 目录 |
+| 了解存量特性设计 | 历史特性规格 | 只读 `specs/registry/functions.yaml`、`features.yaml` 和目标 Feat spec，不读整个 specs 目录；需要刷新或校验索引时按目标仓库提供的生成脚本执行 |
 | 架构级宏观理解 | DeepWiki | 1-2 次提问，不超过 3 次 |
 | 具体实现细节确认 | 源码探索 | 优先用 grep 定位关键符号，减少全文件读取 |
 

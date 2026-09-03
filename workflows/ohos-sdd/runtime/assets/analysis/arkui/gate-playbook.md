@@ -22,23 +22,23 @@
 Define 阶段采用双重确认：
 
 - 证据确认：源码、知识库或现有 specs 只能证明事实依据，状态写为 `源码初步核对/待确认`。
-- Owner 输入确认：FuncID、FeatID、`specs/index.md` 功能域注册信息、Profile/Lineage、影响范围、验证适用性和审批结论必须由需求 Owner 明确给出。
+- Owner 输入确认：FuncID、FeatID、`specs/registry/functions.yaml` 与 `specs/registry/features.yaml` 注册信息、Profile/Lineage、影响范围、验证适用性和审批结论必须由需求 Owner 明确给出。
 
 缺少 Owner 输入确认时，Define 总结论必须为 `Blocked`；不得创建 `spec.md`、`design.md` 或 `evidence/checks/check-spec.md` / `check-design.md`。
 
 Owner 提问规则：
 
-- Agent 可以先基于源码或目录准备候选选项供 Owner 选择，但不得把候选写入 `manifest.md`、`.codespec/registry.md`、`specs/index.md` 或 gate 结论字段。
-- 每次只问一个问题；Owner 回答后，把原文或评审链接写入 `proposal.md` 讨论记录和 `evidence/checks/check-proposal.md` 的确认来源列。
+- Agent 可以先基于源码或目录准备候选选项供 Owner 选择，但不得把候选写入 `manifest.md`、`.codespec/registry.md`、`specs/registry/functions.yaml`、`specs/registry/features.yaml` 或 gate 结论字段。
+- 每次只问一个问题；Owner 回答后，把基线确认原文或评审链接写入 `proposal.md` 基线信息的确认依据，并写入 `evidence/checks/check-proposal.md` 的确认来源列；条件附录已触发时再同步到讨论记录。
 - Owner 未回答时，字段必须保持 `TBD (pending requirement Owner)`，gate 结果为 `Blocked`。
 - FuncID、FeatID、功能域各级名称、影响范围四类信息禁止由 Agent 代填或从历史路径自动编号。
-- `specs/index.md` 的功能域/特性注册视为 Define 阶段 registry 写入的一部分；确认 FuncID 和 FeatID 后必须完成该索引注册。
+- `specs/registry/functions.yaml` 的功能域注册和 `specs/registry/features.yaml` 的特性注册视为 Define 阶段 registry 写入的一部分；确认 FuncID 和 FeatID 后必须完成 YAML 注册。`specs/index.md` 若由目标仓库生成，仅在生成/校验步骤中刷新，不作为手工维护入口。
 
 必问/必检项：
 
 - FuncID 是什么；未给出时记录 `TBD (pending requirement Owner)`。
 - FeatID 是什么；未给出时记录 `TBD (pending requirement Owner)`，不得自动分配编号。
-- `specs/index.md` 是否已注册该 FuncID 和 FeatID。
+- `specs/registry/functions.yaml` 是否已注册该 FuncID，`specs/registry/features.yaml` 是否已注册该 FeatID 及其 spec 路径。
 - 若 FuncID 已存在，必须在对应已注册特性清单中注册 FeatID、特性名称、Spec 文件和 Draft/Baselined 状态。
 - 若 FuncID 不存在，必须先向 Owner 确认每一级功能域名称；目录英文 slug、说明和 `design.md` 链接可由 Agent 给出候选，但写入前必须经 Owner 确认。
 - `profile` / `subprofiles` 是否已选择，并说明选择理由。
@@ -72,7 +72,7 @@ Owner 提问规则：
 
 基线审批检查：
 
-- Owner 已审阅 `proposal.md` 并批准基线（`manifest.baseline_approval.approved=true`，approver/evidence 非空）。
+- Owner 已审阅 `proposal.md` 并明确批准 Define（`proposal.phase_status=approved`，需求输入表“Define 阶段状态”为 `Approved` 且与 frontmatter 一致，`proposal.approval.status/approver/evidence/approved_at/baseline_digest` 均非空，摘要与当前需求基线一致）。
 
 信息来源记录检查：
 
@@ -92,13 +92,13 @@ Owner 提问规则：
 
 FeatID 连续性预检：
 
-1. 从 `specs/index.md` 读取当前 FuncID 下已注册的所有 FeatID。
+1. 从 `specs/registry/functions.yaml` 确认当前 FuncID 的功能域路径，从 `specs/registry/features.yaml` 读取该 FuncID 下已注册的所有 FeatID。
 2. 若当前 FeatID 为 `Feat-NN` 且 `NN > 01`，检查 `Feat-01` 到 `Feat-(NN-1)` 是否全部存在于已注册列表中。
 3. 若任何中间编号缺失，必须判定为 `Blocked`，不得以 `不存在`、`未注册`、`首次建立` 等理由判定为 N/A。
 4. 当前 FeatID 为 `Feat-01` 时，连续性预检自动通过。
-5. `Feat-01` 到 `Feat-(NN-1)` 均视为该功能域存量能力，必须已在 `specs/index.md` 注册，且已有长期规格文件与功能域长期 `design.md`。
+5. `Feat-01` 到 `Feat-(NN-1)` 均视为该功能域存量能力，必须已在 `specs/registry/features.yaml` 注册，且已有长期规格文件与功能域长期 `design.md`。
 
-若存量 Feat 缺少注册或归档文件，优先由需求 Owner 确认并补录缺失项；或由需求 Owner 更正 FeatID 编号，并同步修订 `manifest.md`、`.codespec/registry.md`、`specs/index.md`。
+若存量 Feat 缺少注册或归档文件，优先由需求 Owner 确认并补录缺失项；或由需求 Owner 更正 FeatID 编号，并同步修订 `manifest.md`、`.codespec/registry.md`、`specs/registry/features.yaml`（必要时补充 `functions.yaml`）。完成后按目标仓库约定运行索引生成/校验脚本，避免直接编辑生成的 `specs/index.md`。
 
 所有已归档的存量 spec 和 design.md 必须在编写当前 spec.md / design.md 之前读取。读取记录写入 `evidence/checks/check-spec.md` 的 arkui-specify-entry 部分，包含读取了哪些文件、获取了哪些关键参考点。
 
@@ -172,7 +172,7 @@ Plan 通过后，最终交付前必须将短期产物迁移到长期 `specs/` �
 
 - `.codespec/changes/{id}/spec.md` 最终内容迁移到 `specs/<func-domain>/Feat-NN-<name>-spec.md`。
 - `.codespec/changes/{id}/design.md` 增量内容合并到 `specs/<func-domain>/design.md`，不得新增平行重复设计。
-- `specs/index.md` 特性行状态更新为 Baselined。
+- `specs/registry/features.yaml` 中当前特性记录状态更新为 Baselined；若目标仓库提供 `tools/generate_index.py`，执行生成并用 `tools/generate_index.py --check` 校验生成的 `specs/index.md`。
 - `manifest.long_term_spec_path`、`manifest.long_term_design_path` 指向迁移后的长期路径。
 - `evidence/checks/check-execution-plan.md` 或最终 review 记录迁移状态、差异摘要和未迁移理由。
 

@@ -3,7 +3,7 @@
 # Purpose:
 # - Describe the current OpenHarmony delivery artifacts in a machine-readable way.
 # - Provide one input for later template drift checks and packaging validation.
-# - Record the current OpenHarmony delivery contract and accepted ODK alignment targets.
+# - Record the current OpenHarmony delivery contract and accepted alignment targets.
 
 schema: ohos-sdd-artifacts/v1
 source_root: .
@@ -23,6 +23,50 @@ archive:
     - draft-<yyyymmdd>-<slug>
   registry: .codespec/registry.md
   release_version_in_directory_name: false
+  readiness:
+    manifest_statuses:
+      - done
+      - archived
+    require_levels:
+      - A
+      - B
+      - C
+      - D
+    require_placeholder_free_artifacts: true
+    # on_implementation: 状态触发——execution-plan 代码范围映射记录了实际实现时,
+    # 归档必须三份 Approved Review Evidence;纯规格/文档变更可选(存在即严校验)。
+    # 归档门禁与 manifest.complexity 无关(complexity 仅指导工作流深度)。
+    require_approved_review_evidence: on_implementation
+    registry_write_after_validation: true
+
+traceability:
+  required_chain:
+    - proposal
+    - spec.ac
+    - execution_plan.task
+    - code
+  completion_constraints:
+    - every_ac_maps_to_at_least_one_task
+    - every_task_declares_produces_and_consumes
+    - changed_state_declares_owner_and_full_lifecycle
+    - every_verification_has_expected_and_actual_result
+    - anti_fake_completion_has_concrete_evidence
+    - planned_scope_maps_to_actual_code_scope
+    - every_task_references_spec_and_design_by_stable_id_or_anchor
+
+evidence_policy:
+  minimum_archive_required: false
+  recommended_root: .codespec/changes/<id>/evidence
+  review_evidence:
+    - id: spec_compliance
+      template: templates/review/spec-compliance.md
+      output: .codespec/changes/<id>/evidence/reviews/spec-compliance.md
+    - id: code_quality
+      template: templates/review/code-quality.md
+      output: .codespec/changes/<id>/evidence/reviews/code-quality.md
+    - id: verification
+      template: templates/review/verification.md
+      output: .codespec/changes/<id>/evidence/reviews/verification.md
 
 phase_order:
   - id: define
@@ -47,6 +91,13 @@ artifacts:
     status: recommended
     role: work item metadata and cross-artifact index
     default_location: .codespec/changes/<id>/manifest.md
+    status_values:
+      - draft
+      - approved
+      - implementing
+      - verifying
+      - done
+      - archived
 
   - id: proposal
     layer: core
@@ -54,14 +105,46 @@ artifacts:
     template: templates/proposal.md
     phase: define
     status: required
-    role: raw requirement, clarification record, and requirement baseline
+    role: concise requirement input and confirmed baseline, with conditional clarification and decision appendix
     default_location: .codespec/changes/<id>/proposal.md
+    owns:
+      - agent_repository_and_module_exploration_scope
+      - prohibited_access_and_modification_boundaries
+      - out_of_scope_rebaseline_rule
+    required_sections:
+      - 需求输入
+      - 需求基线
+      - Agent Scope Guard
+    conditional_sections:
+      - section: 附录：澄清与决策记录（条件启用）
+        required_when: complex_critical_or_clarification_blocked_or_contested
     status_values:
-      - Draft
       - Clarifying
+      - AwaitingApproval
+      - Approved
+      - ChangesRequested
+      - Blocked
+    legacy_status_values:
+      - Draft
       - Baselined
       - Deferred
       - Rejected
+    phase_approval:
+      phase_status_field: phase_status
+      allowed_statuses:
+        - clarifying
+        - awaiting_approval
+        - approved
+        - changes_requested
+        - blocked
+      approval_field: approval
+      approved_requires:
+        - status
+        - approver
+        - evidence
+        - approved_at
+        - baseline_digest
+      downstream_requires_approved: true
 
   - id: design
     layer: core
@@ -71,13 +154,42 @@ artifacts:
     depends_on:
       - proposal
       - spec
-    status: conditional
-    required_when:
-      - standard_or_higher_complexity
-      - multi_module_or_cross_repository_change
-      - new_api_or_layering_decision
-    role: architecture constraints, design decisions, and implementation direction
+    status: required
+    role: verified code-fact baseline, architecture constraints, reusable patterns, structural design, state invariants, and implementation direction
     default_location: .codespec/changes/<id>/design.md
+    owns:
+      - code_fact_baseline
+      - architecture_rule_application
+      - existing_pattern_reuse
+      - class_and_interface_structure
+      - architecture_decisions
+      - resource_and_state_ownership
+      - state_lifecycle_and_invariants
+      - concurrency_model
+      - invariant_ac_task_verification_traceability
+    required_sections:
+      - 需求基线
+      - 上下文和现状
+      - 适用架构规则
+      - 关键设计决策
+      - 后续 Task 拆分
+      - 风险和开放问题
+      - 设计审批
+    conditional_sections:
+      - section: 代码事实基线
+        required_when: change_touches_existing_modules_interfaces_data_state_call_chain_or_runtime_behavior
+      - section: 既有模式复用
+        required_when: adjacent_capability_or_repository_convention_exists_or_must_be_searched
+      - section: 类图
+        required_when: inheritance_interface_implementation_or_cross_module_composition_changes
+      - section: 状态归属与不变量
+        required_when: runtime_state_resource_lifecycle_state_machine_concurrency_hot_path_compatibility_or_migration_changes
+    invariant_traceability:
+      required_links:
+        - spec.ac
+        - execution_plan.task
+        - verification_method_and_pass_criteria
+      identifier: INV-<number>
     status_values:
       - Draft
       - Reviewing
@@ -92,8 +204,67 @@ artifacts:
     depends_on:
       - proposal
     status: required
-    role: user-visible behavior, acceptance criteria, API contract, compatibility, and test traceability
+    role: externally observable behavior, three-tier API acceptance criteria, API and error-code facts, openness and compatibility, and test Red-to-Green traceability
     default_location: .codespec/changes/<id>/spec.md
+    owns:
+      - externally_observable_acceptance_criteria
+      - three_tier_interface_observability
+      - then_implementation_boundary
+      - api_openness_for_added_changed_and_deprecated_interfaces
+      - exact_api_and_error_code_fact_contract
+      - ac_verification_and_red_conditions
+    required_sections:
+      - 用户故事
+      - 验收追溯
+      - 规则定义
+      - 验证映射
+      - API 变更分析
+      - API 与错误码事实
+      - 兼容性声明
+    spec_quality:
+      acceptance_traceability:
+        current_columns:
+          - AC
+          - 关联规则
+          - 可观察表面
+        legacy_six_column_shape_supported: true
+        task_mapping_source: execution-plan.md
+        verification_source: 验证映射
+        evidence_source: evidence/reviews
+      acceptance_criteria:
+        format: WHEN_THEN
+        observable_surfaces:
+          - end_user
+          - public_api
+          - system_api
+          - inner_api
+        then_forbids:
+          - internal_data_structure
+          - internal_state_machine
+          - internal_call_chain
+          - implementation_class_or_method
+          - internal_cache_queue_or_lock
+          - implementation_algorithm
+        then_boundary_detection:
+          severity: warn
+          exemption_marker: ext-ok
+          broad_patterns_require_action_verb: true
+          gate_disposition_required: true
+      api_openness:
+        values:
+          - Public
+          - System
+          - InnerAPI
+        changed_or_deprecated_requires_current_and_target: true
+      api_error_facts:
+        existing_requires_source_file_line_or_symbol: true
+        exact_signature_or_numeric_value_required: true
+        error_code_requires_trigger_external_behavior_ac_and_verification: true
+        new_fact_requires_proposal_design_task_or_ac_basis: true
+      verification:
+        requires_test_entry: true
+        requires_red_condition: true
+        red_condition_must_explain_pre_implementation_failure: true
     status_values:
       - Draft
       - Review
@@ -108,16 +279,42 @@ artifacts:
     depends_on:
       - proposal
       - spec
-    conditional_depends_on:
-      - artifact: design
-        when: design_exists
-    status: conditional
-    required_when:
-      - standard_or_higher_complexity
-      - multiple_independent_tasks
-      - cross_module_or_cross_repository_change
-    role: implementation plan, file scope, task decomposition, and handoff information
+      - design
+    status: required
+    role: implementation plan, task contracts, state lifecycle, expected/actual verification, code/commit/review traceability, and handoff information
     default_location: .codespec/changes/<id>/execution-plan.md
+    owns:
+      - ac_task_code_commit_review_traceability
+      - planned_and_actual_code_scope
+      - task_dependencies
+      - task_produces_consumes
+      - state_ownership_and_lifecycle
+      - expected_and_actual_results
+      - anti_fake_completion
+      - stable_spec_and_design_references
+    required_sections:
+      - 执行原则
+      - 受影响文件全量清单
+      - AC 到 Task 追溯
+      - Task 依赖
+      - Task 列表
+      - Task 详情
+      - 代码范围映射
+      - 实现偏差和开放问题
+    required_task_fields:
+      - AC 映射
+      - 前置依赖
+      - 状态所有权和生命周期
+      - Design STATE/INV 映射
+      - Produces
+      - Consumes
+      - Files
+      - Spec References
+      - Design References
+      - Anti-Fake Completion
+      - Expected Result
+      - Actual Result
+      - Review Handoff
     status_values:
       - Draft
       - ReadyForReview
@@ -223,11 +420,11 @@ artifacts:
     spans:
       - plan
     status: reference
-    role: design/spec approval, implementation review, code quality review, and final verification review
+    role: GA/GB/GC status summary, review evidence index, open issues, and final decision
     default_location: .codespec/changes/<id>/review.md
     runtime_outputs:
       - .codespec/changes/<id>/evidence/reviews/spec-compliance.md
-      - .codespec/changes/<id>/evidence/reviews/code-review.md
+      - .codespec/changes/<id>/evidence/reviews/code-quality.md
       - .codespec/changes/<id>/evidence/reviews/verification.md
 
   - id: gate_checklist
@@ -290,7 +487,7 @@ artifacts:
     default_location: .codespec/changes/<id>/threat-model.md
 
 current_drifts:
-  - id: phase_order_vs_odk
+  - id: phase_order_alignment
     severity: migrating
-    description: ohos-sdd accepted ODK phase alignment and has migrated from the legacy Define -> Specify -> Implement -> Release wording to Define -> Specify -> Design -> Plan. Secondary historical or reference docs may still contain legacy Stage terminology until follow-up cleanup completes.
-    follow_up_batch: P3 ODK contract alignment
+    description: ohos-sdd has migrated from the legacy Define -> Specify -> Implement -> Release wording to Define -> Specify -> Design -> Plan. Secondary historical or reference docs may still contain legacy Stage terminology until follow-up cleanup completes.
+    follow_up_batch: P3 phase contract alignment

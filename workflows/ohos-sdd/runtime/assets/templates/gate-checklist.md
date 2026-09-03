@@ -4,9 +4,9 @@
 >
 > **说明**：本模板是阶段检查的参考清单。运行时产物可存储在 `.codespec/changes/{id}/evidence/checks/` 目录中，按阶段拆分为 `check-proposal.md`、`check-spec.md`、`check-design.md`、`check-execution-plan.md`，与 4 阶段一一对应。
 >
-> **阶段命名**：4 阶段模型为 Define（定义）→ Specify（规格说明）→ Design（设计）→ Plan（计划），与 ODK 主阶段命名保持一致。Gate 文件名按阶段命名：`check-proposal.md`、`check-spec.md`、`check-design.md`、`check-execution-plan.md`。
+> **阶段命名**：4 阶段模型为 Define（定义）→ Specify（规格说明）→ Design（设计）→ Plan（计划）。Gate 文件名按阶段命名：`check-proposal.md`、`check-spec.md`、`check-design.md`、`check-execution-plan.md`。
 >
-> **与 ODK Gate 的映射**：ohos-sdd 保留 4 个阶段 gate 文件用于细粒度过程证据，而 ODK 的人工门禁是 `GA / GB / GC` 三个 Gate。推荐映射为：`check-proposal.md` 对应 `GA`，`check-spec.md` + `check-design.md` + `check-execution-plan.md` 共同支撑 `GB`，最终实现/验证/交付证据由 `review.md` 与 `evidence/reviews/` 支撑 `GC`。
+> **Gate 关系**：ohos-sdd 保留 4 个阶段 gate 文件用于细粒度过程证据，人工门禁使用 `GA / GB / GC` 三个 Gate。`check-proposal.md` 对应 `GA`，`check-spec.md` + `check-design.md` + `check-execution-plan.md` 共同支撑 `GB`，最终实现/验证/交付证据由 `review.md` 与 `evidence/reviews/` 支撑 `GC`。
 >
 > **阶段结构**：每个阶段分为入口检查、工作检查和出口检查三部分。入口检查通过后才能开始本阶段工作；出口检查通过后才能进入下一阶段。命中 Profile 时，Profile 定义的 Gate 注入到对应阶段的同名插槽执行。
 
@@ -15,7 +15,7 @@
 | 阶段 | 输入 | 输出 | 必过条件 |
 |------|------|------|----------|
 | 定义 | 原始需求 | `proposal.md` | 范围明确、AC 可测试、基线已审批 |
-| 规格说明 | `proposal.md` | `spec.md` | AC、错误路径、兼容性和验证映射完整 |
+| 规格说明 | `proposal.md` | `spec.md` | AC 外部可观察、THEN 无实现越界、API 开放级别、Red 条件和兼容性完整 |
 | 设计 | `proposal.md` + `spec.md` | `design.md` | 设计约束清晰、与 Spec 一致 |
 | 计划 | `proposal.md` + `spec.md` + `design.md` | `execution-plan.md` + `task.md` | Plan 已审批、文件范围和验证路径明确 |
 
@@ -39,23 +39,29 @@
 > **硬失败规则**：以下任一条件不满足，Define gate 必须判定为不通过：
 >
 > - `基线结论` 不是 `通过`
+> - `基线信息` 中确认人或确认依据缺失
+> - 条件附录已触发，但待澄清项未关闭、争议决策无结论或讨论记录缺少需求方/Owner/SIG 确认证据
 > - `澄清结论` 存在未勾选的适用项
 > - `讨论记录` 中没有需求方/Owner/SIG 的明确确认证据
-> - `manifest.baseline_approval.approved` 不是 `true`
+> - `proposal.phase_status` 不是 `approved`
+> - 需求输入表“Define 阶段状态”缺失，或与 `proposal.phase_status` 不一致
+> - `proposal.approval.status` 不是 `approved`，或 approver/evidence/approved_at/baseline_digest 任一为空，或 baseline_digest 与当前需求基线不一致
 > - 总结论只是 `条件通过`、`ReadyForReview` 或 AI 自评通过
 > - 涉及 Public/System API、跨模块、多仓、UI/无障碍/国际化、兼容性或外部依赖的需求，被当作简单需求跳过澄清
 
 - [ ] 原始问题和期望结果已记录
 - [ ] 需求来源和责任人已明确
-- [ ] 待澄清问题已逐项关闭，状态均为已澄清或明确 N/A
-- [ ] 讨论记录包含需求方/Owner/SIG 的明确确认证据
-- [ ] 澄清结论全部适用项已勾选
+- [ ] Proposal 主文档只包含需求输入和已确认基线，无常态化过程日志
+- [ ] 已判断条件附录是否触发（complex/critical、澄清阻断、争议决策、跨 SIG/多仓协调）
+- [ ] 条件附录触发时，待澄清问题已关闭，讨论/方案取舍和确认证据完整
+- [ ] 条件附录未触发时，澄清过程证据保留在对话或 `evidence/checks/check-proposal.md`
 - [ ] 功能范围（包含/不包含）已确认
 - [ ] API 变更已评估（如有）
 - [ ] 兼容性和非功能需求已确认
 - [ ] 依赖和风险已识别并有缓解方案
-- [ ] 标准及以上需求已完成逐项澄清；复杂度降级有明确理由和确认人
+- [ ] 标准及以上需求已完成逐项澄清；复杂度降级有明确理由和确认人（不要求过程默认写入 proposal）
 - [ ] 目标仓 Agent 指南已检查（如 AGENTS.md/CLAUDE.md）；若存在，关键约束已记录
+- [ ] Agent Scope Guard 已明确允许仓/模块、禁止访问/修改项、知识源授权和越界处理；未复制 Plan/Task 的实现文件清单
 
 → **Profile 入口 Gate**（命中 Profile 时，逐项执行 Profile 定义的 Define 入口 Gate，结果写入 `evidence/checks/check-proposal.md`）
 
@@ -66,14 +72,16 @@
 - [ ] 所有 P0/P1 用户故事有 AC（WHEN/THEN 格式）
 - [ ] 每条 AC 可测试、可度量
 - [ ] `proposal.target_release` 已确认或明确 TBD
-- [ ] `manifest.profile` 已确认或明确 none
+- [ ] 使用 `manifest.md` 时，`manifest.profile` 已确认或明确 none
 - [ ] 不涉及项已显式标记 N/A
-- [ ] `manifest.baseline_approval.approved=true`，且 approver/evidence 非空
+- [ ] `proposal.phase_status=approved`
+- [ ] 需求输入表“Define 阶段状态”存在且为 `Approved`，与 `proposal.phase_status` 一致
+- [ ] `proposal.approval.status=approved`，且 approver/evidence/approved_at/baseline_digest 非空，摘要与当前需求基线一致
 - [ ] `evidence/checks/check-proposal.md` 总结论为 `通过/Approved`
 
 → **Profile 出口 Gate**（命中 Profile 时，逐项执行 Profile 定义的 Define 出口 Gate，结果写入 `evidence/checks/check-proposal.md`）
 
-- [ ] Define Gate 结论已反映到 proposal.md 状态字段（Draft → Baselined）
+- [ ] 澄清关闭后 proposal 先进入 `AwaitingApproval` 并明确请求批准；只有收到显式批准后，Define Gate 结论才反映为 `phase_status: approved`
 
 ---
 
@@ -83,7 +91,7 @@
 
 - [ ] 并行产出锚点：proposal.md 中 API 变更项清单已填写（涉及 API 变更时）或已标记 N/A
 - [ ] 并行产出锚点：design.md 和 spec.md 引用的仓/模块列表与 proposal.md 影响范围一致
-- [ ] 上下文检索日志已创建，包含源码搜索、Agent 指南、官方文档、DeepWiki/多仓知识库等来源的命中或未命中记录
+- [ ] 上下文检索证据已记录在 proposal 基线引用、条件附录（触发时）或 `evidence/checks/check-proposal.md`
 - [ ] 上下文结论已标注可信度；中/低可信结论未直接驱动设计或任务拆分
 - [ ] 多仓/组件归属/API 影响无法仅凭源码确认时，已查询多仓知识库或记录未查询原因
 
@@ -93,15 +101,27 @@
 
 - [ ] 用户故事和 AC 完整
 - [ ] AC 覆盖正常/异常/边界（AC 表含类型列标注）
+- [ ] 每个 AC 已声明终端用户或 Public/System/InnerAPI 可观察表面，THEN 可仅凭该表面判断通过/失败
+- [ ] THEN 不含内部数据结构、状态机、调用链、类/方法、缓存/队列、锁或算法
+- [ ] Level C 的 `spec→then-boundary` WARN 已逐项判断；误报使用 `<!-- ext-ok -->` 时已记录豁免理由和确认人
 - [ ] 规则表覆盖全部 P0/P1 AC（每个 AC 至少关联一条规则）
 - [ ] 规则表每条通过质量检查（触发条件可复现、预期行为可观测、边界值已标注、关联AC已填写、无重叠冲突）
 - [ ] Spec 中无 InnerKit 接口定义、内部实现流程或框架层实现细节
-- [ ] API 变更分析完整（如有），含入参概要、返回值、错误码和开放范围
+- [ ] API 变更分析完整（如有），新增 API 含开放级别；变更/废弃 API 含当前与目标开放级别
+- [ ] API/错误码事实契约完整（如有）：已有项有文件:行/符号，签名/数值精确，错误码有触发条件、外部行为、异常/边界 AC 和验证入口
+- [ ] 验收追溯只维护 AC、关联规则和可观察表面；未复制 Plan 的 Task 映射或 Review Evidence
+- [ ] 每个 AC 的验证映射含真实测试入口、实现前 Red 条件和通过标准；N/A 带具体理由
 - [ ] 兼容性声明完整
 - [ ] 非功能需求有指标或明确 N/A（含功耗和多设备差异）
 - [ ] 全局特性影响已筛选
 - [ ] 上下文引用完整
 - [ ] 未使用的关键知识源有原因记录，不得把"未查询"写成"未命中"
+
+### THEN WARN 处理记录
+
+| AC / WARN | 结论（移入 Design / 保留外部行为 / ext-ok 豁免） | 理由与证据 | 确认人 |
+|-----------|---------------------------------------------------|------------|--------|
+| [AC-* / 无 WARN] | [处理结论] | [路径/说明] | [Owner/Reviewer] |
 
 ### 出口检查
 
@@ -122,7 +142,7 @@
 - [ ] 上下文结论已标注可信度；中/低可信结论未直接驱动设计结论
 - [ ] 多仓/组件归属/API 影响无法仅凭源码确认时，已查询多仓知识库或记录未查询原因
 
-### 设计检查（跳过条件：简单变更无多模块/新 API /分层决策）
+### 设计检查（简单变更可降低检查深度或标记 N/A；design.md 本身仍为必需交付件）
 
 - [ ] 分层调用合规（应用→框架→服务→内核）
 - [ ] 无跨层违规调用（除非 SA 代理）
@@ -133,6 +153,11 @@
 - [ ] 构建系统影响已评估（BUILD.gn / bundle.json）
 - [ ] 涉及 IPC/异步调用时，超时行为已定义
 - [ ] 涉及 Public/System API 变更时，接口参数规约已填写
+- [ ] 涉及已有实现时，代码事实基线包含文件:行/符号、已验证事实、架构规则和设计约束
+- [ ] 已记录既有模式复用；无 prior art 时有检索范围和结论
+- [ ] 涉及继承/接口实现/组合关系时，类图与 ADR、Task 一致
+- [ ] 涉及状态/资源/并发时，STATE-* Owner 和生命周期完整且无冲突
+- [ ] 每个 INV-* 均关联 Spec AC、后续 Task、验证方式和通过标准
 
 ### 一致性检查（design.md 与 spec.md 交叉校验）
 
@@ -163,7 +188,7 @@
 
 ### 执行计划检查
 
-- [ ] AC 到 Task 有完整追溯
+- [ ] AC 到 Task 有完整追溯，且 execution-plan 是该映射的单一事实源
 - [ ] 每个 Task 的文件范围明确
 - [ ] 每个 Task 的不做范围明确
 - [ ] Task 粒度合理（每个 Task 形成独立可验证的能力闭环）
@@ -178,6 +203,20 @@
 
 ---
 
+## 五、归档就绪硬门禁（实现/审查完成后）
+
+> `ohos-sdd archive <change>` 必须先通过本门禁，失败时不得创建或修改 registry。
+
+- [ ] Level A/B/C 全部通过，核心四件套齐全；manifest 如存在，其 status 为 `done` 或 `archived`
+- [ ] execution-plan 的 Task、Expected/Actual、Anti-Fake 和实际代码范围追溯闭合
+- [ ] proposal/spec/design/plan/review/test-spec 等现存交付件无 TBD/TODO/待定/待补充或模板占位符
+- [ ] Review Evidence 状态触发：实际范围包含代码文件 → 三份独立 Review Evidence 齐全、均有且仅有明确 `Approved` Verdict、无占位符；纯文档变更可选（一旦存在同样要求三份齐全且 Approved）
+- [ ] Verification Evidence 如存在，含真实 Execution Records、Expected/Actual Result 和 Fresh Evidence
+- [ ] Spec for Validation 如存在，满足 Profile 的归档审批要求
+- [ ] 所有检查通过后才允许原子更新 `.codespec/registry.md`
+
+---
+
 ## 按复杂度裁剪
 
 > 以下裁剪表是各模板字段"是否需要填写"的**权威判断源**。各模板 header 中的裁剪提示引用本表，不单独定义裁剪规则。
@@ -185,7 +224,7 @@
 | 检查维度 | 简单 | 标准 | 复杂/关键 |
 |----------|------|------|-----------|
 | 需求基线 | 核心字段 | 全量 | 全量 |
-| 设计审查 | 跳过（一句技术约束） | 关键决策 | 全量 + 设计扩展 |
+| 设计审查 | design 简短约束/N/A | 关键决策 | 全量 + 设计扩展 |
 | Spec | 核心 AC | 全量 | 全量 + 场景库 |
 | 上下文收集 | 无 | 内嵌 Spec | 长期 analysis 资产 |
 | 执行计划 | 1-2 Tasks | 完整 Plan | 完整 Plan + 多 Task |

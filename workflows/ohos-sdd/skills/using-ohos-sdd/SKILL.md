@@ -55,7 +55,7 @@ OHOS SDD 是**能力分解**(像 superpowers),不是阶段顺序器。每个能�
 
 ## 依赖骨干
 
-交付件依赖(顺序涌现自此,非阶段 gate):`proposal → spec → design → execution-plan → code`;`evidence/{checks,reviews}` 旁证。完整依赖图 + Level A/B/C/D/E 一致性检查见 `{{ASSET_ROOT}}/workflow/workflow.md`。
+最小交付依赖为 `proposal → spec → design → execution-plan → code`；四份文档始终存在，`manifest.md` 是推荐运行时元数据。Evidence 门禁与复杂度无关（状态触发）：代码范围映射实际范围含代码文件即需三份 Approved Review Evidence，纯文档变更可选（存在即严校验）；`evidence/checks` 恒为可选旁证。完整依赖图 + Level A/B/C/D/E 一致性检查见 `{{ASSET_ROOT}}/workflow/workflow.md`。
 
 ## 守门
 
@@ -66,7 +66,7 @@ OHOS SDD 是**能力分解**(像 superpowers),不是阶段顺序器。每个能�
 | 念头 | 现实 |
 |---|---|
 | "先实现再补 spec" | spec 是真相源,先 spec |
-| "跳过 design,简单变更" | 标准及以上必须 design |
+| "简单变更不写 design/execution-plan" | 四件套对所有复杂度固定存在，简单变更只裁剪内容深度 |
 | "ReadyForReview 当 Approved" | 上游未 Approved 必须停 |
 | "AI 自评通过" | 必跑 ohos-validate 取证据 |
 | "下次再 validate" | 声称完成前必跑 |

@@ -52,7 +52,7 @@ spec_for_validation:
 
 本 profile 是 ArkUI / ACE Engine 变更的基础 profile。执行时必须先遵循 OHOS_SDD 通用流程，再追加本文档定义的 ArkUI 检查点。若 `manifest.subprofiles` 命中 `component`、`capi`、`sdk-api`、`render` 等子 profile，还必须合并对应子 profile 的补充规则。
 
-重点（按 ODK 对齐的 4 阶段主流程）：
+重点（按 4 阶段主流程）：
 
 - Define：交互结束判定、合法延迟状态、异常豁免、维测合同、热路径预算；交互、无障碍、国际化、多形态适配
 - Specify：规则定义（行为/边界/异常/恢复）、对象覆盖边界、验证映射；当前特性和同 FuncID 前置存量 Feat 必须完成长期归档
@@ -152,7 +152,7 @@ Base profile 只保留默认必读摘要和 gate 插槽定义。
 
 | Gate ID | 位置 | 门禁内容 | 通过标准 |
 |---------|------|----------|----------|
-| arkui-define-entry | 入口 | 功能树、Lineage、Profile 定位与影响面矩阵 | FuncID/FeatID 唯一，`.codespec` 目录、profile、lineage、`.codespec/registry.md` 与 `specs/index.md` 注册完整；前端/API/依赖/跨平台/热路径/无障碍/国际化等维度已评估 |
+| arkui-define-entry | 入口 | 功能树、Lineage、Profile 定位与影响面矩阵 | FuncID/FeatID 唯一，`.codespec` 目录、profile、lineage、`.codespec/registry.md`、`specs/registry/functions.yaml`（功能域）与 `specs/registry/features.yaml`（特性）注册完整；前端/API/依赖/跨平台/热路径/无障碍/国际化等维度已评估 |
 | arkui-define-exit | 出口 | 基线审批 + 信息来源记录 | Owner 已批准基线；gate 证据包含检索手段、来源链路、源码核验 path:line 和确认来源；未核验项不得标记为通过 |
 
 ### Specify 阶段

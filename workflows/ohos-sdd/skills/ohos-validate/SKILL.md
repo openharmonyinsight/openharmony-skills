@@ -28,7 +28,7 @@ NO COMPLETION CLAIMS WITHOUT `ohos-sdd validate . --level all` FRESH OUTPUT
 
 1. 跑 ohos-sdd validate . --level all(在 change 目录)
 2. 读 broken_edges:每条含 level/artifact/issue/rework_capability
-3. 有 broken → 按 rework_capability 回对应能力 skill 修复(不在本 skill 内修)
+3. 有 broken → 按 rework_capability 回对应能力 skill 修复(计划/实现追溯缺口回 `ohos-plan`,Review Evidence 缺口回 `ohos-review`,不在本 skill 内修)
 4. 全绿(0 broken)→ 方可声称完成,声明附 validate 输出
 5. 若 manifest.profile ≠ none,按 {{ASSET_ROOT}}/workflow/profile-application.md 应用 profile 命中声明(读 profile 正文 + 追加专项检查)
 6. evidence/checks/check-*.md 记录验证证据
