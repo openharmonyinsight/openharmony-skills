@@ -1,6 +1,6 @@
 ---
 name: using-odk
-description: "Use when the user mentions ODK, ohos-delivery-kit, `.codespec`, or OpenHarmony delivery artifacts (proposal/spec/design/execution-plan/review/validate). Main router: loads phase skills and detects which bridge plugin (Superpowers/OpenSpec/MatrixSpec) is installed."
+description: "Use when the user mentions ODK, ohos-delivery-kit, `codespec`, or OpenHarmony delivery artifacts (proposal/spec/design/execution-plan/review/validate). Main router: loads phase skills and detects which bridge plugin (Superpowers/OpenSpec/MatrixSpec) is installed."
 license: MIT
 ---
 
@@ -14,12 +14,12 @@ You are working in a project that uses **ohos-delivery-kit** — a lightweight d
 
 Once the user invokes any `{{CMD_PREFIX}}*` command in the current session, ODK bridge activates for the remainder of the session: Output Redirection Rules (see Phase-Artifact Mapping below) override all other plugins' default output paths. Ends when the session ends.
 
-ODK also activates when the user explicitly mentions ODK, ohos-delivery-kit, `.codespec`, or ODK artifact names (proposal, spec, design, execution-plan, spec-for-validation, threat-model, review, validate).
+ODK also activates when the user explicitly mentions ODK, ohos-delivery-kit, `codespec`, or ODK artifact names (proposal, spec, design, execution-plan, spec-for-validation, threat-model, review, validate).
 
 ### Deactivation
 
 ODK bridge does **not** activate when:
-- `.codespec/` exists but the user has not invoked any `{{CMD_PREFIX}}*` command in this session
+- `codespec/` exists but the user has not invoked any `{{CMD_PREFIX}}*` command in this session
 - The user is doing ordinary coding, debugging, build, or review tasks
 - The user explicitly says "不用ODK" / "skip ODK" / "don't use ODK"
 
@@ -30,11 +30,14 @@ After activation, follow the Context Loading rules below to determine the active
 All delivery artifacts are archived under:
 
 ```
-.codespec/changes/issue-<issue-number>-<english-slug>/
+codespec/changes/<repo-name>/<req-id>/
+codespec/changes/<repo-name>/draft-<yyyymmdd>-<english-slug>/
 ```
 
+Resolve `<repo-name>` from the Git `origin` URL basename without `.git`; if `origin` is unavailable, use the Git worktree root directory name. A formal directory leaf is exactly `req-id`; the English slug exists only while the change is a draft.
+
 Each change directory is **populated by phase** — `odk-init` only seeds `proposal.md` as a frontmatter stub; the other main docs appear when their phase first runs (a missing main doc before its phase is expected, not an error):
-- `proposal.md` — (`odk-init` stub → `odk-propose` fills) requirements proposal with triage, success criteria, and impact scope (YAML frontmatter with `target_release`)
+- `proposal.md` — (`odk-init` stub → `odk-propose` fills) requirements proposal with triage, 1+8 device variation, external dependencies, success criteria, and impact scope (YAML frontmatter with `target_release`)
 - `spec.md` — (`odk-spec`) functional specification with WHEN/THEN AC, error codes, and verification mapping
 - `design.md` — (`odk-design`) architecture design with Mermaid diagrams and decision comparison (references spec ACs)
 - `execution-plan.md` — (`odk-plan`) implementation plan with AC-Task traceability and task details
@@ -68,7 +71,7 @@ Honour an explicitly user-named command over this default. Stay consistent withi
 
 ### Base Commands (standalone, no plugin required)
 
-Invoke via Skill tool: `odk-init` / `odk-propose` / `odk-spec` / `odk-design` / `odk-plan` / `odk-implement` / `odk-review` / `odk-validate` / `odk-spec-for-validation` / `odk-security-threat-model` / `odk-link-issue`.
+Invoke via Skill tool: `odk-init` / `odk-propose` / `odk-spec` / `odk-design` / `odk-plan` / `odk-implement` / `odk-review` / `odk-validate` / `odk-spec-for-validation` / `odk-security-threat-model` / `odk-link-req`.
 Each skill loads its own full context. Base commands are template-driven with zero plugin dependencies.
 
 ### Bridge Commands (plugin-specific)
@@ -85,13 +88,15 @@ Bridge commands load `using-odk-bridge` automatically for output redirection and
 
 - **target_release** is the single source of truth for version, stored in `proposal.md` YAML frontmatter
 - Traceability chain: `proposal → spec AC → execution-plan Task → code → commit → review`. Any broken link fails validation.
+- **GitCode submission reminder**: when implementation is complete and the user is about to commit, push, or open a GitCode PR, remind them that documents under `codespec/` must be submitted to the separate design-docs repository. Read its address from developer-owned `codespec/profile.yaml` key `design_docs_repository`. If the key is absent or empty, show it as “待开发者填写” and ask the developer to provide it; never guess a repository or automatically push across repositories. This reminder does not by itself block the business-code submission.
 - **Phase Gate**: Artifact phases (propose, spec, design, plan) produce documents for approval. When the user confirms an artifact ("没问题", "looks good", etc.), it means the document is approved — it does NOT authorize skipping to implementation. After each artifact is approved, suggest the next phase command explicitly and wait for the user to invoke it. Do not write implementation code until `execution-plan.md` is approved and the user explicitly invokes an implement command (`{{CMD_PREFIX}}implement`, `{{CMD_PREFIX}}sp-implement`, etc.). This applies regardless of perceived simplicity.
 
 ## Context Loading
 
-- If `.codespec/` does not exist, the project is not yet initialized — guide the user to run `odk-init`
-- If `.codespec/changes/` has exactly one change directory, treat it as the active change
-- If `.codespec/changes/` has multiple directories, ask the user which one to operate on before proceeding
+- If `codespec/` does not exist, the project is not yet initialized — guide the user to run `odk-init`
+- Resolve the current `<repo-name>` and inspect only `codespec/changes/<repo-name>/`
+- If that repository directory has exactly one change directory, treat it as the active change
+- If it has multiple change directories, ask the user which one to operate on before proceeding
 - Once determined, read `target_release` from the active change's `proposal.md` frontmatter
 - Do not load full documents into context — use summaries (≤15 lines) when passing between phases
 - Two distinct read cases, do not conflate them:
@@ -106,7 +111,7 @@ Bridge commands load `using-odk-bridge` automatically for output redirection and
 
 When generating ODK artifacts for a specific OpenHarmony module, apply subsystem-specific constraints:
 
-1. If `.codespec/profile.yaml` exists, use the declared profile IDs (e.g., `profiles: ["arkui"]`)
+1. If `codespec/profile.yaml` exists, use the declared profile IDs (e.g., `profiles: ["arkui"]`)
 2. Otherwise, infer profile from module keywords in the change path or user description (see `{{ASSET_ROOT}}/profiles/README.md` for activation rules)
 3. Read the matching profile(s) from `{{ASSET_ROOT}}/profiles/<id>.yaml`
 4. Apply `template_overrides` to adjust dimensions and sections per phase:

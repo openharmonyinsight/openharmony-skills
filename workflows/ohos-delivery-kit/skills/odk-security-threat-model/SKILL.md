@@ -89,7 +89,7 @@ Run this skill when `proposal` 的 `安全/权限` 维度 = 「是」 **且** �
 
 ## Output
 
-Write to `.codespec/changes/<id>/threat-model.md`
+Write to `codespec/changes/<repo-name>/<req-id>/threat-model.md`
 
 Report summary to user:
 - Number of threats identified by priority (P0/P1/P2)

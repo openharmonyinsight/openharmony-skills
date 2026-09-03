@@ -21,9 +21,9 @@ Use after `execution-plan.md` has been approved and the user wants implementatio
 
 ## Steps
 
-0. Read `.codespec/changes/<id>/execution-plan.md` Task list and list all Tasks as an explicit inventory before starting implementation. All task types — code modification, test writing, configuration update, and verification — are equally mandatory. No task type may be skipped without explicit user consent.
-1. Read the active `.codespec/changes/<id>/spec.md` AC list and `execution-plan.md` 代码范围映射.
-2. Read `.codespec/changes/<id>/execution-plan.md` Task list, file scope, and each Task's「任务间接口」（Produces/Consumes）—align cross-task naming and signatures to it.
+0. Read `codespec/changes/<repo-name>/<req-id>/execution-plan.md` Task list and list all Tasks as an explicit inventory before starting implementation. All task types — code modification, test writing, configuration update, and verification — are equally mandatory. No task type may be skipped without explicit user consent.
+1. Read the active `codespec/changes/<repo-name>/<req-id>/spec.md` AC list and `execution-plan.md` 代码范围映射.
+2. Read `codespec/changes/<repo-name>/<req-id>/execution-plan.md` Task list, file scope, and each Task's「任务间接口」（Produces/Consumes）—align cross-task naming and signatures to it.
 3. Invoke Superpowers `test-driven-development` before editing implementation code.
 4. Execute the approved Task list using Superpowers `subagent-driven-development` when available; otherwise use `executing-plans`.
 5. For each Task:
@@ -39,6 +39,7 @@ Use after `execution-plan.md` has been approved and the user wants implementatio
    - If any Task is incomplete, inform the user and do NOT suggest moving to review — wait for user direction
 7. After implementation, update `execution-plan.md` 代码范围映射 and AC-Task 验证状态 with actual files, tests, and commit references.
 8. If implementation reveals missing ACs or changed scope, pause and update `spec.md` / `execution-plan.md` before continuing.
+9. Before a completed implementation is committed, pushed, or opened as a GitCode PR, read `design_docs_repository` from `codespec/profile.yaml` and remind the user to submit `codespec/` documents to that separate design-docs repository. If absent, report “待开发者填写”; do not guess or automatically push across repositories.
 
 ## Output
 
@@ -49,5 +50,6 @@ Report:
 - Tests or verification commands run
 - Code mapping rows updated in `execution-plan.md` 代码范围映射
 - Any deviations from `execution-plan.md`
+- GitCode design-docs reminder with the developer-provided `design_docs_repository` address or “待开发者填写”
 
 If all Tasks are ✅ Done, suggest next step: run `{{CMD_PREFIX}}review` to generate review records. If any Task is incomplete, do NOT suggest moving to review — report the gaps and wait for user direction.

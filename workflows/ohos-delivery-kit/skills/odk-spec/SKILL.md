@@ -31,6 +31,7 @@ license: MIT
        ```
    - 验证仓库存在且可读（检查目录存在性、关键目录结构如 `api/`）
    - 开发者未提供路径或路径无效时，**spec 阶段不得继续**，必须等待开发者准备好仓库
+   - **阅读仓库根目录的 `AGENTS.md`（若存在）**：学习该仓库的 API 设计规范、命名约定、目录结构约定、声明文件格式要求等知识，作为后续规格定义和格式参考的补充。AGENTS.md 中的内容与既有声明文件的实际格式共同构成格式参考，二者冲突时以 AGENTS.md 为准。读取结果仅用于本阶段撰写规格（过程信息，不写入 spec.md）
    - 阅读仓库中与本次变更 Kit 相关的既有声明文件（≤10 个），提取格式规范：
      - 版权声明头格式
      - JSDoc 结构（`@file`、`@kit`、`@syscap`、`@since` 等标记格式）
@@ -92,7 +93,7 @@ license: MIT
 
 ## Output
 
-Write to `.codespec/changes/<id>/spec.md`.
+Write to `codespec/changes/<repo-name>/<req-id>/spec.md`.
 
 spec.md 固定包含 `## API 规格定义` 章节；若 `API/SDK` = 否，填写"不涉及"并说明理由。API 仓库路径/commit 与既有声明格式参考为 spec 阶段的过程信息，不写入 spec.md；支持属性（跨平台/元服务/卡片/FA-Stage 模型）作为规格表行写入 `## API 规格定义`。
 

@@ -4,11 +4,11 @@ id: ohos-delivery-kit
 
 source:
   repository: https://gitcode.com/oshunter/ohos-delivery-kit.git
-  branch: dev
-  commit: 1b5692b9c9d74b8509e818a5cb57ce19e1057b2c
-  sourceVersion: 0.7.0
-  commitDate: 2026-08-27T17:52:54+08:00
-  importedAt: 2026-08-27
+  branch: main
+  commit: 6d7a6f2f0182f9c43aded48cc91ce37d1e8c8568
+  sourceVersion: 0.10.0
+  commitDate: 2026-09-02T22:34:38+08:00
+  importedAt: 2026-09-02
 
 license:
   declared: MIT
@@ -28,6 +28,7 @@ included:
     - core/adapters
   executables:
     - scripts/validate-artifacts-contract.py
+    - scripts/validate-archive-migration.py
     - scripts/lib/odk_yaml.py
   router:
     prompt: packaging/*/hooks/session-start context

@@ -8,13 +8,13 @@ license: MIT
 
 ## Purpose
 
-Invoke MatrixSpec `/matspec.tasks` for task breakdown generation. Redirect output to ODK archive format in `.codespec/changes/<id>/`.
+Invoke MatrixSpec `/matspec.tasks` for task breakdown generation. Redirect output to ODK archive format in `codespec/changes/<repo-name>/<req-id>/`.
 
 ## Preconditions
 
 - Load `using-odk` first.
 - Load `using-odk-bridge` for output redirection and mode selection.
-- `.codespec/changes/<id>/design.md` must exist (run `{{CMD_PREFIX}}ms-delta-design` first).
+- `codespec/changes/<repo-name>/<req-id>/design.md` must exist (run `{{CMD_PREFIX}}ms-delta-design` first).
 - If MatrixSpec is unavailable, use the fallback chain declared in `adapters/matrixspec.yaml` and clearly report the degradation.
 
 ## Steps
@@ -23,11 +23,11 @@ Invoke MatrixSpec `/matspec.tasks` for task breakdown generation. Redirect outpu
 2. When MatrixSpec tries to write to `matspec/changes/`, apply `using-odk-bridge` Output Redirection Rules instead.
 3. Process output per active mode:
    - strict: Transform to ODK execution-plan format at `{{ASSET_ROOT}}/templates/ai/execution-plan.md`. Add AC-Task traceability table, code scope per task (file-level paths), completion criteria.
-   - passthrough: Copy to `.codespec/changes/<id>/execution-plan.md` unchanged.
+   - passthrough: Copy to `codespec/changes/<repo-name>/<req-id>/execution-plan.md` unchanged.
    - merge: Use MatrixSpec layered format, append AC-Task traceability table and code scope column.
 4. Confirm with user.
 
 ## Output
 
-- Written to `.codespec/changes/<id>/execution-plan.md`
+- Written to `codespec/changes/<repo-name>/<req-id>/execution-plan.md`
 - Report any fields needing human approval

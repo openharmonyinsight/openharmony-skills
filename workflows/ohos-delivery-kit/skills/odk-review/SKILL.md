@@ -24,12 +24,16 @@ license: MIT
 
 2. Backfill `execution-plan.md` 代码范围映射 with actual implementation files and update AC-Task 验证状态.
 
+3. If the next action is a GitCode commit, push, or PR, read developer-owned `codespec/profile.yaml` key `design_docs_repository` and remind the user to submit `codespec/` documents to that separate repository. If it is missing, report “待开发者填写”; do not guess or automatically push across repositories.
+
 ## Output
 
-Write optional process evidence to `.codespec/changes/<id>/evidence/reviews/`.
+Write optional process evidence to `codespec/changes/<repo-name>/<req-id>/evidence/reviews/`.
 
 Do not generate `reviews/` or `gates/` in the minimal archive root by default. These records are process evidence, not formal archive artifacts.
 
 Confirm with the user that all ACs are covered and there are no unresolved deviations.
+
+Include the GitCode design-docs reminder and the configured `design_docs_repository` address (or “待开发者填写”) in the final review handoff.
 
 Suggest next step: run `{{CMD_PREFIX}}validate` to check archive readiness (Level A/B/C/D).

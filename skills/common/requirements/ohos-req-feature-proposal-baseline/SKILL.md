@@ -19,7 +19,7 @@ metadata:
 
 ## 定位
 
-04-feature.md 是 OHOS SIG 评审会议的 Feature/Proposal 基线输入；`proposals/*.md` 是 requirements 阶段的 proposal 索引产物，进入 ODK 交付阶段前必须按本 skill 的 ODK handoff 规则转换为 `.codespec/changes/<change-id>/proposal.md`。本 skill 合并原 Review Ready Gate：在生成 04-feature.md、生成全部 proposal 文件并经用户确认拆分/不拆分结果后，直接执行结构化 Gate 判定，输出 `Ready` / `Conditional Ready` / `Not Ready` 结论。工作量分级约束（PIR #152 P1）按端到端总人月推导：简单(≤5)/标准(≤8)/复杂(≤15)三级，复杂特性须有独立验收边界。模块覆盖完整性校验引用 02-feasibility.md §2.1 代码仓库分析表，缺失模块必须补行或写明排除理由。03-arch-decision-record.md §6 遗留问题闭环校验阻断 Not Ready Gate。
+04-feature.md 是 OHOS SIG 评审会议的 Feature/Proposal 基线输入；`proposals/*.md` 是 requirements 阶段的 proposal 索引产物，进入 ODK 交付阶段前必须按本 skill 的 ODK handoff 规则转换为 `codespec/changes/<repo-name>/<req-id>/proposal.md`。`repo-name` 由 ODK 按目标仓 `origin` 仓名解析，缺少 `origin` 时回退到 Git 根目录名。需求编号尚未取得时保留在 `codespec/changes/<repo-name>/draft-<yyyymmdd>-<english-slug>/proposal.md`，取得开发者确认的 `req-id` 后再由 ODK `odk-link-req` 完成关联；不得推断编号，也不得把 issue 编号默认当作需求编号。本 skill 合并原 Review Ready Gate：在生成 04-feature.md、生成全部 proposal 文件并经用户确认拆分/不拆分结果后，直接执行结构化 Gate 判定，输出 `Ready` / `Conditional Ready` / `Not Ready` 结论。工作量分级约束（PIR #152 P1）按端到端总人月推导：简单(≤5)/标准(≤8)/复杂(≤15)三级，复杂特性须有独立验收边界。模块覆盖完整性校验引用 02-feasibility.md §2.1 代码仓库分析表，缺失模块必须补行或写明排除理由。03-arch-decision-record.md §6 遗留问题闭环校验阻断 Not Ready Gate。
 
 ## ⭐ 思维准则
 
@@ -176,7 +176,7 @@ decision_gate:
 
 ### ODK 边界
 
-`proposals/05-proposal-<slug>.md` 是 requirements 阶段的评审输入，不是 ODK 最终交付归档文件。本 skill 不在 proposal 文件中生成 YAML frontmatter；proposal 末尾 §12 附录承载 feature_id、status、gate_a、仓；rr_id 仅保留在 `01-requirement.md` 和 `04-feature.md`，不属于 requirements proposal 契约；目标版本以 `01-requirement.md` 的 `expected_release` 为事实源，不写入 requirements proposal；`target_release/issue/author/date` 不属于 requirements proposal 契约。不推断 ODK `change-id`、不生成 `.codespec` 目录、也不补充 ODK 模板专有章节。
+`proposals/05-proposal-<slug>.md` 是 requirements 阶段的评审输入，不是 ODK 最终交付归档文件。本 skill 不在 proposal 文件中生成 YAML frontmatter；proposal 末尾 §12 附录承载 feature_id、status、gate_a、仓；rr_id 仅保留在 `01-requirement.md` 和 `04-feature.md`，不属于 requirements proposal 契约；目标版本以 `01-requirement.md` 的 `expected_release` 为事实源，不写入 requirements proposal；`target_release/issue/author/date` 不属于 requirements proposal 契约。本 skill 不推断 ODK `req-id`、不创建 `codespec/changes/` 目录、也不补充 ODK 模板专有章节；正式 handoff 由 ODK 根据已确认需求编号或 draft 状态处理。
 
 ### GA 证据规则
 

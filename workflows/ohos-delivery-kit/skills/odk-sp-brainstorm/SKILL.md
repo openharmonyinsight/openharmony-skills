@@ -8,24 +8,24 @@ license: MIT
 
 ## Purpose
 
-Invoke Superpowers `brainstorming` for requirement clarification and approach selection. Redirect output to ODK archive format in `.codespec/changes/<id>/`.
+Invoke Superpowers `brainstorming` for requirement clarification and approach selection. Redirect output to ODK archive format in `codespec/changes/<repo-name>/<req-id>/`.
 
 ## Preconditions
 
 - Load `using-odk` first.
 - Load `using-odk-bridge` for output redirection and mode selection.
-- `.codespec/changes/<id>/` skeleton must exist (run `{{CMD_PREFIX}}init` first).
+- `codespec/changes/<repo-name>/<req-id>/` skeleton must exist (run `{{CMD_PREFIX}}init` first).
 - If Superpowers skills are unavailable, use the fallback chain declared in `adapters/superpowers.yaml` and clearly report the degradation.
 
 ## Steps
 
 1. Invoke Superpowers `brainstorming` for requirement clarification and approach selection.
 2. Apply `using-odk-bridge` Output Redirection Rules when brainstorming tries to write to `docs/superpowers/specs/`.
-3. Process output per active mode: ensure `proposal.md`, `spec.md`, `design.md` conform to ODK templates in strict mode; preserve plugin format in passthrough mode; append ODK sections in merge mode. For `design.md`, rely on `using-odk-bridge` Design State Ownership Rules so complex state changes include explicit ownership and checkable invariants. In strict mode, also inherit `odk-design`'s DFX design and security steps:
+3. Process output per active mode: ensure `proposal.md`, `spec.md`, `design.md` conform to ODK templates in strict mode; preserve plugin format in passthrough mode; append ODK sections in merge mode. Strict/merge `proposal.md` must include `1+8 设备差异规格` and `外部依赖`. For `design.md`, rely on `using-odk-bridge` Design State Ownership Rules so complex state changes include explicit ownership and checkable invariants. In strict mode, also inherit `odk-design`'s DFX design and security steps:
    - DFX 设计（必填，Step 6）：执行 3 步故障模式分析流程（识别涉及仓库 → 构造变更检索摘要 + 仓内匹配 → 填故障模式分析表），详见 `odk-design/SKILL.md` Step 6 和 `{{ASSET_ROOT}}/contracts/dfx-fmea-matcher.yaml`。
    - Security baseline check (conditional, Step 7): when `proposal.md`「安全/权限」=「是」, expand `design.md`「安全基础检查」; if high-risk criteria are hit, produce `threat-model.md` (see `odk-security-threat-model`).
 
 ## Output
 
-- Written to `.codespec/changes/<id>/proposal.md`, `spec.md`, `design.md`
+- Written to `codespec/changes/<repo-name>/<req-id>/proposal.md`, `spec.md`, `design.md`
 - Report any fields that still need human approval

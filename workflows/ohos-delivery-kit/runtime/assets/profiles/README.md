@@ -7,7 +7,7 @@
 - **只为大仓定制** — 仅 arkui/arkgraphic/arkweb/arkruntime 四个高频大仓有专属 profile，其余走 base 默认
 - **增量差异** — 子 profile 只声明与 base 不同的部分（required_dimensions / additional_sections / agent_instructions）
 - **阶段约束** — `agent_instructions` 按 define/specify/design/plan 分阶段注入；无对应阶段时不要隐式复用其他阶段指令
-- **AI 驱动** — 通过模块关键词自动检测，无需 CLI；`.codespec/profile.yaml` 可显式声明
+- **AI 驱动** — 通过模块关键词自动检测，无需 CLI；`codespec/profile.yaml` 可显式声明
 - **按需加载** — 非 ODK 会话不加载任何 profile；匹配时才读取对应 YAML
 
 ## 可用 Profile
@@ -21,12 +21,17 @@
 
 ## 激活方式
 
-**显式声明**（`.codespec/profile.yaml`）：
+**显式声明**（`codespec/profile.yaml`）：
 
 ```yaml
 profiles:
   - "arkui"
+design_docs_repository: "https://gitcode.com/<组织>/<design-docs仓>.git"
 ```
+
+`design_docs_repository` 不是 profile ID，而是开发者维护的交付仓地址。代码开发完成、
+准备向 GitCode 提交时，ODK 用它提醒 `codespec/` 文档的独立提交目标；缺失时只显示
+“待开发者填写”，不得猜测或自动跨仓推送。
 
 **自动检测**（AI 根据关键词匹配）：
 

@@ -19,9 +19,9 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
 
 ## Steps
 
-0. Read `.codespec/changes/<id>/execution-plan.md` Task list and list all Tasks as an explicit inventory before starting implementation. All task types — code modification, test writing, configuration update, and verification — are equally mandatory. No task type may be skipped without explicit user consent.
-1. Read the active `.codespec/changes/<id>/spec.md` AC list and `execution-plan.md` 代码范围映射 (Task → file).
-2. Read `.codespec/changes/<id>/execution-plan.md` Task list, dependency graph, file scope, and each Task's「任务间接口」（Produces/Consumes）—align cross-task naming and signatures to it.
+0. Read `codespec/changes/<repo-name>/<req-id>/execution-plan.md` Task list and list all Tasks as an explicit inventory before starting implementation. All task types — code modification, test writing, configuration update, and verification — are equally mandatory. No task type may be skipped without explicit user consent.
+1. Read the active `codespec/changes/<repo-name>/<req-id>/spec.md` AC list and `execution-plan.md` 代码范围映射 (Task → file).
+2. Read `codespec/changes/<repo-name>/<req-id>/execution-plan.md` Task list, dependency graph, file scope, and each Task's「任务间接口」（Produces/Consumes）—align cross-task naming and signatures to it.
    Treat the `spec.md` ACs and the execution principles in `execution-plan.md` as authoritative, then proceed in Task order.
 3. For each Task (respecting dependency order):
    - Present the Task description and planned file scope.
@@ -38,6 +38,8 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
    - **API 声明文件修改（条件触发 — Task-1）**：如果当前是 plan 中的第一个 Task（API 声明文件 Task-1）且 `API/SDK` = 是：
      - 读取 `spec.md` 的 `## API 规格定义`（完整规格表：命名、入参、返回值、权限、@syscap、@since、错误码、支持标记等）
      - 获取 API 声明仓库路径（spec 阶段过程信息不落盘）：若本会话已有 spec 阶段确认的 `interface_sdk-js` / `interface_sdk_c` 本地路径，直接使用；否则询问开发者提供（不一定是绝对路径，只要能定位到即可）
+     - **切分支（必须）**：API 声明仓库通常被多个需求共享，必须在修改声明文件前切出专用分支，避免多个需求的改动互相覆盖、diff 混淆。分支名建议关联需求编号，如 `feature/REQ-12345-arkui-focus`；询问开发者确认分支名或由开发者手动切好后告知分支名
+     - **阅读仓库根目录的 `AGENTS.md`（若存在）**：学习该仓库的 API 设计规范、命名约定、目录结构约定、声明文件格式要求等知识，作为修改声明文件的参照。AGENTS.md 中的内容与既有声明文件的实际格式共同构成格式参考，二者冲突时以 AGENTS.md 为准
      - 阅读仓库中与变更最相关的既有声明文件（≤10 个），提取格式规范（版权头、JSDoc 结构、命名风格），作为修改声明文件的参照
      - 参照既有声明文件的格式规范，根据规格表在 API 仓库中修改或新增声明文件：
        - ArkTS 声明写入 `interface_sdk-js/api/@ohos.{kit}.{module}.d.ts`
@@ -46,7 +48,7 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
      - **按需调用 oh-api-definition 质量检查（可选，不阻塞）**：
        - 若开发环境已提供 oh-api-definition，则对新修改的声明文件执行其格式、命名、注释和语法检查；发现问题时修复后重跑
        - 若工具不可用时在 Task `Actual Result` 记录未执行并继续，不要求安装，也不得因此阻塞 Task-1
-     - **生成 diff 文件**：完成适用的质量检查后，生成声明文件修改前后的 diff 文件，归档到 `.codespec/changes/<id>/` 目录下，作为变更证据
+    - **生成 diff 文件**：完成适用的质量检查后，生成声明文件修改前后的 diff 文件，归档到 `codespec/changes/<repo-name>/<req-id>/` 目录下，作为变更证据
    - Run the verification command and confirm it matches the Task's expected result.
    - After each Task, update `execution-plan.md` 代码范围映射 with actual files, tests, and commit references.
    - Backfill the Task's `Actual Result` and anti-fake completion evidence.
@@ -57,6 +59,7 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
 5. If implementation reveals missing ACs or changed scope, pause and update `spec.md` / `execution-plan.md` before continuing.
 6. Keep changes within the Task file scope unless the user approves an execution-plan update.
 7. When any `资源开销审视` dimension is `required` (`contracts/artifacts.yaml#resource_contract`), complete subsystem measurement/evidence Tasks and the business-repo `odk_resource_gate` (commonly under `evidence/resource/`).
+8. When all code Tasks are complete and the user is preparing a GitCode commit, push, or PR, read `design_docs_repository` from `codespec/profile.yaml` and remind the user that `codespec/` documents must be submitted to that separate design-docs repository. If the address is absent or empty, report “design-docs 仓地址：待开发者填写”; never infer the address or push across repositories without explicit authorization.
 
 ## Output
 
@@ -68,5 +71,6 @@ Report:
 - Verification results per Task
 - Code mapping rows updated in `execution-plan.md` 代码范围映射
 - Any deviations from `execution-plan.md` or reference patterns (with justification)
+- Before GitCode submission, the separate `codespec/` publication reminder and the developer-provided `design_docs_repository` address (or “待开发者填写”)
 
 If all Tasks are ✅ Done, suggest next step: run `{{CMD_PREFIX}}review` to generate review records. If any Task is incomplete, do NOT suggest moving to review — report the gaps and wait for user direction.

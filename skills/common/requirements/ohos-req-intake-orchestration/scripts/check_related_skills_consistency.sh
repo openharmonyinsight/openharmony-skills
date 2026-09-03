@@ -6,11 +6,13 @@ set -euo pipefail
 #   A. 编排器 frontmatter metadata.related-skills
 #   B. install_related_skills.sh REQUIRED_SKILLS
 #   C. 全部幸存 SKILL.md/reference(s) 中的 ohos-* skill 引用
-# 任一悬空引用、三方清单漂移或旧别名残留即失败。
+#   D. requirements bundle 中不得残留 ODK 已废弃的归档根、扁平路径或 link 命令
+# 任一悬空引用、三方清单漂移、旧别名或旧 ODK 路径残留即失败。
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ORCH_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 SKILLS_DIR="$(cd "$ORCH_DIR/.." && pwd)"
+SKILLS_ROOT="$(cd "$SKILLS_DIR/../.." && pwd)"
 ORCH_SKILL="$ORCH_DIR/SKILL.md"
 INSTALL_SH="$SCRIPT_DIR/install_related_skills.sh"
 
@@ -79,9 +81,86 @@ while IFS= read -r declared; do
   fi
 done < "$tmp/declared.txt"
 
+legacy_odk_root=".codespec""/changes"
+legacy_link_command="odk-link""-issue"
+for token in "$legacy_odk_root" "$legacy_link_command"; do
+  stale_matches="$(
+    grep -RFn --include='*.md' --exclude-dir=evals --exclude-dir=examples \
+      -- "$token" "$SKILLS_ROOT" || true
+  )"
+  if [[ -n "$stale_matches" ]]; then
+    rc=1
+    echo "STALE ODK archive token: $token"
+    echo "$stale_matches"
+  fi
+done
+
+flat_matches="$(python3 - "$SKILLS_ROOT" <<'PY'
+import pathlib
+import re
+import sys
+
+roots = [pathlib.Path(raw) for raw in sys.argv[1:] if pathlib.Path(raw).exists()]
+patterns = (
+    re.compile(
+        r"codespec/changes/(?:<req-id>|\{req-id\}|\$\{req_id\})-"
+        r"(?:<english-slug>|\{english-slug\}|\$\{slug\})"
+    ),
+    re.compile(
+        r"codespec/changes/draft-(?:<yyyymmdd>|\{yyyymmdd\}|\$\{yyyymmdd\})-"
+        r"(?:<english-slug>|\{english-slug\}|\$\{slug\})"
+    ),
+    re.compile(
+        r"codespec/changes/draft-[0-9]{8}-[a-z0-9]+(?:-[a-z0-9]+)*(?:/)?"
+        r"(?=$|[\s`'\"\)\]\}.,;:])"
+    ),
+    # Concrete formal examples conventionally use an uppercase/numeric req-id
+    # followed by a lowercase English slug in the old single archive layer.
+    re.compile(
+        r"codespec/changes/(?:[A-Z0-9][A-Z0-9-]*[A-Z0-9]|[0-9]+)-"
+        r"[a-z0-9]+(?:-[a-z0-9]+)*(?:/)?(?=$|[\s`'\"\)\]\}.,;:])"
+    ),
+    re.compile(
+        r"codespec/changes/(?i:issue-[0-9]+-[a-z0-9]+(?:-[a-z0-9]+)*)"
+        r"(?:/)?(?=$|[\s`'\"\)\]\}.,;:])"
+    ),
+    re.compile(
+        r"codespec/changes/(?i:req-[a-z0-9-]*[0-9][a-z0-9-]*-"
+        r"[a-z0-9]+(?:-[a-z0-9]+)*)(?:/)?(?=$|[\s`'\"\)\]\}.,;:])"
+    ),
+    # A proposal immediately below changes/ has only the old 0.8 archive layer;
+    # ODK 0.9 always has <repo-name>/<req-id-or-draft>/proposal.md.
+    re.compile(r"codespec/changes/[^/\s`]+/proposal\.md"),
+)
+
+for root in roots:
+    files = [root] if root.is_file() else root.rglob("*.md")
+    for path in files:
+        if any(part in {"evals", "examples"} for part in path.parts):
+            continue
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except (OSError, UnicodeError) as error:
+            print(f"SCAN ERROR {path}: {error}")
+            raise SystemExit(2)
+        for number, line in enumerate(lines, 1):
+            if any(pattern.search(line) for pattern in patterns):
+                print(f"{path}:{number}:{line}")
+PY
+)" || {
+  rc=1
+  echo "ODK archive path semantic scan failed"
+}
+if [[ -n "$flat_matches" ]]; then
+  rc=1
+  while IFS= read -r match; do
+    echo "STALE ODK 0.8 flat archive path: $match"
+  done <<< "$flat_matches"
+fi
+
 if [[ "$rc" -eq 0 ]]; then
   echo "Result: CONSISTENT"
 else
-  echo "Result: INCONSISTENT — 修正 related-skills、install 数组、目录名或 SKILL/reference 中的 ohos-* 引用"
+  echo "Result: INCONSISTENT — 修正 related-skills、install 数组、目录名、SKILL/reference 引用或旧 ODK 归档 token"
 fi
 exit "$rc"

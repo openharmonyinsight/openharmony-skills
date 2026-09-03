@@ -8,7 +8,7 @@
 | `ORCHESTRATOR_SKILL_DIR` | 编排器 skill 安装目录 | `ohos-req-intake-orchestration/SKILL.md` 所在目录；用于定位 `scripts/`、`reference/` 等只读资源 |
 | `WORK_HOME` | 产出物路径（设计文档、分析报告、生成代码） | **默认 = SKILL_HOME**。用户可指定为目标代码仓库（跨仓库场景） |
 | `DOCS_REPO` | 设计文档仓库路径（产出物存放位置） | **启动时自动发现，找不到则询问用户**：按优先级查找 → 找到即使用 → 均未找到则询问用户输入路径 |
-| `docs_dir` | 特性归档产物目录 | `{DOCS_REPO}/docs/features/{change-id}/`（默认）或 `{DOCS_REPO}/.codespec/changes/{change-id}/`（可选，与 ODK 对齐） |
+| `docs_dir` | 特性归档产物目录 | `{DOCS_REPO}/docs/features/{change-id}/`（默认）；进入 ODK 时使用 `{DOCS_REPO}/codespec/changes/<repo-name>/<req-id>/`，编号未取得时使用 `<repo-name>/draft-<yyyymmdd>-<english-slug>` |
 | `analysis_dir` | 代码分析缓存目录 | `{DOCS_REPO}/analysis/` |
 | `references_dir` | 参考资料 | `{DOCS_REPO}/references/` |
 
@@ -21,7 +21,7 @@
    - `{SKILL_HOME}` 本身（检查是否包含 `docs/features/` 和 `analysis/` 子目录）
    - 从 `SKILL_HOME` 逐级向上查找包含 `docs/features/` 和 `analysis/` 子目录的目录
    - 以上均未找到 → 询问用户："未找到设计文档仓库（需包含 docs/features/ 和 analysis/ 目录），请输入完整路径"
-5. `docs_dir` = `{DOCS_REPO}/docs/features/{change-id}/` — 默认归档路径（与 ODK 对齐场景可使用 `.codespec/changes/{change-id}/`）
+5. `docs_dir` = `{DOCS_REPO}/docs/features/{change-id}/`。进入 ODK 时切换为 `{DOCS_REPO}/codespec/changes/<repo-name>/<req-id>/`；`repo-name` 由 ODK 按目标仓 `origin` 仓名解析，缺少 `origin` 时回退到 Git 根目录名。需求编号尚未取得时保留 `{DOCS_REPO}/codespec/changes/<repo-name>/draft-<yyyymmdd>-<english-slug>/`，取得开发者确认的 `req-id` 后执行 `odk-link-req`。不得推断需求编号，也不得默认复用 issue 编号。
 6. 主 Session 在 spawn subagent 时，将上述变量替换为实际绝对路径后注入 task 描述；subagent 收到的是实际路径值，不含变量名
 
 > **重要：** SKILL.md 中所有路径引用均使用上述变量。实际执行时由主 Session 完成变量替换。

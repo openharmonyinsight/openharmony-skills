@@ -38,6 +38,8 @@ mapping:
     source: "brainstorming problem/goals/non-goals/success criteria"
     required_backfill:
       - target_release
+      - device_variation
+      - external_dependencies
       - eight_dimension_na_confirmation
   spec:
     source: "brainstorming scenarios, business rules, edge cases, API notes"

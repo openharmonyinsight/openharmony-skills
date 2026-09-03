@@ -2,7 +2,7 @@ schemaVersion: 1
 kind: Plugin
 id: ohos-delivery-kit
 name: ohos-delivery-kit
-version: 0.7.0
+version: 0.10.0
 description: OpenHarmony delivery artifact specification layer with ODK skills, session routing, validator executable, and passive runtime assets.
 license: MIT
 provenance: provenance.yaml
@@ -36,7 +36,7 @@ components:
         - skills/odk-validate/SKILL.md
         - skills/odk-spec-for-validation/SKILL.md
         - skills/odk-security-threat-model/SKILL.md
-        - skills/odk-link-issue/SKILL.md
+        - skills/odk-link-req/SKILL.md
       role: delivery-workflow
     - id: odk-superpowers-bridge
       include:
@@ -118,6 +118,12 @@ components:
       entrypoint: validate-artifacts-contract.py
       usedBy:
         - odk-validate
+    - id: archive-migration-validator
+      path: runtime/executables/validate-archive-migration.py
+      runtime: python3
+      entrypoint: validate-archive-migration.py
+      usedBy:
+        - odk-validate
 
   agents: []
   tools: []
@@ -137,7 +143,7 @@ commandProjection:
     - skill: odk-validate
     - skill: odk-spec-for-validation
     - skill: odk-security-threat-model
-    - skill: odk-link-issue
+    - skill: odk-link-req
     - skill: odk-sp-brainstorm
     - skill: odk-sp-plan
     - skill: odk-sp-implement

@@ -107,6 +107,42 @@ PROPOSAL_SECTION = contract_scalar("proposal_section")
 PROPOSAL_COLUMNS = contract_list("proposal_columns")
 EVIDENCE_ROOT = contract_scalar("evidence_root")
 
+DEVICE_VARIATION_SECTION = "1+8 设备差异规格"
+DEVICE_VARIATION_COLUMNS = ["设备/差异项", "是否存在差异", "差异说明"]
+DEVICE_VARIATION_ROWS = (
+    "phone",
+    "tablet",
+    "pc/2in1",
+    "wearable",
+    "tv",
+    "car",
+    "default（其他设备）",
+    "功能差异（非品类划分）",
+)
+EXTERNAL_DEPENDENCIES_SECTION = "外部依赖"
+EXTERNAL_DEPENDENCIES_COLUMNS = ["子系统", "仓库", "模块/路径", "依赖类型"]
+
+REQ_ID_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$")
+LEGACY_ISSUE_REQ_RE = re.compile(r"^issue-\d+$", re.IGNORECASE)
+SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+DRAFT_RE = re.compile(r"^draft-\d{8}-(.+)$")
+REPOSITORY_NAME_RE = re.compile(r"^[A-Za-z0-9._-]+$")
+MAX_SLUG_LENGTH = 40
+INVALID_REQ_SCALAR = "__invalid_req_scalar__"
+ASCII_YAML_WHITESPACE = " \t\r\n"
+
+
+class Frontmatter(dict[str, str]):
+    """Parsed user fields plus out-of-band parser validity state."""
+
+    def __init__(self, invalid_reason: str | None = None) -> None:
+        super().__init__()
+        self.invalid_reason = invalid_reason
+
+
+def trim_yaml_whitespace(value: str) -> str:
+    """Trim ASCII/YAML separation whitespace, never Unicode lookalikes."""
+    return value.strip(ASCII_YAML_WHITESPACE)
 
 
 class Reporter:
@@ -132,25 +168,52 @@ def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def read_frontmatter(path: Path) -> dict[str, str]:
+def parse_simple_yaml_scalar(raw: str) -> str | None:
+    """Parse the simple scalar forms accepted in ODK frontmatter."""
+    value = trim_yaml_whitespace(raw)
+    if not value or value[0] not in {'"', "'"}:
+        if value.startswith("#"):
+            return ""
+        return trim_yaml_whitespace(re.sub(r"[ \t\r\n]+#.*$", "", value))
+
+    quote = value[0]
+    closing = value.find(quote, 1)
+    if closing == -1:
+        return None
+    suffix = trim_yaml_whitespace(value[closing + 1 :])
+    if suffix and not suffix.startswith("#"):
+        return None
+    return trim_yaml_whitespace(value[1:closing])
+
+
+def read_frontmatter(path: Path) -> Frontmatter:
     """Read simple YAML frontmatter key:value pairs (no external deps)."""
     if not path.is_file():
-        return {}
-    lines = read_text(path).splitlines()
-    if not lines or lines[0].strip() != "---":
-        return {}
-    result: dict[str, str] = {}
+        return Frontmatter()
+    # Split only on LF. str.splitlines() also treats VT, FF, NEL and Unicode
+    # separators as line boundaries, which would silently normalize invalid
+    # frontmatter differently from the shell validator.
+    lines = read_text(path).split("\n")
+    if not lines or trim_yaml_whitespace(lines[0]) != "---":
+        return Frontmatter("invalid opening delimiter")
+    result = Frontmatter()
+    closed = False
     for line in lines[1:]:
-        if line.strip() == "---":
+        if trim_yaml_whitespace(line) == "---":
+            closed = True
             break
-        match = re.match(r"^([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(.*)$", line)
+        if "\x00" in line:
+            return Frontmatter("frontmatter contains NUL")
+        match = re.match(r"^([A-Za-z_][A-Za-z0-9_]*)[ \t\r]*:[ \t\r]*(.*)$", line)
         if match:
+            key = match.group(1)
+            if key == "req" and key in result:
+                result[key] = INVALID_REQ_SCALAR
+                continue
             raw = match.group(2)
-            # strip inline YAML comment ("value # comment" -> "value"); unquoted values only
-            if not (raw.lstrip().startswith('"') or raw.lstrip().startswith("'")):
-                raw = re.sub(r"\s+#.*$", "", raw)
-            result[match.group(1)] = raw.strip().strip('"').strip("'")
-    return result
+            value = parse_simple_yaml_scalar(raw)
+            result[key] = value if value is not None else trim_yaml_whitespace(raw)
+    return result if closed else Frontmatter("missing closing delimiter")
 
 
 def headings(text: str) -> set[str]:
@@ -201,19 +264,20 @@ def is_separator_row(cells: list[str]) -> bool:
     return bool(cells) and all(re.match(r"^:?-{3,}:?$", cell.strip()) for cell in cells)
 
 
-def markdown_tables(text: str) -> list[list[dict[str, str]]]:
-    """Return Markdown pipe tables as row dictionaries.
+def parsed_markdown_tables(text: str) -> list[tuple[list[str], list[dict[str, str]]]]:
+    """Return Markdown pipe-table headers and row dictionaries.
 
     The parser intentionally supports the simple pipe-table shape used by ODK
-    templates. It does not attempt to handle escaped pipes inside cells.
+    templates, including the valid form without leading/trailing pipes. It does
+    not attempt to handle escaped pipes inside cells.
     """
 
     lines = text.splitlines()
-    tables: list[list[dict[str, str]]] = []
+    tables: list[tuple[list[str], list[dict[str, str]]]] = []
     idx = 0
 
     while idx < len(lines) - 1:
-        if not lines[idx].lstrip().startswith("|"):
+        if "|" not in lines[idx] or "|" not in lines[idx + 1]:
             idx += 1
             continue
 
@@ -225,45 +289,108 @@ def markdown_tables(text: str) -> list[list[dict[str, str]]]:
 
         idx += 2
         rows: list[dict[str, str]] = []
-        while idx < len(lines) and lines[idx].lstrip().startswith("|"):
+        while idx < len(lines) and "|" in lines[idx]:
             cells = split_table_row(lines[idx])
             if len(cells) == len(header) and not is_separator_row(cells):
                 rows.append(dict(zip(header, cells)))
             idx += 1
-        tables.append(rows)
+        tables.append((header, rows))
 
     return tables
 
 
+def markdown_tables(text: str) -> list[list[dict[str, str]]]:
+    """Return Markdown pipe tables as row dictionaries."""
+    return [rows for _, rows in parsed_markdown_tables(text)]
+
+
 def table_has_columns(text: str, required_columns: list[str]) -> bool:
     """Check if text contains a markdown table with the required column names (even if no data rows)."""
-    for table in markdown_tables(text):
-        if table:
-            columns = set(table[0].keys())
-            if all(column in columns for column in required_columns):
-                return True
-        else:
-            # Header-only table: parse the header line directly
-            for line in text.splitlines():
-                if line.lstrip().startswith("|"):
-                    header = split_table_row(line)
-                    if all(col in header for col in required_columns):
-                        return True
+    for header, _ in parsed_markdown_tables(text):
+        if all(column in header for column in required_columns):
+            return True
     return False
 
 
+def tables_with_columns(text: str, required_columns: list[str]) -> list[list[dict[str, str]]]:
+    matches: list[list[dict[str, str]]] = []
+    for header, rows in parsed_markdown_tables(text):
+        if all(column in header for column in required_columns):
+            matches.append(rows)
+    return matches
+
+
 def table_with_columns(text: str, required_columns: list[str]) -> list[dict[str, str]]:
-    for table in markdown_tables(text):
-        if not table:
-            continue
-        columns = set(table[0].keys())
-        if all(column in columns for column in required_columns):
-            return table
-    return []
+    tables = tables_with_columns(text, required_columns)
+    return tables[0] if tables else []
 
 
 def meaningful(value: str) -> bool:
     return bool(value.strip()) and not PLACEHOLDER_RE.match(value)
+
+
+def validate_proposal_tables(proposal: str, reporter: Reporter, *, archive: bool) -> None:
+    """Validate required device-variation and external-dependency proposal tables."""
+
+    issues: list[str] = []
+    device_section = section_text(proposal, DEVICE_VARIATION_SECTION)
+    device_tables = tables_with_columns(device_section, DEVICE_VARIATION_COLUMNS)
+    if not device_tables:
+        issues.append(f"{DEVICE_VARIATION_SECTION} table missing required columns")
+    else:
+        rows = device_tables[0]
+        by_label: dict[str, list[dict[str, str]]] = {}
+        for row in rows:
+            label = row.get("设备/差异项", "").strip()
+            by_label.setdefault(label, []).append(row)
+        for label in DEVICE_VARIATION_ROWS:
+            matches = by_label.get(label, [])
+            if not matches:
+                issues.append(f"{DEVICE_VARIATION_SECTION} missing row: {label}")
+                continue
+            if len(matches) > 1:
+                issues.append(f"{DEVICE_VARIATION_SECTION} duplicate row: {label}")
+                continue
+            row = matches[0]
+            verdict = row.get("是否存在差异", "").strip()
+            if verdict not in {"是", "否"}:
+                issues.append(f"{DEVICE_VARIATION_SECTION} {label} must state 是 or 否")
+            if not meaningful(row.get("差异说明", "")):
+                issues.append(f"{DEVICE_VARIATION_SECTION} {label} requires 差异说明")
+        unknown = sorted(label for label in by_label if label and label not in DEVICE_VARIATION_ROWS)
+        if unknown:
+            issues.append(f"{DEVICE_VARIATION_SECTION} has unknown rows: {', '.join(unknown)}")
+
+    dependency_section = section_text(proposal, EXTERNAL_DEPENDENCIES_SECTION)
+    dependency_tables = tables_with_columns(dependency_section, EXTERNAL_DEPENDENCIES_COLUMNS)
+    if not dependency_tables or not dependency_tables[0]:
+        issues.append(f"{EXTERNAL_DEPENDENCIES_SECTION} requires at least one dependency or 不涉及 row")
+    else:
+        dependency_rows = dependency_tables[0]
+        not_applicable_rows = [
+            index
+            for index, row in enumerate(dependency_rows, start=1)
+            if row.get("子系统", "").strip() == "不涉及"
+        ]
+        if not_applicable_rows and len(dependency_rows) != 1:
+            issues.append(
+                f"{EXTERNAL_DEPENDENCIES_SECTION} 不涉及 row is mutually exclusive with dependency rows"
+            )
+        for index, row in enumerate(dependency_rows, start=1):
+            subsystem = row.get("子系统", "").strip()
+            dependency_type = row.get("依赖类型", "").strip()
+            if subsystem == "不涉及":
+                if not meaningful(dependency_type) or dependency_type in {"不涉及", "无", "无依赖", "无外部依赖"}:
+                    issues.append(f"{EXTERNAL_DEPENDENCIES_SECTION} row {index} 不涉及 requires a concrete reason in 依赖类型")
+                continue
+            for column in EXTERNAL_DEPENDENCIES_COLUMNS:
+                if not meaningful(row.get(column, "")):
+                    issues.append(f"{EXTERNAL_DEPENDENCIES_SECTION} row {index} requires {column}")
+
+    if issues:
+        draft_warn_archive_fail(reporter, archive, "proposal structured tables incomplete: " + "; ".join(issues))
+    else:
+        reporter.pass_("proposal device-variation and external-dependency tables are complete")
 
 
 def _parse_not_applicable(subsection_text: str) -> bool:
@@ -286,16 +413,16 @@ def _visible_markdown(text: str) -> str:
     return re.sub(r"<!--[\s\S]*?-->", "", text)
 
 
-def _parse_dfx_involved_repos(subsection_text: str) -> list[str]:
-    """Parse the canonical repository set from ``> 涉及仓库：repo-a, repo-b``."""
-    match = _DFX_INVOLVED_REPOS_RE.search(subsection_text)
-    if not match:
-        return []
-    return [
-        item.strip().strip("`")
-        for item in re.split(r"[,，、;；+]", match.group(1))
-        if item.strip().strip("`")
-    ]
+def _parse_dfx_involved_repo_declarations(subsection_text: str) -> list[list[str]]:
+    """Parse every structured ``涉及仓库`` declaration in the subsection."""
+    declarations: list[list[str]] = []
+    for match in _DFX_INVOLVED_REPOS_RE.finditer(subsection_text):
+        declarations.append([
+            item.strip().strip("`")
+            for item in re.split(r"[,，、;；+]", match.group(1))
+            if item.strip().strip("`")
+        ])
+    return declarations
 
 
 def _parse_module_impact_repos(design_text: str) -> list[str]:
@@ -322,11 +449,32 @@ def validate_dfx_no_hit_closure(
     Returns True when the structured contract was handled. Draft keeps legacy
     free-text reasons as a compatibility path; Archive requires this contract.
     """
-    involved_repos = _parse_dfx_involved_repos(subsection_text)
-    status_rows = table_with_columns(subsection_text, _DFX_REPO_STATUS_COLUMNS)
-    structured_present = bool(involved_repos or status_rows)
+    involved_declarations = _parse_dfx_involved_repo_declarations(subsection_text)
+    status_tables = tables_with_columns(subsection_text, _DFX_REPO_STATUS_COLUMNS)
+    involved_repos = involved_declarations[0] if involved_declarations else []
+    status_rows = status_tables[0] if status_tables else []
+    structured_present = bool(involved_declarations or status_tables)
     if not structured_present and not archive_mode:
         return False
+
+    # Conflicting structured evidence is never a Draft compatibility warning:
+    # accepting only the first declaration/table would let later UNKNOWN or
+    # extra-repository evidence bypass both Draft and Archive validation.
+    multiplicity_issues: list[str] = []
+    if len(involved_declarations) > 1:
+        multiplicity_issues.append(
+            f"multiple 涉及仓库 declarations ({len(involved_declarations)})"
+        )
+    if len(status_tables) > 1:
+        multiplicity_issues.append(
+            f"multiple 仓库/状态/理由 closure tables ({len(status_tables)})"
+        )
+    if multiplicity_issues:
+        reporter.fail(
+            "design.md: conflicting DFX per-repository no-hit evidence: "
+            + "; ".join(multiplicity_issues)
+        )
+        return True
 
     issues: list[str] = []
     if not involved_repos:
@@ -763,12 +911,103 @@ def sorted_ids(ids: set[str]) -> list[str]:
     return sorted(ids, key=key)
 
 
+def validate_slug(slug: str, reporter: Reporter) -> bool:
+    """Validate the English slug component shared by formal and draft paths."""
+    if len(slug) > MAX_SLUG_LENGTH:
+        reporter.fail(f"change directory slug exceeds {MAX_SLUG_LENGTH} characters: {slug}")
+        return False
+    if not SLUG_RE.fullmatch(slug):
+        reporter.fail(
+            "change directory slug is invalid (use lowercase letters/digits and single hyphens): "
+            f"{slug}"
+        )
+        return False
+    return True
+
+
+def expected_repository_name(repository_root: Path) -> str:
+    """Return the origin repository name, falling back to the checkout basename."""
+    try:
+        top_level = subprocess.run(
+            ["git", "-C", str(repository_root), "rev-parse", "--show-toplevel"],
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=5,
+        )
+        if top_level.returncode != 0 or Path(top_level.stdout.strip()).resolve() != repository_root.resolve():
+            return repository_root.name
+        result = subprocess.run(
+            ["git", "-C", str(repository_root), "remote", "get-url", "origin"],
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        result = None
+
+    if result is not None and result.returncode == 0:
+        remote = result.stdout.strip().rstrip("/")
+        if remote:
+            name = remote.rsplit("/", 1)[-1].rsplit(":", 1)[-1]
+            if name.endswith(".git"):
+                name = name[:-4]
+            if REPOSITORY_NAME_RE.fullmatch(name):
+                return name
+    return repository_root.name
+
+
 def validate_dir_name(change_dir: Path, reporter: Reporter) -> None:
+    change_dir = change_dir.resolve()
+    repository_segment = change_dir.parent
+    changes_dir = repository_segment.parent
+    codespec_dir = changes_dir.parent
+    repository_root = codespec_dir.parent
+    if changes_dir.name != "changes" or codespec_dir.name != "codespec":
+        reporter.fail(
+            "change directory layout must be exactly codespec/changes/<repo-name>/<req-id-or-draft>"
+        )
+        return
+
+    expected_repo = expected_repository_name(repository_root)
+    if repository_segment.name in {".", ".."} or not REPOSITORY_NAME_RE.fullmatch(repository_segment.name):
+        reporter.fail(f"repository path segment is invalid: {repository_segment.name}")
+        return
+    if repository_segment.name != expected_repo:
+        reporter.fail(
+            "repository path segment must match the current repository name "
+            f"'{expected_repo}': {repository_segment.name}"
+        )
+        return
+    reporter.pass_(f"archive repository path is valid: codespec/changes/{expected_repo}")
     name = change_dir.name
-    if re.match(r"^(issue-\d+-[a-z0-9-]+|draft-\d{8}-[a-z0-9-]+)$", name):
-        reporter.pass_(f"change directory name is valid: {name}")
-    else:
-        reporter.fail(f"change directory name is invalid: {name}")
+    proposal = change_dir / "proposal.md"
+    frontmatter = read_frontmatter(proposal)
+    if frontmatter.invalid_reason is not None:
+        reporter.fail(f"proposal.md: invalid frontmatter ({frontmatter.invalid_reason})")
+        return
+    req = trim_yaml_whitespace(frontmatter.get("req", ""))
+    draft_match = DRAFT_RE.fullmatch(name)
+    if draft_match and not req:
+        if validate_slug(draft_match.group(1), reporter):
+            reporter.pass_(f"change directory name is valid draft path: {name}")
+        return
+
+    if not req:
+        reporter.fail("proposal.md: req frontmatter is required for a formal change directory")
+        return
+    if not REQ_ID_RE.fullmatch(req):
+        reporter.fail(f"proposal.md: req '{req}' is invalid (letters, digits, and internal hyphens only)")
+        return
+    if LEGACY_ISSUE_REQ_RE.fullmatch(req):
+        reporter.fail(f"proposal.md: req '{req}' uses reserved legacy issue-<digits> format")
+        return
+
+    if name != req:
+        reporter.fail(f"change directory name must exactly match proposal.md req '{req}': {name}")
+        return
+    reporter.pass_(f"change directory name is valid formal req path: {name}")
 
 
 def validate_target_release(change_dir: Path, reporter: Reporter) -> None:
@@ -1329,7 +1568,7 @@ def validate_archive_readiness(
 
 def main(argv: list[str]) -> int:
     parser = ArgumentParser(description="Validate one ODK change directory against the active artifacts contract.")
-    parser.add_argument("change_dir", help="ODK change directory, for example .codespec/changes/issue-123-demo")
+    parser.add_argument("change_dir", help="ODK change directory, for example codespec/changes/arkui/REQ-123")
     parser.add_argument(
         "--archive",
         action="store_true",
@@ -1353,6 +1592,9 @@ def main(argv: list[str]) -> int:
     validate_target_release(change_dir, reporter)
     files = validate_required_artifacts(change_dir, artifacts, reporter)
     validate_sections(change_dir, artifacts, files, reporter)
+    proposal_path = change_dir / "proposal.md"
+    if proposal_path.is_file():
+        validate_proposal_tables(read_text(proposal_path), reporter, archive=args.archive)
     validate_present_optional_sections(change_dir, artifacts, reporter)
     validate_traceability(change_dir, reporter)
     validate_dfx_constraints(change_dir, reporter, args.archive)

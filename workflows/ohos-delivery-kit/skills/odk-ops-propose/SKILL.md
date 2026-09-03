@@ -8,13 +8,13 @@ license: MIT
 
 ## Purpose
 
-One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta specs + design + tasks, then redirect output to `.codespec/changes/<id>/`.
+One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta specs + design + tasks, then redirect output to `codespec/changes/<repo-name>/<req-id>/`.
 
 ## Preconditions
 
 - Load `using-odk` first.
 - Load `using-odk-bridge` for output redirection and mode selection.
-- `.codespec/changes/<id>/` skeleton must exist (run `{{CMD_PREFIX}}init` first).
+- `codespec/changes/<repo-name>/<req-id>/` skeleton must exist (run `{{CMD_PREFIX}}init` first).
 - If OpenSpec is unavailable, use the fallback chain declared in `adapters/openspec.yaml` and clearly report the degradation.
 
 ## Steps
@@ -23,10 +23,10 @@ One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta s
 2. When OpenSpec tries to write to `openspec/changes/`, apply `using-odk-bridge` Output Redirection Rules instead.
 3. Process output per the active output mode (strict/passthrough/merge, default strict):
    - **strict**: Transform each artifact to conform to ODK templates at `{{ASSET_ROOT}}/templates/ai/`.
-   - **passthrough**: Copy original format to `.codespec/changes/<id>/` unchanged.
+   - **passthrough**: Copy original format to `codespec/changes/<repo-name>/<req-id>/` unchanged.
    - **merge**: Use OpenSpec format as base, append ODK-required sections.
 4. In strict mode, ensure ODK-required fields are present:
-   - proposal: target_release, non-goals, 8-dimension N/A table, success criteria.
+   - proposal: target_release, non-goals, `1+8 设备差异规格`, `外部依赖`, 8-dimension N/A table, success criteria.
    - design: module impact table, verification approach table; inherit `odk-design` DFX design and security steps:
      - DFX 设计（必填，Step 6）：执行 3 步故障模式分析流程（识别涉及仓库 → 构造变更检索摘要 + 仓内匹配 → 填故障模式分析表），详见 `odk-design/SKILL.md` Step 6 和 `{{ASSET_ROOT}}/contracts/dfx-fmea-matcher.yaml`。
      - Security baseline check (conditional, Step 7): when `proposal.md`「安全/权限」=「是」, expand `design.md`「安全基础检查」; if high-risk criteria are hit, produce `threat-model.md` (see `odk-security-threat-model`).
@@ -35,5 +35,5 @@ One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta s
 
 ## Output
 
-- Written to `.codespec/changes/<id>/proposal.md`, `spec.md`, `design.md`, `execution-plan.md`.
+- Written to `codespec/changes/<repo-name>/<req-id>/proposal.md`, `spec.md`, `design.md`, `execution-plan.md`.
 - Report any fields needing human approval.

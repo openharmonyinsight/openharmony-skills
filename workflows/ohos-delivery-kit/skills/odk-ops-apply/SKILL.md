@@ -14,7 +14,7 @@ Invoke OpenSpec `/opsx:apply` to implement tasks from the execution plan, apply 
 
 - Load `using-odk` first.
 - Load `using-odk-bridge` for output redirection and mode selection.
-- `spec.md` and `execution-plan.md` must exist in `.codespec/changes/<id>/`.
+- `spec.md` and `execution-plan.md` must exist in `codespec/changes/<repo-name>/<req-id>/`.
 - `execution-plan.md` must be approved by the user — do NOT implement before plan approval. If the plan is not yet approved, stop and ask the user to review and approve it first.
 - If OpenSpec is unavailable, use the fallback chain declared in `adapters/openspec.yaml` and clearly report the degradation.
 
@@ -24,9 +24,11 @@ Invoke OpenSpec `/opsx:apply` to implement tasks from the execution plan, apply 
 2. After code generation, backfill `execution-plan.md` 代码范围映射 with actual files modified or created.
 3. Update `execution-plan.md` task checkboxes as tasks complete.
 4. Verify AC-Task traceability: every AC has at least one completed task, every task links back to an AC.
+5. Before a completed implementation is committed, pushed, or opened as a GitCode PR, read `design_docs_repository` from `codespec/profile.yaml` and remind the user to submit `codespec/` documents to that separate design-docs repository. If absent, report “待开发者填写”; do not guess or automatically push across repositories.
 
 ## Output
 
 - Code changes applied to the codebase.
 - `execution-plan.md` 代码范围映射 updated with actual implementation files.
 - Task progress recorded in `execution-plan.md`.
+- GitCode design-docs reminder with the developer-provided `design_docs_repository` address or “待开发者填写”.

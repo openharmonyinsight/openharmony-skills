@@ -8,19 +8,20 @@ license: MIT
 
 ## Input
 
-- Change directory path (e.g. `.codespec/changes/issue-12345-arkui-focus/`)
-- If not specified, auto-detect from `.codespec/changes/` (fail if multiple exist)
+- Change directory path (e.g. `codespec/changes/arkui/REQ-12345/`)
+- If not specified, resolve the current repository name and auto-detect from `codespec/changes/<repo-name>/` (fail if multiple exist)
 
 ## Sources
 
 - Artifact contract: installed `contracts/artifacts.yaml` (OpenCode: `{{ASSET_ROOT}}/contracts/artifacts.yaml`)
 - Templates: installed `templates/ai/` (OpenCode: `{{ASSET_ROOT}}/templates/ai/`)
 - Strict validator: `{{EXECUTABLE_ROOT}}/validate-artifacts-contract.py`. It is installed with ODK on every supported platform; use this skill to explain and remediate its findings.
+- Archive migration validator: `{{EXECUTABLE_ROOT}}/validate-archive-migration.py`. Use `plan --map <map.tsv>` before moving legacy archives and `check-staged --map <the-same-map.tsv>` before committing so old-source deletion and planned-target conservation are verified.
 
 ## Steps
 
 1. Resolve the target change directory and load the artifact contract.
-2. Check Level A/B: directory name (must match `issue-<number>-<slug>` or `draft-<yyyymmdd>-<slug>`, e.g. `issue-12345-arkui-focus`), required files, required sections, and conditional-section warnings per `artifacts.yaml`.
+2. Check Level A/B: repository segment and directory name (formal leaf exactly matches `<req>`, or draft matches `draft-<yyyymmdd>-<slug>`), required files, required sections, and conditional-section warnings per `artifacts.yaml`.
 3. Check Level C traceability:
    - every `spec.md` AC appears in the verification mapping with a non-empty verification method
    - every AC appears in `execution-plan.md` AC-to-Task traceability with a Task and verification method
@@ -34,9 +35,10 @@ license: MIT
 5. Report PASS/WARN/FAIL by level. Warnings do not block draft review, but archive readiness requires explicit resolution or accepted risk.
 6. Resource constraints (`contracts/artifacts.yaml#resource_contract`): parse `资源开销审视`; `review-required` blocks archive; `required` needs meaningful, non-placeholder Spec/Design/Plan resource sections. Archive runs root `AGENTS.md` `odk_resource_gate` (missing/non-zero/timeout fails). ODK orchestrates the subsystem gate but does not recompute its measurements.
 7. Run `python3 {{EXECUTABLE_ROOT}}/validate-artifacts-contract.py <change-dir>` for Draft validation, or add `--archive` before `<change-dir>` for the archive gate. Report the exact command and result.
+8. If validation is the final step before a GitCode commit, push, or PR, read `design_docs_repository` from `codespec/profile.yaml` and remind the user that `codespec/` documents must be submitted separately to that design-docs repository. If absent, report “待开发者填写”; do not guess or automatically push across repositories.
 
 ## Output
 
 Print concise validation results with file/section/table references for each issue.
 
-If all levels pass, report archive readiness. Do not generate gate files unless the user explicitly asks for optional process evidence.
+If all levels pass, report archive readiness and include the GitCode `design_docs_repository` reminder when submission is next. Do not generate gate files unless the user explicitly asks for optional process evidence.
