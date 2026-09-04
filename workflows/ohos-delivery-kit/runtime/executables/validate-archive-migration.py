@@ -13,8 +13,11 @@ from pathlib import Path, PurePosixPath
 LEGACY_PATH_RE = re.compile(
     r"^\.codespec/changes/issue-[0-9]+-([a-z0-9]+(?:-[a-z0-9]+)*)$"
 )
-REQ_ID_RE = re.compile(r"^[A-Za-z0-9]+(?:[A-Za-z0-9-]*[A-Za-z0-9])?$")
+REQ_ID_RE = re.compile(r"^[0-9]+$")
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+LEGACY_FLAT_PATH_RE = re.compile(
+    r"^codespec/changes/[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*-(?P<slug>[a-z0-9]+(?:-[a-z0-9]+)*)$"
+)
 DRAFT_RE = re.compile(r"^draft-[0-9]{8}-[a-z0-9]+(?:-[a-z0-9]+)*$")
 REPOSITORY_NAME_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 
@@ -124,9 +127,18 @@ def build_plans(
             if not REQ_ID_RE.fullmatch(identity):
                 fail(f"invalid req-id: {identity}")
             flat_prefix = f"codespec/changes/{identity}-"
-            if not issue_match and not old_path.startswith(flat_prefix):
+            legacy_flat_match = LEGACY_FLAT_PATH_RE.fullmatch(old_path)
+            if issue_match:
+                slug = issue_match.group(1)
+            elif old_path.startswith(flat_prefix):
+                slug = old_path[len(flat_prefix):]
+            elif legacy_flat_match:
+                # Pre-0.11 archives may carry an alphanumeric requirement identity
+                # in the directory name. The TSV mapping is the developer-confirmed
+                # source of truth for the new numeric req-id.
+                slug = legacy_flat_match.group("slug")
+            else:
                 fail(f"invalid legacy path or req identity: {old_path}")
-            slug = issue_match.group(1) if issue_match else old_path[len(flat_prefix):]
             if not SLUG_RE.fullmatch(slug):
                 fail(f"invalid slug: {slug}")
             new_leaf = identity

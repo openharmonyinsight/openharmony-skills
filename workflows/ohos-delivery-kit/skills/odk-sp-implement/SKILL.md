@@ -39,7 +39,7 @@ Use after `execution-plan.md` has been approved and the user wants implementatio
    - If any Task is incomplete, inform the user and do NOT suggest moving to review — wait for user direction
 7. After implementation, update `execution-plan.md` 代码范围映射 and AC-Task 验证状态 with actual files, tests, and commit references.
 8. If implementation reveals missing ACs or changed scope, pause and update `spec.md` / `execution-plan.md` before continuing.
-9. Before a completed implementation is committed, pushed, or opened as a GitCode PR, read `design_docs_repository` from `codespec/profile.yaml` and remind the user to submit `codespec/` documents to that separate design-docs repository. If absent, report “待开发者填写”; do not guess or automatically push across repositories.
+9. Before a completed implementation is committed, pushed, or opened as a GitCode PR, read `design_docs_repository` from `codespec/profile.yaml` and remind the user to submit `codespec/` documents to that separate design-docs repository. If absent, report “待开发者填写”; do not guess or automatically push across repositories. An explicit submission request invokes `odk-submit-design-docs`, which generates `metadata_tracking.yaml` and validates the five-file bundle.
 
 ## Output
 

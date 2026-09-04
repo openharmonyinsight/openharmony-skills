@@ -24,6 +24,111 @@ def _lines(path: str) -> list[str]:
     return Path(path).read_text(encoding="utf-8").splitlines()
 
 
+def _metadata_scalar(value: str) -> str:
+    value = value.strip()
+    if value.startswith(('"', "'")):
+        quote = value[0]
+        closing = value.find(quote, 1)
+        suffix = value[closing + 1 :].strip() if closing >= 0 else ""
+        if closing < 0 or (suffix and not suffix.startswith("#")):
+            raise ValueError("invalid quoted scalar")
+        return value[1:closing]
+    return re.sub(r"\s+#.*$", "", value).strip()
+
+
+def parse_metadata_tracking(path: str) -> dict[str, object]:
+    """Parse the fixed metadata_tracking.yaml schema without external packages."""
+
+    result: dict[str, object] = {"repos": []}
+    repos = result["repos"]
+    assert isinstance(repos, list)
+    current_repo: dict[str, object] | None = None
+    current_section: str | None = None
+    current_item: dict[str, str] | None = None
+    seen_top: set[str] = set()
+    seen_repos_marker = False
+    seen_sections: set[str] = set()
+    last_line_number = 0
+
+    def require_nonempty_block(line_number: int) -> None:
+        if current_repo is None or current_section is None:
+            return
+        items = current_repo[current_section]
+        if isinstance(items, list) and not items:
+            raise ValueError(
+                f"{path}:{line_number}: {current_section} must use [] or contain at least one item"
+            )
+
+    for line_number, raw in enumerate(_lines(path), start=1):
+        last_line_number = line_number
+        line = raw.rstrip()
+        if not line or line.lstrip().startswith("#"):
+            continue
+
+        top = re.fullmatch(r"(req_id|target_release):\s*(.+)", line)
+        if top:
+            require_nonempty_block(line_number)
+            key, value = top.groups()
+            if key in seen_top:
+                raise ValueError(f"{path}:{line_number}: duplicate {key}")
+            seen_top.add(key)
+            result[key] = _metadata_scalar(value)
+            current_section = None
+            current_item = None
+            continue
+        if line == "repos:":
+            require_nonempty_block(line_number)
+            if seen_repos_marker:
+                raise ValueError(f"{path}:{line_number}: duplicate repos")
+            seen_repos_marker = True
+            current_section = None
+            current_item = None
+            continue
+
+        repo = re.fullmatch(r"  - repo:\s*(.+)", line)
+        if repo and seen_repos_marker:
+            require_nonempty_block(line_number)
+            current_repo = {"repo": _metadata_scalar(repo.group(1))}
+            repos.append(current_repo)
+            current_section = None
+            current_item = None
+            seen_sections = set()
+            continue
+
+        section = re.fullmatch(r"    (pull_requests|issues):(?:\s*(\[\]))?", line)
+        if section and current_repo is not None:
+            require_nonempty_block(line_number)
+            section_name = section.group(1)
+            if section_name in seen_sections:
+                raise ValueError(f"{path}:{line_number}: duplicate {section_name}")
+            seen_sections.add(section_name)
+            current_repo[section_name] = []
+            current_section = None if section.group(2) else section_name
+            current_item = None
+            continue
+
+        first_field = re.fullmatch(r"      - ([a-z_]+):\s*(.+)", line)
+        if first_field and current_repo is not None and current_section is not None:
+            current_item = {first_field.group(1): _metadata_scalar(first_field.group(2))}
+            items = current_repo[current_section]
+            assert isinstance(items, list)
+            items.append(current_item)
+            continue
+
+        field = re.fullmatch(r"        ([a-z_]+):\s*(.+)", line)
+        if field and current_item is not None:
+            key, value = field.groups()
+            if key in current_item:
+                raise ValueError(f"{path}:{line_number}: duplicate {key}")
+            current_item[key] = _metadata_scalar(value)
+            continue
+
+        raise ValueError(f"{path}:{line_number}: unsupported metadata syntax: {line.strip()}")
+
+    require_nonempty_block(last_line_number + 1)
+    return result
+
+
 def parse_contract_artifacts(path: str) -> dict[str, dict[str, object]]:
     artifacts: dict[str, dict[str, object]] = {}
     current: str | None = None

@@ -7,6 +7,7 @@ minimum_contract:
     - design
     - execution-plan
   optional_artifacts:
+    - metadata-tracking
     - spec-for-validation
     - threat-model
     - evidence/reviews
@@ -178,6 +179,24 @@ artifacts:
     conditional_sections:
       - section: "资源验证矩阵"
         required_when: "resource chain active (any dimension impact state in active_when_states)."
+
+  metadata-tracking:
+    file: "metadata_tracking.yaml"
+    template: "templates/metadata_tracking.yaml"
+    phase: "design-docs-submit"
+    required: false
+    owns:
+      - req_id
+      - target_release
+      - repositories
+      - pull_requests
+      - issues
+    requires:
+      - proposal
+      - spec
+      - design
+      - execution-plan
+    required_sections: []
 
   spec-for-validation:
     file: "spec-for-validation.md"

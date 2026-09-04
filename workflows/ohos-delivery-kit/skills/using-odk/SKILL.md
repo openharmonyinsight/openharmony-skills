@@ -14,7 +14,7 @@ You are working in a project that uses **ohos-delivery-kit** — a lightweight d
 
 Once the user invokes any `{{CMD_PREFIX}}*` command in the current session, ODK bridge activates for the remainder of the session: Output Redirection Rules (see Phase-Artifact Mapping below) override all other plugins' default output paths. Ends when the session ends.
 
-ODK also activates when the user explicitly mentions ODK, ohos-delivery-kit, `codespec`, or ODK artifact names (proposal, spec, design, execution-plan, spec-for-validation, threat-model, review, validate).
+ODK also activates when the user explicitly mentions ODK, ohos-delivery-kit, `codespec`, or ODK artifact names/actions (proposal, spec, design, execution-plan, spec-for-validation, threat-model, metadata_tracking, review, validate, submit design docs).
 
 ### Deactivation
 
@@ -43,6 +43,7 @@ Each change directory is **populated by phase** — `odk-init` only seeds `propo
 - `execution-plan.md` — (`odk-plan`) implementation plan with AC-Task traceability and task details
 - `spec-for-validation.md` — optional validation specification with integration/system scenarios derived from spec.md (parallel bypass, does not block main flow)
 - `threat-model.md` — optional deep threat analysis (bypass; high-risk security/privacy/compliance changes; produced by `odk-security-threat-model`)
+- `metadata_tracking.yaml` — generated or refreshed by `odk-submit-design-docs` when the formal five-file bundle is submitted to design-docs; it may use `pull_requests: []` before a business-code PR exists
 
 The recommended phase order is **Propose → Specify → Design → Plan → Implement**. Spec defines WHAT (behavior, ACs, business rules); Design defines HOW (architecture, error code values, interface signatures). Design references specific AC numbers from Spec, strengthening the traceability chain. After design, review and update spec's error codes and interfaces if design decisions changed them.
 
@@ -71,7 +72,7 @@ Honour an explicitly user-named command over this default. Stay consistent withi
 
 ### Base Commands (standalone, no plugin required)
 
-Invoke via Skill tool: `odk-init` / `odk-propose` / `odk-spec` / `odk-design` / `odk-plan` / `odk-implement` / `odk-review` / `odk-validate` / `odk-spec-for-validation` / `odk-security-threat-model` / `odk-link-req`.
+Invoke via Skill tool: `odk-init` / `odk-propose` / `odk-spec` / `odk-design` / `odk-plan` / `odk-implement` / `odk-review` / `odk-validate` / `odk-submit-design-docs` / `odk-spec-for-validation` / `odk-security-threat-model` / `odk-link-req`.
 Each skill loads its own full context. Base commands are template-driven with zero plugin dependencies.
 
 ### Bridge Commands (plugin-specific)
@@ -88,7 +89,7 @@ Bridge commands load `using-odk-bridge` automatically for output redirection and
 
 - **target_release** is the single source of truth for version, stored in `proposal.md` YAML frontmatter
 - Traceability chain: `proposal → spec AC → execution-plan Task → code → commit → review`. Any broken link fails validation.
-- **GitCode submission reminder**: when implementation is complete and the user is about to commit, push, or open a GitCode PR, remind them that documents under `codespec/` must be submitted to the separate design-docs repository. Read its address from developer-owned `codespec/profile.yaml` key `design_docs_repository`. If the key is absent or empty, show it as “待开发者填写” and ask the developer to provide it; never guess a repository or automatically push across repositories. This reminder does not by itself block the business-code submission.
+- **GitCode submission reminder**: when implementation is complete and the user is about to commit, push, or open a GitCode PR, remind them that documents under `codespec/` must be submitted to the separate design-docs repository. Read its address from developer-owned `codespec/profile.yaml` key `design_docs_repository`. If the key is absent or empty, show it as “待开发者填写” and ask the developer to provide it; never guess a repository or automatically push across repositories. This reminder does not by itself block the business-code submission. When the user explicitly requests design-document submission, invoke `odk-submit-design-docs`: generate `metadata_tracking.yaml`, validate the five-file bundle, and submit `proposal.md`, `spec.md`, `design.md`, `execution-plan.md`, and `metadata_tracking.yaml` together.
 - **Phase Gate**: Artifact phases (propose, spec, design, plan) produce documents for approval. When the user confirms an artifact ("没问题", "looks good", etc.), it means the document is approved — it does NOT authorize skipping to implementation. After each artifact is approved, suggest the next phase command explicitly and wait for the user to invoke it. Do not write implementation code until `execution-plan.md` is approved and the user explicitly invokes an implement command (`{{CMD_PREFIX}}implement`, `{{CMD_PREFIX}}sp-implement`, etc.). This applies regardless of perceived simplicity.
 
 ## Context Loading
@@ -143,3 +144,4 @@ When using bridge commands, `using-odk-bridge` is loaded automatically and provi
 
 - AI artifact templates: `{{ASSET_ROOT}}/templates/ai/` (proposal, spec, design, execution-plan, spec-for-validation, threat-model)
 - Review templates: `{{ASSET_ROOT}}/templates/review/` (spec-compliance, code-quality, verification)
+- Design-docs submission metadata: `{{ASSET_ROOT}}/templates/metadata_tracking.yaml`

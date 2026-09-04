@@ -1,0 +1,21 @@
+# Generated or refreshed when the ODK design-document bundle is submitted.
+req_id: "{{REQ_ID}}"
+target_release: "{{TARGET_RELEASE}}"
+repos:
+  - repo: "{{ORGANIZATION}}/{{REPOSITORY}}"
+    # An empty list is valid before the business-code PR has been created.
+    pull_requests: []
+    # Populated form:
+    # pull_requests:
+    #   - url: "https://gitcode.com/{{ORGANIZATION}}/{{REPOSITORY}}/pull/123"
+    #     title: "Implement the requirement"
+    #     state: "open" # open | merged | closed
+    #     commit: "0123456789abcdef0123456789abcdef01234567"
+    # Optional extension; omit by default.
+    # issues:
+    #   - issue: 12345
+    #     url: "https://gitcode.com/{{ORGANIZATION}}/{{REPOSITORY}}/issues/12345"
+    #     title: "Track the requirement"
+    #     type: "requirement" # requirement | bug | task | epic
+    #     state: "open" # open | closed
+    #     closed_at: "2026-09-04" # omit while open or when unknown

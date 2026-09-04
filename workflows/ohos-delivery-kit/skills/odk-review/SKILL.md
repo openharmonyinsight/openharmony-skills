@@ -24,7 +24,7 @@ license: MIT
 
 2. Backfill `execution-plan.md` 代码范围映射 with actual implementation files and update AC-Task 验证状态.
 
-3. If the next action is a GitCode commit, push, or PR, read developer-owned `codespec/profile.yaml` key `design_docs_repository` and remind the user to submit `codespec/` documents to that separate repository. If it is missing, report “待开发者填写”; do not guess or automatically push across repositories.
+3. If the next action is a GitCode commit, push, or PR, read developer-owned `codespec/profile.yaml` key `design_docs_repository` and remind the user to submit `codespec/` documents to that separate repository. If it is missing, report “待开发者填写”; do not guess or automatically push across repositories. Explicit submission uses `odk-submit-design-docs` to generate `metadata_tracking.yaml` and validate the five-file bundle.
 
 ## Output
 

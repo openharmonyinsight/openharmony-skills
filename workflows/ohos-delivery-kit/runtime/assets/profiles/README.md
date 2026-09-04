@@ -31,7 +31,8 @@ design_docs_repository: "https://gitcode.com/<组织>/<design-docs仓>.git"
 
 `design_docs_repository` 不是 profile ID，而是开发者维护的交付仓地址。代码开发完成、
 准备向 GitCode 提交时，ODK 用它提醒 `codespec/` 文档的独立提交目标；缺失时只显示
-“待开发者填写”，不得猜测或自动跨仓推送。
+“待开发者填写”，不得猜测或自动跨仓推送。用户明确要求提交时，
+`odk-submit-design-docs` 会生成 `metadata_tracking.yaml` 并校验五件套。
 
 **自动检测**（AI 根据关键词匹配）：
 

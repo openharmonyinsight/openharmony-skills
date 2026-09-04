@@ -18,6 +18,7 @@ import re
 import subprocess
 import sys
 from argparse import ArgumentParser
+from datetime import date
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -32,7 +33,7 @@ _SOURCE_LIB = SCRIPT_DIR.parent / "scripts" / "lib"
 _PUBLISHED_LIB = SCRIPT_DIR / "lib"
 sys.path.insert(0, str(_SOURCE_LIB if _SOURCE_LIB.is_dir() else _PUBLISHED_LIB))
 
-from odk_yaml import parse_contract_artifacts, parse_resource_contract  # noqa: E402
+from odk_yaml import parse_contract_artifacts, parse_metadata_tracking, parse_resource_contract  # noqa: E402
 
 
 AC_RE = re.compile(r"\bAC-\d+(?:\.\d+)?\b")
@@ -122,8 +123,7 @@ DEVICE_VARIATION_ROWS = (
 EXTERNAL_DEPENDENCIES_SECTION = "外部依赖"
 EXTERNAL_DEPENDENCIES_COLUMNS = ["子系统", "仓库", "模块/路径", "依赖类型"]
 
-REQ_ID_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$")
-LEGACY_ISSUE_REQ_RE = re.compile(r"^issue-\d+$", re.IGNORECASE)
+REQ_ID_RE = re.compile(r"^[0-9]+$")
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 DRAFT_RE = re.compile(r"^draft-\d{8}-(.+)$")
 REPOSITORY_NAME_RE = re.compile(r"^[A-Za-z0-9._-]+$")
@@ -958,6 +958,50 @@ def expected_repository_name(repository_root: Path) -> str:
     return repository_root.name
 
 
+def repository_origin_url(repository_root: Path) -> str | None:
+    """Return origin only when repository_root itself is the Git top level."""
+
+    try:
+        top_level = subprocess.run(
+            ["git", "-C", str(repository_root), "rev-parse", "--show-toplevel"],
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=5,
+        )
+        if top_level.returncode != 0 or Path(top_level.stdout.strip()).resolve() != repository_root.resolve():
+            return None
+        result = subprocess.run(
+            ["git", "-C", str(repository_root), "remote", "get-url", "origin"],
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0:
+        return None
+
+    return result.stdout.strip() or None
+
+
+def gitcode_repository_identity(remote: str) -> str | None:
+    """Parse supported HTTPS, SSH URL, and SCP-style GitCode remotes."""
+
+    remote = remote.strip().rstrip("/")
+    if remote.endswith(".git"):
+        remote = remote[:-4]
+    match = re.search(
+        r"(?:^|@|//)gitcode\.com(?::\d+)?[/:]([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)$",
+        remote,
+        re.IGNORECASE,
+    )
+    if not match:
+        return None
+    return f"{match.group(1)}/{match.group(2)}"
+
+
 def validate_dir_name(change_dir: Path, reporter: Reporter) -> None:
     change_dir = change_dir.resolve()
     repository_segment = change_dir.parent
@@ -998,10 +1042,7 @@ def validate_dir_name(change_dir: Path, reporter: Reporter) -> None:
         reporter.fail("proposal.md: req frontmatter is required for a formal change directory")
         return
     if not REQ_ID_RE.fullmatch(req):
-        reporter.fail(f"proposal.md: req '{req}' is invalid (letters, digits, and internal hyphens only)")
-        return
-    if LEGACY_ISSUE_REQ_RE.fullmatch(req):
-        reporter.fail(f"proposal.md: req '{req}' uses reserved legacy issue-<digits> format")
+        reporter.fail(f"proposal.md: req '{req}' is invalid (formal req-id must contain digits only)")
         return
 
     if name != req:
@@ -1032,6 +1073,141 @@ def validate_target_release(change_dir: Path, reporter: Reporter) -> None:
         f"proposal.md: target_release '{value}' does not match R-OH-003 (<major>.<minor>, "
         f"e.g. 7.1; or 7.1-Beta). Branch names (master/dev) are not release versions."
     )
+
+
+def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: bool = False) -> None:
+    """Validate the design-docs metadata sidecar when present or required."""
+
+    path = change_dir / "metadata_tracking.yaml"
+    print("\nLevel A2: Design-docs Metadata")
+    if not path.is_file():
+        if required:
+            reporter.fail("metadata_tracking.yaml missing for design-docs submission")
+        return
+
+    try:
+        metadata = parse_metadata_tracking(str(path))
+    except (OSError, ValueError) as error:
+        reporter.fail(f"metadata_tracking.yaml is invalid: {error}")
+        return
+
+    initial_failures = reporter.failed
+    req_id = str(metadata.get("req_id", "")).strip()
+    if not REQ_ID_RE.fullmatch(req_id):
+        reporter.fail("metadata_tracking.yaml: req_id must contain digits only")
+    elif req_id != change_dir.name:
+        reporter.fail("metadata_tracking.yaml: req_id does not match the change directory")
+    else:
+        proposal_req = trim_yaml_whitespace(read_frontmatter(change_dir / "proposal.md").get("req", ""))
+        if req_id != proposal_req:
+            reporter.fail("metadata_tracking.yaml: req_id does not match proposal.md")
+        else:
+            reporter.pass_("metadata_tracking.yaml: req_id matches directory and proposal.md")
+
+    target_release = str(metadata.get("target_release", "")).strip()
+    proposal_release = trim_yaml_whitespace(
+        read_frontmatter(change_dir / "proposal.md").get("target_release", "")
+    )
+    if not target_release:
+        reporter.fail("metadata_tracking.yaml: target_release is required")
+    elif target_release != proposal_release:
+        reporter.fail("metadata_tracking.yaml: target_release does not match proposal.md")
+    else:
+        reporter.pass_("metadata_tracking.yaml: target_release matches proposal.md")
+
+    repos = metadata.get("repos")
+    if not isinstance(repos, list) or not repos:
+        reporter.fail("metadata_tracking.yaml: repos must contain at least one repository")
+        return
+
+    repository_names: set[str] = set()
+    for index, entry in enumerate(repos, start=1):
+        if not isinstance(entry, dict):
+            reporter.fail(f"metadata_tracking.yaml: repos[{index}] must be a mapping")
+            continue
+        repo = str(entry.get("repo", "")).strip()
+        repo_is_valid = re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repo) is not None
+        if not repo_is_valid:
+            reporter.fail(
+                f"metadata_tracking.yaml: repos[{index}].repo must use organization/repository form"
+            )
+        elif repo in repository_names:
+            reporter.fail(f"metadata_tracking.yaml: duplicate repo entry: {repo}")
+        else:
+            repository_names.add(repo)
+
+        if "pull_requests" not in entry:
+            reporter.fail(f"metadata_tracking.yaml: {repo or index} pull_requests is required")
+        pull_requests = entry.get("pull_requests", [])
+        if not isinstance(pull_requests, list):
+            reporter.fail(f"metadata_tracking.yaml: {repo or index} pull_requests must be a list")
+            pull_requests = []
+        for pr_index, pull_request in enumerate(pull_requests, start=1):
+            if not isinstance(pull_request, dict):
+                reporter.fail(f"metadata_tracking.yaml: {repo or index} pull request {pr_index} must be a mapping")
+                continue
+            missing = [key for key in ("url", "state") if not str(pull_request.get(key, "")).strip()]
+            if missing:
+                reporter.fail(
+                    f"metadata_tracking.yaml: {repo or index} pull request {pr_index} missing: {', '.join(missing)}"
+                )
+            state = str(pull_request.get("state", "")).strip()
+            if state and state not in {"open", "merged", "closed"}:
+                reporter.fail("metadata_tracking.yaml: pull request state must be open, merged, or closed")
+            url = str(pull_request.get("url", "")).strip()
+            expected_pr_url = rf"https://gitcode\.com/{re.escape(repo)}/pulls?/\d+"
+            if url and (not repo_is_valid or not re.fullmatch(expected_pr_url, url)):
+                reporter.fail("metadata_tracking.yaml: pull request url must match its GitCode repository")
+            commit = str(pull_request.get("commit", "")).strip()
+            if commit and not re.fullmatch(r"[0-9a-fA-F]{7,40}", commit):
+                reporter.fail("metadata_tracking.yaml: pull request commit must be a 7-40 digit hex SHA")
+
+        issues = entry.get("issues", [])
+        if not isinstance(issues, list):
+            reporter.fail(f"metadata_tracking.yaml: {repo or index} issues must be a list")
+            issues = []
+        for issue_index, issue in enumerate(issues, start=1):
+            if not isinstance(issue, dict):
+                reporter.fail(f"metadata_tracking.yaml: {repo or index} issue {issue_index} must be a mapping")
+                continue
+            issue_id = str(issue.get("issue", "")).strip()
+            if issue_id and not issue_id.isdigit():
+                reporter.fail("metadata_tracking.yaml: issue must contain digits only")
+            issue_type = str(issue.get("type", "")).strip()
+            if issue_type and issue_type not in {"requirement", "bug", "task", "epic"}:
+                reporter.fail("metadata_tracking.yaml: issue type must be requirement, bug, task, or epic")
+            state = str(issue.get("state", "")).strip()
+            if state and state not in {"open", "closed"}:
+                reporter.fail("metadata_tracking.yaml: issue state must be open or closed")
+            closed_at = str(issue.get("closed_at", "")).strip()
+            if closed_at:
+                try:
+                    date.fromisoformat(closed_at)
+                except ValueError:
+                    reporter.fail("metadata_tracking.yaml: closed_at must be a valid YYYY-MM-DD date")
+            url = str(issue.get("url", "")).strip()
+            expected_issue_url = rf"https://gitcode\.com/{re.escape(repo)}/issues/\d+"
+            if url and (not repo_is_valid or not re.fullmatch(expected_issue_url, url)):
+                reporter.fail("metadata_tracking.yaml: issue url must match its GitCode repository")
+
+    repository_root = change_dir.resolve().parent.parent.parent.parent
+    origin = repository_origin_url(repository_root)
+    current_identity = gitcode_repository_identity(origin) if origin else None
+    if origin and not current_identity:
+        reporter.fail(
+            "metadata_tracking.yaml: current Git origin must be a supported GitCode repository URL"
+        )
+    elif current_identity and current_identity not in repository_names:
+        reporter.fail(
+            "metadata_tracking.yaml: repos must include the current Git origin repository "
+            f"{current_identity}"
+        )
+    elif not current_identity and change_dir.parent.name not in {
+        repo.rsplit("/", 1)[-1] for repo in repository_names
+    }:
+        reporter.fail("metadata_tracking.yaml: repos must include the current business repository")
+    elif reporter.failed == initial_failures:
+        reporter.pass_("metadata_tracking.yaml matches the design-docs submission contract")
 
 
 def validate_required_artifacts(
@@ -1568,11 +1744,16 @@ def validate_archive_readiness(
 
 def main(argv: list[str]) -> int:
     parser = ArgumentParser(description="Validate one ODK change directory against the active artifacts contract.")
-    parser.add_argument("change_dir", help="ODK change directory, for example codespec/changes/arkui/REQ-123")
+    parser.add_argument("change_dir", help="ODK change directory, for example codespec/changes/arkui/12345")
     parser.add_argument(
         "--archive",
         action="store_true",
         help="Enable strict final-readiness checks: unresolved placeholders, filled code mapping, and Actual Result evidence.",
+    )
+    parser.add_argument(
+        "--design-docs-submit",
+        action="store_true",
+        help="Require and validate the five-file design-docs submission bundle.",
     )
     args = parser.parse_args(argv[1:])
 
@@ -1585,12 +1766,13 @@ def main(argv: list[str]) -> int:
 
     artifacts = parse_contract_artifacts(str(CONTRACT_PATH))
 
-    mode = "archive" if args.archive else "draft"
+    mode = "archive" if args.archive else ("design-docs-submit" if args.design_docs_submit else "draft")
     print(f"Validating ODK artifact contract ({mode} mode): {change_dir}")
     print("\nLevel A: Change Directory")
     validate_dir_name(change_dir, reporter)
     validate_target_release(change_dir, reporter)
     files = validate_required_artifacts(change_dir, artifacts, reporter)
+    validate_metadata_tracking(change_dir, reporter, required=args.design_docs_submit)
     validate_sections(change_dir, artifacts, files, reporter)
     proposal_path = change_dir / "proposal.md"
     if proposal_path.is_file():
