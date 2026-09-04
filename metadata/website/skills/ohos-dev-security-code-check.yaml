@@ -1,0 +1,85 @@
+schemaVersion: 1
+
+id: ohos-dev-security-code-check
+title: C/C++ 代码质量检查
+summary: 扫描 C/C++ 代码库的可维护性问题，包括超大文件/函数和模块间循环依赖，支持可配置阈值与目录级扫描。
+
+category:
+  scope: domain
+  namespace: security
+  stage: development
+  domain: security
+  capability: code-check
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - security
+  - code-check
+  - cpp
+  - code-quality
+  - circular-dependencies
+
+audience:
+  - OpenHarmony C/C++ 系统服务开发者
+  - 代码质量与可维护性审查人员
+  - 模块依赖治理维护者
+
+useCases:
+  - title: 扫描超大文件与函数
+    description: 按可配置阈值定位超长文件和超长函数，统计有效代码行（排除空行、注释、预处理指令）。
+  - title: 检测模块循环依赖
+    description: 解析 GN 构建文件的 include 路径，按目录模块分组并发现 A 依赖 B、B 依赖 A 的循环引用。
+  - title: 输出可维护性报告
+    description: 汇总文件/函数尺寸与循环依赖结果，按影响优先级排序并给出重构建议入口。
+
+whenToUse:
+  - 用户要求检查 C/C++ 代码的文件尺寸、函数长度或代码复杂度。
+  - 需要检测目录模块之间的循环依赖或头文件循环引用。
+  - 需要在合并前评估可维护性风险并给出重构方向。
+  - 扫描目标为单个文件或整个目录，且需要可配置阈值。
+
+whenNotToUse:
+  - 只做功能正确性审查或安全漏洞审查（改用 ohos-dev-security-code-review）。
+  - 只需要编译错误定位或构建修复。
+  - 代码不是 C/C++（如纯 ArkTS/JS）。
+
+inputs:
+  required:
+    - 待扫描的 C/C++ 文件或目录路径
+  optional:
+    - 文件/函数有效行阈值
+    - 是否跳过 GN 构建文件解析
+    - 报告输出文件路径
+
+outputs:
+  - 超大文件/函数清单（含有效行数）
+  - 模块循环依赖清单
+  - 可维护性汇总报告与重构建议入口
+
+quickStart:
+  steps:
+    - 提供待扫描的 C/C++ 目录或文件路径。
+    - 按需调整文件/函数阈值与是否解析 GN 构建文件。
+    - 请求 Agent 执行扫描并汇总可维护性问题。
+  examplePrompt: |
+    请使用 ohos-dev-security-code-check 扫描 ./src 目录，
+    文件阈值 1500 行、函数阈值 40 行，同时检测循环依赖并输出报告。
+
+related:
+  skills:
+    - ohos-dev-security-code-review
+  docs:
+    - title: 循环依赖参考
+      path: references/circular-deps.md
+    - title: 重构指引
+      path: references/refactoring.md
+
+extractionNotes:
+  confidence: high
+  missing: []
+  comments:
+    - 由 main 分支 code-checker 迁入 security 领域并重命名，能力保持 C/C++ 可维护性检查不变。
