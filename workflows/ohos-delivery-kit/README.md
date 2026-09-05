@@ -1,7 +1,28 @@
 # ohos-delivery-kit (ODK) Workflow Plugin
 
 Neutral-source plugin providing OpenHarmony delivery artifact specification skills,
-session routing, validator executable, and runtime assets.
+session routing, validator executables, and runtime assets.
+
+## 0.11.0 req-id / design-docs contract change
+
+**Breaking change:** a formal `req-id` must contain digits only, with no length
+restriction. The formal archive location remains
+`codespec/changes/<repo-name>/<req-id>/`; its directory name, `proposal.md` frontmatter
+`req`, and `metadata_tracking.yaml` `req_id` must agree. Drafts continue to use an
+English slug and cannot be submitted as formal design documents.
+
+`odk-submit-design-docs` now creates or refreshes `metadata_tracking.yaml` before a
+design-docs submission. Its strict `--design-docs-submit` gate requires all five files
+in the formal archive: `proposal.md`, `spec.md`, `design.md`,
+`execution-plan.md`, and `metadata_tracking.yaml`. A repository entry may use an empty
+`pull_requests: []` list when no pull request exists yet.
+
+The `issues` field is an optional extension. ODK omits it by default, preserves valid
+existing issue entries, and adds entries only when the developer explicitly requests
+issue tracking. Repositories with previous non-numeric formal IDs must use the bundled
+`validate-archive-migration.py` `plan` and `check-staged` gates before adopting 0.11.0.
+
+See [CHANGELOG.md](CHANGELOG.md) for the released change summary.
 
 ## 0.10.0 proposal contract change
 
@@ -66,7 +87,7 @@ Synced from `oshunter/ohos-delivery-kit` branch `main` via
 - `provenance.yaml` — source tracking (auto-updated by publish script)
 - `hooks/session-router.yaml` — declarative session-start hook
 - `prompts/session-router.md` — router prompt
-- `skills/` — 24 ODK skills (synced from `core/skills/`)
+- `skills/` — 25 ODK skills (synced from `core/skills/`)
 - `runtime/assets/` — templates, profiles, contracts, rules, adapters, examples
 - `runtime/executables/` — artifact and archive-migration validators
 
