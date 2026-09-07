@@ -38,4 +38,8 @@
 - [ ] 实际提交 design-docs 前已生成或刷新 `metadata_tracking.yaml`，并用 `--design-docs-submit` 验证 `proposal.md`、`spec.md`、`design.md`、`execution-plan.md` 与该文件组成的五件套；业务代码 PR 未创建时 `pull_requests: []` 合法
 - [ ] **API 设计校验**：
   - 校验 `proposal.md` 的 `## API 设计属性` 与 `spec.md` 的 `## API 规格定义` 已填写（`API/SDK` = 否时均标注"不涉及"）。API 仓库路径/commit、既有声明格式参考为过程信息，不要求体现在 spec.md 中。
+  - 如 `API/SDK` = 是，校验以下子节已填写：
+    - `### 公共规格属性` 表（是否新增声明文件、API 类型、编程语言、@syscap、@since、权限、跨平台/元服务/卡片、FA/Stage 模型）
+    - 每个 `#### API: <完整签名>` 子节包含：规格表（入参、返回值、错误码等）、API 描述（接口定义三要素 + 接口使用五要素）、设备行为差异（支持设备表始终必填；无差异时差异明细表填"所有支持设备行为一致"）
+    - API 描述内容无占位符，错误码有精确数值和触发条件
   - 如 `API/SDK` = 是，校验声明文件修改 diff 已归档到 `codespec/changes/<repo-name>/<req-id>/`（声明文件 PR 由开发者自行管理）。
