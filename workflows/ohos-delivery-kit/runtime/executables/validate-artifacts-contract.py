@@ -889,7 +889,7 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
         signature = canonical_api_signature(raw_signature)
         if API_SIGNATURE_NAME == "language-dependent":
             name_style = {
-                "C": "free",
+                "C": "either",
                 "ArkTS": "qualified",
                 "两者": "either",
             }.get(api_language, "qualified")
