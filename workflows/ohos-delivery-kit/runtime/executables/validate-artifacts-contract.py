@@ -33,7 +33,12 @@ _SOURCE_LIB = SCRIPT_DIR.parent / "scripts" / "lib"
 _PUBLISHED_LIB = SCRIPT_DIR / "lib"
 sys.path.insert(0, str(_SOURCE_LIB if _SOURCE_LIB.is_dir() else _PUBLISHED_LIB))
 
-from odk_yaml import parse_contract_artifacts, parse_metadata_tracking, parse_resource_contract  # noqa: E402
+from odk_yaml import (  # noqa: E402
+    parse_api_spec_contract,
+    parse_contract_artifacts,
+    parse_metadata_tracking,
+    parse_resource_contract,
+)
 
 
 AC_RE = re.compile(r"\bAC-\d+(?:\.\d+)?\b")
@@ -80,6 +85,7 @@ DFX_SOURCE_REF_RE = re.compile(
 
 
 RESOURCE_CONTRACT = parse_resource_contract(str(CONTRACT_PATH))
+API_SPEC_CONTRACT = parse_api_spec_contract(str(CONTRACT_PATH))
 
 
 def contract_scalar(key: str) -> str:
@@ -96,6 +102,20 @@ def contract_list(key: str) -> list[str]:
     return value
 
 
+def api_contract_scalar(key: str) -> str:
+    value = API_SPEC_CONTRACT.get(key)
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{CONTRACT_PATH}: api_spec_contract.{key} must be a scalar")
+    return value
+
+
+def api_contract_list(key: str) -> list[str]:
+    value = API_SPEC_CONTRACT.get(key)
+    if not isinstance(value, list) or not value:
+        raise ValueError(f"{CONTRACT_PATH}: api_spec_contract.{key} must be a non-empty list")
+    return value
+
+
 RESOURCE_SECTIONS = dict(item.split("=", 1) for item in contract_list("conditional_sections"))
 IMPACT_STATES = set(contract_list("impact_states"))
 ACTIVE_WHEN_STATES = set(contract_list("active_when_states"))
@@ -107,6 +127,20 @@ for dim_key, dim_label in DIMENSION_LABELS.items():
 PROPOSAL_SECTION = contract_scalar("proposal_section")
 PROPOSAL_COLUMNS = contract_list("proposal_columns")
 EVIDENCE_ROOT = contract_scalar("evidence_root")
+
+API_PROPOSAL_SECTION = api_contract_scalar("proposal_section")
+API_TRIGGER_DIMENSION = api_contract_scalar("trigger_dimension")
+API_SPEC_SECTION = api_contract_scalar("spec_section")
+API_COMMON_SECTION = api_contract_scalar("common_section")
+API_PER_API_SECTION = api_contract_scalar("per_api_section")
+API_SIGNATURE_NAME = api_contract_scalar("signature_name")
+API_COMMON_REQUIRED_ITEMS = api_contract_list("common_required_items")
+API_REQUIRED_SPEC_ITEMS = api_contract_list("per_api_required_spec_items")
+API_DESCRIPTION_ELEMENTS = [
+    tuple(item.split("=", 1)) for item in api_contract_list("api_description_elements")
+]
+API_SUPPORTED_DEVICE_COLUMNS = api_contract_list("supported_device_columns")
+API_DEVICE_DIFFERENCE_COLUMNS = api_contract_list("device_difference_columns")
 
 DEVICE_VARIATION_SECTION = "1+8 设备差异规格"
 DEVICE_VARIATION_COLUMNS = ["设备/差异项", "是否存在差异", "差异说明"]
@@ -327,6 +361,178 @@ def table_with_columns(text: str, required_columns: list[str]) -> list[dict[str,
 
 def meaningful(value: str) -> bool:
     return bool(value.strip()) and not PLACEHOLDER_RE.match(value)
+
+
+def normalized_table_key(value: str) -> str:
+    return value.replace("*", "").replace("`", "").strip()
+
+
+def api_sdk_involvement(proposal: str) -> str | None:
+    section = section_text(proposal, API_PROPOSAL_SECTION)
+    rows = table_with_columns(section, ["维度", "是否涉及"])
+    for row in rows:
+        if normalized_table_key(row.get("维度", "")) != API_TRIGGER_DIMENSION:
+            continue
+        value = normalized_table_key(row.get("是否涉及", ""))
+        if value.startswith("是"):
+            return "是"
+        if value.startswith("否"):
+            return "否"
+        return value or None
+    return None
+
+
+def api_signature_complete(signature: str) -> bool:
+    normalized = signature.strip().strip("`")
+    if not normalized or PLACEHOLDER_RE.match(normalized) or BRACKET_PLACEHOLDER_RE.search(normalized):
+        return False
+    close = normalized.rfind("):")
+    if close < 0:
+        return False
+    opening = normalized.find("(")
+    if opening <= 0 or opening >= close:
+        return False
+    name = normalized[:opening].strip()
+    parameters = normalized[opening + 1 : close].strip()
+    return_type = normalized[close + 2 :].strip()
+    if not re.fullmatch(r"[A-Za-z_$][A-Za-z0-9_$.]*", name):
+        return False
+    if API_SIGNATURE_NAME == "qualified" and "." not in name:
+        return False
+    if not meaningful(return_type) or BRACKET_PLACEHOLDER_RE.search(return_type):
+        return False
+    if parameters and ":" not in parameters:
+        return False
+    return True
+
+
+def api_entry_blocks(per_api_text: str) -> list[tuple[str, str]]:
+    matches = list(re.finditer(r"^####\s+API:\s*(.+?)\s*$", per_api_text, flags=re.MULTILINE))
+    entries: list[tuple[str, str]] = []
+    for index, match in enumerate(matches):
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(per_api_text)
+        entries.append((match.group(1).strip(), per_api_text[match.end() : end]))
+    return entries
+
+
+def table_rows_by_key(
+    text: str,
+    columns: list[str],
+    key_column: str,
+) -> dict[str, list[dict[str, str]]]:
+    rows = table_with_columns(text, columns)
+    result: dict[str, list[dict[str, str]]] = {}
+    for row in rows:
+        result.setdefault(normalized_table_key(row.get(key_column, "")), []).append(row)
+    return result
+
+
+def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
+    proposal_path = change_dir / "proposal.md"
+    spec_path = change_dir / "spec.md"
+    if not proposal_path.is_file() or not spec_path.is_file():
+        return
+
+    involvement = api_sdk_involvement(read_text(proposal_path))
+    spec_section = section_text(read_text(spec_path), API_SPEC_SECTION)
+    issues: list[str] = []
+
+    if involvement not in {"是", "否"}:
+        reporter.fail(
+            f"proposal.md: {API_TRIGGER_DIMENSION} must state 是 or 否 in {API_PROPOSAL_SECTION}"
+        )
+        return
+
+    if involvement == "否":
+        visible = _visible_markdown(spec_section)
+        reason = re.search(r"不涉及\s*[：:]\s*(\S[^\n]*)", visible)
+        if reason and meaningful(reason.group(1)):
+            reporter.pass_("spec.md API/SDK=否 has an explicit not-applicable reason")
+        else:
+            reporter.fail("spec.md API/SDK=否 requires an explicit not-applicable reason")
+        return
+
+    common_text = section_text(spec_section, API_COMMON_SECTION)
+    if not common_text:
+        issues.append(f"spec.md: {API_COMMON_SECTION} subsection missing")
+    else:
+        common_rows = table_rows_by_key(common_text, ["规格项", "值"], "规格项")
+        for item in API_COMMON_REQUIRED_ITEMS:
+            matches = common_rows.get(item, [])
+            if not matches:
+                issues.append(f"spec.md: {API_COMMON_SECTION} missing item: {item}")
+            elif len(matches) > 1:
+                issues.append(f"spec.md: {API_COMMON_SECTION} duplicate item: {item}")
+            elif not meaningful(matches[0].get("值", "")):
+                issues.append(f"spec.md: {API_COMMON_SECTION} item has empty value: {item}")
+
+    per_api_text = section_text(spec_section, API_PER_API_SECTION)
+    entries = api_entry_blocks(per_api_text)
+    if not entries:
+        issues.append(f"spec.md: {API_PER_API_SECTION} subsection has no API entries")
+
+    signatures: set[str] = set()
+    for raw_signature, block in entries:
+        signature = " ".join(raw_signature.split())
+        if not api_signature_complete(signature):
+            issues.append(f"spec.md: incomplete API signature: {raw_signature}")
+        if signature in signatures:
+            issues.append(f"spec.md: duplicate API signature: {raw_signature}")
+        signatures.add(signature)
+
+        spec_rows = table_rows_by_key(block, ["规格项", "值"], "规格项")
+        for item in API_REQUIRED_SPEC_ITEMS:
+            matches = spec_rows.get(item, [])
+            if not matches:
+                issues.append(f"spec.md API '{raw_signature}': missing specification item: {item}")
+            elif len(matches) > 1:
+                issues.append(f"spec.md API '{raw_signature}': duplicate specification item: {item}")
+            elif not meaningful(matches[0].get("值", "")):
+                issues.append(f"spec.md API '{raw_signature}': empty specification item: {item}")
+
+        description_rows = table_with_columns(block, ["要素类别", "要素", "内容"])
+        descriptions: dict[tuple[str, str], list[dict[str, str]]] = {}
+        for row in description_rows:
+            key = (
+                normalized_table_key(row.get("要素类别", "")),
+                normalized_table_key(row.get("要素", "")),
+            )
+            descriptions.setdefault(key, []).append(row)
+        for category, element in API_DESCRIPTION_ELEMENTS:
+            matches = descriptions.get((category, element), [])
+            label = f"{category}/{element}"
+            if not matches:
+                issues.append(
+                    f"spec.md API '{raw_signature}': missing API description element: {label}"
+                )
+            elif len(matches) > 1:
+                issues.append(
+                    f"spec.md API '{raw_signature}': duplicate API description element: {label}"
+                )
+            elif not meaningful(matches[0].get("内容", "")):
+                issues.append(f"spec.md API '{raw_signature}': empty API description element: {label}")
+
+        supported = table_with_columns(block, API_SUPPORTED_DEVICE_COLUMNS)
+        if not supported or any(
+            not meaningful(row.get(column, ""))
+            for row in supported
+            for column in API_SUPPORTED_DEVICE_COLUMNS
+        ):
+            issues.append(f"spec.md API '{raw_signature}': supported-device table missing or empty")
+
+        differences = table_with_columns(block, API_DEVICE_DIFFERENCE_COLUMNS)
+        if not differences or any(
+            not meaningful(row.get(column, ""))
+            for row in differences
+            for column in API_DEVICE_DIFFERENCE_COLUMNS
+        ):
+            issues.append(f"spec.md API '{raw_signature}': device-difference table missing or empty")
+
+    if issues:
+        for issue in issues:
+            reporter.fail(issue)
+    else:
+        reporter.pass_("spec.md per-API specification contract is complete")
 
 
 def validate_proposal_tables(proposal: str, reporter: Reporter, *, archive: bool) -> None:
@@ -1753,7 +1959,7 @@ def main(argv: list[str]) -> int:
     parser.add_argument(
         "--design-docs-submit",
         action="store_true",
-        help="Require and validate the five-file design-docs submission bundle.",
+        help="Require the five-file design-docs bundle and enforce archive-equivalent final-readiness checks.",
     )
     args = parser.parse_args(argv[1:])
 
@@ -1765,6 +1971,7 @@ def main(argv: list[str]) -> int:
         return 1
 
     artifacts = parse_contract_artifacts(str(CONTRACT_PATH))
+    strict_delivery = args.archive or args.design_docs_submit
 
     mode = "archive" if args.archive else ("design-docs-submit" if args.design_docs_submit else "draft")
     print(f"Validating ODK artifact contract ({mode} mode): {change_dir}")
@@ -1774,16 +1981,17 @@ def main(argv: list[str]) -> int:
     files = validate_required_artifacts(change_dir, artifacts, reporter)
     validate_metadata_tracking(change_dir, reporter, required=args.design_docs_submit)
     validate_sections(change_dir, artifacts, files, reporter)
+    validate_api_spec_contract(change_dir, reporter)
     proposal_path = change_dir / "proposal.md"
     if proposal_path.is_file():
-        validate_proposal_tables(read_text(proposal_path), reporter, archive=args.archive)
+        validate_proposal_tables(read_text(proposal_path), reporter, archive=strict_delivery)
     validate_present_optional_sections(change_dir, artifacts, reporter)
     validate_traceability(change_dir, reporter)
-    validate_dfx_constraints(change_dir, reporter, args.archive)
+    validate_dfx_constraints(change_dir, reporter, strict_delivery)
     validate_optional_evidence(change_dir, reporter)
     print("\nResource Constraints")
-    validate_resource_constraints(change_dir, reporter, archive=args.archive)
-    if args.archive:
+    validate_resource_constraints(change_dir, reporter, archive=strict_delivery)
+    if strict_delivery:
         validate_archive_readiness(change_dir, artifacts, files, reporter)
 
     print("\nSummary:")

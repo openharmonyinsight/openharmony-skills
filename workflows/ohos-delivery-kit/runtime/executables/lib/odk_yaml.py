@@ -233,6 +233,45 @@ def parse_resource_contract(path: str) -> dict[str, str | list[str]]:
     return result
 
 
+def parse_api_spec_contract(path: str) -> dict[str, str | list[str]]:
+    """Parse the flat scalar/list api_spec_contract block."""
+
+    result: dict[str, str | list[str]] = {}
+    current_list: str | None = None
+    in_contract = False
+    for raw in _lines(path):
+        line = raw.rstrip()
+        if not line or line.lstrip().startswith("#"):
+            continue
+        if line == "api_spec_contract:":
+            in_contract = True
+            continue
+        if in_contract and re.match(r"^\S", line):
+            break
+        if not in_contract:
+            continue
+
+        list_key = re.match(r"^  ([A-Za-z0-9_]+):$", line)
+        if list_key:
+            current_list = list_key.group(1)
+            result[current_list] = []
+            continue
+        scalar = re.match(r"^  ([A-Za-z0-9_]+):\s*(.+)$", line)
+        if scalar:
+            current_list = None
+            result[scalar.group(1)] = _unquote(scalar.group(2))
+            continue
+        item = re.match(r"^    -\s*(.+)$", line)
+        if item and current_list:
+            values = result[current_list]
+            if isinstance(values, list):
+                values.append(_unquote(item.group(1)))
+
+    if not result:
+        raise ValueError(f"{path}: missing or empty api_spec_contract block")
+    return result
+
+
 def validate_resource_contract_schema(contract: dict[str, str | list[str]]) -> list[str]:
     """Validate the executable shape of the thin resource contract."""
 

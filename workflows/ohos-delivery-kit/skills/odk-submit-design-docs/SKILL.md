@@ -42,6 +42,8 @@ python3 "{{EXECUTABLE_ROOT}}/validate-artifacts-contract.py" \
   "codespec/changes/<repo-name>/<req-id>" --design-docs-submit
 ```
 
+`--design-docs-submit` automatically enables the same final-readiness checks as `--archive`, including unresolved placeholders, code mapping, per-task `Actual Result`, DFX closure, and resource constraints.
+
 Do not submit if validation fails. Copy the five files to the same relative path under the configured design-docs checkout: `codespec/changes/<repo-name>/<req-id>/`.
 
 An explicit request to submit or publish the design documents authorizes preparing and synchronizing this bundle. Follow the user's requested Git scope for commit/push/PR operations; the ordinary business-code submission reminder alone is not authorization to mutate another repository.

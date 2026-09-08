@@ -20,12 +20,16 @@ class ReleaseDocumentationTest(unittest.TestCase):
         self.assertIn("codespec/changes/<repo-name>/<req-id>/", readme)
         self.assertIn("metadata_tracking.yaml", readme)
         self.assertIn("requires all five files", " ".join(readme.split()))
+        self.assertIn("same final-readiness checks as archive mode", " ".join(readme.split()))
+        self.assertIn("owner-qualified signatures", " ".join(readme.split()))
         self.assertIn("optional extension", readme)
         self.assertIn(f"{skill_count} ODK skills", readme)
         self.assertIn("## [0.11.0] - 2026-09-04", changelog)
-        self.assertIn("adaeb314b7434673259c1bbb67a7e22da5054a5d", changelog)
+        self.assertIn("500c0063d9a532e5e64caa01a262e302c976fea1", changelog)
         self.assertIn("Breaking", changelog)
         self.assertIn("optional extension", changelog)
+        self.assertIn("per-API specification contract", changelog)
+        self.assertIn("archive-equivalent final-readiness checks", changelog)
 
 
 if __name__ == "__main__":

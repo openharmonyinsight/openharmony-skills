@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.11.0] - 2026-09-04
 
-Source: `main@adaeb314b7434673259c1bbb67a7e22da5054a5d`.
+Source: `main@500c0063d9a532e5e64caa01a262e302c976fea1`.
 
 ### Added
 
@@ -15,6 +15,8 @@ Source: `main@adaeb314b7434673259c1bbb67a7e22da5054a5d`.
 - The metadata template supports `pull_requests: []` before a pull request is created.
 - A release-documentation regression check keeps the published README and changelog
   aligned with the shipped workflow contract.
+- An executable per-API specification contract validates shared attributes, qualified
+  signatures, required specification and description elements, and device behavior.
 
 ### Changed
 
@@ -23,6 +25,8 @@ Source: `main@adaeb314b7434673259c1bbb67a7e22da5054a5d`.
 - The formal design-docs submission gate requires `proposal.md`, `spec.md`,
   `design.md`, `execution-plan.md`, and `metadata_tracking.yaml` under
   `codespec/changes/<repo-name>/<req-id>/`.
+- `--design-docs-submit` now applies archive-equivalent final-readiness checks,
+  including unresolved placeholders, task results, DFX closure, and resource gates.
 - `issues` is an optional extension: it is omitted by default and added only when a
   developer explicitly requests issue tracking.
 

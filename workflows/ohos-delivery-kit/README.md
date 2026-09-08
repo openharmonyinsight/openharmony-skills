@@ -17,6 +17,11 @@ in the formal archive: `proposal.md`, `spec.md`, `design.md`,
 `execution-plan.md`, and `metadata_tracking.yaml`. A repository entry may use an empty
 `pull_requests: []` list when no pull request exists yet.
 
+The submission gate applies the same final-readiness checks as archive mode. When
+`proposal.md` marks `API/SDK` as involved, the validator also requires a complete
+per-API specification with shared attributes, owner-qualified signatures, API
+description elements, and supported-device behavior tables.
+
 The `issues` field is an optional extension. ODK omits it by default, preserves valid
 existing issue entries, and adds entries only when the developer explicitly requests
 issue tracking. Repositories with previous non-numeric formal IDs must use the bundled
