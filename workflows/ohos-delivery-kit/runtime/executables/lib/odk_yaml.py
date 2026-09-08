@@ -26,13 +26,74 @@ def _lines(path: str) -> list[str]:
 
 def _metadata_scalar(value: str) -> str:
     value = value.strip()
-    if value.startswith(('"', "'")):
-        quote = value[0]
-        closing = value.find(quote, 1)
-        suffix = value[closing + 1 :].strip() if closing >= 0 else ""
-        if closing < 0 or (suffix and not suffix.startswith("#")):
-            raise ValueError("invalid quoted scalar")
-        return value[1:closing]
+    if value.startswith("'"):
+        result: list[str] = []
+        index = 1
+        while index < len(value):
+            if value[index] != "'":
+                result.append(value[index])
+                index += 1
+                continue
+            if index + 1 < len(value) and value[index + 1] == "'":
+                result.append("'")
+                index += 2
+                continue
+            suffix = value[index + 1 :].strip()
+            if suffix and not suffix.startswith("#"):
+                raise ValueError("invalid quoted scalar")
+            return "".join(result)
+        raise ValueError("invalid quoted scalar")
+    if value.startswith('"'):
+        escapes = {
+            "0": "\0",
+            "a": "\a",
+            "b": "\b",
+            "t": "\t",
+            "n": "\n",
+            "v": "\v",
+            "f": "\f",
+            "r": "\r",
+            "e": "\x1b",
+            " ": " ",
+            '"': '"',
+            "/": "/",
+            "\\": "\\",
+            "N": "\u0085",
+            "_": "\u00a0",
+            "L": "\u2028",
+            "P": "\u2029",
+        }
+        result = []
+        index = 1
+        while index < len(value):
+            char = value[index]
+            if char == '"':
+                suffix = value[index + 1 :].strip()
+                if suffix and not suffix.startswith("#"):
+                    raise ValueError("invalid quoted scalar")
+                return "".join(result)
+            if char != "\\":
+                result.append(char)
+                index += 1
+                continue
+            if index + 1 >= len(value):
+                raise ValueError("invalid quoted scalar")
+            escaped = value[index + 1]
+            if escaped in escapes:
+                result.append(escapes[escaped])
+                index += 2
+                continue
+            widths = {"x": 2, "u": 4, "U": 8}
+            width = widths.get(escaped)
+            digits = value[index + 2 : index + 2 + width] if width else ""
+            if width is None or len(digits) != width or not re.fullmatch(r"[0-9A-Fa-f]+", digits):
+                raise ValueError("invalid quoted scalar escape")
+            try:
+                result.append(chr(int(digits, 16)))
+            except ValueError as error:
+                raise ValueError("invalid quoted scalar escape") from error
+            index += 2 + width
+        raise ValueError("invalid quoted scalar")
     return re.sub(r"\s+#.*$", "", value).strip()
 
 

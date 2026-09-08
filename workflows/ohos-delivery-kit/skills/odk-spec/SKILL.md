@@ -127,7 +127,7 @@ license: MIT
 
 Write to `codespec/changes/<repo-name>/<req-id>/spec.md`.
 
-spec.md 固定包含 `## API 规格定义` 章节；若 `API/SDK` = 否，填写"不涉及"并说明理由。API 仓库路径/commit 与既有声明格式参考为 spec 阶段的过程信息，不写入 spec.md；支持属性（跨平台/元服务/卡片/FA-Stage 模型）作为公共规格属性表行写入 `### 公共规格属性`；逐 API 的规格表、API 描述、设备行为差异写入 `#### API: <完整签名>` 子节。设备知识（设备类型枚举、差异行为分类等）来源于仓库 `AGENTS.md` 中引用的设备知识文档（若存在），属于过程信息，不写入 spec.md。
+spec.md 固定包含 `## API 规格定义` 章节；若 `API/SDK` = 否，按 `不涉及：<具体理由>` 填写。API 仓库路径/commit 与既有声明格式参考为 spec 阶段的过程信息，不写入 spec.md；支持属性（跨平台/元服务/卡片/FA-Stage 模型）作为公共规格属性表行写入 `### 公共规格属性`；逐 API 的规格表、API 描述、设备行为差异写入 `#### API: <完整签名>` 子节。设备知识（设备类型枚举、差异行为分类等）来源于仓库 `AGENTS.md` 中引用的设备知识文档（若存在），属于过程信息，不写入 spec.md。
 
 Do not generate `gates/` by default. If the user explicitly wants process evidence, record approval notes under an optional evidence directory such as `evidence/gates/`.
 

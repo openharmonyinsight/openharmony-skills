@@ -66,6 +66,7 @@ BRACKET_PLACEHOLDER_RE = re.compile(
     r"\[(?:[^\]\n]*(?:引用|标题|角色|功能|价值|条件|填写|描述|说明|编号|名称|路径|模块|文件|命令|证据|结果|对象|模式|策略|事件|待|TBD|TODO)[^\]\n]*)\]",
     re.IGNORECASE,
 )
+ANGLE_PLACEHOLDER_RE = re.compile(r"<[^>\n]+>")
 ARCHIVE_READY_CLAIM_RE = re.compile(r"\b(?:PASS|Ready)\b|通过|可归档|归档就绪", re.IGNORECASE)
 LEGACY_TARGET_RELEASE_RE = re.compile(
     r"^OpenHarmony-\d+\.\d+(?:-(?:Release|Beta|Alpha|Dev))?$",
@@ -626,7 +627,7 @@ def _api_generic_parameters_complete(parameters: str) -> bool:
     return True
 
 
-def _qualified_api_name_complete(name: str) -> bool:
+def _api_name_complete(name: str, *, name_style: str = "qualified") -> bool:
     identifier = r"[A-Za-z_$][A-Za-z0-9_$]*"
     generic_parameters: str | None = None
     base_name = name
@@ -638,12 +639,15 @@ def _qualified_api_name_complete(name: str) -> bool:
         generic_parameters = name[generic_start + 1 : -1]
         if not generic_parameters or _nesting_positions(name[generic_start:], ",") is None:
             return False
-    name_pattern = (
-        rf"(?:{identifier}\.)+{identifier}"
-        if API_SIGNATURE_NAME == "qualified"
-        else identifier
-    )
-    if not re.fullmatch(name_pattern, base_name):
+    qualified_pattern = rf"(?:{identifier}\.)+{identifier}"
+    qualified = bool(re.fullmatch(qualified_pattern, base_name))
+    free_function = bool(re.fullmatch(identifier, base_name))
+    valid_name = {
+        "qualified": qualified,
+        "free": free_function,
+        "either": qualified or free_function,
+    }.get(name_style, False)
+    if not valid_name:
         return False
     return generic_parameters is None or _api_generic_parameters_complete(generic_parameters)
 
@@ -671,7 +675,7 @@ def _api_parameters_complete(parameters: str) -> bool:
     return True
 
 
-def api_signature_complete(signature: str) -> bool:
+def api_signature_complete(signature: str, *, name_style: str = "qualified") -> bool:
     normalized = canonical_api_signature(signature)
     if not normalized or PLACEHOLDER_RE.match(normalized) or BRACKET_PLACEHOLDER_RE.search(normalized):
         return False
@@ -687,7 +691,7 @@ def api_signature_complete(signature: str) -> bool:
     if return_match is None:
         return False
     return_type = return_match.group(1).strip()
-    if not _qualified_api_name_complete(name):
+    if not _api_name_complete(name, name_style=name_style):
         return False
     if not _api_type_complete(return_type):
         return False
@@ -736,7 +740,7 @@ def canonical_api_signature(signature: str) -> str:
 
 
 def api_common_value_complete(item: str, value: str) -> bool:
-    if not meaningful(value) or re.search(
+    if not meaningful(value) or ANGLE_PLACEHOLDER_RE.search(value) or re.search(
         r"\b(?:TBD|TODO)\b|待确认|待定|待补充|待实现|待验证",
         value,
         flags=re.IGNORECASE,
@@ -749,7 +753,12 @@ def api_common_value_complete(item: str, value: str) -> bool:
     if rule and re.search(r"或|任选|二选一|未确定|未决", normalized):
         return False
     if rule == "boolean-decision":
-        return bool(re.fullmatch(r"(?:是|否)(?:\s*[：:].+)?", normalized))
+        return bool(
+            re.fullmatch(
+                r"(?:是|否)(?:(?:\s*[：:].+)|(?:\s*[（(].+[）)]))?",
+                normalized,
+            )
+        )
     if rule == "api-visibility":
         return normalized in {"Public", "System"}
     if rule == "language":
@@ -820,6 +829,7 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
     involvement = api_sdk_involvement(_visible_markdown(read_text(proposal_path)))
     spec_section = section_text(_visible_markdown(read_text(spec_path)), API_SPEC_SECTION)
     issues: list[str] = []
+    api_language = ""
 
     if involvement not in {"是", "否"}:
         reporter.fail(
@@ -828,9 +838,24 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
         return
 
     if involvement == "否":
-        visible = _visible_markdown(spec_section)
-        reason = re.search(r"不涉及\s*[：:]\s*(\S[^\n]*)", visible)
-        if reason and meaningful(reason.group(1)):
+        visible = "\n".join(
+            line
+            for line in _visible_markdown(spec_section).splitlines()
+            if not line.lstrip().startswith(">")
+        )
+        reason = re.search(r"不涉及(?:\s*[：:]\s*|\s+)(\S[^\n]*)", visible)
+        unresolved = (
+            reason
+            and (
+                ANGLE_PLACEHOLDER_RE.search(reason.group(1))
+                or re.search(
+                    r"\b(?:TBD|TODO)\b|待确认|待定|待补充|待实现|待验证",
+                    reason.group(1),
+                    flags=re.IGNORECASE,
+                )
+            )
+        )
+        if reason and meaningful(reason.group(1)) and not unresolved:
             reporter.pass_("spec.md API/SDK=否 has an explicit not-applicable reason")
         else:
             reporter.fail("spec.md API/SDK=否 requires an explicit not-applicable reason")
@@ -851,6 +876,8 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
                 issues.append(f"spec.md: {API_COMMON_SECTION} item has empty value: {item}")
             elif not api_common_value_complete(item, matches[0].get("值", "")):
                 issues.append(f"spec.md: {API_COMMON_SECTION} unresolved template choice: {item}")
+            elif item == "编程语言":
+                api_language = normalized_table_key(matches[0].get("值", ""))
 
     per_api_text = section_text(spec_section, API_PER_API_SECTION)
     entries = api_entry_blocks(per_api_text)
@@ -860,7 +887,18 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
     signatures: set[str] = set()
     for raw_signature, block in entries:
         signature = canonical_api_signature(raw_signature)
-        if not api_signature_complete(signature):
+        if API_SIGNATURE_NAME == "language-dependent":
+            name_style = {
+                "C": "free",
+                "ArkTS": "qualified",
+                "两者": "either",
+            }.get(api_language, "qualified")
+        else:
+            name_style = API_SIGNATURE_NAME
+        if not api_signature_complete(
+            signature,
+            name_style=name_style,
+        ):
             issues.append(f"spec.md: incomplete API signature: {raw_signature}")
         if signature in signatures:
             issues.append(f"spec.md: duplicate API signature: {raw_signature}")

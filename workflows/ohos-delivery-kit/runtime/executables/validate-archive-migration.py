@@ -14,6 +14,7 @@ LEGACY_PATH_RE = re.compile(
     r"^\.codespec/changes/issue-[0-9]+-([a-z0-9]+(?:-[a-z0-9]+)*)$"
 )
 REQ_ID_RE = re.compile(r"^[0-9]+$")
+LEGACY_FORMAL_ID_RE = re.compile(r"^[A-Za-z0-9]+(?:[A-Za-z0-9-]*[A-Za-z0-9])?$")
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 LEGACY_FLAT_PATH_RE = re.compile(
     r"^codespec/changes/[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*-(?P<slug>[a-z0-9]+(?:-[a-z0-9]+)*)$"
@@ -56,6 +57,23 @@ def read_mapping(path: Path) -> list[tuple[str, str]]:
     return rows
 
 
+def repository_scoped_legacy_path(path: str) -> tuple[str, str] | None:
+    """Return repository and old formal ID for a pre-0.11 scoped archive."""
+
+    parts = PurePosixPath(path).parts
+    if len(parts) != 4 or parts[:2] != ("codespec", "changes"):
+        return None
+    repository, identity = parts[2:]
+    if (
+        not REPOSITORY_NAME_RE.fullmatch(repository)
+        or REQ_ID_RE.fullmatch(identity)
+        or DRAFT_RE.fullmatch(identity)
+        or not LEGACY_FORMAL_ID_RE.fullmatch(identity)
+    ):
+        return None
+    return repository, identity
+
+
 def discover_legacy_archives(root: Path) -> set[str]:
     discovered: set[str] = set()
     issue_changes = root / ".codespec" / "changes"
@@ -73,6 +91,15 @@ def discover_legacy_archives(root: Path) -> set[str]:
         for entry in flat_changes.iterdir():
             if entry.is_dir() and (entry / "proposal.md").is_file():
                 discovered.add(entry.relative_to(root).as_posix())
+                continue
+            if not entry.is_dir():
+                continue
+            for change in entry.iterdir():
+                if not change.is_dir() or not (change / "proposal.md").is_file():
+                    continue
+                relative = change.relative_to(root).as_posix()
+                if repository_scoped_legacy_path(relative):
+                    discovered.add(relative)
     if not discovered:
         fail("no legacy flat or issue-* archives discovered")
     return discovered
@@ -113,6 +140,7 @@ def build_plans(
 
     for old_path, identity in rows:
         issue_match = LEGACY_PATH_RE.fullmatch(old_path)
+        scoped_match = repository_scoped_legacy_path(old_path)
         flat_draft = old_path.removeprefix("codespec/changes/")
         is_flat_draft = (
             old_path == f"codespec/changes/{flat_draft}"
@@ -137,9 +165,17 @@ def build_plans(
                 # in the directory name. The TSV mapping is the developer-confirmed
                 # source of truth for the new numeric req-id.
                 slug = legacy_flat_match.group("slug")
+            elif scoped_match:
+                scoped_repository, _ = scoped_match
+                if scoped_repository != repo_name:
+                    fail(
+                        "repository-scoped source does not match repository identity: "
+                        f"{old_path}"
+                    )
+                slug = None
             else:
                 fail(f"invalid legacy path or req identity: {old_path}")
-            if not SLUG_RE.fullmatch(slug):
+            if slug is not None and not SLUG_RE.fullmatch(slug):
                 fail(f"invalid slug: {slug}")
             new_leaf = identity
 
@@ -228,6 +264,8 @@ def discover_legacy_archives_in_head(root: Path) -> set[str]:
             continue
         parts = PurePosixPath(parent).parts
         if len(parts) == 3 and parts[:2] == ("codespec", "changes"):
+            discovered.add(parent)
+        elif repository_scoped_legacy_path(parent):
             discovered.add(parent)
     if not discovered:
         fail("no legacy flat or issue-* archives discovered in HEAD")
