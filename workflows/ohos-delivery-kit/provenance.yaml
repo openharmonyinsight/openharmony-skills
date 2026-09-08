@@ -4,10 +4,10 @@ id: ohos-delivery-kit
 
 source:
   repository: https://gitcode.com/oshunter/ohos-delivery-kit.git
-  branch: fix/pr351-review-findings-v2
-  commit: 46b7b37febfd070507a3dfc29a93c6a3c1715b0e
+  branch: main
+  commit: 6239bfdcddefe0ea7ebd63b346fc09f479dd4f09
   sourceVersion: 0.11.0
-  commitDate: 2026-09-08T21:59:05+08:00
+  commitDate: 2026-09-08T22:03:06+08:00
   importedAt: 2026-09-08
 
 license:
