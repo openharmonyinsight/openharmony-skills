@@ -21,6 +21,8 @@ The submission gate applies the same final-readiness checks as archive mode. Whe
 `proposal.md` marks `API/SDK` as involved, the validator also requires a complete
 per-API specification with shared attributes, owner-qualified signatures, API
 description elements, and supported-device behavior tables.
+Commented-out specifications and unresolved template choices do not satisfy the gate;
+signature validation also rejects malformed owners or parameters and semantic duplicates.
 
 The `issues` field is an optional extension. ODK omits it by default, preserves valid
 existing issue entries, and adds entries only when the developer explicitly requests

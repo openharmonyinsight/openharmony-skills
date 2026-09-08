@@ -134,6 +134,9 @@ API_SPEC_SECTION = api_contract_scalar("spec_section")
 API_COMMON_SECTION = api_contract_scalar("common_section")
 API_PER_API_SECTION = api_contract_scalar("per_api_section")
 API_SIGNATURE_NAME = api_contract_scalar("signature_name")
+API_COMMON_VALUE_RULES = dict(
+    item.split("=", 1) for item in api_contract_list("common_value_rules")
+)
 API_COMMON_REQUIRED_ITEMS = api_contract_list("common_required_items")
 API_REQUIRED_SPEC_ITEMS = api_contract_list("per_api_required_spec_items")
 API_DESCRIPTION_ELEMENTS = [
@@ -382,27 +385,204 @@ def api_sdk_involvement(proposal: str) -> str | None:
     return None
 
 
+def _nesting_positions(text: str, delimiter: str) -> list[int] | None:
+    """Return delimiter positions outside type nesting, or None for invalid nesting."""
+
+    pairs = {"(": ")", "[": "]", "{": "}", "<": ">"}
+    closing = set(pairs.values())
+    stack: list[str] = []
+    positions: list[int] = []
+    quote: str | None = None
+    escaped = False
+
+    for index, char in enumerate(text):
+        if quote is not None:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                quote = None
+            continue
+        if char in {'"', "'"}:
+            quote = char
+            continue
+        if char in pairs:
+            stack.append(char)
+            continue
+        if char in closing:
+            if char == ">" and index > 0 and text[index - 1] == "=":
+                continue
+            if not stack or pairs[stack[-1]] != char:
+                return None
+            stack.pop()
+            continue
+        if char == delimiter and not stack:
+            positions.append(index)
+
+    return positions if not stack and quote is None else None
+
+
+def _outer_parameter_close(signature: str, opening: int) -> int | None:
+    depth = 0
+    quote: str | None = None
+    escaped = False
+    for index in range(opening, len(signature)):
+        char = signature[index]
+        if quote is not None:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                quote = None
+            continue
+        if char in {'"', "'"}:
+            quote = char
+        elif char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+            if depth == 0:
+                return index
+            if depth < 0:
+                return None
+    return None
+
+
+def _api_parameters_complete(parameters: str) -> bool:
+    if not parameters.strip():
+        return True
+    comma_positions = _nesting_positions(parameters, ",")
+    if comma_positions is None:
+        return False
+    starts = [0] + [position + 1 for position in comma_positions]
+    ends = comma_positions + [len(parameters)]
+    for start, end in zip(starts, ends):
+        parameter = parameters[start:end].strip()
+        colon_positions = _nesting_positions(parameter, ":")
+        if colon_positions is None or not colon_positions:
+            return False
+        colon = colon_positions[0]
+        name = parameter[:colon].strip()
+        type_name = parameter[colon + 1 :].strip()
+        if not re.fullmatch(r"(?:\.\.\.)?[A-Za-z_$][A-Za-z0-9_$]*\??", name):
+            return False
+        if (
+            not meaningful(type_name)
+            or BRACKET_PLACEHOLDER_RE.search(type_name)
+            or _nesting_positions(type_name, ",") is None
+        ):
+            return False
+    return True
+
+
 def api_signature_complete(signature: str) -> bool:
-    normalized = signature.strip().strip("`")
+    normalized = canonical_api_signature(signature)
     if not normalized or PLACEHOLDER_RE.match(normalized) or BRACKET_PLACEHOLDER_RE.search(normalized):
         return False
-    close = normalized.rfind("):")
-    if close < 0:
-        return False
     opening = normalized.find("(")
-    if opening <= 0 or opening >= close:
+    if opening <= 0:
+        return False
+    close = _outer_parameter_close(normalized, opening)
+    if close is None:
         return False
     name = normalized[:opening].strip()
     parameters = normalized[opening + 1 : close].strip()
-    return_type = normalized[close + 2 :].strip()
-    if not re.fullmatch(r"[A-Za-z_$][A-Za-z0-9_$.]*", name):
+    return_match = re.fullmatch(r"\s*:\s*(\S[\s\S]*)", normalized[close + 1 :])
+    if return_match is None:
         return False
-    if API_SIGNATURE_NAME == "qualified" and "." not in name:
+    return_type = return_match.group(1).strip()
+    identifier = r"[A-Za-z_$][A-Za-z0-9_$]*"
+    name_pattern = (
+        rf"(?:{identifier}\.)+{identifier}"
+        if API_SIGNATURE_NAME == "qualified"
+        else identifier
+    )
+    if not re.fullmatch(name_pattern, name):
         return False
-    if not meaningful(return_type) or BRACKET_PLACEHOLDER_RE.search(return_type):
+    if (
+        not meaningful(return_type)
+        or BRACKET_PLACEHOLDER_RE.search(return_type)
+        or _nesting_positions(return_type, ",") is None
+    ):
         return False
-    if parameters and ":" not in parameters:
+    if not _api_parameters_complete(parameters):
         return False
+    return True
+
+
+def canonical_api_signature(signature: str) -> str:
+    source = signature.strip().strip("`")
+    punctuation = set("(),:<>[]{}?|&=")
+    result: list[str] = []
+    quote: str | None = None
+    escaped = False
+    index = 0
+    while index < len(source):
+        char = source[index]
+        if quote is not None:
+            result.append(char)
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                quote = None
+            index += 1
+            continue
+        if char in {'"', "'"}:
+            quote = char
+            result.append(char)
+            index += 1
+            continue
+        if char.isspace():
+            next_index = index + 1
+            while next_index < len(source) and source[next_index].isspace():
+                next_index += 1
+            previous = result[-1] if result else ""
+            following = source[next_index] if next_index < len(source) else ""
+            if previous and following and previous not in punctuation and following not in punctuation:
+                result.append(" ")
+            index = next_index
+            continue
+        result.append(char)
+        index += 1
+    return "".join(result)
+
+
+def api_common_value_complete(item: str, value: str) -> bool:
+    if not meaningful(value) or re.search(
+        r"\b(?:TBD|TODO)\b|待确认|待定|待补充|待实现|待验证",
+        value,
+        flags=re.IGNORECASE,
+    ):
+        return False
+
+    normalized = " ".join(normalized_table_key(value).split())
+    rule = API_COMMON_VALUE_RULES.get(item)
+    annotation = r"(?:\s*[（(].+[）)])?"
+    if rule and re.search(r"或|任选|二选一|未确定|未决", normalized):
+        return False
+    if rule == "boolean-decision":
+        return bool(re.fullmatch(r"(?:是|否)(?:\s*[：:].+)?", normalized))
+    if rule == "api-visibility":
+        return normalized in {"Public", "System"}
+    if rule == "language":
+        return normalized in {"ArkTS", "C", "两者"}
+    if rule == "device-support":
+        parts = re.split(r"[（(]", normalized, maxsplit=1)
+        status_text = parts[0].strip()
+        if len(parts) > 1 and re.search(r"[是否]", parts[1].replace("是否", "")):
+            return False
+        statuses = [part.strip() for part in re.split(r"[/／]", status_text)]
+        return len(statuses) in {1, 3} and all(status in {"是", "否"} for status in statuses)
+    if rule == "application-model":
+        marker = r"@(?:famodelonly|stagemodelonly|FaAndStageModel)"
+        markers = re.findall(marker, normalized)
+        if normalized.startswith("不适用"):
+            return not markers and bool(re.fullmatch(r"不适用\s*[（(].+[）)]", normalized))
+        return len(markers) == 1 and bool(re.fullmatch(rf"{marker}{annotation}", normalized))
     return True
 
 
@@ -433,8 +613,8 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
     if not proposal_path.is_file() or not spec_path.is_file():
         return
 
-    involvement = api_sdk_involvement(read_text(proposal_path))
-    spec_section = section_text(read_text(spec_path), API_SPEC_SECTION)
+    involvement = api_sdk_involvement(_visible_markdown(read_text(proposal_path)))
+    spec_section = section_text(_visible_markdown(read_text(spec_path)), API_SPEC_SECTION)
     issues: list[str] = []
 
     if involvement not in {"是", "否"}:
@@ -465,6 +645,8 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
                 issues.append(f"spec.md: {API_COMMON_SECTION} duplicate item: {item}")
             elif not meaningful(matches[0].get("值", "")):
                 issues.append(f"spec.md: {API_COMMON_SECTION} item has empty value: {item}")
+            elif not api_common_value_complete(item, matches[0].get("值", "")):
+                issues.append(f"spec.md: {API_COMMON_SECTION} unresolved template choice: {item}")
 
     per_api_text = section_text(spec_section, API_PER_API_SECTION)
     entries = api_entry_blocks(per_api_text)
@@ -473,7 +655,7 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
 
     signatures: set[str] = set()
     for raw_signature, block in entries:
-        signature = " ".join(raw_signature.split())
+        signature = canonical_api_signature(raw_signature)
         if not api_signature_complete(signature):
             issues.append(f"spec.md: incomplete API signature: {raw_signature}")
         if signature in signatures:
@@ -616,7 +798,7 @@ def _parse_not_applicable_reason(subsection_text: str) -> str:
 
 def _visible_markdown(text: str) -> str:
     """Remove template guidance that must not count as user-supplied evidence."""
-    return re.sub(r"<!--[\s\S]*?-->", "", text)
+    return re.sub(r"<!--[\s\S]*?(?:-->|\Z)", "", text)
 
 
 def _parse_dfx_involved_repo_declarations(subsection_text: str) -> list[list[str]]:

@@ -58,6 +58,12 @@ api_spec_contract:
   common_section: "公共规格属性"
   per_api_section: "逐 API 规格"
   signature_name: "qualified"
+  common_value_rules:
+    - "是否新增声明文件=boolean-decision"
+    - "API 类型=api-visibility"
+    - "编程语言=language"
+    - "跨平台/元服务/卡片=device-support"
+    - "FA/Stage 模型=application-model"
   common_required_items:
     - "是否新增声明文件"
     - "API 类型"

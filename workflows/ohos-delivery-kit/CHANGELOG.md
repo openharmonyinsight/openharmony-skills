@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.11.0] - 2026-09-04
 
-Source: `main@500c0063d9a532e5e64caa01a262e302c976fea1`.
+Source: `main@57e1642b9d7acc22b88ceaa815bc2e868970fd03`.
 
 ### Added
 
@@ -34,3 +34,6 @@ Source: `main@500c0063d9a532e5e64caa01a262e302c976fea1`.
 
 - Local archive-migration validation detects legacy non-numeric formal IDs before
   they are submitted with the 0.11.0 contract.
+- Per-API validation ignores HTML-commented content, rejects unresolved template
+  choices, validates qualified signature structure, and canonicalizes signatures
+  before duplicate detection.

@@ -25,11 +25,13 @@ class ReleaseDocumentationTest(unittest.TestCase):
         self.assertIn("optional extension", readme)
         self.assertIn(f"{skill_count} ODK skills", readme)
         self.assertIn("## [0.11.0] - 2026-09-04", changelog)
-        self.assertIn("500c0063d9a532e5e64caa01a262e302c976fea1", changelog)
+        self.assertIn("57e1642b9d7acc22b88ceaa815bc2e868970fd03", changelog)
         self.assertIn("Breaking", changelog)
         self.assertIn("optional extension", changelog)
         self.assertIn("per-API specification contract", changelog)
         self.assertIn("archive-equivalent final-readiness checks", changelog)
+        self.assertIn("ignores HTML-commented content", changelog)
+        self.assertIn("semantic duplicates", readme)
 
 
 if __name__ == "__main__":
