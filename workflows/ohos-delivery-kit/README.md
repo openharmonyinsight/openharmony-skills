@@ -21,12 +21,15 @@ The submission gate applies the same final-readiness checks as archive mode. Whe
 `proposal.md` marks `API/SDK` as involved, the validator also requires a complete
 per-API specification with shared attributes, owner-qualified signatures, API
 description elements, and supported-device behavior tables.
-Commented-out specifications and unresolved template choices do not satisfy the gate;
-signature validation also rejects malformed owners or parameters and semantic duplicates.
+HTML-commented and fenced specifications do not satisfy the gate. API decisions must be
+unique and final; shared attributes reject malformed values. Signature validation handles
+C/ArkTS generics, escaped table pipes, malformed types, and semantic duplicates.
 
 The `issues` field is an optional extension. ODK omits it by default, preserves valid
 existing issue entries, and adds entries only when the developer explicitly requests
-issue tracking. Repositories with previous non-numeric formal IDs must use the bundled
+issue tracking. Populated PR and issue entries require complete tracking fields; issue IDs
+must match their GitCode URLs, and `closed_at` is valid only for closed issues. Repositories
+with previous non-numeric formal IDs must use the bundled
 `validate-archive-migration.py` `plan` and `check-staged` gates before adopting 0.11.0.
 
 See [CHANGELOG.md](CHANGELOG.md) for the released change summary.

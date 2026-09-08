@@ -253,9 +253,47 @@ def read_frontmatter(path: Path) -> Frontmatter:
     return result if closed else Frontmatter("missing closing delimiter")
 
 
+def _visible_markdown(text: str) -> str:
+    """Remove template guidance and fenced examples from user evidence."""
+    text = re.sub(r"<!--[\s\S]*?(?:-->|\Z)", "", text)
+    lines = text.splitlines()
+    visible: list[str] = []
+    fence_character: str | None = None
+    fence_length = 0
+    fence_indent: str | None = None
+    for index, line in enumerate(lines):
+        if fence_character is None:
+            opening = re.match(r"^([ \t]*)(`{3,}|~{3,})", line)
+            if opening:
+                indent = opening.group(1)
+                marker = opening.group(2)
+                nested = len(indent.expandtabs(4)) > 3
+                if nested:
+                    close_pattern = re.compile(
+                        rf"^{re.escape(indent)}{re.escape(marker[0])}{{{len(marker)},}}[ \t]*$"
+                    )
+                    if not any(close_pattern.match(candidate) for candidate in lines[index + 1 :]):
+                        visible.append(line)
+                        continue
+                fence_character = marker[0]
+                fence_length = len(marker)
+                fence_indent = indent if nested else None
+                visible.append("")
+                continue
+            visible.append(line)
+            continue
+        close_indent = re.escape(fence_indent) if fence_indent is not None else r"[ \t]{0,3}"
+        if re.match(rf"^{close_indent}{re.escape(fence_character)}{{{fence_length},}}[ \t]*$", line):
+            fence_character = None
+            fence_length = 0
+            fence_indent = None
+        visible.append("")
+    return "\n".join(visible)
+
+
 def headings(text: str) -> set[str]:
     result: set[str] = set()
-    for line in text.splitlines():
+    for line in _visible_markdown(text).splitlines():
         match = re.match(r"^#{2,6}\s+(.+?)\s*$", line)
         if match:
             result.add(match.group(1).strip())
@@ -263,7 +301,7 @@ def headings(text: str) -> set[str]:
 
 
 def section_text(text: str, title: str) -> str:
-    lines = text.splitlines()
+    lines = _visible_markdown(text).splitlines()
     start = None
     start_level = 0
 
@@ -294,7 +332,42 @@ def normalize_cell(value: str) -> str:
 
 
 def split_table_row(line: str) -> list[str]:
-    return [normalize_cell(cell) for cell in line.strip().strip("|").split("|")]
+    source = line.strip()
+    cells: list[str] = []
+    cell: list[str] = []
+    index = 0
+    ended_with_delimiter = False
+    while index < len(source):
+        char = source[index]
+        if char == "\\":
+            end = index
+            while end < len(source) and source[end] == "\\":
+                end += 1
+            slash_count = end - index
+            if end < len(source) and source[end] == "|" and slash_count % 2 == 1:
+                cell.extend("\\" * (slash_count // 2))
+                cell.append("|")
+                index = end + 1
+                ended_with_delimiter = False
+                continue
+            cell.extend("\\" * slash_count)
+            index = end
+            ended_with_delimiter = False
+            continue
+        if char == "|":
+            cells.append(normalize_cell("".join(cell)))
+            cell = []
+            ended_with_delimiter = True
+        else:
+            cell.append(char)
+            ended_with_delimiter = False
+        index += 1
+    cells.append(normalize_cell("".join(cell)))
+    if source.startswith("|"):
+        cells.pop(0)
+    if ended_with_delimiter and cells:
+        cells.pop()
+    return cells
 
 
 def is_separator_row(cells: list[str]) -> bool:
@@ -304,12 +377,11 @@ def is_separator_row(cells: list[str]) -> bool:
 def parsed_markdown_tables(text: str) -> list[tuple[list[str], list[dict[str, str]]]]:
     """Return Markdown pipe-table headers and row dictionaries.
 
-    The parser intentionally supports the simple pipe-table shape used by ODK
-    templates, including the valid form without leading/trailing pipes. It does
-    not attempt to handle escaped pipes inside cells.
+    The parser supports the pipe-table shape used by ODK templates, including
+    escaped pipes in cells and the valid form without leading/trailing pipes.
     """
 
-    lines = text.splitlines()
+    lines = _visible_markdown(text).splitlines()
     tables: list[tuple[list[str], list[dict[str, str]]]] = []
     idx = 0
 
@@ -372,17 +444,16 @@ def normalized_table_key(value: str) -> str:
 
 def api_sdk_involvement(proposal: str) -> str | None:
     section = section_text(proposal, API_PROPOSAL_SECTION)
-    rows = table_with_columns(section, ["维度", "是否涉及"])
-    for row in rows:
-        if normalized_table_key(row.get("维度", "")) != API_TRIGGER_DIMENSION:
-            continue
-        value = normalized_table_key(row.get("是否涉及", ""))
-        if value.startswith("是"):
-            return "是"
-        if value.startswith("否"):
-            return "否"
-        return value or None
-    return None
+    matches = [
+        row
+        for rows in tables_with_columns(section, ["维度", "是否涉及"])
+        for row in rows
+        if normalized_table_key(row.get("维度", "")) == API_TRIGGER_DIMENSION
+    ]
+    if len(matches) != 1:
+        return None
+    value = normalized_table_key(matches[0].get("是否涉及", ""))
+    return value if value in {"是", "否"} else value or None
 
 
 def _nesting_positions(text: str, delimiter: str) -> list[int] | None:
@@ -450,6 +521,133 @@ def _outer_parameter_close(signature: str, opening: int) -> int | None:
     return None
 
 
+def _outer_parameter_open(signature: str) -> int | None:
+    """Find the method parameter list outside method-generic constraints."""
+    pairs = {"<": ">", "[": "]", "{": "}"}
+    stack: list[str] = []
+    quote: str | None = None
+    escaped = False
+    for index, char in enumerate(signature):
+        if quote is not None:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                quote = None
+            continue
+        if char in {'"', "'"}:
+            quote = char
+        elif char in pairs:
+            stack.append(char)
+        elif char in pairs.values():
+            if char == ">" and index > 0 and signature[index - 1] == "=":
+                continue
+            if not stack or pairs[stack[-1]] != char:
+                return None
+            stack.pop()
+        elif char == "(" and not stack:
+            return index
+    return None
+
+
+def _api_type_complete(type_name: str) -> bool:
+    """Validate the lexical structure shared by supported C and ArkTS types."""
+    value = type_name.strip()
+    if (
+        not meaningful(value)
+        or BRACKET_PLACEHOLDER_RE.search(value)
+        or _nesting_positions(value, ",") is None
+    ):
+        return False
+
+    without_literals = re.sub(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'', "literal", value)
+    if not re.search(r"[A-Za-z_$][A-Za-z0-9_$]*|\d", without_literals):
+        return False
+    if re.search(r"[^A-Za-z0-9_$\s.,:;<>\[\]{}()?|&=*+\-/]", without_literals):
+        return False
+    if re.search(r"\?{2,}", without_literals):
+        return False
+    if re.search(r"\|\||&&|==", without_literals):
+        return False
+    if re.search(r"<\s*>", without_literals):
+        return False
+    if re.search(r",\s*[>)}\]]", without_literals):
+        return False
+    if re.search(r"(?:^|[<({\[:,;=])\s*[|&]", without_literals):
+        return False
+    if re.search(r"[|&]\s*(?:$|[>)}\],;])", without_literals):
+        return False
+    if re.search(r":\s*(?:$|[,;)}\]])", without_literals):
+        return False
+    if re.search(r"=>\s*$", without_literals):
+        return False
+    if re.search(r"(?:^|[^=])=\s*$", without_literals):
+        return False
+    if re.search(r"[+\-/]\s*$", without_literals):
+        return False
+    return True
+
+
+def _api_generic_parameters_complete(parameters: str) -> bool:
+    comma_positions = _nesting_positions(parameters, ",")
+    if comma_positions is None:
+        return False
+    starts = [0] + [position + 1 for position in comma_positions]
+    ends = comma_positions + [len(parameters)]
+    identifier = r"[A-Za-z_$][A-Za-z0-9_$]*"
+    for start, end in zip(starts, ends):
+        declaration = parameters[start:end].strip()
+        equal_positions = _nesting_positions(declaration, "=")
+        if equal_positions is None:
+            return False
+        default_positions = [
+            position
+            for position in equal_positions
+            if position + 1 >= len(declaration) or declaration[position + 1] != ">"
+        ]
+        if len(default_positions) > 1:
+            return False
+        if default_positions:
+            position = default_positions[0]
+            declaration, default = declaration[:position], declaration[position + 1 :]
+        else:
+            default = None
+        match = re.fullmatch(
+            r"(?P<name>" + identifier
+            + r")(?:\s+extends(?:\s+|(?=[(\[{]))(?P<constraint>.+))?",
+            declaration,
+        )
+        if match is None:
+            return False
+        for value in (match.group("constraint"), default):
+            if value is not None and not _api_type_complete(value):
+                return False
+    return True
+
+
+def _qualified_api_name_complete(name: str) -> bool:
+    identifier = r"[A-Za-z_$][A-Za-z0-9_$]*"
+    generic_parameters: str | None = None
+    base_name = name
+    generic_start = name.find("<")
+    if generic_start >= 0:
+        if not name.endswith(">"):
+            return False
+        base_name = name[:generic_start]
+        generic_parameters = name[generic_start + 1 : -1]
+        if not generic_parameters or _nesting_positions(name[generic_start:], ",") is None:
+            return False
+    name_pattern = (
+        rf"(?:{identifier}\.)+{identifier}"
+        if API_SIGNATURE_NAME == "qualified"
+        else identifier
+    )
+    if not re.fullmatch(name_pattern, base_name):
+        return False
+    return generic_parameters is None or _api_generic_parameters_complete(generic_parameters)
+
+
 def _api_parameters_complete(parameters: str) -> bool:
     if not parameters.strip():
         return True
@@ -468,11 +666,7 @@ def _api_parameters_complete(parameters: str) -> bool:
         type_name = parameter[colon + 1 :].strip()
         if not re.fullmatch(r"(?:\.\.\.)?[A-Za-z_$][A-Za-z0-9_$]*\??", name):
             return False
-        if (
-            not meaningful(type_name)
-            or BRACKET_PLACEHOLDER_RE.search(type_name)
-            or _nesting_positions(type_name, ",") is None
-        ):
+        if not _api_type_complete(type_name):
             return False
     return True
 
@@ -481,8 +675,8 @@ def api_signature_complete(signature: str) -> bool:
     normalized = canonical_api_signature(signature)
     if not normalized or PLACEHOLDER_RE.match(normalized) or BRACKET_PLACEHOLDER_RE.search(normalized):
         return False
-    opening = normalized.find("(")
-    if opening <= 0:
+    opening = _outer_parameter_open(normalized)
+    if opening is None or opening <= 0:
         return False
     close = _outer_parameter_close(normalized, opening)
     if close is None:
@@ -493,19 +687,9 @@ def api_signature_complete(signature: str) -> bool:
     if return_match is None:
         return False
     return_type = return_match.group(1).strip()
-    identifier = r"[A-Za-z_$][A-Za-z0-9_$]*"
-    name_pattern = (
-        rf"(?:{identifier}\.)+{identifier}"
-        if API_SIGNATURE_NAME == "qualified"
-        else identifier
-    )
-    if not re.fullmatch(name_pattern, name):
+    if not _qualified_api_name_complete(name):
         return False
-    if (
-        not meaningful(return_type)
-        or BRACKET_PLACEHOLDER_RE.search(return_type)
-        or _nesting_positions(return_type, ",") is None
-    ):
+    if not _api_type_complete(return_type):
         return False
     if not _api_parameters_complete(parameters):
         return False
@@ -514,7 +698,7 @@ def api_signature_complete(signature: str) -> bool:
 
 def canonical_api_signature(signature: str) -> str:
     source = signature.strip().strip("`")
-    punctuation = set("(),:<>[]{}?|&=")
+    punctuation = set("(),:;<>[]{}?|&=*")
     result: list[str] = []
     quote: str | None = None
     escaped = False
@@ -570,6 +754,26 @@ def api_common_value_complete(item: str, value: str) -> bool:
         return normalized in {"Public", "System"}
     if rule == "language":
         return normalized in {"ArkTS", "C", "两者"}
+    if rule == "system-capability":
+        return bool(
+            re.fullmatch(r"SystemCapability(?:\.[A-Za-z][A-Za-z0-9_]*)+", normalized)
+            or re.fullmatch(r"不适用\s*[（(].+[）)]", normalized)
+        )
+    if rule == "api-version":
+        return bool(
+            re.fullmatch(r"\d+(?:\.\d+){0,2}" + annotation, normalized)
+            or re.fullmatch(r"不适用\s*[（(].+[）)]", normalized)
+        )
+    if rule == "permission":
+        return bool(
+            re.fullmatch(r"无" + annotation, normalized)
+            or re.fullmatch(
+                r"ohos\.permission\.[A-Z][A-Z0-9_.]*(?:\s*[,，、;；+]\s*"
+                r"ohos\.permission\.[A-Z][A-Z0-9_.]*)*" + annotation,
+                normalized,
+            )
+            or re.fullmatch(r"服务侧校验\s*[：:]\s*\S.{2,}", normalized)
+        )
     if rule == "device-support":
         parts = re.split(r"[（(]", normalized, maxsplit=1)
         status_text = parts[0].strip()
@@ -794,11 +998,6 @@ def _parse_not_applicable_reason(subsection_text: str) -> str:
     """
     match = _NOT_APPLICABLE_REASON_RE.search(subsection_text)
     return match.group(1).strip() if match else ""
-
-
-def _visible_markdown(text: str) -> str:
-    """Remove template guidance that must not count as user-supplied evidence."""
-    return re.sub(r"<!--[\s\S]*?(?:-->|\Z)", "", text)
 
 
 def _parse_dfx_involved_repo_declarations(subsection_text: str) -> list[list[str]]:
@@ -1513,6 +1712,12 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
         if not isinstance(entry, dict):
             reporter.fail(f"metadata_tracking.yaml: repos[{index}] must be a mapping")
             continue
+        unknown_repo_fields = sorted(set(entry) - {"repo", "pull_requests", "issues"})
+        if unknown_repo_fields:
+            reporter.fail(
+                f"metadata_tracking.yaml: repos[{index}] has unknown fields: "
+                + ", ".join(unknown_repo_fields)
+            )
         repo = str(entry.get("repo", "")).strip()
         repo_is_valid = re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repo) is not None
         if not repo_is_valid:
@@ -1534,7 +1739,17 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
             if not isinstance(pull_request, dict):
                 reporter.fail(f"metadata_tracking.yaml: {repo or index} pull request {pr_index} must be a mapping")
                 continue
-            missing = [key for key in ("url", "state") if not str(pull_request.get(key, "")).strip()]
+            unknown_pr_fields = sorted(set(pull_request) - {"url", "title", "state", "commit"})
+            if unknown_pr_fields:
+                reporter.fail(
+                    f"metadata_tracking.yaml: {repo or index} pull request {pr_index} "
+                    f"has unknown fields: {', '.join(unknown_pr_fields)}"
+                )
+            missing = [
+                key
+                for key in ("url", "title", "state", "commit")
+                if not str(pull_request.get(key, "")).strip()
+            ]
             if missing:
                 reporter.fail(
                     f"metadata_tracking.yaml: {repo or index} pull request {pr_index} missing: {', '.join(missing)}"
@@ -1543,7 +1758,9 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
             if state and state not in {"open", "merged", "closed"}:
                 reporter.fail("metadata_tracking.yaml: pull request state must be open, merged, or closed")
             url = str(pull_request.get("url", "")).strip()
-            expected_pr_url = rf"https://gitcode\.com/{re.escape(repo)}/pulls?/\d+"
+            expected_pr_url = (
+                rf"https://gitcode\.com/{re.escape(repo)}/(?:pulls?|merge_requests)/\d+"
+            )
             if url and (not repo_is_valid or not re.fullmatch(expected_pr_url, url)):
                 reporter.fail("metadata_tracking.yaml: pull request url must match its GitCode repository")
             commit = str(pull_request.get("commit", "")).strip()
@@ -1554,13 +1771,36 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
         if not isinstance(issues, list):
             reporter.fail(f"metadata_tracking.yaml: {repo or index} issues must be a list")
             issues = []
+        issue_ids: set[str] = set()
         for issue_index, issue in enumerate(issues, start=1):
             if not isinstance(issue, dict):
                 reporter.fail(f"metadata_tracking.yaml: {repo or index} issue {issue_index} must be a mapping")
                 continue
+            unknown_issue_fields = sorted(
+                set(issue) - {"issue", "url", "title", "type", "state", "closed_at"}
+            )
+            if unknown_issue_fields:
+                reporter.fail(
+                    f"metadata_tracking.yaml: {repo or index} issue {issue_index} "
+                    f"has unknown fields: {', '.join(unknown_issue_fields)}"
+                )
+            missing = [
+                key
+                for key in ("issue", "url", "title", "type", "state")
+                if not str(issue.get(key, "")).strip()
+            ]
+            if missing:
+                reporter.fail(
+                    f"metadata_tracking.yaml: {repo or index} issue {issue_index} "
+                    f"missing: {', '.join(missing)}"
+                )
             issue_id = str(issue.get("issue", "")).strip()
             if issue_id and not issue_id.isdigit():
                 reporter.fail("metadata_tracking.yaml: issue must contain digits only")
+            elif issue_id in issue_ids:
+                reporter.fail(f"metadata_tracking.yaml: duplicate issue entry: {issue_id}")
+            elif issue_id:
+                issue_ids.add(issue_id)
             issue_type = str(issue.get("type", "")).strip()
             if issue_type and issue_type not in {"requirement", "bug", "task", "epic"}:
                 reporter.fail("metadata_tracking.yaml: issue type must be requirement, bug, task, or epic")
@@ -1573,10 +1813,16 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
                     date.fromisoformat(closed_at)
                 except ValueError:
                     reporter.fail("metadata_tracking.yaml: closed_at must be a valid YYYY-MM-DD date")
+                if state != "closed":
+                    reporter.fail(
+                        "metadata_tracking.yaml: closed_at is only valid when issue state is closed"
+                    )
             url = str(issue.get("url", "")).strip()
             expected_issue_url = rf"https://gitcode\.com/{re.escape(repo)}/issues/\d+"
             if url and (not repo_is_valid or not re.fullmatch(expected_issue_url, url)):
                 reporter.fail("metadata_tracking.yaml: issue url must match its GitCode repository")
+            elif url and issue_id and url.rsplit("/", 1)[-1] != issue_id:
+                reporter.fail("metadata_tracking.yaml: issue id must match its GitCode URL")
 
     repository_root = change_dir.resolve().parent.parent.parent.parent
     origin = repository_origin_url(repository_root)

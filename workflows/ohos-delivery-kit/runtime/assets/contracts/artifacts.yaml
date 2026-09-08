@@ -62,6 +62,9 @@ api_spec_contract:
     - "是否新增声明文件=boolean-decision"
     - "API 类型=api-visibility"
     - "编程语言=language"
+    - "@syscap=system-capability"
+    - "@since=api-version"
+    - "权限=permission"
     - "跨平台/元服务/卡片=device-support"
     - "FA/Stage 模型=application-model"
   common_required_items:

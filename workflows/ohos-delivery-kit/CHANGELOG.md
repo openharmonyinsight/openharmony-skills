@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.11.0] - 2026-09-04
 
-Source: `main@57e1642b9d7acc22b88ceaa815bc2e868970fd03`.
+Source: `main@6da219b47f0c90fe884699ce9cf165b3afaa357a`.
 
 ### Added
 
@@ -34,6 +34,9 @@ Source: `main@57e1642b9d7acc22b88ceaa815bc2e868970fd03`.
 
 - Local archive-migration validation detects legacy non-numeric formal IDs before
   they are submitted with the 0.11.0 contract.
-- Per-API validation ignores HTML-commented content, rejects unresolved template
-  choices, validates qualified signature structure, and canonicalizes signatures
-  before duplicate detection.
+- Per-API validation ignores HTML comments and fenced examples, rejects duplicate or
+  unresolved API decisions and malformed shared attributes, validates C/ArkTS generic
+  and type syntax, handles escaped table pipes, and canonicalizes semantic signatures.
+- Design-docs metadata requires complete populated PR/issue entries, accepts GitCode
+  `merge_requests` URLs, rejects unknown fields, correlates issue IDs with URLs, and
+  enforces issue state consistency.
