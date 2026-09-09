@@ -180,7 +180,7 @@ UNREACHABLE、未知状态、缺失/重复仓库或未分析项均不可归档�
 
 ### 深度威胁分析（如需）
 
-> 仅当 `安全基础检查` 暴露高风险信号（敏感数据/网络暴露面/认证授权变更/合规要求）时，运行 `/odk-security-threat-model` 生成独立 `threat-model.md`；本节仅以**摘要形式**列出 P0/P1 风险（每项一行：TH-ID → 缓解 → Task），完整 DFD/STRIDE/合规分析见 `threat-model.md`。
+> 仅当 `安全基础检查` 暴露高风险信号（敏感数据/网络暴露面/认证授权变更/合规要求）时，运行 `{{CMD_PREFIX}}security-threat-model` 生成独立 `threat-model.md`；本节仅以**摘要形式**列出 P0/P1 风险（每项一行：TH-ID → 缓解 → Task），完整 DFD/STRIDE/合规分析见 `threat-model.md`。
 > 不涉及深度分析时填写：本次变更仅需上述基础检查，未触发深度威胁分析（理由：…）。
 
 ## 时序设计

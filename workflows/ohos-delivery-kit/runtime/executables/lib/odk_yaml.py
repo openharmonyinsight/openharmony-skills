@@ -422,13 +422,18 @@ def _markdown_table_headers(text: str) -> list[list[str]]:
     return result
 
 
-def _heading_section(text: str, heading: str) -> str:
-    match = re.search(
+def _heading_sections(text: str, heading: str) -> list[str]:
+    matches = re.finditer(
         rf"^##\s+{re.escape(heading)}\s*$([\s\S]*?)(?=^##\s+|\Z)",
         text,
         flags=re.MULTILINE,
     )
-    return match.group(1) if match else ""
+    return [match.group(1) for match in matches]
+
+
+def _heading_section(text: str, heading: str) -> str:
+    sections = _heading_sections(text, heading)
+    return sections[0] if sections else ""
 
 
 def contract_artifacts(path: str) -> None:
@@ -497,9 +502,10 @@ def validate_resource_templates(path: str, templates_root: str) -> list[str]:
             issues.append("missing resource template: proposal.md")
         else:
             proposal_text = proposal.read_text(encoding="utf-8")
-            section_text = _heading_section(proposal_text, proposal_section)
-            if not section_text:
-                issues.append("proposal.md resource heading differs from contract")
+            proposal_sections = _heading_sections(proposal_text, proposal_section)
+            if len(proposal_sections) != 1:
+                issues.append("proposal.md resource heading must appear exactly once")
+            section_text = proposal_sections[0] if len(proposal_sections) == 1 else ""
             expected_columns = values("proposal_columns")
             if expected_columns not in _markdown_table_headers(section_text):
                 issues.append("proposal.md resource table columns differ from contract")

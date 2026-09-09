@@ -301,31 +301,29 @@ def headings(text: str) -> set[str]:
     return result
 
 
-def section_text(text: str, title: str) -> str:
+def section_texts(text: str, title: str) -> list[str]:
     lines = _visible_markdown(text).splitlines()
-    start = None
-    start_level = 0
-
+    matches: list[tuple[int, int]] = []
     for idx, line in enumerate(lines):
         match = re.match(r"^(#{2,6})\s+(.+?)\s*$", line)
-        if not match:
-            continue
-        if match.group(2).strip() == title:
-            start = idx + 1
-            start_level = len(match.group(1))
-            break
+        if match and match.group(2).strip() == title:
+            matches.append((idx + 1, len(match.group(1))))
 
-    if start is None:
-        return ""
+    sections: list[str] = []
+    for start, start_level in matches:
+        end = len(lines)
+        for idx in range(start, len(lines)):
+            match = re.match(r"^(#{2,6})\s+(.+?)\s*$", lines[idx])
+            if match and len(match.group(1)) <= start_level:
+                end = idx
+                break
+        sections.append("\n".join(lines[start:end]))
+    return sections
 
-    end = len(lines)
-    for idx in range(start, len(lines)):
-        match = re.match(r"^(#{2,6})\s+(.+?)\s*$", lines[idx])
-        if match and len(match.group(1)) <= start_level:
-            end = idx
-            break
 
-    return "\n".join(lines[start:end])
+def section_text(text: str, title: str) -> str:
+    sections = section_texts(text, title)
+    return sections[0] if len(sections) == 1 else ""
 
 
 def normalize_cell(value: str) -> str:
@@ -432,7 +430,14 @@ def tables_with_columns(text: str, required_columns: list[str]) -> list[list[dic
 
 def table_with_columns(text: str, required_columns: list[str]) -> list[dict[str, str]]:
     tables = tables_with_columns(text, required_columns)
-    return tables[0] if tables else []
+    return tables[0] if len(tables) == 1 else []
+
+
+def unique_table_with_columns(
+    text: str, required_columns: list[str]
+) -> list[dict[str, str]] | None:
+    tables = tables_with_columns(text, required_columns)
+    return tables[0] if len(tables) == 1 else None
 
 
 def meaningful(value: str) -> bool:
@@ -444,11 +449,15 @@ def normalized_table_key(value: str) -> str:
 
 
 def api_sdk_involvement(proposal: str) -> str | None:
-    section = section_text(proposal, API_PROPOSAL_SECTION)
+    sections = section_texts(proposal, API_PROPOSAL_SECTION)
+    if len(sections) != 1:
+        return None
+    tables = tables_with_columns(sections[0], ["维度", "是否涉及"])
+    if len(tables) != 1:
+        return None
     matches = [
         row
-        for rows in tables_with_columns(section, ["维度", "是否涉及"])
-        for row in rows
+        for row in tables[0]
         if normalized_table_key(row.get("维度", "")) == API_TRIGGER_DIMENSION
     ]
     if len(matches) != 1:
@@ -552,8 +561,154 @@ def _outer_parameter_open(signature: str) -> int | None:
     return None
 
 
-def _api_type_complete(type_name: str) -> bool:
-    """Validate the lexical structure shared by supported C and ArkTS types."""
+def _c_identifier_sequence_complete(value: str) -> bool:
+    """Validate adjacent identifiers in a simple C type-specifier sequence."""
+    simple = re.sub(r"\[[^\]]*\]", "", value)
+    simple = re.sub(r"[*&]", " ", simple).strip()
+    if re.search(r"[^A-Za-z0-9_\s]", simple):
+        return False
+    words = simple.split()
+    qualifiers = {"const", "volatile", "restrict", "_Atomic"}
+    core = [word for word in words if word not in qualifiers]
+    if not core:
+        return False
+    if core[0] in {"struct", "union", "enum"}:
+        return len(core) == 2 and bool(re.fullmatch(r"[A-Za-z_]\w*", core[1]))
+    if len(core) == 1:
+        return bool(re.fullmatch(r"[A-Za-z_]\w*", core[0]))
+    specifiers = {
+        "signed",
+        "unsigned",
+        "short",
+        "long",
+        "int",
+        "char",
+        "float",
+        "double",
+        "void",
+        "_Bool",
+    }
+    if not all(word in specifiers for word in core):
+        return False
+    counts = {word: core.count(word) for word in specifiers}
+    if any(counts[word] > 1 for word in specifiers - {"long"}) or counts["long"] > 2:
+        return False
+    if counts["signed"] and counts["unsigned"]:
+        return False
+    if counts["void"] or counts["_Bool"] or counts["float"]:
+        return len(core) == 1
+    if counts["char"]:
+        return not any(counts[word] for word in {"short", "long", "int", "double"})
+    if counts["double"]:
+        return (
+            not any(counts[word] for word in {"signed", "unsigned", "short", "int"})
+            and counts["long"] <= 1
+        )
+    return not (counts["short"] and counts["long"])
+
+
+def _arkts_type_syntax_complete(value: str) -> bool:
+    """Reject expression-only tokens and invalid adjacent names in ArkTS types."""
+    if re.search(r"[*/+\-]", value) or re.search(r"(?<![=])=(?!>)", value):
+        return False
+    for match in re.finditer(r"=>", value):
+        remainder = value[match.end() :].lstrip()
+        if (
+            not value[: match.start()].rstrip().endswith(")")
+            or not remainder
+            or remainder[0] in ")]}> ,;:"
+        ):
+            return False
+    equals_positions = _nesting_positions(value, "=")
+    if equals_positions is None:
+        return False
+    arrow_positions = [position for position in equals_positions if value[position : position + 2] == "=>"]
+    if arrow_positions:
+        arrow = arrow_positions[0]
+        parameters = value[:arrow].strip()
+        return_type = value[arrow + 2 :].strip()
+        opening = _outer_parameter_open(parameters)
+        if (
+            opening is None
+            or _outer_parameter_close(parameters, opening) != len(parameters) - 1
+            or parameters[:opening].strip() not in {"", "new", "abstract new"}
+            or not return_type
+            or not _arkts_type_syntax_complete(return_type)
+        ):
+            return False
+    for delimiter in (",", ";"):
+        positions = _nesting_positions(value, delimiter)
+        if positions is None or positions:
+            return False
+    colon_positions = _nesting_positions(value, ":")
+    question_positions = _nesting_positions(value, "?")
+    if colon_positions is None or question_positions is None:
+        return False
+    conditional_depth = 0
+    previous_delimiter = -1
+    for position, delimiter in sorted(
+        [(position, "?") for position in question_positions]
+        + [(position, ":") for position in colon_positions]
+    ):
+        if delimiter == "?":
+            if not re.search(r"\bextends\b", value[previous_delimiter + 1 : position]):
+                return False
+            conditional_depth += 1
+        else:
+            if conditional_depth == 0:
+                return False
+            conditional_depth -= 1
+        previous_delimiter = position
+    if conditional_depth:
+        return False
+    adjacent_identifiers = re.findall(
+        r"(?=\b([A-Za-z_$][A-Za-z0-9_$]*)\s+([A-Za-z_$][A-Za-z0-9_$]*)\b)",
+        value,
+    )
+    prefix_operators = {
+        "readonly",
+        "keyof",
+        "typeof",
+        "infer",
+        "unique",
+        "abstract",
+        "new",
+        "in",
+        "extends",
+    }
+    return all(
+        first in prefix_operators or second in {"extends", "in"}
+        for first, second in adjacent_identifiers
+    )
+
+
+def _c_type_syntax_complete(value: str) -> bool:
+    """Validate C type specifiers and abstract declarators used by API signatures."""
+    if re.search(r"[$|&.:<>{}?=+/\-]", value):
+        return False
+    for delimiter in (",", ":", ";"):
+        positions = _nesting_positions(value, delimiter)
+        if positions is None or positions:
+            return False
+    identifiers = re.findall(r"\b[A-Za-z_]\w*\b", value)
+    qualifiers = {"const", "volatile", "restrict", "_Atomic"}
+    if not identifiers or all(identifier in qualifiers for identifier in identifiers):
+        return False
+    if identifiers[-1] in {"struct", "union", "enum"}:
+        return False
+    if re.search(
+        r"\*\s*(?!const\b|volatile\b|restrict\b|_Atomic\b)([A-Za-z_]\w*)",
+        value,
+    ):
+        return False
+    if re.search(r"\(\s*\*\s*[A-Za-z_]\w*", value):
+        return False
+    sequences = re.findall(r"\b[A-Za-z_]\w*(?:\s+[A-Za-z_]\w*)+\b", value)
+    return all(_c_identifier_sequence_complete(sequence) for sequence in sequences)
+
+
+def _api_type_complete(type_name: str, *, language: str | None = None) -> bool:
+    """Validate supported C/ArkTS type syntax without accepting expressions."""
     value = type_name.strip()
     if (
         not meaningful(value)
@@ -585,12 +740,16 @@ def _api_type_complete(type_name: str) -> bool:
         return False
     if re.search(r"(?:^|[^=])=\s*$", without_literals):
         return False
-    if re.search(r"[+\-/]\s*$", without_literals):
-        return False
-    return True
+    arkts_valid = _arkts_type_syntax_complete(without_literals)
+    c_valid = without_literals == value and _c_type_syntax_complete(without_literals)
+    if language == "ArkTS":
+        return arkts_valid
+    if language == "C":
+        return c_valid
+    return arkts_valid or c_valid
 
 
-def _api_generic_parameters_complete(parameters: str) -> bool:
+def _api_generic_parameters_complete(parameters: str, *, language: str | None = None) -> bool:
     comma_positions = _nesting_positions(parameters, ",")
     if comma_positions is None:
         return False
@@ -622,12 +781,14 @@ def _api_generic_parameters_complete(parameters: str) -> bool:
         if match is None:
             return False
         for value in (match.group("constraint"), default):
-            if value is not None and not _api_type_complete(value):
+            if value is not None and not _api_type_complete(value, language=language):
                 return False
     return True
 
 
-def _api_name_complete(name: str, *, name_style: str = "qualified") -> bool:
+def _api_name_complete(
+    name: str, *, name_style: str = "qualified", language: str | None = None
+) -> bool:
     identifier = r"[A-Za-z_$][A-Za-z0-9_$]*"
     generic_parameters: str | None = None
     base_name = name
@@ -649,10 +810,12 @@ def _api_name_complete(name: str, *, name_style: str = "qualified") -> bool:
     }.get(name_style, False)
     if not valid_name:
         return False
-    return generic_parameters is None or _api_generic_parameters_complete(generic_parameters)
+    return generic_parameters is None or _api_generic_parameters_complete(
+        generic_parameters, language=language
+    )
 
 
-def _api_parameters_complete(parameters: str) -> bool:
+def _api_parameters_complete(parameters: str, *, language: str | None = None) -> bool:
     if not parameters.strip():
         return True
     comma_positions = _nesting_positions(parameters, ",")
@@ -670,12 +833,14 @@ def _api_parameters_complete(parameters: str) -> bool:
         type_name = parameter[colon + 1 :].strip()
         if not re.fullmatch(r"(?:\.\.\.)?[A-Za-z_$][A-Za-z0-9_$]*\??", name):
             return False
-        if not _api_type_complete(type_name):
+        if not _api_type_complete(type_name, language=language):
             return False
     return True
 
 
-def api_signature_complete(signature: str, *, name_style: str = "qualified") -> bool:
+def api_signature_complete(
+    signature: str, *, name_style: str = "qualified", language: str | None = None
+) -> bool:
     normalized = canonical_api_signature(signature)
     if not normalized or PLACEHOLDER_RE.match(normalized) or BRACKET_PLACEHOLDER_RE.search(normalized):
         return False
@@ -691,11 +856,11 @@ def api_signature_complete(signature: str, *, name_style: str = "qualified") -> 
     if return_match is None:
         return False
     return_type = return_match.group(1).strip()
-    if not _api_name_complete(name, name_style=name_style):
+    if not _api_name_complete(name, name_style=name_style, language=language):
         return False
-    if not _api_type_complete(return_type):
+    if not _api_type_complete(return_type, language=language):
         return False
-    if not _api_parameters_complete(parameters):
+    if not _api_parameters_complete(parameters, language=language):
         return False
     return True
 
@@ -813,11 +978,32 @@ def table_rows_by_key(
     columns: list[str],
     key_column: str,
 ) -> dict[str, list[dict[str, str]]]:
-    rows = table_with_columns(text, columns)
+    rows = unique_table_with_columns(text, columns) or []
     result: dict[str, list[dict[str, str]]] = {}
     for row in rows:
         result.setdefault(normalized_table_key(row.get(key_column, "")), []).append(row)
     return result
+
+
+def supported_device_table_issues(rows: list[dict[str, str]]) -> list[str]:
+    """Return decision errors for one per-API supported-device table."""
+    issues: list[str] = []
+    device_names: set[str] = set()
+    for row in rows:
+        device_name = normalized_table_key(row.get("设备类型", ""))
+        version = normalized_table_key(row.get("起始版本", ""))
+        support = normalized_table_key(row.get("是否支持", ""))
+        if device_name in device_names:
+            issues.append(f"duplicate supported device: {device_name}")
+        device_names.add(device_name)
+        if support not in {"是", "否"}:
+            issues.append(f"supported device '{device_name}' must state 是 or 否")
+        if not (
+            re.fullmatch(r"\d+(?:\.\d+){0,2}", version)
+            or re.fullmatch(r"不适用\s*[（(].+[）)]", version)
+        ):
+            issues.append(f"supported device '{device_name}' has invalid starting version")
+    return issues
 
 
 def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
@@ -827,7 +1013,7 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
         return
 
     involvement = api_sdk_involvement(_visible_markdown(read_text(proposal_path)))
-    spec_section = section_text(_visible_markdown(read_text(spec_path)), API_SPEC_SECTION)
+    spec_sections = section_texts(_visible_markdown(read_text(spec_path)), API_SPEC_SECTION)
     issues: list[str] = []
     api_language = ""
 
@@ -836,6 +1022,11 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
             f"proposal.md: {API_TRIGGER_DIMENSION} must state 是 or 否 in {API_PROPOSAL_SECTION}"
         )
         return
+
+    if len(spec_sections) != 1:
+        reporter.fail(f"spec.md: {API_SPEC_SECTION} section must appear exactly once")
+        return
+    spec_section = spec_sections[0]
 
     if involvement == "否":
         visible = "\n".join(
@@ -861,27 +1052,38 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
             reporter.fail("spec.md API/SDK=否 requires an explicit not-applicable reason")
         return
 
-    common_text = section_text(spec_section, API_COMMON_SECTION)
-    if not common_text:
+    common_sections = section_texts(spec_section, API_COMMON_SECTION)
+    if not common_sections:
         issues.append(f"spec.md: {API_COMMON_SECTION} subsection missing")
+    elif len(common_sections) != 1:
+        issues.append(f"spec.md: {API_COMMON_SECTION} subsection must appear exactly once")
     else:
-        common_rows = table_rows_by_key(common_text, ["规格项", "值"], "规格项")
-        for item in API_COMMON_REQUIRED_ITEMS:
-            matches = common_rows.get(item, [])
-            if not matches:
-                issues.append(f"spec.md: {API_COMMON_SECTION} missing item: {item}")
-            elif len(matches) > 1:
-                issues.append(f"spec.md: {API_COMMON_SECTION} duplicate item: {item}")
-            elif not meaningful(matches[0].get("值", "")):
-                issues.append(f"spec.md: {API_COMMON_SECTION} item has empty value: {item}")
-            elif not api_common_value_complete(item, matches[0].get("值", "")):
-                issues.append(f"spec.md: {API_COMMON_SECTION} unresolved template choice: {item}")
-            elif item == "编程语言":
-                api_language = normalized_table_key(matches[0].get("值", ""))
+        common_tables = tables_with_columns(common_sections[0], ["规格项", "值"])
+        if len(common_tables) != 1:
+            issues.append(f"spec.md: {API_COMMON_SECTION} must contain exactly one specification table")
+        else:
+            common_rows = table_rows_by_key(common_sections[0], ["规格项", "值"], "规格项")
+            for item in API_COMMON_REQUIRED_ITEMS:
+                matches = common_rows.get(item, [])
+                if not matches:
+                    issues.append(f"spec.md: {API_COMMON_SECTION} missing item: {item}")
+                elif len(matches) > 1:
+                    issues.append(f"spec.md: {API_COMMON_SECTION} duplicate item: {item}")
+                elif not meaningful(matches[0].get("值", "")):
+                    issues.append(f"spec.md: {API_COMMON_SECTION} item has empty value: {item}")
+                elif not api_common_value_complete(item, matches[0].get("值", "")):
+                    issues.append(f"spec.md: {API_COMMON_SECTION} unresolved template choice: {item}")
+                elif item == "编程语言":
+                    api_language = normalized_table_key(matches[0].get("值", ""))
 
-    per_api_text = section_text(spec_section, API_PER_API_SECTION)
+    per_api_sections = section_texts(spec_section, API_PER_API_SECTION)
+    if not per_api_sections:
+        issues.append(f"spec.md: {API_PER_API_SECTION} subsection has no API entries")
+    elif len(per_api_sections) != 1:
+        issues.append(f"spec.md: {API_PER_API_SECTION} subsection must appear exactly once")
+    per_api_text = per_api_sections[0] if len(per_api_sections) == 1 else ""
     entries = api_entry_blocks(per_api_text)
-    if not entries:
+    if not entries and per_api_sections:
         issues.append(f"spec.md: {API_PER_API_SECTION} subsection has no API entries")
 
     signatures: set[str] = set()
@@ -898,23 +1100,31 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
         if not api_signature_complete(
             signature,
             name_style=name_style,
+            language=api_language,
         ):
             issues.append(f"spec.md: incomplete API signature: {raw_signature}")
         if signature in signatures:
             issues.append(f"spec.md: duplicate API signature: {raw_signature}")
         signatures.add(signature)
 
-        spec_rows = table_rows_by_key(block, ["规格项", "值"], "规格项")
-        for item in API_REQUIRED_SPEC_ITEMS:
-            matches = spec_rows.get(item, [])
-            if not matches:
-                issues.append(f"spec.md API '{raw_signature}': missing specification item: {item}")
-            elif len(matches) > 1:
-                issues.append(f"spec.md API '{raw_signature}': duplicate specification item: {item}")
-            elif not meaningful(matches[0].get("值", "")):
-                issues.append(f"spec.md API '{raw_signature}': empty specification item: {item}")
+        spec_tables = tables_with_columns(block, ["规格项", "值"])
+        if len(spec_tables) != 1:
+            issues.append(f"spec.md API '{raw_signature}': must contain exactly one specification table")
+        else:
+            spec_rows = table_rows_by_key(block, ["规格项", "值"], "规格项")
+            for item in API_REQUIRED_SPEC_ITEMS:
+                matches = spec_rows.get(item, [])
+                if not matches:
+                    issues.append(f"spec.md API '{raw_signature}': missing specification item: {item}")
+                elif len(matches) > 1:
+                    issues.append(f"spec.md API '{raw_signature}': duplicate specification item: {item}")
+                elif not meaningful(matches[0].get("值", "")):
+                    issues.append(f"spec.md API '{raw_signature}': empty specification item: {item}")
 
-        description_rows = table_with_columns(block, ["要素类别", "要素", "内容"])
+        description_tables = tables_with_columns(block, ["要素类别", "要素", "内容"])
+        if len(description_tables) != 1:
+            issues.append(f"spec.md API '{raw_signature}': must contain exactly one API description table")
+        description_rows = description_tables[0] if len(description_tables) == 1 else []
         descriptions: dict[tuple[str, str], list[dict[str, str]]] = {}
         for row in description_rows:
             key = (
@@ -936,15 +1146,26 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
             elif not meaningful(matches[0].get("内容", "")):
                 issues.append(f"spec.md API '{raw_signature}': empty API description element: {label}")
 
-        supported = table_with_columns(block, API_SUPPORTED_DEVICE_COLUMNS)
+        supported_tables = tables_with_columns(block, API_SUPPORTED_DEVICE_COLUMNS)
+        if len(supported_tables) != 1:
+            issues.append(f"spec.md API '{raw_signature}': must contain exactly one supported-device table")
+        supported = supported_tables[0] if len(supported_tables) == 1 else []
         if not supported or any(
             not meaningful(row.get(column, ""))
             for row in supported
             for column in API_SUPPORTED_DEVICE_COLUMNS
         ):
             issues.append(f"spec.md API '{raw_signature}': supported-device table missing or empty")
+        else:
+            issues.extend(
+                f"spec.md API '{raw_signature}': {issue}"
+                for issue in supported_device_table_issues(supported)
+            )
 
-        differences = table_with_columns(block, API_DEVICE_DIFFERENCE_COLUMNS)
+        difference_tables = tables_with_columns(block, API_DEVICE_DIFFERENCE_COLUMNS)
+        if len(difference_tables) != 1:
+            issues.append(f"spec.md API '{raw_signature}': must contain exactly one device-difference table")
+        differences = difference_tables[0] if len(difference_tables) == 1 else []
         if not differences or any(
             not meaningful(row.get(column, ""))
             for row in differences
@@ -1611,6 +1832,34 @@ def repository_origin_url(repository_root: Path) -> str | None:
     return result.stdout.strip() or None
 
 
+def repository_head_commit(repository_root: Path) -> str | None:
+    """Return the full HEAD commit only for the repository rooted at repository_root."""
+    try:
+        top_level = subprocess.run(
+            ["git", "-C", str(repository_root), "rev-parse", "--show-toplevel"],
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=5,
+        )
+        if (
+            top_level.returncode != 0
+            or Path(top_level.stdout.strip()).resolve() != repository_root.resolve()
+        ):
+            return None
+        result = subprocess.run(
+            ["git", "-C", str(repository_root), "rev-parse", "HEAD"],
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    commit = result.stdout.strip()
+    return commit.lower() if result.returncode == 0 and re.fullmatch(r"[0-9a-fA-F]{40}", commit) else None
+
+
 def gitcode_repository_identity(remote: str) -> str | None:
     """Parse supported HTTPS, SSH URL, and SCP-style GitCode remotes."""
 
@@ -1745,6 +1994,10 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
         reporter.fail("metadata_tracking.yaml: repos must contain at least one repository")
         return
 
+    repository_root = change_dir.resolve().parent.parent.parent.parent
+    origin = repository_origin_url(repository_root)
+    current_identity = gitcode_repository_identity(origin) if origin else None
+    current_head = repository_head_commit(repository_root) if current_identity else None
     repository_names: set[str] = set()
     for index, entry in enumerate(repos, start=1):
         if not isinstance(entry, dict):
@@ -1802,8 +2055,28 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
             if url and (not repo_is_valid or not re.fullmatch(expected_pr_url, url)):
                 reporter.fail("metadata_tracking.yaml: pull request url must match its GitCode repository")
             commit = str(pull_request.get("commit", "")).strip()
-            if commit and not re.fullmatch(r"[0-9a-fA-F]{7,40}", commit):
-                reporter.fail("metadata_tracking.yaml: pull request commit must be a 7-40 digit hex SHA")
+            if commit and not re.fullmatch(r"[0-9a-fA-F]{40}", commit):
+                reporter.fail("metadata_tracking.yaml: pull request commit must be a full 40-digit hex SHA")
+            elif (
+                required
+                and commit
+                and current_identity
+                and repo == current_identity
+                and current_head is None
+            ):
+                reporter.fail("metadata_tracking.yaml: unable to resolve current repository HEAD")
+            elif (
+                required
+                and commit
+                and current_identity
+                and repo == current_identity
+                and current_head is not None
+                and commit.lower() != current_head
+            ):
+                reporter.fail(
+                    "metadata_tracking.yaml: current repository pull request commit "
+                    "must match git rev-parse HEAD"
+                )
 
         issues = entry.get("issues", [])
         if not isinstance(issues, list):
@@ -1862,9 +2135,6 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
             elif url and issue_id and url.rsplit("/", 1)[-1] != issue_id:
                 reporter.fail("metadata_tracking.yaml: issue id must match its GitCode URL")
 
-    repository_root = change_dir.resolve().parent.parent.parent.parent
-    origin = repository_origin_url(repository_root)
-    current_identity = gitcode_repository_identity(origin) if origin else None
     if origin and not current_identity:
         reporter.fail(
             "metadata_tracking.yaml: current Git origin must be a supported GitCode repository URL"
