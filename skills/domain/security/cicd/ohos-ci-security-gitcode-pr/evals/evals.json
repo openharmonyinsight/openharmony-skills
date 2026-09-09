@@ -1,0 +1,80 @@
+{
+  "skill_name": "ohos-ci-security-gitcode-pr",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "remote-classification-upstream-vs-fork",
+      "prompt": "我想把当前分支 fix/null-check 提交为 GitCode PR。当前仓库有两个远端：origin 指向 https://gitcode.com/openharmony/security_code_signature，fork 指向 https://gitcode.com/yinghao/security_code_signature。请用 ohos-ci-security-gitcode-pr 说明你会怎么识别上游和 fork，分别用哪个远端做什么。",
+      "expected_output": "Agent 应运行 git remote -v 并按 owner 解析：owner=openharmony 的 origin 为 UPSTREAM（PR base、issue 创建目标），owner=yinghao 的 fork 为 FORK（push 目标、PR head 来源）。不需要用户选择，因为上游和 fork 均已唯一识别。",
+      "files": [],
+      "expectations": [
+        "Agent 说明运行 git remote -v 列出所有远端并逐个解析 URL",
+        "Agent 把 owner=openharmony 的远端分类为 UPSTREAM",
+        "Agent 把 owner 为个人用户名（yinghao）的远端分类为 FORK",
+        "Agent 说明 upstream 用于 PR base、issue 创建",
+        "Agent 说明 fork 用于 push 目标、PR head 来源",
+        "Agent 不假设远端名为 upstream/fork，而是按 owner 判断"
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "cross-repo-pr-head-format-critical",
+      "prompt": "请用 ohos-ci-security-gitcode-pr 为我创建跨仓 PR。上游是 openharmony/security_code_signature，fork 是 yinghao/security_code_signature，当前分支 fix/null-check，base 是 master。请明确告诉我创建 PR 时 head 参数会是什么值，以及为什么这个格式很关键。",
+      "expected_output": "Agent 应明确 head 参数值为 yinghao:fix/null-check（fork-owner:branch-name，无额外前缀），并说明 GitCode API 对跨 fork PR 的 head 格式严格校验，错误格式会导致 PR 创建失败；base 为 master。",
+      "files": [],
+      "expectations": [
+        "Agent 明确 head 值为 yinghao:fix/null-check（fork-owner:branch-name）",
+        "Agent head 值不含 upstream owner 前缀、不含 origin/ 前缀、不含 remote 名前缀",
+        "Agent 说明 GitCode API 对跨 fork PR 的 head 格式严格校验",
+        "Agent 说明错误 head 格式会导致 PR 创建失败",
+        "Agent 明确 base 为 master",
+        "Agent 使用 gitcode_create_pull_request 或等价 MCP 工具而非直接 curl"
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "idempotent-push-when-pr-already-exists",
+      "prompt": "请用 ohos-ci-security-gitcode-pr 帮我提交当前分支改动。但请先检查是否已有同名 PR——如果已经有人创建过，不要重复建 PR，只推送到 fork 并告诉我 PR 链接。上游是 openharmony/security_code_signature。",
+      "expected_output": "Agent 应先用 gitcode_list_pull_requests 在上游仓库查询是否已有匹配当前分支名和 fork owner 的 PR；若已存在，只执行 git push -u <fork-remote> <branch>，不创建 issue、不创建 PR，并告知用户 PR 已存在；不重复创建。",
+      "files": [],
+      "expectations": [
+        "Agent 说明先调用 gitcode_list_pull_requests 查询上游仓库现有 PR",
+        "Agent 说明按分支名和 fork owner 匹配判断 PR 是否已存在",
+        "Agent 说明 PR 已存在时只执行 git push -u <fork-remote> <branch>",
+        "Agent 说明 PR 已存在时不创建 issue、不创建新 PR",
+        "Agent 说明告知用户 PR 已存在并提供链接",
+        "Agent 不在 PR 已存在时跳过 push 或重复创建 PR"
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "issue-creation-and-pr-template-linking",
+      "prompt": "请用 ohos-ci-security-gitcode-pr 提交当前分支改动为 PR。上游有 .gitee/PULL_REQUEST_TEMPLATE.zh-CN.md 模板，里面有“### 关联的issue：”这一行。请说明你会怎么创建 issue 并把 issue 编号填进 PR 模板。",
+      "expected_output": "Agent 应先在上游仓库用 gitcode_create_issue 创建 issue（issue 描述来自 commit message 和 git diff），获得 issue 编号后，将 PR 模板中的“### 关联的issue：”行替换为“### 关联的issue：\n#<issue-number>”，使 PR 合并时自动关闭 issue。",
+      "files": [],
+      "expectations": [
+        "Agent 说明在上游仓库（openharmony owner）用 gitcode_create_issue 创建 issue",
+        "Agent 说明 issue 描述来自 git log -1 / git diff HEAD~1 等上下文",
+        "Agent 说明读取 .gitee/PULL_REQUEST_TEMPLATE.zh-CN.md 作为 PR body 模板",
+        "Agent 说明把模板中“### 关联的issue：”行替换为含 #<issue-number> 的关联引用",
+        "Agent 说明 PR 合并时通过 #number 自动关闭 issue 的机制",
+        "Agent 不在 fork 仓库创建 issue（issue 必须在上游创建）"
+      ]
+    },
+    {
+      "id": 5,
+      "eval_name": "ambiguous-remote-and-mcp-absence-handling",
+      "prompt": "我想用 ohos-ci-security-gitcode-pr 提交 PR，但我的环境有两个情况：（1）当前仓库有多个非 openharmony 远端，无法自动判断哪个是我的 fork；（2）我不确定 gitcode mcp 是否安装。请说明在这种情况下 skill 会怎么处理。",
+      "expected_output": "Agent 应分两点回答：(1) 多个非 openharmony 远端时，skill 按决策矩阵要求用户选择哪个是 fork 远端，不自动猜测；(2) skill 开头明确声明：如果没有 gitcode mcp，立即警告用户并终止 skill，不尝试用 curl 等替代方案绕过。",
+      "files": [],
+      "expectations": [
+        "Agent 说明多个非 openharmony 远端时按决策矩阵要求用户选择 fork 远端",
+        "Agent 不自动猜测或随机选择某个非 openharmony 远端作为 fork",
+        "Agent 说明没有 gitcode mcp 时立即警告用户并终止 skill",
+        "Agent 不建议用 curl 或直接 HTTP 调用绕过 mcp 缺失",
+        "Agent 引用 SKILL.md 开头的 gitcode mcp 前置检查声明",
+        "Agent 说明 upstream 缺失（无 openharmony 远端）时也会警告或要求用户配置"
+      ]
+    }
+  ]
+}
