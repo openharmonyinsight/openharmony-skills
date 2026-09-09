@@ -1,0 +1,183 @@
+{
+  "version": "1.0.0",
+  "description": "资源丰富性/完整性检查规则 - 确保文档内容完整无缺失",
+  "category": "资源丰富性/完整性",
+  "rules": [
+    {
+      "id": "completeness-001",
+      "name": "example-code-missing",
+      "description": "示例代码/解决方案缺失",
+      "type": "completeness",
+      "priority": "high",
+      "confidence": 90,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "api-example-required",
+          "description": "API文档必须包含示例代码",
+          "check": "每个API方法应至少有一个示例"
+        },
+        {
+          "name": "scenario-example-completeness",
+          "description": "场景文档应包含完整示例",
+          "check": "开发场景文档应包含可运行的完整代码"
+        }
+      ],
+      "validation": {
+        "codeBlockMinCount": 1,
+        "codeBlockMinLines": 5,
+        "requireRunnable": true
+      },
+      "indicators": {
+        "badPatterns": [
+          "仅描述API功能但没有代码示例",
+          "示例代码被截断或用'...'省略关键部分",
+          "仅有伪代码而无实际可运行代码"
+        ]
+      },
+      "message": "文档缺少必要的示例代码，开发者难以理解如何使用",
+      "suggestedFix": "为每个API或场景添加完整的、可运行的示例代码"
+    },
+    {
+      "id": "completeness-002",
+      "name": "critical-description-missing",
+      "description": "关键说明缺失",
+      "type": "completeness",
+      "priority": "high",
+      "confidence": 85,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "parameter-description",
+          "description": "参数必须有详细说明",
+          "check": "所有参数都应有类型、必填性、取值范围说明"
+        },
+        {
+          "name": "return-value-description",
+          "description": "返回值必须有说明",
+          "check": "API返回值类型和含义必须说明"
+        },
+        {
+          "name": "exception-description",
+          "description": "异常情况必须说明",
+          "check": "可能的错误情况和异常必须文档化"
+        }
+      ],
+      "requiredSections": {
+        "apiDoc": ["参数", "返回值", "示例", "错误码"],
+        "guideDoc": ["概述", "开发步骤", "示例代码", "约束限制"]
+      },
+      "message": "文档缺少关键说明，开发者无法正确使用API",
+      "suggestedFix": "补充缺失的关键说明章节"
+    },
+    {
+      "id": "completeness-003",
+      "name": "constraint-missing",
+      "description": "规格约束说明缺失",
+      "type": "completeness",
+      "priority": "high",
+      "confidence": 85,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "device-constraint",
+          "description": "设备限制必须说明",
+          "check": "检查是否说明支持的设备类型"
+        },
+        {
+          "name": "version-constraint",
+          "description": "版本限制必须说明",
+          "check": "检查是否说明最低API版本要求"
+        },
+        {
+          "name": "permission-constraint",
+          "description": "权限限制必须说明",
+          "check": "检查是否说明需要的权限"
+        },
+        {
+          "name": "system-capability-constraint",
+          "description": "系统能力限制必须说明",
+          "check": "检查是否声明SystemCapability"
+        }
+      ],
+      "keywords": {
+        "device": ["设备", "2in1", "phone", "tablet", "watch", "TV"],
+        "version": ["API version", "since", "起始版本"],
+        "permission": ["权限", "ohos.permission", "需要申请"],
+        "systemCapability": ["SystemCapability"]
+      },
+      "message": "文档缺少必要的约束条件说明，可能导致开发者误用",
+      "suggestedFix": "添加'约束限制'或'规格说明'章节，明确设备、版本、权限要求"
+    },
+    {
+      "id": "completeness-004",
+      "name": "default-behavior-missing",
+      "description": "默认效果说明缺失",
+      "type": "completeness",
+      "priority": "medium",
+      "confidence": 75,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "default-value",
+          "description": "默认值必须说明",
+          "check": "可选参数的默认值应明确说明"
+        },
+        {
+          "name": "default-behavior",
+          "description": "默认行为必须说明",
+          "check": "未设置时的默认行为应文档化"
+        }
+      ],
+      "indicators": {
+        "shouldExplain": [
+          "默认值为",
+          "默认为",
+          "默认行为",
+          "缺省情况下",
+          "如不设置"
+        ]
+      },
+      "message": "文档未说明默认行为，开发者难以预测代码执行效果",
+      "suggestedFix": "明确说明参数的默认值和未配置时的默认行为"
+    },
+    {
+      "id": "completeness-005",
+      "name": "related-info-missing",
+      "description": "关联信息说明缺失",
+      "type": "completeness",
+      "priority": "medium",
+      "confidence": 70,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "prerequisite-knowledge",
+          "description": "前置知识应说明",
+          "check": "检查是否说明需要了解的前置概念"
+        },
+        {
+          "name": "related-api-reference",
+          "description": "相关API应引用",
+          "check": "检查是否链接到相关API文档"
+        },
+        {
+          "name": "lifecycle-relationship",
+          "description": "生命周期关系应说明",
+          "check": "涉及生命周期时应说明与其他组件的关系"
+        }
+      ],
+      "requiredPatterns": [
+        {
+          "pattern": "前置条件|前置知识|先决条件",
+          "message": "应说明前置知识要求"
+        },
+        {
+          "pattern": "相关API|相关接口|配合使用",
+          "message": "应说明相关API"
+        }
+      ],
+      "message": "文档缺少关联信息，开发者难以形成完整知识脉络",
+      "suggestedFix": "添加前置知识要求和相关API引用"
+    }
+  ]
+}

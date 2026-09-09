@@ -1,0 +1,192 @@
+{
+  "version": "2.0.0",
+  "description": "API文档质量检查规则索引 - 基于7大维度分类体系",
+  "lastUpdated": "2026-03-16",
+  "classification": {
+    "description": "7大问题分类维度",
+    "categories": [
+      {
+        "id": "findability",
+        "name": "资源易找性",
+        "description": "开发者能否快速找到所需信息",
+        "subCategories": ["描述关键字不准确", "官网资料缺失，分散在其他渠道"]
+      },
+      {
+        "id": "completeness",
+        "name": "资源丰富性/完整性",
+        "description": "文档内容是否完整无缺失",
+        "subCategories": ["示例代码/解决方案缺失", "关键说明缺失", "规格约束说明缺失", "默认效果说明缺失", "关联信息说明缺失"]
+      },
+      {
+        "id": "correctness",
+        "name": "资料正确性",
+        "description": "文档内容是否准确无误",
+        "subCategories": ["变更未及时更新", "示例代码不完整 不可用", "JSDOC描述错误"]
+      },
+      {
+        "id": "clarity",
+        "name": "资源清晰易懂",
+        "description": "文档是否易于理解",
+        "subCategories": ["标题与内容不符", "功能描述不准确", "关联文档链接缺失", "机制原理说明缺失"]
+      },
+      {
+        "id": "capability",
+        "name": "能力有效性/易用性/丰富性",
+        "description": "API设计是否合理且易于使用",
+        "subCategories": ["约束条件缺失", "系统bug", "资料过时未更新", "命名存在歧义", "示例代码不实用", "替代方案缺失", "系统能力缺失", "稳定性定位手段缺失"]
+      }
+    ]
+  },
+  "rules": {
+    "spelling": {
+      "file": "spelling-rules.json",
+      "description": "拼写检查规则，包括鸿蒙专有名词校验",
+      "category": "资料正确性",
+      "enabled": true,
+      "priority": "high"
+    },
+    "syntax": {
+      "file": "syntax-rules.json",
+      "description": "代码语法检查规则，包括ArkTS/TypeScript语法验证",
+      "category": "资料正确性",
+      "enabled": true,
+      "priority": "high"
+    },
+    "path-consistency": {
+      "file": "path-consistency-rules.json",
+      "description": "路径一致性检查规则，包括文档内部路径和与Sample的一致性",
+      "category": "资料正确性",
+      "enabled": true,
+      "priority": "high"
+    },
+    "semantics": {
+      "file": "semantics-rules.json",
+      "description": "示例代码语义检查规则，包括占位符清晰度验证",
+      "category": "能力易用性",
+      "enabled": true,
+      "priority": "medium"
+    },
+    "project-structure": {
+      "file": "project-structure.json",
+      "description": "工程结构规范检查规则，对照官方标准工程结构",
+      "category": "资料正确性",
+      "enabled": true,
+      "priority": "medium"
+    },
+    "findability": {
+      "file": "findability-rules.json",
+      "description": "资源易找性检查规则，确保开发者能快速找到所需信息",
+      "category": "资源易找性",
+      "enabled": true,
+      "priority": "high"
+    },
+    "completeness": {
+      "file": "completeness-rules.json",
+      "description": "资源丰富性/完整性检查规则，确保文档内容完整无缺失",
+      "category": "资源丰富性/完整性",
+      "enabled": true,
+      "priority": "high"
+    },
+    "correctness": {
+      "file": "correctness-rules.json",
+      "description": "资料正确性检查规则，确保文档内容准确无误",
+      "category": "资料正确性",
+      "enabled": true,
+      "priority": "high",
+      "sdkSourceCheck": {
+        "enabled": true,
+        "requiresSdk": true,
+        "checkTypes": [
+          "api-since-version-match",
+          "param-count-match",
+          "param-name-match",
+          "param-type-match",
+          "return-type-match",
+          "systemapi-mark-match",
+          "stagemodelonly-mark-match",
+          "error-code-match",
+          "enum-values-complete",
+          "interface-fields-complete"
+        ]
+      }
+    },
+    "clarity": {
+      "file": "clarity-rules.json",
+      "description": "资源清晰易懂检查规则，确保文档易于理解",
+      "category": "资源清晰易懂",
+      "enabled": true,
+      "priority": "medium"
+    },
+    "capability": {
+      "file": "capability-rules.json",
+      "description": "能力有效性/易用性/丰富性检查规则，确保API设计合理",
+      "category": "能力有效性/易用性/丰富性",
+      "enabled": true,
+      "priority": "high"
+    }
+  },
+  "confidenceLevels": {
+    "95": "确定 - 已验证，无疑问",
+    "90": "高 - 证据充分，误报可能性低",
+    "85": "中高 - 很可能正确，建议检查",
+    "70": "中等 - 可能需要人工确认",
+    "60": "低 - 仅建议，视上下文决定",
+    "50": "不确定 - 标记供参考"
+  },
+  "priorityLabels": {
+    "critical": "严重",
+    "high": "高",
+    "medium": "中",
+    "low": "低",
+    "warning": "警告",
+    "suggestion": "建议"
+  },
+  "typeLabels": {
+    "spelling": "拼写错误",
+    "syntax": "代码语法",
+    "formatting": "格式问题",
+    "api-consistency": "API一致性",
+    "document-structure": "文档结构",
+    "example-code": "示例代码",
+    "file-extension": "文件扩展名",
+    "path-consistency": "路径一致性",
+    "semantics": "语义问题",
+    "project-structure": "工程结构",
+    "findability": "资源易找性",
+    "completeness": "完整性",
+    "correctness": "正确性",
+    "clarity": "清晰易懂",
+    "capability": "能力有效性"
+  },
+  "reportTemplate": {
+    "format": "excel",
+    "outputFile": "api-doc-check-result.xlsx",
+    "columns": [
+      { "name": "文件名", "key": "filename", "width": 40, "filterable": true },
+      { "name": "问题类型", "key": "issueType", "width": 20, "filterable": true },
+      { "name": "问题行号", "key": "lineNumber", "width": 15, "filterable": false },
+      { "name": "问题原因", "key": "reason", "width": 50, "filterable": false },
+      { "name": "建议修改方案", "key": "suggestion", "width": 50, "filterable": false },
+      { "name": "问题严重级别", "key": "severity", "width": 15, "filterable": true }
+    ],
+    "styling": {
+      "headerColor": "4472C4",
+      "headerFontColor": "FFFFFF",
+      "severityColors": {
+        "critical": "FFC7CE",
+        "high": "FFEB9C",
+        "medium": "C6EFCE",
+        "low": "DDEBF7"
+      }
+    },
+    "features": {
+      "autoFilter": true,
+      "freezeHeader": true,
+      "conditionalFormatting": true
+    },
+    "summaryMarkdown": {
+      "enabled": true,
+      "filename": "api-doc-check-summary.md"
+    }
+  }
+}

@@ -1,0 +1,223 @@
+{
+  "version": "1.1.0",
+  "description": "资料正确性检查规则 - 确保文档内容准确无误",
+  "category": "资料正确性",
+  "sdkSourceCheck": {
+    "enabled": true,
+    "description": "文档与SDK源码一致性检查",
+    "sdkRepository": {
+      "gitcode": "https://gitcode.com/openharmony/interface_sdk-js",
+      "gitee": "https://gitee.com/openharmony/interface_sdk-js",
+      "localPath": "${INTERFACE_SDK_JS_PATH}"
+    },
+    "mappingRules": {
+      "filePattern": "js-apis(-inner-)?{module}(-{name})?(-sys)?\\.md",
+      "sdkFileMapping": {
+        "js-apis-app-ability-{name}.md": "api/@ohos.app.ability.{name}.d.ts",
+        "js-apis-{name}.md": "api/@ohos.{name}.d.ts",
+        "js-apis-inner-{module}-{name}.md": "api/{module}/{name}.d.ts",
+        "js-apis-inner-{module}-{name}-sys.md": "api/{module}/{name}.d.ts",
+        "capi-{name}.md": "api/{name}.h"
+      }
+    }
+  },
+  "rules": [
+    {
+      "id": "correctness-001",
+      "name": "version-update-lag",
+      "description": "变更未及时更新",
+      "type": "correctness",
+      "priority": "high",
+      "confidence": 85,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "api-version-mark",
+          "description": "API版本标记应准确",
+          "check": "检查@since标记是否与实现一致"
+        },
+        {
+          "name": "changelog-sync",
+          "description": "变更日志应与实现同步",
+          "check": "文档描述应与最新代码实现一致"
+        },
+        {
+          "name": "deprecation-mark",
+          "description": "废弃API应明确标记",
+          "check": "废弃的API应有明确标记和替代方案"
+        }
+      ],
+      "validation": {
+        "versionPatterns": [
+          "@since\\s+\\d+",
+          "API version\\s+\\d+",
+          "<sup>\\d+\\+?</sup>"
+        ],
+        "deprecationPatterns": [
+          "@deprecated",
+          "废弃",
+          "即将删除",
+          "不再推荐使用"
+        ]
+      },
+      "message": "文档版本信息可能未及时更新，与实现不一致",
+      "suggestedFix": "核对文档与代码实现，更新版本标记和变更说明"
+    },
+    {
+      "id": "correctness-002",
+      "name": "example-code-broken",
+      "description": "示例代码不完整/不可用",
+      "type": "correctness",
+      "priority": "critical",
+      "confidence": 95,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "syntax-validity",
+          "description": "示例代码语法必须正确",
+          "check": "代码应符合ArkTS/TypeScript语法"
+        },
+        {
+          "name": "import-completeness",
+          "description": "导入语句必须完整",
+          "check": "所有使用的模块都应有导入"
+        },
+        {
+          "name": "variable-definition",
+          "description": "变量必须先定义后使用",
+          "check": "使用的变量应在代码中定义"
+        },
+        {
+          "name": "api-availability",
+          "description": "使用的API必须存在",
+          "check": "代码中调用的API应存在且可访问"
+        }
+      ],
+      "syntaxChecks": {
+        "typescript": [
+          "unclosed-braces",
+          "unclosed-parentheses",
+          "unclosed-brackets",
+          "invalid-template-string",
+          "missing-imports"
+        ]
+      },
+      "message": "示例代码存在语法错误或无法运行",
+      "suggestedFix": "修正代码语法错误，确保示例可编译运行"
+    },
+    {
+      "id": "correctness-003",
+      "name": "jsdoc-description-error",
+      "description": "JSDOC描述错误",
+      "type": "correctness",
+      "priority": "high",
+      "confidence": 85,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "param-type-match",
+          "description": "参数类型描述应匹配",
+          "check": "JSDOC中的@param类型应与实现一致"
+        },
+        {
+          "name": "return-type-match",
+          "description": "返回值类型描述应匹配",
+          "check": "JSDOC中的@return类型应与实现一致"
+        },
+        {
+          "name": "description-accuracy",
+          "description": "功能描述应准确",
+          "check": "描述应与实际行为一致"
+        }
+      ],
+      "validation": {
+        "jsdocTags": [
+          "@param",
+          "@returns",
+          "@throws",
+          "@since",
+          "@deprecated"
+        ],
+        "requireDescription": true,
+        "requireType": true
+      },
+      "message": "JSDOC描述与实现不一致",
+      "suggestedFix": "核对JSDOC与实际代码，修正不准确的描述"
+    },
+    {
+      "id": "correctness-004",
+      "name": "path-consistency-across-doc",
+      "description": "文档内部路径一致性",
+      "type": "correctness",
+      "priority": "high",
+      "confidence": 90,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "step-path-match",
+          "description": "步骤创建的目录应与配置引用一致",
+          "check": "检查步骤1创建的目录与步骤2引用的路径是否一致"
+        },
+        {
+          "name": "config-file-consistency",
+          "description": "配置文件路径应一致",
+          "check": "检查配置文件中引用的路径与实际路径一致"
+        }
+      ],
+      "message": "文档内部路径不一致，可能导致开发者配置失败",
+      "suggestedFix": "统一文档中各步骤涉及的路径，确保前后一致"
+    },
+    {
+      "id": "correctness-005",
+      "name": "sensitive-info-leak",
+      "description": "敏感信息泄露（隐私保护）",
+      "type": "correctness",
+      "subType": "security",
+      "priority": "critical",
+      "confidence": 95,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "phone-number-check",
+          "description": "禁止出现真实手机号",
+          "check": "检测示例中是否包含真实手机号格式"
+        },
+        {
+          "name": "ip-address-check",
+          "description": "禁止出现真实IP地址",
+          "check": "检测配置中是否包含真实内网或外网IP"
+        },
+        {
+          "name": "personal-info-check",
+          "description": "禁止出现真实个人信息",
+          "check": "检测是否包含真实姓名、地址等"
+        }
+      ],
+      "patterns": [
+        {
+          "type": "regex",
+          "pattern": "(\\+?86)?1[3-9]\\d{9}",
+          "description": "中国大陆手机号匹配",
+          "severity": "critical",
+          "message": "检测到疑似真实手机号，请使用示例号码（如 13000000000）"
+        },
+        {
+          "type": "regex",
+          "pattern": "\\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b",
+          "description": "IP地址匹配（排除 127.0.0.1 和 0.0.0.0）",
+          "severity": "high",
+          "message": "检测到IP地址，请确保不泄露真实服务器IP，建议使用示例IP（如 192.168.x.x）"
+        },
+        {
+          "type": "keyword",
+          "pattern": "公司名称|真实姓名|身份证号",
+          "description": "敏感关键词检查",
+          "severity": "critical",
+          "message": "文档中包含敏感个人信息关键词，存在泄露风险"
+        }
+      ],
+      "message": "文档中包含敏感信息（手机号/IP/个人信息），存在隐私泄露风险",
+      "suggestedFix": "立即删除或脱敏处理，使用符合规范的示例数据"
+    }
+  ]
+}

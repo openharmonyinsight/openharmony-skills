@@ -1,0 +1,175 @@
+{
+  "version": "1.0.0",
+  "description": "HarmonyOS/OpenHarmony 标准工程结构规范",
+  "reference": "https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/ide-project-structure",
+  "structure": {
+    "directories": [
+      {
+        "correct": "resources",
+        "wrong": ["resource", "res", "Resources"],
+        "description": "资源文件目录",
+        "required": true,
+        "pathPattern": "/resources/",
+        "priority": "high",
+        "confidence": 95
+      },
+      {
+        "correct": "entry",
+        "wrong": ["Entry", "main", "Main", "app"],
+        "description": "入口模块目录",
+        "required": true,
+        "pathPattern": "/entry/",
+        "priority": "high",
+        "confidence": 95
+      },
+      {
+        "correct": "ets",
+        "wrong": ["ETS", "ts", "TS", "typescript"],
+        "description": "ArkTS源码目录",
+        "required": true,
+        "pathPattern": "/ets/",
+        "priority": "high",
+        "confidence": 95
+      },
+      {
+        "correct": "entryability",
+        "wrong": ["EntryAbility", "entryAbility", "ability", "Ability"],
+        "description": "Ability目录（小写）",
+        "required": false,
+        "pathPattern": "/entryability/",
+        "priority": "medium",
+        "confidence": 90,
+        "note": "IDE默认创建的目录，部分文档可能使用大写形式"
+      },
+      {
+        "correct": "pages",
+        "wrong": ["Pages", "page", "Page", "main_pages"],
+        "description": "页面目录",
+        "required": false,
+        "pathPattern": "/pages/",
+        "priority": "medium",
+        "confidence": 85
+      },
+      {
+        "correct": "main_pages",
+        "wrong": ["mainpages", "mainPages", "main-page"],
+        "description": "主页面配置目录",
+        "required": false,
+        "pathPattern": "/main_pages/",
+        "priority": "medium",
+        "confidence": 90
+      },
+      {
+        "correct": "workers",
+        "wrong": ["Workers", "worker"],
+        "description": "Worker线程目录",
+        "required": false,
+        "pathPattern": "/workers/",
+        "priority": "low",
+        "confidence": 85
+      }
+    ],
+    "files": [
+      {
+        "correct": "module.json5",
+        "wrong": ["module.json", "Module.json5", "Module.json"],
+        "description": "模块配置文件",
+        "required": true,
+        "priority": "high",
+        "confidence": 95
+      },
+      {
+        "correct": "build-profile.json5",
+        "wrong": ["buildProfile.json5", "build_profile.json5", "build.json"],
+        "description": "构建配置文件",
+        "required": true,
+        "priority": "high",
+        "confidence": 95
+      },
+      {
+        "correct": "oh-package.json5",
+        "wrong": ["oh-package.json", "package.json", "ohPackage.json5"],
+        "description": "包管理配置文件",
+        "required": true,
+        "priority": "high",
+        "confidence": 95
+      },
+      {
+        "correct": "hvigorfile.ts",
+        "wrong": ["hvigorFile.ts", "Hvigorfile.ts", "hvigor.js"],
+        "description": "构建脚本",
+        "required": true,
+        "priority": "medium",
+        "confidence": 90
+      },
+      {
+        "correct": "EntryAbility.ets",
+        "wrong": ["EntryAbility.ts", "entryability.ets", "entryAbility.ets"],
+        "description": "入口Ability文件",
+        "required": false,
+        "priority": "high",
+        "confidence": 95,
+        "note": "必须使用.ets扩展名"
+      },
+      {
+        "correct": "Index.ets",
+        "wrong": ["Index.ts", "index.ets", "index.ts"],
+        "description": "入口页面文件",
+        "required": false,
+        "priority": "high",
+        "confidence": 95,
+        "note": "必须使用.ets扩展名"
+      }
+    ]
+  },
+  "rules": [
+    {
+      "id": "structure-001",
+      "name": "incorrect-directory-name",
+      "description": "使用了非标准的目录名称",
+      "type": "project-structure",
+      "priority": "high",
+      "confidence": 90,
+      "enabled": true,
+      "applyTo": "directories",
+      "message": "目录名 '{wrong}' 不符合标准工程结构，应为 '{correct}'",
+      "explanation": "根据 HarmonyOS 官方工程结构规范，默认目录名应为 '{correct}'",
+      "reference": "https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/ide-project-structure",
+      "suggestedFix": "将 '{wrong}' 改为 '{correct}'"
+    },
+    {
+      "id": "structure-002",
+      "name": "incorrect-file-name",
+      "description": "使用了非标准的文件名称",
+      "type": "project-structure",
+      "priority": "high",
+      "confidence": 90,
+      "enabled": true,
+      "applyTo": "files",
+      "message": "文件名 '{wrong}' 不符合标准工程结构，应为 '{correct}'",
+      "explanation": "根据 HarmonyOS 官方工程结构规范，文件名应为 '{correct}'",
+      "reference": "https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/ide-project-structure",
+      "suggestedFix": "将 '{wrong}' 改为 '{correct}'"
+    },
+    {
+      "id": "structure-003",
+      "name": "wrong-file-extension",
+      "description": "关键文件未使用.ets扩展名",
+      "type": "project-structure",
+      "priority": "high",
+      "confidence": 100,
+      "enabled": true,
+      "criticalExtensions": {
+        ".ets": ["EntryAbility", "AbilityStage", "Index", "EntryView"],
+        ".json5": ["module", "build-profile", "oh-package"]
+      },
+      "message": "关键文件 '{file}' 必须使用 .ets 扩展名",
+      "explanation": "EntryAbility.ets、AbilityStage.ets 等是 IDE 创建的默认项目文件，必须使用 .ets 扩展名",
+      "suggestedFix": "将文件扩展名改为 .ets"
+    }
+  ],
+  "patterns": {
+    "directoryDetection": "['\"\\\\/]\\b({names})\\b['\"\\\\/]",
+    "fileDetection": "\\b({names})\\b"
+  }
+}

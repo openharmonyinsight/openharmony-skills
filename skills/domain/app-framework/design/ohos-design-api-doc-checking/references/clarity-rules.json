@@ -1,0 +1,196 @@
+{
+  "version": "1.0.0",
+  "description": "资源清晰易懂检查规则 - 确保文档易于理解",
+  "category": "资源清晰易懂",
+  "rules": [
+    {
+      "id": "clarity-001",
+      "name": "title-content-mismatch",
+      "description": "标题与内容不符",
+      "type": "clarity",
+      "priority": "high",
+      "confidence": 80,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "title-accuracy",
+          "description": "标题应准确反映内容",
+          "check": "标题中的关键词应在内容中得到体现"
+        },
+        {
+          "name": "section-title-match",
+          "description": "章节标题应与内容匹配",
+          "check": "各章节内容应与标题描述一致"
+        }
+      ],
+      "indicators": {
+        "badPatterns": [
+          "标题为'高级用法'但只讲基础",
+          "标题为'完整示例'但代码不完整",
+          "标题提及功能但内容未解释"
+        ],
+        "goodPatterns": [
+          "标题与内容紧密相关",
+          "章节标题准确概括内容",
+          "关键词在内容中有详细解释"
+        ]
+      },
+      "message": "文档标题与内容可能不匹配，造成理解困扰",
+      "suggestedFix": "修改标题以准确反映内容，或补充缺失的内容"
+    },
+    {
+      "id": "clarity-002",
+      "name": "description-accuracy",
+      "description": "功能描述不准确",
+      "type": "clarity",
+      "priority": "high",
+      "confidence": 85,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "ambiguous-terms",
+          "description": "避免使用模糊术语",
+          "check": "检查'可能'、'大概'、'某些'等模糊用词"
+        },
+        {
+          "name": "precise-description",
+          "description": "功能描述应精确",
+          "check": "描述应明确说明行为、输入、输出"
+        },
+        {
+          "name": "behavior-clarity",
+          "description": "行为描述应清晰",
+          "check": "边界条件和特殊情况应明确说明"
+        }
+      ],
+      "ambiguousPatterns": [
+        {
+          "pattern": "某些情况",
+          "suggestion": "明确列出具体情况"
+        },
+        {
+          "pattern": "可能会",
+          "suggestion": "明确说明触发条件"
+        },
+        {
+          "pattern": "大概",
+          "suggestion": "给出精确值或范围"
+        },
+        {
+          "pattern": "等等|...",
+          "suggestion": "完整列举所有项"
+        }
+      ],
+      "message": "文档描述存在模糊或不准确的表达",
+      "suggestedFix": "使用精确的术语，明确边界条件和具体行为"
+    },
+    {
+      "id": "clarity-003",
+      "name": "missing-related-links",
+      "description": "关联文档链接缺失",
+      "type": "clarity",
+      "priority": "medium",
+      "confidence": 75,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "concept-link",
+          "description": "提及的概念应有链接",
+          "check": "首次提及的技术概念应链接到详细文档"
+        },
+        {
+          "name": "api-reference-link",
+          "description": "API应有引用链接",
+          "check": "提到的API应链接到API参考文档"
+        },
+        {
+          "name": "guide-reference-link",
+          "description": "相关指南应有链接",
+          "check": "应链接到相关的开发指南"
+        }
+      ],
+      "linkPatterns": {
+        "required": [
+          {
+            "concept": "UIAbility",
+            "pattern": "\\[UIAbility\\]\\([^)]+\\)"
+          },
+          {
+            "concept": "AbilityStage",
+            "pattern": "\\[AbilityStage\\]\\([^)]+\\)"
+          },
+          {
+            "concept": "Context",
+            "pattern": "\\[Context\\]\\([^)]+\\)"
+          }
+        ]
+      },
+      "message": "文档缺少必要的关联文档链接",
+      "suggestedFix": "为提及的技术概念和API添加超链接"
+    },
+    {
+      "id": "clarity-004",
+      "name": "mechanism-explanation-missing",
+      "description": "机制原理说明缺失",
+      "type": "clarity",
+      "priority": "medium",
+      "confidence": 70,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "how-it-works",
+          "description": "应说明工作原理",
+          "check": "复杂功能应解释其工作机制"
+        },
+        {
+          "name": "lifecycle-explanation",
+          "description": "生命周期应详细说明",
+          "check": "涉及生命周期的应说明触发时机和顺序"
+        },
+        {
+          "name": "architecture-diagram",
+          "description": "架构应有示意图",
+          "check": "复杂架构建议提供示意图"
+        }
+      ],
+      "requiredSections": {
+        "complexFeature": ["工作原理", "机制说明", "时序图", "架构图"],
+        "lifecycle": ["生命周期", "状态流转", "回调时机"]
+      },
+      "keywords": {
+        "mechanism": ["原理", "机制", "如何工作", "内部实现"],
+        "lifecycle": ["生命周期", "状态", "回调", "触发"]
+      },
+      "message": "文档缺少机制原理说明，开发者难以理解内部工作原理",
+      "suggestedFix": "添加'工作原理'或'机制说明'章节，必要时提供示意图"
+    },
+    {
+      "id": "clarity-005",
+      "name": "terminology-consistency",
+      "description": "术语使用一致性",
+      "type": "clarity",
+      "priority": "medium",
+      "confidence": 80,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "term-unification",
+          "description": "同一术语应统一使用",
+          "check": "同一概念应使用统一术语，避免混用"
+        },
+        {
+          "name": "abbreviation-clarity",
+          "description": "缩写应明确说明",
+          "check": "首次使用的缩写应给出全称"
+        }
+      ],
+      "termMappings": {
+        "UIAbility": ["UIability", "uiability", "UiAbility"],
+        "AbilityStage": ["Abilitystage", "abilityStage"],
+        "ExtensionAbility": ["Extensionability", "extensionAbility"]
+      },
+      "message": "文档中术语使用不一致，可能造成理解困惑",
+      "suggestedFix": "统一术语使用，首次使用缩写时给出全称"
+    }
+  ]
+}

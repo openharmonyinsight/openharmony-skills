@@ -1,0 +1,106 @@
+{
+  "version": "1.0.0",
+  "description": "资源易找性检查规则 - 确保开发者能快速找到所需信息",
+  "category": "资源易找性",
+  "rules": [
+    {
+      "id": "findability-001",
+      "name": "keyword-accuracy",
+      "description": "描述关键字不准确",
+      "type": "findability",
+      "priority": "high",
+      "confidence": 80,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "title-keyword-match",
+          "description": "文档标题应与内容关键词匹配",
+          "check": "验证文档标题中的技术术语是否在正文中得到解释"
+        },
+        {
+          "name": "search-keyword-presence",
+          "description": "常用搜索关键词应出现在文档中",
+          "check": "检查常见开发者搜索词是否被覆盖"
+        }
+      ],
+      "indicators": {
+        "badPatterns": [
+          "标题使用'高级用法'但内容仅包含基础示例",
+          "标题包含'完整指南'但缺少关键步骤",
+          "使用模糊术语如'某些场景'而不具体说明"
+        ],
+        "goodPatterns": [
+          "标题与内容高度相关",
+          "包含具体的技术关键词",
+          "使用开发者常用的搜索术语"
+        ]
+      },
+      "message": "文档描述关键字可能不够准确，影响开发者搜索和定位",
+      "suggestedFix": "优化标题和摘要，确保包含准确的技术关键词"
+    },
+    {
+      "id": "findability-002",
+      "name": "external-reference-completeness",
+      "description": "官网资料缺失，分散在其他渠道",
+      "type": "findability",
+      "priority": "medium",
+      "confidence": 75,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "internal-link-first",
+          "description": "优先引用官方文档内部链接",
+          "check": "检查是否优先使用相对路径链接到官方文档"
+        },
+        {
+          "name": "external-link-warning",
+          "description": "外部链接应明确标识",
+          "check": "链接到非官方渠道时应给出说明"
+        }
+      ],
+      "validation": {
+        "preferredDomains": [
+          "developer.huawei.com",
+          "gitee.com/openharmony",
+          "gitcode.com/openharmony"
+        ],
+        "warningPatterns": [
+          {
+            "pattern": "https://(?!developer\\.huawei\\.com|gitee\\.com/openharmony|gitcode\\.com/openharmony)",
+            "level": "warning",
+            "message": "使用了非官方渠道链接，建议优先使用官方文档"
+          }
+        ]
+      },
+      "message": "文档引用了外部渠道资料，可能影响信息的权威性和可维护性",
+      "suggestedFix": "优先整理到官方文档，或使用官方文档链接"
+    },
+    {
+      "id": "findability-003",
+      "name": "document-discoverability",
+      "description": "文档可发现性检查",
+      "type": "findability",
+      "priority": "medium",
+      "confidence": 70,
+      "enabled": true,
+      "checkPoints": [
+        {
+          "name": "related-links-section",
+          "description": "应有关联文档/相关链接章节",
+          "check": "检查文档末尾是否有相关链接或参见章节"
+        },
+        {
+          "name": "cross-reference-completeness",
+          "description": "交叉引用应完整",
+          "check": "检查引用的其他文档链接是否有效"
+        }
+      ],
+      "indicators": {
+        "shouldHaveSections": ["相关文档", "参见", "参考", "Related"],
+        "shouldHaveLinks": true
+      },
+      "message": "文档可能缺少相关链接章节，影响信息发现的完整性",
+      "suggestedFix": "在文档末尾添加'相关文档'或'参见'章节，列出关联资源"
+    }
+  ]
+}

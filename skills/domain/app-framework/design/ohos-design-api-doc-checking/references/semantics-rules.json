@@ -1,0 +1,144 @@
+{
+  "version": "1.0.0",
+  "description": "示例代码语义检查规则",
+  "rules": [
+    {
+      "id": "semantics-001",
+      "name": "bundlename-placeholder-clarity",
+      "description": "bundleName 使用示例特定值但未说明需替换",
+      "type": "semantics",
+      "priority": "medium",
+      "confidence": 80,
+      "enabled": true,
+      "extraction": {
+        "targetPattern": {
+          "type": "property-assignment",
+          "property": "bundleName",
+          "pattern": "bundleName\\s*[:=]\\s*['\"]([^'\"]+)['\"]"
+        }
+      },
+      "validation": {
+        "type": "placeholder-check",
+        "expectedPlaceholders": [
+          "com.example.your-bundle-name",
+          "com.example.yourbundlename",
+          "your.bundle.name",
+          "com.example.application"
+        ],
+        "badExamples": [
+          "com.ohos.intentexecutedemo",
+          "com.ohos.demo",
+          "com.example.demo",
+          "com.test.app",
+          "com.mycompany.myapp"
+        ],
+        "requireExplanation": true
+      },
+      "message": "bundleName 使用了示例特定值，但未说明开发者需要替换",
+      "explanation": "示例代码中的 bundleName 应为占位符形式或附带注释说明需要替换，否则开发者可能直接复制导致功能异常",
+      "suggestedFix": "将 bundleName 改为 'com.example.your-bundle-name' 或在代码注释中添加 '// 请替换为您的实际 bundleName'",
+      "examples": {
+        "bad": [
+          {
+            "code": "bundleName: 'com.ohos.intentExecuteDemo'",
+            "problem": "使用了示例特定的 bundleName，无替换说明"
+          }
+        ],
+        "good": [
+          {
+            "code": "bundleName: 'com.example.your-bundle-name', // 请替换为您的实际 bundleName",
+            "solution": "使用占位符并添加注释说明"
+          },
+          {
+            "code": "bundleName: 'com.example.myapplication'",
+            "context": "// 在示例说明中明确提示：请将 bundleName 替换为您的实际应用包名",
+            "solution": "文档中明确说明需要替换"
+          }
+        ]
+      }
+    },
+    {
+      "id": "semantics-002",
+      "name": "abilityname-unclear",
+      "description": "abilityName 使用固定值但未说明可根据实际修改",
+      "type": "semantics",
+      "priority": "low",
+      "confidence": 70,
+      "enabled": true,
+      "extraction": {
+        "targetPattern": {
+          "type": "property-assignment",
+          "property": "abilityName",
+          "pattern": "abilityName\\s*[:=]\\s*['\"]([^'\"]+)['\"]"
+        }
+      },
+      "validation": {
+        "type": "placeholder-check",
+        "commonValues": ["EntryAbility", "MainAbility", "UIAbility"],
+        "requireNote": true
+      },
+      "message": "abilityName 使用了固定值，建议说明开发者应根据实际修改",
+      "explanation": "不同工程的 Ability 名称可能不同，示例中应说明此值需要根据实际工程结构调整",
+      "suggestedFix": "在代码注释中添加 '// 请替换为您实际的 Ability 名称'"
+    },
+    {
+      "id": "semantics-003",
+      "name": "hardcoded-values-missing-note",
+      "description": "硬编码值缺少替换说明",
+      "type": "semantics",
+      "priority": "medium",
+      "confidence": 75,
+      "enabled": true,
+      "extraction": {
+        "targetPatterns": [
+          {
+            "property": "moduleName",
+            "pattern": "moduleName\\s*[:=]\\s*['\"]([^'\"]+)['\"]",
+            "isPlaceholder": ["entry", "feature"]
+          },
+          {
+            "property": "abilityStageName",
+            "pattern": "(?:abilityStage|stage)\\s*[:=]\\s*['\"]([^'\"]+)['\"]",
+            "isPlaceholder": []
+          },
+          {
+            "property": "packageName",
+            "pattern": "packageName\\s*[:=]\\s*['\"]([^'\"]+)['\"]",
+            "isPlaceholder": ["com.example"]
+          }
+        ]
+      },
+      "validation": {
+        "type": "context-check",
+        "checkSurroundingText": 200,
+        "explanationKeywords": ["替换", "修改", "实际", "your", "替换为", "根据", "please replace", "change to"]
+      },
+      "message": "示例代码中的 '{property}' 使用了固定值，但未说明需要根据实际替换",
+      "explanation": "示例代码中的关键配置值应明确告知开发者需要根据实际情况替换",
+      "suggestedFix": "在代码注释或文档中说明此值需要根据实际工程配置修改"
+    },
+    {
+      "id": "semantics-004",
+      "name": "magic-number-missing-explanation",
+      "description": "魔法数字缺少说明",
+      "type": "semantics",
+      "priority": "low",
+      "confidence": 60,
+      "enabled": false,
+      "extraction": {
+        "targetPattern": {
+          "type": "magic-number",
+          "pattern": "(?<!\\w)(\\d{3,})(?!\\w)",
+          "exclude": [0, 1, 100]
+        }
+      },
+      "validation": {
+        "type": "context-check",
+        "checkSurroundingText": 150,
+        "explanationKeywords": ["表示", "单位", "毫秒", "秒", "像素", "代表", "means", "represents"]
+      },
+      "message": "示例代码中的数字 '{number}' 可能缺少解释",
+      "explanation": "示例代码中的非0/1数字应说明其含义和单位，提高代码可读性"
+    }
+  ]
+}
