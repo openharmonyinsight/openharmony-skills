@@ -1,0 +1,251 @@
+{
+  "skill_name": "ohos-dev-appmgr-api-generator",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "generate-void-api-with-scalar-params",
+      "prompt": "API: ClearData / void / int32_t pid, const std::string& bundleName",
+      "expected_output": "12 snippets; void uses PARCEL_UTIL_WRITE_NORET and PARCEL_UTIL_SENDREQ_NORET; WriteInt32 for int32_t, WriteString16 for string; Stub reads with bool-form ReadInt32/ReadString16 and returns ERR_INVALID_VALUE on failure; reply is not read (void).",
+      "files": [],
+      "assertions": [
+        {"name": "generates-12-snippets", "type": "regex", "pattern": "12"},
+        {"name": "void-uses-noret-write", "type": "regex", "pattern": "PARCEL_UTIL_WRITE_NORET", "snippet": "proxy_cpp"},
+        {"name": "void-uses-noret-sendreq", "type": "regex", "pattern": "PARCEL_UTIL_SENDREQ_NORET", "snippet": "proxy_cpp"},
+        {"name": "int32-param-write-tag", "type": "regex", "pattern": "WRITE_NORET.*Int32", "note": "void API int32_t param uses macro with Int32 tag", "snippet": "proxy_cpp"},
+        {"name": "string-param-write-tag", "type": "regex", "pattern": "WRITE_NORET.*String16", "note": "void API string param uses macro with String16 tag", "snippet": "proxy_cpp"},
+        {"name": "stub-reads-validated", "type": "regex", "pattern": "if \\(!data\\.Read", "snippet": "stub_cpp"},
+        {"name": "stub-returns-err-invalid-value", "type": "regex", "pattern": "return ERR_INVALID_VALUE", "snippet": "stub_cpp"},
+        {"name": "no-reply-read-for-void", "type": "not_regex", "pattern": "reply\\.Read", "note": "void API should not read a reply", "snippet": "proxy_cpp"}
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "generate-int32-api-with-sptr-broker-param",
+      "prompt": "API: RegisterObserver / int32_t / const sptr<IConfigurationObserver>& observer",
+      "expected_output": "12 snippets; int32_t uses _RET_INT macros; broker sptr uses ->AsObject(); null guard before dereference; Stub uses iface_cast and null-checks.",
+      "files": [],
+      "assertions": [
+        {"name": "int32-uses-ret-int-write", "type": "regex", "pattern": "PARCEL_UTIL_WRITE_RET_INT", "snippet": "proxy_cpp"},
+        {"name": "int32-uses-ret-int-sendreq", "type": "regex", "pattern": "PARCEL_UTIL_SENDREQ_RET_INT", "snippet": "proxy_cpp"},
+        {"name": "broker-uses-asobject", "type": "regex", "pattern": "observer->AsObject\\(\\)", "snippet": "proxy_cpp"},
+        {"name": "proxy-null-guard", "type": "regex", "pattern": "if \\(!observer\\)", "snippet": "proxy_cpp"},
+        {"name": "stub-iface-cast", "type": "regex", "pattern": "iface_cast<IConfigurationObserver>", "snippet": "stub_cpp"},
+        {"name": "stub-null-check", "type": "regex", "pattern": "if \\(!observer\\)", "snippet": "stub_cpp"},
+        {"name": "reply-read-int32-validated", "type": "regex", "pattern": "if \\(!reply\\.ReadInt32\\(ret\\)\\)", "snippet": "proxy_cpp"}
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "generate-bool-api-with-explicit-write",
+      "prompt": "API: IsPluginEnabled / bool / const std::string& pluginName, int32_t flag",
+      "expected_output": "12 snippets; bool uses explicit data.WriteBool / data.WriteString16 (not _RET_INT); SendRequest wrapper used; reply ReadBool validated.",
+      "files": [],
+      "assertions": [
+        {"name": "explicit-write-for-bool-return", "type": "regex", "pattern": "data\\.Write(String16|Int32)", "note": "bool return type uses explicit data.WriteXxx for params (not _RET_INT macro)", "snippet": "proxy_cpp"},
+        {"name": "no-ret-int-for-bool", "type": "not_regex", "pattern": "PARCEL_UTIL_WRITE_RET_INT", "note": "bool should not use _RET_INT macro", "snippet": "proxy_cpp"},
+        {"name": "sendrequest-wrapper", "type": "regex", "pattern": "int32_t errCode = SendRequest", "snippet": "proxy_cpp"},
+        {"name": "reply-read-bool-validated", "type": "regex", "pattern": "if \\(!reply\\.ReadBool\\(ret\\)\\)", "snippet": "proxy_cpp"},
+        {"name": "bool-error-return-false", "type": "regex", "pattern": "return false;", "snippet": "proxy_cpp"}
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "generate-appmgr-resultcode-transport-int32",
+      "prompt": "API: ClearUpApplicationData / AppMgrResultCode / no params",
+      "expected_output": "Client returns AppMgrResultCode and maps int32_t; IAppMgr/Proxy/Service/ServiceInner/Stub all use int32_t transport; Stub writes WriteInt32(result).",
+      "files": [],
+      "assertions": [
+        {"name": "client-returns-enum", "type": "regex", "pattern": "AppMgrResultCode AppMgrClient::ClearUpApplicationData", "snippet": "client_cpp"},
+        {"name": "client-maps-int32", "type": "regex", "pattern": "int32_t result = service->", "snippet": "client_cpp"},
+        {"name": "proxy-uses-int32-transport", "type": "regex", "pattern": "int32_t AppMgrProxy::ClearUpApplicationData", "snippet": "proxy_cpp"},
+        {"name": "stub-writes-int32", "type": "regex", "pattern": "WriteInt32\\(_stub_result\\)", "snippet": "stub_cpp"},
+        {"name": "no-enum-cast-in-stub", "type": "not_regex", "pattern": "static_cast<int32_t>", "note": "result is already int32_t, no enum cast needed", "snippet": "stub_cpp"},
+        {"name": "ret-int-macro-for-transport", "type": "regex", "pattern": "PARCEL_UTIL_SENDREQ_RET_INT", "snippet": "proxy_cpp"}
+      ]
+    },
+    {
+      "id": 5,
+      "eval_name": "generate-async-api-forces-void",
+      "prompt": "API: NotifyStateChange / bool / async=y / no params",
+      "expected_output": "Return type forced to void; uses TF_ASYNC; no reply read; _NORET macros used.",
+      "files": [],
+      "assertions": [
+        {"name": "forced-to-void", "type": "regex", "pattern": "void AppMgrProxy::NotifyStateChange", "snippet": "proxy_cpp"},
+        {"name": "uses-tf-async", "type": "regex", "pattern": "TF_ASYNC", "snippet": "proxy_cpp"},
+        {"name": "uses-noret-sendreq", "type": "regex", "pattern": "PARCEL_UTIL_SENDREQ_NORET", "snippet": "proxy_cpp"},
+        {"name": "no-reply-read", "type": "not_regex", "pattern": "reply\\.Read", "note": "async has no reply to read", "snippet": "proxy_cpp"}
+      ]
+    },
+    {
+      "id": 6,
+      "eval_name": "generate-std-string-api",
+      "prompt": "API: GetBundleName / std::string / int32_t uid",
+      "expected_output": "12 snippets; std::string uses explicit WriteString16/ReadString16; SendRequest wrapper; reply ReadString16 validated; error return empty string.",
+      "files": [],
+      "assertions": [
+        {"name": "string-param-explicit-write", "type": "regex", "pattern": "data\\.WriteInt32", "note": "std::string return type uses explicit data.WriteInt32 for int32_t param (not _RET_INT macro)", "snippet": "proxy_cpp"},
+        {"name": "sendrequest-wrapper", "type": "regex", "pattern": "int32_t errCode = SendRequest", "snippet": "proxy_cpp"},
+        {"name": "reply-read-string16-validated", "type": "regex", "pattern": "if \\(!reply\\.ReadString16\\(ret16\\)\\)", "snippet": "proxy_cpp"},
+        {"name": "string-error-empty", "type": "regex", "pattern": "return \"\";", "snippet": "proxy_cpp"},
+        {"name": "no-ret-int-for-string", "type": "not_regex", "pattern": "PARCEL_UTIL_SENDREQ_RET_INT", "snippet": "proxy_cpp"}
+      ]
+    },
+    {
+      "id": 7,
+      "eval_name": "generate-with-uint32-uint64-params",
+      "prompt": "API: GetProcessInfo / int32_t / uint32_t pid, uint64_t token",
+      "expected_output": "12 snippets; uint32_t uses WriteUint32/ReadUint32; uint64_t uses WriteUint64/ReadUint64; symmetric read/write.",
+      "files": [],
+      "assertions": [
+        {"name": "uint32-write", "type": "regex", "pattern": "Uint32", "snippet": "proxy_cpp"},
+        {"name": "uint64-write", "type": "regex", "pattern": "Uint64", "snippet": "proxy_cpp"},
+        {"name": "uint32-read-validated", "type": "regex", "pattern": "if \\(!data\\.ReadUint32\\(pid\\)\\)", "snippet": "stub_cpp"},
+        {"name": "uint64-read-validated", "type": "regex", "pattern": "if \\(!data\\.ReadUint64\\(token\\)\\)", "snippet": "stub_cpp"}
+      ]
+    },
+    {
+      "id": 8,
+      "eval_name": "generate-with-iremoteobject-sptr",
+      "prompt": "API: SetRemoteObject / void / const sptr<IRemoteObject>& obj",
+      "expected_output": "12 snippets; IRemoteObject uses GetRefPtr() (not ->AsObject()); Stub uses ReadRemoteObject directly; null-checked.",
+      "files": [],
+      "assertions": [
+        {"name": "uses-getrefptr", "type": "regex", "pattern": "obj\\.GetRefPtr\\(\\)", "snippet": "proxy_cpp"},
+        {"name": "no-asobject-for-remoteobject", "type": "not_regex", "pattern": "obj->AsObject", "note": "IRemoteObject should use GetRefPtr, not ->AsObject()", "snippet": "proxy_cpp"},
+        {"name": "stub-read-remote-object", "type": "regex", "pattern": "data\\.ReadRemoteObject\\(\\)", "snippet": "stub_cpp"},
+        {"name": "stub-null-check-remote", "type": "regex", "pattern": "if \\(!obj\\)", "snippet": "stub_cpp"}
+      ]
+    },
+    {
+      "id": 9,
+      "eval_name": "r5-f1-malformed-param-exits-nonzero",
+      "prompt": "CLI stdin: API MalformedParam / int32_t / async=n / param 'x' (1 word) / empty line",
+      "expected_output": "Exit code 1 (not 0); abort message printed; no 12-snippet generation block emitted.",
+      "files": [],
+      "assertions": [
+        {"name": "exit-nonzero", "type": "regex", "pattern": "exit_code=1"},
+        {"name": "abort-message", "type": "regex", "pattern": "Aborting"},
+        {"name": "no-generation-block", "type": "not_regex", "pattern": "=== Generated Code ===", "note": "should not reach the generation output stage"}
+      ]
+    },
+    {
+      "id": 10,
+      "eval_name": "r5-f2-namespaced-broker-accepted",
+      "prompt": "Module-level: _valid_sptr_inner('AAFwk::IUserCallback') and _valid_sptr_inner('OHOS::AAFwk::IUserCallback')",
+      "expected_output": "Both return True; namespaced brokers are accepted (was rejected before R5-F2 fix).",
+      "files": [],
+      "assertions": [
+        {"name": "aafwk-accepted", "type": "regex", "pattern": "AAFwk::IUserCallback.*True"},
+        {"name": "ohos-aafwk-accepted", "type": "regex", "pattern": "OHOS::AAFwk::IUserCallback.*True"}
+      ]
+    },
+    {
+      "id": 11,
+      "eval_name": "r5-f2-keyword-segment-rejected",
+      "prompt": "Module-level: _valid_sptr_inner('IObserver::class') and _valid_sptr_inner('int32_t')",
+      "expected_output": "Both return False; keyword segment and scalar rejected.",
+      "files": [],
+      "assertions": [
+        {"name": "keyword-segment-rejected", "type": "regex", "pattern": "IObserver::class.*False"},
+        {"name": "scalar-rejected", "type": "regex", "pattern": "int32_t.*False"}
+      ]
+    },
+    {
+      "id": 12,
+      "eval_name": "r5-f3-enum-conflict-expression-value",
+      "prompt": "Enum file with APP_DUP = 1 << 2; API name 'Dup' should be rejected as duplicate enum name.",
+      "expected_output": "generate_all raises ValueError mentioning 'already exists'; expression-valued enum name is detected.",
+      "files": [],
+      "assertions": [
+        {"name": "conflict-detected", "type": "regex", "pattern": "already exists"},
+        {"name": "no-snippets-generated", "type": "not_regex", "pattern": "client_h", "note": "should not produce any snippets on conflict"}
+      ]
+    },
+    {
+      "id": 13,
+      "eval_name": "r5-f3-enum-conflict-implicit-value",
+      "prompt": "Enum file with APP_IMPLICIT (no value); API name 'Implicit' should be rejected as duplicate.",
+      "expected_output": "generate_all raises ValueError; implicit-valued enum name is detected.",
+      "files": [],
+      "assertions": [
+        {"name": "conflict-detected", "type": "regex", "pattern": "already exists"},
+        {"name": "implicit-name-in-used-set", "type": "regex", "pattern": "APP_IMPLICIT"}
+      ]
+    },
+    {
+      "id": 14,
+      "eval_name": "r5-f4-directory-as-file-rejected",
+      "prompt": "CLI with project root where 12 target paths are directories, not files.",
+      "expected_output": "Exit code 1; 'Missing required files' message; rejected before interactive input.",
+      "files": [],
+      "assertions": [
+        {"name": "exit-nonzero", "type": "regex", "pattern": "exit_code=1"},
+        {"name": "missing-files-message", "type": "regex", "pattern": "Missing required files"}
+      ]
+    },
+    {
+      "id": 15,
+      "eval_name": "r5-f4b-file-as-project-root-rejected",
+      "prompt": "CLI with a file (not directory) as project root argument.",
+      "expected_output": "Exit code 1; 'not found' message; is_dir() check catches file-as-root.",
+      "files": [],
+      "assertions": [
+        {"name": "exit-nonzero", "type": "regex", "pattern": "exit_code=1"},
+        {"name": "not-found-message", "type": "regex", "pattern": "not found"}
+      ]
+    },
+    {
+      "id": 16,
+      "eval_name": "reject-duplicate-param-names",
+      "prompt": "Module-level: ApiInfo('Dup', 'void', [('int32_t','value'),('bool','value')]) -> validate_api_info raises ValueError.",
+      "expected_output": "ValueError mentioning 'duplicate parameter name'.",
+      "files": [],
+      "assertions": [
+        {"name": "duplicate-rejected", "type": "regex", "pattern": "duplicate parameter name"}
+      ]
+    },
+    {
+      "id": 17,
+      "eval_name": "reject-cpp-keyword-as-api-name",
+      "prompt": "Module-level: ApiInfo('class', 'void', []) -> validate_api_info raises ValueError.",
+      "expected_output": "ValueError mentioning 'must not be a C++ keyword'.",
+      "files": [],
+      "assertions": [
+        {"name": "keyword-rejected", "type": "regex", "pattern": "C\\+\\+ keyword"}
+      ]
+    },
+    {
+      "id": 18,
+      "eval_name": "reject-unsupported-vector-param",
+      "prompt": "Module-level: ApiInfo('VecApi', 'void', [('std::vector<int32_t>','values')]) -> validate_api_info raises ValueError.",
+      "expected_output": "ValueError mentioning 'unsupported parameter type'.",
+      "files": [],
+      "assertions": [
+        {"name": "vector-rejected", "type": "regex", "pattern": "unsupported parameter type"}
+      ]
+    },
+    {
+      "id": 19,
+      "eval_name": "reject-non-broker-sptr",
+      "prompt": "Module-level: ApiInfo('BadSptr', 'void', [('sptr<int32_t>','val')]) -> validate_api_info raises ValueError.",
+      "expected_output": "ValueError mentioning 'unsupported parameter type'; sptr<int32_t> rejected (int has no AsObject()).",
+      "files": [],
+      "assertions": [
+        {"name": "non-broker-sptr-rejected", "type": "regex", "pattern": "unsupported parameter type"}
+      ]
+    },
+    {
+      "id": 20,
+      "eval_name": "generate-namespaced-broker-full-chain",
+      "prompt": "API: RegisterCallback / void / const sptr<AAFwk::IUserCallback>& callback",
+      "expected_output": "12 snippets; AAFwk::IUserCallback accepted as valid broker; Proxy uses ->AsObject(); Stub uses iface_cast<AAFwk::IUserCallback>.",
+      "files": [],
+      "assertions": [
+        {"name": "generates-12-snippets", "type": "regex", "pattern": "12"},
+        {"name": "proxy-uses-asobject", "type": "regex", "pattern": "callback->AsObject\\(\\)", "snippet": "proxy_cpp"},
+        {"name": "stub-iface-cast-namespaced", "type": "regex", "pattern": "iface_cast<AAFwk::IUserCallback>", "snippet": "stub_cpp"},
+        {"name": "null-guard-present", "type": "regex", "pattern": "if \\(!callback\\)", "snippet": "proxy_cpp"}
+      ]
+    }
+  ]
+}

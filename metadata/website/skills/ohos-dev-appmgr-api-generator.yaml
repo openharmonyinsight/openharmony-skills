@@ -1,0 +1,76 @@
+schemaVersion: 1
+
+id: ohos-dev-appmgr-api-generator
+title: AppMgr API 生成器
+summary: 为 app_manager 服务新增 IPC 接口时，一次性生成从 AppMgrClient 到 AppMgrServiceInner 的完整调用链（client/proxy/interface/stub/service/service_inner 共 12 个文件的代码片段），遵循 ability_runtime 现有 AppMgr 代码模式与封送约定。
+
+category:
+  scope: domain
+  namespace: app-framework
+  stage: development
+  domain: app-framework
+  capability: appmgr-api-generator
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - appmgr
+  - ipc
+  - ability-runtime
+  - api-generator
+  - codegen
+
+audience:
+  - ability_runtime / app_manager 子系统开发者
+  - 需要新增 AppMgr IPC 接口的工程师
+  - 代码生成与脚手架维护人员
+
+useCases:
+  - title: 新增 AppMgr IPC 接口
+    description: 提供 API 名、返回类型、参数列表后，生成 client.h/.cpp、ipc_interface_code.h、proxy.h/.cpp、interface.h、stub.h/.cpp、service.h/.cpp、service_inner.h/.cpp 共 12 个文件的待粘贴代码片段。
+  - title: 推荐下一个可用 IPC code
+    description: 扫描现有 AppMgrInterfaceCode 枚举，建议未被占用的下一个 code 值，避免与已用值冲突。
+  - title: 按返回类型选择正确的封送宏
+    description: 根据 void/int32_t/AppMgrResultCode/bool/std::string 自动选择 _NORET/_RET_INT/显式 Write+SendRequest 封装，并生成校验过的 parcel 读写与 sptr null guard。
+
+whenToUse:
+  - 为 app_manager 服务新增 IPC 接口并希望端到端生成调用链
+  - 需要 AppMgr 风格的 Handle* Stub 分发与 OnRemoteRequestInnerN 接入指引
+  - 想快速得到类型安全、可编译的 client/proxy/stub 骨架代码
+
+whenNotToUse:
+  - 修改非 app_manager 子系统的 IPC 接口（本生成器仅建模 AppMgr 路径与宏）
+  - 需要 Parcelable（AAFwk::Want、Configuration）或 std::vector<T> 参数封送（生成器显式拒绝，需手工补齐）
+  - 仅做单文件小改、不涉及整条调用链
+
+inputs:
+  required:
+    - API 名（camelCase，如 GetConfiguration）
+    - 返回类型（AppMgrResultCode | int32_t | void | bool | std::string）
+    - 参数列表（<type> <name>，支持 string/int32_t/uint32_t/uint64_t/bool/sptr<IRemoteObject>/sptr<IXxx broker>）
+  optional:
+    - async IPC 标志（TF_ASYNC 仅用于 void 单向通知）
+    - ability_runtime 工程根目录（用于读取现有枚举、计算下一个 IPC code）
+
+outputs:
+  - 12 个文件的待粘贴代码片段（含目标路径与插入指引）
+  - 下一个可用 AppMgrInterfaceCode 值
+  - Stub 的 case 标签、Handle 声明与 Handle 方法定义三件套
+
+quickStart:
+  steps:
+    - 准备 API 签名（名、返回类型、参数、是否 async）。
+    - 运行 scripts/generate_appmgr_api.py <ability_runtime_root> 生成全部片段。
+    - 按 references/files.md 的路径与插入点把片段贴入对应文件。
+    - 在 app_mgr_service_inner.cpp 中补全 // TODO 标记的业务逻辑。
+  examplePrompt: |
+    请使用 ohos-dev-appmgr-api-generator 为 app_manager 新增接口 GetConfiguration：
+    返回 AppMgrResultCode，参数 const std::string& bundleName，同步 IPC。
+    生成 12 个文件片段并给出下一个可用 IPC code。
+
+related:
+  skills: []
+  docs: []
