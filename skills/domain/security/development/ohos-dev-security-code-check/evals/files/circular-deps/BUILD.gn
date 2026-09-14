@@ -1,0 +1,30 @@
+# GN build file for circular-deps fixture.
+# Declares include_dirs so the scanner can resolve cross-module includes.
+# include_dirs = ["."] allows #include "module_a/header_a.h" and "module_b/header_b.h" to resolve.
+
+import("//build/ohos.gni")
+
+module_a_dir = "module_a"
+module_b_dir = "module_b"
+
+ohos_source_module("module_a") {
+  sources = [
+    "module_a/source_a.cpp",
+  ]
+  include_dirs = [
+    ".",
+    "module_a",
+    "module_b",
+  ]
+}
+
+ohos_source_module("module_b") {
+  sources = [
+    "module_b/source_b.cpp",
+  ]
+  include_dirs = [
+    ".",
+    "module_a",
+    "module_b",
+  ]
+}

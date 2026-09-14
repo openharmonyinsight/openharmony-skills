@@ -1,0 +1,83 @@
+schemaVersion: 1
+
+id: ohos-ci-security-gitcode-pr
+title: GitCode PR 提交流程
+summary: 完成 OpenHarmony 仓库的 GitCode PR 提交，含智能远端识别、issue 创建、fork 推送与跨仓 PR 创建及 issue 关联。
+
+category:
+  scope: domain
+  namespace: security
+  stage: cicd
+  domain: security
+  capability: gitcode-pr
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - security
+  - gitcode-pr
+  - cicd
+  - pr-workflow
+
+audience:
+  - OpenHarmony 仓库贡献者
+  - GitCode fork/PR 提交流程使用者
+  - 跨仓 issue-PR 关联维护者
+
+useCases:
+  - title: 识别上游与 fork 远端
+    description: 解析 git remote 列表，按 owner 区分 openharmony 上游与个人 fork，处理多远端歧义。
+  - title: 创建 issue 并提交 PR
+    description: 加载 issue 模板生成 issue，推送 fork 分支，再基于上游 PR 模板创建跨仓 PR 并关联 issue。
+  - title: 幂等提交
+    description: 先检查同名分支 PR 是否已存在，已存在则只推送不重复创建。
+
+whenToUse:
+  - 用户要求向 OpenHarmony 仓库提交、创建 PR 或推送改动。
+  - 需要识别 GitCode 上游与 fork 远端并完成跨仓 PR。
+  - 需要创建 issue 并在 PR 中通过 #number 关联。
+
+whenNotToUse:
+  - 只在本地做代码评审而不涉及 GitCode PR 提交。
+  - 目标平台是 GitHub、Gitee Web 或其他非 GitCode 平台。
+  - 缺少 gitcode mcp 且无法配置时的纯本地操作。
+
+inputs:
+  required:
+    - 本地 OpenHarmony 仓库工作区（含已提交改动）
+    - 可用的 gitcode mcp 与访问令牌
+  optional:
+    - 目标分支名（默认当前分支）
+    - 上游/fork 远端名（可自动识别）
+    - PR 模板路径（默认 .gitee/PULL_REQUEST_TEMPLATE.zh-CN.md）
+
+outputs:
+  - 创建的 issue 编号与链接
+  - 推送到 fork 的分支结果
+  - 创建的 PR 链接（head 为 fork-owner:branch，base 为上游目标分支）
+  - 远端识别与决策过程说明
+
+quickStart:
+  steps:
+    - 在本地仓库完成改动提交，确认 git status 干净。
+    - 确认 gitcode mcp 可用且令牌已配置。
+    - 请求 Agent 执行 PR 提交流程（自动识别远端、建 issue、推送 fork、创建 PR）。
+  examplePrompt: |
+    请使用 ohos-ci-security-gitcode-pr 把当前分支的改动提交为 PR：
+    先识别上游和 fork 远端，创建 issue，推送 fork，再用上游 PR 模板创建跨仓 PR 并关联 issue。
+
+related:
+  skills:
+    - ohos-ci-gitcode-cli-usage
+  docs:
+    - title: issue 模板
+      path: references/issue_template.md
+
+extractionNotes:
+  confidence: high
+  missing: []
+  comments:
+    - 由 main 分支 gitcode-pr 迁入 security 领域并重命名，能力保持 GitCode PR 提交流程不变。
