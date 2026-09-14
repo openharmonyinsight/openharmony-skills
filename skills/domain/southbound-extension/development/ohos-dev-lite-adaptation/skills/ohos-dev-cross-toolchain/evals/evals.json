@@ -1,0 +1,58 @@
+{
+  "skill_name": "ohos-dev-cross-toolchain",
+  "evals": [
+    {
+      "id": "cross_toolchain_auto_detect_and_verify",
+      "source_example": "SKILL.md 方法论（auto 模式 PATH 探测 + 测试编译校验；探测记录 prefix/path/version）。环境样例取自 L0 RISC-V 常见 riscv32-unknown-elf- 前缀与 L1 musl arm 前缀",
+      "prompt": "我在做一块 RISC-V L0 板子（rv32imac，LiteOS-M）的 OpenHarmony 适配，工具链没特殊要求，环境 PATH 里应该有编译器。请帮我探测并配置工具链，写入 workflow_config.yaml 的 toolchain 块。环境实测：\n\n```text\n$ which riscv32-unknown-elf-gcc\n/opt/gcc-riscv32/bin/riscv32-unknown-elf-gcc\n$ riscv32-unknown-elf-gcc --version\nriscv32-unknown-elf-gcc (GCC) 13.2.0\n$ echo 'int main(){return 0;}' | riscv32-unknown-elf-gcc -x c -march=rv32imac - -o /dev/null && echo COMPILE_OK\nCOMPILE_OK\n```\n\n只输出该写的 toolchain 配置块和校验结论。",
+      "expected_output": "auto 模式命中：mode=auto, prefix=riscv32-unknown-elf-, path=/opt/gcc-riscv32/bin, version=13.2.0；校验结论包含测试编译通过（不止 --version）。",
+      "files": [],
+      "expectations": [
+        "Selects/resolves mode auto and records the detected prefix riscv32-unknown-elf- with path /opt/gcc-riscv32/bin.",
+        "Records version 13.2.0 from the --version output into the config.",
+        "The verification conclusion cites the test compilation (int main compile with -march=rv32imac succeeded), not merely --version as proof of usability.",
+        "Outputs a well-formed toolchain YAML block matching the workflow_config schema (mode/prefix/path/version/special_flags fields present)."
+      ]
+    },
+    {
+      "id": "user_mode_prefix_path_config_generation",
+      "source_example": "SKILL.md 配置位置 yaml 模板（mode=user：prefix/path 填法 + special_flags）+ L1 musl 工具链真实样例（arm-openeuler-linux-musleabi-，Hi3516CV610_L1_适配指南.md §2.2 记载 /opt/openeuler_gcc_arm32le-musl/bin/arm-openeuler-linux-musleabi-gcc）",
+      "prompt": "我要用自己的工具链编译 L1 小型系统（Cortex-A7，musl libc），不用环境 PATH 里的。工具链信息：gcc 全路径 /opt/openeuler_gcc_arm32le-musl/bin/arm-openeuler-linux-musleabi-gcc，测试编译已确认可用。请生成 workflow_config.yaml 的 toolchain: 配置块（该拆的前缀/路径拆对）。",
+      "expected_output": "mode=user, prefix=arm-openeuler-linux-musleabi-, path=/opt/openeuler_gcc_arm32le-musl/bin 的 YAML 块。",
+      "files": [],
+      "expectations": [
+        "Sets mode to user (not auto), since the user explicitly provides their own toolchain.",
+        "Splits the full gcc path correctly: prefix arm-openeuler-linux-musleabi- (with trailing dash) and path /opt/openeuler_gcc_arm32le-musl/bin.",
+        "The config block contains the schema fields (mode/prefix/path/version/special_flags at minimum).",
+        "Does not drop or mutate the musleabi prefix spelling (no arm-linux-gnueabi- or similar fabrication)."
+      ]
+    },
+    {
+      "id": "version_incompatibility_zicsr_detection_wrapper_fix",
+      "source_example": "SKILL.md wrapper 模式设计依据：prebuilt GCC 不把 zicsr 暴露进默认 march，编 rv32imac 目标报 unrecognized 指令（csrr 等）→ wrapper 注入 -march=rv32imac_zicsr（compiler_fix_playbook §4 recipe）",
+      "prompt": "编译 RISC-V L0 固件时报错。工具链版本和报错如下：\n\n```text\n$ riscv32-unknown-elf-gcc --version\nriscv32-unknown-elf-gcc (GCC) 10.4.0\n$ riscv32-unknown-elf-gcc -x c -c test.c -o test.o\ntest.c: In function 'read_cycle':\ntest.c:3:5: error: unrecognized opcode 'csrr', extension 'zicsr' or 'zifencei' required\n```\n\n这是怎么回事？该怎么在 workflow_config.yaml 层面修（不想改源码也不想升级工具链）？",
+      "expected_output": "版本不兼容检出：GCC 10.x 起 CSR 指令从基础指令集 I 拆出到独立扩展 zicsr，prebuilt 默认 march=rv32imac 不含 zicsr → csrr 编不过。修法：wrapper 模式——生成 wrapper 脚本 exec 原 gcc 时追加 -march=rv32imac_zicsr，config 填 mode=wrapper + special_flags=[\"-march=rv32imac_zicsr\"] + wrapper 路径。",
+      "files": [],
+      "expectations": [
+        "Identifies the root cause as a toolchain/instruction-set version incompatibility: CSR instructions moved to the separate zicsr extension (split from base I in newer ISA specs), and the default -march=rv32imac of this prebuilt does not include it.",
+        "Does not propose editing the source code or hand-writing raw opcode as the primary fix.",
+        "Proposes the wrapper solution: a shell script exec-ing the original gcc with the appended flag -march=rv32imac_zicsr (or equivalent zicsr-including march).",
+        "Gives the corresponding config: mode=wrapper, special_flags containing the march extension, wrapper path recorded in the toolchain block.",
+        "Mentions verifying with a test compilation through the wrapper afterwards."
+      ]
+    },
+    {
+      "id": "no_toolchain_found_install_guidance_not_silent_substitute",
+      "source_example": "SKILL.md 禁止操作表（探测不到不静默换本机 gcc）+ Exceptions 表（PATH 无交叉 gcc → 引导安装/转 user 模式问用户）",
+      "prompt": "帮我的 L0 Cortex-M 板子配置工具链。实测环境：\n\n```text\n$ which arm-none-eabi-gcc\n(not found)\n$ which riscv32-unknown-elf-gcc\n(not found)\n$ which gcc\n/usr/bin/gcc\n$ gcc --version\ngcc (Ubuntu 11.4.0) 11.4.0\n```\n\nPATH 里只有本机 gcc。怎么配？",
+      "expected_output": "不把本机 gcc 当交叉工具链配置——告知缺 arm-none-eabi 交叉工具链，引导安装（或问用户有无现成工具链路径转 user 模式）。",
+      "files": [],
+      "expectations": [
+        "Does NOT configure the host /usr/bin/gcc as the cross toolchain (it cannot emit ARM Cortex-M targets).",
+        "Explicitly reports that no arm-none-eabi cross toolchain was found in PATH.",
+        "Offers the two fallback paths: install the cross toolchain (env-prep installation guidance), or have the user supply an existing toolchain path and switch to user mode.",
+        "Does not fabricate a toolchain path/prefix that was not detected or provided."
+      ]
+    }
+  ]
+}

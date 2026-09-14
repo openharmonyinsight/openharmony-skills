@@ -1,0 +1,48 @@
+{
+    "product_name": "uniproton_stm32f407zg",
+    "type": "mini",
+    "version": "3.0",
+    "ohos_version": "OpenHarmony 1.0",
+    "device_company": "st",
+    "device_build_path": "device/board/st/stm32f407zg",
+    "board": "stm32f407zg",
+    "kernel_type": "uniproton",
+    "kernel_is_prebuilt": false,
+    "kernel_version": "3.0.0",
+    "subsystems": [
+      {
+        "subsystem": "hiviewdfx",
+        "components": [
+          { "component": "hilog_lite", "features": [] },
+          { "component": "hievent_lite", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "startup",
+        "components": [
+          { "component": "bootstrap_lite", "features": [] },
+          { "component": "init", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "security",
+        "components": [
+          { "component": "huks", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "commonlibrary",
+        "components": [
+          { "component": "utils_lite", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "thirdparty",
+        "components": [
+          { "component": "mbedtls", "features": [] },
+          { "component": "bounds_checking_function", "features": [] }
+        ]
+      }
+    ],
+    "product_adapter_dir": "//vendor/st/stm32f407zg/hals"
+}

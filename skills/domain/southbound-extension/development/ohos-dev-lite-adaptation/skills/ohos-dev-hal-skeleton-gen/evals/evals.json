@@ -1,0 +1,73 @@
+{
+  "skill_name": "ohos-dev-hal-skeleton-gen",
+  "evals": [
+    {
+      "id": "l1_gpio_driver_skeleton_hdf",
+      "source_example": "SR-02 iter10_skill-reverify-fix（b21588f 修后 ✅）：HdfDriverEntry/Bind/Init/Release + irqStart=55 从 HCS 读入（gpio_config.hcs 实测值） + match_attr hisi_hi3516cv610_gpio 两侧严格相等",
+      "prompt": "给 Hi3516CV610（L1 小型系统，精简版 HDF）生成 GPIO 驱动骨架。芯片规格（chip_spec.json 摘录）：GPIO 控制器 PL061，寄存器基址 0x11090000，组间距 regStep 0x1000，共 11 组、每组 8 pin；DTS 中断描述为 `interrupts = <0 23 4>`（GIC SPI 23，高电平触发）。驱动 moduleName 取 hisi_hi3516cv610_gpio_driver。厂商 SDK 没有提供 GPIO 外设 API。请给出：① .c 的整体结构要点（入口注册/硬件读写方式）② gpio_config.hcs 内容 ③ device_info.hcs 对端片段要点 ④ BUILD.gn 模板选择。",
+      "expected_output": ".c uses HdfDriverEntry (Bind/Init/Release + HDF_INIT), register-direct route via OSAL (OsalIoRead32/OsalIoWrite32, PL061) since no SDK GPIO API; irqStart = 55 (SPI 23 + 32) carried in gpio_config.hcs and read from HCS at Init (GetUint32), not hardcoded; match_attr 'hisi_hi3516cv610_gpio' equals device_info.hcs deviceMatchAttr and deviceNode moduleName equals HDF_INIT moduleName; BUILD.gn uses hdf_driver template.",
+      "files": [],
+      "expectations": [
+        ".c structure uses HdfDriverEntry with Bind/Init/Release populated plus HDF_INIT registration.",
+        "Chooses the register-direct route (PL061 via OSAL wrappers) because the vendor SDK has no GPIO API — and does not invent SDK function calls (hi_gpio_* etc.).",
+        "gpio_config.hcs carries regBase 0x11090000, regStep 0x1000, groupNum 11, bitNum 8, and irqStart 55 (SPI 23 + 32), not raw 23.",
+        "The irq value is read from HCS at Init (e.g. drsOps GetUint32(node, \"irqStart\", ...)) rather than hardcoded in the .c file.",
+        "gpio_config.hcs match_attr is exactly 'hisi_hi3516cv610_gpio' and the device_info.hcs counterpart fragment's deviceMatchAttr is identical, with deviceNode moduleName 'hisi_hi3516cv610_gpio_driver' matching the .c HDF_INIT moduleName.",
+        "BUILD.gn uses the hdf_driver template (not lite_component)."
+      ]
+    },
+    {
+      "id": "irq_gic_plus32_conversion",
+      "source_example": "SR-02 iter09 深审硬错误①：irqStart=23 是 GIC 原始 SPI 号，Linux 上应为 55（SPI 23 + 32）；dv300 irqStart=48 ↔ SPI 16 佐证 +32 约定",
+      "prompt": "DTS 里 GPIO 中断节点写的是 `interrupts = <0 23 4>`（GIC SPI 23）。我在 gpio_config.hcs 里填 irqStart = 23，驱动里 OsalRegisterIrq 直接用这个值。这样对吗？",
+      "expected_output": "No — OsalRegisterIrq takes the Linux IRQ number (virq); GIC SPI xlate computes hwirq = spi_param + 32, so SPI 23 must be written as irqStart = 55. Filling 23 registers to the wrong IRQ region.",
+      "files": [],
+      "expectations": [
+        "Answers that irqStart = 23 is wrong and the correct value is 55.",
+        "Explains the conversion: GIC SPI xlate does hwirq = spi_param + 32, and OsalRegisterIrq expects the Linux virq, not the raw DTS SPI number.",
+        "Notes the consequence of the wrong value: registering to the wrong IRQ (23 falls in the PPI/SPI-7 region, not GPIO).",
+        "Mentions that PPI conversion differs (+16) and/or cites a corroborating verified chip (hi3516dv300 irqStart=48 for DTS SPI 16)."
+      ]
+    },
+    {
+      "id": "missing_device_info_counterpart",
+      "source_example": "SR-02 iter09 深审硬错误② + iter10 重跑未闭合：match_attr 无对端 deviceNode → .ko 加载但 Bind/Init 不被调用；b21588f 靠真产出 device_info.hcs.gpio.fragment 才闭合",
+      "prompt": "我生成的 gpio_config.hcs 里 `match_attr = \"hisi_hi3516cv610_gpio\"`，hc-gen 编译也过了。但产品 device_info.hcs 里 device_gpio 的 device1 当前用的是 linux_gpio_adapter，没有我这个 match_attr 的对端。板子上驱动 .ko 加载了但完全不工作。为什么？该怎么改？",
+      "expected_output": "Root cause: HCS pairing is a runtime framework behavior — without a deviceNode in device_info.hcs whose moduleName/deviceMatchAttr match, HDF never calls Bind/Init (compilers and hc-gen cannot catch this). Fix: actually generate/modify the device_info.hcs side (replace the linux_gpio_adapter deviceNode or coexist), aligning the three-segment chain: .c HDF_INIT moduleName == deviceNode moduleName, deviceNode deviceMatchAttr == *_config.hcs match_attr.",
+      "files": [],
+      "expectations": [
+        "Identifies the root cause: no counterpart deviceNode in device_info.hcs → HDF framework never calls Bind/Init even though the .ko loads and hc-gen passes (runtime framework behavior, not a compile error).",
+        "Prescribes actually generating/modifying the device_info.hcs side (a deviceNode fragment with moduleName/serviceName/deviceMatchAttr), not merely documenting that it should be changed.",
+        "Addresses the linux_gpio_adapter situation: replace that deviceNode's moduleName/deviceMatchAttr with the new driver's values, or configure coexistence.",
+        "States the three-segment alignment requirement: .c HDF_INIT moduleName == deviceNode moduleName, and deviceNode deviceMatchAttr == *_config.hcs match_attr (strict equality)."
+      ]
+    },
+    {
+      "id": "l0_iot_hal_route_no_hdf",
+      "source_example": "SR-02 验收判据 2 + iter12 端到端：L0 走 IoT 外设驱动子系统（IoTGpioInit/SetDir/Write/Read/RegisterIsr 板上 27/27 PASS），非 HDF；BUILD.gn lite_component",
+      "prompt": "给 Hi3861（L0 轻量系统，LiteOS-M）生成 GPIO HAL 驱动。厂商 SDK 提供 hi_gpio_set_dir / hi_gpio_write / hi_gpio_read 这些 API。应该生成 HDF 框架代码吗（HdfDriverEntry/GpioMethod/GpioCntlrAdd）？产出结构应该是什么样的？",
+      "expected_output": "L0 uses the IoT peripheral driver subsystem route, NOT HDF: component registration via GpioOperations/GpioRegisterOps, IoT API adaptation (IoTGpioInit/SetDir/Write/...) whose bodies call the SDK APIs (hi_gpio_*), lite_component BUILD.gn, no HCS files and no OSAL usage.",
+      "files": [],
+      "expectations": [
+        "Answers NO to HDF for L0: no HdfDriverEntry/GpioMethod/GpioCntlrAdd in the L0 output.",
+        "Uses the IoT peripheral driver subsystem route with component-style registration (GpioOperations + GpioRegisterOps or equivalent adapter registration).",
+        "Driver bodies call the provided SDK APIs (hi_gpio_set_dir/hi_gpio_write/hi_gpio_read) per the call-SDK-functions route, without inventing SDK function names beyond those given.",
+        "BUILD.gn uses the lite_component template.",
+        "L0 output contains no HCS files and no OSAL interfaces (OsalIoRead32 etc.)."
+      ]
+    },
+    {
+      "id": "l1_bare_register_access_antipattern",
+      "source_example": "SR-02 禁止项「L1 直接操作寄存器」+ b21588f 修后实证：L1 寄存器访问走 OSAL 封装（OsalIoRead32/OsalIoWrite32），基址从 HCS 读入不硬编码",
+      "prompt": "这是我写的 L1 HDF GPIO 驱动的 Write 函数，可以直接用吗？\n\n```c\nstatic int32_t GpioWrite(struct GpioCntlr *cntlr, uint16_t pin, uint16_t val)\n{\n    *(volatile uint32_t *)(0x11090000 + (1 << (pin + 2))) = ((val & 1) << pin);\n    return HDF_SUCCESS;\n}\n```",
+      "expected_output": "Two problems: bare volatile-pointer register access in L1 must go through OSAL wrappers (OsalIoWrite32); and the hardcoded base 0x11090000 must come from HCS config (regBase read at Init), not be compiled into the .c.",
+      "files": [],
+      "expectations": [
+        "Flags bare volatile-pointer register access as wrong for L1: hardware access must be wrapped in OSAL (OsalIoWrite32/OsalIoRead32).",
+        "Flags the hardcoded register base 0x11090000 in the .c: the base must be carried in *_config.hcs (regBase) and read at Init.",
+        "Provides the corrected shape: read config via DRS at Init, then OsalIoWrite32(regBase + offset, value).",
+        "Does NOT claim the PL061 DATA addressing scheme (base + (1 << (pin+2))) itself is wrong — the problem is the access mechanism and hardcoded base, not the offset math."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+schemaVersion: 1
+kind: Plugin
+id: ohos-dev-lite-adaptation
+name: ohos-dev-lite-adaptation
+version: 0.1.0
+description: OpenHarmony Lite (L0/L1) 芯片适配工作流 plugin —— 7 阶段编排（P1 环境搭建→P2 内核移植→P3 驱动开发→P4 构建验证→P5 测试编译→P6 文档审查→P7 问题诊断逃生舱）+ 分级 GATE 门控（含 GATE-T/GATE-BURN/GATE-HW/GATE-R）+ 1 个工作流编排器 + 16 个领域 skill（芯片规格解析/内核源码查询/设备树配置/HAL 驱动生成/内核裁剪/构建装配/RTOS 迁移/编译烧录部署/XTS 验证/测试生成/代码审查/问题诊断/文档检索与合成）+ 100 个 skill 参考语料文件（93 篇 md + 7 非 md，随各 skill 的 references/ 分发）+ 38 篇 step 语料。Hi3516CV610 (L1) 已完成 P1-P4 产物构建与结构对比实证；烧录、板载运行和 XTS 运行状态以归档证据为准，当前不宣称全链路通过。
+license: MIT
+provenance: provenance.yaml
+
+variables:
+  # skill 正文内使用 skills/<id>/ 相对路径（plugin 内互引）与 {{ASSET_ROOT}} 资产引用，
+  # 由宿主适配器在安装时解析。源仓正文用真实路径 runtime/assets/，发布产物内替换为
+  # {{ASSET_ROOT}}/（见 tools/publish_transform.py）。
+  ASSET_ROOT: runtime/assets
+  CMD_PREFIX:
+    claude-code: /
+    codex: ""
+    opencode: ""
+
+components:
+  skills:
+    # ---- router（7 阶段编排 + GATE 门控 + Agent 调度协议）----
+    - id: ohos-dev-lite-adaptation
+      path: SKILL.md
+      role: router
+
+    # ---- 工作流编排器（根入口的内部实现，含完整路由契约与调度协议）----
+    - id: ohos-dev-workflow-router
+      path: skills/ohos-dev-workflow-router/SKILL.md
+      role: router
+
+    # ---- 能力 skill（源仓已同构重组：目录名 = id，无映射）----
+    - id: ohos-dev-soc-spec-parse
+      path: skills/ohos-dev-soc-spec-parse/SKILL.md
+      role: adaptation-workflow
+    - id: ohos-dev-kernel-source-query
+      path: skills/ohos-dev-kernel-source-query/SKILL.md
+      role: adaptation-workflow
+    - id: ohos-dev-board-config-gen
+      path: skills/ohos-dev-board-config-gen/SKILL.md
+      role: adaptation-workflow
+    - id: ohos-dev-hal-skeleton-gen
+      path: skills/ohos-dev-hal-skeleton-gen/SKILL.md
+      role: adaptation-workflow
+    - id: ohos-dev-kernel-node-adapt
+      path: skills/ohos-dev-kernel-node-adapt/SKILL.md
+      role: adaptation-workflow
+    - id: ohos-dev-kernel-trim-config
+      path: skills/ohos-dev-kernel-trim-config/SKILL.md
+      role: adaptation-workflow
+    - id: ohos-dev-build-config
+      path: skills/ohos-dev-build-config/SKILL.md
+      role: adaptation-workflow
+    - id: ohos-dev-rtos-migrate
+      path: skills/ohos-dev-rtos-migrate/SKILL.md
+      role: adaptation-workflow
+    - id: ohos-ci-lite-deploy-burn
+      path: skills/ohos-ci-lite-deploy-burn/SKILL.md
+      role: adaptation-workflow
+    - id: ohos-test-lite-adapt-verify
+      path: skills/ohos-test-lite-adapt-verify/SKILL.md
+      role: adaptation-workflow
+    - id: ohos-test-lite-ut-gen
+      path: skills/ohos-test-lite-ut-gen/SKILL.md
+      role: adaptation-workflow
+    - id: ohos-dev-driver-review
+      path: skills/ohos-dev-driver-review/SKILL.md
+      role: adaptation-workflow
+    - id: ohos-issue-lite-diagnose
+      path: skills/ohos-issue-lite-diagnose/SKILL.md
+      role: adaptation-workflow
+    - id: ohos-design-ref-retrieval
+      path: skills/ohos-design-ref-retrieval/SKILL.md
+      role: adaptation-workflow
+    - id: ohos-design-doc-synthesis
+      path: skills/ohos-design-doc-synthesis/SKILL.md
+      role: adaptation-workflow
+    - id: ohos-dev-cross-toolchain
+      path: skills/ohos-dev-cross-toolchain/SKILL.md
+      role: adaptation-workflow
+
+  prompts: []
+  hooks: []
+
+  assets:
+    - id: workflow-steps
+      path: runtime/assets/workflow/steps
+      description: 7 阶段实现（01-env-prep ~ 07-problem-diag，含 GATE 判据与 Compiler Fix Loop）
+      usedBy: [skills]
+    - id: workflow-decisions
+      path: runtime/assets/workflow/DECISIONS.md
+      description: A1-A6 项目决策变量模板（项目模式/目标系统/可选阶段/裁剪/子代理开关/P7 升降级）
+      usedBy: [skills]
+    - id: workflow-config-template
+      path: runtime/assets/workflow/workflow_config.template.yaml
+      usedBy: [skills]
+    - id: skill-references
+      path: skills/*/references
+      description: 100 个领域参考语料文件（93 篇 md + 7 个非 md：1 png / 1 json / 5 个构建样本）随各 skill 目录同步（fault-knowledge-base/ddr-variant-guide/compiler-fix-playbook/多内核源码路由等）。统计口径 = 本 asset 的 path glob skills/*/references（17 个分发 skill 的 references/，utility skill 不随产物分发故不计入）。全包 references 对账：本 asset 100 个（93 md）+ workflow-steps 内嵌 references 31 篇（属 38 篇 step 语料）+ 包根 references/ 2 篇（router-contracts asset）= 133 个文件（126 md + 7 非 md）
+      usedBy: [skills]
+    - id: router-contracts
+      path: references
+      description: 包根 references/ 的 router 契约（router-contract.md）与 Agent 调度协议（agent-dispatch-protocol.md），2 篇 md
+      usedBy: [skills]
+    - id: workflow-target-profiles
+      path: runtime/assets/workflow/target-profiles
+      description: 内置 target profile（hi3516cv610-linux-l1.yaml + README），P1 选定后 P2/P3/P4 消费的路由数据
+      usedBy: [skills]
+    - id: deploy-tools
+      path: skills/ohos-ci-lite-deploy-burn/tools
+      description: 烧录/测试执行工具（burn_one.py / map_analyzer.py）随 skill 目录同步
+      usedBy: [skills]
+
+  executables: []
+  agents: []
+  tools: []
+
+  mcpServers:
+    - id: project-brain
+      optional: true
+      description: 领域知识检索增强（keyword_search / read_doc，加速本地源码分析）
+      install: |
+        可选但推荐——不装时 skill 走降级链（本地 references/ → 联网检索 → 询问用户），功能完整。
+        安装（版本 pin 到 commit e6f0dbdb，即 v0.4.1，避免上游 master 漂移）：
+          uv tool install git+https://gitcode.com/xuanwu/project-brain.git@e6f0dbdb0efc993d24022bbed7acf75cc8685a4d
+        装后必须在目标 OpenHarmony 仓构建知识图谱（否则 MCP 无数据可查）：
+          cd /path/to/your/openharmony_repo && project-brain --project . build
+        宿主 MCP 连接配置（上游 README：https://gitcode.com/xuanwu/project-brain）：
+          command: project-brain, args: ["--project", ".", "serve"]
+      fallback: "本地 references/ 检索 → 联网检索 → 询问用户（降级链见各 skill「知识检索」节；未配置 MCP 时功能完整可用）"
+
+commandProjection:
+  source: skill
+  generatedByHostAdapter: true
+  commands:
+    - skill: ohos-dev-lite-adaptation
+    - skill: ohos-dev-workflow-router
+    - skill: ohos-dev-soc-spec-parse
+    - skill: ohos-dev-kernel-source-query
+    - skill: ohos-dev-board-config-gen
+    - skill: ohos-dev-hal-skeleton-gen
+    - skill: ohos-dev-kernel-node-adapt
+    - skill: ohos-dev-kernel-trim-config
+    - skill: ohos-dev-build-config
+    - skill: ohos-dev-rtos-migrate
+    - skill: ohos-ci-lite-deploy-burn
+    - skill: ohos-test-lite-adapt-verify
+    - skill: ohos-test-lite-ut-gen
+    - skill: ohos-dev-driver-review
+    - skill: ohos-issue-lite-diagnose
+    - skill: ohos-design-ref-retrieval
+    - skill: ohos-design-doc-synthesis
+    - skill: ohos-dev-cross-toolchain
+
+compatibility:
+  targets:
+    claude-code:
+      strategy: generate-native-plugin
+      lifecycle: native
+    codex:
+      strategy: generate-install-payload
+      lifecycle: managed-by-install-script
+    opencode:
+      strategy: generate-install-payload
+      lifecycle: managed-by-install-script
+  missingCapabilityPolicy: report-declared-fallback
+
+build:
+  generatedArtifactsOnly: true
+  # false：本产物按源仓工作区快照构建（源仓提交前 source.commit pin 不成立），
+  # 且 transform SKILL_MAP 未登记新名映射，重跑不能复现本产物（见 provenance.yaml
+  # commitNote）。源仓提交 + pin 更新 + 映射登记并验证重跑一致后再改回 true。
+  reproducible: false
+  outputs:
+    includeLockfile: true
+    includeFileDigests: true
+    includeCompatibilityReport: true

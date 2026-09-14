@@ -1,0 +1,77 @@
+{
+  "skill_name": "ohos-dev-soc-spec-parse",
+  "evals": [
+    {
+      "id": "l1_full_extraction_from_sdk_sources",
+      "source_example": "iter09 Part B 深审真实判据（外设 8/8 全核通过，Hi3516CV610）",
+      "prompt": "请提取 Hi3516CV610 芯片规格，生成 chip_spec.json。以下是我从厂商 SDK 拿到的关键源码片段（DTS hi3516cv610-open.dtsi 节选 + soc/config/gcc/autoconf.h 节选 + dt-bindings/clock/hi3516cv610-clock.h 节选）：\n\n```dts\n// hi3516cv610-open.dtsi（节选）\ncpus {\n    #address-cells = <1>;\n    #size-cells = <0>;\n    cpu@0 { device_type = \"cpu\"; compatible = \"arm,cortex-a7\"; reg = <0>;\n            clock-frequency = <HI3516CV610_FIXED_1200M>; };\n    cpu@1 { device_type = \"cpu\"; compatible = \"arm,cortex-a7\"; reg = <1>;\n            clock-frequency = <HI3516CV610_FIXED_1200M>; };\n};\nuart0: serial@11040000 { compatible = \"arm,pl011\"; reg = <0x11040000 0x1000>;\n                         interrupts = <0 10 4>; clocks = <&clock HI3516CV610_FIXED_24M>; };\nspi0: spi@11070000 { compatible = \"arm,pl022\"; reg = <0x11070000 0x1000>;\n                     interrupts = <0 19 4>; };\ngic: interrupt-controller@12401000 { compatible = \"arm,cortex-a7-gic\";\n    reg = <0x12401000 0x1000>, <0x12402000 0x2000>; interrupt-controller; };\n```\n\n```c\n// soc/config/gcc/autoconf.h（节选）\n#define CONFIG_SMP 1\n#define CONFIG_A7 1\n#define CONFIG_CPU_TYPE \"a7\"\n```\n\n```c\n// dt-bindings/clock/hi3516cv610-clock.h（节选）\n#define HI3516CV610_FIXED_2400M 1\n#define HI3516CV610_FIXED_1200M 2\n#define HI3516CV610_FIXED_24M 41\n```\n\n只输出 chip_spec.json 内容（一个 JSON 对象）。",
+      "expected_output": "chip_spec.json with L1 Cortex-A7 dual-core SMP @1200MHz, UART0 base 0x11040000 IRQ 10, SPI0 base 0x11070000 IRQ 19, GIC-400 distributor 0x12401000, FIXED clock ids recorded, fieldSources citing the provided SDK files.",
+      "files": [],
+      "expectations": [
+        "metadata.targetSystemLevel is L1 (Cortex-A7 with MMU).",
+        "metadata.coreCount is 2 and metadata.maxFrequency is 1200 (from DTS cpu@0/cpu@1 clock-frequency HI3516CV610_FIXED_1200M).",
+        "cpu.coreType is Cortex-A7.",
+        "UART0 entry has baseAddress 0x11040000 and interrupts[0].irqNumber 10.",
+        "SPI0 entry has baseAddress 0x11070000 and interrupts[0].irqNumber 19.",
+        "interruptController identifies GIC (GIC-400 or arm,cortex-a7-gic equivalent) with gicDistributorBase 0x12401000.",
+        "clockSystem.fixedClocks includes HI3516CV610_FIXED_1200M with id 2 (and HI3516CV610_FIXED_24M id 41 if referenced).",
+        "Every non-null hardware field has a fieldSources entry citing the provided SDK source (dtsi / autoconf.h / clock header), not generic memory.",
+        "completenessReport (or equivalent checklist statistics) and confidence are present."
+      ]
+    },
+    {
+      "id": "ddr_variant_singlepoint_xlsm_query",
+      "source_example": "iter09 单点查询实测场景 + AR 详设 §3.2 业务场景（Hi3516CV610 -20S）",
+      "prompt": "我这块板子是 Hi3516CV610 -20S 变体，裸烧该用哪个 xlsm 文件？DDR 参数是什么？",
+      "expected_output": "Direct single-point answer (no full 8-step extraction): -20S variant maps to DDR3 2133Mbps 128MB QFN9x9 package, xlsm file Hi3516CV610-DMEB_4L_DDR3_2133M_128MB_16bit-A7_950M_QFN.xlsm, citing ddr-variant-guide.md as source.",
+      "files": [],
+      "expectations": [
+        "The answer is a direct lookup answer and does not run the full 8-step extraction workflow.",
+        "The xlsm filename is exactly Hi3516CV610-DMEB_4L_DDR3_2133M_128MB_16bit-A7_950M_QFN.xlsm.",
+        "DDR parameters stated: DDR3 type, 2133 Mbps rate, 128 MB capacity, QFN9x9 package.",
+        "The answer cites the variant table source (references/ddr-variant-guide.md or chip-specs-quick-ref.md)."
+      ]
+    },
+    {
+      "id": "contradiction_detection_ref_vs_sdk",
+      "source_example": "iter09 实测：执行者主动发现 quick-ref 单核@950MHz vs SDK 双核@1200MHz 矛盾并在 crossValidation.discrepancies 标注（skill-ref 错误后经 a4ce570 修复）",
+      "prompt": "请提取 Hi3516CV610 芯片规格。参考资料 A（某第三方芯片简介整理）写着：\"Hi3516CV610：单核 Cortex-A7，主频 950 MHz\"。但厂商 SDK 源码如下：\n\n```dts\n// hi3516cv610-open.dtsi\ncpu@0 { compatible = \"arm,cortex-a7\"; clock-frequency = <HI3516CV610_FIXED_1200M>; };\ncpu@1 { compatible = \"arm,cortex-a7\"; clock-frequency = <HI3516CV610_FIXED_1200M>; };\n```\n```c\n// autoconf.h\n#define CONFIG_SMP 1\n```\n\ncoreCount 和 maxFrequency 该信谁？怎么处理？只输出结论和处理方式。",
+      "expected_output": "Trusts verifiable SDK source code over the reference sheet: coreCount=2 (dual-core SMP), maxFrequency=1200MHz; records the contradiction in crossValidation.discrepancies with resolution rationale (950M likely a DDR-side/rated marking in xlsm filename, DTS/SDK is authoritative) and suggests runtime recheck.",
+      "files": [],
+      "expectations": [
+        "Concludes coreCount = 2 (dual-core) and maxFrequency = 1200, not 1/950 from the reference sheet.",
+        "Explains the evidence basis: DTS has cpu@0 and cpu@1 nodes plus CONFIG_SMP=1 in autoconf.h.",
+        "Proposes recording the conflict in crossValidation.discrepancies (or explicitly reports the discrepancy to the user) rather than silently picking one side.",
+        "Does NOT fabricate a compromise value (e.g. average) and does not blindly trust the reference sheet.",
+        "Optionally suggests a runtime verification method (e.g. /proc/cpuinfo after boot)."
+      ]
+    },
+    {
+      "id": "l0_wifi_checklist_trim_hi3861",
+      "source_example": "SKILL.md 硬件信息适用规则示例 + checklist 两维度裁剪（Hi3861 = L0 + WiFi）",
+      "prompt": "我要把 Hi3861V100 适配到 OpenHarmony，这颗芯片是 RISC-V rv32imac 核（无 MMU），集成了 WiFi/BLE。请判断：它的硬件信息 checklist 怎么裁剪？必须要有几项？输出判定过程和裁剪结果，不用生成完整 chip_spec.json。",
+      "expected_output": "L0 (rv32imac no MMU) + WiFi capability: keeps register-definition/bitfield item (L0 requirement), adds RF calibration/antenna item (WiFi requirement); mandatory items = 7 base + 1 WiFi = 8.",
+      "files": [],
+      "expectations": [
+        "Determines targetSystemLevel = L0 based on rv32imac without MMU.",
+        "Keeps the register definition + bitfield item in the mandatory checklist (L0 requires it for HAL driver development).",
+        "Adds RF calibration/antenna configuration as an extra mandatory item due to WiFi capability.",
+        "States the final mandatory count as 8 (7 base + 1 WiFi).",
+        "The judgment path names both dimensions (system level, functional capability)."
+      ]
+    },
+    {
+      "id": "no_irq_peripheral_honesty",
+      "source_example": "iter09 深审实证：I2C0/1/2 DTS 无 interrupts 属性，chip_spec.json 以空数组 + notes 诚实标注而非编造中断号",
+      "prompt": "提取以下外设的中断信息到 chip_spec.json 的 peripherals 结构。DTS 片段：\n\n```dts\nuart0: serial@11040000 { compatible = \"arm,pl011\"; reg = <0x11040000 0x1000>; interrupts = <0 10 4>; };\ni2c0: i2c@11060000 { compatible = \"vendor,i2c\"; reg = <0x11060000 0x1000>; /* 注意：该节点无 interrupts 属性 */ };\n```\n\n只输出这两个外设的 peripherals JSON 条目。",
+      "expected_output": "UART0 gets irqNumber 10; I2C0 gets an empty interrupts array (or null) plus an explanatory note that the DTS declares no IRQ (likely polling or shared), with no fabricated interrupt number.",
+      "files": [],
+      "expectations": [
+        "UART0 entry has baseAddress 0x11040000 and interrupts[0].irqNumber 10.",
+        "I2C0 entry does NOT contain any invented irqNumber (no fabricated integer).",
+        "I2C0 interrupts is an empty array or null, with a note/fieldSources explanation such as 'DTS 未声明独立 IRQ' or 'no interrupts property in DTS'.",
+        "Both entries include name/type/baseAddress required subfields."
+      ]
+    }
+  ]
+}

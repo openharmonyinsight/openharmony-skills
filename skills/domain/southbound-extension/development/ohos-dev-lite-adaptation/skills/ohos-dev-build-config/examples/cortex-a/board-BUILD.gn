@@ -1,0 +1,6 @@
+# device/board/<device_company>/<board>/BUILD.gn
+# Board 构建入口：config.json 的 device_build_path 指向此目录。
+# target 名约定用 <board>（hispark_taurus）。
+group("hispark_taurus") {
+  deps = []
+}

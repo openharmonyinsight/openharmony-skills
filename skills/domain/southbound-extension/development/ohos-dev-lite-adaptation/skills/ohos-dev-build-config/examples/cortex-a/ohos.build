@@ -1,0 +1,10 @@
+{
+  "parts": {
+    "product_hispark_taurus_linux": {
+      "module_list": [
+        "//vendor/hisilicon/hispark_taurus_linux:hispark_taurus_linux"
+      ]
+    }
+  },
+  "subsystem": "product_hispark_taurus_linux"
+}

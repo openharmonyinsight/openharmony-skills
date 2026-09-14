@@ -1,0 +1,10 @@
+{
+  "parts": {
+    "product_uniproton_stm32f407zg": {
+      "module_list": [
+        "//vendor/st/stm32f407zg:stm32f407zg"
+      ]
+    }
+  },
+  "subsystem": "product_uniproton_stm32f407zg"
+}

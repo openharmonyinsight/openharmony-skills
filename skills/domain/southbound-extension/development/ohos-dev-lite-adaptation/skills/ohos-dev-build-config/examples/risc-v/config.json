@@ -1,0 +1,84 @@
+{
+    "product_name": "wifiiot_hispark_pegasus",
+    "type": "mini",
+    "version": "3.0",
+    "ohos_version": "OpenHarmony 1.0",
+    "device_company": "hisilicon",
+    "device_build_path": "device/board/hisilicon/hispark_pegasus",
+    "board": "hispark_pegasus",
+    "kernel_type": "liteos_m",
+    "kernel_is_prebuilt": true,
+    "kernel_version": "",
+    "subsystems": [
+      {
+        "subsystem": "applications",
+        "components": [
+          { "component": "wifi_iot_sample_app", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "iothardware",
+        "components": [
+          { "component": "peripheral", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "hiviewdfx",
+        "components": [
+          { "component": "hilog_lite", "features": [] },
+          { "component": "hievent_lite", "features": [] },
+          { "component": "blackbox_lite", "features": [] },
+          { "component": "hidumper_lite", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "systemabilitymgr",
+        "components": [
+          { "component": "samgr_lite", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "security",
+        "components": [
+          { "component": "device_auth", "features": [] },
+          { "component": "huks", "features": [
+            "huks_use_lite_storage = true",
+            "huks_use_hardware_root_key = true",
+            "huks_config_file = \"hks_config_lite.h\""
+          ]}
+        ]
+      },
+      {
+        "subsystem": "startup",
+        "components": [
+          { "component": "bootstrap_lite", "features": [] },
+          { "component": "init", "features": [
+            "init_feature_begetctl_liteos = true",
+            "init_lite_use_thirdparty_mbedtls = true"
+          ]}
+        ]
+      },
+      {
+        "subsystem": "communication",
+        "components": [
+          { "component": "wifi_lite", "features": [] },
+          { "component": "dsoftbus", "features": [] },
+          { "component": "wifi_aware", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "updater",
+        "components": [
+          { "component": "sys_installer_lite", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "commonlibrary",
+        "components": [
+          { "component": "utils_lite", "features": [ "utils_lite_feature_file = true" ] }
+        ]
+      }
+    ],
+    "third_party_dir": "//device/soc/hisilicon/hi3861v100/sdk_liteos/third_party",
+    "product_adapter_dir": "//vendor/hisilicon/hispark_pegasus/hals"
+}

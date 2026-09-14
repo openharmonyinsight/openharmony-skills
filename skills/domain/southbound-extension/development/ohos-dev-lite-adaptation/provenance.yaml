@@ -1,0 +1,81 @@
+schemaVersion: 1
+kind: Provenance
+id: ohos-dev-lite-adaptation
+source:
+  repository: https://gitcode.com/chen-mingyu4/ohos-lite-expert.git
+  branch: main
+  commit: 0023f4d32fd9775c8693b47d8f74531963e67e02
+  commitNote: 初始版本源自 ohos-lite-expert 工作流；本 PR 合入 openharmony-skills release 分支。reproducible=false 原因：初始包按源仓工作区快照构建（当时源仓提交前 source.commit pin 不成立），包结构经重组转换（transform SKILL_MAP 未登记全量新名映射），且 openharmony-skills 检视轮次的修复（R1-R3 共 21 项 + 后续自查）直接施加于本包、未回写源仓——无法仅凭 source.commit 逐字节重建本包；源仓提交 + pin 更新 + 映射登记并验证重跑一致后方可改 true
+  sourceVersion: 0.1.0
+  importedAt: 2026-09-10
+license:
+  declared: MIT
+  sourceLicenseFileFound: true
+included:
+  skills:
+    - skills/ohos-dev-workflow-router
+    - skills/ohos-dev-soc-spec-parse
+    - skills/ohos-dev-kernel-source-query
+    - skills/ohos-dev-board-config-gen
+    - skills/ohos-dev-hal-skeleton-gen
+    - skills/ohos-dev-kernel-node-adapt
+    - skills/ohos-dev-kernel-trim-config
+    - skills/ohos-dev-build-config
+    - skills/ohos-dev-rtos-migrate
+    - skills/ohos-ci-lite-deploy-burn
+    - skills/ohos-test-lite-adapt-verify
+    - skills/ohos-test-lite-ut-gen
+    - skills/ohos-dev-driver-review
+    - skills/ohos-issue-lite-diagnose
+    - skills/ohos-design-ref-retrieval
+    - skills/ohos-design-doc-synthesis
+    - skills/ohos-dev-cross-toolchain
+  assets:
+    - runtime/assets/workflow/steps
+    - runtime/assets/workflow/DECISIONS.md
+    - runtime/assets/workflow/workflow_config.template.yaml
+    - runtime/assets/workflow/target-profiles
+  evals:
+    - skills/*/evals
+excluded:
+  # 说明：源仓 plugin.yaml 的 components.skills 为全量声明（17 个分发 skill +
+  # 4 个 utility：oh-lite-setup / oh-lite-check / claude-session-tips /
+  # Host-specific setup and repository-only maintenance files stay excluded;
+  # contribution-prep skills are not part of the release payload.
+  # 注意：以下 excluded 路径均为【源仓快照】（ohos-lite-expert@0023f4d）中
+  # 未随包分发的源仓级路径（source-only），不是本插件目录内的路径，
+  # provenance 校验时不应在本包目录中寻找这些文件。
+  # 包内 skills/ohos-ci-lite-deploy-burn/tools 是 deploy-tools 运行时资产
+  # （见 plugin.yaml），不属于任何排除项。
+  platformOrHostSpecific:
+    - skills/oh-lite-setup
+    - skills/oh-lite-check
+    - skills/claude-session-tips
+    - dev/commands/
+    - dev/hooks/
+    - .claude-plugin/
+    - .mcp.json
+    - dev/install.sh
+    - dev/uninstall.sh
+    - dev/sha_check.sh
+  repoSpecific:
+    # source-only：源仓 dev/ 下的仓库级 TODO 与本地配置快照，未随包分发
+    # （本插件目录内无 dev/ 目录）
+    - dev/TODO.md
+    - dev/workflow_config.yaml
+    - 测试文件/
+  nonRuntimeAssets:
+    - README.md
+    - dev/USAGE.md
+    - docs/
+    - AGENTS.md
+    # 源仓顶层 tools/（仓库维护/发布辅助脚本）——与包内运行时资产
+    # skills/ohos-ci-lite-deploy-burn/tools（plugin.yaml 的 deploy-tools）无关
+    - tools/
+  rationale: >
+    Host-specific setup and repository-maintenance files are excluded from the
+    portable runtime product; source-only skills remain in this repository.
+transform:
+  renameSkillDirs: completed
+  assetPlaceholder: runtime/assets -> {{ASSET_ROOT}}/
+  frontmatterName: source skill names already match insight ids

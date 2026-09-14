@@ -1,0 +1,397 @@
+ root {
+    device_info {
+        match_attr = "hdf_manager";
+        template host {
+            hostName = "";
+            priority = 100;
+            template device {
+                template deviceNode {
+                    policy = 0;
+                    priority = 100;
+                    preload = 0;
+                    permission = 0664;
+                    moduleName = "";
+                    serviceName = "";
+                    deviceMatchAttr = "";
+                }
+            }
+        }
+        platform :: host {
+            hostName = "platform_host";
+            priority = 50;
+            device_gpio :: device {
+                device0 :: deviceNode {
+                    policy = 0;
+                    priority = 10;
+                    permission = 0644;
+                    moduleName = "hisi_pl061_driver";
+                    deviceMatchAttr = "hisilicon_hi35xx_pl061";
+                }
+            }
+            device_watchdog :: device {
+                device0 :: deviceNode {
+                    policy = 1;
+                    priority = 20;
+                    permission = 0644;
+                    moduleName = "HDF_PLATFORM_WATCHDOG";
+                    serviceName = "HDF_PLATFORM_WATCHDOG_0";
+                    deviceMatchAttr = "hisilicon_hi35xx_watchdog_0";
+                }
+            }
+            device_rtc :: device {
+                device0 :: deviceNode {
+                    policy = 1;
+                    priority = 30;
+                    permission = 0644;
+                    moduleName = "HDF_PLATFORM_RTC";
+                    serviceName = "HDF_PLATFORM_RTC";
+                    deviceMatchAttr = "hisilicon_hi35xx_rtc";
+                }
+            }
+            device_uart :: device {
+                device0 :: deviceNode {
+                    policy = 1;
+                    priority = 40;
+                    permission = 0644;
+                    moduleName = "HDF_PLATFORM_UART";
+                    serviceName = "HDF_PLATFORM_UART_0";
+                    deviceMatchAttr = "hisilicon_hi35xx_uart_0";
+                }
+                device1 :: deviceNode {
+                    policy = 2;
+                    permission = 0644;
+                    priority = 40;
+                    moduleName = "HDF_PLATFORM_UART";
+                    serviceName = "HDF_PLATFORM_UART_1";
+                    deviceMatchAttr = "hisilicon_hi35xx_uart_1";
+                }
+                device2 :: deviceNode {
+                    policy = 2;
+                    priority = 40;
+                    permission = 0644;
+                    moduleName = "HDF_PLATFORM_UART";
+                    serviceName = "HDF_PLATFORM_UART_2";
+                    deviceMatchAttr = "hisilicon_hi35xx_uart_2";
+                }
+                device3 :: deviceNode {
+                    policy = 2;
+                    priority = 40;
+                    permission = 0644;
+                    moduleName = "HDF_PLATFORM_UART";
+                    serviceName = "HDF_PLATFORM_UART_3";
+                    deviceMatchAttr = "hisilicon_hi35xx_uart_3";
+                }
+            }
+            device_i2c :: device {
+                device0 :: deviceNode {
+                    policy = 2;
+                    priority = 50;
+                    permission = 0644;
+                    moduleName = "HDF_PLATFORM_I2C_MANAGER";
+                    serviceName = "HDF_PLATFORM_I2C_MANAGER";
+                    deviceMatchAttr = "hdf_platform_i2c_manager";
+                }
+                device1 :: deviceNode {
+                    policy = 0;
+                    priority = 55;
+                    permission = 0644;
+                    moduleName = "hi35xx_i2c_driver";
+                    serviceName = "HI35XX_I2C_DRIVER";
+                    deviceMatchAttr = "hisilicon_hi35xx_i2c";
+                }
+            }
+            device_dmac :: device {
+                device0 :: deviceNode {
+                    policy = 1;
+                    priority = 50;
+                    preload = 0;
+                    moduleName = "HDF_PLATFORM_DMAC";
+                    serviceName = "HDF_PLATFORM_DMAC0";
+                    deviceMatchAttr = "hisilicon_hi35xx_dmac_0";
+                }
+            }
+			device_i2s :: device {
+                device0 :: deviceNode {
+                    policy = 1;
+                    priority = 60;
+                    permission = 0644;
+                    moduleName = "HDF_PLATFORM_I2S";
+                    serviceName = "HDF_PLATFORM_I2S_0";
+                    deviceMatchAttr = "hisilicon_hi35xx_i2s_0";
+                }
+            }
+            device_spi :: device {
+                device0 :: deviceNode {
+                    policy = 1;
+                    priority = 60;
+                    permission = 0644;
+                    moduleName = "HDF_PLATFORM_SPI";
+                    serviceName = "HDF_PLATFORM_SPI_0";
+                    deviceMatchAttr = "hisilicon_hi35xx_spi_0";
+                }
+                device1 :: deviceNode {
+                    policy = 1;
+                    priority = 60;
+                    permission = 0644;
+                    moduleName = "HDF_PLATFORM_SPI";
+                    serviceName = "HDF_PLATFORM_SPI_1";
+                    deviceMatchAttr = "hisilicon_hi35xx_spi_1";
+                }
+                device2 :: deviceNode {
+                    policy = 1;
+                    priority = 60;
+                    permission = 0644;
+                    moduleName = "HDF_PLATFORM_SPI";
+                    serviceName = "HDF_PLATFORM_SPI_2";
+                    deviceMatchAttr = "hisilicon_hi35xx_spi_2";
+                }
+            }
+            device_mmc:: device {
+                device0 :: deviceNode {
+                    policy = 2;
+                    priority = 10;
+                    permission = 0644;
+                    moduleName = "hi3516_mmc_driver";
+                    serviceName = "HDF_PLATFORM_MMC_0";
+                    deviceMatchAttr = "hi3516_mmc_emmc";
+                }
+                device1 :: deviceNode {
+                    policy = 1;
+                    priority = 20;
+                    permission = 0644;
+                    moduleName = "hi3516_mmc_driver";
+                    serviceName = "HDF_PLATFORM_MMC_1";
+                    deviceMatchAttr = "hi3516_mmc_sd";
+                }
+                device2 :: deviceNode {
+                    policy = 1;
+                    priority = 30;
+                    permission = 0644;
+                    moduleName = "hi3516_mmc_driver";
+                    serviceName = "HDF_PLATFORM_MMC_2";
+                    deviceMatchAttr = "hi3516_mmc_sdio";
+                }
+            }
+            device_pwm :: device {
+                device0 :: deviceNode {
+                    policy = 1;
+                    priority = 80;
+                    permission = 0644;
+                    moduleName = "HDF_PLATFORM_PWM";
+                    serviceName = "HDF_PLATFORM_PWM_0";
+                    deviceMatchAttr = "hisilicon_hi35xx_pwm_0";
+                }
+                device1 :: deviceNode {
+                    policy = 1;
+                    priority = 80;
+                    permission = 0644;
+                    moduleName = "HDF_PLATFORM_PWM";
+                    serviceName = "HDF_PLATFORM_PWM_1";
+                    deviceMatchAttr = "hisilicon_hi35xx_pwm_1";
+                }
+            }
+            device_mipi_dsi:: device {
+                device0 :: deviceNode {
+                    policy = 0;
+                    priority = 150;
+                    permission = 0644;
+                    moduleName = "HDF_MIPI_TX";
+                    serviceName = "HDF_MIPI_TX";
+                }
+            }
+            device_hisi_sdk:: device {
+                device0 :: deviceNode {
+                    policy = 1;
+                    priority = 180;
+                    permission = 0644;
+                    moduleName = "HDF_PLATFORM_HISI_SDK";
+                    serviceName = "HDF_PLATFORM_HISI_SDK";
+                }
+            }
+        }
+        display :: host {
+            hostName = "display_host";
+            device_hdf_disp :: device {
+                device0 :: deviceNode {
+                    policy = 2;
+                    priority = 200;
+                    permission = 0660;
+                    moduleName = "HDF_DISP";
+                    serviceName = "hdf_disp";
+                }
+            }
+            device_hi35xx_disp :: device {
+                device0 :: deviceNode {
+                    policy = 0;
+                    priority = 199;
+                    moduleName = "HI351XX_DISP";
+                }
+            }
+            device_lcd :: device {
+                device0 :: deviceNode {
+                    policy = 0;
+                    priority = 100;
+                    preload = 1;
+                    moduleName = "LITE_LCDKIT";
+                    deviceMatchAttr = "hdf_lcdkit_driver";
+                }
+                device1 :: deviceNode {
+                    policy = 0;
+                    priority = 100;
+                    preload = 0;
+                    moduleName = "LCD_ICN9700";
+                }
+                device2 :: deviceNode {
+                    policy = 0;
+                    priority = 100;
+                    preload = 1;
+                    moduleName = "LCD_ST7789";
+                }
+            }
+        }
+
+        input :: host {
+            hostName = "input_host";
+            priority = 100;
+            device_input_manager :: device {
+                device0 :: deviceNode {
+                    policy = 2;
+                    priority = 100;
+                    preload = 0;
+                    permission = 0660;
+                    moduleName = "HDF_INPUT_MANAGER";
+                    serviceName = "input_dev_manager";
+                    deviceMatchAttr = "";
+                }
+            }
+            device_hdf_touch :: device {
+                device0 :: deviceNode {
+                    policy = 2;
+                    priority = 120;
+                    preload = 0;
+                    permission = 0660;
+                    moduleName = "HDF_TOUCH";
+                    serviceName = "event1";
+                    deviceMatchAttr = "touch_device1";
+                }
+            }
+
+            device_touch_chip :: device {
+                device0 :: deviceNode {
+                    policy = 0;
+                    priority = 130;
+                    preload = 0;
+                    permission = 0660;
+                    moduleName = "HDF_TOUCH_GT911";
+                    serviceName = "hdf_touch_gt911_service";
+                    deviceMatchAttr = "zsj_gt911_5p5";
+                }
+/*
+                device1 :: deviceNode {
+                    policy = 0;
+                    priority = 140;
+                    preload = 0;
+                    permission = 0660;
+                    moduleName = "HDF_TOUCH_GT911";
+                    serviceName = "hdf_touch_gt911_service";
+                    deviceMatchAttr = "zsj_gt911_4p0";
+                }
+
+                device2 :: deviceNode {
+                    policy = 0;
+                    priority = 150;
+                    preload = 0;
+                    permission = 0660;
+                    moduleName = "HDF_TOUCH_GT911";
+                    serviceName = "hdf_touch_gt911_service";
+                    deviceMatchAttr = "tg_gt911_7p0";
+                }
+                device0 :: deviceNode {
+                    policy = 0;
+                    priority = 130;
+                    preload = 0;
+                    permission = 0660;
+                    moduleName = "HDF_TOUCH_FT6336";
+                    serviceName = "hdf_touch_ft6336_service";
+                    deviceMatchAttr = "st_ft6336_2p35";
+                }
+*/
+            }
+            device_hdf_hid :: device {
+                device0 :: deviceNode {
+                    policy = 2;
+                    priority = 140;
+                    preload = 1;
+                    permission = 0660;
+                    moduleName = "HDF_HID";
+                    serviceName = "event2";
+                }
+            }
+/*
+            device_hdf_key :: device {
+                device0 :: deviceNode {
+                    policy = 2;
+                    priority = 130;
+                    preload = 0;
+                    permission = 0660;
+                    moduleName = "HDF_KEY";
+                    serviceName = "hdf_key_service0";
+                    deviceMatchAttr = "key_device0";
+                }
+            }
+*/
+        }
+
+        network :: host {
+            hostName = "network_host";
+            device_wifi :: device {
+                device0 :: deviceNode {
+                    policy = 2;
+                    priority = 100;
+                    preload = 0;
+                    permission = 0664;
+                    moduleName = "HDF_WIFI";
+                    deviceMatchAttr = "hdf_wlan_driver";
+                    serviceName = "hdfwifi";
+                }
+            }
+            device_wlan_chips :: device {
+                device0 :: deviceNode {
+                    policy = 0;
+                    preload = 1;
+                    moduleName = "HDF_WLAN_CHIPS";
+                    deviceMatchAttr = "hdf_wlan_chips_hi3881";
+                    serviceName = "hisi";
+                }
+            }
+        }
+        sensor :: host {
+            hostName = "sensor_host";
+            device_sensor_manager :: device {
+                device0 :: deviceNode {
+                    policy = 2;
+                    priority = 100;
+                    preload = 0;
+                    permission = 0664;
+                    moduleName = "HDF_SENSOR_MGR_AP";
+                    serviceName = "hdf_sensor_manager_ap";
+                }
+            }
+            device_sensor :: device {
+                device_accel :: deviceNode {
+                    policy = 0;
+                    priority = 101;
+                    preload = 0;
+                    permission = 0664;
+                    moduleName = "HDF_SENSOR_ACCEL";
+                }
+            }
+        }
+        storage :: host {
+
+        }
+        media :: host {
+
+        }
+    }
+}

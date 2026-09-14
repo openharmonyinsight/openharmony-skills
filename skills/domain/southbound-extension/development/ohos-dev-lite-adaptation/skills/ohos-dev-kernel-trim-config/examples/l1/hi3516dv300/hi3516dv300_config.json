@@ -1,0 +1,115 @@
+{
+    "subsystems": [
+       {
+         "subsystem": "hdf",
+         "components": [
+           { "component": "hdf_core","features":[ "hdf_core_platform_test_support = true" ]  }
+         ]
+       },
+       {
+        "subsystem": "kernel",
+        "components": [
+          { "component": "liteos_a" }
+        ]
+      },
+       {
+         "subsystem": "hiviewdfx",
+         "components": [
+           { "component": "hilog_lite" }
+         ]
+       },
+       {
+         "subsystem": "startup",
+         "components": [
+           { "component": "init" },
+           { "component": "appspawn" }
+   
+         ]
+       },
+       {
+         "subsystem": "communication",
+         "components": [
+           { "component": "dsoftbus" },
+           { "component": "ipc" }
+         ]
+       },
+       {
+         "subsystem": "systemabilitymgr",
+         "components": [
+           { "component": "samgr_lite" },
+           { "component": "safwk_lite" }
+         ]
+       },
+       {
+         "subsystem": "security",
+         "components": [
+           { "component": "device_auth" },
+           { "component": "huks" }
+         ]
+       },
+       {
+         "subsystem": "commonlibrary",
+         "components": [
+           { "component": "utils_lite" }
+         ]
+       },
+       {
+         "subsystem": "updater",
+         "components": [
+           { "component": "sys_installer_lite" }
+         ]
+       },
+       {
+         "subsystem": "developtools",
+         "components": [
+           { "component": "syscap_codec" }
+         ]
+       },
+       {
+         "subsystem": "thirdparty",
+         "components": [
+           { "component": "mbedtls" },
+           { "component": "libcoap" },
+           { "component": "toybox" },
+           { "component": "optimized_routines" },
+           { "component": "musl" },
+           { "component": "cJSON" },
+           { "component": "mksh" },
+           { "component": "FreeBSD" },
+           { "component": "bounds_checking_function" },
+           { "component": "NuttX" },
+           { "component": "FatFs" }
+         ]
+       },
+       {
+         "subsystem": "ability",
+         "components": [
+           { "component": "dmsfwk_lite" }
+         ]
+       },
+        {
+         "subsystem": "xts",
+         "components": [
+           { "component": "device_attest_lite" }
+         ]
+       },
+       {
+         "subsystem": "arkui",
+         "components": [
+           { "component": "ace_engine_lite" }
+         ]
+       },
+        {
+        "subsystem": "multimedia",
+        "components": [
+          { "component": "media_lite", "features":[] }
+        ]
+      },
+      {
+        "subsystem": "applications",
+        "components": [
+          { "component": "camera_sample_app", "features":[] }
+        ]
+      }
+     ]
+   } 

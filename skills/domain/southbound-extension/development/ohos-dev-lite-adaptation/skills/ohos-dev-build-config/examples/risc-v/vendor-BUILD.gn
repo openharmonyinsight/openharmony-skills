@@ -1,0 +1,9 @@
+# vendor/<device_company>/<board>/BUILD.gn
+# 产品构建 target：ohos.build 的 module_list 指向此 target。
+# target 名必须等于 ohos.build module_list 冒号后的部分（此处为 hispark_pegasus）。
+group("hispark_pegasus") {
+  deps = []
+  # 产品实际编译内容由 config.json 的 subsystems 驱动，此处不重复。
+  # 如有 vendor 自有 demo/应用模块，在此引用：
+  # "//vendor/hisilicon/hispark_pegasus/demo/led_demo:led_demo",
+}

@@ -1,0 +1,29 @@
+# 方式 B 板级 BUILD.gn：直接编译开源 LiteOS-M
+# 参考来源：device/qemu/esp32/liteos_m/board/BUILD.gn
+# 关键：import("//kernel/liteos_m/liteos.gni") 把开源内核拉入编译
+
+import("//kernel/liteos_m/liteos.gni")
+
+kernel_module("bsp_config") {
+  sources = [
+    "main.c",                    # 板级入口：LOS_KernelInit() + 硬件初始化 hooks
+    "hals/driver/hal_watchdog.c", # HAL 驱动（看门狗等）
+    "fs/fs_init.c",               # 文件系统初始化
+  ]
+  include_dirs = [
+    "include",
+    "hals/driver",
+  ]
+}
+
+config("public") {
+  include_dirs = [ "." ]
+  ldflags = [
+    "-Wl,-T" + rebase_path("{board}.ld"),
+  ]
+}
+
+# 注意：
+# 1. 不需要 startup_S.s —— 开源 LiteOS-M 在 kernel/liteos_m/arch/ 自带启动代码
+# 2. 不需要 *_adapter/kal/ —— 内核原生提供 CMSIS-RTOS2 + POSIX
+# 3. main.c 调用 LOS_KernelInit() 后启动 OH 应用

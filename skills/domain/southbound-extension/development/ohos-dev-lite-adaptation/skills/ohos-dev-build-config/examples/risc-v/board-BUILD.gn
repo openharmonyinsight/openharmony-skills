@@ -1,0 +1,8 @@
+# device/board/<device_company>/<board>/BUILD.gn
+# Board 构建入口：config.json 的 device_build_path 指向此目录。
+# target 名约定用 <board>（hispark_pegasus）。
+group("hispark_pegasus") {
+  deps = []
+  # 如有板级驱动/配置模块，在此引用：
+  # "//device/board/hisilicon/hispark_pegasus/liteos_m:hdf_config",
+}

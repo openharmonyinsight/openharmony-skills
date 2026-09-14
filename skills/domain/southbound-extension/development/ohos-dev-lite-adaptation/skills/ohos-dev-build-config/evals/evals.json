@@ -1,0 +1,74 @@
+{
+  "skill_name": "ohos-dev-build-config",
+  "evals": [
+    {
+      "id": "l1_config_json_ohos_build_generation",
+      "source_example": "SR-04 自验证 4.1/4.2 实测值（装配咬合 5/5 PASS + 配置一致性 12/12 PASS，Hi3516CV610 L1）",
+      "prompt": "给 Hi3516CV610（ARM Cortex-A7 双核 SMP @1200MHz，L1 小型系统，LiteOS-A 路线（本例为 CV610 的 LiteOS-A 产品配置场景——该板默认 target profile 为 L1-Linux，kernel_family=linux；两个路线的产品定义分别生成），device_company=hisilicon，板名 hi3516cv610_dmeb，DDR 基地址 0x40000000，GIC-400 dist 0x12401000，主晶振 24MHz，存储 SPI Nor，工具链 Clang）生成 vendor 侧的产品定义文件。product_name 请取 hi3516cv610_dmeb_liteos_a。只输出 config.json 和 ohos.build 两个文件的完整内容。",
+      "expected_output": "config.json with product_name hi3516cv610_dmeb_liteos_a / type small / kernel_type liteos_a / device_build_path + product_adapter_dir pointing at real paths, plus ohos.build whose part and subsystem names are product_hi3516cv610_dmeb_liteos_a (= product_ + product_name) and module_list pointing at the vendor BUILD.gn target. Both files valid JSON.",
+      "files": [],
+      "expectations": [
+        "config.json has product_name exactly 'hi3516cv610_dmeb_liteos_a', type 'small', and kernel_type 'liteos_a' (consistent with what config.gni would carry for L1).",
+        "ohos.build part name is exactly 'product_hi3516cv610_dmeb_liteos_a' (the literal prefix 'product_' + config.json product_name).",
+        "ohos.build subsystem field equals the same 'product_hi3516cv610_dmeb_liteos_a' string.",
+        "ohos.build module_list points to a target under '//vendor/hisilicon/hi3516cv610_dmeb_liteos_a' whose target name matches the vendor BUILD.gn group name implied by the plan.",
+        "config.json product_adapter_dir points to the hals/ directory under the vendor product directory (e.g. //vendor/hisilicon/hi3516cv610_dmeb_liteos_a/hals).",
+        "config.json device_build_path points to the Board-level path (device/board/hisilicon/hi3516cv610_dmeb) that contains a Board BUILD.gn.",
+        "Both outputs are valid JSON (parseable)."
+      ]
+    },
+    {
+      "id": "part_name_derivation_and_generation_order",
+      "source_example": "SR-04 实测：part=product_hi3516cv610_dmeb_liteos_a（product_ + product_name）；SKILL Step 3 生成顺序约束",
+      "prompt": "我在给新芯片生成构建文件。config.json 的 product_name 是 hi3516cv610_dmeb_liteos_a。请问：ohos.build 的 part/subsystem 名怎么定？另外 config.json 和 ohos.build 的生成顺序谁先谁后，为什么？",
+      "expected_output": "part/subsystem name = 'product_' + product_name = product_hi3516cv610_dmeb_liteos_a; config.json must be generated BEFORE ohos.build because the part name depends on product_name.",
+      "files": [],
+      "expectations": [
+        "States part (and subsystem) name is exactly 'product_hi3516cv610_dmeb_liteos_a', derived as 'product_' + product_name.",
+        "States config.json must be generated before ohos.build.",
+        "Explains the ordering dependency: ohos.build part name derives from config.json's product_name, so generating ohos.build first risks a mismatched part name.",
+        "Does not invent any other naming scheme (e.g. board name or bare product_name without prefix)."
+      ]
+    },
+    {
+      "id": "soc_buildgn_hardcoded_sdk_path_antipattern",
+      "source_example": "SR-04 验收判据 3 + 配置一致性 #7：SoC BUILD.gn 不写死厂商 SDK 源码路径（实测仅 deps=[liteos_a] + TODO 注释占位）",
+      "prompt": "我在 SoC BUILD.gn 里这样写了厂商 SDK 接入，帮我看看有没有问题。厂商 SDK 还没拿到，路径是我猜的：\n\n```gn\ngroup(\"hi3516cv610\") {\n  deps = [\n    \"//device/soc/hisilicon/hi3516cv610/sdk/open_source/full_sdk:all_libs\",\n  ]\n}\n```",
+      "expected_output": "Flags the hardcoded guessed vendor SDK path as a prohibited practice; correct approach is to keep only the kernel deps entry point plus a TODO comment marking the SDK attach point for the vendor to fill in.",
+      "files": [],
+      "expectations": [
+        "Identifies writing the guessed vendor SDK source path into SoC BUILD.gn deps as a violation/anti-pattern.",
+        "The corrected BUILD.gn keeps only the legitimate entry point (e.g. deps on liteos_a/kernel) and a TODO comment reserving the SDK attach point.",
+        "Explains the rationale: the SDK attach point is left to the vendor; a guessed path breaks gn gen with missing-target errors.",
+        "Does not keep the fabricated 'sdk/open_source/full_sdk' path in the corrected output."
+      ]
+    },
+    {
+      "id": "assembly_mating_check_mismatch",
+      "source_example": "SR-04 装配咬合 5 条实测（part 名/module_list target/device_build_path/product_adapter_dir/product_name 目录约定）——本用例把第 2 条做成真实断裂",
+      "prompt": "帮我跑一下装配咬合校验，看哪条不过。我的文件如下：\n\nconfig.json（vendor/hisilicon/hi3516cv610_dmeb_liteos_a/ 下，目录存在）：\n```json\n{\n  \"product_name\": \"hi3516cv610_dmeb_liteos_a\",\n  \"type\": \"small\",\n  \"device_build_path\": \"device/board/hisilicon/hi3516cv610_dmeb\",\n  \"kernel_type\": \"liteos_a\",\n  \"product_adapter_dir\": \"//vendor/hisilicon/hi3516cv610_dmeb_liteos_a/hals\"\n}\n```\n\nohos.build：\n```json\n{\n  \"parts\": {\n    \"product_hi3516cv610_dmeb_liteos_a\": {\n      \"module_list\": [\"//vendor/hisilicon/hi3516cv610_dmeb_liteos_a:hi3516cv610_dmeb\"]\n    }\n  },\n  \"subsystem\": \"product_hi3516cv610_dmeb_liteos_a\"\n}\n```\n\nvendor BUILD.gn 里写的是 `group(\"hi3516cv610_dmeb_liteos_a\")`。\n已知：device/board/hisilicon/hi3516cv610_dmeb/BUILD.gn 存在，hals/BUILD.gn 存在。逐条给出 5 条咬合校验的结果。",
+      "expected_output": "Exactly one mating check fails: ohos.build module_list target name ('hi3516cv610_dmeb', missing the _liteos_a suffix) != vendor BUILD.gn group name ('hi3516cv610_dmeb_liteos_a'); the other four checks pass. Fix: make module_list target and group name identical.",
+      "files": [],
+      "expectations": [
+        "Runs/reports all five mating checks individually (part name = product_ + product_name, module_list target == vendor group name, device_build_path exists with Board BUILD.gn, product_adapter_dir exists with hals BUILD.gn, product_name matches vendor directory convention).",
+        "Flags the module_list target vs vendor BUILD.gn group name mismatch as the failing item.",
+        "Marks the other four checks (part name prefix, device_build_path, product_adapter_dir, product_name directory convention) as passing.",
+        "Notes this mismatch would surface at hb assembly as 'no such target' during build.",
+        "Gives the fix: align module_list target name with the vendor BUILD.gn group name (rename one to match the other)."
+      ]
+    },
+    {
+      "id": "formal_build_vs_gn_smoke",
+      "source_example": "SKILL Step 5 禁止项（裸 gn gen+ninja 仅 GN 语法冒烟，正式编译一律 build.sh --product）+ SR-04 4.3 编译命令实测",
+      "prompt": "我刚生成完 GN 配置文件，想快速验证一下。直接 gn gen + ninja 当正式编译跑，可以吗？正式编译应该用什么命令？",
+      "expected_output": "Bare gn gen + ninja only does syntax smoke checking (bypasses hb product/subsystem assembly, cannot produce flashable firmware); formal compilation must use ./build.sh --product <product_name>.",
+      "files": [],
+      "expectations": [
+        "States bare gn gen + ninja bypasses the hb product/subsystem assembly logic and cannot produce a flashable firmware image.",
+        "States the formal build command is './build.sh --product <product_name>' with product_name taken from config.json.",
+        "Notes the gn/ninja route is acceptable only as a minimal syntax smoke check (and requires prebuilts ready).",
+        "Mentions build products land under out/<board>/<product>/."
+      ]
+    }
+  ]
+}

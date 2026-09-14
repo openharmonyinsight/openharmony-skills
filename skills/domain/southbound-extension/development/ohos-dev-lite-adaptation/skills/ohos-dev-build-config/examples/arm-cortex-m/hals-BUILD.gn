@@ -1,0 +1,6 @@
+# vendor/<device_company>/<board>/hals/BUILD.gn
+# HAL 适配目录占位：config.json 的 product_adapter_dir 指向此目录。
+# 目录内的具体 HAL 实现由其他能力/厂商填充，不在本 SKILL 范围。
+group("hals") {
+  deps = []
+}

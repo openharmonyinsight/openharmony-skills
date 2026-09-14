@@ -1,0 +1,64 @@
+{
+  "skill_name": "ohos-ci-lite-deploy-burn",
+  "evals": [
+    {
+      "id": "remote_build_artifact_download_flow",
+      "source_example": "iter12 实战编译链路（build.sh --product wifiiot_hispark_pegasus，产物 out/hispark_pegasus/wifiiot_hispark_pegasus/）+ SKILL.md Phase 1/2 定义",
+      "prompt": "我的 config.json 配了 SSH 模式：connection.method=ssh（host/port/user 已填），build.product_name=wifiiot_hispark_pegasus，artifacts.remote_map_path=out/hispark_pegasus/wifiiot_hispark_pegasus/Hi3861_wifiiot_app_burn.map，local.artifacts_dir=E:/fw。请编译并下载产物。说明执行流程和产出物。",
+      "expected_output": "Phase 1 远程执行编译（SSH 到 code_dir 跑 build 命令，产物在 out/hispark_pegasus/wifiiot_hispark_pegasus/ 下）→ Phase 2 SCP 拉取 .bin + .map 到 E:/fw（LOCAL_ARTIFACTS）；Local 模式才跳过 Phase 2；下载后可校验文件完整性。",
+      "files": [],
+      "expectations": [
+        "流程为 Phase 1（编译）→ Phase 2（产物下载）两阶段串联，顺序正确。",
+        "编译在远程服务器执行（SSH 方式），不在本地跑 build。",
+        "下载产物包含 .bin 和 .map，落到 config 的 local.artifacts_dir（E:/fw）。",
+        "指出 Local 模式（源码在本机）时 Phase 2 跳过（产物已在本地）。",
+        "变量取值来自 config.json（product_name / remote_map_path / artifacts_dir），无凭空编造的路径。"
+      ]
+    },
+    {
+      "id": "l1_burn_package_and_medium_mismatch",
+      "source_example": "iter07 实战（Hi3516CV610）：介质错配 no find spi + Invalid spi flash block size；L1 烧录包 boot_image+env+uImage+rootfs+xml 按 xml 分区表（burn_table）烧 eMMC/NAND；裸烧必用 debug defconfig",
+      "prompt": "Hi3516CV610 L1 板，我在烧 env/kernel/rootfs 时控制台打印：\n\n```\nLoading Environment from NAND... OK\ngetinfo spi → no find spi\nInvalid spi flash block size!\n```\n\n烧不下去了。这是什么问题？怎么处置？另外确认下 L1 的烧录包应该包含哪些文件、怎么组织烧录分区？",
+      "expected_output": "判定为介质错配（板子实际 boot 介质是 NAND ≠ 烧录包目标介质 SPI Nor）；处置：getinfo 确认实际介质 → 按实际介质重做包（NAND→ubifs/nand_env/NAND defconfig）→ intake.boot.medium 不能假设，必须从硬件确认。L1 烧录包 = boot_image + env + uImage + rootfs + 分区 xml（burn_table），按 xml 分区表逐区烧，工具是 HiTool/厂商 ToolPlatform 非 HiBurn。",
+      "files": [],
+      "expectations": [
+        "根因判定为介质错配：板上现有 uboot 是 NAND 版，烧录包按 SPI Nor 做，两者不一致。",
+        "给出 getinfo 确认实际介质的处置步骤（getinfo spi/nand/mmc）。",
+        "给出按实际介质重做包的具体差异（NAND→rootfs ubifs + nand_env + NAND defconfig；SPI Nor→jffs2；eMMC→ext4）。",
+        "指出 intake.boot.medium 不能假设，必须从硬件确认（getinfo/拨码/原理图），防止复发。",
+        "L1 烧录包内容答出 5 件：boot_image + env + uImage + rootfs + 分区 xml（分区表/burn_table），按 xml 逐区烧。",
+        "指出 L1 烧录工具是 HiTool/厂商 ToolPlatform（USB/网口），不是 L0 的 HiBurn 串口方式。"
+      ]
+    },
+    {
+      "id": "test_run_log_capture_and_passfail_stats",
+      "source_example": "iter12 实战 + SKILL.md「自动上板跑 test」能力 1-4（burn_one.py WAKE_MAGIC 0xEFBEADDE... 唤醒、at_probe 降级、[统计] 40 Tests 0 Failures、结束标志 All the test suites finished、0xC35A69A6 握手重试码）",
+      "prompt": "Hi3861 板已烧好带 XTS 的固件，我想重跑一次测试拿 PASS/FAIL 统计。但发 AT+RST 前发现串口对 AT 探测没响应（AT 静默）。另外上次 HiBurn 烧录时报过 0xC35A69A6，当时以为校验失败。请说明：①AT 静默时怎么跑测试 ②怎么判断 XTS 跑完了、统计从哪来 ③0xC35A69A6 到底是什么。",
+      "expected_output": "①burn_one.py 降级链：at_probe 无响应 → 自动发 WAKE_MAGIC 唤醒 AT → 唤醒成功再 AT+RST；仍失败 → 降级仅监听串口 + 提示用户手按 RST（监听已在抓不遗漏）。②结束标志 `All the test suites finished`，收到即视为完成；统计行如 `[统计] 40 Tests, 0 Failures, 通过率 100.0%` 由 run_and_read 累计 PASSED/FAILED 得出；重跑用 --run-only。③0xC35A69A6 是握手重试码（板子没及时进下载模式/时序错开），不是校验失败；校验 fail 是签名/格式问题。",
+      "files": [],
+      "expectations": [
+        "AT 静默处置给出 WAKE_MAGIC 自动唤醒（burn_one.py 烧录/运行前自动发），不是让用户直接放弃或白等超时。",
+        "唤醒仍失败时降级为仅监听串口 + 提示用户手按 RST，且说明监听已在抓不会遗漏。",
+        "XTS 完成判定是收到 `All the test suites finished` 标志。",
+        "统计产出形式为 PASSED/FAILED 累计的统计行（如 `[统计] 40 Tests, 0 Failures, 通过率 100.0%`）。",
+        "镜像已烧好只重跑测试用 --run-only（AT+RST 软复位，免按键）。",
+        "0xC35A69A6 正确定性为握手重试码而非校验失败，并区分两类故障（握手重试 vs 签名/格式校验 fail）。"
+      ]
+    },
+    {
+      "id": "map_analysis_artifacts",
+      "source_example": "tools/map_analyzer.py（skill 自带资产，ohos-test-lite-adapt-verify explore/verify 阶段调用的 analyze/compare 双模式）",
+      "prompt": "固件编好了，我想看看 RAM/ROM 内存布局，找出占内存最大的段和符号；之后改了代码重新编，还想对比改前改后的差异。用本 skill 的工具怎么做？",
+      "expected_output": "单次分析用 `python tools/map_analyzer.py analyze <map文件>` 输出内存布局（RAM/ROM 已用、Top N 最大段/符号）；对比用 `python tools/map_analyzer.py compare <基线map> <新map>` 输出 delta（RAM/Flash 变化 +/- KB、Top 变化最大的段/符号）。.map 文件来自编译产物下载（Phase 2）。",
+      "files": [],
+      "expectations": [
+        "指出工具是本 skill 自带的 tools/map_analyzer.py。",
+        "单次布局分析给出 analyze 子命令 + MAP 文件位置参数的完整命令形式（如 python map_analyzer.py analyze <map_file>）。",
+        "对比分析给出 compare 子命令 + 基线 map + 新 map 两个参数的完整命令形式。",
+        "说明 analyze 产出含 Top 最大段/符号级信息（不只总数）。",
+        "说明 compare 产出含 RAM/Flash 变化 delta（+/- KB）及变化最大的段/符号。",
+        ".map 文件来源说清：编译产物（Phase 2 下载或本地编译 out 目录），不是凭空指定。"
+      ]
+    }
+  ]
+}

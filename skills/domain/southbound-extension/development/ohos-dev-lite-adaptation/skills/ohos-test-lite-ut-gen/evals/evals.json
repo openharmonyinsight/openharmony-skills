@@ -1,0 +1,74 @@
+{
+  "skill_name": "ohos-test-lite-ut-gen",
+  "evals": [
+    {
+      "id": "l0_gpio_hctest_five_scenario_generation",
+      "source_example": "iter12 端到端真实生成物 iot_gpio_test_27.c（546 行，27 用例：正向11+边界8+异常6+ISR1+CMSIS1，板子 27/27 PASS）",
+      "prompt": "请为以下 Hi3861 L0（LiteOS-M）GPIO 驱动接口头文件生成测试代码和配套 BUILD.gn。\n\n```c\n// iot_gpio.h（节选，Hi3861 L0，iot_hardware 接口）\ntypedef void (*GpioIsrCallbackFunc)(char *arg);\nunsigned int IoTGpioInit(unsigned int id);\nunsigned int IoTGpioSetDir(unsigned int id, IotGpioDirection dir);\nunsigned int IoTGpioSetOutput(unsigned int id, IotIoLevel level);\nunsigned int IoTGpioRegisterIsrFunc(unsigned int id, IotGpioIntType intType, IotGpioIntPolarity intPolarity, GpioIsrCallbackFunc func, char *arg);\n// 返回值：IOT_SUCCESS(0) 成功；IOT_FAILURE(1) 失败（含非法参数，如 pin 超出范围）\n// 芯片有效 GPIO 引脚号范围：0~15\n```\n\n要求覆盖正向功能/边界值/异常路径/ISR 安全/CMSIS 兼容五类场景，引脚号不要硬编码。",
+      "expected_output": "HCTest+iCunit 纯 C 测试文件 + BUILD.gn：LITE_TEST_SUIT/LITE_TEST_CASE 注册、五类场景各有独立用例、非法 pin 断言 IOT_FAILURE、ISR 用例传真 callback、TEST_PIN 宏定义、lite_component BUILD.gn。",
+      "files": [],
+      "expectations": [
+        "Uses the HCTest + iCunit framework (LITE_TEST_SUIT / LITE_TEST_CASE / RUN_TEST_SUITE + ICUNIT_ASSERT_* macros) in pure C, with no C++ / HWTEST_F / gtest constructs.",
+        "Covers all five scenario classes with at least one case each: positive, boundary, exception/invalid-param, ISR safety, CMSIS compatibility.",
+        "The invalid-pin exception case asserts the specific expected value IOT_FAILURE (e.g. ICUNIT_ASSERT_EQUAL(ret, IOT_FAILURE, ret)), not a vacuous always-true assertion like TEST_ASSERT_UINT32_WITHIN(1, 0, ret) or TEST_ASSERT_TRUE(1).",
+        "The ISR case passes a real callback function of type GpioIsrCallbackFunc (non-NULL), not NULL.",
+        "Pin numbers are defined via macros (e.g. #define TEST_PIN_VALID / TEST_PIN_INVALID) rather than hardcoded literals in test bodies.",
+        "Each LITE_TEST_CASE carries the test flag (Function | MediumTest | Level1 or equivalent).",
+        "A companion BUILD.gn is generated using import of lite_component.gni with include path //base/iot_hardware/peripheral/... (underscored, not //base/iothardware/...)."
+      ]
+    },
+    {
+      "id": "l1_watchdog_hwtest_gtest_generation",
+      "source_example": "iter09 测试1（L1-Linux 路线，Hi3516CV610）真实产出 watchdog_hal_test.cpp（17 个 HWTEST_F 编进 ARM .bin，ninja [42/42] 退出码 0）",
+      "prompt": "目标平台是 L1 小型系统 L1-Linux 路线（kernel_family=linux，如 Hi3516CV610，Cortex-A，有 MMU），请为以下 watchdog 驱动 HAL 接口生成测试代码 + BUILD.gn：\n\n```c\n// watchdog_if.h（节选，L1 HDF 接口，drivers/peripheral）\nint32_t WatchdogOpen(int16_t wdtId, DevHandle *handle);\nint32_t WatchdogClose(DevHandle handle);\nint32_t WatchdogStart(DevHandle handle);\nint32_t WatchdogStop(DevHandle handle);\nint32_t WatchdogSetTimeout(DevHandle handle, uint32_t seconds);\nint32_t WatchdogFeed(DevHandle handle);\n// 返回值：HDF_SUCCESS(0) 成功；负值错误码（非法参数等）\n// 有效 wdtId：0；非法 wdtId：-1 / 99\n```\n\n系统级别已确认 L1。",
+      "expected_output": "HWTest/gtest C++ 测试（HWTEST_F + EXPECT_EQ 等，L1-Linux 路线），L1 不含 ISR/CMSIS 用例，改覆盖正向/边界/异常/生命周期；BUILD.gn 依赖 drivers/peripheral。",
+      "files": [],
+      "expectations": [
+        "Generates C++ test code using HWTEST_F macro with gtest assertions (EXPECT_EQ / ASSERT_TRUE / EXPECT_NE), inside a class deriving from testing::Test（L1-Linux 路线实证；L1-LiteOS-A 路线需先按平台 acts 范式确认，不默认 HWTest）.",
+        "Does NOT generate any L0 constructs: no LITE_TEST_CASE, no ICUNIT_ASSERT_*, no iCunit include.",
+        "Does NOT force ISR-safety or CMSIS-compatibility cases (these are L0-only); instead covers positive/boundary/exception/lifecycle scenarios.",
+        "Each HWTEST_F carries a TestSize level tag (e.g. TestSize.Level0)（L1-Linux 路线实证；L1-LiteOS-A 路线需先按平台 acts 范式确认，不默认 HWTest）.",
+        "BUILD.gn depends on //drivers/peripheral/... HAL target and includes the liteos_a testsuites or HDF hal include path, not iot_hardware."
+      ]
+    },
+    {
+      "id": "anti_pattern_vacuous_boundary_assertion_review",
+      "source_example": "iter09 测试2 真实翻车点：边界断言 TEST_ASSERT_UINT32_WITHIN(1, 0, ret) 对 unsigned 等于 ret∈{0,1} 而返回值恰只有 0/1 → 退化恒真（deep-review 判定），iter10/iter12 修复",
+      "prompt": "以下是为 L0 GPIO 驱动生成的边界值测试片段，请审查断言是否有判别力（能否区分实现正确/错误），指出问题并给出修正后的断言：\n\n```c\n/* 边界值测试：pin=0（合法下边界）与 pin=99（非法） */\nLITE_TEST_CASE(IotGpioTestSuite, testGpioBoundary, Function | MediumTest | Level1)\n{\n    unsigned int ret;\n    ret = IoTGpioSetDir(0, IOT_GPIO_DIR_OUT);        /* pin=0 合法边界 */\n    TEST_ASSERT_UINT32_WITHIN(1, 0, ret);            /* 期望成功附近 */\n    ret = IoTGpioSetDir(99, IOT_GPIO_DIR_OUT);       /* pin=99 非法 */\n    TEST_ASSERT_UINT32_WITHIN(1, 0, ret);            /* 同上 */\n}\n/* 已知：IoTGpioSetDir 返回 unsigned，只有 IOT_SUCCESS(0) / IOT_FAILURE(1) 两种取值 */\n```\n\n只输出问题分析和修正后的断言代码。",
+      "expected_output": "识别 WITHIN(1,0,ret) 对仅取 {0,1} 的 unsigned 返回值退化为恒真断言（无论实现对错都过）；修正为对合法边界 pin 断言 IOT_SUCCESS、对非法 pin 断言 IOT_FAILURE。",
+      "files": [],
+      "expectations": [
+        "Identifies that TEST_ASSERT_UINT32_WITHIN(1, 0, ret) only checks ret in {0,1}, which covers BOTH possible return values, making the assertion vacuous (always passes regardless of correctness).",
+        "Explains the boundary case pin=99 (invalid) should assert the specific failure value IOT_FAILURE, and pin=0 (valid boundary) should assert IOT_SUCCESS.",
+        "Provides corrected assertions using exact-value assertions (e.g. TEST_ASSERT_EQUAL_INT32 / ICUNIT_ASSERT_EQUAL with IOT_SUCCESS and IOT_FAILURE).",
+        "Does not defend the WITHIN assertion as acceptable."
+      ]
+    },
+    {
+      "id": "isr_null_callback_and_cmsis_case_presence",
+      "source_example": "iter12 v1→v2 真坑：v1 ISR 用例 callback 传 NULL 烧板 HardFault；v2 传真 callback 后 27/27 PASS（testIoTGpioIsrCallbackPath026 + testIoTGpioCmsisConsistency027）",
+      "prompt": "我在给 L0 Hi3861 平台生成 GPIO 测试。有人说：ISR 测试用例直接调 IoTGpioRegisterIsrFunc(id, type, polarity, NULL, NULL) 然后断言返回 IOT_SUCCESS 就行了，反正注册成功就行；CMSIS 兼容性测试可有可无，L0 反正也测不出差异。请评价这个说法，并给出正确的 ISR 安全用例和 CMSIS 兼容用例应该怎么写（可用伪代码）。接口签名：\n\n```c\ntypedef void (*GpioIsrCallbackFunc)(char *arg);\nunsigned int IoTGpioRegisterIsrFunc(unsigned int id, IotGpioIntType intType, IotGpioIntPolarity intPolarity, GpioIsrCallbackFunc func, char *arg);\n// NULL callback 时返回 HI_ERR_GPIO_INVALID_PARAMETER(0x80001040)，不走注册路径\n```",
+      "expected_output": "指出 NULL callback 是参数校验测试而非 ISR 功能测试（且断言 SUCCESS 会假红）；ISR 用例须传真 callback 并验证真 ISR 上下文（中断触发、callback 内无阻塞调用）；CMSIS 兼容用例应在 CMSIS-RTOS2 任务中调用接口验证行为一致，不能省。",
+      "files": [],
+      "expectations": [
+        "States that passing NULL callback does NOT exercise the registration path (returns HI_ERR_GPIO_INVALID_PARAMETER / invalid-parameter error), so asserting IOT_SUCCESS would be a false-red test.",
+        "States the ISR case must pass a real callback function (GpioIsrCallbackFunc signature) and ideally verify real interrupt-context behavior (callback invoked from actual ISR, no blocking calls inside callback), not merely that the callback function can be invoked synchronously.",
+        "Disagrees that the CMSIS compatibility case is unnecessary for L0, and sketches a case that calls the IoT GPIO API from within a CMSIS-RTOS2 task/thread expecting behavior consistent with the native call.",
+        "Does not recommend keeping the NULL-callback assertion of IOT_SUCCESS."
+      ]
+    },
+    {
+      "id": "board_test_not_running_gc_sections_triage",
+      "source_example": "iter12 真坑：烧板后测试不跑/HardFault——linker.ld 缺 KEEP(.zinitcall.run*/.zinitcall.sys.service*/.zinitcall.test*)，gc-sections 丢弃 initCase 指针/函数体（skill Step 5.5/Step 7 已回填）",
+      "prompt": "我在 hi3861 L0 板上烧了带 HCTest 测试的固件（27 个 LITE_TEST_CASE），但串口只看到 \"HCTest Framework inited\" 之后就没有任何测试输出，测试好像根本没跑。另一种情况：跑到测试注册阶段直接 HardFault。`nm OHOS_Image | grep initCase` 输出为空。固件开启了 -Wl,--gc-sections。这是什么问题？怎么修？",
+      "expected_output": "判定为 linker 脚本未 KEEP zinitcall 测试相关段导致 gc-sections 丢弃 initCase 函数指针/函数体：无输出=测试没注册进 runner；HardFault=只留悬挂指针而函数体被丢。修法=linker.ld .zInit 段内加 KEEP(SORT_BY_NAME(.zinitcall.run*)/.zinitcall.sys.service*/.zinitcall.test*) 并强制重链，编后 nm 验证 initCase 计数/指针非 0/段边界符号。",
+      "files": [],
+      "expectations": [
+        "Attributes the symptom to the linker script missing KEEP for zinitcall test-related sections (.zinitcall.run* / .zinitcall.sys.service* / .zinitcall.test*) combined with --gc-sections, not to a driver bug or flash/burn problem.",
+        "Distinguishes the two failure modes: no test output = test suite never registered into the runner; HardFault at registration = dangling zinitcall pointer with initCase function body garbage-collected.",
+        "Gives the fix: add KEEP(*(SORT_BY_NAME(.zinitcall.run*))) plus sys.service and test sections inside the .zInit region of linker.ld, and force a relink (touch linker.ld / explicit rebuild target, since ninja may not track the -T script dependency).",
+        "Specifies post-build verification: nm-counted initCase symbols must equal the number of test cases with non-zero addresses, __zinitcall_run_initCase* pointers non-zero, and __zinitcall_run_(start|end) boundary symbols present."
+      ]
+    }
+  ]
+}

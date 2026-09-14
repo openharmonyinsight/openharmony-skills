@@ -1,0 +1,59 @@
+{
+  "skill_name": "ohos-dev-lite-adaptation",
+  "evals": [
+    {
+      "id": "router_intent_new_project_greenfield",
+      "source_example": "skills/ohos-dev-workflow-router/SKILL.md 路由规则 R3（新项目从 P1）+ steps/01 source_provenance 模式（greenfield）",
+      "prompt": "我有一颗 hi3516cv610 的板子，想把 OpenHarmony Lite 移植上去，什么都还没开始。该怎么走？",
+      "expected_output": "Router identifies a new full adaptation: starts at P1 (环境搭建), greenfield mode (source_provenance.mode=greenfield, no existing skeleton), collects workflow_config prerequisites (board/medium/DDR variant), and lays out the 7-phase path rather than jumping into kernel porting directly.",
+      "files": [],
+      "expectations": [
+        "Routes the user to start at P1 (环境搭建) rather than P2 or any later phase.",
+        "Identifies this as greenfield / 从零生成 mode (no existing chip skeleton in the OH repo).",
+        "Mentions collecting prerequisite decisions (target system level L0/L1, boot medium, DDR variant suffix) before or during P1 — per Step 0 苏格拉底澄清/前置决策采集.",
+        "Outlines the 7-phase flow (P1→P7) as the roadmap rather than giving isolated advice.",
+        "Does not fabricate chip-specific details before P1 environment confirmation."
+      ]
+    },
+    {
+      "id": "router_escape_hatch_p7",
+      "source_example": "skills/ohos-dev-workflow-router/SKILL.md 路由规则 R2（错误切 P7 逃生舱，不中断主线）+ 07-problem-diag 回归断点",
+      "prompt": "我们正在 P4 编译构建阶段，ninja 报错：region RAM overflowed by 4168 bytes。现在应该怎么办？",
+      "expected_output": "Router applies escape-hatch routing: the error is handed to P7 (problem-diag) without abandoning the main line; after diagnosis/fix the flow returns to the P4 breakpoint. Diagnosis should point to link-section overflow causes (e.g. section growth, gc-sections dropping, SRAM size limits) rather than telling the user to restart the workflow.",
+      "files": [],
+      "expectations": [
+        "Recognizes this as an in-phase failure that triggers the P7 escape hatch (not a workflow restart).",
+        "Preserves the P4 breakpoint for return after the fix (回归断点 semantics).",
+        "Routes the diagnosis toward section/RAM overflow root causes (linker sections, component size, gc-sections behavior).",
+        "Does not instruct the user to abandon current progress or re-run earlier phases."
+      ]
+    },
+    {
+      "id": "router_gate_discipline_no_advance_on_fail",
+      "source_example": "skills/ohos-dev-workflow-router/SKILL.md GATE 门控表（技术门控 PASS 自决过）+ 02-kernel-port 可行性报告反短路",
+      "prompt": "P2 内核移植阶段的东西我基本写完了，就是内核可行性报告还没写（觉得没必要）。GATE-K 能不能过？直接进 P3 写驱动吧？",
+      "expected_output": "Router enforces GATE discipline: missing feasibility report is a GATE-K FAIL condition (the anti-shortcut rule exists precisely because feasibility-report-absence caused real failures) — the gate does not pass on 'basically done', P3 must not start until the report exists and gate criteria are met.",
+      "files": [],
+      "expectations": [
+        "Refuses to pass GATE-K without the feasibility report (identifies it as a gate criterion, not optional paperwork).",
+        "Explains gates are hard quality discipline (PASS criteria must be actually met, not self-declared as done).",
+        "Does not allow P3 to start on a FAILED/incomplete GATE-K.",
+        "Optionally explains why the rule exists (real failures from skipped feasibility verification)."
+      ]
+    },
+    {
+      "id": "router_decision_a5_reading_and_translation",
+      "source_example": "{{ASSET_ROOT}}/workflow/DECISIONS.md A5 当前值（不需要/单 Agent 顺序模式 + reason）+ router 术语大白话转译表（受众标注）",
+      "prompt": "这个工作流的 A5 决策现在是什么设置？用人话说是什么意思？我想改成并行模式可以吗？",
+      "expected_output": "Reads A5 from DECISIONS.md: current value 不需要 (single-agent sequential mode), with the recorded reason (dispatch mode never actually ran; enabling dispatch before single-agent Round-Trip converges violates 'correctness before quality'). Answers in plain language for the user, notes the technical definition source, and explains what changing it would require (single-agent Round-Trip convergence first).",
+      "files": [],
+      "expectations": [
+        "States the current A5 value correctly: 不需要 (single-agent sequential mode).",
+        "Translates the meaning into plain language (编排器自己顺序跑所有阶段，不派发子代理).",
+        "Cites or reflects the recorded reason (dispatch mode never actually run; correctness-first principle).",
+        "Advises on what changing A5 would involve rather than just flipping the value (single-agent Round-Trip convergence as the precondition).",
+        "Distinguishes plain-language translation from the authoritative technical definition (DECISIONS.md as source)."
+      ]
+    }
+  ]
+}

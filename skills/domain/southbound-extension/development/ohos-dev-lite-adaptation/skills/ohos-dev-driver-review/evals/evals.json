@@ -1,0 +1,74 @@
+{
+  "skill_name": "ohos-dev-driver-review",
+  "evals": [
+    {
+      "id": "sec004_mutex_unlock_without_lock",
+      "source_example": "SR-08 iter09 深审真实判例 C-1（hal_token.c:181-205，SEC-004/FUNC-005，互斥锁加锁失败仍 unlock + 返回 OK，CRITICAL，代码片段与源码逐字一致）",
+      "prompt": "请深度审查下面这段 L1 系统（LiteOS-A 用户态 HAL）的 token 读写代码（摘自 hal_token.c）。\n\n```c\nstatic pthread_mutex_t tokenMutex;\nstatic int tokenLock;\n\nstatic int32_t ReadTokenRawData(const char* path, const char* fileName, char* buffer, uint32_t bufferLen)\n{\n    tokenLock = pthread_mutex_lock(&tokenMutex);\n    if (tokenLock == 0) {\n        int ret = ReadTokenFile(path, fileName, buffer, bufferLen);\n        if (ret < 0) {\n            pthread_mutex_unlock(&tokenMutex);\n            return HAL_TOKEN_ERR;\n        }\n    }\n    pthread_mutex_unlock(&tokenMutex);\n    return HAL_TOKEN_OK;\n}\n\nstatic int32_t WriteTokenRawData(const char* path, const char* fileName, const char* data, uint32_t dataLen)\n{\n    tokenLock = pthread_mutex_lock(&tokenMutex);\n    if (tokenLock == 0) {\n        int ret = WriteTokenFile(path, fileName, data, dataLen);\n        if (ret < 0) {\n            pthread_mutex_unlock(&tokenMutex);\n            return HAL_TOKEN_ERR;\n        }\n    }\n    pthread_mutex_unlock(&tokenMutex);\n    return HAL_TOKEN_OK;\n}\n```\n\n只输出对这两个函数的审查发现（规则 ID + 严重度 + 问题 + 修复建议）。",
+      "expected_output": "CRITICAL finding (rule IDs SEC-004 shared-data protection + FUNC-005 return-value handling, or equivalent): if pthread_mutex_lock fails (returns non-0), code (1) skips the read/write, (2) still calls pthread_mutex_unlock on an unlocked mutex — undefined behavior, (3) returns HAL_TOKEN_OK — silent success, caller believes data was read. Fix: on lock failure return HAL_TOKEN_ERR immediately without unlock; single-exit lock/unlock pairing. Both functions share the same defect.",
+      "files": [],
+      "expectations": [
+        "检出加锁失败仍调用 pthread_mutex_unlock 的问题，且指出这是对未加锁互斥锁解锁（未定义行为）。",
+        "检出加锁失败仍 return HAL_TOKEN_OK 的静默成功问题（调用方以为读到了数据，实际 buffer 未变）。",
+        "该发现定为 CRITICAL 级（阻塞合入级），并引用规则 ID（如 SEC-004 / FUNC-005 或等价的共享数据保护/返回值检查规则）。",
+        "修复建议明确：加锁失败直接返回错误、不调用 unlock，lock/unlock 严格配对；给出 Before/After 或等价的修复代码。",
+        "两个函数（Read/Write）的同型缺陷都被覆盖，不只报一个。"
+      ]
+    },
+    {
+      "id": "severity_calibration_three_tiers",
+      "source_example": "SR-08 iter09 深审真实校准判例：C-5 malloc 失败路径泄漏应 HIGH 非 CRITICAL；H-4 close 返回值忽略应 MEDIUM 非 HIGH；C-6 硬编码制造密钥保持 CRITICAL（hal_token.c:236-238 / hal_sys_param.c:44,47 / hal_token.c:466-470）",
+      "prompt": "审查以下三段 L1 HAL 代码，对每个问题给出严重度（CRITICAL/HIGH/MEDIUM/LOW）并说明定级理由。\n\n【片段A】malloc 失败路径（hal_token.c ReadTokenWithFlag，buffLen=160）：\n```c\nchar *buf = malloc(buffLen);\nif (buf == NULL) { return HAL_TOKEN_ERR; }\nif (ReadTokenRawData(path, fileName, buf, buffLen) != 0) { free(buf); return HAL_TOKEN_ERR; }\n// ... 校验 magic number，失败路径已 free ...\nif (memcpy_s(TokenWithFlag, TOKEN_WITH_FLAG_SIZE, buf + TOKEN_MAGIC_NUM_SIZE, TOKEN_WITH_FLAG_SIZE) != 0) {\n    return HAL_TOKEN_ERR;   // ← 这里直接 return，没 free(buf)\n}\nfree(buf);\n```\n\n【片段B】close 返回值忽略（hal_sys_param.c，本地 flash 上的文件）：\n```c\nint fd = open(path, O_RDONLY);\nif (fd < 0) { return NULL; }\nssize_t n = read(fd, strOrigin, sizeof(strOrigin) - 1);\n(void)close(fd);   // ← 返回值忽略\n```\n\n【片段C】硬编码制造密钥（hal_token.c HalGetAcKey）：\n```c\nconst char manufacturekeyBuf[] = {\n    0x13, 0x42, 0x3F, 0x3F, 0x53 /* ...共 48 字节明文密钥... */, 0x3F, 0x47\n};\nif (acKey == NULL || len < sizeof(manufacturekeyBuf)) { return EC_FAILURE; }\nif (memcpy_s(acKey, len, manufacturekeyBuf, sizeof(manufacturekeyBuf)) != EOK) { return EC_FAILURE; }\nreturn EC_SUCCESS;\n```\n\n只输出三个定级 + 理由。",
+      "expected_output": "A: HIGH — failure-path-only 160-byte leak, not data corruption/overflow/silent success, so not CRITICAL (CRITICAL reserved for HardFault/security hole/data corruption/silent success). B: MEDIUM — close on local flash rarely fails, low actual risk on L1, HIGH would be over-strict. C: CRITICAL — 48-byte plaintext manufacture key hardcoded in source, credential-management level issue (anyone with repo read access can extract it).",
+      "files": [],
+      "expectations": [
+        "片段A定 HIGH（失败路径资源泄漏），不是 CRITICAL——理由包含'仅失败路径泄漏/非数据损坏级'的校准逻辑。",
+        "片段B定 MEDIUM 不是 HIGH——理由包含'本地 flash 上 close 极少失败/实际风险低'的风险匹配逻辑。",
+        "片段C定 CRITICAL——理由点明凭据管理级风险（明文密钥入库，任何有仓库读权限者可提取）。",
+        "三个定级都不偏严不偏松，且各自给出了与实际风险匹配的定级理由（不是机械按规则表默认级）。",
+        "严重度边界口径与'CRITICAL 限可致 HardFault/安全漏洞/数据损坏/静默成功'的校准原则一致。"
+      ]
+    },
+    {
+      "id": "fix_suggestion_before_after",
+      "source_example": "SR-08 iter09 真实判例 C-3（hal_token.c:315/337/359/385/401，SEC-001，TOKEN_WITH_FLAG_SIZE - len 无符号下溢致堆栈溢出写，修复建议含入口 len 校验）",
+      "prompt": "深度审查这段 L1 token 写入代码（TOKEN_WITH_FLAG_SIZE=155，TOKEN_FLAG_SIZE=4，均为 uint32_t）：\n\n```c\nstatic int32_t OEMWriteTokenB(const char* token, uint32_t len)\n{\n    char tokenWithFlagB[TOKEN_WITH_FLAG_SIZE] = {0};\n    uint8_t flag[TOKEN_FLAG_SIZE] = {0};\n    SetTokenFlag(flag, 2);\n    if ((memcpy_s(tokenWithFlagB, TOKEN_WITH_FLAG_SIZE, token, len) != 0) ||\n        (memcpy_s(tokenWithFlagB + len, TOKEN_WITH_FLAG_SIZE - len, flag, TOKEN_FLAG_SIZE) != 0)) {\n        return HAL_TOKEN_ERR;\n    }\n    return WriteTokenWithFlag(TOKEN_FILE_PATH, TOKEN_B_FILE_NAME, tokenWithFlagB, TOKEN_WITH_FLAG_SIZE);\n}\n\nint HalWriteToken(const char *token, unsigned int len)\n{\n    if (token == NULL) {\n        return EC_FAILURE;\n    }\n    return OEMWriteToken(token, len);\n}\n```\n\n输出发现（规则 ID + 严重度 + 当前代码 + 修复建议代码）。",
+      "expected_output": "SEC-004 finding (medium, not CRITICAL): the expression TOKEN_WITH_FLAG_SIZE - len would unsigned-underflow when len > 155, BUT the || short-circuit makes this unreachable: when len > 155, the first memcpy_s(tokenWithFlagB, 155, token, len) fails (destination too small) and returns non-0, so the second memcpy_s is never evaluated. When len <= 155, 155 - len is non-negative. The code is safe due to memcpy_s boundary checking + || short-circuit. However, relying on short-circuit for safety is fragile — an explicit len validation at function entry is the robust fix: if (len > TOKEN_WITH_FLAG_SIZE - TOKEN_FLAG_SIZE) return HAL_TOKEN_ERR.",
+      "files": [],
+      "expectations": [
+        "正确分析 || 短路语义：len > 155 时第一个 memcpy_s 失败返回非 0，第二个不执行；len <= 155 时 155-len 非负。表达式本身安全。",
+        "指出 TOKEN_WITH_FLAG_SIZE - len 在 len > 155 时确实会无符号下溢（如果被求值的话），但因为短路不可达。",
+        "定级为 medium（脆弱设计而非实际溢出），不应定 CRITICAL。",
+        "修复建议是入口加显式 len 校验（如 len > TOKEN_WITH_FLAG_SIZE - TOKEN_FLAG_SIZE 拒绝），而不是依赖短路保护。"
+      ]
+    },
+    {
+      "id": "l1_rule_filtering_no_false_positive",
+      "source_example": "SR-08 iter09/iter10 实测（TC-08-02）：从代码特征（pthread_mutex/POSIX I/O/realpath/malloc）自动判定 L1（LiteOS-A / L1-Linux 用户态 HAL），规则适用性筛选表正确排除 FUNC-002 CMSIS / SEC-003 ISR 严格 / SEC-002 栈溢出严格，L0 MCU 专属规则零误报",
+      "prompt": "请审查以下 L1 代码片段并先做规则适用性说明——哪些 MCU（L0 Cortex-M）专属规则在本批代码上不适用、为什么：\n\n```c\n// hal_sys_param.c（节选）\n#include <pthread.h>\n#include <sys/stat.h>\n#include <stdlib.h>\n\nconst char* HalGetSerial(void)\n{\n    static char str[STR_MAX] = {0};\n    char strOrigin[STR_MAX] = {0};\n    if (strlen(str) > 0) { return str; }\n    char *realPath = realpath(SYS_SERIAL_PATH, NULL);\n    if (realPath == NULL) { return NULL; }\n    int fd = open(realPath, O_RDONLY);\n    free(realPath);\n    if (fd < 0) { return NULL; }\n    ssize_t n = read(fd, strOrigin, sizeof(strOrigin) - 1);\n    (void)close(fd);\n    if (n > 0) {\n        for (ssize_t j = 0; j < n && j < STR_MAX - 1; j++) { str[j] = strOrigin[j]; }\n        str[(n < STR_MAX - 1) ? n : STR_MAX - 1] = '\\0';\n    }\n    return str;\n}\n```\n\n先输出系统级别判定 + 规则适用性筛选表，再输出真实发现。",
+      "expected_output": "Auto-detects L1 (LiteOS-A / L1-Linux userland HAL) from code features (pthread, POSIX file I/O open/read/close, realpath, malloc/free — user-space HAL traits, not MCU register/CMSIS driver). Rule filtering: FUNC-002 CMSIS compliance NOT applicable; SEC-003 ISR-strict rules NOT applicable (no ISR in this layer); SEC-002 stack-overflow strict mode relaxed (MPU stacks larger). No false positives flagging Cortex-M-only rules (e.g. does not demand CMSIS compliance or ISR<256B-locals checks here). Real findings still apply: e.g. static cache str returned without lock (Task-Task race on first fill), close return ignored.",
+      "files": [],
+      "expectations": [
+        "系统级别自动判定为 L1（LiteOS-A / MPU 用户态 HAL），依据是代码特征（pthread / POSIX 文件 I/O / realpath / malloc），不是靠用户告知。",
+        "明确列出排除的 L0 专属规则：CMSIS 合规（FUNC-002）、ISR 安全严格检查（SEC-003）、栈溢出严格模式（SEC-002 严格档）在本批不适用。",
+        "没有把 Cortex-M 专属规则误报到这段 L1 代码上（无 CMSIS/ISR 局部变量 256B 之类误报发现）。",
+        "排除 L0 规则的同时仍报出 L1 下真实成立的问题（如 static 缓存 str 无锁首次填充竞争、close 返回值忽略等）。",
+        "输出包含规则适用性筛选表（或等价的适用/不适用对照说明）。"
+      ]
+    },
+    {
+      "id": "isr_safety_violation_l0",
+      "source_example": "SKILL.md Step 4 MCU 专项检查真实规则（SEC-003 ISR 无阻塞调用、SEC-002 ISR 局部变量 < 256B、ISR 禁动态内存分配；L0 严格 ISR 限制表）",
+      "prompt": "快速扫描这段 L0（LiteOS-M，Cortex-M4，GPIO 外设）驱动的 ISR 相关代码，只报 CRITICAL + HIGH：\n\n```c\n/* UART 接收中断处理函数 */\nstatic void UartIrqHandler(void)\n{\n    uint8_t rxBuf[512];              /* 收包缓冲 */\n    uint32_t len = UartReadFifo(rxBuf, sizeof(rxBuf));\n    if (len > 0) {\n        if (LOS_SemPend(g_rxSem, 100) != LOS_OK) {   /* 等上次处理完 */\n            printf(\"uart irq: drop frame, len=%u\\n\", len);\n            return;\n        }\n        uint8_t *frame = (uint8_t *)LOS_MemAlloc(m_aucSysMem0, len);\n        if (frame != NULL) {\n            memcpy_s(frame, len, rxBuf, len);\n            LOS_QueueWrite(g_rxQueue, frame, len, 0);\n        }\n        LOS_SemPost(g_rxSem);\n    }\n}\n```\n\n输出发现（规则 ID + 严重度 + 修复方向）。",
+      "expected_output": "Flags multiple ISR-safety violations: (1) SEC-003 CRITICAL — blocking call LOS_SemPend with timeout inside ISR (ISRs may only use ISR-safe APIs like LOS_SemPost/LOS_QueueWrite); (2) SEC-003/EMB — printf in ISR (blocking/slow); (3) SEC-002/EMB — ISR local variables total 512B rxBuf exceeding the 256B limit; (4) dynamic memory allocation LOS_MemAlloc inside ISR is prohibited. Fix direction: ISR only drains FIFO + LOS_QueueWrite (ISR-safe), defer processing to task context; shrink/shrink-remove big locals.",
+      "files": [],
+      "expectations": [
+        "检出 ISR 内调用阻塞 API：LOS_SemPend 带超时（中断上下文禁阻塞等待）——定级 CRITICAL 或 HIGH 且引用 ISR 安全类规则 ID（SEC-003 或等价）。",
+        "检出 ISR 内 printf（阻塞/慢速输出不适合中断上下文）。",
+        "检出 ISR 局部变量超限：rxBuf 512B > 256B 上限（SEC-002/栈用量类规则）。",
+        "检出 ISR 内动态内存分配（LOS_MemAlloc 禁止在中断上下文调用）。",
+        "修复方向正确：ISR 只做取数 + ISR 安全 API（如 LOS_QueueWrite/LOS_SemPost），处理逻辑移到任务上下文——而不是建议'把超时调小'之类治标方案。"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+target: hi3516cv610
+board: hispark_dmeb
+system_type: small   # small=L1 小型 / mini=L0 轻量
+kernel_family: linux
+kernel_version: "5.10"
+driver_model: linux_kernel_plus_oh_integration
+device_description: dts
+build_integration: oh_build_gn
+source_strategy: greenfield
+provenance: manual/generated
+boot_medium: spi_nand   # 启动介质（决定 boot_image 构建的 BOOT_MEDIA；DMEB demo 板实测默认 SPI Nand，见 04 BOOT_MEDIA 节）
+storage: emmc           # rootfs/数据介质（决定 rootfs 文件系统 ext4 + eMMC xml）。双介质板与 boot_medium 不同；
+                        # 与 workflow_config.yaml 的 intake.boot.medium 对账——用户确认值优先，冲突停下问用户
+burn_package:
+  format: vendor_partition_xml
+  image_size_policy: fit
+  boot_chain:
+    required_inputs:
+      - gsl_source_or_prebuilt
+      - ddr_training_source_or_vendor_binary
+      - ddr_register_or_reg_info_parameters
+      - uboot_or_boot_image_builder
+      - boot_image_pack_command
+    missing_policy: BLOCKED_VENDOR_SDK
+  required_artifacts:
+    - boot_image.bin
+    - env.bin
+    - uImage
+    - rootfs.ext4
+    - Hi3516CV610-emmc.xml
+required_outputs:
+  - device/soc/hisilicon/hi3516cv610/sdk_linux/BUILD.gn
+  - device/soc/hisilicon/hi3516cv610/sdk_linux/config.gni
+  - device/soc/hisilicon/hi3516cv610/sdk_linux/build.sh
+  - device/board/hisilicon/hispark_dmeb
+  - linux_5.10_defconfig
+  - board_dts
+  - ohos_build_registration
+conditions:
+  - vendor_boot_ddr_and_proprietary_image_tools_unverified
+  - hardware_validation_skipped_no_hardware
