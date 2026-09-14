@@ -50,8 +50,8 @@
       "expectations": [
         "Agent 使用 -f/--file-threshold 30 和 -F/--function-threshold 10 参数运行 scan_cpp_size.py",
         "Agent 使用 -o/--output 参数将报告写入 /tmp/code_check_strict.md",
-        "Agent 报告在严格阈值下 session_manager.cpp 超过 30 行文件阈值",
-        "Agent 报告在严格阈值下更多函数被标记为超大（不仅 RefreshAllSessions）",
+        "Agent 报告在严格阈值下 session_manager.cpp 超过 30 行文件阈值（85 有效行 > 30）",
+        "Agent 报告在严格阈值下 RefreshAllSessions 仍被标记为超大函数（66 有效行 > 10）",
         "Agent 确认报告文件已写入指定路径",
         "Agent 不使用默认阈值（2000/50）运行本次扫描"
       ]

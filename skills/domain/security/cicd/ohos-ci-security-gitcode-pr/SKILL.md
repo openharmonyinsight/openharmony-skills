@@ -183,14 +183,24 @@ UPSTREAM_REPO="security_code_signature"
 FORK_OWNER="someone"
 FORK_REMOTE="fork"
 
+# Generate PR body with issue reference — use double quotes so $ISSUE_NUMBER expands
+ISSUE_NUMBER=123
+PR_BODY=$(cat .gitee/PULL_REQUEST_TEMPLATE.zh-CN.md | \
+  sed "s/^### 关联的issue：\$/### 关联的issue：\n#${ISSUE_NUMBER}/")
+
+# Verify the issue reference is present before creating the PR
+if [[ "$PR_BODY" != *"#${ISSUE_NUMBER}"* ]]; then
+  echo "Error: Issue reference #${ISSUE_NUMBER} not found in PR body"
+  exit 1
+fi
+
 gitcode_create_pull_request \
   --owner $UPSTREAM_OWNER \
   --repo $UPSTREAM_REPO \
   --title "fix(code_signature): add null check for buffer pointer" \
   --head "$FORK_OWNER:$BRANCH_NAME" \
   --base "master" \
-  --body "$(cat .gitee/PULL_REQUEST_TEMPLATE.zh-CN.md | \
-    sed 's/^### 关联的issue：$/### 关联的issue：\n#$ISSUE_NUMBER/')"
+  --body "$PR_BODY"
 ```
 
 ## Templates

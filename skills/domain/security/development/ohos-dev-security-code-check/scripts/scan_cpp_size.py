@@ -59,144 +59,222 @@ FUNCTION_PATTERNS = [
     # Lambda capture: [&](params) { - but we'll skip lambdas as they're inline
 ]
 
-# Single line comment pattern
-SINGLE_LINE_COMMENT = re.compile(r'//.*?$')
-
-# Multi-line comment pattern
-MULTI_LINE_COMMENT = re.compile(r'/\*.*?\*/', re.DOTALL)
-
 # Preprocessor directives
 PREPROCESSOR = re.compile(r'^\s*#.*?$')
 
 
-def count_effective_lines(content: str) -> int:
-    """Count non-blank, non-comment lines."""
-    lines = content.split('\n')
-    count = 0
+def strip_comments_and_strings(content: str) -> str:
+    """Replace string literals, char literals, and comments with spaces.
+    
+    Preserves newlines and overall line structure so the result can be used
+    for brace counting (F03 fix) and effective-line counting (F04 fix) without
+    treating braces inside strings/comments as structural.
+    """
+    result = []
+    i = 0
+    n = len(content)
+    in_string = False
+    in_char = False
+    in_line_comment = False
+    in_block_comment = False
 
-    for line in lines:
-        # Remove single line comments
-        line = SINGLE_LINE_COMMENT.sub('', line)
-        # Check if line has non-whitespace content
-        if line.strip():
-            count += 1
+    while i < n:
+        c = content[i]
 
-    # Now remove multi-line comments and count remaining
-    content_without_multi = MULTI_LINE_COMMENT.sub('', content)
-    lines_without_multi = content_without_multi.split('\n')
+        if in_line_comment:
+            if c == '\n':
+                in_line_comment = False
+                result.append(c)
+            else:
+                result.append(' ')
+            i += 1
+            continue
 
-    # More accurate count - exclude preprocessor directives
-    count = 0
-    for line in lines_without_multi:
-        # Remove single line comments first
-        line = SINGLE_LINE_COMMENT.sub('', line)
-        stripped = line.strip()
-        # Exclude blank lines, preprocessor directives
-        if stripped and not stripped.startswith('#'):
-            count += 1
+        if in_block_comment:
+            if c == '*' and i + 1 < n and content[i + 1] == '/':
+                in_block_comment = False
+                result.append('  ')
+                i += 2
+                continue
+            elif c == '\n':
+                result.append(c)
+            else:
+                result.append(' ')
+            i += 1
+            continue
 
-    return count
+        if in_string:
+            if c == '\\' and i + 1 < n:
+                result.append('  ')
+                i += 2
+                continue
+            elif c == '"':
+                in_string = False
+                result.append(' ')
+                i += 1
+                continue
+            elif c == '\n':
+                in_string = False
+                result.append(c)
+                i += 1
+                continue
+            else:
+                result.append(' ')
+                i += 1
+                continue
+
+        if in_char:
+            if c == '\\' and i + 1 < n:
+                result.append('  ')
+                i += 2
+                continue
+            elif c == "'":
+                in_char = False
+                result.append(' ')
+                i += 1
+                continue
+            elif c == '\n':
+                in_char = False
+                result.append(c)
+                i += 1
+                continue
+            else:
+                result.append(' ')
+                i += 1
+                continue
+
+        # Not in any special state
+        if c == '/' and i + 1 < n and content[i + 1] == '/':
+            in_line_comment = True
+            result.append('  ')
+            i += 2
+            continue
+        elif c == '/' and i + 1 < n and content[i + 1] == '*':
+            in_block_comment = True
+            result.append('  ')
+            i += 2
+            continue
+        elif c == '"':
+            in_string = True
+            result.append(' ')
+            i += 1
+            continue
+        elif c == "'":
+            in_char = True
+            result.append(' ')
+            i += 1
+            continue
+        else:
+            result.append(c)
+            i += 1
+            continue
+
+    return ''.join(result)
 
 
 def find_functions(content: str) -> List[Dict]:
     """
     Find function definitions and their line ranges.
     Returns list of dicts with name, start_line, end_line, and the function body.
+
+    F02 fix: accumulates multi-line signatures until '{' is found.
+    F03 fix: uses strip_comments_and_strings so braces inside strings/comments
+             do not prematurely close function bodies.
     """
     functions = []
     lines = content.split('\n')
+    stripped_content = strip_comments_and_strings(content)
+    stripped_lines = stripped_content.split('\n')
 
-    # Stack to track brace levels
-    brace_stack = []
-    current_function = None
-    function_start_line = 0
-    template_depth = 0
-
-    # Pattern to match function signature lines
-    # This matches lines that look like function definitions
     func_signature_pattern = re.compile(
-        r'^\s*'  # leading whitespace
-        r'(?:template\s*<[^>]*>\s*)?'  # optional template
-        r'(?:[\w\s\*&:<>]+?)'  # return type (lazy)
-        r'\b([a-zA-Z_][a-zA-Z0-9_]*)\s*'  # function name
-        r'(?:\s*::\s*[a-zA-Z_][a-zA-Z0-9_]*)?'  # optional :: qualifier
-        r'\s*\([^)]*\)\s*'  # parameters
-        r'(?:const\s+)?(?:volatile\s+)?(?:override\s+)?(?:final\s+)?(?:noexcept\s*\(.*?\))?'  # qualifiers
-        r'(?:\s*=\s*0)?'  # pure virtual
-        r'(?:\s*->\s*[^{;]+)?'  # trailing return
-        r'\s*(:\s*[^{;]+)?'  # constructor initializer list
-        r'\s*\{'  # opening brace
+        r'^\s*'
+        r'(?:template\s*<[^>]*>\s*)?'
+        r'(?:[\w\s\*&:<>]+?)'
+        r'\b([a-zA-Z_][a-zA-Z0-9_]*)\s*'
+        r'(?:\s*::\s*[a-zA-Z_][a-zA-Z0-9_]*)?'
+        r'\s*\([^)]*\)\s*'
+        r'(?:const\s+)?(?:volatile\s+)?(?:override\s+)?(?:final\s+)?(?:noexcept\s*\(.*?\))?'
+        r'(?:\s*=\s*0)?'
+        r'(?:\s*->\s*[^{;]+)?'
+        r'\s*(:\s*[^{;]+)?'
+        r'\s*\{'
     )
 
-    # Pattern for constructor/destructor
-    ctor_dtor_pattern = re.compile(
-        r'^\s*(?:(?:[\w:]+::)?(?:~?[A-Z][a-zA-Z0-9_]*|[a-z_][a-zA-Z0-9_]*)\s*\([^)]*\)\s*(?::\s*[^{]+)?\{)',
-        re.MULTILINE
-    )
+    skip_keywords = {
+        'if', 'for', 'while', 'switch', 'catch', 'struct', 'class',
+        'namespace', 'enum', 'union', 'typedef', 'using', 'extern',
+        'return', 'break', 'continue', 'goto', 'do', 'else', 'case',
+        'default', 'try', 'throw', 'sizeof', 'decltype', 'typeid',
+        'static_assert', 'alignas', 'alignof', 'typeof', 'reinterpret_cast'
+    }
+
+    current_function = None
+    brace_count = 0
+    sig_buffer: list[str] = []
+    sig_start_line = 0
 
     i = 0
     while i < len(lines):
-        line = lines[i]
+        raw_line = lines[i]
+        stripped_line = stripped_lines[i] if i < len(stripped_lines) else ''
 
-        # Track template depth
-        if '<' in line and '>' in line:
-            template_count = line.count('<') - line.count('>')
-            template_depth += template_count
-
-        # Check for function signature
-        match = func_signature_pattern.match(line)
-
-        if match and not current_function:
-            func_name = match.group(1)
-
-            # Filter out common non-function keywords
-            skip_keywords = {
-                'if', 'for', 'while', 'switch', 'catch', 'struct', 'class',
-                'namespace', 'enum', 'union', 'typedef', 'using', 'extern',
-                'return', 'break', 'continue', 'goto', 'do', 'else', 'case',
-                'default', 'try', 'throw', 'sizeof', 'decltype', 'typeid',
-                'static_assert', 'alignas', 'alignof', 'typeof', 'reinterpret_cast'
-            }
-
-            if func_name not in skip_keywords:
-                # Count braces to find function end
-                brace_count = line.count('{') - line.count('}')
-                brace_stack = [brace_count] if brace_count > 0 else []
-
-                if brace_count > 0:
-                    current_function = {
-                        'name': func_name,
-                        'line_start': i + 1,  # 1-indexed
-                        'content': []
-                    }
-                    function_start_line = i
-                else:
-                    # Opening brace might be on next line
-                    if i + 1 < len(lines) and '{' in lines[i + 1]:
-                        brace_stack = [lines[i + 1].count('{') - lines[i + 1].count('}')]
-
-                        if brace_stack[0] > 0:
-                            current_function = {
-                                'name': func_name,
-                                'line_start': i + 1,
-                                'content': []
-                            }
-                            function_start_line = i
-
-        elif current_function:
-            # Track brace level within function
-            open_braces = line.count('{')
-            close_braces = line.count('}')
-            brace_stack[-1] += open_braces - close_braces
-
-            current_function['content'].append(line)
-
-            # Check if function ended
-            if brace_stack[-1] <= 0:
+        if current_function:
+            brace_count += stripped_line.count('{') - stripped_line.count('}')
+            current_function['content'].append(raw_line)
+            if brace_count <= 0:
                 current_function['line_end'] = i + 1
                 functions.append(current_function)
                 current_function = None
-                brace_stack = []
+                brace_count = 0
+            i += 1
+            continue
+
+        if sig_buffer:
+            sig_buffer.append(stripped_line)
+            accumulated = '\n'.join(sig_buffer)
+            match = func_signature_pattern.match(accumulated)
+            if match:
+                func_name = match.group(1)
+                if func_name not in skip_keywords:
+                    brace_count = accumulated.count('{') - accumulated.count('}')
+                    current_function = {
+                        'name': func_name,
+                        'line_start': sig_start_line + 1,
+                        'content': [lines[sig_start_line]] + [lines[j] for j in range(sig_start_line + 1, i + 1)]
+                    }
+                    if brace_count <= 0:
+                        current_function['line_end'] = i + 1
+                        functions.append(current_function)
+                        current_function = None
+                        brace_count = 0
+                    sig_buffer = []
+                else:
+                    sig_buffer = []
+            elif '{' in stripped_line:
+                sig_buffer = []
+            i += 1
+            continue
+
+        match = func_signature_pattern.match(stripped_line)
+        if match:
+            func_name = match.group(1)
+            if func_name not in skip_keywords:
+                brace_count = stripped_line.count('{') - stripped_line.count('}')
+                if brace_count > 0:
+                    current_function = {
+                        'name': func_name,
+                        'line_start': i + 1,
+                        'content': [raw_line]
+                    }
+                else:
+                    sig_buffer = [stripped_line]
+                    sig_start_line = i
+            i += 1
+            continue
+
+        if '(' in stripped_line and '{' not in stripped_line and not stripped_line.strip().startswith('#'):
+            sig_buffer = [stripped_line]
+            sig_start_line = i
 
         i += 1
 
@@ -204,40 +282,17 @@ def find_functions(content: str) -> List[Dict]:
 
 
 def count_effective_lines_in_text(text: str) -> int:
-    """Count non-blank, non-comment, non-preprocessor lines in a text block."""
-    lines = text.split('\n')
+    """Count non-blank, non-comment, non-preprocessor lines in a text block.
+    
+    Uses strip_comments_and_strings so that same-line block comments (F04) and
+    braces inside strings/comments (F03) are correctly excluded.
+    """
+    stripped = strip_comments_and_strings(text)
     count = 0
-
-    in_block_comment = False
-
-    for line in lines:
-        # Handle block comment state
-        if '/*' in line and '*/' not in line and not in_block_comment:
-            in_block_comment = True
-            # Remove content before /* and check remaining
-            line = line.split('/*')[0]
-
-        if '*/' in line and in_block_comment:
-            in_block_comment = False
-            # Remove content after */
-            parts = line.split('*/')
-            if len(parts) > 1:
-                line = parts[1]
-            else:
-                line = ''
-
-        if in_block_comment:
-            continue
-
-        # Remove single line comments
-        line = SINGLE_LINE_COMMENT.sub('', line)
-
-        stripped = line.strip()
-
-        # Skip blank lines and preprocessor directives
-        if stripped and not stripped.startswith('#'):
+    for line in stripped.split('\n'):
+        stripped_line = line.strip()
+        if stripped_line and not stripped_line.startswith('#'):
             count += 1
-
     return count
 
 
@@ -306,11 +361,6 @@ def scan_directory(path: Path, file_threshold: int, func_threshold: int) -> Dict
                             lines_count=result['total_lines'],
                             large_functions=result['large_functions']
                         ))
-                    elif result['large_functions']:
-                        # Add to large functions even if file itself isn't large
-                        for func in result['large_functions']:
-                            results['all_large_functions'].append(func)
-
                     results['all_large_functions'].extend(result['large_functions'])
 
     return results
@@ -443,9 +493,26 @@ def main():
         print(f"Error: Path '{args.path}' does not exist.")
         return 1
 
-    results = scan_directory(scan_path, args.file_threshold, args.function_threshold)
-
-    report = generate_markdown_report(results, args.file_threshold, args.function_threshold)
+    if scan_path.is_file():
+        result = analyze_file(scan_path, args.file_threshold, args.function_threshold)
+        results = {
+            'large_files': [],
+            'all_large_functions': [],
+            'total_files_scanned': 0
+        }
+        if result:
+            results['total_files_scanned'] = 1
+            if result['is_large_file']:
+                results['large_files'].append(LargeFile(
+                    path=result['path'],
+                    lines_count=result['total_lines'],
+                    large_functions=result['large_functions']
+                ))
+            results['all_large_functions'] = result['large_functions']
+        report = generate_markdown_report(results, args.file_threshold, args.function_threshold)
+    else:
+        results = scan_directory(scan_path, args.file_threshold, args.function_threshold)
+        report = generate_markdown_report(results, args.file_threshold, args.function_threshold)
 
     if args.output:
         with open(args.output, 'w', encoding='utf-8') as f:

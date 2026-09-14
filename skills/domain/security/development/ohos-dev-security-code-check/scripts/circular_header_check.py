@@ -253,30 +253,20 @@ def group_files_by_directory(all_files: Dict[str, FileInfo],
         module_name = get_component_module(dir_path, root_path)
         component_to_files[module_name].append(file_path)
 
-    # Create modules for each component
+    # Create modules for each component with any C/C++ files
+    # (F06 fix: include header-only directories, not just those with source files)
     for module_name, files in component_to_files.items():
-        # Only create modules for components with actual source files
-        has_source = any(all_files[f].file_type == 'source' for f in files)
-        if has_source:
-            modules[module_name] = ModuleInfo(
-                dir_path=module_name,  # Store module name as dir_path
-                files=files.copy(),
-                module_name=module_name
-            )
+        modules[module_name] = ModuleInfo(
+            dir_path=module_name,
+            files=files.copy(),
+            module_name=module_name
+        )
 
-    # Build file to module mapping (including headers from include/ dirs)
-    for mod_name, mod_info in modules.items():
-        for file_path in mod_info.files:
-            file_to_module[file_path] = mod_name
-
-    # Also map header files to their component's module
-    # This is important for detecting when a source file includes a header from another component
+    # Build file to module mapping for all files
     for file_path, file_info in all_files.items():
-        if file_path not in file_to_module:
-            dir_path = file_info.dir_path
-            module_name = get_component_module(dir_path, root_path)
-            if module_name in modules:
-                file_to_module[file_path] = module_name
+        dir_path = file_info.dir_path
+        module_name = get_component_module(dir_path, root_path)
+        file_to_module[file_path] = module_name
 
     return modules, file_to_module
 
@@ -360,7 +350,7 @@ def find_directory_cycles(all_files: Dict[str, FileInfo],
     return [CircularDependency(cycle=c, cycle_type='directory') for c in unique_cycles]
 
 
-def scan_project(root_path: Path, verbose: bool = False) -> Tuple[Dict[str, FileInfo], Set[Path]]:
+def scan_project(root_path: Path, verbose: bool = False, no_gn: bool = False) -> Tuple[Dict[str, FileInfo], Set[Path]]:
     """Scan entire project for C/C++ files."""
     all_files = {}
     all_include_dirs = {root_path.resolve()}
@@ -368,21 +358,23 @@ def scan_project(root_path: Path, verbose: bool = False) -> Tuple[Dict[str, File
     skip_dirs = {'build', 'out', 'node_modules', '.git', 'third_party',
                  'vendor', 'external', '__pycache__', 'cmake-build'}
 
-    # Find GN build files
-    if verbose:
-        print("Finding GN build files...", file=sys.stderr, flush=True)
-    gn_files = find_gn_build_files(root_path)
+    if not no_gn:
+        if verbose:
+            print("Finding GN build files...", file=sys.stderr, flush=True)
+        gn_files = find_gn_build_files(root_path)
 
-    for gn_file in gn_files:
-        include_dirs = parse_gn_build_file(gn_file)
-        for inc_dir in include_dirs:
-            if not os.path.isabs(inc_dir):
-                inc_path = (gn_file.parent / inc_dir).resolve()
-            else:
-                inc_path = Path(inc_dir).resolve()
+        for gn_file in gn_files:
+            include_dirs = parse_gn_build_file(gn_file)
+            for inc_dir in include_dirs:
+                if inc_dir.startswith('//'):
+                    inc_path = (root_path / inc_dir[2:]).resolve()
+                elif not os.path.isabs(inc_dir):
+                    inc_path = (gn_file.parent / inc_dir).resolve()
+                else:
+                    inc_path = Path(inc_dir).resolve()
 
-            if inc_path.exists():
-                all_include_dirs.add(inc_path)
+                if inc_path.exists():
+                    all_include_dirs.add(inc_path)
 
     # Scan files
     if verbose:
@@ -431,7 +423,7 @@ def generate_markdown_report(directory_cycles: List[CircularDependency],
             "",
             f"Detected {len(directory_cycles)} circular dependencies **between directory modules**.",
             "",
-            "A module is a directory containing C/C++ source files.",
+            "A module is a directory containing C/C++ source or header files.",
             "",
         ])
 
@@ -539,7 +531,7 @@ def main():
     if args.verbose:
         print(f"Scanning: {scan_path}", file=sys.stderr)
 
-    all_files, include_dirs = scan_project(scan_path, args.verbose)
+    all_files, include_dirs = scan_project(scan_path, args.verbose, args.no_gn)
 
     if args.verbose:
         print(f"Files: {len(all_files)}, Include dirs: {len(include_dirs)}", file=sys.stderr)
