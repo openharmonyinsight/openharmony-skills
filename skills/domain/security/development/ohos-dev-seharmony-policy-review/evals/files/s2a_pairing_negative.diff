@@ -1,0 +1,29 @@
+diff --git a/sepolicy/base/te/pairing.te b/sepolicy/base/te/pairing.te
+index 1111111..2222222 100644
+--- a/sepolicy/base/te/pairing.te
++++ b/sepolicy/base/te/pairing.te
+@@ -10,17 +10,22 @@ allow base_rule base_target:file { read };
+ # F4 negative 1: a removed comment must not exempt an added allow
+-# stale comment
++allow fresh_one data_file:file { read };
+ context separator
+ 
+ # F4 negative 2: a removed attribute statement must not exempt an added allow
+-attribute removed_attr;
++allow fresh_two data_file:file { read };
+ context separator
+ 
+ # F4 negative 3: one removed allow exempts at most one same-object:class added allow
+-allow mod_domain target_file:file { read };
++allow mod_domain target_file:file { read open };
++allow fresh_three data_file:file { read };
+ context separator
+ 
+ # F4 positive control: subject rename keeps object:class -> pairs (modifiable-exempt)
+-allow mod_domain target_file:file { read };
++allow renamed_domain target_file:file { read };
+ context separator
+ 
+ # F4 negative 4: removed allow with a different object:class must not exempt the added allow
+-allow other_domain other_target:file { read };
++allow fresh_four data_file:file { read };

@@ -1,0 +1,73 @@
+schemaVersion: 1
+
+id: ohos-dev-seharmony-policy-review
+title: OpenHarmony SELinux 策略提交自检扫描
+summary: 依据 selinux_adapter 仓库自检项，扫描 commit/PR diff 中新增的 .te、file_contexts、service_contexts、attributes、*_whitelist.json 等策略文件，逐条判定并输出报告（含 ROM 增量估算）。
+
+category:
+  scope: domain
+  namespace: security
+  stage: development
+  domain: seharmony
+  capability: policy-review
+
+status:
+  maturity: stable
+  version: 2.2.0
+  owner: openharmony
+
+tags:
+  - selinux
+  - sepolicy
+  - policy-review
+  - commit-selfcheck
+  - security
+
+audience:
+  - SELinux 策略提交者
+  - 安全评审人员
+  - 子系统责任田开发者
+
+useCases:
+  - title: 提交前自检
+    description: 在 sepolicy 策略 commit/PR 合入前，扫描 diff 中新增的 allow/neverallow/file_contexts 等变更，逐条判定是否符合自检要求。
+  - title: PR 评审辅助
+    description: 评审他人 PR 的 sepolicy 变更，快速定位违规项与需确认项。
+  - title: rename 重构判定
+    description: 识别 diff 性质为 rename 重构时，避免对 pre-existing 缺失误报违规。
+
+whenToUse:
+  - 扫描 commit 自检、SELinux 策略 PR 自检
+  - commit selfcheck、策略合入检查
+  - selinux policy review、扫描 PR diff
+  - avc 日志注释检查、allow 落点检查、allow 空行分隔检查
+  - service_contexts 评审检查、whitelist flex 评审检查
+  - pc_only/tablet_only 等产品宏违规检查、ROM 估算
+
+whenNotToUse:
+  - 仓库非 selinux_adapter（本 skill 面向 selinux_adapter 仓库）
+
+inputs:
+  required:
+    - commit/区间/工作区 diff（含 sepolicy/ 下文件变更）
+  optional:
+    - 完整文件内容（用于 S17 #avc: 注释 hunk 外补查）
+
+outputs:
+  - 按 S1–S23 逐条判定的结果表（PASS/SUGGESTION/WARNING/FAIL/NA）
+  - ROM 增量估算（A/D/M 值及总量）
+  - 按三类处置分组的需处理项详情（必须修复 / 建议修复 / 需评审决策）
+
+quickStart:
+  steps:
+    - 提供 commit/区间/工作区 diff 来源。
+    - 运行 scan.py（lint 脚本，第一部分）跑自动可检项。
+    - 对脚本覆盖不了的项做语义分析（第二部分），给出判定依据。
+    - 按模板生成报告（必须修复/建议修复/需评审决策分组）。
+  examplePrompt: |
+    请使用 ohos-dev-seharmony-policy-review 扫描这个 PR 的 sepolicy diff，
+    按自检项跑自检并输出报告。
+
+related:
+  skills: []
+  docs: []

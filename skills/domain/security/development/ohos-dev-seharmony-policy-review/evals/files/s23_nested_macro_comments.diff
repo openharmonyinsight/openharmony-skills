@@ -1,0 +1,19 @@
+diff --git a/sepolicy/ohos_policy/test/nest/system/nest.te b/sepolicy/ohos_policy/test/nest/system/nest.te
+index 1111111..2222222 100644
+--- a/sepolicy/ohos_policy/test/nest/system/nest.te
++++ b/sepolicy/ohos_policy/test/nest/system/nest.te
+@@ -5,10 +5,16 @@
+ # header comment
+ pc_only(`
+ debug_only(`
+ # inner comment
+ ')
++allow nest_service secret_data:file { read };
+ ')
+ 
++# pc_only(`
++allow plain_service data_file:file { read };
++
++watch_only(`
+ allow pre_service pre_target:file { read };
++') # end watch_only

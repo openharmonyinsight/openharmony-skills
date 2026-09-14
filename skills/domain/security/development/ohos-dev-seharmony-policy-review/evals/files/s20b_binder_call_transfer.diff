@@ -1,0 +1,13 @@
+diff --git a/sepolicy/ohos_policy/test/test_binder/system/binder.te b/sepolicy/ohos_policy/test/test_binder/system/binder.te
+index 1234567..abcdefg 100644
+--- a/sepolicy/ohos_policy/test/test_binder/system/binder.te
++++ b/sepolicy/ohos_policy/test/test_binder/system/binder.te
+@@ -1,3 +1,10 @@
++# avc: denied { call } for pid=100 scontext=u:r:test_service:s0 tcontext=u:r:sa_target:s0 tclass=binder permissive=1
++allow test_service sa_target:binder { call };
++
++# avc: denied { transfer } for pid=100 scontext=u:r:test_service:s0 tcontext=u:r:sa_target:s0 tclass=binder permissive=1
++allow test_service sa_target:binder { transfer };
++
++# avc: denied { call transfer } for pid=100 scontext=u:r:other_service:s0 tcontext=u:r:sa_target:s0 tclass=binder permissive=1
++allow other_service sa_target:binder { call transfer };

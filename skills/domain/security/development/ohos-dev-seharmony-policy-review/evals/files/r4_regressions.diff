@@ -1,0 +1,33 @@
+diff --git a/sepolicy/base/public/multi_hunk.te b/sepolicy/base/public/multi_hunk.te
+index 1111111..2222222 100644
+--- a/sepolicy/base/public/multi_hunk.te
++++ b/sepolicy/base/public/multi_hunk.te
+@@ -10,3 +10,4 @@ allow old_rule target:file { read };
+ context line
+-old_rule target:file { read };
+ context line
+@@ -100,3 +101,4 @@ allow far_away self:file { read };
+ context line
++allow fresh_domain data_file:file { read };
+ context line
+diff --git a/sepolicy/ohos_policy/test/test_comp/system/x.te b/sepolicy/ohos_policy/test/test_comp/system/x.te
+index 3333333..4444444 100644
+--- a/sepolicy/ohos_policy/test/test_comp/system/x.te
++++ b/sepolicy/ohos_policy/test/test_comp/system/x.te
+@@ -5,3 +5,14 @@ allow base_rule base_target:file { read };
++attribute rgm_violator_bad;
++typeattribute foo violator_bad;
++# Do not use default_service here
++allow { domain pc_only(`bad_domain') tablet_only(`-good_domain') } target:file { read };
++neverallow foo bar:binder { call transfer };
++# avc: denied { read } for pid=100 scontext=u:r:hunk1_service:s0 tcontext=u:object_r:data_file:s0 tclass=file permissive=1
++allow hunk1_service data_file:file { read };
++
++    allow indented_service indented_target:file { read };
+diff --git a/sepolicy/ohos_policy/test/test_comp/system/y.te b/sepolicy/ohos_policy/test/test_comp/system/y.te
+index 5555555..6666666 100644
+--- a/sepolicy/ohos_policy/test/test_comp/system/y.te
++++ b/sepolicy/ohos_policy/test/test_comp/system/y.te
+@@ -1,2 +1,3 @@
+ # avc: denied { write } for pid=100 scontext=u:r:hunk1_service:s0 tcontext=u:object_r:data_file:s0 tclass=file permissive=1
++allow hunk1_service data_file:file { write };

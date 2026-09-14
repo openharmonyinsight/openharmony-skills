@@ -1,0 +1,9 @@
+diff --git a/sepolicy/ohos_policy/test/test_s1_medial/system/s1_medial.te b/sepolicy/ohos_policy/test/test_s1_medial/system/s1_medial.te
+index 1234567..abcdefg 100644
+--- a/sepolicy/ohos_policy/test/test_s1_medial/system/s1_medial.te
++++ b/sepolicy/ohos_policy/test/test_s1_medial/system/s1_medial.te
+@@ -1,3 +1,7 @@
++type access_token_data, file_type;
++allow foo_service sa_access_token_check:samgr_class { get };
++allow bar_service access_token_service:samgr_class { get };
++type my_access_token_type, sa_service_attr;
