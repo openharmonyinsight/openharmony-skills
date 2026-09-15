@@ -55,7 +55,7 @@
 
 **文档类型判定**：API 文档（同 Case 1）。
 
-**文件映射**：按 `correctness-rules.json → sdkSourceCheck.mappingRules`，模式 `js-apis-{name}.md → api/@ohos.{name}.d.ts`，`js-apis-demo-taskmanager.md`（name=demo.taskmanager）映射到 `api/@ohos.demo.taskmanager.d.ts`，文件存在，映射成功。
+**文件映射**：按 `correctness-rules.json → sdkSourceCheck.mappingRules` 顺序匹配，命中规则 `^js-apis-(?<name>[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)\.md$ → api/@ohos.{name}.d.ts`，捕获 `name=demo-taskmanager`，经 `transforms.name = hyphen-to-dot` 转换为 `demo.taskmanager`，得到 `api/@ohos.demo.taskmanager.d.ts`；`mappingRules.assertions` 中登记了同一期望值，文件存在性校验通过，映射成功。
 
 **模块执行范围**：仅执行 `correctness.sdkSourceCheck` 的 10 个检查点（api-since-version-match / param-count-match / param-name-match / param-type-match / return-type-match / systemapi-mark-match / stagemodelonly-mark-match / error-code-match / enum-values-complete / interface-fields-complete）。
 

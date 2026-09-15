@@ -10,6 +10,7 @@
       "priority": "medium",
       "confidence": 80,
       "enabled": true,
+      "execution": "automatic",
       "extraction": {
         "targetPattern": {
           "type": "property-assignment",
@@ -65,6 +66,7 @@
       "priority": "low",
       "confidence": 70,
       "enabled": true,
+      "execution": "automatic",
       "extraction": {
         "targetPattern": {
           "type": "property-assignment",
@@ -89,6 +91,7 @@
       "priority": "medium",
       "confidence": 75,
       "enabled": true,
+      "execution": "automatic",
       "extraction": {
         "targetPatterns": [
           {
@@ -125,6 +128,7 @@
       "priority": "low",
       "confidence": 60,
       "enabled": false,
+      "execution": "automatic",
       "extraction": {
         "targetPattern": {
           "type": "magic-number",
@@ -138,6 +142,7 @@
         "explanationKeywords": ["表示", "单位", "毫秒", "秒", "像素", "代表", "means", "represents"]
       },
       "message": "示例代码中的数字 '{number}' 可能缺少解释",
+      "suggestedFix": "为魔数补充含义、单位或取值依据说明",
       "explanation": "示例代码中的非0/1数字应说明其含义和单位，提高代码可读性"
     }
   ]

@@ -34,7 +34,7 @@ Evaluation method: rubric assertion review against `evals/evals.json`。每个�
 | 1 | 逐条结构化记录（类型/行号/原因/建议/级别） | ✅ | 12 行结构化表格，额外含规则 ID 与置信度 |
 | 2 | recieve → receive | ✅ | spelling-001, L55, 置信度 95% |
 | 3 | UiAbility → UIAbility | ✅ | spelling-002 (glossary AbilityFramework.UIAbility), L55 |
-| 4 | `$ {` 模板字符串空格 | ✅ | syntax-001, L46, 置信度 100% |
+| 4 | `$ {` 模板字符串空格（第 46 行） | ✅ | syntax-001, L46, 置信度 100%；同行 `${err.message}` 未被误报 |
 | 5 | 大括号未闭合 | ✅ | syntax-002/003, L63-70, 严重 |
 | 6 | "完整示例"标题与内容不符 | ✅ | clarity-001, L61, 命中 badPattern |
 | 7 | queryTasks 缺错误码表 | ✅ | completeness-002, L53-70 |
@@ -68,6 +68,45 @@ Evaluation method: rubric assertion review against `evals/evals.json`。每个�
 - **覆盖保证**：with skill 对 SDK 10 个检查点逐项给出"命中/通过/不适用"结论（含 param-count、systemapi 等通过项证据）；baseline 只报告发现的问题，无法证明未漏检。
 - **深度发现**：with skill 额外命中 `9+` 未用 `<sup>` 上标导致锚点失效（versionPatterns 规则）、"取消"能力在文档与 SDK 中均无实现等 baseline 未系统性覆盖的问题。
 - **baseline 的反向亮点**：without skill 发现了 d.ts 缺 `@permission` 声明与文档权限描述不一致的问题，当前规则库未覆盖该检查点，已记入规则扩展建议（见 without-skill-report.md）。
+
+## Ground Truth 校验（按 ±3 行判分规则重新核对）
+
+本报告初次判分时，`evals.json` 的植入行号与 fixture 已脱节（模板字符串缺陷记为第 42 行，fixture 实际在第 46 行，偏差 4 行 > ±3），
+即"用过期 ground truth 证明全通过"。现已按当前 fixture 校正全部植入位置，并补齐可自动校验的 `probe` 字段：
+
+| 用例 | 植入缺陷 | 原行号 | 校正后行号 | probe |
+| --- | --- | --- | --- | --- |
+| `api_doc_planted_errors` | syntax（`$ {` 空格） | 42 | **46** | `$ {err.code}` |
+| `api_doc_planted_errors` | syntax（括号未闭合） | 61 | **66** | `async function queryAll() {` |
+| `api_doc_planted_errors` | clarity（"完整示例"名不副实） | 59 | **61** | `**完整示例**` |
+| `dev_guide_scope_and_rules` | syntax（`$ {` 空格） | 25 | **26** | `$ {err.code}` |
+| `dev_guide_scope_and_rules` | spelling（recieve） | 33 | **32** | `recieve` |
+| `dev_guide_scope_and_rules` | clarity（高级用法） | 35 | **34** | `## 高级用法` |
+| `dev_guide_scope_and_rules` | path-consistency（死链） | 39 | **41** | `background-task-guide.md` |
+
+自动校验命令（fixture 或植入位置再次漂移时会直接失败）：
+
+```bash
+python3 evals/check_ground_truth.py
+# PASS：3 个用例、16 条植入缺陷的行号与 probe 全部与 fixture 一致
+
+node evals/scripts/run_self_check.mjs
+# 自检结果：通过 44 项，失败 0 项（断言清单见 references/workflow-details.md 步骤 7）
+```
+
+### 关于运行输出的时效性
+
+`evals/runs/with-skill-output.md` 与 `evals/runs/without-skill-output.md` 是 2026-09-08 那次 Agent 运行的**原始记录**，保留不改。
+本轮检视修复（F001-F009）重写了参考执行器：新增逐 API 章节的必备小节检查、执行台账、术语规则的标识符位置排除、
+同行命中合并等，因此用修复后的执行器重跑，条目数与分组会与该原始记录不同（例如 API fixture 由 12 条变为 23 条结构化记录）。
+这不影响判分结论：命中植入缺陷的证据行号（L46、L63-70、L61、L55、L53-70）仍全部落在校正后 ground truth 的 ±3 行窗口内，
+下一次正式评测应重新生成 runs/ 输出并同步更新本报告。
+
+按校正后的 ground truth 与同一判分规则重新核对 with/without 两份报告：
+
+- with-skill 运行输出中每条命中证据的行号（L46、L63-70、L61、L55、L53-70、L26、L32、L34-36、L41）均落在对应植入位置 ±3 行内，**3/3 通过的结论不变**；
+- without-skill（baseline）报告的 3 处期望级失败（标题-内容矛盾、严重级别校准、范围治理）与行号无关，**0/3 的结论不变**；
+- 结论：原判分的问题不在判定结果，而在 ground truth 过期；现已由脚本保证同步。
 
 ## Conclusion
 

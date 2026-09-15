@@ -11,6 +11,7 @@
       "priority": "high",
       "confidence": 80,
       "enabled": true,
+      "execution": "agent",
       "checkPoints": [
         {
           "name": "title-accuracy",
@@ -46,6 +47,7 @@
       "priority": "high",
       "confidence": 85,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "ambiguous-terms",
@@ -66,19 +68,28 @@
       "ambiguousPatterns": [
         {
           "pattern": "某些情况",
+          "type": "keyword",
           "suggestion": "明确列出具体情况"
         },
         {
           "pattern": "可能会",
+          "type": "keyword",
           "suggestion": "明确说明触发条件"
         },
         {
           "pattern": "大概",
+          "type": "keyword",
           "suggestion": "给出精确值或范围"
         },
         {
-          "pattern": "等等|...",
+          "pattern": "等等",
+          "type": "keyword",
           "suggestion": "完整列举所有项"
+        },
+        {
+          "pattern": "...",
+          "type": "keyword",
+          "suggestion": "用实际内容替换省略号"
         }
       ],
       "message": "文档描述存在模糊或不准确的表达",
@@ -92,6 +103,7 @@
       "priority": "medium",
       "confidence": 75,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "concept-link",
@@ -136,6 +148,7 @@
       "priority": "medium",
       "confidence": 70,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "how-it-works",
@@ -159,7 +172,7 @@
       },
       "keywords": {
         "mechanism": ["原理", "机制", "如何工作", "内部实现"],
-        "lifecycle": ["生命周期", "状态", "回调", "触发"]
+        "lifecycle": ["生命周期", "状态流转", "回调时机", "lifecycle"]
       },
       "message": "文档缺少机制原理说明，开发者难以理解内部工作原理",
       "suggestedFix": "添加'工作原理'或'机制说明'章节，必要时提供示意图"
@@ -172,6 +185,7 @@
       "priority": "medium",
       "confidence": 80,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "term-unification",

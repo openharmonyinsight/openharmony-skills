@@ -1,7 +1,7 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "API文档质量检查规则索引 - 基于7大维度分类体系",
-  "lastUpdated": "2026-03-16",
+  "lastUpdated": "2026-09-14",
   "classification": {
     "description": "7大问题分类维度",
     "categories": [
@@ -163,6 +163,7 @@
     "outputFile": "api-doc-check-result.xlsx",
     "columns": [
       { "name": "文件名", "key": "filename", "width": 40, "filterable": true },
+      { "name": "Designer", "key": "designer", "width": 20, "filterable": true },
       { "name": "问题类型", "key": "issueType", "width": 20, "filterable": true },
       { "name": "问题行号", "key": "lineNumber", "width": 15, "filterable": false },
       { "name": "问题原因", "key": "reason", "width": 50, "filterable": false },

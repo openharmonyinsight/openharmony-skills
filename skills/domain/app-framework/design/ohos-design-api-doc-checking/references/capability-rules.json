@@ -16,6 +16,7 @@
       "priority": "high",
       "confidence": 85,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "device-constraint",
@@ -45,7 +46,7 @@
       ],
       "requiredConstraints": {
         "systemApi": ["SystemCapability", "权限", "设备限制"],
-        "newApi": ["@since", "API version"],
+        "newApi": ["@since", "API version", "起始版本", "<sup>"],
         "performanceSensitive": ["性能影响", "资源占用", "调用频率限制"]
       },
       "message": "API缺少必要的约束条件说明，开发者可能在不适用场景下误用",
@@ -60,6 +61,7 @@
       "priority": "high",
       "confidence": 80,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "known-issues-section",
@@ -88,6 +90,7 @@
       "priority": "high",
       "confidence": 85,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "deprecation-mark",
@@ -125,6 +128,7 @@
       "priority": "medium",
       "confidence": 75,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "api-name-clarity",
@@ -164,6 +168,7 @@
       "priority": "high",
       "confidence": 80,
       "enabled": true,
+      "execution": "agent",
       "checkPoints": [
         {
           "name": "real-world-scenario",
@@ -212,6 +217,7 @@
       "priority": "medium",
       "confidence": 70,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "alternative-api",
@@ -251,6 +257,7 @@
       "priority": "medium",
       "confidence": 75,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "capability-declaration",
@@ -276,6 +283,7 @@
       "priority": "medium",
       "confidence": 70,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "error-code-clarity",
@@ -321,6 +329,7 @@
       "priority": "high",
       "confidence": 85,
       "enabled": true,
+      "execution": "agent",
       "checkPoints": [
         {
           "name": "typical-scenarios",
@@ -351,6 +360,7 @@
       "priority": "medium",
       "confidence": 75,
       "enabled": true,
+      "execution": "agent",
       "checkPoints": [
         {
           "name": "imperative-style",
@@ -370,6 +380,7 @@
       "priority": "high",
       "confidence": 80,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "pre-operation-notes",

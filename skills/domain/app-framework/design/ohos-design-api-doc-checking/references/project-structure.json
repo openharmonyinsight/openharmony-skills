@@ -131,6 +131,7 @@
       "priority": "high",
       "confidence": 90,
       "enabled": true,
+      "execution": "automatic",
       "applyTo": "directories",
       "message": "目录名 '{wrong}' 不符合标准工程结构，应为 '{correct}'",
       "explanation": "根据 HarmonyOS 官方工程结构规范，默认目录名应为 '{correct}'",
@@ -145,6 +146,7 @@
       "priority": "high",
       "confidence": 90,
       "enabled": true,
+      "execution": "automatic",
       "applyTo": "files",
       "message": "文件名 '{wrong}' 不符合标准工程结构，应为 '{correct}'",
       "explanation": "根据 HarmonyOS 官方工程结构规范，文件名应为 '{correct}'",
@@ -159,6 +161,7 @@
       "priority": "high",
       "confidence": 100,
       "enabled": true,
+      "execution": "automatic",
       "criticalExtensions": {
         ".ets": ["EntryAbility", "AbilityStage", "Index", "EntryView"],
         ".json5": ["module", "build-profile", "oh-package"]

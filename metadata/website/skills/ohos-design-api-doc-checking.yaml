@@ -57,8 +57,9 @@ inputs:
     - 指定执行的规则模块子集。
 
 outputs:
-  - Excel 问题汇总报告（.xlsx），含文件名、问题类型、行号、原因、修改建议、严重级别。
-  - 可选 Markdown 汇总报告（统计概览与维度分布）。
+  - Excel 问题汇总报告（.xlsx），含文件名、Designer、问题类型、行号、原因、修改建议、严重级别。
+  - 可选 Markdown 汇总报告（统计概览、维度分布与执行状态）。
+  - 执行台账：每条启用规则的执行状态（executed/not-applicable/not-executed/failed）与原因，未执行的检查不计为"无问题"。
 
 quickStart:
   steps:

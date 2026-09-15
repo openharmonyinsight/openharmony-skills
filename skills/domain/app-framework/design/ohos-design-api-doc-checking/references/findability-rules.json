@@ -11,6 +11,7 @@
       "priority": "high",
       "confidence": 80,
       "enabled": true,
+      "execution": "agent",
       "checkPoints": [
         {
           "name": "title-keyword-match",
@@ -46,6 +47,7 @@
       "priority": "medium",
       "confidence": 75,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "internal-link-first",
@@ -83,6 +85,7 @@
       "priority": "medium",
       "confidence": 70,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "related-links-section",

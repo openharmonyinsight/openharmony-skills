@@ -50,6 +50,17 @@ metadata:
 - **可选模块**：completeness、capability
 - **不执行**：SDK源码一致性检查（不适用）
 
+## 执行必须留痕（fail-closed）
+
+"全部执行"必须由**执行台账**证明，不能只在结论里声明：
+
+- 每条 `enabled: true` 的规则都要有一条台账记录，状态为 `executed` / `not-applicable` / `not-executed` / `failed`；
+- `not-executed` 与 `failed` 必须带原因，并在报告中显式呈现（缺外部 Sample 数据、缺 SDK 路径、提取为空等）；
+- **未执行不等于 0 问题**：SDK 一致性检查在文档 API 提取为空、SDK 文件缺失时必须记为 `failed`，不得输出"无问题"；
+- `execution: agent` 的规则（如 `clarity-001` 标题与内容不符）必须由检视者逐条 checkPoint 回填 verdict，未回填即判失败。
+
+台账结构、断言与实现见 [references/workflow-details.md](references/workflow-details.md) 步骤 3 与步骤 7。
+
 # 核心功能
 
 ## 7大质量维度检查
@@ -83,7 +94,11 @@ metadata:
 | `clarity` | `clarity-rules.json` | 资源清晰易懂 | 标题-内容匹配、描述准确性、链接完整性、机制说明 |
 | `capability` | `capability-rules.json` | 能力有效性/易用性/丰富性 | 约束条件、已知问题、命名规范、实用性、替代方案 |
 
-> **规则管理说明**：本 SKILL 的具体检查规则存储在 `references/` 目录下的 JSON 文件中。新增或修改检查规则时，只需编辑对应的规则文件，无需修改 SKILL.md。
+> **规则管理说明**：本 SKILL 的检查规则存储在 `references/` 目录下的 JSON 文件中，由执行器的**注册表 + 声明式驱动**消费。
+>
+> - 规则必须声明 `execution`：`automatic`（JSON 提供 `pattern`/`patterns`/`keywords`/`requiredSections`/`indicators`/`extraction`/`validation` 等机器可判定配置）或 `agent`（只有 `checkPoints` 语义描述，需人工/Agent 判定并回填 verdict）。
+> - 新增 `automatic` 规则且复用已有驱动类型时，**只改 JSON 即生效**；新增驱动类型或函数处理器时，需同时在 `references/workflow-details.md` 的 `RULE_HANDLERS` 登记。
+> - 加载期强制校验：启用规则缺处理器、注册表存在未知 ID、`execution` 缺失、必填字段缺失、正则无法构造、good/bad 样例断言失败，一律 fail-fast，**不允许静默跳过**。
 
 # 报告格式
 
@@ -93,8 +108,8 @@ metadata:
 
 | 列名 | 说明 |
 |------|------|
-| **文件名** | 被检查的文件路径（只保留最后一个/后的字符） |
-| **Designer** | 被检查的文件的设计人<!--Designer: xxx--> |
+| **文件名** | 被检查文件的路径（相对项目根目录，见 `references/excel-format.md` 数据格式规范） |
+| **Designer** | 被检查文件的设计人，取文档中的 `<!--Designer: xxx-->` 注释；未标注时填 `-` |
 | **问题类型** | 问题所属的质量维度 |
 | **问题行号** | 问题所在的具体行号 |
 | **问题原因** | 问题的详细描述 |
@@ -127,15 +142,24 @@ SDK 源码一致性检查是 correctness 维度的核心功能，用于确保文
 
 ## 文件映射规则
 
-文档文件与 SDK 文件的映射遵循以下规则：
+文档文件与 SDK 文件的映射由 `references/correctness-rules.json → sdkSourceCheck.mappingRules` 声明，**按数组顺序匹配，更具体的规则必须排在更宽泛的规则之前**（否则 `-sys` 会被并入 `{name}`）：
 
-| 文档文件模式 | SDK 文件路径 | 示例 |
-|-------------|-------------|------|
-| `js-apis-app-ability-{name}.md` | `api/@ohos.app.ability.{name}.d.ts` | `js-apis-app-ability-wantAgent.md` → `@ohos.app.ability.wantAgent.d.ts` |
-| `js-apis-{name}.md` | `api/@ohos.{name}.d.ts` | `js-apis-geolocation.md` → `@ohos.geolocation.d.ts` |
-| `js-apis-inner-{module}-{name}.md` | `api/{module}/{name}.d.ts` | `js-apis-inner-wantAgent-wantAgentInfo.md` → `wantAgent/wantAgentInfo.d.ts` |
-| `js-apis-inner-{module}-{name}-sys.md` | `api/{module}/{name}.d.ts` | `js-apis-inner-wantAgent-wantAgentInfo-sys.md` → `wantAgent/wantAgentInfo.d.ts` |
-| `capi-{name}.md` | `api/{name}.h` | `capi-native-bundle.md` → `native_bundle.h` |
+| 顺序 | 文档文件模式 | 名称转换 | SDK 文件路径 | 示例 |
+|-----|-------------|---------|-------------|------|
+| 0 | `options.sdkFilePath` 显式指定 | — | 直接使用 | 调用方指定 `api/@ohos.demo.taskmanager.d.ts` |
+| 0.5 | `explicitMapping` 中登记的文件名 | — | 表中声明的路径 | `js-apis-demo-taskmanager.md` |
+| 1 | `js-apis-inner-{module}-{name}-sys.md` | — | `api/{module}/{name}.d.ts` | `js-apis-inner-wantAgent-wantAgentInfo-sys.md` → `api/wantAgent/wantAgentInfo.d.ts` |
+| 2 | `js-apis-inner-{module}-{name}.md` | — | `api/{module}/{name}.d.ts` | `js-apis-inner-wantAgent-wantAgentInfo.md` → `api/wantAgent/wantAgentInfo.d.ts` |
+| 3 | `js-apis-app-ability-{name}.md` | `hyphen-to-dot` | `api/@ohos.app.ability.{name}.d.ts` | `js-apis-app-ability-wantAgent.md` → `api/@ohos.app.ability.wantAgent.d.ts` |
+| 4 | `js-apis-{name}.md` | `hyphen-to-dot` | `api/@ohos.{name}.d.ts` | `js-apis-geolocation.md` → `api/@ohos.geolocation.d.ts`；`js-apis-demo-taskmanager.md` → `api/@ohos.demo.taskmanager.d.ts` |
+| 5 | `capi-{name}.md` | `hyphen-to-underscore` | `api/{name}.h` | `capi-native-bundle.md` → `api/native_bundle.h` |
+
+约束：
+
+- `docPattern` 必须锚定整个文件名（`^…$`），`{module}` 使用惰性匹配，避免贪婪吞掉 `{name}` 的分隔符；
+- 名称转换只能通过 `transforms` 按占位符声明，**禁止**对文件名整体做连字符替换；
+- 无法由模式推导的特殊命名登记到 `explicitMapping`，或由调用方用 `options.sdkFilePath` 指定；
+- `mappingRules.assertions` 中的样例在检查开始前必须全部通过（含目标文件存在性），映射失败返回 `reason` 并把该检查记为 `failed`，不得当成"无可比对内容，0 问题"。
 
 ## 检查项
 
@@ -156,23 +180,30 @@ SDK 源码一致性检查包括以下 10 个检查点：
 
 ## 使用方式
 
-检查工具会自动尝试从以下位置加载 SDK 源码：
+SDK 源码路径按以下优先级解析：
 
-1. 环境变量 `INTERFACE_SDK_JS_PATH` 指定的本地路径
-2. 通过 `git clone` 临时克隆的仓库（自动清理）
+1. 调用参数 `options.sdkFilePath`（直接指定 `.d.ts` / `.h`，跳过模式匹配）
+2. 调用参数 `options.sdkSourcePath`（SDK 仓库根目录，配合映射规则解析）
+3. 环境变量 `INTERFACE_SDK_JS_PATH` 指定的本地路径
+4. 通过 `git clone` 临时克隆的仓库（自动清理）
 
 **配置环境变量（推荐）**：
 ```bash
 export INTERFACE_SDK_JS_PATH=/path/to/interface_sdk-js
 ```
 
+**未提供 SDK 路径时**：SDK 一致性检查记为 `not-executed` 并在报告中说明原因，其余规则照常执行；
+**提供了路径但映射失败/文件缺失/文档 API 提取为空**时记为 `failed`。两种状态都不得输出"SDK 一致性无问题"。
+
 # 规则扩展
 
 ## 新增规则
 
-1. 确定规则所属维度（见上表）
-2. 在对应规则文件中添加规则配置
-3. 无需修改 SKILL.md，立即生效
+1. 确定规则所属维度（见上表）与执行方式（`automatic` / `agent`）
+2. 在对应规则文件中添加规则配置，必填字段齐全（含 `execution`、`message`、`suggestedFix`）
+3. `automatic` 规则复用已有驱动类型时只改 JSON 即生效；引入新驱动或函数处理器时，在 `references/workflow-details.md` 的 `RULE_HANDLERS` 登记
+4. 带 `pattern`/`examples` 的规则必须提供 good/bad 样例，加载期会做正反例断言
+5. 运行 `references/workflow-details.md` 步骤 7 的自检断言，确认覆盖校验与规则自检通过
 
 ## 规则配置模板
 
@@ -183,14 +214,26 @@ export INTERFACE_SDK_JS_PATH=/path/to/interface_sdk-js
   "description": "规则描述",
   "type": "{dimension}",
   "subType": "{subCategory}",
-  "priority": "high|medium|low",
+  "priority": "critical|high|medium|low",
   "confidence": 90,
   "enabled": true,
+  "execution": "automatic|agent",
   "checkPoints": [...],
   "message": "错误消息模板",
-  "explanation": "详细说明",
+  "explanation": "详细说明（可选）",
   "suggestedFix": "修复建议"
 }
 ```
 
 详细扩展指南和示例见：[references/rule-extensions.md](references/rule-extensions.md)
+
+# 自检
+
+改动规则文件、执行器或评测 fixture 后，必须跑通以下两项再更新评测证据：
+
+| 自检 | 命令 | 校验内容 |
+|------|------|---------|
+| 执行器与规则库一致性 | `node evals/scripts/run_self_check.mjs` | 断言 A1-A16（清单见 `references/workflow-details.md` 步骤 7）：正则可构造与正反例、注册表全覆盖、SDK 映射断言（含清空 `explicitMapping` 的独立校验）、错误码解析、示例完整性判定、报告字段契约、执行台账完整性 |
+| 评测 ground truth 一致性 | `python3 evals/check_ground_truth.py` | 每条植入缺陷的 `line` 上确实存在 `probe` 字符串；expectations 中的行号落在植入行号 ±3 行内 |
+
+两项自检都以退出码表示结果（0 通过 / 1 失败），且都用**真实规则 JSON + 真实 fixture**，不使用合成数据。

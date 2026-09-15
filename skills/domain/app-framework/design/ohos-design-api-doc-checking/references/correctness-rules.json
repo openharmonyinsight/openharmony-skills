@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "资料正确性检查规则 - 确保文档内容准确无误",
   "category": "资料正确性",
   "sdkSourceCheck": {
@@ -11,14 +11,55 @@
       "localPath": "${INTERFACE_SDK_JS_PATH}"
     },
     "mappingRules": {
-      "filePattern": "js-apis(-inner-)?{module}(-{name})?(-sys)?\\.md",
-      "sdkFileMapping": {
-        "js-apis-app-ability-{name}.md": "api/@ohos.app.ability.{name}.d.ts",
-        "js-apis-{name}.md": "api/@ohos.{name}.d.ts",
-        "js-apis-inner-{module}-{name}.md": "api/{module}/{name}.d.ts",
-        "js-apis-inner-{module}-{name}-sys.md": "api/{module}/{name}.d.ts",
-        "capi-{name}.md": "api/{name}.h"
-      }
+      "description": "文档文件名 → SDK 源文件路径的映射。数组顺序即匹配优先级，更具体的规则（-sys、app-ability、inner）必须排在更宽泛的规则之前；docPattern 必须是锚定整个文件名的正则（以 ^ 开头、以 $ 结尾），占位符使用命名捕获组，名称转换必须通过 transforms 显式声明，禁止对文件名整体做连字符替换。",
+      "filePattern": "^js-apis(-inner-)?{module}(-{name})?(-sys)?\\.md$",
+      "matchOrder": "declaration-order",
+      "sdkFileMapping": [
+        {
+          "docPattern": "^js-apis-inner-(?<module>[A-Za-z0-9_.]+?)-(?<name>[A-Za-z0-9_.]+)-sys\\.md$",
+          "sdkPath": "api/{module}/{name}.d.ts",
+          "note": "系统接口文档；必须排在非 -sys 的 inner 规则之前，否则 -sys 会被并入 {name}"
+        },
+        {
+          "docPattern": "^js-apis-inner-(?<module>[A-Za-z0-9_.]+?)-(?<name>[A-Za-z0-9_.]+)\\.md$",
+          "sdkPath": "api/{module}/{name}.d.ts",
+          "note": "{module} 使用惰性匹配，避免贪婪吞掉 {name} 前的分隔符"
+        },
+        {
+          "docPattern": "^js-apis-app-ability-(?<name>[A-Za-z0-9_.]+(?:-[A-Za-z0-9_.]+)*)\\.md$",
+          "sdkPath": "api/@ohos.app.ability.{name}.d.ts",
+          "transforms": { "name": "hyphen-to-dot" }
+        },
+        {
+          "docPattern": "^js-apis-(?<name>[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)\\.md$",
+          "sdkPath": "api/@ohos.{name}.d.ts",
+          "transforms": { "name": "hyphen-to-dot" },
+          "note": "文件名中的连字符是模块分隔符，按声明转换为点号：js-apis-demo-taskmanager.md → api/@ohos.demo.taskmanager.d.ts"
+        },
+        {
+          "docPattern": "^capi-(?<name>[a-z0-9]+(?:-[a-z0-9]+)*)\\.md$",
+          "sdkPath": "api/{name}.h",
+          "transforms": { "name": "hyphen-to-underscore" },
+          "note": "C API 头文件使用下划线：capi-native-bundle.md → api/native_bundle.h"
+        }
+      ],
+      "explicitMapping": {
+        "js-apis-demo-taskmanager.md": "api/@ohos.demo.taskmanager.d.ts"
+      },
+      "explicitMappingNote": "仅登记无法由 sdkFileMapping 推导的特殊命名；本条与通用规则 `js-apis-{name}.md` + hyphen-to-dot 的结果一致，作为评测 fixture 的双通道交叉校验保留。显式条目若与模式规则结果不一致，必须以模式规则为准并说明原因，避免两条通道静默分叉。",
+      "overrides": {
+        "optionName": "sdkFilePath",
+        "envName": "INTERFACE_SDK_JS_PATH",
+        "description": "调用方可通过 options.sdkFilePath 直接指定 .d.ts/.h 路径，跳过模式匹配；映射失败时返回 reason 而不是 null，由调用方产出『SDK文件映射失败』问题并标记该检查为 failed"
+      },
+      "assertions": [
+        { "docFileName": "js-apis-geolocation.md", "expected": "api/@ohos.geolocation.d.ts" },
+        { "docFileName": "js-apis-demo-taskmanager.md", "expected": "api/@ohos.demo.taskmanager.d.ts" },
+        { "docFileName": "js-apis-app-ability-wantAgent.md", "expected": "api/@ohos.app.ability.wantAgent.d.ts" },
+        { "docFileName": "js-apis-inner-wantAgent-wantAgentInfo.md", "expected": "api/wantAgent/wantAgentInfo.d.ts" },
+        { "docFileName": "js-apis-inner-wantAgent-wantAgentInfo-sys.md", "expected": "api/wantAgent/wantAgentInfo.d.ts" },
+        { "docFileName": "capi-native-bundle.md", "expected": "api/native_bundle.h" }
+      ]
     }
   },
   "rules": [
@@ -30,6 +71,7 @@
       "priority": "high",
       "confidence": 85,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "api-version-mark",
@@ -71,6 +113,7 @@
       "priority": "critical",
       "confidence": 95,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "syntax-validity",
@@ -113,6 +156,7 @@
       "priority": "high",
       "confidence": 85,
       "enabled": true,
+      "execution": "agent",
       "checkPoints": [
         {
           "name": "param-type-match",
@@ -152,6 +196,7 @@
       "priority": "high",
       "confidence": 90,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "step-path-match",
@@ -176,6 +221,7 @@
       "priority": "critical",
       "confidence": 95,
       "enabled": true,
+      "execution": "automatic",
       "checkPoints": [
         {
           "name": "phone-number-check",

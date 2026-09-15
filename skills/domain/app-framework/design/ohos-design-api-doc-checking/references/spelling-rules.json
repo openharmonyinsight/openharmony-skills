@@ -207,8 +207,10 @@
       "priority": "medium",
       "confidence": 95,
       "enabled": true,
+      "execution": "automatic",
       "checkInCodeBlocks": false,
       "message": "\"{wrong}\" 拼写错误，应为 \"{correct}\"",
+      "suggestedFix": "按 commonMisspellings 对照表改正拼写",
       "autoFixable": true
     },
     {
@@ -219,8 +221,11 @@
       "priority": "high",
       "confidence": 95,
       "enabled": true,
-      "checkInCodeBlocks": true,
+      "execution": "automatic",
+      "checkInCodeBlocks": false,
+      "checkScopeNote": "只在描述性文本中判定：小写形式（callback、resource、want、hap 等）常作为合法标识符出现在代码块、行内代码与表格的参数名/名称列中，在这些位置匹配会产生误报",
       "message": "\"{wrong}\" 应为 \"{correct}\"",
+      "suggestedFix": "按 harmonyOSGlossary 使用标准大小写形式",
       "explanation": "鸿蒙专有名词应使用标准大小写形式",
       "autoFixable": true
     },
@@ -232,10 +237,12 @@
       "priority": "medium",
       "confidence": 70,
       "enabled": true,
+      "execution": "automatic",
       "checkInCodeBlocks": true,
-      "pattern": "@([A-Za-z]+)",
+      "pattern": "^\\s*@([A-Za-z]+)",
       "validDecorators": ["Entry", "Component", "State", "Prop", "Link", "Provide", "Consume", "Watch", "Builder", "CustomDialog", "Extend", "Styles", "Animate", "StorageLink", "StorageProp", "ObjectLink", "Observed"],
       "message": "未知装饰器 \"@{decorator}\"，请检查拼写",
+      "suggestedFix": "核对装饰器拼写；若为自定义装饰器，补充其定义位置与导入说明",
       "autoFixable": false
     }
   ]

@@ -10,6 +10,7 @@
       "priority": "high",
       "confidence": 90,
       "enabled": true,
+      "execution": "automatic",
       "extraction": {
         "creationPatterns": [
           {
@@ -52,6 +53,7 @@
         "caseSensitive": false
       },
       "message": "文档中创建的目录名与引用的目录名不一致",
+      "suggestedFix": "统一各步骤与配置中的目录名，以创建步骤中的命名为准",
       "explanation": "步骤指导中创建的目录名应与配置文件中引用的路径保持一致",
       "examples": {
         "bad": [
@@ -76,6 +78,7 @@
       "priority": "high",
       "confidence": 90,
       "enabled": true,
+      "execution": "automatic",
       "extraction": {
         "creationPatterns": [
           {
@@ -100,6 +103,7 @@
         "caseSensitive": true
       },
       "message": "文档中创建的文件名与引用的文件名不一致",
+      "suggestedFix": "统一各步骤与配置中的文件名，以创建步骤中的命名为准",
       "explanation": "步骤指导中创建的文件名应与代码示例和配置中引用的文件名完全一致"
     },
     {
@@ -110,6 +114,7 @@
       "priority": "high",
       "confidence": 85,
       "enabled": true,
+      "execution": "automatic",
       "requiresExternalData": true,
       "extraction": {
         "sampleReferencePatterns": [
@@ -137,6 +142,7 @@
         "caseSensitive": false
       },
       "message": "文档中的目录/文件路径与引用的Sample代码不一致",
+      "suggestedFix": "与 Sample 工程保持一致的目录/文件命名；确有差异时说明原因并给出 Sample 链接",
       "explanation": "文档中的路径应与引用的官方Sample代码保持一致，避免开发者参考时出现配置错误",
       "reference": "https://gitcode.com/openharmony/applications_app_samples",
       "examples": {
@@ -157,6 +163,7 @@
       "priority": "critical",
       "confidence": 95,
       "enabled": true,
+      "execution": "automatic",
       "scope": "module.json5",
       "extraction": {
         "srcEntryPattern": "srcEntry['\"\\s:]+['\"]([^'\"]+)['\"]",
@@ -167,6 +174,7 @@
         "requiredMatch": true
       },
       "message": "module.json5中的 srcEntry 路径与步骤指导创建的目录不匹配",
+      "suggestedFix": "修正 module.json5 的 srcEntry 路径，使其指向步骤中实际创建的目录",
       "explanation": "srcEntry 配置的路径必须与实际创建的目录结构一致，否则会导致 AbilityStage 等组件加载失败",
       "impact": "abilitystage-loading-failure"
     }

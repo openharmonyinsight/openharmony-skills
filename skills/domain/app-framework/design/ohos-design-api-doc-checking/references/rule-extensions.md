@@ -27,9 +27,10 @@
   "description": "规则描述",
   "type": "{dimension}",
   "subType": "{subCategory}",
-  "priority": "high|medium|low",
+  "priority": "critical|high|medium|low",
   "confidence": 90,
   "enabled": true,
+  "execution": "automatic|agent",
   "checkPoints": [
     {
       "name": "check-point-name",
@@ -55,14 +56,31 @@
 | `priority` | string | 是 | 优先级：`critical`、`high`、`medium`、`low` |
 | `confidence` | number | 是 | 置信度（0-100），表示检测结果的可靠程度 |
 | `enabled` | boolean | 是 | 是否启用该规则 |
-| `checkPoints` | array | 否 | 检查点列表，描述具体检查逻辑 |
+| `execution` | string | 是 | `automatic`（JSON 提供机器可判定的驱动配置）或 `agent`（只有语义 checkPoints，需回填 verdict） |
+| `checkPoints` | array | 否 | 检查点列表，描述具体检查逻辑；`execution: agent` 时必填，verdict 按 checkPoint 逐条回填 |
 | `message` | string | 是 | 错误消息模板 |
-| `explanation` | string | 是 | 详细说明，解释为什么这是个问题 |
+| `explanation` | string | 否 | 详细说明，解释为什么这是个问题 |
 | `suggestedFix` | string | 是 | 修复建议，提供具体的解决方案 |
+| `examples` | object | 否 | `{ "bad": [...], "good": [...] }`；带 `pattern` 的规则建议提供，加载期做正反例断言 |
 
-### 3. 无需修改 SKILL.md，立即生效
+> 上表中标记为「是」的字段由 `validateRuleCoverage()` 在加载期强制校验，缺失即 fail-fast。
 
-框架会自动加载新规则并按维度归类执行。
+### 3. 生效条件
+
+新规则会被自动加载并按维度归类执行，**无需修改 SKILL.md**，但要满足下列条件之一，否则加载期校验会直接失败（不会静默跳过）：
+
+| 情况 | 是否需要改执行器 |
+|------|----------------|
+| `execution: automatic`，且复用已有驱动配置（`pattern`/`patterns`/`ambiguousPatterns`/`keywords`/`requiredConstraints`/`requiredSections`/`indicators`/`extraction`/`validation`/`requiredPatterns`/`requiredPattern`/`termMappings`/`criticalExtensions`） | 否，只改 JSON |
+| `execution: agent`，只提供 `checkPoints` | 否，只改 JSON；执行时由 Agent 回填 verdict |
+| 需要新的驱动类型或新的 `pattern.type: function` 处理器 | 是，需在 `workflow-details.md` 的 `RULE_HANDLERS` / `FUNCTION_HANDLERS` 登记 |
+
+加载期强制校验（见 `workflow-details.md` 步骤 1）：
+
+1. **覆盖校验**：每条 `enabled: true` 的规则必须在 `RULE_HANDLERS` 中有处理器，且处理器声明的 `name`/`execution` 与规则 JSON 一致；注册表中不得存在规则文件里没有的 ID。
+2. **字段校验**：必填字段齐全、`priority` 合法、`confidence` 在 0-100。
+3. **正则自检**：所有启用正则必须能 `new RegExp` 构造；能匹配全部中性样例的"退化正则"（如把字面量 `...` 当正则）会被拒绝。
+4. **正反例断言**：提供 `examples` 的规则必须满足 good 全不命中、bad 全命中。
 
 ## 规则 ID 命名规范
 
@@ -96,6 +114,7 @@
   "priority": "high",
   "confidence": 85,
   "enabled": true,
+  "execution": "agent",
   "checkPoints": [
     {
       "name": "title-keyword-match",
@@ -121,6 +140,7 @@
   "priority": "high",
   "confidence": 90,
   "enabled": true,
+  "execution": "agent",
   "checkPoints": [
     {
       "name": "constraint-section-exists",
@@ -146,6 +166,7 @@
   "priority": "critical",
   "confidence": 95,
   "enabled": true,
+  "execution": "agent",
   "checkPoints": [
     {
       "name": "syntax-validation",
@@ -176,6 +197,7 @@
   "priority": "medium",
   "confidence": 75,
   "enabled": true,
+  "execution": "agent",
   "checkPoints": [
     {
       "name": "keyword-coverage",
@@ -193,7 +215,7 @@
 
 ```json
 {
-  "id": "capability-009",
+  "id": "capability-012",
   "name": "api-constraint-documentation",
   "description": "检查API约束条件是否完整记录",
   "type": "capability",
@@ -201,6 +223,7 @@
   "priority": "high",
   "confidence": 85,
   "enabled": true,
+  "execution": "agent",
   "checkPoints": [
     {
       "name": "parameter-constraints",
@@ -218,6 +241,10 @@
   "suggestedFix": "补充完整的约束条件说明，包括参数约束、系统约束等"
 }
 ```
+
+> **示例 2/3/5 标为 `agent` 的原因**：它们只提供 `checkPoints` 语义描述，没有机器可判定的驱动配置。
+> 若给示例 2 补上 `keywords`（如 `{"constraint": ["约束", "限制", "注意事项"]}`）、给示例 3 补上 `syntaxChecks`/`pattern`，
+> 就可以改标 `execution: "automatic"` 交给执行器自动判定，此时 `RULE_HANDLERS` 中对应的驱动也要能消费这些配置。
 
 ## 置信度与优先级说明
 
@@ -254,10 +281,11 @@
 如果规则没有按预期工作：
 
 1. 检查 `enabled` 字段是否为 `true`
-2. 检查规则文件是否在 `index.json` 中正确配置
-3. 检查规则 ID 是否符合命名规范
-4. 查看检查工具的日志输出
-5. 使用测试用例逐步验证检查逻辑
+2. 检查规则文件是否在 `index.json` 中正确配置，且 `category` 能在 `DIMENSION_BY_CATEGORY` 中映射到维度
+3. 检查规则 ID 是否符合命名规范，并已在 `RULE_HANDLERS` 中登记
+4. 检查 `execution` 是否与规则实际配置匹配（声明 `automatic` 却只有 `checkPoints`，执行时会因缺少驱动配置而不适用）
+5. 查看执行台账：状态为 `not-executed`/`failed` 的记录会给出原因
+6. 跑一遍 `workflow-details.md` 步骤 7 的自检断言，用真实规则 JSON + fixture 复现，而不是用合成数据
 
 ## 规则维护
 
