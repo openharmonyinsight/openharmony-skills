@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eval Report — ohos-dev-appmgr-api-generator</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 2rem; background: #f8f9fa; color: #1a1a1a; }
+  h1 { border-bottom: 2px solid #0b69c3; padding-bottom: .5rem; color: #0b69c3; }
+  .summary { display: flex; gap: 1rem; margin: 1.5rem 0; flex-wrap: wrap; }
+  .stat { background: #fff; border-radius: 8px; padding: 1rem 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.1); min-width: 120px; text-align: center; }
+  .stat .num { font-size: 2rem; font-weight: 700; }
+  .stat .label { font-size: .85rem; color: #666; text-transform: uppercase; }
+  .stat.pass .num { color: #28a745; }
+  .stat.fail .num { color: #dc3545; }
+  .stat.total .num { color: #0b69c3; }
+  .stat.rate .num { color: #6f42c1; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+  th, td { padding: .6rem .8rem; text-align: left; border-bottom: 1px solid #e9ecef; font-size: .9rem; vertical-align: top; }
+  th { background: #0b69c3; color: #fff; font-weight: 600; }
+  tr.pass { background: #f0fff4; }
+  tr.fail { background: #fff5f5; }
+  .badge { display: inline-block; padding: .15rem .5rem; border-radius: 4px; font-size: .75rem; font-weight: 600; }
+  .badge.pass { background: #28a745; color: #fff; }
+  .badge.fail { background: #dc3545; color: #fff; }
+  .detail { font-family: "Cascadia Code", "Fira Code", monospace; font-size: .82rem; white-space: pre-wrap; max-height: 200px; overflow-y: auto; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: .5rem; }
+  .assertion-list { list-style: none; padding-left: 0; margin: 0; }
+  .assertion-list li { padding: .15rem 0; font-size: .82rem; }
+  .assertion-list .ok { color: #28a745; }
+  .assertion-list .ko { color: #dc3545; }
+  .meta { color: #888; font-size: .85rem; margin-bottom: 1rem; }
+</style>
+</head>
+<body>
+<h1>Evaluation Report — ohos-dev-appmgr-api-generator</h1>
+<div class="meta">Generated: 2026-09-14 14:27:50 | Script: generate_appmgr_api.py | Eval count: 20</div>
+<div class="summary">
+  <div class="stat total"><div class="num">20</div><div class="label">Total</div></div>
+  <div class="stat pass"><div class="num">20</div><div class="label">Passed</div></div>
+  <div class="stat fail"><div class="num">0</div><div class="label">Failed</div></div>
+  <div class="stat rate"><div class="num">100%</div><div class="label">Pass Rate</div></div>
+</div>
+<table>
+<thead>
+<tr>
+  <th style="width:40px">#</th>
+  <th style="width:220px">Eval Name</th>
+  <th style="width:60px">Result</th>
+  <th style="width:50px">Asserts</th>
+  <th>Assertion Details</th>
+  <th>Output Sample</th>
+</tr>
+</thead>
+<tbody>
+<tr class="pass">
+  <td>1</td>
+  <td>generate-void-api-with-scalar-params</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>8/8</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>generates-12-snippets</b> — pattern /12/ in full output matched</li><li class="ok">[PASS] <b>void-uses-noret-write</b> — pattern /PARCEL_UTIL_WRITE_NORET/ in proxy_cpp matched</li><li class="ok">[PASS] <b>void-uses-noret-sendreq</b> — pattern /PARCEL_UTIL_SENDREQ_NORET/ in proxy_cpp matched</li><li class="ok">[PASS] <b>int32-param-write-tag</b> — pattern /WRITE_NORET.*Int32/ in proxy_cpp matched</li><li class="ok">[PASS] <b>string-param-write-tag</b> — pattern /WRITE_NORET.*String16/ in proxy_cpp matched</li><li class="ok">[PASS] <b>stub-reads-validated</b> — pattern /if \(!data\.Read/ in stub_cpp matched</li><li class="ok">[PASS] <b>stub-returns-err-invalid-value</b> — pattern /return ERR_INVALID_VALUE/ in stub_cpp matched</li><li class="ok">[PASS] <b>no-reply-read-for-void</b> — pattern /reply\.Read/ in proxy_cpp NOT found (good)</li></ul></td>
+  <td><div class="detail">Generated 12 snippets
+
+--- client_h ---
+    /**
+     * ClearData
+     */
+    virtual void ClearData(int32_t pid, const std::string&amp; bundleName);
+
+--- client_cpp ---
+void AppMgrClient::ClearData(int32_t pid, const std::string&amp; bundleName)
+{
+    sptr&lt;IAppMgr&gt; service = iface_cast&lt;IAppMgr&gt;(mgrHolder_-&gt;GetRemoteObject());
+    if (service == nullptr) {
+        TAG_LOGE(AAFwkTag::APPMGR, "Service is nullptr.");
+        return;
+    }
+    service-&gt;ClearData(pid, bundleName);
+}
+
+--- ipc_code_h ---
+    AP</div></td>
+</tr><tr class="pass">
+  <td>2</td>
+  <td>generate-int32-api-with-sptr-broker-param</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>7/7</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>int32-uses-ret-int-write</b> — pattern /PARCEL_UTIL_WRITE_RET_INT/ in proxy_cpp matched</li><li class="ok">[PASS] <b>int32-uses-ret-int-sendreq</b> — pattern /PARCEL_UTIL_SENDREQ_RET_INT/ in proxy_cpp matched</li><li class="ok">[PASS] <b>broker-uses-asobject</b> — pattern /observer-&gt;AsObject\(\)/ in proxy_cpp matched</li><li class="ok">[PASS] <b>proxy-null-guard</b> — pattern /if \(!observer\)/ in proxy_cpp matched</li><li class="ok">[PASS] <b>stub-iface-cast</b> — pattern /iface_cast&lt;IConfigurationObserver&gt;/ in stub_cpp matched</li><li class="ok">[PASS] <b>stub-null-check</b> — pattern /if \(!observer\)/ in stub_cpp matched</li><li class="ok">[PASS] <b>reply-read-int32-validated</b> — pattern /if \(!reply\.ReadInt32\(ret\)\)/ in proxy_cpp matched</li></ul></td>
+  <td><div class="detail">Generated 12 snippets
+
+--- client_h ---
+    /**
+     * RegisterObserver
+     */
+    virtual int32_t RegisterObserver(const sptr&lt;IConfigurationObserver&gt;&amp; observer);
+
+--- client_cpp ---
+int32_t AppMgrClient::RegisterObserver(const sptr&lt;IConfigurationObserver&gt;&amp; observer)
+{
+    sptr&lt;IAppMgr&gt; service = iface_cast&lt;IAppMgr&gt;(mgrHolder_-&gt;GetRemoteObject());
+    if (service == nullptr) {
+        TAG_LOGE(AAFwkTag::APPMGR, "Service is nullptr.");
+        return AAFwk::ERR_APP_MGR_SERVICE_NOT_CONNECTED;
+   </div></td>
+</tr><tr class="pass">
+  <td>3</td>
+  <td>generate-bool-api-with-explicit-write</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>5/5</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>explicit-write-for-bool-return</b> — pattern /data\.Write(String16|Int32)/ in proxy_cpp matched</li><li class="ok">[PASS] <b>no-ret-int-for-bool</b> — pattern /PARCEL_UTIL_WRITE_RET_INT/ in proxy_cpp NOT found (good)</li><li class="ok">[PASS] <b>sendrequest-wrapper</b> — pattern /int32_t errCode = SendRequest/ in proxy_cpp matched</li><li class="ok">[PASS] <b>reply-read-bool-validated</b> — pattern /if \(!reply\.ReadBool\(ret\)\)/ in proxy_cpp matched</li><li class="ok">[PASS] <b>bool-error-return-false</b> — pattern /return false;/ in proxy_cpp matched</li></ul></td>
+  <td><div class="detail">Generated 12 snippets
+
+--- client_h ---
+    /**
+     * IsPluginEnabled
+     */
+    virtual bool IsPluginEnabled(const std::string&amp; pluginName, int32_t flag);
+
+--- client_cpp ---
+bool AppMgrClient::IsPluginEnabled(const std::string&amp; pluginName, int32_t flag)
+{
+    sptr&lt;IAppMgr&gt; service = iface_cast&lt;IAppMgr&gt;(mgrHolder_-&gt;GetRemoteObject());
+    if (service == nullptr) {
+        TAG_LOGE(AAFwkTag::APPMGR, "Service is nullptr.");
+        return false;
+    }
+    return service-&gt;IsPluginEnabled(pluginN</div></td>
+</tr><tr class="pass">
+  <td>4</td>
+  <td>generate-appmgr-resultcode-transport-int32</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>6/6</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>client-returns-enum</b> — pattern /AppMgrResultCode AppMgrClient::ClearUpApplicationData/ in client_cpp matched</li><li class="ok">[PASS] <b>client-maps-int32</b> — pattern /int32_t result = service-&gt;/ in client_cpp matched</li><li class="ok">[PASS] <b>proxy-uses-int32-transport</b> — pattern /int32_t AppMgrProxy::ClearUpApplicationData/ in proxy_cpp matched</li><li class="ok">[PASS] <b>stub-writes-int32</b> — pattern /WriteInt32\(_stub_result\)/ in stub_cpp matched</li><li class="ok">[PASS] <b>no-enum-cast-in-stub</b> — pattern /static_cast&lt;int32_t&gt;/ in stub_cpp NOT found (good)</li><li class="ok">[PASS] <b>ret-int-macro-for-transport</b> — pattern /PARCEL_UTIL_SENDREQ_RET_INT/ in proxy_cpp matched</li></ul></td>
+  <td><div class="detail">Generated 12 snippets
+
+--- client_h ---
+    /**
+     * ClearUpApplicationData
+     */
+    virtual AppMgrResultCode ClearUpApplicationData();
+
+--- client_cpp ---
+AppMgrResultCode AppMgrClient::ClearUpApplicationData()
+{
+    sptr&lt;IAppMgr&gt; service = iface_cast&lt;IAppMgr&gt;(mgrHolder_-&gt;GetRemoteObject());
+    if (service == nullptr) {
+        TAG_LOGE(AAFwkTag::APPMGR, "Service is nullptr.");
+        return AppMgrResultCode::ERROR_SERVICE_NOT_CONNECTED;
+    }
+    int32_t result = service-&gt;ClearUpApplica</div></td>
+</tr><tr class="pass">
+  <td>5</td>
+  <td>generate-async-api-forces-void</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>4/4</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>forced-to-void</b> — pattern /void AppMgrProxy::NotifyStateChange/ in proxy_cpp matched</li><li class="ok">[PASS] <b>uses-tf-async</b> — pattern /TF_ASYNC/ in proxy_cpp matched</li><li class="ok">[PASS] <b>uses-noret-sendreq</b> — pattern /PARCEL_UTIL_SENDREQ_NORET/ in proxy_cpp matched</li><li class="ok">[PASS] <b>no-reply-read</b> — pattern /reply\.Read/ in proxy_cpp NOT found (good)</li></ul></td>
+  <td><div class="detail">Generated 12 snippets
+
+--- client_h ---
+    /**
+     * NotifyStateChange
+     */
+    virtual void NotifyStateChange();
+
+--- client_cpp ---
+void AppMgrClient::NotifyStateChange()
+{
+    sptr&lt;IAppMgr&gt; service = iface_cast&lt;IAppMgr&gt;(mgrHolder_-&gt;GetRemoteObject());
+    if (service == nullptr) {
+        TAG_LOGE(AAFwkTag::APPMGR, "Service is nullptr.");
+        return;
+    }
+    service-&gt;NotifyStateChange();
+}
+
+--- ipc_code_h ---
+    APP_NOTIFY_STATE_CHANGE = 2,
+
+--- proxy_h ---
+    /**
+     * NotifySt</div></td>
+</tr><tr class="pass">
+  <td>6</td>
+  <td>generate-std-string-api</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>5/5</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>string-param-explicit-write</b> — pattern /data\.WriteInt32/ in proxy_cpp matched</li><li class="ok">[PASS] <b>sendrequest-wrapper</b> — pattern /int32_t errCode = SendRequest/ in proxy_cpp matched</li><li class="ok">[PASS] <b>reply-read-string16-validated</b> — pattern /if \(!reply\.ReadString16\(ret16\)\)/ in proxy_cpp matched</li><li class="ok">[PASS] <b>string-error-empty</b> — pattern /return "";/ in proxy_cpp matched</li><li class="ok">[PASS] <b>no-ret-int-for-string</b> — pattern /PARCEL_UTIL_SENDREQ_RET_INT/ in proxy_cpp NOT found (good)</li></ul></td>
+  <td><div class="detail">Generated 12 snippets
+
+--- client_h ---
+    /**
+     * GetBundleName
+     */
+    virtual std::string GetBundleName(int32_t uid);
+
+--- client_cpp ---
+std::string AppMgrClient::GetBundleName(int32_t uid)
+{
+    sptr&lt;IAppMgr&gt; service = iface_cast&lt;IAppMgr&gt;(mgrHolder_-&gt;GetRemoteObject());
+    if (service == nullptr) {
+        TAG_LOGE(AAFwkTag::APPMGR, "Service is nullptr.");
+        return {};
+    }
+    return service-&gt;GetBundleName(uid);
+}
+
+--- ipc_code_h ---
+    APP_GET_BUNDLE_NAME = 2,
+
+--- proxy_</div></td>
+</tr><tr class="pass">
+  <td>7</td>
+  <td>generate-with-uint32-uint64-params</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>4/4</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>uint32-write</b> — pattern /Uint32/ in proxy_cpp matched</li><li class="ok">[PASS] <b>uint64-write</b> — pattern /Uint64/ in proxy_cpp matched</li><li class="ok">[PASS] <b>uint32-read-validated</b> — pattern /if \(!data\.ReadUint32\(pid\)\)/ in stub_cpp matched</li><li class="ok">[PASS] <b>uint64-read-validated</b> — pattern /if \(!data\.ReadUint64\(token\)\)/ in stub_cpp matched</li></ul></td>
+  <td><div class="detail">Generated 12 snippets
+
+--- client_h ---
+    /**
+     * GetProcessInfo
+     */
+    virtual int32_t GetProcessInfo(uint32_t pid, uint64_t token);
+
+--- client_cpp ---
+int32_t AppMgrClient::GetProcessInfo(uint32_t pid, uint64_t token)
+{
+    sptr&lt;IAppMgr&gt; service = iface_cast&lt;IAppMgr&gt;(mgrHolder_-&gt;GetRemoteObject());
+    if (service == nullptr) {
+        TAG_LOGE(AAFwkTag::APPMGR, "Service is nullptr.");
+        return AAFwk::ERR_APP_MGR_SERVICE_NOT_CONNECTED;
+    }
+    return service-&gt;GetProcessInfo(</div></td>
+</tr><tr class="pass">
+  <td>8</td>
+  <td>generate-with-iremoteobject-sptr</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>4/4</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>uses-getrefptr</b> — pattern /obj\.GetRefPtr\(\)/ in proxy_cpp matched</li><li class="ok">[PASS] <b>no-asobject-for-remoteobject</b> — pattern /obj-&gt;AsObject/ in proxy_cpp NOT found (good)</li><li class="ok">[PASS] <b>stub-read-remote-object</b> — pattern /data\.ReadRemoteObject\(\)/ in stub_cpp matched</li><li class="ok">[PASS] <b>stub-null-check-remote</b> — pattern /if \(!obj\)/ in stub_cpp matched</li></ul></td>
+  <td><div class="detail">Generated 12 snippets
+
+--- client_h ---
+    /**
+     * SetRemoteObject
+     */
+    virtual void SetRemoteObject(const sptr&lt;IRemoteObject&gt;&amp; obj);
+
+--- client_cpp ---
+void AppMgrClient::SetRemoteObject(const sptr&lt;IRemoteObject&gt;&amp; obj)
+{
+    sptr&lt;IAppMgr&gt; service = iface_cast&lt;IAppMgr&gt;(mgrHolder_-&gt;GetRemoteObject());
+    if (service == nullptr) {
+        TAG_LOGE(AAFwkTag::APPMGR, "Service is nullptr.");
+        return;
+    }
+    service-&gt;SetRemoteObject(obj);
+}
+
+--- ipc_code_h ---
+    APP_SET_REMOTE</div></td>
+</tr><tr class="pass">
+  <td>9</td>
+  <td>r5-f1-malformed-param-exits-nonzero</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>3/3</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>exit-nonzero</b> — pattern /exit_code=1/ in full output matched</li><li class="ok">[PASS] <b>abort-message</b> — pattern /Aborting/ in full output matched</li><li class="ok">[PASS] <b>no-generation-block</b> — pattern /=== Generated Code ===/ in full output NOT found (good)</li></ul></td>
+  <td><div class="detail">exit_code=1
+
+=== AppMgr API Generator ===
+
+API name (camelCase, e.g. GetConfiguration): Return type (AppMgrResultCode | int32_t | void | bool | std::string): Async IPC (TF_ASYNC)? (y/n): 
+Enter parameters, one per line, format: &lt;type&gt; &lt;name&gt;
+Examples:  'const std::string&amp; bundleName'  |  'int32_t pid'  |  'const sptr&lt;IConfigurationObserver&gt;&amp; observer'
+Empty line to finish.
+param1&gt; Error: format is '&lt;type&gt; &lt;name&gt;'. Example: 'const std::string&amp; bundleName'
+Aborting: the request signature must not </div></td>
+</tr><tr class="pass">
+  <td>10</td>
+  <td>r5-f2-namespaced-broker-accepted</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>2/2</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>aafwk-accepted</b> — pattern /AAFwk::IUserCallback.*True/ in full output matched</li><li class="ok">[PASS] <b>ohos-aafwk-accepted</b> — pattern /OHOS::AAFwk::IUserCallback.*True/ in full output matched</li></ul></td>
+  <td><div class="detail">AAFwk::IUserCallback -&gt; True
+OHOS::AAFwk::IUserCallback -&gt; True</div></td>
+</tr><tr class="pass">
+  <td>11</td>
+  <td>r5-f2-keyword-segment-rejected</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>2/2</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>keyword-segment-rejected</b> — pattern /IObserver::class.*False/ in full output matched</li><li class="ok">[PASS] <b>scalar-rejected</b> — pattern /int32_t.*False/ in full output matched</li></ul></td>
+  <td><div class="detail">IObserver::class -&gt; False
+int32_t -&gt; False</div></td>
+</tr><tr class="pass">
+  <td>12</td>
+  <td>r5-f3-enum-conflict-expression-value</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>2/2</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>conflict-detected</b> — pattern /already exists/ in full output matched</li><li class="ok">[PASS] <b>no-snippets-generated</b> — pattern /client_h/ in full output NOT found (good)</li></ul></td>
+  <td><div class="detail">IPC enum name 'APP_DUP' already exists in C:\Users\sty28\AppData\Local\Temp\tmpqklxci_h\interfaces\inner_api\app_manager\include\appmgr\app_mgr_ipc_interface_code.h. Pick a different API name, or extend the enum by hand if you intend to reuse an existing code. — used_names: ['APP_BASE', 'APP_DUP']</div></td>
+</tr><tr class="pass">
+  <td>13</td>
+  <td>r5-f3-enum-conflict-implicit-value</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>2/2</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>conflict-detected</b> — pattern /already exists/ in full output matched</li><li class="ok">[PASS] <b>implicit-name-in-used-set</b> — pattern /APP_IMPLICIT/ in full output matched</li></ul></td>
+  <td><div class="detail">IPC enum name 'APP_IMPLICIT' already exists in C:\Users\sty28\AppData\Local\Temp\tmp1namnfcr\interfaces\inner_api\app_manager\include\appmgr\app_mgr_ipc_interface_code.h. Pick a different API name, or extend the enum by hand if you intend to reuse an existing code. — used_names: ['APP_BASE', 'APP_IMPLICIT']</div></td>
+</tr><tr class="pass">
+  <td>14</td>
+  <td>r5-f4-directory-as-file-rejected</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>2/2</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>exit-nonzero</b> — pattern /exit_code=1/ in full output matched</li><li class="ok">[PASS] <b>missing-files-message</b> — pattern /Missing required files/ in full output matched</li></ul></td>
+  <td><div class="detail">exit_code=1
+Error: C:\Users\sty28\AppData\Local\Temp\tmp7a82siyl does not look like an ability_runtime project root. Missing required files:
+  - C:\Users\sty28\AppData\Local\Temp\tmp7a82siyl\interfaces\inner_api\app_manager\include\appmgr\app_mgr_ipc_interface_code.h
+  - C:\Users\sty28\AppData\Local\Temp\tmp7a82siyl\interfaces\inner_api\app_manager\include\appmgr\app_mgr_client.h
+  - C:\Users\sty28\AppData\Local\Temp\tmp7a82siyl\interfaces\inner_api\app_manager\src\appmgr\app_mgr_client.cpp
+  - </div></td>
+</tr><tr class="pass">
+  <td>15</td>
+  <td>r5-f4b-file-as-project-root-rejected</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>2/2</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>exit-nonzero</b> — pattern /exit_code=1/ in full output matched</li><li class="ok">[PASS] <b>not-found-message</b> — pattern /not found/ in full output matched</li></ul></td>
+  <td><div class="detail">exit_code=1
+Error: Project root not found: C:\Users\sty28\AppData\Local\Temp\tmprv_hwd0b.txt
+</div></td>
+</tr><tr class="pass">
+  <td>16</td>
+  <td>reject-duplicate-param-names</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>1/1</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>duplicate-rejected</b> — pattern /duplicate parameter name/ in full output matched</li></ul></td>
+  <td><div class="detail">duplicate parameter name 'value': parameter names must be unique within an API signature</div></td>
+</tr><tr class="pass">
+  <td>17</td>
+  <td>reject-cpp-keyword-as-api-name</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>1/1</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>keyword-rejected</b> — pattern /C\+\+ keyword/ in full output matched</li></ul></td>
+  <td><div class="detail">invalid API name 'class': must not be a C++ keyword</div></td>
+</tr><tr class="pass">
+  <td>18</td>
+  <td>reject-unsupported-vector-param</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>1/1</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>vector-rejected</b> — pattern /unsupported parameter type/ in full output matched</li></ul></td>
+  <td><div class="detail">unsupported parameter type 'std::vector&lt;int32_t&gt;' for parameter 'values': only scalar types and sptr&lt;IRemoteObject&gt; / sptr&lt;IXxx broker&gt; are auto-marshaled. Parcelable (AAFwk::Want, Configuration), std::vector&lt;T&gt;, and non-broker sptr (e.g. sptr&lt;int32_t&gt;) need manual marshaling — add them by hand after generation</div></td>
+</tr><tr class="pass">
+  <td>19</td>
+  <td>reject-non-broker-sptr</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>1/1</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>non-broker-sptr-rejected</b> — pattern /unsupported parameter type/ in full output matched</li></ul></td>
+  <td><div class="detail">unsupported parameter type 'sptr&lt;int32_t&gt;' for parameter 'val': only scalar types and sptr&lt;IRemoteObject&gt; / sptr&lt;IXxx broker&gt; are auto-marshaled. Parcelable (AAFwk::Want, Configuration), std::vector&lt;T&gt;, and non-broker sptr (e.g. sptr&lt;int32_t&gt;) need manual marshaling — add them by hand after generation</div></td>
+</tr><tr class="pass">
+  <td>20</td>
+  <td>generate-namespaced-broker-full-chain</td>
+  <td><span class="badge pass">PASS</span></td>
+  <td>4/4</td>
+  <td><ul class="assertion-list"><li class="ok">[PASS] <b>generates-12-snippets</b> — pattern /12/ in full output matched</li><li class="ok">[PASS] <b>proxy-uses-asobject</b> — pattern /callback-&gt;AsObject\(\)/ in proxy_cpp matched</li><li class="ok">[PASS] <b>stub-iface-cast-namespaced</b> — pattern /iface_cast&lt;AAFwk::IUserCallback&gt;/ in stub_cpp matched</li><li class="ok">[PASS] <b>null-guard-present</b> — pattern /if \(!callback\)/ in proxy_cpp matched</li></ul></td>
+  <td><div class="detail">Generated 12 snippets
+
+--- client_h ---
+    /**
+     * RegisterCallback
+     */
+    virtual void RegisterCallback(const sptr&lt;AAFwk::IUserCallback&gt;&amp; callback);
+
+--- client_cpp ---
+void AppMgrClient::RegisterCallback(const sptr&lt;AAFwk::IUserCallback&gt;&amp; callback)
+{
+    sptr&lt;IAppMgr&gt; service = iface_cast&lt;IAppMgr&gt;(mgrHolder_-&gt;GetRemoteObject());
+    if (service == nullptr) {
+        TAG_LOGE(AAFwkTag::APPMGR, "Service is nullptr.");
+        return;
+    }
+    service-&gt;RegisterCallback(callback);
+}
+
+--- </div></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

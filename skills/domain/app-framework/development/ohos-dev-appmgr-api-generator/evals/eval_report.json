@@ -1,0 +1,480 @@
+{
+  "skill_name": "ohos-dev-appmgr-api-generator",
+  "timestamp": "2026-09-14T14:27:50.007572",
+  "total": 20,
+  "passed": 20,
+  "failed": 0,
+  "pass_rate": "100%",
+  "results": [
+    {
+      "id": 1,
+      "name": "generate-void-api-with-scalar-params",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "generates-12-snippets",
+          "pass": true,
+          "detail": "pattern /12/ in full output matched"
+        },
+        {
+          "name": "void-uses-noret-write",
+          "pass": true,
+          "detail": "pattern /PARCEL_UTIL_WRITE_NORET/ in proxy_cpp matched"
+        },
+        {
+          "name": "void-uses-noret-sendreq",
+          "pass": true,
+          "detail": "pattern /PARCEL_UTIL_SENDREQ_NORET/ in proxy_cpp matched"
+        },
+        {
+          "name": "int32-param-write-tag",
+          "pass": true,
+          "detail": "pattern /WRITE_NORET.*Int32/ in proxy_cpp matched"
+        },
+        {
+          "name": "string-param-write-tag",
+          "pass": true,
+          "detail": "pattern /WRITE_NORET.*String16/ in proxy_cpp matched"
+        },
+        {
+          "name": "stub-reads-validated",
+          "pass": true,
+          "detail": "pattern /if \\(!data\\.Read/ in stub_cpp matched"
+        },
+        {
+          "name": "stub-returns-err-invalid-value",
+          "pass": true,
+          "detail": "pattern /return ERR_INVALID_VALUE/ in stub_cpp matched"
+        },
+        {
+          "name": "no-reply-read-for-void",
+          "pass": true,
+          "detail": "pattern /reply\\.Read/ in proxy_cpp NOT found (good)"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "generate-int32-api-with-sptr-broker-param",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "int32-uses-ret-int-write",
+          "pass": true,
+          "detail": "pattern /PARCEL_UTIL_WRITE_RET_INT/ in proxy_cpp matched"
+        },
+        {
+          "name": "int32-uses-ret-int-sendreq",
+          "pass": true,
+          "detail": "pattern /PARCEL_UTIL_SENDREQ_RET_INT/ in proxy_cpp matched"
+        },
+        {
+          "name": "broker-uses-asobject",
+          "pass": true,
+          "detail": "pattern /observer->AsObject\\(\\)/ in proxy_cpp matched"
+        },
+        {
+          "name": "proxy-null-guard",
+          "pass": true,
+          "detail": "pattern /if \\(!observer\\)/ in proxy_cpp matched"
+        },
+        {
+          "name": "stub-iface-cast",
+          "pass": true,
+          "detail": "pattern /iface_cast<IConfigurationObserver>/ in stub_cpp matched"
+        },
+        {
+          "name": "stub-null-check",
+          "pass": true,
+          "detail": "pattern /if \\(!observer\\)/ in stub_cpp matched"
+        },
+        {
+          "name": "reply-read-int32-validated",
+          "pass": true,
+          "detail": "pattern /if \\(!reply\\.ReadInt32\\(ret\\)\\)/ in proxy_cpp matched"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "generate-bool-api-with-explicit-write",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "explicit-write-for-bool-return",
+          "pass": true,
+          "detail": "pattern /data\\.Write(String16|Int32)/ in proxy_cpp matched"
+        },
+        {
+          "name": "no-ret-int-for-bool",
+          "pass": true,
+          "detail": "pattern /PARCEL_UTIL_WRITE_RET_INT/ in proxy_cpp NOT found (good)"
+        },
+        {
+          "name": "sendrequest-wrapper",
+          "pass": true,
+          "detail": "pattern /int32_t errCode = SendRequest/ in proxy_cpp matched"
+        },
+        {
+          "name": "reply-read-bool-validated",
+          "pass": true,
+          "detail": "pattern /if \\(!reply\\.ReadBool\\(ret\\)\\)/ in proxy_cpp matched"
+        },
+        {
+          "name": "bool-error-return-false",
+          "pass": true,
+          "detail": "pattern /return false;/ in proxy_cpp matched"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "generate-appmgr-resultcode-transport-int32",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "client-returns-enum",
+          "pass": true,
+          "detail": "pattern /AppMgrResultCode AppMgrClient::ClearUpApplicationData/ in client_cpp matched"
+        },
+        {
+          "name": "client-maps-int32",
+          "pass": true,
+          "detail": "pattern /int32_t result = service->/ in client_cpp matched"
+        },
+        {
+          "name": "proxy-uses-int32-transport",
+          "pass": true,
+          "detail": "pattern /int32_t AppMgrProxy::ClearUpApplicationData/ in proxy_cpp matched"
+        },
+        {
+          "name": "stub-writes-int32",
+          "pass": true,
+          "detail": "pattern /WriteInt32\\(_stub_result\\)/ in stub_cpp matched"
+        },
+        {
+          "name": "no-enum-cast-in-stub",
+          "pass": true,
+          "detail": "pattern /static_cast<int32_t>/ in stub_cpp NOT found (good)"
+        },
+        {
+          "name": "ret-int-macro-for-transport",
+          "pass": true,
+          "detail": "pattern /PARCEL_UTIL_SENDREQ_RET_INT/ in proxy_cpp matched"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "generate-async-api-forces-void",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "forced-to-void",
+          "pass": true,
+          "detail": "pattern /void AppMgrProxy::NotifyStateChange/ in proxy_cpp matched"
+        },
+        {
+          "name": "uses-tf-async",
+          "pass": true,
+          "detail": "pattern /TF_ASYNC/ in proxy_cpp matched"
+        },
+        {
+          "name": "uses-noret-sendreq",
+          "pass": true,
+          "detail": "pattern /PARCEL_UTIL_SENDREQ_NORET/ in proxy_cpp matched"
+        },
+        {
+          "name": "no-reply-read",
+          "pass": true,
+          "detail": "pattern /reply\\.Read/ in proxy_cpp NOT found (good)"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "generate-std-string-api",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "string-param-explicit-write",
+          "pass": true,
+          "detail": "pattern /data\\.WriteInt32/ in proxy_cpp matched"
+        },
+        {
+          "name": "sendrequest-wrapper",
+          "pass": true,
+          "detail": "pattern /int32_t errCode = SendRequest/ in proxy_cpp matched"
+        },
+        {
+          "name": "reply-read-string16-validated",
+          "pass": true,
+          "detail": "pattern /if \\(!reply\\.ReadString16\\(ret16\\)\\)/ in proxy_cpp matched"
+        },
+        {
+          "name": "string-error-empty",
+          "pass": true,
+          "detail": "pattern /return \"\";/ in proxy_cpp matched"
+        },
+        {
+          "name": "no-ret-int-for-string",
+          "pass": true,
+          "detail": "pattern /PARCEL_UTIL_SENDREQ_RET_INT/ in proxy_cpp NOT found (good)"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "generate-with-uint32-uint64-params",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "uint32-write",
+          "pass": true,
+          "detail": "pattern /Uint32/ in proxy_cpp matched"
+        },
+        {
+          "name": "uint64-write",
+          "pass": true,
+          "detail": "pattern /Uint64/ in proxy_cpp matched"
+        },
+        {
+          "name": "uint32-read-validated",
+          "pass": true,
+          "detail": "pattern /if \\(!data\\.ReadUint32\\(pid\\)\\)/ in stub_cpp matched"
+        },
+        {
+          "name": "uint64-read-validated",
+          "pass": true,
+          "detail": "pattern /if \\(!data\\.ReadUint64\\(token\\)\\)/ in stub_cpp matched"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "generate-with-iremoteobject-sptr",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "uses-getrefptr",
+          "pass": true,
+          "detail": "pattern /obj\\.GetRefPtr\\(\\)/ in proxy_cpp matched"
+        },
+        {
+          "name": "no-asobject-for-remoteobject",
+          "pass": true,
+          "detail": "pattern /obj->AsObject/ in proxy_cpp NOT found (good)"
+        },
+        {
+          "name": "stub-read-remote-object",
+          "pass": true,
+          "detail": "pattern /data\\.ReadRemoteObject\\(\\)/ in stub_cpp matched"
+        },
+        {
+          "name": "stub-null-check-remote",
+          "pass": true,
+          "detail": "pattern /if \\(!obj\\)/ in stub_cpp matched"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "r5-f1-malformed-param-exits-nonzero",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "exit-nonzero",
+          "pass": true,
+          "detail": "pattern /exit_code=1/ in full output matched"
+        },
+        {
+          "name": "abort-message",
+          "pass": true,
+          "detail": "pattern /Aborting/ in full output matched"
+        },
+        {
+          "name": "no-generation-block",
+          "pass": true,
+          "detail": "pattern /=== Generated Code ===/ in full output NOT found (good)"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "r5-f2-namespaced-broker-accepted",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "aafwk-accepted",
+          "pass": true,
+          "detail": "pattern /AAFwk::IUserCallback.*True/ in full output matched"
+        },
+        {
+          "name": "ohos-aafwk-accepted",
+          "pass": true,
+          "detail": "pattern /OHOS::AAFwk::IUserCallback.*True/ in full output matched"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "r5-f2-keyword-segment-rejected",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "keyword-segment-rejected",
+          "pass": true,
+          "detail": "pattern /IObserver::class.*False/ in full output matched"
+        },
+        {
+          "name": "scalar-rejected",
+          "pass": true,
+          "detail": "pattern /int32_t.*False/ in full output matched"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "r5-f3-enum-conflict-expression-value",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "conflict-detected",
+          "pass": true,
+          "detail": "pattern /already exists/ in full output matched"
+        },
+        {
+          "name": "no-snippets-generated",
+          "pass": true,
+          "detail": "pattern /client_h/ in full output NOT found (good)"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "name": "r5-f3-enum-conflict-implicit-value",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "conflict-detected",
+          "pass": true,
+          "detail": "pattern /already exists/ in full output matched"
+        },
+        {
+          "name": "implicit-name-in-used-set",
+          "pass": true,
+          "detail": "pattern /APP_IMPLICIT/ in full output matched"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "name": "r5-f4-directory-as-file-rejected",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "exit-nonzero",
+          "pass": true,
+          "detail": "pattern /exit_code=1/ in full output matched"
+        },
+        {
+          "name": "missing-files-message",
+          "pass": true,
+          "detail": "pattern /Missing required files/ in full output matched"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "name": "r5-f4b-file-as-project-root-rejected",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "exit-nonzero",
+          "pass": true,
+          "detail": "pattern /exit_code=1/ in full output matched"
+        },
+        {
+          "name": "not-found-message",
+          "pass": true,
+          "detail": "pattern /not found/ in full output matched"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "name": "reject-duplicate-param-names",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "duplicate-rejected",
+          "pass": true,
+          "detail": "pattern /duplicate parameter name/ in full output matched"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "name": "reject-cpp-keyword-as-api-name",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "keyword-rejected",
+          "pass": true,
+          "detail": "pattern /C\\+\\+ keyword/ in full output matched"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "name": "reject-unsupported-vector-param",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "vector-rejected",
+          "pass": true,
+          "detail": "pattern /unsupported parameter type/ in full output matched"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "name": "reject-non-broker-sptr",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "non-broker-sptr-rejected",
+          "pass": true,
+          "detail": "pattern /unsupported parameter type/ in full output matched"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "name": "generate-namespaced-broker-full-chain",
+      "pass": true,
+      "assertions": [
+        {
+          "name": "generates-12-snippets",
+          "pass": true,
+          "detail": "pattern /12/ in full output matched"
+        },
+        {
+          "name": "proxy-uses-asobject",
+          "pass": true,
+          "detail": "pattern /callback->AsObject\\(\\)/ in proxy_cpp matched"
+        },
+        {
+          "name": "stub-iface-cast-namespaced",
+          "pass": true,
+          "detail": "pattern /iface_cast<AAFwk::IUserCallback>/ in stub_cpp matched"
+        },
+        {
+          "name": "null-guard-present",
+          "pass": true,
+          "detail": "pattern /if \\(!callback\\)/ in proxy_cpp matched"
+        }
+      ]
+    }
+  ]
+}
