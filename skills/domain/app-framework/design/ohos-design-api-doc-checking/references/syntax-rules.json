@@ -1,0 +1,184 @@
+{
+  "version": "1.1.0",
+  "description": "代码语法检查规则",
+  "rules": [
+    {
+      "id": "syntax-001",
+      "name": "template-string-invalid-space",
+      "description": "模板字符串 $ 与 { 之间有空格",
+      "type": "syntax",
+      "priority": "high",
+      "confidence": 100,
+      "enabled": true,
+      "execution": "automatic",
+      "languages": ["typescript", "arkts", "ets", "javascript"],
+      "pattern": {
+        "type": "regex",
+        "value": "\\$\\s+\\{",
+        "flags": "g"
+      },
+      "message": "模板字符串语法错误：`$` 与 `{` 之间不能有空格",
+      "suggestedFix": "删除 `$` 与 `{` 之间的空白，写作 `${expression}`",
+      "explanation": "ArkTS/TypeScript 中模板字符串插值必须写作 `${expression}`，`$` 与 `{` 之间一旦出现空白即不再构成插值，运行时输出字面量 \"$ {...}\"。插值表达式内部的空白（如 `${ error.message }`、`${value }`）是合法语法，不属于本规则检出范围，因此正则使用 `\\s+`（至少一个空白）而不是 `\\s*`（允许零个空白）。",
+      "fix": {
+        "type": "replace",
+        "pattern": "\\$\\s+\\{",
+        "replacement": "${"
+      },
+      "examples": {
+        "bad": [
+          "`$ {err.code}`",
+          "`$  {error.message}`",
+          "console.log(`taskId: $ {id}`);"
+        ],
+        "good": [
+          "`${error.message}`",
+          "`${value}`",
+          "`${ error.message }`",
+          "`${error.message }`",
+          "console.error(`createTask failed, code is ${err.code}, message is ${err.message}`);"
+        ]
+      }
+    },
+    {
+      "id": "syntax-002",
+      "name": "unclosed-brace",
+      "description": "未闭合的大括号",
+      "type": "syntax",
+      "priority": "high",
+      "confidence": 90,
+      "enabled": true,
+      "execution": "automatic",
+      "languages": ["typescript", "arkts", "ets", "javascript", "json", "json5"],
+      "pattern": {
+        "type": "function",
+        "name": "checkUnclosedBraces",
+        "reference": "references/workflow-details.md → 步骤 4：4.7 函数式语法检查处理器"
+      },
+      "message": "检测到未闭合的大括号",
+      "suggestedFix": "补齐缺失的 `}`，确保代码块内大括号配对",
+      "explanation": "代码块中 `{` 和 `}` 数量不匹配，可能导致语法错误",
+      "examples": {
+        "bad": [
+          "function f() {\n  if (x) {\n    doSomething();\n  }"
+        ],
+        "good": [
+          "function f() {\n  if (x) {\n    doSomething();\n  }\n}"
+        ]
+      }
+    },
+    {
+      "id": "syntax-003",
+      "name": "unclosed-parenthesis",
+      "description": "未闭合的圆括号",
+      "type": "syntax",
+      "priority": "high",
+      "confidence": 90,
+      "enabled": true,
+      "execution": "automatic",
+      "languages": ["typescript", "arkts", "ets", "javascript"],
+      "pattern": {
+        "type": "function",
+        "name": "checkUnclosedParentheses",
+        "reference": "references/workflow-details.md → 步骤 4：4.7 函数式语法检查处理器"
+      },
+      "message": "检测到未闭合的圆括号",
+      "suggestedFix": "补齐缺失的 `)`，确保代码块内圆括号配对",
+      "explanation": "代码中 `(` 和 `)` 数量不匹配，可能导致语法错误",
+      "examples": {
+        "bad": [
+          "tasks.forEach((task) => {\n  console.info(task.name);"
+        ],
+        "good": [
+          "tasks.forEach((task) => {\n  console.info(task.name);\n});"
+        ]
+      }
+    },
+    {
+      "id": "syntax-004",
+      "name": "unclosed-bracket",
+      "description": "未闭合的方括号",
+      "type": "syntax",
+      "priority": "high",
+      "confidence": 90,
+      "enabled": true,
+      "execution": "automatic",
+      "languages": ["typescript", "arkts", "ets", "javascript", "json", "json5"],
+      "pattern": {
+        "type": "function",
+        "name": "checkUnclosedBrackets",
+        "reference": "references/workflow-details.md → 步骤 4：4.7 函数式语法检查处理器"
+      },
+      "message": "检测到未闭合的方括号",
+      "suggestedFix": "补齐缺失的 `]`，确保代码块内方括号配对",
+      "explanation": "代码中 `[` 和 `]` 数量不匹配，可能导致语法错误",
+      "examples": {
+        "bad": [
+          "let list: Array<string> = ['a', 'b';"
+        ],
+        "good": [
+          "let list: Array<string> = ['a', 'b'];"
+        ]
+      }
+    },
+    {
+      "id": "syntax-005",
+      "name": "mismatched-quotes",
+      "description": "引号不匹配（字符串未闭合）",
+      "type": "syntax",
+      "priority": "high",
+      "confidence": 95,
+      "enabled": true,
+      "execution": "automatic",
+      "languages": ["typescript", "arkts", "ets", "javascript", "json", "json5"],
+      "pattern": {
+        "type": "function",
+        "name": "checkUnbalancedQuotes",
+        "reference": "references/workflow-details.md → 步骤 4：4.7 函数式语法检查处理器",
+        "algorithm": "仅在代码块内做字符级状态机扫描（状态：code / single / double / template / block-comment）：跳过行注释（//）与块注释（/* */），处理反斜杠转义；单引号与双引号字符串不允许跨行，行尾仍处于字符串状态即判定该行未闭合；反引号模板字符串允许跨行，仅在整段代码结束仍未闭合时报告。不得采用『剥离字符串后统计引号奇偶』的实现——未闭合字符串会在剥离阶段被整段吃掉，导致漏检。"
+      },
+      "message": "检测到未闭合的字符串引号",
+      "suggestedFix": "补齐缺失的引号或改用模板字符串；确认注释与转义引号未被误判",
+      "explanation": "字符串引号未闭合会导致示例代码无法编译。本规则原先使用单行正则实现，其 `pattern.value` 在 JSON→RegExp 两层转义下无法构造（`new RegExp` 抛 `SyntaxError: Unterminated group`），且单行正则无法区分注释与字符串中的引号；因此改为与 syntax-002/003/004 一致的函数式检查，由 `checkUnbalancedQuotes` 实现。",
+      "examples": {
+        "bad": [
+          "let msg = 'unclosed;",
+          "console.log(\"task name: ' + name);"
+        ],
+        "good": [
+          "let msg = 'closed';",
+          "let escaped = 'it\\'s ok';",
+          "// 注释中的引号不应触发本规则 '",
+          "console.log(`task name: ${name}`);"
+        ]
+      }
+    },
+    {
+      "id": "syntax-006",
+      "name": "missing-semicolon",
+      "description": "缺少分号",
+      "type": "syntax",
+      "priority": "low",
+      "confidence": 60,
+      "enabled": false,
+      "execution": "automatic",
+      "languages": ["typescript", "arkts", "ets"],
+      "pattern": {
+        "type": "regex",
+        "value": "(?<!;)(?<!\\{)\\s*\\n(?=\\s*(?:let|const|var|import|export|function|class|interface|type|enum))",
+        "flags": "g"
+      },
+      "message": "语句末尾可能缺少分号",
+      "suggestedFix": "在语句末尾补充 `;`",
+      "explanation": "虽然 ArkTS 支持自动分号插入，但显式添加分号可以避免歧义"
+    }
+  ],
+  "selfTest": {
+    "description": "规则加载时必须执行的自检，实现见 references/workflow-details.md → 步骤 1：1.3 规则自检",
+    "requirements": [
+      "所有 enabled 的 regex 规则必须能用 pattern.value/pattern.flags 成功构造 RegExp，构造失败即中止检查（fail-fast），不得静默跳过",
+      "所有带 examples 的规则必须满足：good 样例全部不命中、bad 样例全部命中",
+      "带 g 标志的正则每次使用前必须重置 lastIndex（或改用 matchAll），避免同一 RegExp 复用导致漏检"
+    ]
+  }
+}

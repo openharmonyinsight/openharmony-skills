@@ -1,0 +1,75 @@
+schemaVersion: 1
+
+id: ohos-design-api-doc-checking
+title: API 文档质量检查
+summary: 对 OpenHarmony API 文档执行 7 大质量维度检查与 SDK 源码一致性校验，输出 Excel 与 Markdown 报告。
+
+category:
+  scope: domain
+  namespace: app-framework
+  stage: design
+  domain: api
+  capability: doc-checking
+
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - api-doc
+  - documentation-quality
+  - sdk-consistency
+  - dts
+  - design-review
+  - spelling
+  - clarity
+
+audience:
+  - API 文档作者
+  - 接口评审人员
+  - 资料质量运营人员
+  - SDK 维护人员
+
+useCases:
+  - title: API 文档全维度质量检查
+    description: 对 js-apis-*.md、capi-*.md 等 API 文档执行拼写、语法、路径一致性、清晰度等 10 个规则模块检查。
+  - title: SDK 源码一致性校验
+    description: 将 API 文档与 interface_sdk-js 仓库的 .d.ts/.h 定义比对，校验版本、参数、返回值、错误码等一致性。
+  - title: 开发指南文档检查
+    description: 对 guide/tutorial 类开发指南执行适用规则子集检查。
+
+whenToUse:
+  - 需要对 API 文档（js-apis-*.md、capi-*.md）进行质量评估或错误检测。
+  - 需要校验 API 文档与 interface_sdk-js 的 .d.ts/.h 定义是否一致。
+  - 接口评审、资料质量门禁或文档合入前检查。
+
+whenNotToUse:
+  - 仅需要审查代码本身的实现质量（应使用代码审查类 Skill）。
+  - 仅需要生成 API 而非检查文档。
+  - 静态 ArkTS/TS 接口的设计评审（不涉及文档质量时）。
+
+inputs:
+  required:
+    - 待检查的 API 文档或开发指南文件路径。
+  optional:
+    - INTERFACE_SDK_JS_PATH 环境变量指向的本地 SDK 源码目录。
+    - 指定执行的规则模块子集。
+
+outputs:
+  - Excel 问题汇总报告（.xlsx），含文件名、Designer、问题类型、行号、原因、修改建议、严重级别。
+  - 可选 Markdown 汇总报告（统计概览、维度分布与执行状态）。
+  - 执行台账：每条启用规则的执行状态（executed/not-applicable/not-executed/failed）与原因，未执行的检查不计为"无问题"。
+
+quickStart:
+  steps:
+    - 指定待检查的文档文件或目录路径。
+    - 可选：设置 INTERFACE_SDK_JS_PATH 以启用 SDK 源码一致性检查。
+    - 要求 Agent 使用本 Skill 执行检查并输出报告。
+  examplePrompt: |
+    请使用 ohos-design-api-doc-checking 检查 docs/application-dev-reference/apis/js-apis-geolocation.md，
+    SDK 源码在 /path/to/interface_sdk-js，输出 Excel 报告。
+
+related:
+  skills: []
+  docs: []

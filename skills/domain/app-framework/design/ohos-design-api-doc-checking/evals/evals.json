@@ -1,0 +1,164 @@
+{
+  "skill_name": "ohos-design-api-doc-checking",
+  "evaluation_method": {
+    "type": "rubric_assertion",
+    "pass_rule": "A case passes only when all expectations are satisfied. The with-skill run must pass every case. The without-skill run is evaluated with the same prompts and expectations to measure baseline gaps.",
+    "grading_notes": [
+      "Ground truth defects are planted in evals/inputs/. A finding counts as a hit only when it matches a planted defect by issue type and approximate line number (±3 lines).",
+      "Do not award a pass for generic advice that does not identify the specific planted defect (type + line + reason + fix).",
+      "Do not award a pass when the output is unstructured prose without per-issue records (file, type, line, reason, suggestion, severity).",
+      "False positives on clean content are tolerated up to 2 per case; beyond that the case fails on precision.",
+      "Planted defect line numbers must stay in sync with evals/inputs/: run `python3 evals/check_ground_truth.py` after editing any fixture. The script fails when a declared `line` no longer contains its `probe` string."
+    ]
+  },
+  "evals": [
+    {
+      "id": "api_doc_planted_errors",
+      "prompt": "请检查 inputs/js-apis-demo-taskmanager.md 的文档质量（不做 SDK 源码比对），输出结构化问题清单：文件名、问题类型、问题行号、问题原因、建议修改方案、问题严重级别。",
+      "files": ["evals/inputs/js-apis-demo-taskmanager.md"],
+      "planted_defects": [
+        {"type": "spelling", "file": "evals/inputs/js-apis-demo-taskmanager.md", "line": 55, "probe": "recieve", "detail": "recieve → receive"},
+        {
+          "type": "spelling/glossary",
+          "file": "evals/inputs/js-apis-demo-taskmanager.md",
+          "line": 55,
+          "probe": "UiAbility",
+          "detail": "UiAbility → UIAbility"
+        },
+        {
+          "type": "syntax",
+          "file": "evals/inputs/js-apis-demo-taskmanager.md",
+          "line": 46,
+          "probe": "$ {err.code}",
+          "detail": "模板字符串 `$ {err.code}` 中 $ 与 { 之间有空格 (syntax-001)；同行 `${err.message}` 是正确写法，不得被误报"
+        },
+        {
+          "type": "syntax",
+          "file": "evals/inputs/js-apis-demo-taskmanager.md",
+          "line": 66,
+          "probe": "async function queryAll() {",
+          "detail": "queryTasks 示例代码块大括号/圆括号未闭合 (syntax-002/003)"
+        },
+        {
+          "type": "clarity",
+          "file": "evals/inputs/js-apis-demo-taskmanager.md",
+          "line": 61,
+          "probe": "**完整示例**",
+          "detail": "标题为'完整示例'但代码不完整 (clarity-001)"
+        },
+        {
+          "type": "completeness",
+          "file": "evals/inputs/js-apis-demo-taskmanager.md",
+          "line": 53,
+          "probe": "## demoTaskManager.queryTasks9+",
+          "detail": "queryTasks 缺少参数说明/错误码表，关键说明缺失"
+        },
+        {
+          "type": "capability/constraint",
+          "file": "evals/inputs/js-apis-demo-taskmanager.md",
+          "line": 13,
+          "probe": "## demoTaskManager.createTask9+",
+          "detail": "createTask 权限约束仅一句话（见第 15 行），缺少申请方式等约束条件说明（可接受为中等置信度发现）"
+        }
+      ],
+      "expected_output": "结构化问题清单，至少命中 spelling(recieve)、glossary(UiAbility)、syntax($ { 空格)、syntax(未闭合大括号)、clarity(完整示例名不副实)、completeness(queryTasks 缺错误码/参数说明) 6 类植入缺陷，每条含行号、原因、修复建议和严重级别。",
+      "expectations": [
+        "输出为逐条结构化问题记录（含问题类型、行号、原因、建议、严重级别），而非泛泛建议。",
+        "命中 recieve 拼写错误并给出 receive。",
+        "命中 UiAbility 专有名词错误并给出 UIAbility。",
+        "命中模板字符串 `$ {` 空格语法错误（第 46 行），且不把同行的 `${err.message}` 判为错误。",
+        "命中 queryTasks 示例代码块大括号未闭合（第 63-70 行代码块）。",
+        "命中'完整示例'标题与不完整代码不符的问题。",
+        "命中 queryTasks 缺少错误码表/关键说明的完整性问题。"
+      ]
+    },
+    {
+      "id": "sdk_consistency_check",
+      "prompt": "请对 inputs/js-apis-demo-taskmanager.md 执行 SDK 源码一致性检查。SDK 源码位于 inputs/sdk/（INTERFACE_SDK_JS_PATH=inputs/sdk）。输出结构化不一致清单，并给出严重级别。",
+      "files": ["evals/inputs/js-apis-demo-taskmanager.md", "evals/inputs/sdk/api/@ohos.demo.taskmanager.d.ts"],
+      "planted_defects": [
+        {
+          "type": "api-since-version-match",
+          "file": "evals/inputs/js-apis-demo-taskmanager.md",
+          "line": 7,
+          "probe": "起始版本为9",
+          "detail": "文档 createTask/queryTasks/TaskInfo 标记 9+，d.ts @since 10，Critical"
+        },
+        {
+          "type": "error-code-match",
+          "file": "evals/inputs/sdk/api/@ohos.demo.taskmanager.d.ts",
+          "line": 46,
+          "probe": "801 - Capability not supported",
+          "detail": "文档 createTask 错误码表缺 801（d.ts 有 @throws 801）"
+        },
+        {
+          "type": "error-code-match",
+          "file": "evals/inputs/js-apis-demo-taskmanager.md",
+          "line": 53,
+          "probe": "## demoTaskManager.queryTasks9+",
+          "detail": "文档 queryTasks 无错误码表（d.ts 第 55 行有 @throws 401）"
+        },
+        {
+          "type": "interface-fields-complete",
+          "file": "evals/inputs/sdk/api/@ohos.demo.taskmanager.d.ts",
+          "line": 37,
+          "probe": "priority: number",
+          "detail": "文档 TaskInfo 属性表缺 priority 字段（d.ts 有 priority: number）"
+        }
+      ],
+      "expected_output": "按 js-apis-{name}.md → api/@ohos.{name}.d.ts 映射加载 d.ts，命中起始版本不一致（9+ vs @since 10，严重/Critical）、createTask 缺 801 错误码、TaskInfo 缺 priority 字段，至少 3 项，且版本不一致被标为最高严重级别。",
+      "expectations": [
+        "正确应用文件映射规则找到 inputs/sdk/api/@ohos.demo.taskmanager.d.ts 并实际比对内容。",
+        "命中文档 9+ 与 d.ts @since 10 的起始版本不一致，且标记为 Critical/严重。",
+        "命中文档 createTask 错误码表缺少 801。",
+        "命中文档 TaskInfo 属性表缺少 priority 字段。",
+        "输出为结构化不一致记录（检查点、位置、文档值 vs SDK 值、严重级别）。"
+      ]
+    },
+    {
+      "id": "dev_guide_scope_and_rules",
+      "prompt": "请检查 inputs/application-dev-guide-demo-task.md 的文档质量，输出结构化问题清单，并说明本次执行了哪些规则模块、跳过了哪些模块及原因。",
+      "files": ["evals/inputs/application-dev-guide-demo-task.md"],
+      "planted_defects": [
+        {
+          "type": "clarity",
+          "file": "evals/inputs/application-dev-guide-demo-task.md",
+          "line": 7,
+          "probe": "某些情况下",
+          "detail": "模糊用词：'某些情况下'、'可能会'、'大概' (clarity-002)"
+        },
+        {
+          "type": "syntax",
+          "file": "evals/inputs/application-dev-guide-demo-task.md",
+          "line": 26,
+          "probe": "$ {err.code}",
+          "detail": "模板字符串 `$ {err.code}` 空格 (syntax-001)"
+        },
+        {"type": "spelling", "file": "evals/inputs/application-dev-guide-demo-task.md", "line": 32, "probe": "recieve", "detail": "recieve → receive"},
+        {
+          "type": "clarity",
+          "file": "evals/inputs/application-dev-guide-demo-task.md",
+          "line": 34,
+          "probe": "## 高级用法",
+          "detail": "'高级用法'标题下只讲基础导入，标题与内容不符 (clarity-001)"
+        },
+        {
+          "type": "path-consistency",
+          "file": "evals/inputs/application-dev-guide-demo-task.md",
+          "line": 41,
+          "probe": "background-task-guide.md",
+          "detail": "引用 background-task-guide.md 不存在于 inputs/（死链）"
+        }
+      ],
+      "expected_output": "识别文档类型为开发指南；执行必选模块（spelling、syntax、path-consistency、clarity、semantics、project-structure、findability、correctness），将 completeness、capability 标为可选，明确不执行 SDK 源码一致性检查；命中模糊用词、$ { 空格、recieve、高级用法标题不符等至少 4 处植入缺陷。",
+      "expectations": [
+        "明确判定文档类型为开发指南（而非 API 文档），并给出判定依据。",
+        "明确说明不执行 SDK 源码一致性检查，completeness/capability 为可选模块。",
+        "命中概述段落的模糊用词（'某些情况下'/'可能会'/'大概'）。",
+        "命中模板字符串 `$ {` 空格语法错误。",
+        "命中 recieve 拼写错误。",
+        "命中'高级用法'标题与内容不符。"
+      ]
+    }
+  ]
+}
