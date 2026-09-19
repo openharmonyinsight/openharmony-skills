@@ -17,17 +17,23 @@
 #
 
 import argparse
+import bz2
+import gzip
 import io
+import http.client
 import json
 import os
 import re
 import subprocess
 import sys
 import tarfile
+import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
+import zlib
+import lzma
 from collections import Counter
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
@@ -41,12 +47,37 @@ CI_DOWNLOAD_URL = "https://cidownload.openharmony.cn/{path}"
 EVENT_ID_PATTERN = re.compile(r"/detail/([0-9a-f]{24})(?:/|$)")
 PR_URL_PATTERN = re.compile(r"/(?:pull|merge_requests)/(\d+)(?:/|$)")
 SUCCESS_RESULTS = {"success", "passed", "pass"}
-FAILURE_RESULTS = {"failed", "fail", "error", "canceled", "cancelled", "skip", "skipped"}
+FAILURE_RESULTS = {"failed", "fail", "error", "canceled", "cancelled"}
+SKIP_RESULTS = {"skip", "skipped", "ignore"}
+MAX_DOWNLOAD_BYTES = 64 * 1024 * 1024
+MAX_JSON_BYTES = 16 * 1024 * 1024
+MAX_ARCHIVE_BYTES = 128 * 1024 * 1024
+MAX_ARCHIVE_MEMBERS = 10000
+MAX_CODECHECK_PAGES = 100
+MAX_CODECHECK_DETAILS = 100000
+OH_GC_TIMEOUT = 60
 DEFAULT_XDG_CACHE_HOME = "/tmp/openharmony-ci-cache"
 
 
 class ToolError(RuntimeError):
     """Domain-specific error for user-facing failures."""
+
+
+def positive_int(value: str) -> int:
+    try:
+        number = int(value)
+    except (TypeError, ValueError) as exc:
+        raise argparse.ArgumentTypeError("must be a positive integer") from exc
+    if number <= 0:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return number
+
+
+def read_limited(stream: Any, limit: int) -> bytes:
+    data = stream.read(limit + 1)
+    if len(data) > limit:
+        raise ToolError(f"response or archive exceeds byte limit ({limit})")
+    return data
 
 
 def parse_args() -> argparse.Namespace:
@@ -55,22 +86,21 @@ def parse_args() -> argparse.Namespace:
     )
     source_group = parser.add_mutually_exclusive_group(required=True)
     source_group.add_argument("--event-id", help="DCP event id, for example 69c51ede64650f998b1d01a4")
-    source_group.add_argument("--pr", type=int, help="GitCode PR number")
+    source_group.add_argument("--pr", type=positive_int, help="GitCode PR number")
     source_group.add_argument("--pr-url", help="GitCode PR URL")
     parser.add_argument(
         "--repo",
-        default="openharmony/arkui_ace_engine",
-        help="oh-gc repo name when querying PR comments",
+        help="GitCode owner/repo; inferred from --pr-url, required with --pr",
     )
     parser.add_argument(
         "--log-mode",
         choices=("auto", "always", "never"),
         default="auto",
-        help="auto: fetch logs only for non-success jobs; always: fetch logs for all jobs with artifacts; never: status only",
+        help="auto: fetch logs only for failed/canceled jobs; always: fetch logs for all jobs with artifacts; never: status only",
     )
     parser.add_argument(
         "--log-lines",
-        type=int,
+        type=positive_int,
         default=80,
         help="Tail line count to keep when summarizing text logs",
     )
@@ -86,7 +116,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--codecheck-page-size",
-        type=int,
+        type=positive_int,
         default=300,
         help="Page size for DCP static check defect details",
     )
@@ -98,12 +128,12 @@ def http_get_json(url: str) -> Dict[str, Any]:
     request = urllib.request.Request(url, headers={"User-Agent": "openharmony-ci/1.0"})
     try:
         with urllib.request.urlopen(request, timeout=30) as response:
-            content = response.read()
-    except urllib.error.URLError as exc:
+            content = read_limited(response, MAX_JSON_BYTES)
+    except (urllib.error.URLError, http.client.HTTPException, OSError) as exc:
         raise ToolError(f"request failed: {url}: {exc}") from exc
     try:
         return json.loads(content.decode("utf-8"))
-    except json.JSONDecodeError as exc:
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         raise ToolError(f"invalid json from {url}") from exc
 
 
@@ -117,12 +147,12 @@ def http_post_json(url: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     )
     try:
         with urllib.request.urlopen(request, timeout=30) as response:
-            content = response.read()
-    except urllib.error.URLError as exc:
+            content = read_limited(response, MAX_JSON_BYTES)
+    except (urllib.error.URLError, http.client.HTTPException, OSError) as exc:
         raise ToolError(f"request failed: {url}: {exc}") from exc
     try:
         return json.loads(content.decode("utf-8"))
-    except json.JSONDecodeError as exc:
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         raise ToolError(f"invalid json from {url}") from exc
 
 
@@ -130,8 +160,8 @@ def http_get_bytes(url: str) -> bytes:
     request = urllib.request.Request(url, headers={"User-Agent": "openharmony-ci/1.0"})
     try:
         with urllib.request.urlopen(request, timeout=60) as response:
-            return response.read()
-    except urllib.error.URLError as exc:
+            return read_limited(response, MAX_DOWNLOAD_BYTES)
+    except (urllib.error.URLError, http.client.HTTPException, OSError) as exc:
         raise ToolError(f"download failed: {url}: {exc}") from exc
 
 
@@ -145,7 +175,7 @@ def build_oh_gc_env() -> Dict[str, str]:
 def run_oh_gc(args: Sequence[str]) -> Any:
     cmd = ["oh-gc", *args]
     try:
-        completed = subprocess.run(cmd, capture_output=True, text=True, check=True, env=build_oh_gc_env())
+        completed = subprocess.run(cmd, capture_output=True, text=True, check=True, env=build_oh_gc_env(), timeout=OH_GC_TIMEOUT)
     except FileNotFoundError as exc:
         raise ToolError("oh-gc is not installed or not in PATH") from exc
     except subprocess.CalledProcessError as exc:
@@ -158,12 +188,14 @@ def run_oh_gc(args: Sequence[str]) -> Any:
                 "and may also need access to dcp.openharmony.cn and cidownload.openharmony.cn"
             )
         raise ToolError(f"oh-gc command failed: {' '.join(cmd)}: {detail}") from exc
+    except (OSError, UnicodeError, subprocess.TimeoutExpired) as exc:
+        raise ToolError(f"unable to run oh-gc: {exc}") from exc
     output = completed.stdout.strip()
     if not output:
         return []
     try:
         return json.loads(output)
-    except json.JSONDecodeError as exc:
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         raise ToolError(f"oh-gc returned non-json output for: {' '.join(cmd)}") from exc
 
 
@@ -172,6 +204,17 @@ def parse_pr_number(pr_url: str) -> int:
     if not match:
         raise ToolError(f"unable to parse pr number from url: {pr_url}")
     return int(match.group(1))
+
+
+def parse_pr_repo(pr_url: str) -> str:
+    try:
+        parsed = urllib.parse.urlparse(pr_url)
+    except ValueError as exc:
+        raise ToolError(f"invalid GitCode PR URL: {pr_url}") from exc
+    match = re.fullmatch(r"/([^/]+)/([^/]+)/(?:pull|merge_requests)/\d+/?", parsed.path)
+    if parsed.scheme not in {"http", "https"} or parsed.hostname != "gitcode.com" or not match:
+        raise ToolError(f"invalid GitCode PR URL: {pr_url}")
+    return f"{match.group(1)}/{match.group(2)}"
 
 
 def collect_strings(value: Any) -> List[str]:
@@ -261,22 +304,49 @@ def latest_event_id_from_pr(pr_number: int, repo: str) -> Tuple[str, Dict[str, A
     return latest_match[2], latest_match[1]
 
 
-def flatten_files_tree(node: Any, prefix: str = "") -> List[Dict[str, str]]:
+def flatten_files_tree(node: Any, prefix: str = "", errors: Optional[List[str]] = None) -> List[Dict[str, str]]:
+    problems = errors if errors is not None else []
     results: List[Dict[str, str]] = []
-    if not isinstance(node, dict):
-        return results
-    for name, value in node.items():
-        current = f"{prefix}/{name}" if prefix else str(name)
-        if isinstance(value, dict) and isinstance(value.get("url"), str):
-            results.append({"name": current, "url": value["url"]})
+    pending = [(node, prefix)]
+    visited = 0
+    while pending:
+        current_node, current_path = pending.pop()
+        visited += 1
+        if visited > MAX_ARCHIVE_MEMBERS:
+            problems.append("artifact listing exceeds entry limit")
+            break
+        if not isinstance(current_node, dict):
+            problems.append(f"invalid artifact entry at {current_path or '/'}")
             continue
-        results.extend(flatten_files_tree(value, current))
+        if "url" in current_node:
+            url = current_node["url"]
+            if not isinstance(url, str) or not url.strip():
+                problems.append(f"invalid artifact URL at {current_path}")
+            else:
+                results.append({"name": current_path, "url": url})
+            continue
+        for name, value in reversed(list(current_node.items())):
+            pending.append((value, f"{current_path}/{name}" if current_path else str(name)))
+    if errors is None and problems:
+        raise ToolError("; ".join(problems))
     return results
 
 
 def normalize_job(build: Dict[str, Any]) -> Dict[str, Any]:
     debug = build.get("debug", {}) if isinstance(build.get("debug"), dict) else {}
-    job_name = build.get("buildTarget") or debug.get("component") or "unknown"
+    validation_errors = []
+    for field, value in (("buildTarget", build.get("buildTarget")), ("component", debug.get("component"))):
+        if value is not None and not isinstance(value, str):
+            validation_errors.append(f"{field} must be a string")
+    job_name = next((value for value in (build.get("buildTarget"), debug.get("component"))
+                     if isinstance(value, str) and value.strip()), "unknown")
+    if "debug" in build and not isinstance(build["debug"], dict):
+        validation_errors.append("debug must be an object")
+    for field in ("result", "startTime", "endTime", "buildFailReason", "buildFailType"):
+        if field in debug and debug[field] is not None and not isinstance(debug[field], str):
+            validation_errors.append(f"debug.{field} must be a string")
+    if build.get("result") is not None and not isinstance(build["result"], str):
+        validation_errors.append("result must be a string")
     result = classify_result(
         debug.get("result") or build.get("result") or "",
         debug.get("startTime", ""),
@@ -295,6 +365,7 @@ def normalize_job(build: Dict[str, Any]) -> Dict[str, Any]:
         "artifacts": debug.get("Artifacts", ""),
         "build_log": debug.get("buildLog", ""),
         "raw": build,
+        "validation_errors": validation_errors,
     }
     return normalized
 
@@ -324,8 +395,13 @@ def should_fetch_codecheck(event_data: Dict[str, Any], codecheck_mode: str) -> b
     if codecheck_mode == "never":
         return False
     summaries = event_data.get("codeCheckSummary", [])
-    if not isinstance(summaries, list) or not summaries:
+    if not isinstance(summaries, list):
+        raise ToolError("codeCheckSummary must be a list")
+    if not summaries:
         return False
+    if any(not isinstance(item, dict) or not isinstance(item.get("task_id"), str)
+           or not item["task_id"].strip() for item in summaries):
+        return True
     if codecheck_mode == "always":
         return True
     if is_failure_result(str(event_data.get("result", ""))):
@@ -355,8 +431,8 @@ def infer_overall_result(raw_result: str, jobs: List[Dict[str, Any]]) -> str:
         return "running"
     if any(item == "pending" for item in job_results):
         return "pending"
-    if job_results and all(item in SUCCESS_RESULTS for item in job_results):
-        return "success"
+    if job_results and all(item in SUCCESS_RESULTS | SKIP_RESULTS for item in job_results):
+        return "success" if any(item in SUCCESS_RESULTS for item in job_results) else "skipped"
     return "unknown"
 
 
@@ -391,38 +467,68 @@ def decode_text_payload(data: bytes) -> str:
 
 
 def inspect_archive_bytes(data: bytes, line_count: int) -> Tuple[str, str]:
+    try:
+        return _inspect_archive_bytes(data, line_count)
+    except ToolError:
+        raise
+    except (zipfile.BadZipFile, tarfile.TarError, zlib.error, lzma.LZMAError,
+            EOFError, OSError, RuntimeError, NotImplementedError) as exc:
+        raise ToolError(f"unable to read log archive: {exc}") from exc
+
+
+def _inspect_archive_bytes(data: bytes, line_count: int) -> Tuple[str, str]:
     buffer = io.BytesIO(data)
     if zipfile.is_zipfile(buffer):
-        buffer.seek(0)
         with zipfile.ZipFile(buffer) as archive:
-            names = archive.namelist()
+            entries = archive.infolist()
+            if len(entries) > MAX_ARCHIVE_MEMBERS:
+                raise ToolError("archive exceeds member limit")
+            names = [entry.filename for entry in entries if not entry.is_dir()]
             preferred = next((name for name in names if name.endswith("error.log")), None)
-            if preferred is None:
-                preferred = next((name for name in names if name.endswith("build.log")), None)
-            if preferred is None and names:
-                preferred = names[0]
+            preferred = preferred or next((name for name in names if name.endswith("build.log")), None)
+            preferred = preferred or (names[0] if names else None)
             if preferred is None:
                 raise ToolError("zip archive is empty")
-            content = archive.read(preferred)
+            if archive.getinfo(preferred).file_size > MAX_ARCHIVE_BYTES:
+                raise ToolError("archive member exceeds byte limit")
+            with archive.open(preferred) as member:
+                content = read_limited(member, MAX_ARCHIVE_BYTES)
             return preferred, tail_text_lines(decode_text_payload(content), line_count)
-    buffer.seek(0)
+    if data.startswith((b"PK\x03\x04", b"PK\x05\x06", b"PK\x07\x08")):
+        raise ToolError("damaged ZIP archive")
+    compressed = False
+    for magic, opener in ((b"\x1f\x8b", gzip.open), (b"BZh", bz2.BZ2File), (b"\xfd7zXZ\x00", lzma.LZMAFile)):
+        if data.startswith(magic):
+            compressed = True
+            with opener(io.BytesIO(data), mode="rb") as stream:
+                data = read_limited(stream, MAX_ARCHIVE_BYTES)
+            break
     try:
-        with tarfile.open(fileobj=buffer) as archive:
-            members = [member for member in archive.getmembers() if member.isfile()]
-            preferred_member = next((m for m in members if m.name.endswith("error.log")), None)
-            if preferred_member is None:
-                preferred_member = next((m for m in members if m.name.endswith("build.log")), None)
-            if preferred_member is None and members:
-                preferred_member = members[0]
-            if preferred_member is None:
-                raise ToolError("tar archive is empty")
-            extracted = archive.extractfile(preferred_member)
-            if extracted is None:
-                raise ToolError(f"unable to read member: {preferred_member.name}")
-            return preferred_member.name, tail_text_lines(decode_text_payload(extracted.read()), line_count)
-    except tarfile.TarError:
-        pass
-    return "", tail_text_lines(decode_text_payload(data), line_count)
+        archive = tarfile.open(fileobj=io.BytesIO(data), mode="r:")
+    except tarfile.ReadError as exc:
+        if compressed or data[257:262] == b"ustar" or b"\x00" in data[:512]:
+            raise ToolError("damaged or unsupported log archive") from exc
+        return "", tail_text_lines(decode_text_payload(data), line_count)
+    with archive:
+        members = []
+        for index, member in enumerate(archive):
+            if index >= MAX_ARCHIVE_MEMBERS:
+                raise ToolError("archive exceeds member limit")
+            if member.isfile():
+                if member.size > MAX_ARCHIVE_BYTES or member.offset_data + member.size > len(data):
+                    raise ToolError("archive member is truncated or exceeds byte limit")
+                members.append(member)
+        preferred = next((m for m in members if m.name.endswith("error.log")), None)
+        preferred = preferred or next((m for m in members if m.name.endswith("build.log")), None)
+        preferred = preferred or (members[0] if members else None)
+        if preferred is None:
+            raise ToolError("tar archive is empty")
+        extracted = archive.extractfile(preferred)
+        if extracted is None:
+            raise ToolError(f"unable to read member: {preferred.name}")
+        with extracted:
+            content = read_limited(extracted, MAX_ARCHIVE_BYTES)
+        return preferred.name, tail_text_lines(decode_text_payload(content), line_count)
 
 
 def maybe_write_download(download_dir: Optional[str], source_url: str, data: bytes) -> Optional[str]:
@@ -431,55 +537,75 @@ def maybe_write_download(download_dir: Optional[str], source_url: str, data: byt
     os.makedirs(download_dir, exist_ok=True)
     parsed = urllib.parse.urlparse(source_url)
     name = os.path.basename(parsed.path) or "download.bin"
-    path = os.path.join(download_dir, name)
-    with open(path, "wb") as file_obj:
+    with tempfile.NamedTemporaryFile(dir=download_dir, prefix="log-", suffix=f"-{name}", delete=False) as file_obj:
         file_obj.write(data)
-    return path
+        return file_obj.name
+
+
+def normalize_log_url(value: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ToolError("log URL must be a non-empty string")
+    try:
+        parsed = urllib.parse.urlparse(value)
+        if parsed.scheme or parsed.netloc:
+            if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username:
+                raise ToolError("unsupported log URL")
+            return value
+        return CI_DOWNLOAD_URL.format(path=value.lstrip("/"))
+    except ValueError as exc:
+        raise ToolError(f"invalid log URL: {value}") from exc
 
 
 def fetch_job_logs(job: Dict[str, Any], log_lines: int, download_dir: Optional[str]) -> Dict[str, Any]:
+    errors: List[str] = []
     files: List[Dict[str, str]] = []
-    artifacts = job.get("artifacts") or ""
-    build_log = job.get("build_log") or ""
-    if artifacts:
-        directory = urllib.parse.quote(artifacts, safe="/")
-        listing = http_get_json(DCP_FILES_URL.format(directory=directory))
-        files = flatten_files_tree(listing.get("data", {}))
-
+    paths = {}
+    for field in ("artifacts", "build_log"):
+        value = job.get(field)
+        if value is not None and not isinstance(value, str):
+            errors.append(f"{field} must be a string")
+            value = ""
+        paths[field] = value or ""
+    if paths["artifacts"]:
+        try:
+            directory = urllib.parse.quote(paths["artifacts"], safe="/")
+            listing = http_get_json(DCP_FILES_URL.format(directory=directory))
+            tree = listing.get("data") if isinstance(listing, dict) else None
+            if not isinstance(tree, dict):
+                raise ToolError("invalid artifact listing: data must be an object")
+            files = flatten_files_tree(tree, errors=errors)
+        except (ToolError, OSError, ValueError) as exc:
+            errors.append(str(exc))
     candidate = choose_log_candidate(files)
-    source_path = ""
-    if candidate is not None:
-        source_path = candidate["url"]
-    elif build_log:
-        parsed = urllib.parse.urlparse(build_log)
-        source_path = parsed.path.lstrip("/")
-
-    if not source_path:
-        return {
-            "files": files,
-            "selected_log": None,
-            "downloaded_to": None,
-            "archive_member": None,
-            "tail": "",
-        }
-
-    source_url = CI_DOWNLOAD_URL.format(path=source_path.lstrip("/"))
-    data = http_get_bytes(source_url)
-    direct_text = decode_text_payload(data).strip()
-    if direct_text.startswith("http://") or direct_text.startswith("https://"):
-        redirected = urllib.parse.urlparse(direct_text)
-        if redirected.netloc == "cidownload.openharmony.cn":
-            source_url = direct_text
+    result = {"files": files, "selected_log": None, "downloaded_to": None, "archive_member": None, "tail": ""}
+    sources = [candidate["url"]] if candidate else []
+    if paths["build_log"] and paths["build_log"] not in sources:
+        sources.append(paths["build_log"])
+    if not sources:
+        errors.append("no downloadable log is available")
+    for source in sources:
+        try:
+            source_url = normalize_log_url(source)
             data = http_get_bytes(source_url)
-    downloaded_to = maybe_write_download(download_dir, source_url, data)
-    archive_member, tail = inspect_archive_bytes(data, log_lines)
-    return {
-        "files": files,
-        "selected_log": source_url,
-        "downloaded_to": downloaded_to,
-        "archive_member": archive_member or None,
-        "tail": tail,
-    }
+            direct_text = decode_text_payload(data).strip()
+            if "\n" not in direct_text and direct_text.startswith(("http://", "https://")):
+                redirected = urllib.parse.urlparse(direct_text)
+                if redirected.netloc == "cidownload.openharmony.cn":
+                    source_url = normalize_log_url(direct_text)
+                    data = http_get_bytes(source_url)
+            result["selected_log"] = source_url
+            try:
+                result["downloaded_to"] = maybe_write_download(download_dir, source_url, data)
+            except (OSError, ValueError) as exc:
+                errors.append(f"unable to save log: {exc}")
+            member, tail = inspect_archive_bytes(data, log_lines)
+            result.update(archive_member=member or None, tail=tail)
+            break
+        except (ToolError, OSError, ValueError) as exc:
+            errors.append(str(exc))
+    if errors:
+        result["error"] = "; ".join(errors)
+    return result
 
 
 def normalize_codecheck_defect(detail: Dict[str, Any], defect: Dict[str, Any]) -> Dict[str, Any]:
@@ -505,71 +631,112 @@ def normalize_codecheck_defect(detail: Dict[str, Any], defect: Dict[str, Any]) -
     }
 
 
-def extract_codecheck_details(page_payload: Dict[str, Any]) -> List[Dict[str, Any]]:
-    data = page_payload.get("data", {})
-    defects = data.get("defects", []) if isinstance(data, dict) else []
-    details: List[Dict[str, Any]] = []
+def validate_codecheck_page(page_payload: Any) -> Dict[str, Any]:
+    data = page_payload.get("data") if isinstance(page_payload, dict) else None
+    if not isinstance(data, dict):
+        raise ToolError("invalid codecheck response: data must be an object")
+    count = data.get("count")
+    if isinstance(count, bool) or not isinstance(count, (int, str)) or not str(count).isdigit():
+        raise ToolError("invalid codecheck response: count must be a non-negative integer")
+    defects = data.get("defects")
+    if not isinstance(defects, list):
+        raise ToolError("invalid codecheck response: defects must be a list")
     for defect in defects:
-        if not isinstance(defect, dict):
-            continue
-        for detail in defect.get("defectDetailList", []):
-            if isinstance(detail, dict):
-                details.append(normalize_codecheck_defect(detail, defect))
-    return details
+        if not isinstance(defect, dict) or not isinstance(defect.get("defectDetailList"), list):
+            raise ToolError("invalid codecheck response: each defect must contain defectDetailList")
+        if not all(isinstance(detail, dict) for detail in defect["defectDetailList"]):
+            raise ToolError("invalid codecheck response: defect details must be objects")
+    return data
+
+
+def extract_codecheck_details(page_payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    data = validate_codecheck_page(page_payload)
+    return [
+        normalize_codecheck_defect(detail, defect)
+        for defect in data["defects"]
+        for detail in defect["defectDetailList"]
+    ]
 
 
 def fetch_codecheck_defects(uuid: str, task_id: str, page_size: int = 300) -> Dict[str, Any]:
     if page_size <= 0:
         raise ToolError("--codecheck-page-size must be greater than 0")
     url = DCP_CODECHECK_TASK_URL.format(uuid=uuid, task_id=urllib.parse.quote(task_id, safe=""))
-    page_num = 1
     defects: List[Dict[str, Any]] = []
-    fetched_defect_groups = 0
+    seen_groups = set()
+    seen_details = set()
     total_count: Optional[int] = None
-    while True:
-        payload = {"pageNum": page_num, "pageSize": page_size}
-        page_payload = http_post_json(url, payload)
-        data = page_payload.get("data", {})
-        if not isinstance(data, dict):
-            raise ToolError(f"unexpected codecheck response for task: {task_id}")
-        if total_count is None:
-            count = data.get("count", 0)
-            total_count = int(count) if isinstance(count, (int, str)) and str(count).isdigit() else 0
-        page_defects = data.get("defects", [])
-        fetched_defect_groups += len(page_defects) if isinstance(page_defects, list) else 0
-        defects.extend(extract_codecheck_details(page_payload))
-        if fetched_defect_groups >= total_count or not data.get("defects"):
-            break
-        page_num += 1
-    return {
-        "task_id": task_id,
-        "defect_count": total_count if total_count is not None else len(defects),
-        "defects": defects,
-    }
+    error = None
+    try:
+        for page_num in range(1, MAX_CODECHECK_PAGES + 1):
+            page_payload = http_post_json(url, {"pageNum": page_num, "pageSize": page_size})
+            data = validate_codecheck_page(page_payload)
+            count = int(data["count"])
+            if total_count is None:
+                total_count = count
+            elif count != total_count:
+                raise ToolError("codecheck count changed during pagination")
+            groups = data["defects"]
+            if len(seen_groups) + len(groups) > total_count:
+                raise ToolError("codecheck page exceeds reported count")
+            new_groups, new_details, details = set(), set(), []
+            for group in groups:
+                identity = json.dumps(group.get("defectId") or group, sort_keys=True, ensure_ascii=False)
+                if identity in seen_groups or identity in new_groups:
+                    raise ToolError("duplicate or overlapping codecheck page")
+                new_groups.add(identity)
+                for detail in group["defectDetailList"]:
+                    identity = json.dumps(detail.get("id") or detail, sort_keys=True, ensure_ascii=False)
+                    if identity in seen_details or identity in new_details:
+                        raise ToolError("duplicate codecheck detail")
+                    new_details.add(identity)
+                    details.append(normalize_codecheck_defect(detail, group))
+            if len(defects) + len(details) > MAX_CODECHECK_DETAILS:
+                raise ToolError("codecheck details exceed limit")
+            seen_groups.update(new_groups)
+            seen_details.update(new_details)
+            defects.extend(details)
+            if len(seen_groups) == total_count:
+                break
+            if not groups:
+                raise ToolError("incomplete codecheck response: empty page before total count")
+        else:
+            raise ToolError("codecheck pagination exceeds page limit")
+    except (ToolError, OSError, ValueError) as exc:
+        error = str(exc)
+    report = {"task_id": task_id, "defect_count": total_count if not error else None,
+              "expected_count": total_count, "retrieved_count": len(seen_groups),
+              "retrieved_detail_count": len(defects), "defects": defects, "complete": error is None}
+    if error:
+        report["error"] = error
+    return report
 
 
 def build_codecheck_report(event_data: Dict[str, Any], page_size: int) -> Dict[str, Any]:
     uuid = event_data.get("uuid", "")
     summaries = event_data.get("codeCheckSummary", [])
     if not isinstance(uuid, str) or not uuid:
-        return {"uuid": uuid, "summary": summaries if isinstance(summaries, list) else [], "defect_count": 0, "tasks": []}
+        raise ToolError("DCP event is missing the UUID required for static-check details")
     if not isinstance(summaries, list):
-        summaries = []
+        raise ToolError("codeCheckSummary must be a list")
 
     tasks = []
     defect_count = 0
-    for summary in summaries:
-        if not isinstance(summary, dict):
-            continue
-        task_id = summary.get("task_id", "")
-        if not isinstance(task_id, str) or not task_id:
-            continue
-        task_report = fetch_codecheck_defects(uuid, task_id, page_size)
-        task_report["result"] = summary.get("result", "")
-        task_report["check_type"] = summary.get("check_type", "")
-        task_report["issue_count"] = summary.get("issue_count", "")
+    for index, summary in enumerate(summaries):
+        task_id = summary.get("task_id") if isinstance(summary, dict) else None
+        try:
+            if not isinstance(task_id, str) or not task_id.strip():
+                raise ToolError(f"codecheck summary[{index}] is missing a valid task_id")
+            task_report = fetch_codecheck_defects(uuid, task_id, page_size)
+        except (ToolError, OSError, ValueError) as exc:
+            task_report = {"task_id": task_id, "defect_count": None, "defects": [], "error": str(exc)}
+        fields = summary if isinstance(summary, dict) else {}
+        task_report["summary_index"] = index
+        task_report["result"] = fields.get("result", "")
+        task_report["check_type"] = fields.get("check_type", "")
+        task_report["issue_count"] = fields.get("issue_count", "")
         task_report["summary"] = summary
-        defect_count += int(task_report.get("defect_count", 0) or 0)
+        defect_count += int(task_report.get("retrieved_count", task_report.get("defect_count")) or 0)
         tasks.append(task_report)
 
     return {
@@ -581,35 +748,75 @@ def build_codecheck_report(event_data: Dict[str, Any], page_size: int) -> Dict[s
 
 
 def build_output(args: argparse.Namespace) -> Dict[str, Any]:
+    for name in ("log_lines", "codecheck_page_size"):
+        value = getattr(args, name)
+        if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+            raise ToolError(f"--{name.replace('_', '-')} must be a positive integer")
+    if args.pr is not None and args.pr <= 0:
+        raise ToolError("--pr must be a positive integer")
     pr_number: Optional[int] = args.pr
     comment: Optional[Dict[str, Any]] = None
+    repo = args.repo
     if args.pr_url:
+        url_repo = parse_pr_repo(args.pr_url)
+        if repo and repo != url_repo:
+            raise ToolError(f"--repo {repo} conflicts with PR URL repository {url_repo}")
+        repo = url_repo
         pr_number = parse_pr_number(args.pr_url)
 
     if args.event_id:
         event_id = args.event_id
     elif pr_number is not None:
-        event_id, comment = latest_event_id_from_pr(pr_number, args.repo)
+        if not repo:
+            raise ToolError("--repo owner/repo is required with --pr")
+        event_id, comment = latest_event_id_from_pr(pr_number, repo)
     else:
         raise ToolError("missing event source")
 
     event_payload = http_get_json(DCP_EVENT_URL.format(event_id=event_id))
-    event_data = event_payload.get("data", {})
-    builds = event_data.get("builds", []) if isinstance(event_data, dict) else []
-    jobs = [normalize_job(build) for build in builds if isinstance(build, dict)]
-
+    event_data = event_payload.get("data") if isinstance(event_payload, dict) else None
+    if not isinstance(event_data, dict) or not event_data:
+        raise ToolError("DCP event data is missing or invalid; fall back to openharmony_ci PR comments when available")
+    builds = event_data.get("builds", [])
+    if not isinstance(builds, list):
+        raise ToolError("DCP event builds must be a list")
+    jobs = []
+    errors = []
+    for index, build in enumerate(builds):
+        if not isinstance(build, dict):
+            errors.append({"stage": "event", "error": f"builds[{index}] must be an object"})
+            continue
+        job = normalize_job(build)
+        jobs.append(job)
+        for problem in job["validation_errors"]:
+            errors.append({"stage": "event", "job_name": job["job_name"], "error": f"builds[{index}]: {problem}"})
     failures = [job for job in jobs if is_failure_result(str(job["result"]))]
     for job in jobs:
         if should_fetch_logs(job, args.log_mode):
-            job["log_detail"] = fetch_job_logs(job, args.log_lines, args.download_dir)
+            try:
+                job["log_detail"] = fetch_job_logs(job, args.log_lines, args.download_dir)
+                if job["log_detail"].get("error"):
+                    errors.append({"stage": "log", "job_name": job["job_name"], "error": job["log_detail"]["error"]})
+            except (ToolError, OSError, ValueError, zipfile.BadZipFile) as exc:
+                job["log_detail"] = {"error": str(exc)}
+                errors.append({"stage": "log", "job_name": job["job_name"], "error": str(exc)})
 
     codecheck = None
-    if isinstance(event_data, dict) and should_fetch_codecheck(event_data, args.codecheck_mode):
-        codecheck = build_codecheck_report(event_data, args.codecheck_page_size)
+    if args.codecheck_mode != "never":
+        try:
+            if should_fetch_codecheck(event_data, args.codecheck_mode):
+                codecheck = build_codecheck_report(event_data, args.codecheck_page_size)
+                for task in codecheck["tasks"]:
+                    if task.get("error"):
+                        errors.append({"stage": "codecheck", "task_id": task["task_id"], "error": task["error"]})
+                codecheck["complete"] = not any(task.get("error") for task in codecheck["tasks"])
+        except (ToolError, OSError, ValueError) as exc:
+            codecheck = {"complete": False, "defect_count": None, "tasks": [], "error": str(exc)}
+            errors.append({"stage": "codecheck", "error": str(exc)})
 
     report = {
         "pr_number": pr_number,
-        "repo": args.repo,
+        "repo": repo,
         "event_id": event_id,
         "overall_result": infer_overall_result(event_data.get("result", ""), jobs),
         "timestamp": event_data.get("timestamp", ""),
@@ -618,6 +825,8 @@ def build_output(args: argparse.Namespace) -> Dict[str, Any]:
         "failure_count": len(failures),
         "failed_jobs": [job["job_name"] for job in failures],
         "source_comment": comment,
+        "complete": not errors,
+        "errors": errors,
     }
     if codecheck is not None:
         report["codecheck"] = codecheck
@@ -629,6 +838,10 @@ def print_text_report(report: Dict[str, Any]) -> None:
     if report.get("pr_number") is not None:
         title_parts.insert(0, f"pr=#{report['pr_number']}")
     print(" ".join(title_parts))
+    if report.get("complete") is False:
+        print("report_complete=false (some details could not be fetched)")
+    for error in report.get("errors", []):
+        print(f"warning: {error['stage']} {error.get('job_name') or error.get('task_id', '')}: {error['error']}")
     if report.get("failed_jobs"):
         print(f"failed_jobs={', '.join(report['failed_jobs'])}")
     for job in report["jobs"]:

@@ -40,9 +40,11 @@ python3 scripts/openharmony_ci.py --pr <pr_number> --repo <repo>
 When invoked, the script sets `XDG_CACHE_HOME=/tmp/openharmony-ci-cache` for `oh-gc` so it writes to a temp directory instead of `~/.cache`. This matters in sandboxed environments where `~/.cache` is read-only — without it the script would fail. Mention this safety mechanism in the output when the environment is restricted. If you need a different cache location, set `XDG_CACHE_HOME` before invoking the script.
 
 Supported inputs (use the correct flag for each):
-- `--pr <number>` — when the user gives a PR number like "PR 82764"
+- `--pr <number> --repo <owner/repo>` — a PR number requires an explicit repository; there is no default repository.
 - `--pr-url <gitcode_pr_url>` — when the user gives a full GitCode URL. **Always use this flag with the full URL, not just the PR number extracted from it.**
 - `--event-id <dcp_event_id>` — when the user gives a DCP event ID directly
+
+`--pr-url` infers the repository from the URL. A conflicting explicit `--repo` is rejected. Artifact paths and log URLs are manual investigation inputs, not standalone CLI flags.
 
 Useful flags:
 - `--log-mode auto`
@@ -60,9 +62,18 @@ Useful flags:
 - `--json`
   Machine-readable output.
 - `--download-dir <dir>`
-  Save downloaded log archives/files locally.
+  Save downloaded log archives/files locally with unique filenames to avoid overwriting logs from different jobs or runs.
 
 ## Expectations
+- `skip`, `skipped`, and `ignore` are not failed jobs and do not trigger automatic log downloads. Without a DCP overall result, success plus skipped jobs yields success; only skipped jobs yields skipped. An explicit DCP overall result remains authoritative.
+- Log or static-check task retrieval failures preserve the remaining results. Report `complete=false` and the entries in `errors`; missing details are not evidence of zero defects. Partial static-check counts include only retrieved defect groups. Tasks expose `expected_count`, `retrieved_count` (groups), and `retrieved_detail_count`; an incomplete task has `defect_count=null` and retains details from earlier valid pages.
+- Logs are excerpts (the last 80 lines by default, configurable with `--log-lines`), with one selected log per job and one member per archive. Inspect additional logs when these excerpts do not establish the cause.
+- Invalid job fields, artifact entries, or static-check summaries are reported as errors while valid siblings remain available. Duplicate/overlapping pages, changing counts, early empty pages, and damaged archives make the report incomplete.
+- Directory lookup or selected-log failure falls back to an available `buildLog` link. Both relative artifact paths and absolute HTTP(S) log URLs are supported. Retain lookup warnings even when the fallback succeeds.
+- A log save failure retains the readable log tail; later static-check page failures retain earlier pages. Inspect `errors` alongside these partial results.
+- Resource limits: `oh-gc` timeout 60 seconds, JSON responses 16 MiB, log downloads 64 MiB, decompressed archives/selected ZIP members 128 MiB, archive/listing entries 10,000, codecheck pages 100 and detail records 100,000 per task. Exceeding a limit is an explicit error; available partial results remain marked incomplete. These limits are constants in the bundled script.
+- `--pr`, `--log-lines`, and `--codecheck-page-size` must be positive integers. Argument checks run before network requests.
+
 - **Sandbox XDG_CACHE_HOME**: In sandboxed or restricted environments, always mention that the bundled script redirects `XDG_CACHE_HOME` to `/tmp/openharmony-ci-cache` so `oh-gc` doesn't fail on a read-only `~/.cache`. This is a key reason to use the script over raw `oh-gc`.
 - Prefer `--pr` or `--pr-url` when the task starts from a GitCode PR.
 - The script reads `openharmony_ci` comments with `oh-gc`, extracts the newest DCP event id, then queries DCP APIs.
