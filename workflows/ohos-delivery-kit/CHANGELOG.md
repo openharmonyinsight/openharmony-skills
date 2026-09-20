@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.11.0] - 2026-09-04
 
-Source: `main@b4686f444d8550489a0e8cfcb0fd0ee9100736c9`.
+Source: `main@b56be9cc0b6cb2175c131f68989d51dbbe6dacec`.
 
 ### Added
 
@@ -20,6 +20,10 @@ Source: `main@b4686f444d8550489a0e8cfcb0fd0ee9100736c9`.
 
 ### Changed
 
+- Workflow/profile routing and API specification details load on demand from
+  shared `runtime/assets/contracts/skill-guides/`; existing rules and approval
+  gates are retained. Profile-consuming phase skills reference the shared guide
+  directly, with its relative-path base explicitly defined.
 - **Breaking:** formal `req-id` values are digits only. The archive directory,
   `proposal.md` `req`, and `metadata_tracking.yaml` `req_id` must match.
 - The formal design-docs submission gate requires `proposal.md`, `spec.md`,

@@ -26,7 +26,7 @@ Read the change context from the user's request. If the user describes a require
 
 ## Steps
 
-0. Check for subsystem profile: follow the Profile Detection rules in `using-odk` — if a profile matches, apply its `template_overrides.proposal` (required/optional dimensions, fragments) and `agent_instructions.define` before generating content
+0. Check for subsystem profile: read and follow `{{ASSET_ROOT}}/contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.proposal` (required/optional dimensions, fragments) and `agent_instructions.define` before generating content
 1. Read template from `{{ASSET_ROOT}}/templates/ai/proposal.md`
 2. Generate `proposal.md` per the template.
    - **Change type classification**: determine `change_type` from the requirement description and fill both the YAML frontmatter and the 初始分级判断 table row. Classification criteria:
