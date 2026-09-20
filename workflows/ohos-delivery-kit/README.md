@@ -98,7 +98,7 @@ Synced from `oshunter/ohos-delivery-kit` branch `main` via
 - `hooks/session-router.yaml` — declarative session-start hook
 - `prompts/session-router.md` — router prompt
 - `skills/` — 25 ODK skills (synced from `core/skills/`)
-- `runtime/assets/` — templates, profiles, contracts, rules, adapters, examples
+- `runtime/assets/` — templates, profiles, contracts (including skill-guides), rules, adapters
 - `runtime/executables/` — artifact and archive-migration validators
 
 ## Variables

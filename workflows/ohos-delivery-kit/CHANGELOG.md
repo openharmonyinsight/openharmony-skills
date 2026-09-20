@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.11.0] - 2026-09-04
 
-Source: `main@b56be9cc0b6cb2175c131f68989d51dbbe6dacec`.
+Source: `main@22855998fdb882051d089a398e737fc3f5d10ff5`.
 
 ### Added
 
