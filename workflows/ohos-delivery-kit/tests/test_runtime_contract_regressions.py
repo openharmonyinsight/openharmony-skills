@@ -205,6 +205,13 @@ second
                 self.assertTrue(validator.api_signature_complete(
                     f"OH_call1(value: {type_name}): int", name_style="free", language="C"))
 
+    def test_c_callback_named_array_parameters_are_accepted(self) -> None:
+        for type_name in ("void (*)(int values[4])", "void (*)(char message[])",
+                          "void (*)(int values[2][4])", "void (*)(void (*cb)(int values[4]))"):
+            with self.subTest(type=type_name):
+                self.assertTrue(validator.api_signature_complete(
+                    f"OH_call1(value: {type_name}): int", name_style="free", language="C"))
+
     def test_arkts_callback_empty_parameters_are_rejected(self) -> None:
         for type_name in ("(value: string,, other: number) => void",
                           "Promise<(value: string,, other: number) => void>"):

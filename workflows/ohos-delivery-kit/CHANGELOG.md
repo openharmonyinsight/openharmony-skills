@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.11.0] - 2026-09-04
 
-Source: `main@b84cdede9128e809f4f36ae54990041c862284d9`.
+Source: `main@f3b8cdb0f11c557f39979fb6c43200db307647ac`.
 
 ### Added
 
@@ -35,6 +35,9 @@ Source: `main@b84cdede9128e809f4f36ae54990041c862284d9`.
   developer explicitly requests issue tracking.
 
 ### Fixed
+
+- C callbacks accept named array parameters, including unsized, multidimensional
+  and nested callback declarations, without dropping array dimensions.
 
 - C callback parameter declarations support names, including nested callbacks;
   ArkTS arrow types reject empty parameters recursively while preserving tuple types.

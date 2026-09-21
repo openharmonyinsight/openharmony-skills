@@ -713,7 +713,10 @@ def _c_parameter_declaration_complete(value: str) -> bool:
     qualifier = r"(?:const|volatile|restrict|_Atomic)\b"
     pointer = rf"(?:\*\s*(?:{qualifier}\s*)*)+"
     named_pointer = re.search(rf"\(\s*{pointer}(?P<name>[A-Za-z_]\w*)\s*\)", value)
-    name = named_pointer or re.search(r"(?P<name>[A-Za-z_]\w*)\s*$", value)
+    # Array parameter names precede their dimensions rather than ending the
+    # declaration. Remove only the name and keep the abstract array declarator.
+    named_array = re.search(r"\b(?P<name>[A-Za-z_]\w*)\s*(?=(?:\[[^\[\]]*\]\s*)+$)", value)
+    name = named_pointer or named_array or re.search(r"(?P<name>[A-Za-z_]\w*)\s*$", value)
     if name is None or name.group("name") in keywords:
         return False
     start, end = name.span("name")
