@@ -186,6 +186,18 @@ second
             )
         )
 
+    def test_c_function_pointer_empty_parameter_is_rejected(self) -> None:
+        for type_name in ("int (*)(int,,int)", "int (*)(void (*)(int,,int))"):
+            with self.subTest(type=type_name):
+                self.assertFalse(validator.api_signature_complete(
+                    f"OH_call1(value: {type_name}): int", name_style="free", language="C"))
+
+    def test_c_qualified_function_pointer_is_accepted(self) -> None:
+        for type_name in ("void (* const)(const char *)", "void (* volatile)(const char *)"):
+            with self.subTest(type=type_name):
+                self.assertTrue(validator.api_signature_complete(
+                    f"OH_call1(value: {type_name}): int", name_style="free", language="C"))
+
     def test_supported_device_decisions_are_validated(self) -> None:
         valid = [{"设备类型": "手机", "起始版本": "6.0", "是否支持": "是"}]
         self.assertEqual([], validator.supported_device_table_issues(valid))

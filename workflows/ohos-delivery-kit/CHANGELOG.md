@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.11.0] - 2026-09-04
 
-Source: `main@22855998fdb882051d089a398e737fc3f5d10ff5`.
+Source: `main@44b442bf2e876676cd65db6587c0559712c00755`.
 
 ### Added
 
@@ -35,6 +35,9 @@ Source: `main@22855998fdb882051d089a398e737fc3f5d10ff5`.
   developer explicitly requests issue tracking.
 
 ### Fixed
+
+- C function-pointer validation recursively rejects empty parameter entries and
+  accepts qualified pointers such as `void (* const)(const char *)`.
 
 - Local archive-migration validation detects legacy non-numeric formal IDs before
   they are submitted with the 0.11.0 contract.

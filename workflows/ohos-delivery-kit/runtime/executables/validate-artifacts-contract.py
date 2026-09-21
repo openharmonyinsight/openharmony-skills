@@ -684,6 +684,35 @@ def _arkts_type_syntax_complete(value: str) -> bool:
 
 def _c_type_syntax_complete(value: str) -> bool:
     """Validate C type specifiers and abstract declarators used by API signatures."""
+    # Validate function-pointer parameter types recursively instead of treating
+    # parenthesized text as opaque. Qualifiers belong to each pointer level,
+    # not to the return type's identifier sequence.
+    qualifier = r"(?:const|volatile|restrict|_Atomic)\b"
+    pointer = rf"(?:\*\s*(?:{qualifier}\s*)*)+"
+    function_pointer = re.fullmatch(
+        rf"(.+?)\(\s*{pointer}\)\s*\((.*)\)", value, re.DOTALL
+    )
+    if function_pointer:
+        return_type, parameters = function_pointer.groups()
+        if not _api_type_complete(return_type, language="C"):
+            return False
+        parameters = parameters.strip()
+        # Empty lists are valid C declarations; (void) explicitly has no args.
+        if not parameters or parameters == "void":
+            return True
+        commas = _nesting_positions(parameters, ",")
+        if commas is None:
+            return False
+        parts = [parameters[start:end].strip() for start, end in zip(
+            [0] + [position + 1 for position in commas], commas + [len(parameters)]
+        )]
+        for index, parameter in enumerate(parts):
+            if parameter == "...":
+                if index == 0 or index != len(parts) - 1:
+                    return False
+            elif parameter == "void" or not _api_type_complete(parameter, language="C"):
+                return False
+        return True
     if re.search(r"[$|&.:<>{}?=+/\-]", value):
         return False
     for delimiter in (",", ":", ";"):
