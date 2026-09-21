@@ -728,6 +728,12 @@ def _c_parameter_declaration_complete(value: str) -> bool:
 
 def _c_type_syntax_complete(value: str) -> bool:
     """Validate C type specifiers and abstract declarators used by API signatures."""
+    # A numeric operand cannot be followed by another bare operand without an
+    # operator. Check dimensions before either abstract or named declarations
+    # can pass; do not interpret symbols or evaluate C constant expressions.
+    for dimension in re.finditer(r"\[([^\[\]]*)\]", value):
+        if re.search(r"\b[0-9][A-Za-z0-9_]*\s+[A-Za-z0-9_]", dimension.group(1)):
+            return False
     # Validate function-pointer parameter types recursively instead of treating
     # parenthesized text as opaque. Qualifiers belong to each pointer level,
     # not to the return type's identifier sequence.

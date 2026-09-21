@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.11.0] - 2026-09-04
 
-Source: `main@f3b8cdb0f11c557f39979fb6c43200db307647ac`.
+Source: `main@b9c1eaa41a9de6305e96f56d1f67b2cc1fccce00`.
 
 ### Added
 
@@ -35,6 +35,9 @@ Source: `main@f3b8cdb0f11c557f39979fb6c43200db307647ac`.
   developer explicitly requests issue tracking.
 
 ### Fixed
+
+- C array dimensions reject adjacent operands such as `4 4`, for both named
+  and abstract parameters, including multidimensional and nested callbacks.
 
 - C callbacks accept named array parameters, including unsized, multidimensional
   and nested callback declarations, without dropping array dimensions.
