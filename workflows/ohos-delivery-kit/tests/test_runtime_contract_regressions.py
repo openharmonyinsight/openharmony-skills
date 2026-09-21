@@ -198,10 +198,30 @@ second
                 self.assertTrue(validator.api_signature_complete(
                     f"OH_call1(value: {type_name}): int", name_style="free", language="C"))
 
+    def test_c_callback_named_parameters_are_accepted(self) -> None:
+        for type_name in ("void (*)(int code)", "void (*)(const char *message)",
+                          "void (*)(void (*cb)(int code))"):
+            with self.subTest(type=type_name):
+                self.assertTrue(validator.api_signature_complete(
+                    f"OH_call1(value: {type_name}): int", name_style="free", language="C"))
+
+    def test_arkts_callback_empty_parameters_are_rejected(self) -> None:
+        for type_name in ("(value: string,, other: number) => void",
+                          "Promise<(value: string,, other: number) => void>"):
+            with self.subTest(type=type_name):
+                self.assertFalse(validator.api_signature_complete(
+                    f"Example.on(cb: {type_name}): void", language="ArkTS"))
+
+    def test_arkts_callback_tuple_parameters_are_accepted(self) -> None:
+        for type_name in ("(value: [string, number]) => void",
+                          "Promise<(value: [string, number]) => void>", "(value: []) => void"):
+            with self.subTest(type=type_name):
+                self.assertTrue(validator.api_signature_complete(
+                    f"Example.on(cb: {type_name}): void", language="ArkTS"))
+
     def test_supported_device_decisions_are_validated(self) -> None:
         valid = [{"设备类型": "手机", "起始版本": "6.0", "是否支持": "是"}]
         self.assertEqual([], validator.supported_device_table_issues(valid))
-
         invalid = [
             {"设备类型": "手机", "起始版本": "banana", "是否支持": "maybe"},
             {"设备类型": "手机", "起始版本": "6.0", "是否支持": "是"},

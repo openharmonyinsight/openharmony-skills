@@ -612,11 +612,28 @@ def _arkts_type_syntax_complete(value: str) -> bool:
     if re.search(r"[*/+\-]", value) or re.search(r"(?<![=])=(?!>)", value):
         return False
     for match in re.finditer(r"=>", value):
+        prefix = value[: match.start()].rstrip()
         remainder = value[match.end() :].lstrip()
         if (
-            not value[: match.start()].rstrip().endswith(")")
+            not prefix.endswith(")")
             or not remainder
             or remainder[0] in ")]}> ,;:"
+        ):
+            return False
+        # Check every arrow, including those inside generics/object types.
+        # Find its parameter group backwards so nested callback groups stay intact.
+        depth = 0
+        opening = None
+        for index in range(len(prefix) - 1, -1, -1):
+            if prefix[index] == ")":
+                depth += 1
+            elif prefix[index] == "(":
+                depth -= 1
+                if depth == 0:
+                    opening = index
+                    break
+        if opening is None or not _api_parameters_complete(
+            prefix[opening + 1 : -1], language="ArkTS"
         ):
             return False
     equals_positions = _nesting_positions(value, "=")
@@ -682,6 +699,30 @@ def _arkts_type_syntax_complete(value: str) -> bool:
     )
 
 
+def _c_parameter_declaration_complete(value: str) -> bool:
+    """Accept a parameter type or a named declaration, not an arbitrary suffix."""
+    if value == "void":
+        return False  # Only the sole (void) case is accepted by the caller.
+    if _api_type_complete(value, language="C"):
+        return True
+    keywords = {
+        "const", "volatile", "restrict", "_Atomic", "struct", "union", "enum",
+        "signed", "unsigned", "short", "long", "int", "char", "float", "double",
+        "void", "_Bool", "auto", "register", "static", "extern", "typedef",
+    }
+    qualifier = r"(?:const|volatile|restrict|_Atomic)\b"
+    pointer = rf"(?:\*\s*(?:{qualifier}\s*)*)+"
+    named_pointer = re.search(rf"\(\s*{pointer}(?P<name>[A-Za-z_]\w*)\s*\)", value)
+    name = named_pointer or re.search(r"(?P<name>[A-Za-z_]\w*)\s*$", value)
+    if name is None or name.group("name") in keywords:
+        return False
+    start, end = name.span("name")
+    type_name = (value[:start] + value[end:]).strip()
+    if type_name == "void":
+        return False
+    return _api_type_complete(type_name, language="C")
+
+
 def _c_type_syntax_complete(value: str) -> bool:
     """Validate C type specifiers and abstract declarators used by API signatures."""
     # Validate function-pointer parameter types recursively instead of treating
@@ -710,7 +751,7 @@ def _c_type_syntax_complete(value: str) -> bool:
             if parameter == "...":
                 if index == 0 or index != len(parts) - 1:
                     return False
-            elif parameter == "void" or not _api_type_complete(parameter, language="C"):
+            elif not _c_parameter_declaration_complete(parameter):
                 return False
         return True
     if re.search(r"[$|&.:<>{}?=+/\-]", value):
@@ -739,12 +780,18 @@ def _c_type_syntax_complete(value: str) -> bool:
 def _api_type_complete(type_name: str, *, language: str | None = None) -> bool:
     """Validate supported C/ArkTS type syntax without accepting expressions."""
     value = type_name.strip()
+    # The document-wide [text] placeholder rule is not a type grammar: ArkTS
+    # tuples legitimately have this shape. Explicit placeholder words still fail.
+    tuple_shape = language == "ArkTS" and value.startswith("[") and value.endswith("]")
     if (
-        not meaningful(value)
+        (not meaningful(value) and not tuple_shape)
         or BRACKET_PLACEHOLDER_RE.search(value)
         or _nesting_positions(value, ",") is None
     ):
         return False
+
+    if tuple_shape and re.fullmatch(r"\[\s*\]", value):
+        return True
 
     without_literals = re.sub(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'', "literal", value)
     if not re.search(r"[A-Za-z_$][A-Za-z0-9_$]*|\d", without_literals):

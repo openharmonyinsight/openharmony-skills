@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.11.0] - 2026-09-04
 
-Source: `main@44b442bf2e876676cd65db6587c0559712c00755`.
+Source: `main@b84cdede9128e809f4f36ae54990041c862284d9`.
 
 ### Added
 
@@ -35,6 +35,9 @@ Source: `main@44b442bf2e876676cd65db6587c0559712c00755`.
   developer explicitly requests issue tracking.
 
 ### Fixed
+
+- C callback parameter declarations support names, including nested callbacks;
+  ArkTS arrow types reject empty parameters recursively while preserving tuple types.
 
 - C function-pointer validation recursively rejects empty parameter entries and
   accepts qualified pointers such as `void (* const)(const char *)`.
