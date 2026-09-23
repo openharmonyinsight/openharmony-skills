@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.11.0] - 2026-09-04
 
-Source: `main@f639410d6850aaf3e891155860e54cfaf0d90f5f`.
+Source: `main@0f4971585cdd631e250f6a00ce7797f2917cd95b`.
 
 ### Added
 
@@ -20,6 +20,11 @@ Source: `main@f639410d6850aaf3e891155860e54cfaf0d90f5f`.
 
 ### Changed
 
+- Split the artifact validator's Markdown and API-signature helpers into runtime
+  libraries while preserving document gates and exit codes. Reports explicitly
+  mark target language/toolchain validation as NOT VERIFIED.
+- Publish all Python runtime libraries and verify their inventory against the
+  pinned source commit, rejecting ignored local modules and incomplete bundles.
 - Workflow/profile routing and API specification details load on demand from
   shared `runtime/assets/contracts/skill-guides/`; existing rules and approval
   gates are retained. Profile-consuming phase skills reference the shared guide
