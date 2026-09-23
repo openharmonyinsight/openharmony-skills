@@ -17,6 +17,14 @@ in the formal archive: `proposal.md`, `spec.md`, `design.md`,
 `execution-plan.md`, and `metadata_tracking.yaml`. A repository entry may use an empty
 `pull_requests: []` list when no pull request exists yet.
 
+For `API/SDK=是`, the submission also includes
+`evidence/task1-api-declaration-en.diff` and `evidence/task1-api-declaration-zh.diff`
+at their original relative paths. These must be nonempty unified diffs with complete
+hunks and actual added/deleted lines. Missing or invalid evidence warns in draft mode
+and fails archive/submission mode; blank files are not a no-change exemption.
+The structural check does not prove applicability, bilingual equivalence, or compiler
+correctness. Preserve other evidence referenced by the documents when submitting.
+
 The submission gate applies the same final-readiness checks as archive mode. When
 `proposal.md` marks `API/SDK` as involved, the validator also requires a complete
 per-API specification with shared attributes, owner-qualified signatures, API

@@ -24,7 +24,7 @@ Invoke OpenSpec `/opsx:apply` to implement tasks from the execution plan, apply 
 2. After code generation, backfill `execution-plan.md` 代码范围映射 with actual files modified or created.
 3. Update `execution-plan.md` task checkboxes as tasks complete.
 4. Verify AC-Task traceability: every AC has at least one completed task, every task links back to an AC.
-5. Before a completed implementation is committed, pushed, or opened as a GitCode PR, read `design_docs_repository` from `codespec/profile.yaml` and remind the user to submit `codespec/` documents to that separate design-docs repository. If absent, report “待开发者填写”; do not guess or automatically push across repositories. An explicit submission request invokes `odk-submit-design-docs`, which generates `metadata_tracking.yaml` and validates the five-file bundle.
+5. Before a completed implementation is committed, pushed, or opened as a GitCode PR, read `design_docs_repository` from `codespec/profile.yaml` and remind the user to submit `codespec/` documents to that separate design-docs repository. If absent, report “待开发者填写”; do not guess or automatically push across repositories. An explicit submission request invokes `odk-submit-design-docs`, which generates `metadata_tracking.yaml` and validates the five-base-file bundle plus required conditional evidence.
 
 ## Output
 

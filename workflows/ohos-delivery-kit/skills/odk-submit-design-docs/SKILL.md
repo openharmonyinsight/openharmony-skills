@@ -41,13 +41,21 @@ For a non-GitCode current business repository, the current schema requires `pull
 
 ## Validate and Submit
 
-The design-docs submission bundle is exactly:
+The design-docs submission bundle always includes these five base files:
 
 - `proposal.md`
 - `spec.md`
 - `design.md`
 - `execution-plan.md`
 - `metadata_tracking.yaml`
+
+For `API/SDK=是`, also include `evidence/task1-api-declaration-en.diff` and
+`evidence/task1-api-declaration-zh.diff`. Both must contain nonempty text unified
+diffs with complete hunks and actual added/deleted lines, not blank files or labels.
+Preserve their relative paths. No implicit no-change exemption exists: if genuine
+evidence is unavailable, stop and report the missing evidence rather than fabricate it.
+Structural validation does not prove applicability, bilingual equivalence, or
+language correctness; review these against the actual declaration changes.
 
 Run:
 
@@ -58,7 +66,12 @@ python3 "{{EXECUTABLE_ROOT}}/validate-artifacts-contract.py" \
 
 `--design-docs-submit` automatically enables the same final-readiness checks as `--archive`, including unresolved placeholders, code mapping, per-task `Actual Result`, DFX closure, and resource constraints.
 
-Do not submit if validation fails. Copy the five files to the same relative path under the configured design-docs checkout: `codespec/changes/<repo-name>/<req-id>/`.
+Do not submit if validation fails. Copy the five base files and required conditional
+evidence to the same relative path under the confirmed design-docs checkout:
+`codespec/changes/<repo-name>/<req-id>/`. Preserve evidence referenced by the documents;
+do not copy unrelated files. Before committing, verify the copied files against the
+validated source bundle; do not substitute the design-docs remote/HEAD for business
+repository identity or re-generate business metadata in the destination checkout.
 
 An explicit request to submit or publish the design documents authorizes preparing and synchronizing this bundle. Follow the user's requested Git scope for commit/push/PR operations; the ordinary business-code submission reminder alone is not authorization to mutate another repository.
 

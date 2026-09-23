@@ -45,7 +45,7 @@ Validate the slug against `^[a-z0-9]+(?:-[a-z0-9]+)*$` and a maximum length of 4
 6. Ensure the repo `.gitignore` ignores the bridge plugin workspaces ODK redirects output away from:
    - Entries to ensure, **idempotently** (append only missing ones; never overwrite or remove existing content): `openspec/`, `docs/superpowers/`, `matspec/`, `.matspec-cli/`
    - If `.gitignore` does not exist, create it with a short `# ODK bridge workspaces` header followed by the entries.
-   - **Do NOT add `codespec/`** — it is the delivery archive. At GitCode submission time it is submitted to the separate design-docs repository named by developer-owned `codespec/profile.yaml` key `design_docs_repository`, not silently bundled into the business-code commit. `odk-submit-design-docs` generates `metadata_tracking.yaml` and validates the five-file bundle before that submission.
+   - **Do NOT add `codespec/`** — it is the delivery archive. At GitCode submission time it is submitted to the separate design-docs repository named by developer-owned `codespec/profile.yaml` key `design_docs_repository`, not silently bundled into the business-code commit. `odk-submit-design-docs` generates `metadata_tracking.yaml` and validates the five-base-file bundle plus required conditional evidence before that submission.
    - **Do NOT add adapter install dirs** (`.claude/`, `.codex/`, `.opencode/`, `opencode.json`, etc.) — committing those is a team choice, not ODK's to decide.
 
 ## Output

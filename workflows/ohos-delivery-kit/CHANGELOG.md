@@ -6,12 +6,12 @@ this file. Source artifacts are synchronized from
 
 ## [0.11.0] - 2026-09-04
 
-Source: `main@16ca5c8f5181be218217d1af5b8863fbdf1d1244`.
+Source: `main@2e5b440fe9e138cd93ec9305c7f5362acedea12f`.
 
 ### Added
 
 - `odk-submit-design-docs` generates `metadata_tracking.yaml` before design-docs
-  submission and validates the formal five-file bundle.
+  submission and validates the five base files plus required conditional evidence.
 - The metadata template supports `pull_requests: []` before a pull request is created.
 - A release-documentation regression check keeps the published README and changelog
   aligned with the shipped workflow contract.
@@ -48,6 +48,15 @@ Source: `main@16ca5c8f5181be218217d1af5b8863fbdf1d1244`.
 
 ### Fixed
 
+- Recognize indented and closing-hash ATX headings when rejecting duplicate API
+  and resource contract sections.
+- Accept arithmetic C array bounds while rejecting dangling operators and adjacent
+  operands. Keep type validation separate from bound expressions.
+- Require nonempty unified-diff API evidence with complete hunks and actual changes;
+  include both language variants in the design-docs submission bundle.
+- Preserve standalone absolute-path loading of the YAML helper. The source focus
+  example now includes explicitly illustrative declaration fixtures and aligned scope.
+
 - C array dimensions reject adjacent operands such as `4 4`, for both named
   and abstract parameters, including multidimensional and nested callbacks.
 
@@ -71,6 +80,7 @@ Source: `main@16ca5c8f5181be218217d1af5b8863fbdf1d1244`.
 
 ### Known limitations
 
-- The source `12345-arkui-focus` submission example lacks the two API declaration
-  diffs required by PR #130, so its full submission regression currently fails.
-  The five-file submission procedure does not yet copy this additional evidence.
+- Signature/bound checks are bounded lexical checks, not target SDK/compiler checks.
+  Diff structure validation does not establish applicability, bilingual semantic
+  equivalence, or genuine business provenance. Illustrative source examples are not
+  production evidence and are not included in this publishing channel.

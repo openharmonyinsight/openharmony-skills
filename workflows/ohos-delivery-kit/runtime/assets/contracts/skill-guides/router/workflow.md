@@ -16,7 +16,7 @@ Each change directory is **populated by phase** — `odk-init` only seeds `propo
 - `execution-plan.md` — (`odk-plan`) implementation plan with AC-Task traceability and task details
 - `spec-for-validation.md` — optional validation specification with integration/system scenarios derived from spec.md (parallel bypass, does not block main flow)
 - `threat-model.md` — optional deep threat analysis (bypass; high-risk security/privacy/compliance changes; produced by `odk-security-threat-model`)
-- `metadata_tracking.yaml` — generated or refreshed by `odk-submit-design-docs` when the formal five-file bundle is submitted to design-docs; it may use `pull_requests: []` before a business-code PR exists
+- `metadata_tracking.yaml` — generated or refreshed by `odk-submit-design-docs` when the formal five-base-file bundle plus required conditional evidence is submitted to design-docs; it may use `pull_requests: []` before a business-code PR exists
 
 The recommended phase order is **Propose → Specify → Design → Plan → Implement**. Spec defines WHAT (behavior, ACs, business rules); Design defines HOW (architecture, error code values, interface signatures). Design references specific AC numbers from Spec, strengthening the traceability chain. After design, review and update spec's error codes and interfaces if design decisions changed them.
 
@@ -57,4 +57,3 @@ Each skill loads its own full context. Base commands are template-driven with ze
 | MatrixSpec (`ms`) | `odk-ms-proposal` / `odk-ms-delta-spec` / `odk-ms-delta-design` / `odk-ms-tasks` / `odk-ms-validation` |
 
 Bridge commands load `using-odk-bridge` automatically for output redirection and mode selection. They fall back to base commands when the plugin is unavailable.
-

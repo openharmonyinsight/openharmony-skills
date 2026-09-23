@@ -7,6 +7,7 @@ import contextlib
 import io
 from pathlib import Path
 import shutil
+import subprocess
 import tempfile
 import unittest
 from unittest import mock
@@ -34,6 +35,50 @@ odk_yaml = load_module(
 
 
 class RuntimeContractRegressionTest(unittest.TestCase):
+    def test_atx_heading_variants_preserve_duplicate_detection(self) -> None:
+        for heading in ("  ## API 规格定义", "## API 规格定义 ##"):
+            text = "## API 规格定义\nfirst\n" + heading + "\nsecond"
+            self.assertEqual(["first", "second"], validator.section_texts(text, "API 规格定义"))
+            self.assertEqual("", validator.section_text(text, "API 规格定义"))
+
+    def test_c_array_bound_expressions_preserve_type_checks(self) -> None:
+        for bound in ("2+2", "8/2", "8-4", "sizeof(int)", "N + 1"):
+            self.assertTrue(validator.api_signature_complete(
+                f"OH_call(callback: void (*)(int values[{bound}])): int",
+                name_style="free", language="C"))
+        for bound in ("2+", "N N", "4 4"):
+            self.assertFalse(validator.api_signature_complete(
+                f"OH_call(callback: void (*)(int values[{bound}])): int",
+                name_style="free", language="C"))
+
+    def test_api_diff_evidence_requires_nonempty_complete_hunks(self) -> None:
+        valid = "--- a/api.h\n+++ b/api.h\n@@ -1 +1 @@\n-void old(void);\n+void updated(void);\n"
+        for content in ("", "\n", "en\n", valid.replace("@@ -1 +1 @@", "@@ -1,4 +1,4 @@"), valid):
+            with tempfile.TemporaryDirectory() as temporary:
+                change = Path(temporary)
+                (change / "proposal.md").write_text(
+                    "## 不涉及项确认\n\n| 维度 | 是否涉及 |\n| --- | --- |\n| API/SDK | 是 |\n",
+                    encoding="utf-8")
+                evidence = change / "evidence"
+                evidence.mkdir()
+                for language in ("en", "zh"):
+                    (evidence / f"task1-api-declaration-{language}.diff").write_text(content, encoding="utf-8")
+                reporter = validator.Reporter()
+                with contextlib.redirect_stdout(io.StringIO()):
+                    validator.validate_api_declaration_diffs(change, reporter, archive=True)
+                self.assertEqual(content != valid, reporter.failed > 0)
+
+    def test_yaml_helper_loads_by_absolute_path_in_isolated_process(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            result = subprocess.run(["python3", "-I", "-B", "-c",
+                "import importlib.util,sys; "
+                "s=importlib.util.spec_from_file_location('standalone',sys.argv[1]); "
+                "m=importlib.util.module_from_spec(s); s.loader.exec_module(m); "
+                "assert m._heading_sections('  ## Title ##\\nbody','Title') == ['body']",
+                str(WORKFLOW_ROOT / "runtime/executables/lib/odk_yaml.py")],
+                cwd=temporary, text=True, capture_output=True)
+            self.assertEqual(0, result.returncode, result.stderr)
+
     def validate_api_documents(self, proposal: str, spec: str) -> str:
         with tempfile.TemporaryDirectory() as temporary:
             change_dir = Path(temporary)

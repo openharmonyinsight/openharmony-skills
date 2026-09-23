@@ -46,6 +46,7 @@ from odk_document import (  # noqa: E402
     tables_with_columns, table_with_columns, unique_table_with_columns, meaningful,
 )
 from odk_repository import parse_git_remote  # noqa: E402
+from odk_diff import valid_unified_diff  # noqa: E402
 # Re-export legacy entry points for callers that load this script as a module.
 from odk_api_signature import (  # noqa: E402
     _nesting_positions, _outer_parameter_close, _outer_parameter_open,
@@ -568,6 +569,19 @@ def validate_api_declaration_diffs(change_dir: Path, reporter: Reporter, *, arch
             archive,
             "API declaration diff evidence missing under evidence/: " + ", ".join(missing),
         )
+        return
+    invalid = []
+    for language in ("en", "zh"):
+        path = change_dir / "evidence" / f"task1-api-declaration-{language}.diff"
+        try:
+            valid = valid_unified_diff(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError):
+            valid = False
+        if not valid:
+            invalid.append(path.name)
+    if invalid:
+        draft_warn_archive_fail(reporter, archive,
+            "API declaration diff evidence must contain nonempty valid unified diffs: " + ", ".join(invalid))
     else:
         reporter.pass_("API declaration diff evidence (en/zh) is archived")
 
@@ -2105,7 +2119,7 @@ def main(argv: list[str]) -> int:
     parser.add_argument(
         "--design-docs-submit",
         action="store_true",
-        help="Require the five-file design-docs bundle and enforce archive-equivalent final-readiness checks.",
+        help="Require the five base design-docs files plus conditional evidence and enforce archive-equivalent final-readiness checks.",
     )
     args = parser.parse_args(argv[1:])
 

@@ -278,7 +278,18 @@ def _c_type_syntax_complete(value: str) -> bool:
     # operator. Check dimensions before either abstract or named declarations
     # can pass; do not interpret symbols or evaluate C constant expressions.
     for dimension in re.finditer(r"\[([^\[\]]*)\]", value):
-        if re.search(r"\b[0-9][A-Za-z0-9_]*\s+[A-Za-z0-9_]", dimension.group(1)):
+        bound = dimension.group(1).strip()
+        if re.search(r"\b[0-9][A-Za-z0-9_]*\s+[A-Za-z0-9_]", bound):
+            return False
+        if bound not in {"", "*"} and re.search(r"[+*/%&|^?:<>=!~\-]\s*$", bound):
+            return False
+        # Preserve the old adjacent-name rejection without interpreting symbols.
+        # sizeof(type) and array qualifiers may legitimately precede a name.
+        prefixes = {"sizeof", "_Alignof", "static", "const", "volatile", "restrict",
+                    "signed", "unsigned", "short", "long", "struct", "union", "enum"}
+        if any(first not in prefixes for first, _ in re.findall(
+            r"(?=\b([A-Za-z_]\w*)\s+([A-Za-z_0-9]\w*)\b)", bound
+        )):
             return False
     # Validate function-pointer parameter types recursively instead of treating
     # parenthesized text as opaque. Qualifiers belong to each pointer level,
@@ -309,13 +320,16 @@ def _c_type_syntax_complete(value: str) -> bool:
             elif not _c_parameter_declaration_complete(parameter):
                 return False
         return True
-    if re.search(r"[$|&.:<>{}?=+/\-]", value):
+    # Array bounds are expressions, not type specifiers. Keep the dimension
+    # checks above, but do not reject arithmetic in a bound as a type operator.
+    type_shape = re.sub(r"\[[^\[\]]*\]", "", value)
+    if re.search(r"[$|&.:<>{}?=+/\-]", type_shape):
         return False
     for delimiter in (",", ":", ";"):
         positions = _nesting_positions(value, delimiter)
         if positions is None or positions:
             return False
-    identifiers = re.findall(r"\b[A-Za-z_]\w*\b", value)
+    identifiers = re.findall(r"\b[A-Za-z_]\w*\b", type_shape)
     qualifiers = {"const", "volatile", "restrict", "_Atomic"}
     if not identifiers or all(identifier in qualifiers for identifier in identifiers):
         return False
@@ -323,12 +337,12 @@ def _c_type_syntax_complete(value: str) -> bool:
         return False
     if re.search(
         r"\*\s*(?!const\b|volatile\b|restrict\b|_Atomic\b)([A-Za-z_]\w*)",
-        value,
+        type_shape,
     ):
         return False
-    if re.search(r"\(\s*\*\s*[A-Za-z_]\w*", value):
+    if re.search(r"\(\s*\*\s*[A-Za-z_]\w*", type_shape):
         return False
-    sequences = re.findall(r"\b[A-Za-z_]\w*(?:\s+[A-Za-z_]\w*)+\b", value)
+    sequences = re.findall(r"\b[A-Za-z_]\w*(?:\s+[A-Za-z_]\w*)+\b", type_shape)
     return all(_c_identifier_sequence_complete(sequence) for sequence in sequences)
 
 

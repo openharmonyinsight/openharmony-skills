@@ -62,7 +62,7 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
 5. If implementation reveals missing ACs or changed scope, pause and update `spec.md` / `execution-plan.md` before continuing.
 6. Keep changes within the Task file scope unless the user approves an execution-plan update.
 7. When any `资源开销审视` dimension is `required` (`contracts/artifacts.yaml#resource_contract`), complete subsystem measurement/evidence Tasks and the business-repo `odk_resource_gate` (commonly under `evidence/resource/`).
-8. When all code Tasks are complete and the user is preparing a GitCode commit, push, or PR, read `design_docs_repository` from `codespec/profile.yaml` and remind the user that `codespec/` documents must be submitted to that separate design-docs repository. If the address is absent or empty, report “design-docs 仓地址：待开发者填写”; never infer the address or push across repositories without explicit authorization. When submission is explicitly requested, use `odk-submit-design-docs` to generate `metadata_tracking.yaml` and submit the five-file bundle.
+8. When all code Tasks are complete and the user is preparing a GitCode commit, push, or PR, read `design_docs_repository` from `codespec/profile.yaml` and remind the user that `codespec/` documents must be submitted to that separate design-docs repository. If the address is absent or empty, report “design-docs 仓地址：待开发者填写”; never infer the address or push across repositories without explicit authorization. When submission is explicitly requested, use `odk-submit-design-docs` to generate `metadata_tracking.yaml` and submit the five-base-file bundle plus required conditional evidence.
 
 ## Output
 

@@ -28,7 +28,7 @@ Invoke Superpowers `requesting-code-review` and `verification-before-completion`
    - **code-review-YYYYMMDD.md** — Code quality review; verify code scope matches execution-plan boundaries
    - **verification-YYYYMMDD.md** — Verification evidence; explicit code-vs-spec consistency conclusion
 4. Persist to `codespec/changes/<repo-name>/<req-id>/evidence/reviews/`.
-5. If the next action is a GitCode commit, push, or PR, read `design_docs_repository` from `codespec/profile.yaml` and remind the user to submit `codespec/` documents to that separate design-docs repository. If absent, report “待开发者填写”; never guess or automatically push across repositories. Actual submission uses `odk-submit-design-docs` to generate `metadata_tracking.yaml` and validate the five-file bundle.
+5. If the next action is a GitCode commit, push, or PR, read `design_docs_repository` from `codespec/profile.yaml` and remind the user to submit `codespec/` documents to that separate design-docs repository. If absent, report “待开发者填写”; never guess or automatically push across repositories. Actual submission uses `odk-submit-design-docs` to generate `metadata_tracking.yaml` and validate the five-base-file bundle plus required conditional evidence.
 
 ## Output
 

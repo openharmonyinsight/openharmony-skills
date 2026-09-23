@@ -12,6 +12,17 @@ import argparse
 import re
 from pathlib import Path
 
+if __package__:
+    from .odk_document import section_texts
+else:  # Direct CLI and importlib absolute-path callers need no sys.path setup.
+    import importlib.util
+    _document_spec = importlib.util.spec_from_file_location(
+        "_odk_yaml_document", Path(__file__).with_name("odk_document.py")
+    )
+    _document = importlib.util.module_from_spec(_document_spec)
+    _document_spec.loader.exec_module(_document)
+    section_texts = _document.section_texts
+
 
 def _unquote(value: str) -> str:
     value = value.strip()
@@ -423,17 +434,12 @@ def _markdown_table_headers(text: str) -> list[list[str]]:
 
 
 def _heading_sections(text: str, heading: str) -> list[str]:
-    matches = re.finditer(
-        rf"^##\s+{re.escape(heading)}\s*$([\s\S]*?)(?=^##\s+|\Z)",
-        text,
-        flags=re.MULTILINE,
-    )
-    return [match.group(1) for match in matches]
+    return section_texts(text, heading)
 
 
 def _heading_section(text: str, heading: str) -> str:
     sections = _heading_sections(text, heading)
-    return sections[0] if sections else ""
+    return sections[0] if len(sections) == 1 else ""
 
 
 def contract_artifacts(path: str) -> None:

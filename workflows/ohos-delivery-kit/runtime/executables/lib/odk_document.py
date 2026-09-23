@@ -67,12 +67,22 @@ def _visible_markdown(text: str) -> str:
     return "\n".join(visible)
 
 
+def atx_heading(line: str) -> tuple[int, str] | None:
+    """Parse an ATX heading, including CommonMark indentation/closing hashes."""
+    match = re.match(r"^ {0,3}(#{1,6})(?:[ \t]+(.*)|[ \t]*)$", line)
+    if not match:
+        return None
+    title = match.group(2) or ""
+    title = re.sub(r"(?:^|[ \t]+)#+[ \t]*$", "", title).strip()
+    return len(match.group(1)), title
+
+
 def headings(text: str) -> set[str]:
     result: set[str] = set()
     for line in _visible_markdown(text).splitlines():
-        match = re.match(r"^#{2,6}\s+(.+?)\s*$", line)
+        match = atx_heading(line)
         if match:
-            result.add(match.group(1).strip())
+            result.add(match[1])
     return result
 
 
@@ -80,16 +90,16 @@ def section_texts(text: str, title: str) -> list[str]:
     lines = _visible_markdown(text).splitlines()
     matches: list[tuple[int, int]] = []
     for idx, line in enumerate(lines):
-        match = re.match(r"^(#{2,6})\s+(.+?)\s*$", line)
-        if match and match.group(2).strip() == title:
-            matches.append((idx + 1, len(match.group(1))))
+        match = atx_heading(line)
+        if match and match[1] == title:
+            matches.append((idx + 1, match[0]))
 
     sections: list[str] = []
     for start, start_level in matches:
         end = len(lines)
         for idx in range(start, len(lines)):
-            match = re.match(r"^(#{2,6})\s+(.+?)\s*$", lines[idx])
-            if match and len(match.group(1)) <= start_level:
+            match = atx_heading(lines[idx])
+            if match and match[0] <= start_level:
                 end = idx
                 break
         sections.append("\n".join(lines[start:end]))
