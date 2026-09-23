@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.11.0] - 2026-09-04
 
-Source: `main@0f4971585cdd631e250f6a00ce7797f2917cd95b`.
+Source: `main@16ca5c8f5181be218217d1af5b8863fbdf1d1244`.
 
 ### Added
 
@@ -20,6 +20,13 @@ Source: `main@0f4971585cdd631e250f6a00ce7797f2917cd95b`.
 
 ### Changed
 
+- Confirm the design-docs target before submission. An unconfigured GitCode origin
+  offers `https://gitcode.com/OpenHarmonyAI/design-docs`; other origins require a
+  developer-supplied address. Existing profile configuration remains authoritative.
+- Verify the checkout and every effective push URL against the confirmed endpoint,
+  including protocol, port, SSH user, and path semantics. Non-GitCode business
+  repositories must not generate unsupported GitCode PR/issue metadata.
+- Task 1 API declaration gates require English and Chinese diff evidence.
 - Split the artifact validator's Markdown and API-signature helpers into runtime
   libraries while preserving document gates and exit codes. Reports explicitly
   mark target language/toolchain validation as NOT VERIFIED.
@@ -61,3 +68,9 @@ Source: `main@0f4971585cdd631e250f6a00ce7797f2917cd95b`.
 - Design-docs metadata requires complete populated PR/issue entries, accepts GitCode
   `merge_requests` URLs, rejects unknown fields, correlates issue IDs with URLs, and
   enforces issue state consistency.
+
+### Known limitations
+
+- The source `12345-arkui-focus` submission example lacks the two API declaration
+  diffs required by PR #130, so its full submission regression currently fails.
+  The five-file submission procedure does not yet copy this additional evidence.

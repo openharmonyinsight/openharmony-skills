@@ -50,8 +50,12 @@ before archival.
 When code development is complete and a GitCode commit, push, or PR is about to be
 created, ODK reminds the developer to submit `codespec/` documents separately to the
 design-docs repository configured by the developer as `design_docs_repository` in
-`codespec/profile.yaml`. If the address is missing, ODK reports that it is pending
-developer input; it does not guess the repository or push across repositories.
+`codespec/profile.yaml`. If the address is missing and the business repository's
+`origin` host is exactly `gitcode.com`, ODK offers
+`https://gitcode.com/OpenHarmonyAI/design-docs` for explicit confirmation. For other
+origins it asks the developer for an address. No response is not consent: ODK must
+confirm the target before submission and verify every effective push URL against
+that endpoint. Confirmation alone does not persist a profile change.
 
 ## 0.9.0 archive path change
 

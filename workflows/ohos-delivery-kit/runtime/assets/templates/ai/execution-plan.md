@@ -74,7 +74,7 @@ graph TD
 
 <!--
 若 API/SDK = 是，TASK-1 固定为：根据 spec.md API 规格定义修改声明文件。
-包含：修改/新增声明文件 → 如环境可用则运行 oh-api-definition（可选、不阻塞）→ 生成 diff 文件。
+包含：修改/新增声明文件 → 如环境可用则运行 oh-api-definition（可选、不阻塞）→ 生成英文/中文声明注释双份 diff（evidence/task1-api-declaration-en.diff 与 -zh.diff）。
 -->
 
 ### TASK-1: [名称]

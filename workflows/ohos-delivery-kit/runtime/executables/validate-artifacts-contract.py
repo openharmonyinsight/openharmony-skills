@@ -45,6 +45,7 @@ from odk_document import (  # noqa: E402
     is_separator_row, parsed_markdown_tables, markdown_tables, table_has_columns,
     tables_with_columns, table_with_columns, unique_table_with_columns, meaningful,
 )
+from odk_repository import parse_git_remote  # noqa: E402
 # Re-export legacy entry points for callers that load this script as a module.
 from odk_api_signature import (  # noqa: E402
     _nesting_positions, _outer_parameter_close, _outer_parameter_open,
@@ -546,6 +547,29 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
             reporter.fail(issue)
     else:
         reporter.pass_("spec.md per-API specification contract is complete")
+
+
+def validate_api_declaration_diffs(change_dir: Path, reporter: Reporter, *, archive: bool) -> None:
+    """Require archived en/zh API declaration diffs when API/SDK is involved."""
+    proposal_path = change_dir / "proposal.md"
+    if not proposal_path.is_file():
+        return
+    involvement = api_sdk_involvement(_visible_markdown(read_text(proposal_path)))
+    if involvement != "是":
+        return
+    missing = [
+        name
+        for name in ("task1-api-declaration-en.diff", "task1-api-declaration-zh.diff")
+        if not (change_dir / "evidence" / name).is_file()
+    ]
+    if missing:
+        draft_warn_archive_fail(
+            reporter,
+            archive,
+            "API declaration diff evidence missing under evidence/: " + ", ".join(missing),
+        )
+    else:
+        reporter.pass_("API declaration diff evidence (en/zh) is archived")
 
 
 def validate_proposal_tables(proposal: str, reporter: Reporter, *, archive: bool) -> None:
@@ -1364,7 +1388,9 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
 
     repository_root = change_dir.resolve().parent.parent.parent.parent
     origin = repository_origin_url(repository_root)
-    current_identity = gitcode_repository_identity(origin) if origin else None
+    current_remote = parse_git_remote(origin) if origin else None
+    current_identity = current_remote.repository if current_remote else None
+    current_is_gitcode = bool(current_remote and current_remote.host == "gitcode.com")
     current_head = repository_head_commit(repository_root) if current_identity else None
     repository_names: set[str] = set()
     for index, entry in enumerate(repos, start=1):
@@ -1378,7 +1404,10 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
                 + ", ".join(unknown_repo_fields)
             )
         repo = str(entry.get("repo", "")).strip()
-        repo_is_valid = re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repo) is not None
+        repo_is_valid = (
+            re.fullmatch(r"(?:[A-Za-z0-9_.-]+/)+[A-Za-z0-9_.-]+", repo) is not None
+            and all(part not in {".", ".."} for part in repo.split("/"))
+        )
         if not repo_is_valid:
             reporter.fail(
                 f"metadata_tracking.yaml: repos[{index}].repo must use organization/repository form"
@@ -1394,6 +1423,9 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
         if not isinstance(pull_requests, list):
             reporter.fail(f"metadata_tracking.yaml: {repo or index} pull_requests must be a list")
             pull_requests = []
+        if repo == current_identity and not current_is_gitcode and pull_requests:
+            reporter.fail("metadata_tracking.yaml: non-GitCode current repository requires pull_requests: []; "
+                          "same-path GitCode records cannot identify this source")
         for pr_index, pull_request in enumerate(pull_requests, start=1):
             if not isinstance(pull_request, dict):
                 reporter.fail(f"metadata_tracking.yaml: {repo or index} pull request {pr_index} must be a mapping")
@@ -1428,6 +1460,7 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
             elif (
                 required
                 and commit
+                and current_is_gitcode
                 and current_identity
                 and repo == current_identity
                 and current_head is None
@@ -1436,6 +1469,7 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
             elif (
                 required
                 and commit
+                and current_is_gitcode
                 and current_identity
                 and repo == current_identity
                 and current_head is not None
@@ -1450,6 +1484,9 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
         if not isinstance(issues, list):
             reporter.fail(f"metadata_tracking.yaml: {repo or index} issues must be a list")
             issues = []
+        if repo == current_identity and not current_is_gitcode and issues:
+            reporter.fail("metadata_tracking.yaml: non-GitCode current repository cannot use GitCode issues; "
+                          "omit issues or use an empty list")
         issue_ids: set[str] = set()
         for issue_index, issue in enumerate(issues, start=1):
             if not isinstance(issue, dict):
@@ -1505,7 +1542,7 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
 
     if origin and not current_identity:
         reporter.fail(
-            "metadata_tracking.yaml: current Git origin must be a supported GitCode repository URL"
+            "metadata_tracking.yaml: current Git origin must be a supported repository URL (HTTPS/SSH with namespace/repository)"
         )
     elif current_identity and current_identity not in repository_names:
         reporter.fail(
@@ -2091,6 +2128,7 @@ def main(argv: list[str]) -> int:
     validate_metadata_tracking(change_dir, reporter, required=args.design_docs_submit)
     validate_sections(change_dir, artifacts, files, reporter)
     validate_api_spec_contract(change_dir, reporter)
+    validate_api_declaration_diffs(change_dir, reporter, archive=strict_delivery)
     proposal_path = change_dir / "proposal.md"
     if proposal_path.is_file():
         validate_proposal_tables(read_text(proposal_path), reporter, archive=strict_delivery)

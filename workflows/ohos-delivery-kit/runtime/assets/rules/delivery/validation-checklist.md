@@ -42,4 +42,4 @@
     - `### 公共规格属性` 表（是否新增声明文件、API 类型、编程语言、@syscap、@since、权限、跨平台/元服务/卡片、FA/Stage 模型）
     - 每个 `#### API: <完整签名>` 子节包含：规格表（入参、返回值、错误码等）、API 描述（接口定义三要素 + 接口使用五要素）、设备行为差异（支持设备表始终必填；无差异时差异明细表填"所有支持设备行为一致"）
     - API 描述内容无占位符，错误码有精确数值和触发条件
-  - 如 `API/SDK` = 是，校验声明文件修改 diff 已归档到 `codespec/changes/<repo-name>/<req-id>/`（声明文件 PR 由开发者自行管理）。
+  - 如 `API/SDK` = 是，校验英文声明注释 diff 与中文声明注释 diff 均已归档（`validate-artifacts-contract.py` 自动检查：Draft 缺失 WARN / Archive 缺失 FAIL；文件名固定为 `evidence/task1-api-declaration-en.diff` 与 `evidence/task1-api-declaration-zh.diff`；两者签名、代码与标记完全一致，仅注释描述语言不同；中文版仅作为归档证据，不写回 API 仓。声明文件 PR 由开发者自行管理）。

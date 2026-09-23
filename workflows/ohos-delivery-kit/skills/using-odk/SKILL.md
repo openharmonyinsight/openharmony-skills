@@ -39,6 +39,8 @@ After ODK activates, read `{{ASSET_ROOT}}/contracts/skill-guides/router/workflow
 
 ## Context Loading
 
+For actual design-document submission, `odk-submit-design-docs` resolves and confirms the destination first: retain an explicit `design_docs_repository`; otherwise offer `https://gitcode.com/OpenHarmonyAI/design-docs` for a business `origin` whose host is exactly `gitcode.com`, and require a user-provided address for other/missing origins. No answer is not consent; the reminder alone never authorizes cross-repository writes.
+
 - If `codespec/` does not exist, the project is not yet initialized — guide the user to run `odk-init`
 - Resolve the current `<repo-name>` and inspect only `codespec/changes/<repo-name>/`
 - If that repository directory has exactly one change directory, treat it as the active change

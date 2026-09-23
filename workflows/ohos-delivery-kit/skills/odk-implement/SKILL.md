@@ -48,7 +48,10 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
      - **按需调用 oh-api-definition 质量检查（可选，不阻塞）**：
        - 若开发环境已提供 oh-api-definition，则对新修改的声明文件执行其格式、命名、注释和语法检查；发现问题时修复后重跑
        - 若工具不可用时在 Task `Actual Result` 记录未执行并继续，不要求安装，也不得因此阻塞 Task-1
-    - **生成 diff 文件**：完成适用的质量检查后，生成声明文件修改前后的 diff 文件，归档到 `codespec/changes/<repo-name>/<req-id>/` 目录下，作为变更证据
+    - **生成声明注释双语 diff（英文 + 中文）**：完成适用的质量检查后，基于同一修改前基线生成两份 diff，归档到 `codespec/changes/<repo-name>/<req-id>/evidence/` 目录下，作为变更证据：
+      - **英文声明注释 diff**（文件名固定为 `task1-api-declaration-en.diff`）：声明文件的实际修改内容，声明注释（ArkTS 为 JSDoc，C 为 Doxygen 或仓库既有注释规范）使用英文——这是提交到 API 声明仓库的版本
+      - **中文声明注释 diff**（文件名固定为 `task1-api-declaration-zh.diff`）：签名、代码、版权头与标记（`@syscap`/`@since`/`@kit`/`@permission` 等）与英文版完全一致，仅将声明注释的描述正文改为中文；中文内容以 `spec.md` 逐 API 子节的 `**API 描述**`（三要素+五要素）为源头，与英文注释保持语义一致
+      - **约束**：中文版仅作为归档证据，不写回 API 声明仓库、不替代英文声明文件。两份 diff 均不得改变任何签名、入参、返回值、错误码或标记
    - Run the verification command and confirm it matches the Task's expected result.
    - After each Task, update `execution-plan.md` 代码范围映射 with actual files, tests, and commit references.
    - Backfill the Task's `Actual Result` and anti-fake completion evidence.

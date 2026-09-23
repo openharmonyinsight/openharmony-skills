@@ -34,6 +34,11 @@ design_docs_repository: "https://gitcode.com/<组织>/<design-docs仓>.git"
 “待开发者填写”，不得猜测或自动跨仓推送。用户明确要求提交时，
 `odk-submit-design-docs` 会生成 `metadata_tracking.yaml` 并校验五件套。
 
+实际提交时先确认目标仓：已配置地址不被默认值覆盖；未配置且业务仓 origin 为
+GitCode 时，询问是否使用 `https://gitcode.com/OpenHarmonyAI/design-docs`；其他来源
+要求用户提供地址后确认。`profile.yaml` 可不存在，本次确认不自动写入配置；只有用户
+要求保存时才更新 `design_docs_repository`。未确认不得跨仓复制或推送。
+
 **自动检测**（AI 根据关键词匹配）：
 
 - `arkui`、`component`、`layout` → `arkui`
