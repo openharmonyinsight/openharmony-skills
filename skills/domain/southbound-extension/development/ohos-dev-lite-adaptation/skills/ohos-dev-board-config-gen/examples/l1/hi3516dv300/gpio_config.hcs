@@ -1,0 +1,306 @@
+root {
+    platform {
+        gpio_config {
+            controller_0x120d0000 {
+                match_attr = "hisilicon_hi35xx_pl061";
+                groupNum = 12;
+                bitNum = 8;
+                regBase = 0x120d0000;
+                regStep = 0x1000;
+                irqStart = 48;
+                irqShare = 0;
+                template gpio_info {
+                    gpioCustomName = "";
+                }
+                GPIO0 :: gpio_info {
+                    gpioCustomName = "GPIO0_0";
+                }
+                GPIO1 :: gpio_info {
+                    gpioCustomName = "GPIO0_1";
+                }
+                GPIO2 :: gpio_info {
+                    gpioCustomName = "GPIO0_2";
+                }
+                GPIO3 :: gpio_info {
+                    gpioCustomName = "GPIO0_3";
+                }
+                GPIO4 :: gpio_info {
+                    gpioCustomName = "GPIO0_4";
+                }
+                GPIO5 :: gpio_info {
+                    gpioCustomName = "GPIO0_5";
+                }
+                GPIO6 :: gpio_info {
+                    gpioCustomName = "GPIO0_6";
+                }
+                GPIO7 :: gpio_info {
+                    gpioCustomName = "GPIO0_7";
+                }
+                GPIO8 :: gpio_info {
+                    gpioCustomName = "GPIO1_0";
+                }
+                GPIO9 :: gpio_info {
+                    gpioCustomName = "GPIO1_1";
+                }
+                GPIO10 :: gpio_info {
+                    gpioCustomName = "GPIO1_2";
+                }
+                GPIO11 :: gpio_info {
+                    gpioCustomName = "GPIO1_3";
+                }
+                GPIO12 :: gpio_info {
+                    gpioCustomName = "GPIO1_4";
+                }
+                GPIO13 :: gpio_info {
+                    gpioCustomName = "GPIO1_5";
+                }
+                GPIO14 :: gpio_info {
+                    gpioCustomName = "GPIO1_6";
+                }
+                GPIO15 :: gpio_info {
+                    gpioCustomName = "GPIO1_7";
+                }
+                GPIO16 :: gpio_info {
+                    gpioCustomName = "GPIO2_0";
+                }
+                GPIO17 :: gpio_info {
+                    gpioCustomName = "GPIO2_1";
+                }
+                GPIO18 :: gpio_info {
+                    gpioCustomName = "GPIO2_2";
+                }
+                GPIO19 :: gpio_info {
+                    gpioCustomName = "GPIO2_3";
+                }
+                GPIO20 :: gpio_info {
+                    gpioCustomName = "GPIO2_4";
+                }
+                GPIO21 :: gpio_info {
+                    gpioCustomName = "GPIO2_5";
+                }
+                GPIO22 :: gpio_info {
+                    gpioCustomName = "GPIO2_6";
+                }
+                GPIO23 :: gpio_info {
+                    gpioCustomName = "GPIO2_7";
+                }
+                GPIO24 :: gpio_info {
+                    gpioCustomName = "GPIO3_0";
+                }
+                GPIO25 :: gpio_info {
+                    gpioCustomName = "GPIO3_1";
+                }
+                GPIO26 :: gpio_info {
+                    gpioCustomName = "GPIO3_2";
+                }
+                GPIO27 :: gpio_info {
+                    gpioCustomName = "GPIO3_3";
+                }
+                GPIO28 :: gpio_info {
+                    gpioCustomName = "GPIO3_4";
+                }
+                GPIO29 :: gpio_info {
+                    gpioCustomName = "GPIO3_5";
+                }
+                GPIO30 :: gpio_info {
+                    gpioCustomName = "GPIO3_6";
+                }
+                GPIO31 :: gpio_info {
+                    gpioCustomName = "GPIO3_7";
+                }
+                GPIO32 :: gpio_info {
+                    gpioCustomName = "GPIO4_0";
+                }
+                GPIO33 :: gpio_info {
+                    gpioCustomName = "GPIO4_1";
+                }
+                GPIO34 :: gpio_info {
+                    gpioCustomName = "GPIO4_2";
+                }
+                GPIO35 :: gpio_info {
+                    gpioCustomName = "GPIO4_3";
+                }
+                GPIO36 :: gpio_info {
+                    gpioCustomName = "GPIO4_4";
+                }
+                GPIO37 :: gpio_info {
+                    gpioCustomName = "GPIO4_5";
+                }
+                GPIO38 :: gpio_info {
+                    gpioCustomName = "GPIO4_6";
+                }
+                GPIO39 :: gpio_info {
+                    gpioCustomName = "GPIO4_7";
+                }
+                GPIO40 :: gpio_info {
+                    gpioCustomName = "GPIO5_0";
+                }
+                GPIO41 :: gpio_info {
+                    gpioCustomName = "GPIO5_1";
+                }
+                GPIO42 :: gpio_info {
+                    gpioCustomName = "GPIO5_2";
+                }
+                GPIO43 :: gpio_info {
+                    gpioCustomName = "GPIO5_3";
+                }
+                GPIO44 :: gpio_info {
+                    gpioCustomName = "GPIO5_4";
+                }
+                GPIO45 :: gpio_info {
+                    gpioCustomName = "GPIO5_5";
+                }
+                GPIO46 :: gpio_info {
+                    gpioCustomName = "GPIO5_6";
+                }
+                GPIO47 :: gpio_info {
+                    gpioCustomName = "GPIO5_7";
+                }
+                GPIO48 :: gpio_info {
+                    gpioCustomName = "GPIO6_0";
+                }
+                GPIO49 :: gpio_info {
+                    gpioCustomName = "GPIO6_1";
+                }
+                GPIO50 :: gpio_info {
+                    gpioCustomName = "GPIO6_2";
+                }
+                GPIO51 :: gpio_info {
+                    gpioCustomName = "GPIO6_3";
+                }
+                GPIO52 :: gpio_info {
+                    gpioCustomName = "GPIO6_4";
+                }
+                GPIO53 :: gpio_info {
+                    gpioCustomName = "GPIO6_5";
+                }
+                GPIO54 :: gpio_info {
+                    gpioCustomName = "GPIO6_6";
+                }
+                GPIO55 :: gpio_info {
+                    gpioCustomName = "GPIO6_7";
+                }
+                GPIO56 :: gpio_info {
+                    gpioCustomName = "GPIO7_0";
+                }
+                GPIO57 :: gpio_info {
+                    gpioCustomName = "GPIO7_1";
+                }
+                GPIO58 :: gpio_info {
+                    gpioCustomName = "GPIO7_2";
+                }
+                GPIO59 :: gpio_info {
+                    gpioCustomName = "GPIO7_3";
+                }
+                GPIO60 :: gpio_info {
+                    gpioCustomName = "GPIO7_4";
+                }
+                GPIO61 :: gpio_info {
+                    gpioCustomName = "GPIO7_5";
+                }
+                GPIO62 :: gpio_info {
+                    gpioCustomName = "GPIO7_6";
+                }
+                GPIO63 :: gpio_info {
+                    gpioCustomName = "GPIO7_7";
+                }
+                GPIO64 :: gpio_info {
+                    gpioCustomName = "GPIO8_0";
+                }
+                GPIO65 :: gpio_info {
+                    gpioCustomName = "GPIO8_1";
+                }
+                GPIO66 :: gpio_info {
+                    gpioCustomName = "GPIO8_2";
+                }
+                GPIO67 :: gpio_info {
+                    gpioCustomName = "GPIO8_3";
+                }
+                GPIO68 :: gpio_info {
+                    gpioCustomName = "GPIO8_4";
+                }
+                GPIO69 :: gpio_info {
+                    gpioCustomName = "GPIO8_5";
+                }
+                GPIO70 :: gpio_info {
+                    gpioCustomName = "GPIO8_6";
+                }
+                GPIO71 :: gpio_info {
+                    gpioCustomName = "GPIO8_7";
+                }
+                GPIO72 :: gpio_info {
+                    gpioCustomName = "GPIO9_0";
+                }
+                GPIO73 :: gpio_info {
+                    gpioCustomName = "GPIO9_1";
+                }
+                GPIO74 :: gpio_info {
+                    gpioCustomName = "GPIO9_2";
+                }
+                GPIO75 :: gpio_info {
+                    gpioCustomName = "GPIO9_3";
+                }
+                GPIO76 :: gpio_info {
+                    gpioCustomName = "GPIO9_4";
+                }
+                GPIO77 :: gpio_info {
+                    gpioCustomName = "GPIO9_5";
+                }
+                GPIO78 :: gpio_info {
+                    gpioCustomName = "GPIO9_6";
+                }
+                GPIO79 :: gpio_info {
+                    gpioCustomName = "GPIO9_7";
+                }
+                GPIO80 :: gpio_info {
+                    gpioCustomName = "GPIO10_0";
+                }
+                GPIO81 :: gpio_info {
+                    gpioCustomName = "GPIO10_1";
+                }
+                GPIO82 :: gpio_info {
+                    gpioCustomName = "GPIO10_2";
+                }
+                GPIO83 :: gpio_info {
+                    gpioCustomName = "GPIO10_3";
+                }
+                GPIO84 :: gpio_info {
+                    gpioCustomName = "";
+                }
+                GPIO85 :: gpio_info {
+                    gpioCustomName = "GPIO10_5";
+                }
+                GPIO86 :: gpio_info {
+                    gpioCustomName = "GPIO10_6";
+                }
+                GPIO87 :: gpio_info {
+                    gpioCustomName = "GPIO10_7";
+                }
+                GPIO88 :: gpio_info {
+                    gpioCustomName = "GPIO11_0";
+                }
+                GPIO89 :: gpio_info {
+                    gpioCustomName = "GPIO11_1";
+                }
+                GPIO90 :: gpio_info {
+                    gpioCustomName = "GPIO11_2";
+                }
+                GPIO91 :: gpio_info {
+                    gpioCustomName = "GPIO11_3";
+                }
+                GPIO92 :: gpio_info {
+                    gpioCustomName = "GPIO11_4";
+                }
+                GPIO93 :: gpio_info {
+                    gpioCustomName = "GPIO11_5";
+                }
+                GPIO94 :: gpio_info {
+                    gpioCustomName = "GPIO11_6";
+                }
+                GPIO95 :: gpio_info {
+                    gpioCustomName = "GPIO11_7";
+                }
+            }
+        }
+    }
+}

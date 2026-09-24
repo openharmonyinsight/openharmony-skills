@@ -1,0 +1,48 @@
+{
+  "skill_name": "ohos-design-doc-synthesis",
+  "evals": [
+    {
+      "id": "l1_adaptation_guide_fill_from_upstream_outputs",
+      "source_example": "SR-07 真实合成产物 Hi3516CV610_L1_适配指南.md（9 章结构：概述/环境搭建/build_lite 编译配置/内核移植/HAL 层(精简版 HDF)/精简版 HDF 驱动/子系统集成/编译烧录与验证/附录；变量来自上游 chip_spec/defconfig/XTS，工具链引用真实服务端路径与实测 GATE 结果）",
+      "prompt": "Hi3516CV610 的 OpenHarmony Lite 适配做完了，请合成一份芯片适配手册。上游各阶段产出的数据如下：\n\n- 芯片规格（chip_spec.json）：Cortex-A7 双核，主频 1200MHz；DDR3 128MB；DDR 变体后缀 -20S；内核 linux-5.10；目标系统级别 L1\n- 驱动清单：GPIO、UART、I2C、SPI、Watchdog 均已适配，配置走 HCS\n- build 配置：config.gni 目标 hi3516cv610；链接脚本按 128MB DDR 布局；ninja [499/499] 全部编译通过\n- XTS 结果：426/426 PASS（HUKS 40/40，deviceattest 3/3），4 次启动稳定\n- 决策记录（DECISIONS.md）：binder 协议位宽选 BINDER_IPC_32BIT；watchdog 驱动走内核 defconfig + DTS 适配",
+      "expected_output": "符合 9 章模板的 L1 适配手册：概述（双核 Cortex-A7@1200MHz/DDR3 128MB 来自 chip_spec）→ 环境搭建 → build_lite 编译配置（引用 499/499 实测）→ 内核移植 → HAL 层（精简版 HDF）→ 精简版 HDF 驱动 → 子系统集成 → 编译烧录与验证（XTS 426/426）→ 附录；全部数值来自给定上游产出；L1 驱动框架术语（精简版 HDF + HCS）由执行者按系统级别自取，非输入给词；头部含数据来源块。",
+      "files": [],
+      "expectations": [
+        "The document follows the 9-chapter adaptation-guide structure (overview / environment / build config / kernel porting / HAL / HDF drivers / subsystem integration / build-flash-verify / appendix) or an equivalent complete template skeleton.",
+        "Chip specs in the document come from the provided upstream data (dual-core Cortex-A7, 1200 MHz, DDR3 128MB, -20S variant) — no invented frequencies, capacities, or peripherals not present in the inputs.",
+        "Verification status cites the actual XTS numbers (426/426, HUKS 40/40) and the ninja [499/499] build fact instead of vague claims.",
+        "Driver framework wording self-derives the correct L1 terminology 精简版 HDF (+ HCS) — the inputs only say \"已适配 + 配置走 HCS\" — and never uses 'IoT 外设驱动子系统' or '完整 HDF' for this L1 target.",
+        "Terms are consistent: 小型系统 (Small System) for L1, kernel named correctly (linux-5.10 / LiteOS-A family naming, not LITEOS or LiteOS_).",
+        "Decision records (e.g. BINDER_IPC_32BIT, watchdog via defconfig+DTS) are carried over from DECISIONS.md without rewriting their meaning.",
+        "Document header includes a data-source block citing the upstream outputs."
+      ]
+    },
+    {
+      "id": "deliverable_template_selection_by_intent",
+      "source_example": "SKILL.md Step 0 意图判断决策树（三种 deliverable：① 适配手册 ② API 参考 ③ 移植指南，仅出所请求的那种）",
+      "prompt": "我们的适配已经验收完了，现在需要一份文档，让后续同事能照着从芯片评估一路做到烧录验证、复刻这次移植——重点是\"怎么一步步做\"。应该出哪种文档？请说明选择依据和该文档的章节骨架。",
+      "expected_output": "选择 ③ 移植指南（7 章：移植前置/内核移植步骤/驱动移植步骤/构建配置步骤/烧录验证步骤/常见问题/参考案例），依据需求特征（过程复现的步骤指引）论证；说明与 ① 适配手册（项目画像）和 ② API 参考文档（接口定义）的区别。",
+      "files": [],
+      "expectations": [
+        "Selects the porting-guide (移植指南) deliverable, not the adaptation handbook or API reference.",
+        "Justifies the selection against the stated need (step-by-step replication guide), distinguishing it from what the other deliverable types are for.",
+        "The chapter skeleton matches the porting-guide template: pre-porting assessment, kernel porting steps, driver porting steps, build config steps, flash-and-verify steps, FAQ/known issues, reference cases.",
+        "Mentions the L0/L1 branch difference (kernel/driver framework chapters differ) rather than presenting a level-agnostic skeleton as complete."
+      ]
+    },
+    {
+      "id": "missing_upstream_data_marked_not_fabricated",
+      "source_example": "SKILL.md 禁止操作表 + Step 3 填充规则：上游缺失标 WIP（待 P? 产出后填），不编造；功能状态不推测",
+      "prompt": "生成 Hi3516CV610 的 L1 适配手册。目前手上的上游产出只有：chip_spec.json（双核 Cortex-A7，DDR3 128MB）和 build 配置（ninja [499/499] 编译通过）；XTS 计划下周才跑，驱动清单也还没整理出来。现在这份手册能出到什么程度、怎么出？",
+      "expected_output": "手册以 WIP 稿出：只有编译验证（ninja [499/499]）一条可落「已验证」；XTS 相关验证内容标 WIP（待 XTS 产出后填）、不写预测数字；驱动/外设支持内容标 WIP（待驱动清单产出）、不逐项猜支持状态；缺数据的章节保留为显式待补占位而非删掉或用通用套话填满；不把「还没跑」包装成「理论支持」。",
+      "files": [],
+      "expectations": [
+        "Distinguishes filled-vs-pending content: the only verification claim made is the evidence-backed build fact (ninja [499/499]); XTS-related verification content is marked WIP/pending (待 XTS 产出后填) with no predicted results.",
+        "No XTS pass numbers, test case counts, or module statuses are invented.",
+        "Driver/peripheral support content is marked WIP/pending (driver list missing), with no guessed per-peripheral supported/unsupported statuses.",
+        "Missing chapters are kept as explicit pending placeholders (WIP + what upstream output will fill them) rather than dropped or filled with generic boilerplate — the handbook is honestly labeled a WIP draft.",
+        "Does not fabricate a '理论支持' upgrade either — absent evidence is marked as pending/WIP, distinct from a deliberate ⚠️ theoretical-support judgment."
+      ]
+    }
+  ]
+}

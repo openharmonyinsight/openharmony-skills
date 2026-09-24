@@ -1,0 +1,6 @@
+# vendor/<device_company>/<board>/BUILD.gn
+# 产品构建 target：ohos.build 的 module_list 指向此 target。
+# target 名必须等于 ohos.build module_list 冒号后的部分（此处为 stm32f407zg）。
+group("stm32f407zg") {
+  deps = []
+}

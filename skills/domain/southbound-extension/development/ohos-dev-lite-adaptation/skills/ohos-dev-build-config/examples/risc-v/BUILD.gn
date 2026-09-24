@@ -1,0 +1,5 @@
+# Copyright (C) 2020 Hisilicon (Shanghai) Technologies Co., Ltd. All rights reserved.
+
+group("hi3861v100") {
+  deps = [ "sdk_liteos:run_wifiiot_scons" ]
+}

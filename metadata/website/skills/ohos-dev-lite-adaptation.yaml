@@ -1,0 +1,79 @@
+schemaVersion: 1
+
+id: ohos-dev-lite-adaptation
+title: OpenHarmony Lite 芯片适配工作流
+summary: 面向 OpenHarmony Lite (L0/L1) 芯片与开发板的七阶段适配工作流：芯片规格解析、内核移植、驱动与设备配置、构建验证、测试生成与烧录执行、文档审查、问题诊断，含分级 GATE 门控与证据留痕。
+
+category:
+  scope: domain
+  namespace: southbound-extension
+  stage: development
+  domain: lite
+  capability: adaptation
+
+status:
+  maturity: trial
+  version: 0.1.0
+  owner: openharmony
+
+tags:
+  - openharmony-lite
+  - chip-adaptation
+
+audience:
+  - 芯片/开发板适配工程师
+  - OpenHarmony Lite 内核与驱动开发者
+  - 嵌入式系统验证工程师
+
+useCases:
+  - title: 新芯片/新板全流程 bring-up
+    description: 从 datasheet/SDK 提取芯片规格，完成内核移植、设备配置与驱动接入，产出可编译的构建产物并通过 GATE 门控。
+  - title: 扩展已有 Lite 适配
+    description: 将驱动、构建、烧录、测试或文档工作路由到对应阶段，不丢失检查点。
+  - title: 适配问题回溯诊断
+    description: 编译报错、烧录失败、XTS 不通过时定位根因并回到原检查点修复。
+
+whenToUse:
+  - 开始一颗新的 OpenHarmony Lite (L0/L1) 芯片或开发板适配。
+  - 适配需要跨阶段协调内核、驱动、构建、烧录或测试工作。
+  - 编译报错、烧录失败或 XTS 不通过，需要定位根因并回到对应阶段。
+
+whenNotToUse:
+  - OpenHarmony 标准系统（L2）适配（本 skill 仅覆盖 Lite L0/L1；注意 L1 含 Linux 内核路线——L1-Linux，如 Hi3516CV610，内核 Linux + DTS，仍属 Lite 范围非标准系统）。
+  - 产线量产、OTA 与工厂烧录流程。
+  - 应用层 ArkTS/CAPI 测试生成（应使用 ohos-test-arkts-xts-generation、ohos-test-capi-xts-generation）。
+
+inputs:
+  required:
+    - 目标芯片/SoC 与开发板型号
+    - 架构与 L0/L1 系统级别
+    - 可用的 datasheet、SDK、启动链与构建输入
+  optional:
+    - 已有适配仓或参考板
+    - 烧录与板载验证的硬件访问条件（HiBurn.exe 需自备，不随 plugin 分发）
+
+outputs:
+  - 芯片规格文件（chip_spec.json）、阶段产物与决策记录（DECISIONS.md）
+  - 可编译的构建配置与固件产物证据
+  - 烧录/XTS 运行记录与 MAP 内存布局分析
+  - 带明确 GATE 状态的测试、审查与诊断报告
+
+quickStart:
+  steps:
+    - 说明目标芯片/开发板、L0/L1 级别，以及可用的 SDK、datasheet 和编译环境。
+    - 完成 P1 前置决策，选定或创建目标 profile。
+    - 跟随工作流依次完成 P2-P7 的适配、构建、烧录与验证。
+  examplePrompt: |
+    我有一块 hispark_pegasus 开发板（Hi3861V100，RISC-V 32 位，SRAM 352KB /
+    Flash 2MB，跑 LiteOS-M），想适配到 OpenHarmony Lite L0：目标是编出可烧录
+    镜像、烧到板上跑起来，并把测试用例编进去验证。OpenHarmony 源码和
+    riscv32 交叉工具链在一台可 SSH 的远程服务器上。请开始适配，并告诉我
+    下一步需要我提供什么。
+
+related:
+  skills:
+    - ohos-issue-xts-log-analysis
+    - ohos-dev-build-execution-diagnosis
+  docs:
+    - title: 工作流介绍
+      path: README.md

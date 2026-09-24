@@ -1,0 +1,201 @@
+# Copyright (C) 2021 Hisilicon (Shanghai) Technologies Co., Ltd. All rights reserved.
+
+if (defined(ohos_lite)) {
+  import("//build/lite/config/component/lite_component.gni")
+} else {
+  import("//build/config/clang/clang.gni")
+  import("//build/ohos.gni")
+}
+import("//build/ohos/kernel/kernel.gni")
+
+SDK_LINUX_PATH = "//device/soc/hisilicon/hi3516dv300/sdk_linux"
+SDK_LINUX_LIB_LITE_PATH = "$SDK_LINUX_PATH/out/lib"
+
+group("hispark_taurus_sdk") {
+  if (defined(ohos_lite)) {
+    deps = [
+      ":sdk_linux_lite_libs",
+      ":sdk_make",
+      "//kernel/linux/build:linux_kernel",
+    ]
+  } else {
+    deps = [
+      ":sdk_linux_modules",
+      ":sdk_make",
+      "out/lib:sdk_linux_mpp_group",
+      "//kernel/linux/build:linux_kernel",
+    ]
+  }
+}
+
+#####################################################################
+sdk_modules_name_list = [
+  "hi3516cv500_base.ko",
+  "hi3516cv500_hdmi.ko",
+  "hi3516cv500_ir.ko",
+  "hi3516cv500_sys.ko",
+  "hi3516cv500_tde.ko",
+  "hi3516cv500_vo_dev.ko",
+  "hi3516cv500_wdt.ko",
+  "hifb.ko",
+  "hi_irq.ko",
+  "hi_mipi_rx.ko",
+  "hi_mipi_tx.ko",
+  "hi_osal.ko",
+  "hi_proc.ko",
+  "sys_config.ko",
+  "load3516dv300_user",
+]
+
+if (defined(ohos_lite)) {
+  build_ext_component("sdk_make") {
+    exec_path = rebase_path(".", root_build_dir)
+    outdir = rebase_path("$root_out_dir")
+    clang_dir = ""
+    if (ohos_build_compiler_dir != "") {
+      clang_dir = rebase_path("$ohos_build_compiler_dir")
+    }
+    command = "./build.sh ${ohos_root_path} ${outdir} y ${clang_dir} ${linux_kernel_version}"
+    deps = [ "//kernel/linux/build:linux_kernel" ]
+  }
+  not_needed(sdk_modules_name_list)
+} else {
+  sdk_tmp_root_path = root_out_dir
+  sdk_tmp_dir = "$sdk_tmp_root_path/sdk_linux/src_tmp"
+  sdk_tmp_mods_dir = "$sdk_tmp_dir/out/ko"
+
+  action("sdk_make") {
+    script = "build.sh"
+    outputs = []
+    foreach(module, sdk_modules_name_list) {
+      outputs += [ "$sdk_tmp_mods_dir/$module" ]
+    }
+    args = [
+      rebase_path("//"),
+      rebase_path("$sdk_tmp_root_path"),
+      "n",
+      rebase_path("$clang_base_path"),
+      linux_kernel_version,
+    ]
+    deps = [ "//kernel/linux/build:linux_kernel" ]
+  }
+
+  sdk_modules_file_list = get_target_outputs(":sdk_make")
+  kernel_modules_targets = []
+
+  foreach(km, sdk_modules_file_list) {
+    _name = get_path_info(km, "file")
+    ohos_prebuilt_shared_library(_name) {
+      deps = [ ":sdk_make" ]
+      source = km
+      module_install_dir = "modules"
+      install_images = [
+        vendor_base_dir,
+        "updater",
+      ]
+      part_name = "hisilicon_products"
+    }
+    kernel_modules_targets += [ ":$_name" ]
+  }
+
+  group("sdk_linux_modules") {
+    deps = kernel_modules_targets
+  }
+}
+
+#####################################################################
+sdk_libs_name_set = [
+  "libVoiceEngine.so",
+  "lib_hiacs.so",
+  "lib_hiae.so",
+  "lib_hiawb.so",
+  "lib_hiawb_natura.so",
+  "lib_hicalcflicker.so",
+  "lib_hidehaze.so",
+  "lib_hidrc.so",
+  "lib_hiir_auto.so",
+  "lib_hildci.so",
+  "libaaccomm.so",
+  "libaacdec.so",
+  "libaacenc.so",
+  "libaacsbrdec.so",
+  "libaacsbrenc.so",
+  "libdnvqe.so",
+  "libhdmi.so",
+  "libhi3516cv500_acodec.so",
+  "libhi3516cv500_adec.so",
+  "libhi3516cv500_aenc.so",
+  "libhi3516cv500_ai.so",
+  "libhi3516cv500_aio.so",
+  "libhi3516cv500_ao.so",
+  "libhi3516cv500_base.so",
+  "libhi3516cv500_chnl.so",
+  "libhi3516cv500_dis.so",
+  "libhi3516cv500_gdc.so",
+  "libhi3516cv500_h264e.so",
+  "libhi3516cv500_h265e.so",
+  "libhi3516cv500_isp.so",
+  "libhi3516cv500_ive.so",
+  "libhi3516cv500_jpegd.so",
+  "libhi3516cv500_jpege.so",
+  "libhi3516cv500_nnie.so",
+  "libhi3516cv500_rc.so",
+  "libhi3516cv500_rgn.so",
+  "libhi3516cv500_sys.so",
+  "libhi3516cv500_vdec.so",
+  "libhi3516cv500_vedu.so",
+  "libhi3516cv500_venc.so",
+  "libhi3516cv500_vfmw.so",
+  "libhi3516cv500_vgs.so",
+  "libhi3516cv500_vi.so",
+  "libhi3516cv500_vo.so",
+  "libhi3516cv500_vpss.so",
+  "libhi_irq.so",
+  "libhi_osal.so",
+  "libhi_sensor_i2c.so",
+  "libhifisheyecalibrate.so",
+  "libhive_AEC.so",
+  "libhive_AGC.so",
+  "libhive_ANR.so",
+  "libhive_EQ.so",
+  "libhive_HPF.so",
+  "libhive_RES.so",
+  "libhive_RES_ext.so",
+  "libhive_common.so",
+  "libhive_record.so",
+  "libhive_talkv2.so",
+  "libhive_wnr.so",
+  "libisp.so",
+  "libive.so",
+  "libmd.so",
+  "libmpi.so",
+  "libnnie.so",
+  "libsdk.so",
+  "libsecurec.so",
+  "libsns_imx335.so",
+  "libtde.so",
+  "libupvqe.so",
+]
+
+if (defined(ohos_lite)) {
+  lib_lite_abspath = rebase_path("$SDK_LINUX_LIB_LITE_PATH", ".")
+  sdk_linux_libs_targets = []
+
+  foreach(lib, sdk_libs_name_set) {
+    copy("$lib") {
+      sources = [ "$lib_lite_abspath/$lib" ]
+      outputs = [ "$root_out_dir/$lib" ]
+    }
+    sdk_linux_libs_targets += [ ":$lib" ]
+  }
+
+  group("sdk_linux_lite_libs") {
+    deps = sdk_linux_libs_targets
+  }
+} else {
+  not_needed([
+               SDK_LINUX_LIB_LITE_PATH,
+               SDK_LINUX_PATH,
+             ])
+  not_needed(sdk_libs_name_set)
+}

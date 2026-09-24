@@ -1,0 +1,116 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice, this list of
+#    conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list
+#    of conditions and the following disclaimer in the documentation and/or other materials
+#    provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used
+#    to endorse or promote products derived from this software without specific prior written
+#    permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# Kernel type, e.g. "linux", "liteos_a", "liteos_m", "uniproton".
+kernel_type = "uniproton"
+
+# Kernel version.
+kernel_version = "3.0.0"
+
+# Board CPU type, e.g. "cortex-a7", "riscv32","cortex-m4".
+board_cpu = "cortex-m4"
+
+# Board arch, e.g.  "armv7-a", "rv32imac".
+board_arch = ""
+
+# Toolchain name used for system compiling.
+# E.g. gcc-arm-none-eabi, arm-linux-harmonyeabi-gcc, ohos-clang,  riscv32-unknown-elf.
+# Note: The default toolchain is "ohos-clang". It's not mandatory if you use the default toolchain.
+board_toolchain = "arm-none-eabi-gcc"
+
+use_board_toolchain = true
+
+# The toolchain path installed, it's not mandatory if you have added toolchain path to your ~/.bashrc.
+board_toolchain_path = ""
+
+# Compiler prefix.
+board_toolchain_prefix = "arm-none-eabi-"
+
+# Compiler type, "gcc" or "clang".
+board_toolchain_type = "gcc"
+
+#Debug compiler optimization level options
+board_opt_flags = []
+
+# Board related common compile flags.
+board_cflags = [
+  "-mcpu=cortex-m4",
+  "-fno-common",
+  "-fomit-frame-pointer",
+  "-fstack-protector-strong",
+  "-fdata-sections",
+  "-ffunction-sections",
+  "-fshort-enums",
+  "-funsigned-char",
+  "-mfloat-abi=softfp",
+  "-mfpu=vfpv4-d16",
+  "-mthumb",
+  "-Wa,-mimplicit-it=thumb",
+  "-O2",
+  "-DSECUREC_BUFFER_SIZE=32",
+  "-D__RTOS__",
+  "-DOS_DEVICE_CONFIG",
+  "-DSTM32F40XX",
+]
+board_cflags += board_opt_flags
+
+board_asmflags = [
+  "-mcpu=cortex-m4",
+  "-mfloat-abi=softfp",
+  "-mfpu=vfpv4-d16",
+  "-mthumb",
+  "-Wa,-mimplicit-it=thumb",
+  "-fno-common",
+  "-fomit-frame-pointer",
+  "-funsigned-char",
+  "-O2",
+]
+board_asmflags += board_opt_flags
+
+board_cxx_flags = board_cflags
+
+board_ld_flags = []
+
+board_ld_flags += []
+
+# Board related headfiles search path.
+board_include_dirs = [
+  "//third_party/mbedtls/include",
+  "//device/soc/st/stm32f407zg/uniproton/hals",
+  "//device/soc/st/stm32f407zg/uniproton/hals/cmsis",
+  "//third_party/cmsis",
+]
+
+# Board adapter dir for OHOS components.
+board_adapter_dir = "//device/soc/st/stm32f407zg/uniproton"
+
+# Sysroot path.
+board_configed_sysroot = ""
+
+# Board storage type, it used for file system generation.
+storage_type = "spinor"

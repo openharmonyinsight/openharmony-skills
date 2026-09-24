@@ -1,0 +1,104 @@
+{
+  "skill_name": "ohos-test-lite-adapt-verify",
+  "evals": [
+    {
+      "id": "six_phase_orchestration_correctness",
+      "source_example": "iter12 端到端实战 6 阶段编排（SR-10 §测试4：环境初始化→基线量测→分析提案→实现改动→编译烧录跑测试→归档总结，PROVENANCE 记录 6 阶段全走通，终点 27/27 PASS）",
+      "prompt": "用 ohos-test-lite-adapt-verify 对 Hi3861 hispark_pegasus 板跑一遍完整的适配验证 + 体积优化（先减体积再验证）。只说明你会按什么流程编排执行（阶段顺序、循环关系、每阶段产物路径），不用真的执行。",
+      "expected_output": "6 阶段顺序：阶段0 init（工具链/连接/设备/测试策略）→ 阶段1 explore（量基线 baseline_map.md + 架构图 + 初稿）→ 阶段2 analyze（提案 proposal/design/specs/tasks，用户批准）→ 阶段3 implement（按 tasks 改代码）→ 阶段4 verify（编译→下载→烧录→跑测试 + map_analyzer compare 对基线）→ 阶段5 summary（归档 + commit + lessons）；其中阶段3↔阶段4 循环（测试不过/MAP 无改善时先分类归因再路由：实现缺陷/评估有误回 implement；环境/构建问题修对应环节，不改产品代码）；产物全在 xts_test/ 下（reports/ proposals/ lessons.md）。",
+      "files": [],
+      "expectations": [
+        "给出完整 6 阶段顺序：init → explore → analyze → implement → verify → summary，无缺项无乱序。",
+        "指出阶段3↔阶段4 是循环：测试不过/MAP 无改善时先分类归因再路由——实现缺陷/评估有误回 implement 修正再重跑，环境/构建问题修对应环节（MAP 回炉仅 optimization 模式；本例为体积优化场景，test-only 不设 MAP 门槛）。",
+        "analyze 阶段产物是提案 4 件套（proposal/design/specs/tasks）且需用户批准后才进 implement。",
+        "verify 阶段除跑测试外还做 MAP 对比（map_analyzer compare 基线 vs 新 map）（本例为 optimization 场景；test-only 模式 MAP 仅参考/跳过）。",
+        "阶段产物路径落在 xts_test/ 下（reports/baseline_map.md、proposals/、verify_result.md、lessons.md 等）。",
+        "summary 阶段做归档 + commit + 经验沉淀，且编译/烧录/串口能力由 ohos-ci-lite-deploy-burn 提供。"
+      ]
+    },
+    {
+      "id": "test_strategy_user_decision_discipline",
+      "source_example": "init SKILL Step 4 / verify 核心原则：测试策略由用户决定（XTS/Unit/Integration/Manual/Custom 五选一写入 config），verify 不硬编码测试套件按 test.strategy 分流",
+      "prompt": "我要跑 Hi3861 的适配验证。我这边没有 XTS 环境，只想用我自写的一套串口命令回显校验脚本来验证（脚本我自己提供，结果输出到日志我定义格式）。请说明你怎么安排验证。",
+      "expected_output": "尊重用户选择 Custom 策略：init 阶段把 test.strategy=custom 写入 config 并请用户描述方案要点；verify 阶段按策略 E（Custom Test）执行——烧录固件后按用户描述的方案运行、按用户定义的格式采集结果；不强行推 XTS，不替用户改用其他策略；MAP 对比按入口模式执行（optimization 必做；test-only 有基线仅参考、无基线跳过），不由测试策略决定。",
+      "files": [],
+      "expectations": [
+        "接受用户的自定义测试方案为合法策略（Custom），不拒绝也不强行推销 XTS。",
+        "会把策略选择写入 config（test.strategy），并请用户描述方案要点/结果格式。",
+        "verify 执行时按用户的方案与格式采集结果（烧录后跑用户脚本、解析用户定义的日志格式），不自造统计格式冒充用户格式。",
+        "不出现替用户默认切换策略的行为（如未问就把 test.strategy 设成 xts）。",
+        "MAP 对比（compare 基线 vs 新 map）是体积优化路径（optimization 模式）的验收；纯测试验证（test-only）时 MAP 仅参考或跳过（无基线）。"
+      ]
+    },
+    {
+      "id": "fail_classification_and_rollback",
+      "source_example": "SR-06 iter12 实战回炉链（v1 HardFault + gc-sections 丢 initCase → 修后 27/27，均为实现缺陷路径）+ 环境问题案例为分类路由规则补充（R15 检视修复）",
+      "prompt": "verify 阶段（optimization 模式，本轮改了日志模块）跑完出现三种结果：①测试有 Fail——失败的 3 条用例全部位于本轮改动的日志模块（板子串口显示 FAILED）；②测试全过但 map_analyzer compare 显示 RAM 比基线还大了 3KB；③换备板重跑时串口完全无输出（同一固件在主板上是全过的）。分别该怎么处理？如果同一个问题已经来回改了 4 次还是不过呢？",
+      "expected_output": "①归类为**实现缺陷**（失败用例集中在本轮改动模块）→ 回 implement 按已批准 tasks 修正后重跑 verify；②先归因再路由：优化点评估有误/实现问题 → 回 implement 排查修正；改动未生效（烧错 bin/构建缓存）→ 修构建/烧录环节重跑；gc-sections 丢段 → 修构建配置——后两者不改产品代码；③归类为**环境问题**（备板/串口，同固件主板全过）→ 修环境或换回主板重跑，不改产品代码、不进 implement；回炉超 3 次 → 停下请求用户介入/咨询决策。",
+      "files": [],
+      "expectations": [
+        "①先做失败分类，归类为实现缺陷（失败用例位于本轮改动模块）并回 implement 按已批准 tasks 修正后重跑，不是忽略 Fail 或直接出报告。",
+        "②先归因再路由：优化点评估有误/实现问题 → 回 implement 排查修正；改动未生效 / gc-sections 丢段等构建环节问题 → 修构建/烧录配置重跑，不改产品代码。MAP 无改善/恶化是回炉条件之一（optimization 模式的门槛；test-only 模式不设 MAP 回炉条件）。",
+        "③归类为环境问题：修环境/换板重跑，不改产品代码、不进 implement——分类结果真正决定路由方向，不是一律回 implement。",
+        "三种结果都不允许带病进 summary（不准把测试通过当优化完成，也不准带 Fail 归档）。",
+        "RAM 反而增大时给出排查方向（改动未生效 / gc-sections 丢段 / 优化点评估有误等至少其一）。",
+        "回炉超 3 次的处理是停下请求用户介入/咨询决策，不是第 5 次盲改。"
+      ]
+    },
+    {
+      "id": "dual_intent_test_vs_miniaturization",
+      "source_example": "主 SKILL 职责边界表：XTS 测试验证（阶段4 为主，不改代码）vs 固件体积优化 miniaturization（完整 6 阶段，阶段1-3 核心，要改代码）；两者产物不同不准互换充当",
+      "prompt": "我有两个诉求，请分别说明走什么路径、产物有什么区别：A. \"固件功能我已经改完了，帮我烧板跑 XTS 确认没问题\"；B. \"固件太大了，帮我分析一下哪些模块占内存大并优化掉 20KB\"。",
+      "expected_output": "A 走 XTS 测试验证路径：阶段4 verify 为主（编译→烧录→跑 XTS→测试报告），阶段1-3 跳过或轻量，不改代码，产物=测试报告（通过率/失败清单）。B 走体积优化路径：完整 6 阶段（explore 量基线 → analyze 找优化点出提案 → implement 改代码 → verify MAP 对比），产物=优化报告（前后对比 + MAP 分析 + 改动清单）。两者产物分开，不准拿 A 的测试通过充当 B 的优化完成（反之亦然）。",
+      "files": [],
+      "expectations": [
+        "A 判定为测试验证意图：以阶段4 为主，不进入改代码流程；A 中\"功能我已经改完了\"（代码有变动）不改变判定——模式由是否要求优化决定，不由代码是否变动决定。",
+        "B 判定为体积优化（miniaturization）意图：完整 6 阶段，阶段1-3（基线/分析/实现）是核心。",
+        "A 与 B 的产物类型区分清楚：A=测试报告（通过率/失败用例清单），B=优化报告（优化前后大小对比 + MAP 分析 + 改动清单）。",
+        "明确两类结果不可互换充当（测试通过 ≠ 优化完成，体积没变 ≠ 测试通过）。",
+        "B 的验收含 MAP 对比基线确认改善量（如是否达到 -20KB 预期）。"
+      ]
+    },
+    {
+      "id": "test_only_fail_no_implement_route",
+      "source_example": "主 SKILL 职责边界（test-only 不改代码）+ verify.md 回炉表按模式分流（R4 F002 修复）",
+      "prompt": "我是做功能开发的，固件我自己改好了，用 test-only 模式让工作流帮我烧板跑 XTS 验证一下。结果 40 条用例里有 3 条 FAILED。工作流接下来会怎么处理？会进改代码流程修这些问题吗？",
+      "expected_output": "记录 3 条失败用例与证据（失败原因分类：用例缺陷 / 实现缺陷 / 环境问题），保留失败状态并报告结果——不会自动进入 implement 改代码：implement 的前置是已批准的提案/tasks，且 test-only 约定不改用户代码。确需修源码时先征得用户授权，经同意后才切换到修改流程（optimization 路径）；用户也可自行修复后重新 test-only 验证。",
+      "files": [],
+      "expectations": [
+        "失败处理先做记录与报告：失败用例清单 + 证据 + 失败原因分类，不静默。",
+        "明确 test-only 模式测试 Fail 不自动进 implement（无提案/tasks 前置、不改用户代码的约定）。",
+        "涉及源码修复时先征得用户授权，再切换到修改流程。",
+        "optimization 模式的 Fail 先分类按类别路由：实现缺陷才按已批准 tasks 回 implement 修正后重跑；环境问题修环境/配置重跑，用例缺陷修测试方案或报告。",
+        "不出现替用户默认改代码的行为。"
+      ]
+    },
+    {
+      "id": "compile_failure_classification_routing",
+      "source_example": "主 SKILL 异常表 / verify.md Step1 编译失败分类路由（R16 检视修复）；iter 实战编译失败均为源码缺陷路径（undefined reference / 头文件缺失）",
+      "prompt": "optimization 模式 verify 阶段编译，两种情况分别怎么处理：① 编译报错在我这轮改动的驱动文件里（undefined reference to 一个我重构时删掉的函数）；② 编译在 GN 阶段报 toolchain clang 版本不匹配，跟我改的代码无关——昨天同样的代码还能编过。都直接回 implement 改代码吗？",
+      "expected_output": "先分类再路由：①归类为源码缺陷（错误位于本轮改动文件、由重构引入）→ 回 implement 按已批准 tasks 修正后重跑；②归类为环境/工具链问题（与改动无关、此前可编）→ 修工具链或构建配置（可调 ohos-dev-cross-toolchain / ohos-dev-build-config skill）后重跑，不改产品代码、不进 implement。test-only 模式下编译失败一律报错并报告用户（含原因分类），不代改用户代码。",
+      "files": [],
+      "expectations": [
+        "先做编译失败原因分类（源码缺陷 vs 环境/构建配置/工具链问题），不是一律回 implement。",
+        "①归类源码缺陷（错误位于本轮改动文件、重构引入）→ 回 implement 按已批准 tasks 修正后重跑。",
+        "②归类环境/工具链问题（与改动无关、此前可编）→ 修环境或构建配置后重跑，不改产品代码、不进 implement。",
+        "给出环境问题的具体修复路径（调 cross-toolchain / build-config skill 或修工具链配置）。",
+        "test-only 模式的编译失败报错并报告用户（含原因分类），不代改用户代码。"
+      ]
+    },
+    {
+      "id": "run_only_image_consistency_gate",
+      "source_example": "verify.md 模式块镜像核实要求 + Step1 同源说明（R18 检视修复）",
+      "prompt": "test-only 模式验证：固件我昨天烧过板了，今天源码没改，直接 --run-only 重跑 XTS 就行吧？另外本地还留着一份更早编译的 .map，顺便对比一下内存参考值。",
+      "expected_output": "--run-only 前须核实板上镜像即待测产物（启动日志构建时间戳/版本号，或产物哈希比对）：核实一致（源码未改、昨日产物可对应）→ 可 --run-only；无法核实 → 按不一致处理，完整烧录待测产物。MAP 参考对比须用与板上镜像同源的 .map——「更早编译的 .map」与板上镜像不同源，要么取同源 .map，要么对比结果标注「来源为另一次构建，不可与本次测试结果关联」。",
+      "files": [],
+      "expectations": [
+        "指出 --run-only 前须核实板上镜像即待测产物（时间戳/版本/哈希任一方式），不是直接重跑。",
+        "无法核实时按不一致处理：完整烧录待测产物。",
+        "MAP 参考对比要求 .map 与板上镜像同源；不同源的旧 .map 须标注「不可与本次测试结果关联」或改取同源产物。",
+        "不出现跳过核实直接 --run-only 的建议。"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+root {
+    platform {
+        pwm_config {
+            template pwm_device {
+                serviceName = "";
+                match_attr = "";
+                num = 0;
+                base = 0x12070000;
+            }
+
+            device_0x12070000 :: pwm_device {
+                match_attr = "hisilicon_hi35xx_pwm_0";
+            }
+
+            device_0x12070020 :: pwm_device {
+                match_attr = "hisilicon_hi35xx_pwm_1";
+                num = 1;
+                base = 0x12070020;
+            }
+        }
+    }
+}

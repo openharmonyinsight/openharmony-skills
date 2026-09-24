@@ -1,0 +1,10 @@
+{
+  "parts": {
+    "product_wifiiot_hispark_pegasus": {
+      "module_list": [
+        "//vendor/hisilicon/hispark_pegasus:hispark_pegasus"
+      ]
+    }
+  },
+  "subsystem": "product_wifiiot_hispark_pegasus"
+}

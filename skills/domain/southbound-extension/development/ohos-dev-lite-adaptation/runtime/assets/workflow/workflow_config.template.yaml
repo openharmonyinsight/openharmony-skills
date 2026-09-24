@@ -1,0 +1,466 @@
+# workflow_config.yaml
+# ───────────────────────────────────────────────────────
+# 通用 Workflow 配置模板
+# ───────────────────────────────────────────────────────
+# 
+# 用法:
+#   1. 复制本文件到你的项目根目录: cp {{ASSET_ROOT}}/workflow/workflow_config.template.yaml <your-project>/workflow_config.yaml
+#   2. 填写以下所有 [用户输入] 字段
+#   3. 运行 skills/ohos-dev-workflow-router/SKILL.md（工作流编排器）开始工作流开发，各 step 按需读本文件
+#
+# 原则:
+#   - 本文件是工作流 SKILL 的**唯一领域依赖入口**
+#   - SKILL 正文中不应硬编码任何芯片名、路径、工具链版本
+#   - 所有领域特定信息要么来自本文件，要么在 SKILL 执行时询问用户
+#   - [用户输入] = 必填; (可选) = 有默认值可不填
+# ───────────────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════
+# §1  目标系统 (Target System) — [用户输入]
+# ═══════════════════════════════════════════════════════════
+
+target:
+  name: ""              # [必填] 芯片型号, e.g. "Hi3861V100", "STM32F407", "ESP32-S3"
+  vendor: ""            # [必填] 芯片厂商, e.g. "hisilicon", "st", "espressif"
+  board: ""             # [必填] 开发板名称, e.g. "hispark_pegasus", "nucleo-f407"
+  product_type: ""       # [必填] 产品类型, e.g. "wifiiot", "mini_system"
+  system_type: ""        # [必填] 当前流程仅支持 mini/small:
+                          #   "mini"     → L0 资源等级；内核/驱动模型由 target profile 选择
+                          #   "small"    → L1 资源等级；可选择 Linux、LiteOS-A 或其他 profile 支持的组合
+                          #   "standard" → L2/Linux（当前流程拒绝，需独立流程）
+  arch: ""               # [必填] CPU 架构, e.g. "riscv32", "arm-cortex-m4", "xtensa"
+  abi: ""                # [必填] ABI, e.g. "ilp32", "eabi", "hard"
+  flash_size: 0          # [可选] Flash 大小 (bytes), 用于 L5 固件大小验证
+  ram_size: 0            # [可选] RAM 大小 (bytes)
+  profile: ""            # [P1 Step 5 写入] 选定 target profile 的路径（内置在
+                          #   {{ASSET_ROOT}}/workflow/target-profiles/，或用户项目内自定义）。
+                          #   P1 加载后写入本字段 + session manifest；P2/P3/P4 消费前校验
+                          #   两者一致（不一致停下问）。加载规则见编排器 §target profile 加载规则
+
+  # ── 工具链配置 (Toolchain) — [可选，不填则 auto-detect] ──
+  # 用户想用自己的工具链（不用环境里的）时填这里。mode=user 时工作流优先用此配置、不 auto-detect。
+  # 不确定可留 mode=auto，工作流 auto-detect PATH，缺失时交互问用户。详见 README「工具链配置」。
+  # 工具链统一配置在 §4 顶层 toolchain，避免出现两个事实源。
+
+# ═══════════════════════════════════════════════════════════
+# §1.0 工作流编排 (Workflow Control) — [可选，有默认值]
+# ═══════════════════════════════════════════════════════════
+# 宿主适配器从本段读取跨阶段路由/调度策略，并与 DECISIONS.md 对账；
+# 不解析 DECISIONS.md 的 Markdown。
+workflow:
+  mode: full                # full | verify-only | quick-prototype
+  dispatch_mode: single     # single | enabled | required
+  p7_escalation: auto       # auto: HardFault/启动挂起/间歇失败 -> ultrabrain；其余 -> unspecified-high
+
+# ═══════════════════════════════════════════════════════════
+# §1.1 三层仓库模型 (Three-Layer Repo Model)
+# ═══════════════════════════════════════════════════════════
+#
+# OpenHarmony 每个芯片适配由三个独立仓库组成:
+#   SoC 层 (device_soc_*)  → 芯片 SDK、HAL 驱动、寄存器操作
+#   Board 层 (device_board_*) → 开发板外设、启动配置、defconfig
+#   Vendor 层 (vendor_*)    → 产品定义(config.json)、子系统列表、打包
+#
+# ⚠️ 关键: Board/Vendor 仓库名**不一定**与 SoC 厂商名一致!
+#   例: Rockchip SoC → Board仓是 device_board_hihope (润和软件)
+#       NXP SoC → Board仓是 device_board_osware (OSware)
+#       Gigadevice SoC → Board仓是 device_board_talkweb (拓维信息)
+#
+# 仓库地址格式: Gitee https://gitee.com/openharmony/<repo>
+#                GitHub https://github.com/openharmony/<repo>
+
+repos:
+  soc:                   # [必填] SoC 适配仓库
+    name: ""             #   仓库名, e.g. "device_soc_hisilicon"
+    url_gitee: ""         #   Gitee 地址 (可选, 用于参考)
+    url_github: ""        #   GitHub 地址 (可选, 用于参考)
+    adapter_path: ""      #   [必填] 适配层代码在仓库中的路径
+                          #   e.g. "device/soc/hisilicon/hi3861v100/hi3861_adapter/"
+  board:                 # [必填] Board 适配仓库
+    name: ""             #   仓库名, e.g. "device_board_hisilicon"
+    url_gitee: ""
+    url_github: ""
+    config_path: ""      #   板级配置路径, e.g. "device/board/hisilicon/pegasus/"
+  vendor:                # [必填] Vendor 产品仓库
+    name: ""             #   仓库名, e.g. "vendor_hisilicon"
+    url_gitee: ""
+    url_github: ""
+    product_path: ""     #   产品定义路径, e.g. "vendor/hisilicon/hispark_pegasus/"
+
+# ═══════════════════════════════════════════════════════════
+# §1.2 芯片目标快速选择表 (Chip Target Quick Reference)
+# ═══════════════════════════════════════════════════════════
+#
+# 从 Survey 提取的已知适配芯片。新芯片适配时先查此表确认系统类型。
+# 完整列表见: 17 家 SoC 厂商适配全景（原 meta/domain/oh-lite-workflow-design/references/chip_adaptation_landscape.md，该 domain 知识已随 meta/ 删除，如需可从 git 历史恢复）
+
+# L0 迷你系统 (Mini, <1MB RAM, LiteOS-M, IoT HAL):
+chip_table_l0:
+  - { name: "Hi3861V100", vendor: "hisilicon", arch: "riscv32", board: "hispark_pegasus", repo_soc: "device_soc_hisilicon" }
+  - { name: "STM32F407ZG", vendor: "st", arch: "arm-cortex-m4", board: "bearpi_hm_nano", repo_soc: "device_soc_st" }
+  - { name: "ESP32", vendor: "espressif", arch: "xtensa", board: "esp32_qemu", repo_soc: "device_soc_esp" }
+  - { name: "GR5515", vendor: "goodix", arch: "arm-cortex-m4", board: "gr5515_sk", repo_soc: "device_soc_goodix" }
+  - { name: "CST85F01", vendor: "chipsea", arch: "riscv32", board: "cst85_wblink", repo_soc: "device_soc_chipsea" }
+  - { name: "W800", vendor: "winnermicro", arch: "riscv", board: "", repo_soc: "device_soc_winnermicro" }
+  - { name: "TLSR9/B91", vendor: "telink", arch: "risc", board: "b91_starter_kit", repo_soc: "device_soc_telink" }
+  - { name: "GD32F450", vendor: "gigadevice", arch: "arm-cortex-m4", board: "niobe407", repo_soc: "device_soc_gigadevice" }
+
+# L1 小型系统 (Small, 1-16MB RAM；内核/驱动模型由 target profile 声明):
+chip_table_l1:
+  - { name: "RK2206", vendor: "rockchip", arch: "arm-cortex-m4", board: "neptune100", repo_soc: "device_soc_rockchip", repo_board: "device_board_hihope" }
+  - { name: "BK7235", vendor: "beken", arch: "arm-cortex-m4", board: "v200zr", repo_soc: "device_soc_beken" }
+  - { name: "ASR5822", vendor: "asrmicro", arch: "arm-cortex-m4", board: "dev_wifi_a", repo_soc: "device_soc_asrmicro", repo_board: "device_board_lango" }
+  - { name: "BES2600", vendor: "bestechnic", arch: "arm-cortex-m4+dsp", board: "v200zr", repo_soc: "device_soc_bestechnic", repo_board: "device_board_fnlink" }
+  - { name: "HPM6750", vendor: "hpmicro", arch: "riscv64", board: "hpm6750evk2", repo_soc: "device_soc_hpmicro" }
+  - { name: "STM32MP157", vendor: "st", arch: "arm-cortex-a7+m4", board: "bearpi_hm_micro", repo_soc: "device_soc_st" }
+  - { name: "Hi3518EV300", vendor: "hisilicon", arch: "arm-cortex-a7", board: "hispark_taurus", repo_soc: "device_soc_hisilicon" }
+
+# ═══════════════════════════════════════════════════════════
+# §2 代码库 (Code Repository)
+# ═══════════════════════════════════════════════════════════
+
+repo:
+  root: ""               # [必填] 代码库根目录 (绝对或相对于 workflow_config 的路径)
+                       #   e.g., "/srv/workspace/openharmony_master_*/code/"
+                       #   或 "../openharmony-lite-2b/"
+  remote:               # [可选] 远程环境 (如果代码不在本地)
+    ssh_host: ""         #     SSH host, e.g. "root@192.168.1.100"
+    ssh_port: 22        #     SSH port
+    ssh_key: ""          #     SSH private key path
+    agent_port: 40911    #     Agent 窗口 port (用于多路复用)
+
+# ═══════════════════════════════════════════════════════════
+# §3  Ground Truth (GT) 来源
+# ═══════════════════════════════════════════════════════════
+# GT = 已验证的正确实现, 用作 Round-Trip 验证的基准
+
+ground_truth:
+  source: ""            # [必填] GT 来源说明
+                         #   e.g., "device/soc/hisilicon/hi3861v100/hi3861_adapter/"
+                         #   或 "vendor/bes2600w/adapter/", 或 "外部 git repo URL"
+  location: ""          # [必填] GT 在 repo 中的根路径 (相对于 repo.root)
+                         #   e.g., "device/soc/hisilicon/hi3861v100/"
+  layers:               # [必填] 验证分层定义 (可自定义层数和名称)
+    - name: "L1-结构层"
+      description: "构建配置文件"
+      files: []             # GT 文件 glob 模式, e.g. ["config.json", "BUILD.gn"]
+      extract_strategy: "value_placeholder"  # hollow | value_placeholder | preserve
+    - name: "L2-符号层"
+      description: "内核适配层 (KAL/CMSIS/POSIX)"
+      files: []
+      extract_strategy: "function_body_removal"
+    - name: "L3-接口层"
+      description: "HAL 驱动层"
+      files: []
+      extract_strategy: "function_body_removal"
+    - name: "L4-配置层"
+      description: "HCS / defconfig / Kconfig"
+      files: []
+      extract_strategy: "value_placeholder"
+    - name: "L5-构建层"
+      description: "编译 + 固件产出"
+      extract_strategy: "none"  # L5 不挖空, 直接用编译结果验证
+
+# ═══════════════════════════════════════════════════════════
+# §4 交叉编译工具链
+# ═══════════════════════════════════════════════════════════
+
+toolchain:
+  mode: auto              # auto | user | wrapper | docker（P4/诊断路由读取）
+  path: ""               # mode=user 时工具链 bin 目录
+  prefix: ""             # [必填] 工具链前缀, e.g. "riscv32-unknown-elf-", "arm-none-eabi-"
+  type: ""               # [必填] "gcc" | "clang" | "other"
+  version: ""             # [可选] 版本号, e.g. "13.2.0", "10.3-2021.10"
+  gcc_version: ""         # [运行时证据] 实测 gcc 版本
+  binutils_version: ""    # [运行时证据] 实测 binutils/ld 版本
+  install_path: ""       # [可选] 安装路径, e.g., "/opt/riscv/bin/", "/usr/bin/"
+  special_flags: []       # [可选] 统一注入的额外编译标志, e.g., ["-march=rv32imac_zicsr"]
+  wrapper:                # 工具链包装脚本（对不兼容工具链的关键方案）
+    enabled: false        #   是否使用 wrapper 脚本包装原始编译器
+    original_binary: ""   #   被包装的原始编译器路径, e.g., "/opt/riscv/bin/riscv32-unknown-elf-gcc.real"
+    purpose: ""           #   包装目的, e.g., "inject zicsr to -march", "add size opts for compile-only"
+    inject_flags: []      #   注入的额外标志, e.g., ["-march=rv32imac_zicsr", "-Os"]
+    condition: ""         #   触发条件, e.g., "compile-only (not link)", "specific arch"
+  alt_paths: []            # [新增] 备选工具链路径 (服务器可能存在多个版本)
+                            #   例: ["/opt/gcc_riscv32/bin/", "/opt/riscv/bin/"]
+
+# ═══════════════════════════════════════════════════════════
+# §5  Build System (构建系统)
+# ═══════════════════════════════════════════════════════════
+
+build_system:
+  type: ""               # [必填] "build_sh" | "gn_ninja" | "scons" | "make" | "cmake" | "other"
+  build_cmd: ""           # [必填] 标准完整构建命令（优先 ./build.sh，非 hb）
+                          #   e.g., "./build.sh --product-name {target.product_type}"
+  direct_build_cmd: ""     # [新增] 直接构建命令 (绕过标准构建系统的超时/包装限制)
+                          #   e.g., "cd sdk_liteos && sh hm_build.sh {output} linux"
+                          #   用途: 当 build_cmd 因超时或内部限制失败时的 fallback
+                          #   为空时禁用 (例: 用 hm_build.sh 绕过 ./build.sh 超时)
+  timeout_secs: 600        # [新增] 构建超时时间 (秒), 0=不限制
+                          #   (例: build_ext_components.py 硬编码超时不够用)
+  hb_module_path: ""     # (hb 专用) hb 模块路径, e.g., "<root>/build/hb>"
+  gn_path: ""             # (gn 专用) gn 二进制路径
+  ninja_extra_args: ""   # (ninja 专用) 额外参数
+                          #   ⚠️ 实证: OH 必须使用 "-w dupbuild=warn"
+                          #   (OH 有重复 NOTICE 文件规则, 默认 err 会阻断构建)
+
+# ═══════════════════════════════════════════════════════════
+# §6 产物路径映射 (Output Paths)
+# ═══════════════════════════════════════════════════════════
+# 所有路径相对于 repo.root; 以 "/" 结尾表示目录
+
+paths:
+  verification_manifest: ""   # [必填] 统一验证证据清单；所有 PASS/FAIL/UNVERIFIED 均引用此文件
+  # L1 内核大小对比的可审计输入；P2/P4 必须写入实际值和 SHA256。
+  build_manifest:
+    defconfig: ""
+    defconfig_sha256: ""
+    generated_config: ""
+    generated_config_sha256: ""
+    source_commit: ""
+    patch_manifest: ""
+    toolchain_version: ""
+    build_command: ""
+  output_root: ""        # [必填] 构建输出根, e.g., "out/{board}/{product}/"
+  verify_dir: ""          # [必填] 验证工作区目录, e.g., "verify/" or "oh-lite-workflow-design/verify/"
+  references_dir: ""       # [必填] 参考材料目录, e.g., "references/" or "oh-lite-workflow-design/references/"
+  hollowed_dir: ""         # 挖空后骨架输出目录
+  regenerated_dir: ""       # Workflow 再生输出目录
+  gt_backup_dir: ""         # GT 备份目录 (只读)
+
+# ═══════════════════════════════════════════════════════════
+# §7  验证门控阈值 (Gate Thresholds)
+# ═══════════════════════════════════════════════════════════
+
+gates:
+  l1_pass_threshold: 0.80     # L1 结构层通过率 (key 匹配比例)
+  l2_pass_threshold: 0.80     # L2 符号层覆盖率
+  l3_pass_threshold: 0.80     # L3 接口层签名匹配率
+  l4_pass_threshold: 0.80     # L4 配置层拓扑一致率
+  l5_firmware_deviation: 0.05  # L5 固件大小允许偏差 (±5%)
+  convergence_rounds: 3          # 连续通过次数才算收敛
+  cross_target_count: 2        # 需要通过的靶机数量才算泛化
+  rom_overflow_strategy: "fail"  # ROM_TEXT/Flash 溢出处理策略
+                                #   "fail"       — 直接失败, 报告溢出量 (默认, 最安全)
+                                #   "linker_adjust" — 尝试调整链接脚本内存区域大小 (需用户批准 GT 修改)
+                                #   "code_optimize" — 尝试编译优化减尺寸 (-Os, -fdata-sections 等)
+                                #   "ask_user"    — 暂停询问用户选择方案
+  multi_output:                 # 多产物构建（bootloader+loader+app 分步链接）
+    enabled: false              # mini(L0) 默认 false；small(L1) 必须显式设为 true；standard(L2) 不由本流程处理
+    outputs: []                 #   产物定义列表:
+                                #     - name: "bootloader"
+                                #       pattern: "*boot*.bin"
+                                #       gate_separate: true   # 是否独立门控
+                                #     - name: "loader"
+                                #       pattern: "*loader*.bin"
+                                #     - name: "main_app"
+                                #       pattern: "*.out"  (或主固件)
+                                #       is_primary: true      # 主产物, GATE-V11/V12 主要检查对象
+
+  gate_0:                       # GATE-0 环境健康检查（P1 首检，P4 编译前复检）
+    check_build_sh: true        # GATE-0a: ./build.sh 可用性
+    check_gn: true              # GATE-0b: gn 可用性
+    check_components: true      # GATE-0c: components.json 存在
+    check_toolchain: true       # GATE-0d: 工具链完整性
+
+  # P1 配置校验规则：不满足时停止工作流，不自动猜测或降级。
+  validation:
+    allowed_system_types: ["mini", "small"]   # mini=L0 轻量 / small=L1 小型（standard=L2 不由本流程处理）
+    small_requires_multi_output: true
+    evidence_required_for_pass: true
+
+# ═══════════════════════════════════════════════════════════
+# §8  SDK API 命名约定 (SDK API Naming Convention)
+# ═══════════════════════════════════════════════════════════
+# 如果目标 SDK 的 API 命名与 OH HAL 接口命名不一致, 在此处记录映射关系
+# SKILL 将读取此表来生成正确的委托代码
+
+sdk_api_mapping:
+  enabled: false          # [布尔] 是否启用 SDK API 映射
+  conventions: []         # 映射规则列表, 每项:
+                            #   - oh_pattern: "OH 接口函数名正则"
+                            #   - sdk_func: "SDK 函数名"
+                            #   - note: "特殊说明"
+  # 示例 (Hi3861V100):
+  # - oh_pattern: "IoTWatchDogKick"
+  #   sdk_func: "hi_watchdog_feed"
+  #   note: "Kick→Feed 语义差异"
+
+# ═════════════════════════════════════════════════════════════
+# §9  参考材料索引 (Reference Materials Index)
+# ═══════════════════════════════════════════════════════════
+# 列出已存在的参考文档路径 (相对于 references_dir), SKILL 将自动发现并使用
+
+references_index: []
+  # - "posix_ref_impl.md"      # POSIX KAL 实现模式
+  # - "wifi_hal_architecture.md" # WiFi HAL 架构
+  # - "hi3861_sdk_api_crossref.md"  # SDK API 交叉引用
+  # - "cmsis_mapping_table.md"   # CMSIS-RTOS v2 → 目标 OS 映射
+
+# ═════════════════════════════════════════════════════════════
+# §10 高级选项 (Advanced Options)
+# ═══════════════════════════════════════════════════════════
+
+advanced:
+  timeout_s: 500            # scons/hb build 超时时间 (秒), 0=不限制
+  ninja_dupbuild: "warn"    # ninja dupbuild 策略: "err" | "warn"
+  lto_enabled: false        # 是否启用 LTO (链接时优化)
+  extra_cflags: ""          # 额外的 C 编译标志 (追加到所有编译)
+  extra_ldflags: ""         # 额外的链接标志
+
+# ═════════════════════════════════════════════════════════════
+# §11 前置决策采集 (Upfront Decision Intake) — [可选，不填则工作流开始时交互问]
+# ═════════════════════════════════════════════════════════════
+# P-前置采集原则：能提前定的决策在这里填好，工作流开始时直接读、不重复问。
+# 留空 = 工作流 P1 Step 0 会一连串问题批量问完，问完写回这里持久化。
+# 晚绑定的决策（如 L1-Linux 构建路径 A/B、内核补丁冲突）不在此列，保留即时问。
+
+intake:
+  deliverable:
+    goal: "full-burnable-image"   # 默认目标；仅用户明确要求时才改为 kernel-rootfs-only
+    format: ""                    # 可选：partition-package | whole-image | user-specified
+    allow_user_burn: true          # 用户可自行使用烧录工具，不能因此降低完整包要求
+  kernel_variant: ""        # 内核变体由 target profile 声明；此处仅作 session 对账，不据此猜测驱动框架
+  boot:
+    medium: ""              # boot 介质: "emmc" | "nor" | "spi_nand" | "sd" | "tftp_nfs"
+                             #   （spi_nand=SPI 接口 Nand，对应 BOOT_MEDIA=spi_nand；与 nor=SPI Nor 是
+                             #   两种不同介质，DMEB 类板实测默认 spi_nand，选错烧出 0x81）
+                             #   决定 P4 rootfs 文件系统(ext4/jffs2/ubifs) + 烧录路由
+  security:
+    secure_mode: ""         # "secure" | "non-secure" | ""(未检测→P1 Step 5 检测)
+                             #   决定 P4 Step 4.4 是否用 secure build 变体
+  peripherals:
+    scope: ""               # "minimal" | "full" | "with_display" — 决定 P3 驱动范围/是否带 display
+  paths:
+    archive_dir: ""         # 输出件归档本地路径（GATE-交付 用，预录就不必到时才问）
+                             #   e.g. "D:\\tools\\burn\\<chip>\\ai_ver\\"
+
+  burn:
+    tool:
+      enabled: false              # 用户可选择由工作流执行；false 不阻断完整包生成
+      name: ""                    # HiBurn/HiTool/厂商工具等
+      version: ""
+      connection: ""              # serial | usb | jtag | emmc | user-managed
+      authorization: ""            # 用户授权状态；空值表示由用户自行烧录
+
+# 完整镜像前置审计（由 P1 填充，不要求用户填写内部实现策略）
+  feasibility:
+    board_code_source: ""       # public | authorized_vendor | unavailable
+    kernel_available: ""        # yes | no | unverified
+    uboot_available: ""          # yes | no | unverified
+    image_builder_available: ""  # yes | no | unverified
+    hardware_or_offline_validation: "" # hardware | offline | none | unverified
+    unsuitable_target_policy: "stop_and_ask"
+
+sdk:
+  completeness_status: "pending"  # pending | complete | blocked | unverified
+  gaps: []                         # 每项含 name, status, impact_phase, evidence_ref
+  input_inventory: ""              # inventory 文件路径（含来源、版本、SHA256、许可）
+  phase_b_allowlist: ""            # 经过审查后允许交给 Phase B 的清单
+
+burn:
+  version_rule: "{chip}_{date}"   # rootfs/烧录件版本标记规则
+  package:
+    enabled: true                  # 默认要求完整烧录包；仅 kernel-rootfs-only 时显式关闭
+    manifest: ""                   # 目标分区 XML/JSON manifest，相对 staged 包目录
+    staging_dir: ""                # 只包含最终交给烧录工具的文件；不允许引用构建树外文件
+    require_closure_check: true    # 检查 manifest 的每个输入都在 staging_dir 中
+    image_size_policy: "fit"      # fit: 镜像 <= 分区；fixed: 必须填满分区；由目标 profile 明确选择
+    required_artifacts: []         # 完整包产物清单，按介质/target profile 填——rootfs 文件系统跟随介质：
+                                   #   eMMC → rootfs.ext4；NOR → rootfs.jffs2；NAND → rootfs.jffs2/ubifs
+    # L1 vendor boot 链输入；缺任一项时只能 BLOCKED_VENDOR_SDK，禁止伪造 boot_image。
+    boot_chain:
+      required_inputs: []          # GSL/DDR/reg_info/U-Boot 或 boot-image builder/pack command
+      missing_policy: BLOCKED_VENDOR_SDK
+    closure:
+      required_files: []           # 按介质填，不写死单一介质默认值（eMMC: [boot_image.bin, env.bin,
+                                   #   uImage, rootfs.ext4, <目标分区 xml>]；NOR: rootfs.jffs2；NAND:
+                                   #   rootfs.jffs2/ubifs）。rootfs 类型须与 env rootfstype、xml FileSystem
+                                   #   三方一致（见 04 Step 4.6）；清单由 target profile 的
+                                   #   burn_package.required_artifacts 声明
+      allow_intermediate: false
+      intermediate_label: "intermediate/partial"
+
+build_quality:
+  # 两套分类的关系：deps_guard/startup_guard 各自的 fail_class 是守卫自身的
+  # 技术标签（缺什么：依赖闭包/启动配置）；failure_classes 四分类是构建门控
+  # 视角的责任归因（谁的锅：板级适配/源码/工作流输入/工具链环境），用于
+  # GATE-B 阻断与缺口指派。进 P7 诊断后由诊断侧按其 A-H 8 类错误分类
+  # （见 skills/ohos-issue-lite-diagnose）重新归类，两套并存互不替代。
+  deps_guard:
+    enabled: true
+    fail_class: "dependency_closure"
+  startup_guard:
+    enabled: true
+    fail_class: "startup_configuration"
+  failure_classes: ["product_board_adaptation", "source", "workflow_input", "toolchain_environment"]
+
+handoff:
+  required_fields: [confirmed, unverified, blockers, artifact_paths, completeness]
+  completeness_values: ["complete", "intermediate", "partial", "blocked", "unverified"]
+  require_manifest_ref: true
+
+ai_generation:
+  enabled: true
+  require_source_assumptions_verification: true
+  require_human_confirmation_points: true
+  vendor_private_inputs_policy: "analyze_validate_orchestrate_only"
+
+# ═════════════════════════════════════════════════════════════
+# §12 诊断自动轮数阈值 (Diagnostic Auto-Round Threshold)
+# ═════════════════════════════════════════════════════════════
+# 诊断/解决问题时，AI 自动尝试的最大轮数；超过则暂停问用户。
+# ⚠️ 阈值针对"卡在同一个问题上无进展"的轮数——跨不同子问题各有进展
+#    （每个子问题在推进或已解决）不累计触发；只有同一问题反复尝试无实质
+#    突破才计数。判别示例：GSL/uboot code/-10B 各解决=有进展不累计；
+#    0x81 卡住多轮无突破=同一问题无进展才计数。
+# 触发后 AI 必须汇报：①卡在哪个问题上 N 轮无进展 ②已尝试的 N 轮和结论
+# ③当前卡点 ④请用户决定：人工介入（请教专家/换硬件）还是 AI 继续分析。
+# 目的：避免 AI 陷入无限自动循环（如反复重构建重烧）。
+#   - 默认 5 轮，用户可按问题复杂度/耐心调
+#   - 0 = 禁用（不限轮数，不推荐）
+#   - 详见 skills/ohos-issue-lite-diagnose/SKILL.md 和 {{ASSET_ROOT}}/workflow/steps/07-problem-diag/SKILL.md
+
+diagnostic:
+  max_auto_rounds: 5        # 同一问题无进展最大自动轮数；超过则暂停交还用户（跨子问题各有进展不累计）
+
+# ═════════════════════════════════════════════════════════════
+# §13 经验积累机制 (Experience Accumulation) — [可选，默认 manual 不回填]
+# ═════════════════════════════════════════════════════════════
+# 控制本次适配的根因/教训是否回填到工作流正文/语料。
+# P-失败回填原则的用户可控开关：manual 默认不回填（GATE-交付 时问用户），
+# auto 自动回填，off 不回填。详见 skills/ohos-dev-workflow-router/SKILL.md §经验回填环节。
+
+experience:
+  accumulation: manual      # manual(默认,不主动回填,GATE-交付问用户) | auto(自动回填) | off(不回填)
+                            #   manual: 用户不主动说 yes 就不回填，工作流保持通用
+                            #   auto:   各阶段收尾自动回填踩坑/修复/决策依据（调试追踪项目用）
+                            #   off:    显式关闭回填通道
+  scope:                    # 回填范围（auto 模式生效，manual 模式问用户选哪些）
+    - cases                 #   cases:    skills/ohos-issue-lite-diagnose/references/diagnostic-cases.md 诊断案例
+    - fault-kb              #   fault-kb: skills/ohos-issue-lite-diagnose/references/fault-knowledge-base.md 故障知识库
+    - methods               #   methods:  对应 step 的 SKILL.md 方法节（正文方法）
+  personalize_tag: true     # 回填时打个性化标签 `（来源：{chip} @ {iter}, {date}）` 区分通用 vs 个性化教训
+
+# ═════════════════════════════════════════════════════════════
+# §14 阶段开关与 P2 裁剪项 (Phase Controls)
+# ═════════════════════════════════════════════════════════════
+# 将某阶段设为 false 是显式跳过：编排器必须在 verification_manifest 记录
+# SKIPPED_USER、原因和风险。quick-prototype 会额外强制跳过 P5/P6。
+phases:
+  p1_env_prep:
+    enabled: true
+  p2_kernel_port:
+    enabled: true
+    trim_components: []     # A4: 仅填写经规格/依赖核实后允许裁剪的组件
+  p3_driver_device:
+    enabled: true
+    rtos_migration_enabled: false
+  p4_build_verify:
+    enabled: true
+  p5_test_gen:
+    enabled: true           # false 只能由用户明确选择；无硬件仅跳过 P5-B
+  p6_doc_review:
+    enabled: true           # false 会使最终交付为 CONDITIONAL
+  p7_problem_diag:
+    enabled: true           # 诊断逃生舱；关闭前必须由用户明确承担无自动诊断的风险

@@ -1,0 +1,60 @@
+{
+  "skill_name": "ohos-dev-kernel-node-adapt",
+  "evals": [
+    {
+      "id": "watchdog_devnode_defconfig_dts",
+      "source_example": "SKILL.md Step 2/Step 3 + watchdog-adapter-playbook 方法论（iter07 hi3516cv610 实战提炼：CONFIG_WATCHDOG+CONFIG_DW_WATCHDOG、compatible snps,dw-wdt、wdt@0x11030000）",
+      "prompt": "板子 bring-up 卡住了：OH init 反复重启（reboot loop），日志里 watchdog_service 打不开 /dev/watchdog。init.cfg 里有 `chmod 0666 /dev/watchdog`。当前内核 defconfig（arch/arm/configs/hi3516cv610_defconfig）里没有开任何 watchdog 相关 CONFIG，DTS（arch/arm/boot/dts/hi3516cv610.dtsi）里也没有 wdt 节点。这颗 SoC 用的是 Synopsys DesignWare WDT，寄存器基址 0x11030000。请给出让 /dev/watchdog 出来的完整内核侧改动方案。",
+      "expected_output": "Full kernel-side adaptation: enable CONFIG_WATCHDOG=y + CONFIG_DW_WATCHDOG=y in defconfig, add DTS watchdog node with compatible \"snps,dw-wdt\" + reg 0x11030000 + status \"okay\", rebuild via make dtbs + zImage, then verify node appears; explicitly rejects the rootfs-bypass (deleting watchdog_service from init.cfg) as the primary fix.",
+      "files": [],
+      "expectations": [
+        "方案包含 defconfig 开 CONFIG_WATCHDOG=y 和 CONFIG_DW_WATCHDOG=y（Synopsys DesignWare WDT 对应驱动）。",
+        "方案包含在 DTS 加 watchdog 节点，compatible 为 snps,dw-wdt，reg/基址为 0x11030000，且 status = \"okay\"。",
+        "方案说明 DTS 改动后要走 make dtbs 重编设备树再重编内核（不是只改 defconfig）。包含烧后验证步骤（ls /dev/watchdog / ps 确认 watchdog_service 起来）。",
+        "不把'从 init.cfg 删 watchdog_service 绕过'当主修复——若提及 rootfs 绕过，明确标注为短期权宜/技术债，驱动适配才是正路。",
+        "不凭空编造 watchdog 的时钟/中断参数（clocks 等拿不到的信息标需查 TRM/参考 DTS，而不是直接猜）。"
+      ]
+    },
+    {
+      "id": "spi_nand_dual_side_id_table",
+      "source_example": "SKILL.md Step 4 + spi-nand-id-table-playbook 方法论（iter07 DS35Q1GB-IB 实战：spi nand id 0xe5 0xf1、uboot raw/fmc100 与内核 fmc100 两侧独立源文件）",
+      "prompt": "板载 SPI Nand 颗粒内核 probe 失败：内核日志 `bsp_spi_nand_probe error -19`，uboot 启动早期打印 `spi nand id: 0xe5 0xf1`。已知这颗颗粒查不到公开 datasheet，但同一块板 uboot 能正常读，且 uboot 打印 `Page:2KB OOB:128B`。SDK 里 uboot 侧 ID 表在 drivers/mtd/nand/raw/fmc100/fmc_ids_hi3516cv610.c，内核侧在 drivers/mtd/nand/fmc100/fmc_ids_hi3516cv610.c。请给出 ID 表适配方案。",
+      "expected_output": "Dual-side ID table entry adaptation: confirm 0xe5 0xf1 not in both tables by grepping both files, clone an existing entry with same vendor prefix 0xe5 and same pagesize/OOB specs (only change id + name), patch BOTH uboot-side (raw/fmc100) and kernel-side (fmc100) files, use runtime print (Page:2KB OOB:128B) as authority instead of missing datasheet, rebuild both sides.",
+      "files": [],
+      "expectations": [
+        "方案要求先在两侧 ID 表源文件都 grep 确认 0xe5 0xf1 条目确实不存在，再补条目。",
+        "明确 uboot 与内核是两份独立的源文件（路径差一层 raw/），条目必须两侧都补，否则一侧识别另一侧 probe 失败。",
+        "新条目的做法是照抄同表同厂商前缀（0xe5）、同 pagesize/OOB 规格的现有条目，只改 id + name，不是从零写。",
+        "颗粒规格以能跑的 bin 的 runtime print（Page:2KB OOB:128B / spi nand id: 0xe5 0xf1）为权威，不因缺 datasheet 而猜规格。",
+        "包含重编两侧（uboot + 内核）并重烧验证的步骤。"
+      ]
+    },
+    {
+      "id": "binder_32bit_config_arrangement",
+      "source_example": "SKILL.md Step 2 CONFIG 表 + binder-adapter-playbook 方法论（OH001 案例：32 位小系统 binder ioctl c0186201 -22 EINVAL、BINDER_IPC_32BIT、关 BINDERFS）",
+      "prompt": "32 位 ARM 的 OH 小系统 L1-Linux 路线（kernel_family=linux）板上，samgr 起不来卡在 boot step -9，日志里 binder ioctl c0186201 returned -22 刷了 400 次。ls /dev 没有 binder 节点。当前 defconfig 没开任何 android/binder 相关 CONFIG。请安排内核侧修复。",
+      "expected_output": "Binder enablement for 32-bit OH small system: CONFIG_ANDROID=y + CONFIG_ANDROID_BINDER_IPC=y (check drivers/Kconfig source line uncommented), keep BINDERFS off (misc_register/devtmpfs path), and for 32-bit ARM add #define BINDER_IPC_32BIT 1 in kernel binder.h to align with user-mode 24B struct — otherwise ioctl -22 EINVAL persists.",
+      "files": [],
+      "expectations": [
+        "给出要开的 CONFIG：CONFIG_ANDROID=y + CONFIG_ANDROID_BINDER_IPC=y。",
+        "指出 32 位 OH 小系统需要 BINDER_IPC_32BIT（内核 binder.h 加 #define BINDER_IPC_32BIT 1 对齐 user 态 24B 结构体），否则 ioctl -22 EINVAL 不解决。",
+        "说明 BINDERFS 应关闭（走 misc_register/devtmpfs 出 /dev/binder）。",
+        "至少提及检查 drivers/Kconfig 里对应 source 行是否被注释（被注释则 CONFIG 开了也不编入）。",
+        "能把 ioctl -22 症状与协议位宽/缺节点关联起来解释，而不是只说'重编试试'。"
+      ]
+    },
+    {
+      "id": "full_audit_not_single_fix",
+      "source_example": "SKILL.md Step 1 方法论（iter07 教训：全量审计缺口，不只修当前报错那个）+ config-devnode-map 依赖映射",
+      "prompt": "OH init 启动时 apphilogcat 报 `fd failed No such file`，/dev/hilog 不存在，这是当前唯一的报错。但 init.cfg 的 pre-init 段还有这些路径操作：`chmod 0666 /dev/binder`、`chmod 0666 /dev/hwbinder`、`chmod 0666 /dev/vndbinder`、`chown 4 4 /dev/hilog`，另外配置里 watchdog_service 依赖 /dev/watchdog，还有 service 依赖 cgroup。现在只修好了 hilog 的 CONFIG，下一步该怎么做？",
+      "expected_output": "Performs full /dev node gap audit instead of fixing only the reported one: enumerate all pre-init chmod/chown paths + service dependencies (binder/hwbinder/vndbinder/watchdog/cgroup), check each against defconfig CONFIG + DTS node, list ALL gaps at once (iter07 lesson: discovering them one error at a time wastes bring-up cycles).",
+      "files": [],
+      "expectations": [
+        "明确要求做全量审计：把 init.cfg pre-init 的 chmod/chown 路径 + service 依赖的 /dev 节点全部列出，不只盯 hilog。",
+        "逐个节点给出对应要核对的内核项：/dev/binder·hwbinder·vndbinder → CONFIG_ANDROID/ANDROID_BINDER_IPC；/dev/watchdog → CONFIG_WATCHDOG/DW_WATCHDOG + DTS；cgroup → CONFIG_CGROUPS/FREEZER。",
+        "说明一次性列出全部缺口的原因（避免一个个报错才发现，bring-up 反复烧录浪费时间）。",
+        "对每个缺口同时查 defconfig（CONFIG 开没开）和 DTS（节点在不在、status 是否 okay）两个层面。"
+      ]
+    }
+  ]
+}

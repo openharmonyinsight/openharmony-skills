@@ -1,0 +1,23 @@
+root {
+    platform {
+        adc_config_hi35xx {
+            match_attr = "hisilicon_hi35xx_adc";
+            template adc_device {
+                regBasePhy = 0x120e0000;
+                regSize = 0x34;
+                deviceNum = 0;
+                validChannel = 0x1;
+                dataWidth = 10;
+                scanMode = 1;
+                delta = 0;
+                deglitch = 0;
+                glitchSample = 5000;
+                rate = 20000;
+            }
+            device_0 :: adc_device {
+                deviceNum = 0;
+                validChannel = 0x2;
+            }
+        }
+    }
+}

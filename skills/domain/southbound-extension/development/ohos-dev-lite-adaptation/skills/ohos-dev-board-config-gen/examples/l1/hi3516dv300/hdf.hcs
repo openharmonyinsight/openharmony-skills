@@ -1,0 +1,14 @@
+/* HCS 主入口文件 — Hi3516DV300 L1 样本 */
+/* 来源：ohos-lite-helper MCP 域 device-config（l1-config-samples） */
+
+#include "device_info.hcs"
+#include "gpio_config.hcs"
+#include "uart_config.hcs"
+#include "i2c_config.hcs"
+#include "spi_config.hcs"
+#include "pwm_config.hcs"
+#include "adc_config.hcs"
+
+root {
+    module = "hisilicon,hi35xx_chip";
+}

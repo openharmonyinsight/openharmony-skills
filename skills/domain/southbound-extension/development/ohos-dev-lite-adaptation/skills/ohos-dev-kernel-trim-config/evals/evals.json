@@ -1,0 +1,73 @@
+{
+  "skill_name": "ohos-dev-kernel-trim-config",
+  "evals": [
+    {
+      "id": "l0_hi3861_ram_budget_trim_plan",
+      "source_example": "SR-06 iter10 重跑 ✅ 实测方案：Hi3861 352KB SRAM 扣 WiFi/BLE 协议栈 → 内核可用 200~250KB → 128~256KB 级别；关 Track/CPUP/FPB；TSK 32→15 / SEM 100→32 / MUX 64→24 / QUEUE 64→16 / SWTMR 80→16；保留 TSK_MONITOR + MEM_WATERLINE；RAM 预算 20% 裕量",
+      "prompt": "Hi3861V100 开发板要做 LiteOS-M 内核裁剪：RISC-V rv32imac @160MHz，总 SRAM 352KB，Flash 2MB，L0 轻量系统，板载 WiFi/BLE（厂商协议栈大约占 100~150KB RAM，不可裁）。现有 target_config.h：TSK_LIMIT 32 / SEM_LIMIT 100 / MUX_LIMIT 64 / QUEUE_LIMIT 64 / SWTMR_LIMIT 80，Track/CPUP/FPB/TSK_MONITOR/MEM_WATERLINE 全 YES。请给出裁剪方案（RAM 分级判定 + 逐类决策 + 实例上限 + 预算检查）。",
+      "expected_output": "RAM tier determination: 352KB minus 100~150KB WiFi/BLE leaves ~200~250KB kernel-usable → 128~256KB tier. Minimal set of 6 kept. Debug components closed: Track/CPUP/FPB; TSK_MONITOR and MEM_WATERLINE kept (stability/diagnostic value, low cost). Instance limits lowered: TSK 32→15, SEM 100→32, MUX 64→24, QUEUE 64→16, SWTMR 80→16 (all above kernel default lower bounds). RAM budget check with ~20% safety margin.",
+      "files": [],
+      "expectations": [
+        "Correct RAM tier derivation: total 352KB minus WiFi/BLE stack (100~150KB) gives kernel-usable ~200~250KB, classified into the 128~256KB tier (not the 256~512KB tier by total SRAM).",
+        "Minimal functional set of 6 components (task/scheduler/memory/interrupt/exception/clock) is kept — never trimmed.",
+        "Debug-class components Track, CPUP, FPB are closed; TSK_MONITOR and MEM_WATERLINE are kept (or kept with an explicit rationale like stack-overflow detection / OOM diagnostics at tiny cost).",
+        "Instance limits lowered in the right direction (TSK 32→15, SEM 100→32, MUX 64→24, QUEUE 64→16, SWTMR 80→16 or comparable), and stated to remain above kernel default lower bounds (TSK 5 / SEM 6 / MUX 6 / QUEUE 6 / SWTMR 5).",
+        "RAM budget check performed with ~20% safety margin and conclusion that the trimmed kernel fits.",
+        "Flags runtime risk of aggressive SEM/QUEUE cuts (vendor WiFi stack may exhaust semaphores/queues) — not just compile-time safety."
+      ]
+    },
+    {
+      "id": "cpup_disable_must_be_explicit_no",
+      "source_example": "SR-06 iter10：CPUP 裁剪推荐显式 #define ... NO（注释掉 #define 在标准 C 工具链下 #if 按 0 求值不报错，但依赖隐式行为且 -Wundef 可警，不推荐）",
+      "prompt": "我要在 target_config.h 里把 CPUP 关掉，写成了注释：\n\n```c\n/* #define LOSCFG_BASE_CORE_CPUP YES */\n```\n\n已知 los_config.h 里 LOSCFG_BASE_CORE_CPUP 没有 #ifndef 默认定义，而内核源码里到处是 `#if (LOSCFG_BASE_CORE_CPUP == 1)`。这样关对吗？",
+      "expected_output": "Not recommended — commenting out the #define leaves the symbol undefined. In #if contexts the C preprocessor treats undefined macros as 0 (C99 §6.10.1), so #if (LOSCFG_BASE_CORE_CPUP == 1) evaluates to #if (0 == 1) = #if 0 and compiles without error on standard toolchains. However, this relies on implicit preprocessor behavior and -Wundef can flag it. The correct way is explicit: #define LOSCFG_BASE_CORE_CPUP NO (NO=0 walks the exclusion branch cleanly). CPUP_HWI needs the same explicit treatment.",
+      "files": [],
+      "expectations": [
+        "Answers that commenting out the #define is not the recommended approach.",
+        "Explains the mechanism correctly: undefined macros in #if evaluate to 0 per C standard (not a compilation error), but this is fragile and -Wundef can flag it.",
+        "Gives the correct form: #define LOSCFG_BASE_CORE_CPUP NO (explicit NO, keeping the definition).",
+        "Notes NO=0 makes the #if guards cleanly take the exclusion branch, and that CPUP_HWI needs the same explicit treatment."
+      ]
+    },
+    {
+      "id": "pmp_lazy_macro_no_savings",
+      "source_example": "SR-06 iter09 深审翻车点 + iter10 修：LOSCFG_BASE_CORE_PMP 全树仅 target_config.h 定义、C 代码无 #ifdef 引用，boot 汇编 riscv_init_flashboot.S:190-222 无条件写 PMP CSR——关宏不省 ROM/RAM，iter09 曾虚报 ~800B ROM + PMP 区 RAM",
+      "prompt": "Hi3861 上有同事说：\"把 LOSCFG_BASE_CORE_PMP 宏关了，能省 ~800B ROM 和 PMP 区的 RAM\"。我 grep 了全代码树：`LOSCFG_BASE_CORE_PMP` 只有 target_config.h 一处定义，C 源码里没有任何 `#ifdef LOSCFG_BASE_CORE_PMP` 引用；而 boot 汇编（riscv_init_flashboot.S）里 PMP CSR 初始化是无条件执行的。这个说法对吗？",
+      "expected_output": "No — PMP is a lazy/inert macro here: closing it saves neither ROM (no C implementation guarded by the macro) nor RAM (PMP region is hardware CSR), and runtime PMP behavior is unchanged because boot asm writes PMP CSRs unconditionally. Such closures must not be counted in ROM/RAM savings totals.",
+      "files": [],
+      "expectations": [
+        "Answers that the savings claim is wrong (虚报): closing the macro saves ~0.",
+        "Explains why: no C implementation is guarded by the macro (no ROM to save) and the PMP region is hardware CSR space (no RAM to save).",
+        "Notes runtime behavior is unchanged because boot assembly writes PMP CSRs unconditionally.",
+        "States the rule: such lazy-macro closures must NOT be counted into ROM/RAM savings totals (and should be annotated as no actual gain)."
+      ]
+    },
+    {
+      "id": "queue_limit_lowering_vs_disable",
+      "source_example": "SR-06 compile-verify-report §2.1 #9 实测：QUEUE_LIMIT 64→16 且 QUEUE 组件保持开启，不触发 los_config.h:421 的 SWTMR→QUEUE #error（该守卫只约束 QUEUE 组件关闭）；限额下调只缩池不破依赖",
+      "prompt": "los_config.h 第 421 行有这个守卫：\n\n```c\n#error \"if LOSCFG_BASE_CORE_SWTMR is set to 1, then LOSCFG_BASE_IPC_QUEUE must also be set to 1\"\n```\n\n我的裁剪方案是：SWTMR 保持 YES，QUEUE 组件也保持开启，只是把 LOSCFG_BASE_IPC_QUEUE_LIMIT 从 64 下调到 16。会触发这个 #error 吗？",
+      "expected_output": "No — the guard constrains the QUEUE component being disabled (set to 0/NO), not its pool limit being lowered; QUEUE stays YES so the guard is not triggered. Lowering a LIMIT macro only shrinks the pool size and breaks no dependency.",
+      "files": [],
+      "expectations": [
+        "Answers that the #error is NOT triggered by this plan.",
+        "Explains the distinction: the guard constrains the QUEUE component's enable state (YES/NO), while QUEUE_LIMIT is a pool-size macro — lowering it is not disabling the component.",
+        "Notes limit lowering only shrinks the static pool / max instance count and breaks no dependency chain.",
+        "Flags the runtime consideration: cutting QUEUE 64→16 (75%) is aggressive and may exhaust queues at runtime (suggest conservative value or smoke test first)."
+      ]
+    },
+    {
+      "id": "error_guard_source_verification_over_docs",
+      "source_example": "SR-06 compile-verify-report §3.1/§3.2 实测修正：文档所述 #error \"cpup need support task monitor\" 在当前 los_config.h 不存在（全量 7 条 #error 无一涉及 CPUP/TSK_MONITOR）；真实依赖方向相反——CPUP 定义包在 #if (TSK_MONITOR == YES) 守卫内",
+      "prompt": "一份旧文档写着：Hi3861 的 los_config.h 里有 `#error \"cpup need support task monitor\"`，在 CPUP=YES 且 TSK_MONITOR=NO 时报错。我的裁剪组合是 CPUP=NO + TSK_MONITOR=YES。另外有同事记得 target_config.h 里 CPUP 的定义是包在 `#if (LOSCFG_BASE_CORE_TSK_MONITOR == YES)` 里的。我怎么确认我的组合是安全的？",
+      "expected_output": "Verify against actual source, not the doc: grep the real los_config.h for its complete #error list and check whether any fires for CPUP=NO + TSK_MONITOR=YES. The documented guard may not exist in the current source (real finding: it does not, and the true dependency direction is reversed — CPUP's define sits inside the TSK_MONITOR==YES guard). Conclusion: CPUP=NO + TSK_MONITOR=YES is safe; if TSK_MONITOR were NO, CPUP would be undefined — in #if that silently evaluates to 0 (a masked config risk per C99, not a compile error).",
+      "files": [],
+      "expectations": [
+        "Prescribes reading the actual los_config.h #error list (grep the source) as the verification method, rather than trusting the old document or memory.",
+        "Points out that the cited #error may not exist in the current source — the answer does not treat the doc claim as ground truth.",
+        "Addresses the real dependency direction: CPUP is defined inside the TSK_MONITOR==YES guard, so TSK_MONITOR=NO would leave CPUP undefined — in #if it silently evaluates to 0 (masked config risk, not a compile error per C99), while TSK_MONITOR=YES permits CPUP independently set to NO.",
+        "Concludes the CPUP=NO + TSK_MONITOR=YES combination is safe (no relevant guard fires) based on source verification.",
+        "Notes CPUP must still be explicitly defined as NO (not commented out): undefined macros in #if silently evaluate to 0 (masking config errors; -Wundef can flag it), and any plain-C reference of the macro would fail to compile with undeclared identifier."
+      ]
+    }
+  ]
+}

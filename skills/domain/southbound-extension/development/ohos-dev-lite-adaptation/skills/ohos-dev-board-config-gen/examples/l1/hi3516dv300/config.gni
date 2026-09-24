@@ -1,0 +1,61 @@
+# Copyright (c) 2021 HiSilicon (Shanghai) Technologies CO., LIMITED.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Kernel type, e.g. "linux", "liteos_a", "liteos_m".
+kernel_type = "liteos_a"
+
+# Kernel version.
+kernel_version = ""
+
+# Board CPU type, e.g. "cortex-a7", "riscv32".
+board_cpu = "cortex-a7"
+
+# Board arch, e.g.  "armv7-a", "rv32imac".
+board_arch = ""
+
+# Toolchain name used for system compiling.
+# E.g. gcc-arm-none-eabi, arm-linux-harmonyeabi-gcc, ohos-clang,  riscv32-unknown-elf.
+# Note: The default toolchain is "ohos-clang". It's not mandatory if you use the default toolchain.
+board_toolchain = ""
+
+# The toolchain path installed, it's not mandatory if you have added toolchain path to your ~/.bashrc.
+board_toolchain_path = ""
+
+# Compiler prefix.
+board_toolchain_prefix = ""
+
+# Compiler type, "gcc" or "clang".
+board_toolchain_type = "clang"
+
+# Board related common compile flags.
+board_cflags = [
+  "-mfloat-abi=softfp",
+  "-mfpu=neon-vfpv4",
+]
+board_cxx_flags = [
+  "-mfloat-abi=softfp",
+  "-mfpu=neon-vfpv4",
+]
+board_ld_flags = []
+
+# Board related headfiles search path.
+board_include_dirs = []
+
+# Board adapter dir for OHOS components.
+board_adapter_dir = "//device/soc/hisilicon/common/hal"
+
+# Sysroot path.
+board_configed_sysroot = ""
+
+# Board storage type, it used for file system generation.
+storage_type = "emmc"

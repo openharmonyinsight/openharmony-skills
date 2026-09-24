@@ -1,0 +1,105 @@
+{
+    "product_name": "hispark_taurus_linux",
+    "type": "small",
+    "version": "3.0",
+    "ohos_version": "OpenHarmony 1.0",
+    "device_company": "hisilicon",
+    "device_build_path": "device/board/hisilicon/hispark_taurus",
+    "board": "hispark_taurus",
+    "kernel_type": "linux",
+    "kernel_is_prebuilt": false,
+    "kernel_version": "4.19",
+    "subsystems": [
+      {
+        "subsystem": "hdf",
+        "components": [
+          { "component": "hdf_core", "features": [ "hdf_core_platform_test_support = true" ] }
+        ]
+      },
+      {
+        "subsystem": "hiviewdfx",
+        "components": [
+          { "component": "hilog_lite", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "startup",
+        "components": [
+          { "component": "init", "features": [] },
+          { "component": "appspawn", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "communication",
+        "components": [
+          { "component": "dsoftbus", "features": [] },
+          { "component": "ipc", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "systemabilitymgr",
+        "components": [
+          { "component": "samgr_lite", "features": [] },
+          { "component": "safwk_lite", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "security",
+        "components": [
+          { "component": "device_auth", "features": [] },
+          { "component": "huks", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "commonlibrary",
+        "components": [
+          { "component": "utils_lite", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "updater",
+        "components": [
+          { "component": "sys_installer_lite", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "developtools",
+        "components": [
+          { "component": "syscap_codec", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "thirdparty",
+        "components": [
+          { "component": "mbedtls", "features": [] },
+          { "component": "musl", "features": [] },
+          { "component": "bounds_checking_function", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "ability",
+        "components": [
+          { "component": "dmsfwk_lite", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "arkui",
+        "components": [
+          { "component": "ace_engine_lite", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "multimedia",
+        "components": [
+          { "component": "media_lite", "features": [] }
+        ]
+      },
+      {
+        "subsystem": "applications",
+        "components": [
+          { "component": "camera_sample_app", "features": [] }
+        ]
+      }
+    ],
+    "product_adapter_dir": "//vendor/hisilicon/hispark_taurus_linux/hals"
+}

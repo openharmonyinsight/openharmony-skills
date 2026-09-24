@@ -1,0 +1,57 @@
+{
+  "skill_name": "ohos-dev-kernel-source-query",
+  "evals": [
+    {
+      "id": "chip_type_source_routing",
+      "source_example": "SKILL.md 芯片→数据源映射表 + 阶段1 决策树（AT32F437→NuttX BSP / 全志T507→Linux mainline as H616，真实映射数据）",
+      "prompt": "我要查两颗芯片的驱动适配代码，分别该去哪个仓库查？\n\nA. AT32F437（Artery 的 Cortex-M4 内核，无 MMU）——想找它的外设驱动/适配代码。\nB. 全志 T507（四核 Cortex-A53，有 MMU）——想找它的 DTS 和驱动代码。\n\n请给出每颗芯片的主数据源和备用数据源，以及路由理由。",
+      "expected_output": "A: AT32F437 → primary NuttX BSP, fallback Artery SDK (no MMU Cortex-M → RTOS first per decision tree). B: T507 → primary Linux mainline searched as H616 (近似型号映射), no fallback listed. Both cite the chip→source mapping rationale (MMU presence decides Linux vs RTOS direction).",
+      "files": [],
+      "expectations": [
+        "AT32F437 的主数据源答 NuttX BSP，备用 Artery SDK。",
+        "全志 T507 的主数据源答 Linux 主线，且说明按 H616 近似型号查（映射表原文 as H616）。",
+        "路由理由提到了无 MMU（Cortex-M → RTOS 优先）/ 有 MMU（Cortex-A → Linux 优先）的芯片类型判定逻辑。",
+        "不建议 clone 整仓——以 Sourcegraph/raw URL 免 clone 方式查询。"
+      ]
+    },
+    {
+      "id": "compatible_string_content_search",
+      "source_example": "SKILL.md 阶段2/查询工具方法论（Sourcegraph content 搜索 + patternType:literal，compatible 反查驱动）+ 常见路径速记",
+      "prompt": "我在 DTS 里看到 watchdog 节点写的是 `compatible = \"snps,dw-wdt\"`，想知道 Linux 内核里哪个驱动文件处理这个 compatible。我有网络但不方便 clone torvalds/linux 这种大仓。该用什么方法、什么命令查？",
+      "expected_output": "Use Sourcegraph content search against repo:github.com/torvalds/linux with the exact compatible string quoted and patternType=literal, lang:c; gives the curl command form; result should land in drivers/watchdog/ (dw_wdt driver). No clone needed.",
+      "files": [],
+      "expectations": [
+        "方法是用 Sourcegraph 内容搜索（不 clone 仓库）。",
+        "给出具体查询形式：repo:github.com/torvalds/linux + compatible 字符串（snps,dw-wdt），且强调 patternType=literal / 精确字符串匹配（compatible 反查要防子串误配）。",
+        "给出可执行的 curl 命令形式（sourcegraph.com/.api/search/stream 端点）。",
+        "能从结果定位到驱动文件路径（drivers/watchdog/ 下的 dw wdt 驱动），而不是只停在搜索步骤。"
+      ]
+    },
+    {
+      "id": "dts_and_register_definition_lookup",
+      "source_example": "SKILL.md 映射表（STM32F407 → Linux mainline as F429，Fallback CMSIS-SVD）+ 常见路径速记（DTS arch/{arm,arm64}/boot/dts/{vendor}/{chip}.dtsi；时钟 drivers/clk/clk-{chip}.c，STM32 没有 st/ 子目录）",
+      "prompt": "查 STM32F407 的硬件定义：① 它的 DTS 文件（dtsi）在 Linux 内核里大概什么路径？② 寄存器/外设定义如果主线 DTS 不够细，还能去哪查？③ 顺带问下 STM32 的时钟驱动文件路径有什么特殊之处？",
+      "expected_output": "① STM32F407 is covered in Linux mainline via STM32F429 dtsi (arch/arm/boot/dts/st/ 下 st/stm32f4xx 系列，F407 按 F429 家族 dtsi 查); ② register-level detail fallback is CMSIS-SVD (per mapping table); ③ STM32 clock driver sits directly under drivers/clk/ without the st/ vendor subdirectory (clk-stm32*, 注意与一般 vendor 子目录规律不同).",
+      "files": [],
+      "expectations": [
+        "指出 STM32F407 在 Linux 主线按 F429（近似型号）查，DTS 路径规律为 arch/arm/boot/dts/st/（vendor 子目录 st）。",
+        "寄存器级定义的备用数据源答 CMSIS-SVD（映射表中 STM32F407 的 Fallback）。",
+        "指出 STM32 时钟驱动没有 st/ 子目录的特殊路径规律（drivers/clk/clk-stm32*.c 直接在 clk/ 下）。",
+        "回答基于映射表/路径规律真实数据，不编造具体寄存器地址。"
+      ]
+    },
+    {
+      "id": "gitcode_fallback_when_raw_url_fails",
+      "source_example": "SKILL.md GitCode获取节 + 失败兜底表（真实踩坑：gitcode.com/{owner}/{repo}/raw/master/{path} 返回 HTML；GitCode contents API 免认证两步走）",
+      "prompt": "我按 GitHub 的习惯用 `curl https://gitcode.com/openharmony/device_soc_hisilicon/raw/master/xxx.c` 去读 OpenHarmony 仓的文件，结果返回的是 HTML 页面不是文件内容。这是为什么？正确姿势是什么？我想列 hi3861 的某个目录再下载其中一个文件。",
+      "expected_output": "Explains GitCode raw URL format is NOT usable (returns HTML page); correct approach is the free-of-token GitCode contents API: step 1 list dir via api.gitcode.com/api/v5/repos/{owner}/{repo}/contents/{dir_path}?ref=master to get file sha, step 2 download blob via raw.gitcode.com/{owner}/{repo}/blobs/{sha}/{path}. Also notes Sourcegraph does not index GitCode repos so it can't substitute.",
+      "files": [],
+      "expectations": [
+        "明确说明 GitCode 的 raw/master/{path} URL 格式不可用（返回 HTML 页面），这是已知坑。",
+        "给出正确两步流程：① contents API 列目录拿 sha ② raw.gitcode.com/.../blobs/{sha}/{path} 下载原始内容。",
+        "说明 GitCode 公开仓库 API 免 token 直接 curl。",
+        "提到 Sourcegraph 不索引 GitCode 上的 OpenHarmony 仓（不能拿 Sourcegraph 替代查 GitCode）。"
+      ]
+    }
+  ]
+}

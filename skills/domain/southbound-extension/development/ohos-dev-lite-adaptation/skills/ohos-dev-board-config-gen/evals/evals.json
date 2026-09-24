@@ -1,0 +1,71 @@
+{
+  "skill_name": "ohos-dev-board-config-gen",
+  "evals": [
+    {
+      "id": "match_attr_pairing_uart_config_hcs",
+      "source_example": "SR-03 b21588f 修后实测：match_attr 16 对严格相等（hisilicon_hi35xx_uart_0/1/2 ↔ uart_config.hcs），寄存器/中断与 DTS 零不一致",
+      "prompt": "为 Hi3516CV610（L1 小型系统）生成 UART0 的 uart_config.hcs 配置节点。已有 device_info.hcs 片段如下：\n\n```\nroot {\n    device_info {\n        platform :: host {\n            device_uart :: device {\n                device0 :: deviceNode {\n                    policy = 2;\n                    priority = 40;\n                    permission = 0644;\n                    moduleName = \"HDF_PLATFORM_UART\";\n                    serviceName = \"HDF_PLATFORM_UART\";\n                    deviceMatchAttr = \"hisilicon_hi35xx_uart_0\";\n                }\n            }\n        }\n    }\n}\n```\n\n芯片规格：UART0 寄存器基址 0x11040000，中断号 10，波特率 115200。只输出 uart_config.hcs 中 uart0 相关节点内容。",
+      "expected_output": "A uart config node whose match_attr is exactly 'hisilicon_hi35xx_uart_0' (strict char-for-char equality with deviceMatchAttr), with regBase/iomemBase 0x11040000, irqNum 10, baudRate 115200, valid HCS syntax (paired braces, semicolon-terminated attributes).",
+      "files": [],
+      "expectations": [
+        "The generated match_attr value is exactly 'hisilicon_hi35xx_uart_0', identical to the deviceMatchAttr in the provided device_info.hcs fragment (no spelling/case/suffix deviation).",
+        "Register base is 0x11040000 and IRQ number is 10, matching the provided chip spec.",
+        "baudRate is set to 115200.",
+        "HCS syntax is valid: braces paired, every attribute ends with a semicolon, node nested under a root config structure.",
+        "The answer warns (or the design reflects) that a match_attr mismatch causes the driver to silently fail to load."
+      ]
+    },
+    {
+      "id": "defconfig_dependency_chain_check",
+      "source_example": "SR-03 iter09 深审真编译阻断：缺 CONFIG_MFD_BSP_FMC=y 致 MTD_SPI_NAND_FMC100 依赖断裂；缺 PM=y 致 BSP_TIMER 不生效（漏开依赖编译器不报错但走不到编译分支）",
+      "prompt": "我在给 Hi3516CV610 生成 defconfig。内核 Kconfig 里相关定义如下：\n\n```kconfig\nconfig MTD_SPI_NAND_FMC100\n    tristate \"FMC100 SPI Nand\"\n    depends on MFD_BSP_FMC && MTD_SPI_NAND_BSP\n\nconfig BSP_TIMER\n    bool \"BSP timer\"\n    depends on PM\n```\n\n我的 defconfig 里有 `CONFIG_MTD_SPI_NAND_FMC100=y` 和 `CONFIG_BSP_TIMER=y`，但没有 MFD_BSP_FMC、MTD_SPI_NAND_BSP、PM 这几项。编译能过吗？这个配置有问题吗？",
+      "expected_output": "Two dependency breaks identified: MTD_SPI_NAND_FMC100 needs MFD_BSP_FMC=y && MTD_SPI_NAND_BSP=y; BSP_TIMER needs PM=y. The compiler will not error, but the configs silently do not take effect (the code branches are not compiled in). Fix: enable the dependency CONFIGs and cross-check against the official arch/arm/configs/<chip>_defconfig gold standard.",
+      "files": [],
+      "expectations": [
+        "Identifies the MTD_SPI_NAND_FMC100 dependency break: MFD_BSP_FMC and MTD_SPI_NAND_BSP must both be =y.",
+        "Identifies the BSP_TIMER dependency break: PM must be =y.",
+        "Explains that this class of break does NOT produce a compile error — the CONFIG silently fails to take effect / the code branch is not compiled in.",
+        "Prescribes cross-checking every CONFIG_XXX=y against the official arch/arm/configs/<chip>_defconfig gold standard (and Kconfig depends on chains) to fill in the missing dependencies."
+      ]
+    },
+    {
+      "id": "hex_legality_0x3516CV610",
+      "source_example": "SR-03 iter09 翻车点：target_config.h 写 0x3516CV610，大写 V 非十六进制字符致 C 编译错误；b21588f 修为 0x3516c610 全小写",
+      "prompt": "我在 soc.gni 里把 Hi3516CV610 的芯片 ID 写成了 `chip_type = 0x3516CV610`，编译报错了。为什么？正确写法是什么？",
+      "expected_output": "Uppercase 'V' is not a hexadecimal character, so 0x3516CV610 is an illegal C hex literal causing a compile error; correct value is 0x3516c610 (all lowercase, digits only).",
+      "files": [],
+      "expectations": [
+        "Identifies the root cause: 'V' is not a valid hexadecimal character, making 0x3516CV610 an illegal hex literal.",
+        "Gives the corrected value 0x3516c610 (all-lowercase, valid hex).",
+        "Explains this class of error surfaces as a C compile error.",
+        "Recommends grepping the whole generated output for similar illegal hex values (letters outside a-f after 0x) before delivery."
+      ]
+    },
+    {
+      "id": "l0_vs_l1_file_set_hcs_completeness",
+      "source_example": "SR-03 iter10 回归根因：L1 产出只生成 config.gni/soc.gni/defconfig/dts/target_config.h 完全漏 HCS → HDF 驱动框架无设备节点树，所有 HDF 驱动加载失败；b21588f 修后 11 HCS 全量补齐",
+      "prompt": "两块板要做设备配置：① Hi3861（RISC-V MCU，无 MMU，352KB RAM，L0 轻量系统）；② Hi3516CV610 DEMB（Cortex-A7，128MB RAM，L1 小型系统）。各自要生成哪些设备配置文件？另外上次给 L1 板生成时只产出了 config.gni/soc.gni/defconfig/dts/target_config.h，HCS 一个没生成，结果板上所有 HDF 驱动加载失败——为什么？",
+      "expected_output": "L0 file set: config.gni + board_config.h + linker.ld + target_config.h (compile-time C macros, no HCS). L1 file set: config.gni + soc.gni + defconfig + DTS + hdf.hcs + device_info.hcs + per-peripheral *_config.hcs (gpio/uart/i2c/spi/pwm/adc/watchdog/rtc/mmc). Root cause of the failure: L1 without HCS means the HDF driver framework has no device node tree, so all HDF drivers fail to load.",
+      "files": [],
+      "expectations": [
+        "L0 file set is exactly config.gni + board_config.h + linker.ld + target_config.h, described as compile-time constants with no runtime HCS parsing.",
+        "L1 file set includes hdf.hcs + device_info.hcs + per-peripheral *_config.hcs in addition to config.gni/soc.gni/defconfig/DTS.",
+        "Explains the previous failure root cause: missing HCS files leave the HDF driver framework without a device node tree, so all HDF drivers fail to load (even though compilation passes).",
+        "Notes the L0/L1 mechanism difference: L0 uses compile-time C macros (board_config.h) while L1 uses runtime HCS parsing."
+      ]
+    },
+    {
+      "id": "riscv_march_mabi_no_mcpu",
+      "source_example": "SKILL/config-gni-guide 规则：march/mabi 从厂商 SDK/工具链提取实际值，RISC-V 不用 -mcpu（board_cpu 留空）；Hi3861 实测 board_arch=rv32imac",
+      "prompt": "给 Hi3861（RISC-V rv32imac 核）生成 config.gni 的架构/工具链变量。board_cpu、board_arch、board_cflags（-march/-mabi/-mcpu 相关）分别该怎么填？能照抄 Cortex-M4 板子的写法吗？",
+      "expected_output": "board_arch = rv32imac; board_cpu left empty (RISC-V does not use -mcpu); board_cflags carry -march=rv32imac (+ -mabi=...), values taken from the vendor SDK/toolchain, not copied from a Cortex-M4 template.",
+      "files": [],
+      "expectations": [
+        "board_arch is set to rv32imac (or -march=rv32imac appears in flags).",
+        "States RISC-V does not use -mcpu: board_cpu is left empty and no -mcpu= flag appears in cflags.",
+        "Flags include -march=rv32imac and an -mabi setting (e.g. rv32imac/ilp32 family).",
+        "States the values must come from the vendor SDK/toolchain's actual values, and that copying a Cortex-M4 board's flags (-mcpu=cortex-m4/-mthumb) is wrong."
+      ]
+    }
+  ]
+}

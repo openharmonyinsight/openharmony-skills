@@ -1,0 +1,21 @@
+{
+  "product_name": "{product_name}",
+  "type": "mini",
+  "version": "3.0.0",
+  "ohos_version": "OpenHarmony 1.0",
+  "device_company": "{vendor}",
+  "board": "{board}",
+  "kernel_type": "liteos_m",
+  "kernel_version": "",
+  "subsystems": [
+    {
+      "subsystem": "kernel",
+      "components": [
+        {
+          "component": "liteos_m",
+          "features": []
+        }
+      ]
+    }
+  ]
+}

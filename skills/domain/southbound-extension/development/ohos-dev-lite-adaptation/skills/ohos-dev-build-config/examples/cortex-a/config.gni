@@ -1,0 +1,61 @@
+# Copyright (C) 2021 Hisilicon (Shanghai) Technologies Co., Ltd. All rights reserved.
+# Copyright (c) 2022 HiSilicon (Shanghai) Technologies CO., LIMITED.
+
+# ==================== Board 级配置 ====================
+# Board 级 config.gni 是 build_lite 的标准入口。
+# SoC 级变量（如 usb_default_config_path）通过 import 引入。
+
+# Kernel type, e.g. "linux", "liteos_a", "liteos_m".
+kernel_type = "linux"
+
+# Kernel version.
+kernel_version = "4.19"
+
+# Board CPU type, e.g. "cortex-a7", "riscv32".
+board_cpu = "cortex-a7"
+
+# Board arch, e.g.  "armv7-a", "rv32imac".
+board_arch = ""
+
+# Toolchain name used for system compiling.
+board_toolchain = ""
+
+# The toolchain path installed.
+board_toolchain_path = ""
+
+# Compiler prefix.
+board_toolchain_prefix = ""
+
+# Compiler type, "gcc" or "clang".
+board_toolchain_type = "clang"
+
+# Board related common compile flags.
+board_cflags = [
+  "-mfloat-abi=softfp",
+  "-mfpu=neon-vfpv4",
+]
+board_cxx_flags = [
+  "-mfloat-abi=softfp",
+  "-mfpu=neon-vfpv4",
+]
+board_ld_flags = []
+
+# Board related headfiles search path.
+board_include_dirs = []
+
+# Board adapter dir for OHOS components.
+board_adapter_dir = "//device/board/hisilicon/hal"
+
+# Sysroot path.
+board_configed_sysroot = ""
+
+# Board storage type, it used for file system generation.
+storage_type = "emmc"
+
+# ==================== SoC 级配置（可选） ====================
+# 以下变量来自 SoC 级配置，多板共享 SoC 时可拆分到独立文件。
+
+usb_default_config_path =
+    "//device/soc/hisilicon/common/hal/usb/hi3516dv300/include"
+
+display_device_hal = "soc/hisilicon/common/hal"

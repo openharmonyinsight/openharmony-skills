@@ -1,0 +1,73 @@
+{
+  "skill_name": "ohos-issue-lite-diagnose",
+  "evals": [
+    {
+      "id": "boot_0x81_structured_diagnosis_discipline",
+      "source_example": "iter09 真实诊断：Hi3516CV610 裸烧 boot_image Uncompress Fail! err=0x81（diagnosis.md 227 行，7 假设 H1-H7 标状态 + 3 优先级修复方案 + P1-P7 下一步排查）",
+      "prompt": "Hi3516CV610 DMEB 板（L1 小型系统）裸烧自拼的 boot_image 后起不来。串口日志：烧录进行到 100%、DDR Training 通过，hw_compressed stub 跑起来、跳转地址修复成功；随后用 GZIP 解压 IP 把内嵌的 gzip u-boot.bin 解压到 0x41800000，stub 的 fail 分支打印出从 IP 状态/返回寄存器读回的原始值后停下：\n\n```\nUncompress Fail!\nerr   = 0x81\ntmo   = 0\ncrg   = 0x3010\ndprs  = 0x81\nrtnlen= 0x45F78\ndstlen= 0x45F78\nsrclen= 0x27821\n```\n\n（rtnlen = IP 实际写出的字节数，dstlen = 期望解压长度（取自 gzip 流尾 ISIZE），srclen = 输入 gzip 流长度。）请诊断。",
+      "expected_output": "结构化诊断报告：把原始寄存器 dump 解析成症状表（含 rtnlen==dstlen 反常点）+ 多假设清单（每条标 待验证/已证伪 状态 + 验证手段）+ 优先级修复方案 + 下一步排查清单；利用 rtnlen==dstlen 反常点削弱数据损坏类假设、或明确给出软件侧证伪手段（gzip -t/CRC 校验、与已知良好产物对比）；0x81 位域含义不编造，按厂商私有错误码处理、计划绕开它（标准产物对比/厂商渠道）而非依赖解码它；根因标「未确证」非「确认」。",
+      "files": [],
+      "expectations": [
+        "Parses the raw register dump into a structured symptom table (err=0x81, tmo=0, rtnlen=dstlen=0x45F78/286584, srclen=0x27821) with interpretation, not just a verbatim log quote.",
+        "Produces multiple (>=3) distinct hypotheses (data corruption, image assembly/build-flow, error-code semantics, IP timing/sensitivity, etc.), each explicitly labeled with a status (pending-verification / falsified / confirmed) and a verification method — no unlabeled hypotheses.",
+        "Either uses the rtnlen == dstlen anomaly from the dump to weaken/falsify the data-corruption hypothesis, or prescribes an explicit software-side falsification step (e.g. gzip -t / CRC32 check of the embedded stream, or byte-compare against a known-good artifact) as that hypothesis's verification method.",
+        "Does NOT fabricate the 0x81 bitfield meaning from memory — treats the vendor-specific error code as not publicly decodable and routes the plan around it (e.g. standard-build artifact comparison / vendor support channel) instead of depending on decoding it.",
+        "Does NOT declare a confirmed root cause — the conclusion is labeled hypothesis/pending-verification (未确证).",
+        "Provides prioritized fix directions and a numbered next-step checklist."
+      ]
+    },
+    {
+      "id": "unconfirmed_root_cause_labeling_discipline",
+      "source_example": "iter07 教训沉淀（memory: dont-claim-rootcause-before-verification）：诊断报告纪律——实测确认前一律标「假设/待验证」，不得写「确认根因」",
+      "prompt": "我在排查一个 L1 系统的 service 起不来的问题。目前掌握的情况只有这些：客户端调用 GetFeatureApi 连续重试约 9 秒后返回 -2；服务端进程 ps 能看到还活着；服务端注册 feature 的代码在源码里能找到。有人说\"那根因肯定就是服务端没注册 feature 给 samgr\"，你觉得这个结论现在能不能下？应该怎么表述？",
+      "expected_output": "不能下——现有证据全是静态/间接的（客户端现象 + 进程存活 + 代码存在），运行时发布调用是否真的执行、feature 是否真的登记进 samgr 路由表均无实测证据；该结论只能标「假设/待验证」，实测确认后才可称确认根因；自行指出缺什么证据（服务端日志/加打印）并给验证手段（发布调用处加打印、查 samgr 路由表）。",
+      "files": [],
+      "expectations": [
+        "Refuses to endorse the conclusion as a confirmed root cause at this evidence level.",
+        "States the discipline explicitly: before实测确认, conclusions are labeled hypothesis/pending-verification, never 确认根因.",
+        "Self-identifies the missing evidence without being told: the listed facts are all static/indirect, and no runtime evidence (server-side logs or debug prints) shows the publish/registration call actually executing and the feature actually registered.",
+        "Proposes concrete verification means (server-side debug prints at the publish call, samgr router table inspection, or per-round burn with version tag)."
+      ]
+    },
+    {
+      "id": "compile_error_c11_atomic_musl_gcc_incompatibility",
+      "source_example": "SKILL 故障知识库编译错误类（arm-gcc 兼容性）：musl 内部原子宏 __c11_atomic 与 GCC 版本不兼容 → 给出映射/版本对齐修复方向",
+      "prompt": "L1 小型系统（LiteOS-A，arm gcc 交叉编译）编译时报错，请诊断并给修复方向：\n\n```\nIn file included from .../musl/include/stdatomic.h:14,\n                 from .../some_source.c:5:\n.../musl/include/musl-internal/atomic.h: error: implicit declaration of function '__c11_atomic_load' [-Werror=implicit-function-declaration]\n.../musl/include/musl-internal/atomic.h: error: implicit declaration of function '__c11_atomic_store'\nerror: '_Atomic' does not name a type\n```\n\n工具链是厂商 prebuilt 的 arm gcc 交叉编译器，OH 源码树用 musl libc。",
+      "expected_output": "归类为编译错误类的 musl/GCC 兼容性故障：musl 内部用 C11 atomic（__c11_atomic_*），所用 GCC（内置 clang 式 __c11_atomic 扩展缺失/不支持 _Atomic）不兼容；修复方向：换成 musl 配套版本的工具链（对齐参考仓/官方 prebuilt gcc 版本），或把 __c11_atomic_* 映射为 GCC __atomic_* 内建（-fgnu89 不适用，走宏映射/工具链升级二选一），并给验证步骤。",
+      "files": [],
+      "expectations": [
+        "Classifies this as a compiler/toolchain compatibility error (musl C11 atomics vs GCC version), not a missing-header or code typo issue.",
+        "Identifies the mismatch direction: musl's internal atomic headers rely on __c11_atomic_* builtins / _Atomic that the toolchain in use does not provide (these are clang-origin builtins).",
+        "Offers a fix direction: align the toolchain version to the musl-matched cross gcc (reference-repo prebuilt), or map __c11_atomic_* to GCC __atomic_* builtins — at least one concrete actionable fix.",
+        "Includes regression verification steps (rebuild command + expected clean compile), consistent with the every-fix-needs-verification rule."
+      ]
+    },
+    {
+      "id": "benign_error_triage_not_all_logs_are_faults",
+      "source_example": "iter07 良性报错判据实证（diagnostic-cases.md §9 OH005）：binder OpenDriver EACCES errno=13（非 root SA，重试成功）+ -32 spam 15 行瞬时自愈；核心 SA BINDER_SET_CONTEXT_MGR ret=0；4 次启动不重启；XTS 426/426 → 判良性",
+      "prompt": "L1 系统 bring-up 末期，串口日志里残留这些报错，请判断要不要继续定位（背景：此前 root SA 的 BINDER_SET_CONTEXT_MGR ret=0，samgr 就绪，核心服务全部发布；XTS 426/426 全过含 HUKS 40/40；连续 4 次启动无重启无挂死）：\n\n```\n[ERR] OpenDriver failed, EACCES errno=13\n[ERR] OpenDriver retry ... ok\n（OpenDriver 这组在启动过程重复出现多次，每次都以 retry ok 收尾）\n[WARN] ... -32 ... （连续 15 行，之后不再出现）\n[ERR] auxiliary SA boot fail, retry 1/2\n[ERR] auxiliary SA boot fail, retry 2/2\n[INFO] auxiliary SA online\n```",
+      "expected_output": "按良性判据逐条核对（不影响核心功能/非关键路径/瞬时自愈/不导致重启）判为良性；不自动死磕也不默写无问题，汇报依据 + 残留风险 + 由用户决定收工还是继续。",
+      "files": [],
+      "expectations": [
+        "Does NOT treat every error line as a fault to fix, and does NOT blanket-dismiss them without evidence either — it evaluates against explicit benign-error criteria.",
+        "Checks the four benign criteria explicitly: core functions unaffected (root SA context mgr OK, samgr ready, XTS 426/426), non-critical path (these errors come from non-root/auxiliary components that do not require BINDER_SET_CONTEXT_MGR), transient/self-healing (OpenDriver retry ok, -32 spam stops, auxiliary SA comes online after retries), no reboot/hang (4 boots stable).",
+        "Concludes benign/acceptable-residue, not fatal.",
+        "Escalates the decision to the user (accept residue vs continue digging) with residual-risk assessment, rather than auto-continuing to debug or silently closing.",
+        "The conclusion is evidence-based (cites the given XTS/boot facts), not a gut call."
+      ]
+    },
+    {
+      "id": "stale_log_version_mismatch_guard",
+      "source_example": "iter07 真实教训（Step 2.3）：多轮烧录日志与烧录件对不上（烧了旧版以为最新/多轮日志混淆），沉淀为每轮版本标记 + 拿日志先核对（huksfix14 实证 4 次日志均带 oh-lite-rootfs huksfix14-20260724 标记）",
+      "prompt": "我在多轮迭代调试一块 L1 板子（每轮改代码重编重烧）。这轮我改了修复 patch 并烧录，抓到的开机日志里看不到任何镜像版本标识，而且日志现象和上一轮一模一样没有变化。我现在该做什么？直接根据这份日志继续分析吗？",
+      "expected_output": "不直接分析——无版本标识 + 现象与上轮完全一致，强烈暗示烧的还是旧版镜像或日志抓错；应先停下确认烧录件身份（本轮产物是否内置版本标识、烧录工具实际写入的是不是新产物），重烧重抓确认后再分析；后续每轮镜像内置唯一版本标记并开机自动打印（不靠手动），让每份日志自证身份；该标记是调试临时工具，回归通过后从正式交付件移除。",
+      "files": [],
+      "expectations": [
+        "Advises NOT to analyze this log as-is; stops to verify the burn artifact identity first.",
+        "Identifies the missing version marker as the red flag (log likely from an older image or wrong capture), and notes the identical-to-last-round symptom supports the stale-image hypothesis.",
+        "Prescribes the version-marker practice: each iteration embeds a unique version marker in the image and prints it automatically at every boot (not relying on manual echo), so every log self-identifies its image.",
+        "Mentions that after confirmation the debug marker should be removed from the final deliverable (marker is a debug-phase tool)."
+      ]
+    }
+  ]
+}

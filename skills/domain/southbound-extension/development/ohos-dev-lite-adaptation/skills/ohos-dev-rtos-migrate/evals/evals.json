@@ -1,0 +1,72 @@
+{
+  "skill_name": "ohos-dev-rtos-migrate",
+  "evals": [
+    {
+      "id": "vendor_osal_to_l1_hdf_watchdog",
+      "source_example": "SR-05 自验证 iter09/iter10 真实输入与产出（rich_linux_driver.c 579 行厂商 OSAL 看门狗驱动 → hi3516_watchdog_hdf.c，22 条 API 映射 + WatchdogCntlr/WatchdogMethod 重构，交叉编译通过）",
+      "prompt": "把下面这段厂商 OSAL 看门狗驱动（Hi3516CV610，字符设备模式）迁到 OpenHarmony L1 HDF 平台驱动（HDF 框架，L1-LiteOS / L1-Linux 路线通用；本例厂商驱动底层为 Linux，实测于 CV610 L1-Linux 路线）。请给出：迁移策略、关键 API 映射表、架构重构方案要点。\n\n```c\n// rich_linux_driver.c 节选（厂商 OSAL，底层 Linux kthread/wait_event/spin_lock）\nstatic osal_spinlock g_ot_dog_lock;\nstatic osal_wait g_wdt_wait_queue;\nstatic osal_atomic g_ot_dog_state;\n\nstatic void ot_dog_set_timeout(unsigned int nr) {\n    unsigned long flags;\n    osal_spin_lock_irqsave(&g_ot_dog_lock, &flags);\n    ot_wdt_writel(OT_WDT_UNLOCK_VAL, OT_WDT_LOCK);\n    ot_wdt_writel(cnt, OT_WDT_LOAD);\n    ot_wdt_writel(0, OT_WDT_LOCK);\n    osal_spin_unlock_irqrestore(&g_ot_dog_lock, &flags);\n}\n\nstatic osal_ioctl_cmd g_ot_dog_ioctl_cmd_list[] = {\n    { WDIOC_GETSTATUS, ot_dog_ioctl_get_status },\n    { WDIOC_KEEPALIVE, ot_dog_ioctl_keep_alive },\n    { WDIOC_SETTIMEOUT, ot_dog_ioctl_set_timeout },\n    { WDIOC_SETOPTIONS, ot_dog_ioctl_set_options },\n};\n\nstatic osal_fileops g_ot_dog_fops = { .open = ot_dog_open, .release = ot_dog_release,\n    .cmd_list = g_ot_dog_ioctl_cmd_list,\n    .cmd_cnt = sizeof(g_ot_dog_ioctl_cmd_list) / sizeof(g_ot_dog_ioctl_cmd_list[0]) };\n\nint ot_dog_deamon(void *data) {\n    while (1) {\n        if (osal_kthread_should_stop()) { break; }\n        dog_feed();\n        osal_wait_timeout_interruptible(&g_wdt_wait_queue, ot_dog_exit_wait_condition_callback,\n            NULL, g_default_margin * 1000 / 2 + 10);\n    }\n    return 0;\n}\n\ng_wtdg_reg_base = (volatile void *)osal_ioremap(OT_WDT_BASE, WDT_REGS_LENGTH);\ng_ot_dog_miscdev = osal_dev_create(\"watchdog\");\ng_ot_dog_miscdev->fops = &g_ot_dog_fops;\nosal_dev_register(g_ot_dog_miscdev);\nosal_atomic_set(&g_ot_dog_state, OT_DOG_SELFCLR);\n```",
+      "expected_output": "Strategy C variant (OSAL→OSAL + char-device→HDF): maps osal_spin_lock_irqsave→OsalSpinLockIrqSave, osal_wait_*→OsalSem*, osal_kthread_create→OsalThreadCreate+OsalThreadStart, osal_ioremap→OsalIoRemap, osal_atomic_*→OsalAtomic*; osal_dev_create+fileops+ioctl cmd list → WatchdogCntlrAdd + WatchdogMethod method table (getStatus/feed/setTimeout/start/stop); daemon thread rebuilt with OsalThreadEntry + OsalSemWait + volatile shouldStop; L1 code uses only Osal*/Hdf* no direct LOS_*; HCS match_attr = deviceMatchAttr = moduleName triple pairing.",
+      "files": [],
+      "expectations": [
+        "判定为策略 C 变体（OSAL→OSAL + 字符设备→HDF 框架升级），两层工作：API 层 osal_*→Osal*，框架层字符设备→HDF 平台驱动。",
+        "osal_dev_create + osal_fileops + osal_ioctl_cmd[] 命令表的去向答 WatchdogCntlrAdd/Remove + WatchdogMethod 方法表（getStatus/feed/setTimeout/start/stop 一一对应），且说明选 WatchdogCntlr 模式而非手写 Dispatch 的理由。",
+        "同步原语映射正确：osal_spin_lock_irqsave→OsalSpinLockIrqSave、osal_wait_*→OsalSemInit/OsalSemWait/OsalSemPost、osal_ioremap→OsalIoRemap、osal_atomic_*→OsalAtomic*。",
+        "L1 迁移产出的 API 全部为 Osal*/Hdf*，无 LOS_* 直接调用（违反即错）。全局静态变量重构为实例化私有数据结构挂 WatchdogCntlr.priv。",
+        "包含配套 HCS：*_config.hcs 的 match_attr 与 device_info.hcs 的 deviceMatchAttr 以及 .c 的 moduleName 三方配对。"
+      ]
+    },
+    {
+      "id": "atomic_return_value_semantics",
+      "source_example": "SR-05 iter09_partB/output/migration-plan.md 映射 #11/#12 真实判据（osal_atomic_increturn/decreturn → OsalAtomicIncReturn/DecReturn，宏返回新值）+ rich_linux_driver.c ot_dog_open 真实代码（decreturn != 0 判独占）",
+      "prompt": "迁移下面这段独占打开逻辑到 L1（HDF OSAL）。注意：源代码依赖原子操作返回值做判断，请检查返回值语义，给出映射并说明有没有坑。\n\n```c\n// 厂商驱动（rich_linux_driver.c 原文）\nstatic osal_atomic g_driver_open;\n// 初始化时：osal_atomic_set(&g_driver_open, 1);\n\nstatic int ot_dog_open(void *private_data)\n{\n    int ret = 0;\n    wtdg_unused(private_data);\n    if (osal_atomic_decreturn(&g_driver_open) != 0) {\n        ret = osal_atomic_increturn(&g_driver_open);\n        osal_printk(\"Error: device already open:%d.\\n\", ret);\n        return -1;\n    }\n    ot_dog_keepalive();\n    return ret;\n}\n```\n\n可选的目标侧原子操作：`OsalAtomicIncReturn/OsalAtomicDecReturn`（宏），或 GCC 内建 `__atomic_add_fetch` / `__atomic_fetch_add`。哪个能用哪个不能用，为什么？",
+      "expected_output": "OsalAtomicIncReturn/DecReturn return the NEW value after the op (verified against osal_atomic.h, underlying LOS_Atomic*), so `OsalAtomicDecReturn(&x) != 0` preserves the exclusive-open semantics (initial 1 → first open decrements to 0 and passes). GCC __atomic_fetch_add/__atomic_fetch_sub style (fetch-op naming) returns the OLD value — using it would invert the check: first open would see old=1 !=0 and wrongly report 'already open'. If a __builtin is needed, must use __atomic_add_fetch/__atomic_sub_fetch (op-fetch, returns new value), not the fetch-op variants.",
+      "files": [],
+      "expectations": [
+        "映射到 OsalAtomicDecReturn/OsalAtomicIncReturn，并明确这些宏返回的是操作后的新值（初值 1，首次 open 自减后返回 0 判定通过，语义保持）。",
+        "明确指出 __atomic_fetch_add / __atomic_fetch_sub 这类 fetch 前缀变体返回旧值——用它替换会导致判断反了（首次 open 返回旧值 1 ≠ 0 被误判'已打开'）。",
+        "如需用 GCC 内建，给出正确变体：__atomic_add_fetch / __atomic_sub_fetch（返回新值），即 op-fetch 命名而非 fetch-op。",
+        "不是只给一行映射了事——显式讨论了返回值语义差异这个坑（这是源代码逻辑正确性的关键）。"
+      ]
+    },
+    {
+      "id": "include_defect_needs_real_compile",
+      "source_example": "SR-05 iter09 真实翻车点（自验证说明 §4.1：真编译缺失漏 1 个 include 缺陷，hal_wtdg_hdf.c:204 用 WATCHDOG_START/WATCHDOG_STOP 但未 include watchdog_if.h，watchdog_core.h 不传递包含）",
+      "prompt": "下面是我迁移到 L1 HDF 的看门狗驱动 getStatus 实现片段，结构自检（肉眼看代码结构）我觉得没问题，但你可以先帮我判断有没有隐患；然后告诉我结构自检够不够、交付前还必须做什么验证。\n\n```c\n#include \"watchdog_core.h\"\n#include \"osal_atomic.h\"\n\nstatic int32_t Hi3516WdtGetStatus(struct WatchdogCntlr *cntlr, int32_t *status)\n{\n    struct Hi3516WatchdogData *priv = NULL;\n    if (cntlr == NULL || status == NULL) {\n        return HDF_ERR_INVALID_PARAM;\n    }\n    priv = (struct Hi3516WatchdogData *)cntlr->priv;\n    *status = (priv->started) ? WATCHDOG_START : WATCHDOG_STOP;\n    return HDF_SUCCESS;\n}\n```",
+      "expected_output": "Spots the include defect: WATCHDOG_START/WATCHDOG_STOP enum constants live in watchdog_if.h; watchdog_core.h does NOT transitively include it, so this file fails to compile with 'WATCHDOG_START' undeclared — a structural self-check (eyeballing) blind spot that only real compiler symbol resolution catches. Fix: add #include \"watchdog_if.h\". Delivery requires real cross-compile (single-file -c with real HDF headers, -Wall -Wextra), not just structural self-check.",
+      "files": [],
+      "expectations": [
+        "指出隐患：WATCHDOG_START/WATCHDOG_STOP 枚举常量定义在 watchdog_if.h，当前只 include 了 watchdog_core.h，而 watchdog_core.h 不传递包含它——编译会报 'WATCHDOG_START' undeclared。",
+        "给出修复：补 #include \"watchdog_if.h\"。",
+        "明确回答结构自检不够：符号定义在另一头文件/传递包含链断裂这类问题只有真编译（编译器符号解析）能抓到。",
+        "要求交付前做真交叉编译验证（目标平台交叉编译器单文件 -c 或 -fsyntax-only，用真实 HDF 头），而不是只看代码结构。"
+      ]
+    },
+    {
+      "id": "no_direct_mapping_alternative_not_todo",
+      "source_example": "SR-05 iter10 migration-plan.md 映射 #8/#10 真实判据（osal_wait_timeout_interruptible 带条件回调→OsalSemWait 循环顶检查；osal_kthread_should_stop→自管 volatile bool + OsalSemPost 唤醒，均 ⚠️ 中置信度 + 注明来源，0 TODO）",
+      "prompt": "厂商 OSAL 里这两个 API 在 OpenHarmony L1 HDF OSAL 里没有直接等价物：\n\n1. `osal_wait_timeout_interruptible(wq, cb, data, ms)` —— 带条件回调的超时等待（睡 ms 或 cb 返回真时提前醒）。\n2. `osal_kthread_should_stop()` —— 内核线程退出标志查询。\n\n迁移方案里这两条怎么处理？给出你的转换方案和标注方式。",
+      "expected_output": "Provides explicit composition alternatives rather than TODO/fabricated mapping: (1) OsalSemWait(sem, ms) + re-check exit condition at loop top (original cb checked EXIT state; now loop body checks) — semantically equivalent; (2) self-managed volatile bool shouldStop, set true in Release + OsalSemPost to wake the sleeping daemon + destroy thread. Both marked medium confidence with source noted (checked osal_sem.h/osal_thread.h, no such API) and flagged for human confirmation; no empty TODO, no invented direct API.",
+      "files": [],
+      "expectations": [
+        "第 1 条给出组合方案：OsalSemWait(sem, ms) 超时返回后在循环里重新检查退出条件（语义等价：原来回调检查 EXIT 态，现在循环体检查），而不是留 TODO 或编造一个假 API。",
+        "第 2 条给出自管 volatile bool shouldStop 方案，且配套唤醒机制（Release 里置 true + OsalSemPost 唤醒睡眠的 daemon 线程再 destroy）。",
+        "两条都标注置信度（⚠️ 中置信度）并注明依据来源（查过 osal_sem.h / osal_thread.h 无此 API / 联网检索），不是当高置信度直接映射。",
+        "方案里体现'需人工确认'的标注，符合'无直接映射 → 明确替代方案 + 标注'而非'TODO 留空'。"
+      ]
+    },
+    {
+      "id": "l0_native_api_no_osal",
+      "source_example": "SKILL.md ③ 高频 API 映射速查表真实数据（FreeRTOS→LiteOS-M 20 条核心映射：xTaskCreate→LOS_TaskCreate 栈 word×4、xSemaphoreCreateMutex→LOS_MuxCreate、Tick 1000Hz vs 100Hz 换算）",
+      "prompt": "把下面这个 FreeRTOS UART 驱动核心逻辑迁到 OpenHarmony L0（LiteOS-M，目标芯片 STM32F407）。给出 API 映射表和关键参数转换。\n\n```c\nstatic SemaphoreHandle_t uart_tx_mutex;\nstatic TaskHandle_t uart_task_handle;\n\nvoid uart_driver_init(void) {\n    uart_tx_mutex = xSemaphoreCreateMutex();\n    xTaskCreate(uart_task, \"uart\", 256, NULL, 5, &uart_task_handle);\n}\n\nvoid uart_task(void *arg) {\n    for (;;) {\n        if (xSemaphoreTake(uart_tx_mutex, pdMS_TO_TICKS(100)) == pdTRUE) {\n            HAL_UART_Transmit(&huart1, buf, len, 100);\n            xSemaphoreGive(uart_tx_mutex);\n        }\n        vTaskDelay(pdMS_TO_TICKS(50));\n    }\n}\n```",
+      "expected_output": "L0 migration uses LiteOS-M native APIs only (no OSAL): xSemaphoreCreateMutex→LOS_MuxCreate, xSemaphoreTake→LOS_MuxPend, xSemaphoreGive→LOS_MuxPost, xTaskCreate→LOS_TaskCreate, vTaskDelay→LOS_TaskDelay. Parameter conversions: stack size 256 words × 4 = 1024 bytes; tick frequency conversion (FreeRTOS configTICK_RATE_HZ default 1000Hz vs LiteOS-M LOSCFG_BASE_CORE_TICK_PER_SECOND default 100Hz — timeouts must be rescaled). Architecture: task model can be kept for L0 (vs L1 needing HDF).",
+      "files": [],
+      "expectations": [
+        "互斥锁映射：xSemaphoreCreateMutex→LOS_MuxCreate、xSemaphoreTake→LOS_MuxPend、xSemaphoreGive→LOS_MuxPost（L0 用 LiteOS-M 原生 API）。",
+        "整个迁移方案中不出现 OSAL 接口（Osal*）——L0 禁用 OSAL（include 应为 los_*.h）。",
+        "栈大小单位转换正确：xTaskCreate 的 256 是 word，转 LiteOS-M 字节需 ×4 = 1024 字节。",
+        "指出 Tick 频率差异：FreeRTOS 默认 1000Hz vs LiteOS-M 默认 100Hz，延时/超时值需要换算（不是原样照抄 ticks 数）。",
+        "架构层面允许保留任务模型（L0 不需要 HDF/HCS 改造），不像 L1 那样要求 HdfDriverEntry。"
+      ]
+    }
+  ]
+}
