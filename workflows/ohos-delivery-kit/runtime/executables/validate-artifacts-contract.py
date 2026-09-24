@@ -40,7 +40,7 @@ from odk_yaml import (  # noqa: E402
     parse_resource_contract,
 )
 from odk_document import (  # noqa: E402
-    PLACEHOLDER_RE, BRACKET_PLACEHOLDER_RE, _visible_markdown, headings,
+    PLACEHOLDER_RE, BRACKET_PLACEHOLDER_RE, _visible_markdown, atx_heading, headings,
     section_texts, section_text, normalize_cell, split_table_row,
     is_separator_row, parsed_markdown_tables, markdown_tables, table_has_columns,
     tables_with_columns, table_with_columns, unique_table_with_columns, meaningful,
@@ -331,12 +331,22 @@ def api_common_value_complete(item: str, value: str) -> bool:
     return True
 
 
+def api_heading_signature(line: str) -> str | None:
+    """Return an opaque signature, including empty; None means no API heading."""
+    heading = atx_heading(line)
+    if heading is None or heading[0] != 4 or not heading[1].startswith("API:"):
+        return None
+    return heading[1][len("API:"):].strip()
+
+
 def api_entry_blocks(per_api_text: str) -> list[tuple[str, str]]:
-    matches = list(re.finditer(r"^####[ \t]+API:[ \t]*([^\n]*)$", per_api_text, flags=re.MULTILINE))
+    lines = per_api_text.splitlines()
+    matches = [(index, signature) for index, line in enumerate(lines)
+               if (signature := api_heading_signature(line)) is not None]
     entries: list[tuple[str, str]] = []
-    for index, match in enumerate(matches):
-        end = matches[index + 1].start() if index + 1 < len(matches) else len(per_api_text)
-        entries.append((match.group(1).strip(), per_api_text[match.end() : end]))
+    for index, (start, signature) in enumerate(matches):
+        end = matches[index + 1][0] if index + 1 < len(matches) else len(lines)
+        entries.append((signature, "\n".join(lines[start + 1:end])))
     return entries
 
 
@@ -1125,9 +1135,9 @@ def unresolved_markers(text: str) -> list[str]:
 
         # API text has its own explicit placeholder policy. Do not reinterpret
         # source identifiers or quoted literals with generic prose heuristics.
-        api_heading = re.match(r"^####[ \t]+API:[ \t]*([^\n]*)$", line)
-        if api_heading:
-            if not api_signature_complete(api_heading.group(1)):
+        api_signature = api_heading_signature(line)
+        if api_signature is not None:
+            if not api_signature_complete(api_signature):
                 markers.append(f"L{line_no}: unresolved API signature placeholder")
             continue
 

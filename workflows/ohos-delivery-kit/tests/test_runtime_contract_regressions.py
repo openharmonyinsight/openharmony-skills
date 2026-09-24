@@ -62,10 +62,25 @@ class RuntimeContractRegressionTest(unittest.TestCase):
             ('kit.call(value: [待填写]): void', False),
             ('', False),
         ):
-            with self.subTest(signature=signature):
-                self.assertEqual(expected, validator.api_signature_complete(signature))
-                self.assertEqual(not expected, bool(validator.unresolved_markers(
-                    f'#### API: {signature}')))
+            for indent in ('', ' ', '  ', '   '):
+                for closing in ('', ' ####'):
+                    with self.subTest(signature=signature, indent=indent, closing=closing):
+                        heading = f'{indent}#### API: {signature}{closing}'
+                        parsed = validator.api_heading_signature(heading)
+                        self.assertEqual(signature, parsed)
+                        self.assertEqual(expected, validator.api_signature_complete(parsed))
+                        self.assertEqual(not expected, bool(validator.unresolved_markers(heading)))
+
+    def test_api_heading_blocks_preserve_empty_and_duplicate_entries(self) -> None:
+        text = ('#### API: kit.call(): void\nfirst\n'
+                '  #### API: kit.call(): void ####\nsecond\n'
+                '   #### API: ####\nthird')
+        self.assertEqual([('kit.call(): void', 'first'),
+                          ('kit.call(): void', 'second'), ('', 'third')],
+                         validator.api_entry_blocks(text))
+        self.assertIsNone(validator.api_heading_signature('    #### API: TBD'))
+        self.assertEqual('kit.call(): Type#',
+                         validator.api_heading_signature('#### API: kit.call(): Type#'))
 
     def test_api_diff_evidence_requires_nonempty_complete_hunks(self) -> None:
         valid = "--- a/api.h\n+++ b/api.h\n@@ -1 +1 @@\n-void old(void);\n+void updated(void);\n"

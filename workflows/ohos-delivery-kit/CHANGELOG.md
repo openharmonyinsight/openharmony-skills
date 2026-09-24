@@ -6,9 +6,13 @@ this file. Source artifacts are synchronized from
 
 ## [0.12.0] - 2026-09-24
 
-Source: `main@646404eb1987a53b49dcd2c8b8345a0acf36d697`.
+Source: `main@242776e801cbce245275f07026478856e2e78e2a`.
 
 ### Changed
+
+- Normalize Markdown API headings consistently in Draft and Archive: accept
+  0–3 spaces of indentation and strip closing hashes before presence, template
+  marker and duplicate checks, preserving literal signature content.
 
 - Keep API validation within the document contract: signatures are opaque text,
   not parsed as C/ArkTS syntax, types or array-bound expressions. Source review
