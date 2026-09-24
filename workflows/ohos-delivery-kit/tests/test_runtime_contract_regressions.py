@@ -41,15 +41,31 @@ class RuntimeContractRegressionTest(unittest.TestCase):
             self.assertEqual(["first", "second"], validator.section_texts(text, "API 规格定义"))
             self.assertEqual("", validator.section_text(text, "API 规格定义"))
 
-    def test_c_array_bound_expressions_preserve_type_checks(self) -> None:
-        for bound in ("2+2", "8/2", "8-4", "sizeof(int)", "N + 1"):
+    def test_c_array_bounds_are_opaque_document_text(self) -> None:
+        for bound in ("2+2", "8/2", "8-4", "sizeof(int)", "N + 1", "8 % 3", "1 << 3", "TODO_COUNT", "TBD_SIZE"):
             self.assertTrue(validator.api_signature_complete(
                 f"OH_call(callback: void (*)(int values[{bound}])): int",
                 name_style="free", language="C"))
         for bound in ("2+", "N N", "4 4"):
-            self.assertFalse(validator.api_signature_complete(
+            self.assertTrue(validator.api_signature_complete(
                 f"OH_call(callback: void (*)(int values[{bound}])): int",
                 name_style="free", language="C"))
+
+    def test_signature_markers_are_explicit_and_archive_consistent(self) -> None:
+        for signature, expected in (
+            ('kit.call(value: "[文件]"): void', True),
+            ('kit.call(value: "[待填写]"): void', True),
+            ('OH_call(values: int[TODO_COUNT]): int', True),
+            ('OH_call(values: int[TBD_SIZE]): int', True),
+            ('<完整签名>', False),
+            ('`<完整签名>`', False),
+            ('kit.call(value: [待填写]): void', False),
+            ('', False),
+        ):
+            with self.subTest(signature=signature):
+                self.assertEqual(expected, validator.api_signature_complete(signature))
+                self.assertEqual(not expected, bool(validator.unresolved_markers(
+                    f'#### API: {signature}')))
 
     def test_api_diff_evidence_requires_nonempty_complete_hunks(self) -> None:
         valid = "--- a/api.h\n+++ b/api.h\n@@ -1 +1 @@\n-void old(void);\n+void updated(void);\n"
@@ -156,7 +172,7 @@ second
         output = self.validate_api_documents(proposal, duplicate_table)
         self.assertIn("must contain exactly one specification table", output)
 
-    def test_invalid_arkts_type_expressions_are_rejected(self) -> None:
+    def test_arkts_expression_validity_is_toolchain_owned(self) -> None:
         for value in (
             "string number",
             "Foo + Bar",
@@ -172,8 +188,8 @@ second
             "{ cb: (value: string) => }",
         ):
             with self.subTest(value=value):
-                self.assertFalse(validator._api_type_complete(value, language="ArkTS"))
-        self.assertFalse(
+                self.assertTrue(validator.api_signature_complete(f"kit.call(value: {value}): void", language="ArkTS"))
+        self.assertTrue(
             validator.api_signature_complete(
                 "PaymentCallback.onSuccess(transactionId: string number): void",
                 language="ArkTS",
@@ -193,7 +209,7 @@ second
             "T extends U ? X : V extends W ? Y : Z",
         ):
             with self.subTest(value=value):
-                self.assertTrue(validator._api_type_complete(value, language="ArkTS"))
+                self.assertTrue(validator.api_signature_complete(f"kit.call(value: {value}): void", language="ArkTS"))
 
     def test_valid_c_type_specifier_combinations_are_accepted(self) -> None:
         for value in (
@@ -204,9 +220,9 @@ second
             "int (*)(unsigned long, const char *)",
         ):
             with self.subTest(value=value):
-                self.assertTrue(validator._api_type_complete(value, language="C"))
+                self.assertTrue(validator.api_signature_complete(f"kit.call(value: {value}): void", language="C"))
 
-    def test_invalid_c_type_specifier_combinations_are_rejected(self) -> None:
+    def test_c_type_validity_is_toolchain_owned(self) -> None:
         for value in (
             "signed unsigned int",
             "long float",
@@ -220,7 +236,7 @@ second
             "Foo; Bar",
         ):
             with self.subTest(value=value):
-                self.assertFalse(validator._api_type_complete(value, language="C"))
+                self.assertTrue(validator.api_signature_complete(f"kit.call(value: {value}): void", language="C"))
 
     def test_c_function_pointer_signature_is_accepted(self) -> None:
         self.assertTrue(
@@ -231,10 +247,10 @@ second
             )
         )
 
-    def test_c_function_pointer_empty_parameter_is_rejected(self) -> None:
+    def test_c_parameter_validity_is_toolchain_owned(self) -> None:
         for type_name in ("int (*)(int,,int)", "int (*)(void (*)(int,,int))"):
             with self.subTest(type=type_name):
-                self.assertFalse(validator.api_signature_complete(
+                self.assertTrue(validator.api_signature_complete(
                     f"OH_call1(value: {type_name}): int", name_style="free", language="C"))
 
     def test_c_qualified_function_pointer_is_accepted(self) -> None:
@@ -257,18 +273,18 @@ second
                 self.assertTrue(validator.api_signature_complete(
                     f"OH_call1(value: {type_name}): int", name_style="free", language="C"))
 
-    def test_c_callback_array_adjacent_operands_are_rejected(self) -> None:
+    def test_c_array_validity_is_toolchain_owned(self) -> None:
         for type_name in ("void (*)(int values[4 4])", "void (*)(int [4 4])",
                           "void (*)(void (*cb)(int values[4 4]))"):
             with self.subTest(type=type_name):
-                self.assertFalse(validator.api_signature_complete(
+                self.assertTrue(validator.api_signature_complete(
                     f"OH_call1(value: {type_name}): int", name_style="free", language="C"))
 
-    def test_arkts_callback_empty_parameters_are_rejected(self) -> None:
+    def test_arkts_parameter_validity_is_toolchain_owned(self) -> None:
         for type_name in ("(value: string,, other: number) => void",
                           "Promise<(value: string,, other: number) => void>"):
             with self.subTest(type=type_name):
-                self.assertFalse(validator.api_signature_complete(
+                self.assertTrue(validator.api_signature_complete(
                     f"Example.on(cb: {type_name}): void", language="ArkTS"))
 
     def test_arkts_callback_tuple_parameters_are_accepted(self) -> None:

@@ -49,10 +49,6 @@ from odk_repository import parse_git_remote, metadata_repository_url, metadata_p
 from odk_diff import valid_unified_diff  # noqa: E402
 # Re-export legacy entry points for callers that load this script as a module.
 from odk_api_signature import (  # noqa: E402
-    _nesting_positions, _outer_parameter_close, _outer_parameter_open,
-    _c_identifier_sequence_complete, _arkts_type_syntax_complete,
-    _c_parameter_declaration_complete, _c_type_syntax_complete, _api_type_complete,
-    _api_generic_parameters_complete, _api_name_complete, _api_parameters_complete,
     api_signature_complete, canonical_api_signature,
 )
 
@@ -132,7 +128,6 @@ API_TRIGGER_DIMENSION = api_contract_scalar("trigger_dimension")
 API_SPEC_SECTION = api_contract_scalar("spec_section")
 API_COMMON_SECTION = api_contract_scalar("common_section")
 API_PER_API_SECTION = api_contract_scalar("per_api_section")
-API_SIGNATURE_NAME = api_contract_scalar("signature_name")
 API_COMMON_VALUE_RULES = dict(
     item.split("=", 1) for item in api_contract_list("common_value_rules")
 )
@@ -337,7 +332,7 @@ def api_common_value_complete(item: str, value: str) -> bool:
 
 
 def api_entry_blocks(per_api_text: str) -> list[tuple[str, str]]:
-    matches = list(re.finditer(r"^####\s+API:\s*(.+?)\s*$", per_api_text, flags=re.MULTILINE))
+    matches = list(re.finditer(r"^####[ \t]+API:[ \t]*([^\n]*)$", per_api_text, flags=re.MULTILINE))
     entries: list[tuple[str, str]] = []
     for index, match in enumerate(matches):
         end = matches[index + 1].start() if index + 1 < len(matches) else len(per_api_text)
@@ -387,7 +382,6 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
     involvement = api_sdk_involvement(_visible_markdown(read_text(proposal_path)))
     spec_sections = section_texts(_visible_markdown(read_text(spec_path)), API_SPEC_SECTION)
     issues: list[str] = []
-    api_language = ""
 
     if involvement not in {"是", "否"}:
         reporter.fail(
@@ -445,8 +439,6 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
                     issues.append(f"spec.md: {API_COMMON_SECTION} item has empty value: {item}")
                 elif not api_common_value_complete(item, matches[0].get("值", "")):
                     issues.append(f"spec.md: {API_COMMON_SECTION} unresolved template choice: {item}")
-                elif item == "编程语言":
-                    api_language = normalized_table_key(matches[0].get("值", ""))
 
     per_api_sections = section_texts(spec_section, API_PER_API_SECTION)
     if not per_api_sections:
@@ -461,19 +453,7 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
     signatures: set[str] = set()
     for raw_signature, block in entries:
         signature = canonical_api_signature(raw_signature)
-        if API_SIGNATURE_NAME == "language-dependent":
-            name_style = {
-                "C": "either",
-                "ArkTS": "qualified",
-                "两者": "either",
-            }.get(api_language, "qualified")
-        else:
-            name_style = API_SIGNATURE_NAME
-        if not api_signature_complete(
-            signature,
-            name_style=name_style,
-            language=api_language,
-        ):
+        if not api_signature_complete(raw_signature):
             issues.append(f"spec.md: incomplete API signature: {raw_signature}")
         if signature in signatures:
             issues.append(f"spec.md: duplicate API signature: {raw_signature}")
@@ -1141,6 +1121,14 @@ def unresolved_markers(text: str) -> list[str]:
             in_fence = not in_fence
             continue
         if in_fence:
+            continue
+
+        # API text has its own explicit placeholder policy. Do not reinterpret
+        # source identifiers or quoted literals with generic prose heuristics.
+        api_heading = re.match(r"^####[ \t]+API:[ \t]*([^\n]*)$", line)
+        if api_heading:
+            if not api_signature_complete(api_heading.group(1)):
+                markers.append(f"L{line_no}: unresolved API signature placeholder")
             continue
 
         line_markers: list[str] = []
@@ -2135,8 +2123,8 @@ def validate_archive_readiness(
 def main(argv: list[str]) -> int:
     parser = ArgumentParser(
         description="Validate one ODK change directory against the active artifacts contract.",
-        epilog=("PASS means document-contract completeness only. API signatures use legacy "
-                "heuristics, not a C/ArkTS compiler. Language/toolchain validation is NOT VERIFIED; "
+        epilog=("PASS means document-contract completeness only. API signatures are opaque "
+                "documentation, not checked by a C/ArkTS compiler. Language/toolchain validation is NOT VERIFIED; "
                 "run the target repository's SDK/build checks separately. Exit codes remain 0/1."),
     )
     parser.add_argument("change_dir", help="ODK change directory, for example codespec/changes/arkui/12345")
@@ -2186,7 +2174,7 @@ def main(argv: list[str]) -> int:
 
     # Informational scope, not a new warning/failure or a compiler success claim.
     print("\nVerification scope:")
-    print("  Document contract: checked (including legacy API signature heuristics)")
+    print("  Document contract: checked (API signature presence/placeholders/duplicates only)")
     print("  NOT VERIFIED language/toolchain: no target SDK/compiler validation was run; "
           "run the target repository's build checks separately")
     print("\nSummary:")

@@ -33,7 +33,7 @@ license: MIT
    - implementation files, Task links, verification status, and Actual Result are backfilled where implementation has happened
    - optional evidence under `evidence/reviews/` and `evidence/gates/` is non-empty and supports any passing conclusion
    - `API/SDK=是` changes must archive `evidence/task1-api-declaration-en.diff` and `evidence/task1-api-declaration-zh.diff` (validator enforcement: Draft missing → WARN, Archive missing → FAIL)
-5. Report PASS/WARN/FAIL by level. Warnings do not block draft review, but archive readiness requires explicit resolution or accepted risk.
+5. Report PASS/WARN/FAIL by level. Warnings do not block draft review, but archive readiness requires explicit resolution or accepted risk. API signatures are opaque document text: check presence, placeholders and duplicates only, not C/ArkTS syntax, types or array bounds. Document PASS is not compilation success. Source review and target toolchain/CI own language correctness; report unrun checks as NOT VERIFIED. Do not require GCC for document validation.
 6. Resource constraints (`contracts/artifacts.yaml#resource_contract`): parse `资源开销审视`; `review-required` blocks archive; `required` needs meaningful, non-placeholder Spec/Design/Plan resource sections. Archive runs root `AGENTS.md` `odk_resource_gate` (missing/non-zero/timeout fails). ODK orchestrates the subsystem gate but does not recompute its measurements.
 7. Run `python3 {{EXECUTABLE_ROOT}}/validate-artifacts-contract.py <change-dir>` for Draft validation, or add `--archive` before `<change-dir>` for the archive gate. Report the exact command and result.
    In the automatic post-implementation/pre-PR handoff, use `--archive`: metadata is not required yet. Do not use `--design-docs-submit` or create dummy PR entries before a real PR exists. Return results to the calling coordinator; do not recursively invoke review/implement or independently start submission. Keep standalone Draft/archive validation available.
@@ -42,5 +42,7 @@ license: MIT
 ## Output
 
 Print concise validation results with file/section/table references for each issue.
+
+For API signatures, use explicit template markers (e.g. `<完整签名>` or `[待填写]`), not keyword guesses inside source text. Identifier substrings such as `TODO_COUNT` and quoted literals are not placeholders. Draft and archive checks share this policy; ordinary prose placeholder checks remain unchanged.
 
 If all levels pass, report archive readiness and include the GitCode `design_docs_repository` reminder when submission is next. Do not generate gate files unless the user explicitly asks for optional process evidence.

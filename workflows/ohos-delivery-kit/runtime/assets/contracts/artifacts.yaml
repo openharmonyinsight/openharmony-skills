@@ -57,7 +57,7 @@ api_spec_contract:
   spec_section: "API 规格定义"
   common_section: "公共规格属性"
   per_api_section: "逐 API 规格"
-  signature_name: "language-dependent"
+  # Signatures are opaque text; syntax and types belong to the source toolchain.
   common_value_rules:
     - "是否新增声明文件=boolean-decision"
     - "API 类型=api-visibility"

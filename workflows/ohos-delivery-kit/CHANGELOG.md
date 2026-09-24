@@ -6,9 +6,16 @@ this file. Source artifacts are synchronized from
 
 ## [0.12.0] - 2026-09-24
 
-Source: `main@1ba43562551f551c4d9ee2feb5e0b3bada9ff849`.
+Source: `main@646404eb1987a53b49dcd2c8b8345a0acf36d697`.
 
 ### Changed
+
+- Keep API validation within the document contract: signatures are opaque text,
+  not parsed as C/ArkTS syntax, types or array-bound expressions. Source review
+  and the target toolchain own language correctness; no GCC dependency is added.
+- Preserve empty/duplicate/explicit-placeholder checks. Draft and archive share
+  the signature marker policy, accepting identifier substrings and quoted text
+  while rejecting template markers such as `<完整签名>`.
 
 - **Breaking:** unify archive identity as `proposal_id`, `<proposal-id>` and
   `odk-link-proposal`; preserve numeric IDs and document field migration.
