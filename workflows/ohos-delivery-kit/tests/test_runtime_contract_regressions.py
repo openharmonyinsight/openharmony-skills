@@ -295,12 +295,12 @@ second
             change_dir = Path(temporary) / "codespec" / "changes" / "arkui_ace_engine" / "123"
             change_dir.mkdir(parents=True)
             (change_dir / "proposal.md").write_text(
-                "---\nreq: '123'\ntarget_release: '7.1'\n---\n",
+                "---\nproposal_id: '123'\ntarget_release: '7.1'\n---\n",
                 encoding="utf-8",
             )
             metadata = change_dir / "metadata_tracking.yaml"
             template = """\
-req_id: "123"
+proposal_id: "123"
 target_release: "7.1"
 repos:
   - repo: "openharmony/arkui_ace_engine"

@@ -7,8 +7,8 @@
 ## Level A: Init (初始化后)
 
 - [ ] `codespec/changes/` 目录存在
-- [ ] 路径为 `codespec/changes/<repo-name>/<req-id-or-draft>/`，仓名与 Git `origin`（无 origin 时为工作树根目录名）一致
-- [ ] 正式目录叶子为纯数字 `<req-id>`（不限制长度）；`proposal.md` frontmatter 的 `req:` 必须与目录名完全一致
+- [ ] 路径为 `codespec/changes/<repo-name>/<proposal-id-or-draft>/`，仓名与 Git `origin`（无 origin 时为工作树根目录名）一致
+- [ ] 正式目录叶子为纯数字 `<proposal-id>`（不限制长度）；`proposal.md` frontmatter 的 `proposal_id:` 必须与目录名完全一致
 - [ ] 草稿目录名格式正确（`draft-<yyyymmdd>-<english-slug>`），且位于 `<repo-name>` 层下
 - [ ] `english-slug` 仅含小写字母、数字和分隔非空片段的连字符，长度不超过 40；目录名在 `codespec/` 下唯一
 - [ ] 必需归档文件列表存在 (proposal.md + spec.md + design.md + execution-plan.md)
@@ -33,7 +33,7 @@
 - [ ] 如存在可选 review/verification 证据，应包含 spec-compliance + code-quality + verification
 - [ ] 如存在可选 verification 证据，应有明确的「代码与规格一致性结论」
 - [ ] 追溯链完整 (AC → Task → code → commit → review)
-- [ ] 实现的 commit message 包含关联的 `req-id`
+- [ ] 实现的 commit message 包含关联的 `proposal-id`
 - [ ] 准备向 GitCode 提交代码时，已提醒用户将 `codespec/` 文档单独提交到 `codespec/profile.yaml` 的 `design_docs_repository`；地址缺失时明确标记“待开发者填写”，不得猜测或自动跨仓推送
 - [ ] 实际提交 design-docs 前已生成或刷新 `metadata_tracking.yaml`，并用 `--design-docs-submit` 验证 `proposal.md`、`spec.md`、`design.md`、`execution-plan.md` 与该文件组成的五件套；业务代码 PR 未创建时 `pull_requests: []` 合法
 - [ ] **API 设计校验**：

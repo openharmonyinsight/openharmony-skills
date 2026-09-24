@@ -21,7 +21,7 @@ license: MIT
 ## Steps
 
 1. Resolve the target change directory and load the artifact contract.
-2. Check Level A/B: repository segment and directory name (formal leaf exactly matches `<req>`, or draft matches `draft-<yyyymmdd>-<slug>`), required files, required sections, and conditional-section warnings per `artifacts.yaml`.
+2. Check Level A/B: repository segment and directory name (formal leaf exactly matches `<proposal-id>`, or draft matches `draft-<yyyymmdd>-<slug>`), required files, required sections, and conditional-section warnings per `artifacts.yaml`.
 3. Check Level C traceability:
    - every `spec.md` AC appears in the verification mapping with a non-empty verification method
    - every AC appears in `execution-plan.md` AC-to-Task traceability with a Task and verification method
@@ -36,6 +36,7 @@ license: MIT
 5. Report PASS/WARN/FAIL by level. Warnings do not block draft review, but archive readiness requires explicit resolution or accepted risk.
 6. Resource constraints (`contracts/artifacts.yaml#resource_contract`): parse `资源开销审视`; `review-required` blocks archive; `required` needs meaningful, non-placeholder Spec/Design/Plan resource sections. Archive runs root `AGENTS.md` `odk_resource_gate` (missing/non-zero/timeout fails). ODK orchestrates the subsystem gate but does not recompute its measurements.
 7. Run `python3 {{EXECUTABLE_ROOT}}/validate-artifacts-contract.py <change-dir>` for Draft validation, or add `--archive` before `<change-dir>` for the archive gate. Report the exact command and result.
+   In the automatic post-implementation/pre-PR handoff, use `--archive`: metadata is not required yet. Do not use `--design-docs-submit` or create dummy PR entries before a real PR exists. Return results to the calling coordinator; do not recursively invoke review/implement or independently start submission. Keep standalone Draft/archive validation available.
 8. If validation is the final step before a GitCode commit, push, or PR, read `design_docs_repository` from `codespec/profile.yaml` and remind the user that `codespec/` documents must be submitted separately to that design-docs repository. If absent, report “待开发者填写”; do not guess or automatically push across repositories. For actual design-docs submission, require `metadata_tracking.yaml` and run the validator with `--design-docs-submit`.
 
 ## Output

@@ -3,12 +3,27 @@
 Neutral-source plugin providing OpenHarmony delivery artifact specification skills,
 session routing, validator executables, and runtime assets.
 
-## 0.11.0 req-id / design-docs contract change
+## 0.12.0 proposal ID / delivery handoff
 
-**Breaking change:** a formal `req-id` must contain digits only, with no length
+**Migration required:** proposal frontmatter and metadata now use `proposal_id`;
+the binding command is `odk-link-proposal`. Existing numeric IDs are unchanged.
+Old identity fields and command aliases are not retained. Follow
+[the 0.12.0 migration guide](MIGRATION-0.12.0.md) before using the new validator.
+
+Implementation now runs review and archive validation automatically, then stops
+with a reminder to submit the source PR. Only the user's source-PR instruction
+starts commit/push/PR creation and prepares local metadata from the verified PR.
+A separate confirmation starts the design-docs PR workflow; neither step merges.
+For non-GitCode origins, supply the design-docs address for this submission, even
+if a profile already has an address. PR creation/query failure must not be hidden
+by an empty metadata list. Non-GitCode PR/MR records use their actual URL plus
+an explicit HTTPS `repository_url`; host, port and namespace/path must match.
+Legacy GitCode repository URLs remain optional. Issue tracking remains GitCode-only.
+
+**Breaking change:** a formal `proposal-id` must contain digits only, with no length
 restriction. The formal archive location remains
-`codespec/changes/<repo-name>/<req-id>/`; its directory name, `proposal.md` frontmatter
-`req`, and `metadata_tracking.yaml` `req_id` must agree. Drafts continue to use an
+`codespec/changes/<repo-name>/<proposal-id>/`; its directory name, `proposal.md` frontmatter
+`proposal_id`, and `metadata_tracking.yaml` `proposal_id` must agree. Drafts continue to use an
 English slug and cannot be submitted as formal design documents.
 
 `odk-submit-design-docs` now creates or refreshes `metadata_tracking.yaml` before a
@@ -38,7 +53,7 @@ existing issue entries, and adds entries only when the developer explicitly requ
 issue tracking. Populated PR and issue entries require complete tracking fields; issue IDs
 must match their GitCode URLs, and `closed_at` is valid only for closed issues. Repositories
 with previous non-numeric formal IDs must use the bundled
-`validate-archive-migration.py` `plan` and `check-staged` gates before adopting 0.11.0.
+`validate-archive-migration.py` `plan` and `check-staged` gates before adopting 0.12.0.
 
 See [CHANGELOG.md](CHANGELOG.md) for the released change summary.
 
@@ -68,16 +83,16 @@ that endpoint. Confirmation alone does not persist a profile change.
 ## 0.9.0 archive path change
 
 **Breaking change:** formal delivery artifacts now use two repository-scoped levels:
-`codespec/changes/<repo-name>/<req-id>/`. The repository name is resolved from the
+`codespec/changes/<repo-name>/<proposal-id>/`. The repository name is resolved from the
 Git `origin` URL (without `.git`), falling back to the worktree root directory name.
-The formal directory leaf is exactly `req-id` and no longer retains the English slug.
+The formal directory leaf is exactly `proposal-id` and no longer retains the English slug.
 
-Before a requirement ID is available, keep the English description in
+Before a proposal ID is available, keep the English description in
 `codespec/changes/<repo-name>/draft-<yyyymmdd>-<english-slug>/`. After obtaining the
-ID, run `odk-link-req` to rename it to `<repo-name>/<req-id>/` and update `proposal.md`.
+ID, run `odk-link-proposal` to rename it to `<repo-name>/<proposal-id>/` and update `proposal.md`.
 
 Repositories upgrading from ODK 0.8.x must migrate the former flat
-`codespec/changes/<req-id>-<english-slug>/` directories and their references. Follow
+`codespec/changes/<proposal-id>-<english-slug>/` directories and their references. Follow
 the executable [0.9.0 migration guide](MIGRATION-0.9.0.md). The installed
 `runtime/executables/validate-archive-migration.py` provides local `plan` and
 `check-staged` gates and now detects both 0.8 flat archives and older issue archives.
@@ -86,14 +101,14 @@ the executable [0.9.0 migration guide](MIGRATION-0.9.0.md). The installed
 
 **Breaking change:** the former hidden archive root and issue-number directory naming
 are no longer supported. Formal delivery artifacts now use
-`codespec/changes/<req-id>-<english-slug>/`. Before a requirement ID is available,
+`codespec/changes/<proposal-id>-<english-slug>/`. Before a proposal ID is available,
 keep the draft at `codespec/changes/draft-<yyyymmdd>-<english-slug>/`; after obtaining
-the ID, run `odk-link-req` to rename the directory and update `proposal.md`.
+the ID, run `odk-link-proposal` to rename the directory and update `proposal.md`.
 
-`req-id` may contain letters, digits, and internal hyphens. The
+`proposal-id` may contain letters, digits, and internal hyphens. The
 [0.8.0 migration guide](MIGRATION-0.8.0.md) is frozen historical documentation
 and must only be used with pinned 0.8.0 tools; current users must follow the
-[0.9.0 migration guide](MIGRATION-0.9.0.md). `odk-link-req` only links new drafts;
+[0.9.0 migration guide](MIGRATION-0.9.0.md). `odk-link-proposal` only links new drafts;
 it is not a legacy archive migrator.
 The 0.8.0 rules above are historical; 0.9.0 repositories must use the new
 repository-scoped layout.

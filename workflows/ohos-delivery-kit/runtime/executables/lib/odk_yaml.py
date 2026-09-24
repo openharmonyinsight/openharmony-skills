@@ -137,7 +137,7 @@ def parse_metadata_tracking(path: str) -> dict[str, object]:
         if not line or line.lstrip().startswith("#"):
             continue
 
-        top = re.fullmatch(r"(req_id|target_release):\s*(.+)", line)
+        top = re.fullmatch(r"(proposal_id|target_release):\s*(.+)", line)
         if top:
             require_nonempty_block(line_number)
             key, value = top.groups()
@@ -165,6 +165,16 @@ def parse_metadata_tracking(path: str) -> dict[str, object]:
             current_section = None
             current_item = None
             seen_sections = set()
+            continue
+
+        repository_url = re.fullmatch(r"    repository_url:\s*(.+)", line)
+        if repository_url and current_repo is not None:
+            require_nonempty_block(line_number)
+            if "repository_url" in current_repo:
+                raise ValueError(f"{path}:{line_number}: duplicate repository_url")
+            current_repo["repository_url"] = _metadata_scalar(repository_url.group(1))
+            current_section = None
+            current_item = None
             continue
 
         section = re.fullmatch(r"    (pull_requests|issues):(?:\s*(\[\]))?", line)

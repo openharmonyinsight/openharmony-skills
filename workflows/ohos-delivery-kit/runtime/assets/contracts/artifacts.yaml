@@ -1,5 +1,5 @@
 version: 2
-archive_root: "codespec/changes/<repo-name>/<req-id>/"
+archive_root: "codespec/changes/<repo-name>/<proposal-id>/"
 minimum_contract:
   required_artifacts:
     - proposal
@@ -237,7 +237,7 @@ artifacts:
     phase: "design-docs-submit"
     required: false
     owns:
-      - req_id
+      - proposal_id
       - target_release
       - repositories
       - pull_requests

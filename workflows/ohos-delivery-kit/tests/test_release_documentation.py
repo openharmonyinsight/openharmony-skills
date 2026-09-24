@@ -26,9 +26,9 @@ class ReleaseDocumentationTest(unittest.TestCase):
         self.assertIsNotNone(provenance_commit)
         skill_count = len(list((WORKFLOW_ROOT / "skills").glob("*/SKILL.md")))
 
-        self.assertIn("## 0.11.0 req-id / design-docs contract change", readme)
+        self.assertIn("## 0.12.0 proposal ID / delivery handoff", readme)
         self.assertIn("digits only", readme)
-        self.assertIn("codespec/changes/<repo-name>/<req-id>/", readme)
+        self.assertIn("codespec/changes/<repo-name>/<proposal-id>/", readme)
         self.assertIn("metadata_tracking.yaml", readme)
         self.assertIn("requires all five files", " ".join(readme.split()))
         self.assertIn("same final-readiness checks as archive mode", " ".join(readme.split()))
@@ -36,6 +36,11 @@ class ReleaseDocumentationTest(unittest.TestCase):
         self.assertIn("optional extension", readme)
         self.assertIn(f"{skill_count} ODK skills", readme)
         self.assertIn("## [0.11.0] - 2026-09-04", changelog)
+        self.assertIn("## [0.12.0] - 2026-09-24", changelog)
+        self.assertIn("MIGRATION-0.12.0.md", readme)
+        self.assertTrue((WORKFLOW_ROOT / "MIGRATION-0.12.0.md").is_file())
+        self.assertIn("repository_url", readme)
+        self.assertIn("odk-link-proposal", readme)
         source_match = re.search(
             r"^Source: `main@([0-9a-f]{40})`\.$", changelog, re.MULTILINE
         )

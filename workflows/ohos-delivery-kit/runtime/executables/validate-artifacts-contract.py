@@ -45,7 +45,7 @@ from odk_document import (  # noqa: E402
     is_separator_row, parsed_markdown_tables, markdown_tables, table_has_columns,
     tables_with_columns, table_with_columns, unique_table_with_columns, meaningful,
 )
-from odk_repository import parse_git_remote  # noqa: E402
+from odk_repository import parse_git_remote, metadata_repository_url, metadata_pr_url_matches  # noqa: E402
 from odk_diff import valid_unified_diff  # noqa: E402
 # Re-export legacy entry points for callers that load this script as a module.
 from odk_api_signature import (  # noqa: E402
@@ -159,12 +159,12 @@ DEVICE_VARIATION_ROWS = (
 EXTERNAL_DEPENDENCIES_SECTION = "外部依赖"
 EXTERNAL_DEPENDENCIES_COLUMNS = ["子系统", "仓库", "模块/路径", "依赖类型"]
 
-REQ_ID_RE = re.compile(r"^[0-9]+$")
+PROPOSAL_ID_RE = re.compile(r"^[0-9]+$")
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 DRAFT_RE = re.compile(r"^draft-\d{8}-(.+)$")
 REPOSITORY_NAME_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 MAX_SLUG_LENGTH = 40
-INVALID_REQ_SCALAR = "__invalid_req_scalar__"
+INVALID_PROPOSAL_ID_SCALAR = "__invalid_proposal_id_scalar__"
 ASCII_YAML_WHITESPACE = " \t\r\n"
 
 
@@ -240,11 +240,13 @@ def read_frontmatter(path: Path) -> Frontmatter:
             break
         if "\x00" in line:
             return Frontmatter("frontmatter contains NUL")
+        if re.match(r'''^[ \t]*(?:req|req_id|"req"|"req_id"|'req'|'req_id')[ \t]*:''', line):
+            return Frontmatter("legacy identity field; migrate to proposal_id")
         match = re.match(r"^([A-Za-z_][A-Za-z0-9_]*)[ \t\r]*:[ \t\r]*(.*)$", line)
         if match:
             key = match.group(1)
-            if key == "req" and key in result:
-                result[key] = INVALID_REQ_SCALAR
+            if key == "proposal_id" and key in result:
+                result[key] = INVALID_PROPOSAL_ID_SCALAR
                 continue
             raw = match.group(2)
             value = parse_simple_yaml_scalar(raw)
@@ -1290,7 +1292,7 @@ def validate_dir_name(change_dir: Path, reporter: Reporter) -> None:
     repository_root = codespec_dir.parent
     if changes_dir.name != "changes" or codespec_dir.name != "codespec":
         reporter.fail(
-            "change directory layout must be exactly codespec/changes/<repo-name>/<req-id-or-draft>"
+            "change directory layout must be exactly codespec/changes/<repo-name>/<proposal-id-or-draft>"
         )
         return
 
@@ -1308,27 +1310,30 @@ def validate_dir_name(change_dir: Path, reporter: Reporter) -> None:
     name = change_dir.name
     proposal = change_dir / "proposal.md"
     frontmatter = read_frontmatter(proposal)
+    if "req" in frontmatter or "req_id" in frontmatter:
+        reporter.fail("proposal.md: legacy identity field; migrate to proposal_id")
+        return
     if frontmatter.invalid_reason is not None:
         reporter.fail(f"proposal.md: invalid frontmatter ({frontmatter.invalid_reason})")
         return
-    req = trim_yaml_whitespace(frontmatter.get("req", ""))
+    proposal_id = trim_yaml_whitespace(frontmatter.get("proposal_id", ""))
     draft_match = DRAFT_RE.fullmatch(name)
-    if draft_match and not req:
+    if draft_match and not proposal_id:
         if validate_slug(draft_match.group(1), reporter):
             reporter.pass_(f"change directory name is valid draft path: {name}")
         return
 
-    if not req:
-        reporter.fail("proposal.md: req frontmatter is required for a formal change directory")
+    if not proposal_id:
+        reporter.fail("proposal.md: proposal_id frontmatter is required for a formal change directory")
         return
-    if not REQ_ID_RE.fullmatch(req):
-        reporter.fail(f"proposal.md: req '{req}' is invalid (formal req-id must contain digits only)")
+    if not PROPOSAL_ID_RE.fullmatch(proposal_id):
+        reporter.fail(f"proposal.md: proposal_id '{proposal_id}' is invalid (formal proposal-id must contain digits only)")
         return
 
-    if name != req:
-        reporter.fail(f"change directory name must exactly match proposal.md req '{req}': {name}")
+    if name != proposal_id:
+        reporter.fail(f"change directory name must exactly match proposal.md proposal_id '{proposal_id}': {name}")
         return
-    reporter.pass_(f"change directory name is valid formal req path: {name}")
+    reporter.pass_(f"change directory name is valid formal proposal_id path: {name}")
 
 
 def validate_target_release(change_dir: Path, reporter: Reporter) -> None:
@@ -1372,17 +1377,17 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
         return
 
     initial_failures = reporter.failed
-    req_id = str(metadata.get("req_id", "")).strip()
-    if not REQ_ID_RE.fullmatch(req_id):
-        reporter.fail("metadata_tracking.yaml: req_id must contain digits only")
-    elif req_id != change_dir.name:
-        reporter.fail("metadata_tracking.yaml: req_id does not match the change directory")
+    proposal_id = str(metadata.get("proposal_id", "")).strip()
+    if not PROPOSAL_ID_RE.fullmatch(proposal_id):
+        reporter.fail("metadata_tracking.yaml: proposal_id must contain digits only")
+    elif proposal_id != change_dir.name:
+        reporter.fail("metadata_tracking.yaml: proposal_id does not match the change directory")
     else:
-        proposal_req = trim_yaml_whitespace(read_frontmatter(change_dir / "proposal.md").get("req", ""))
-        if req_id != proposal_req:
-            reporter.fail("metadata_tracking.yaml: req_id does not match proposal.md")
+        frontmatter_proposal_id = trim_yaml_whitespace(read_frontmatter(change_dir / "proposal.md").get("proposal_id", ""))
+        if proposal_id != frontmatter_proposal_id:
+            reporter.fail("metadata_tracking.yaml: proposal_id does not match proposal.md")
         else:
-            reporter.pass_("metadata_tracking.yaml: req_id matches directory and proposal.md")
+            reporter.pass_("metadata_tracking.yaml: proposal_id matches directory and proposal.md")
 
     target_release = str(metadata.get("target_release", "")).strip()
     proposal_release = trim_yaml_whitespace(
@@ -1406,12 +1411,27 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
     current_identity = current_remote.repository if current_remote else None
     current_is_gitcode = bool(current_remote and current_remote.host == "gitcode.com")
     current_head = repository_head_commit(repository_root) if current_identity else None
+
+    def is_current_repository(web_repo):
+        return bool(current_remote and web_repo
+                    and web_repo.repository == current_identity
+                    and web_repo.host == current_remote.host
+                    and (current_remote.scheme != "https" or web_repo.port == current_remote.port))
+
+    explicit_current = any(
+        isinstance(entry, dict)
+        and str(entry.get("repo", "")).strip() == current_identity
+        and is_current_repository(metadata_repository_url(str(entry.get("repository_url", ""))))
+        for entry in repos
+    )
     repository_names: set[str] = set()
+    repository_keys: set[tuple[str, int, str]] = set()
+    current_seen = False
     for index, entry in enumerate(repos, start=1):
         if not isinstance(entry, dict):
             reporter.fail(f"metadata_tracking.yaml: repos[{index}] must be a mapping")
             continue
-        unknown_repo_fields = sorted(set(entry) - {"repo", "pull_requests", "issues"})
+        unknown_repo_fields = sorted(set(entry) - {"repo", "repository_url", "pull_requests", "issues"})
         if unknown_repo_fields:
             reporter.fail(
                 f"metadata_tracking.yaml: repos[{index}] has unknown fields: "
@@ -1426,10 +1446,29 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
             reporter.fail(
                 f"metadata_tracking.yaml: repos[{index}].repo must use organization/repository form"
             )
-        elif repo in repository_names:
-            reporter.fail(f"metadata_tracking.yaml: duplicate repo entry: {repo}")
         else:
             repository_names.add(repo)
+
+        explicit_url = "repository_url" in entry
+        repo_url = str(entry.get("repository_url", f"https://gitcode.com/{repo}")).strip()
+        web_repo = metadata_repository_url(repo_url)
+        if not web_repo or web_repo.repository != repo:
+            reporter.fail("metadata_tracking.yaml: repository_url must be a credential-free HTTPS repository URL matching repo")
+        # Backward compatibility: an unqualified empty current-origin entry may
+        # represent a non-GitCode source, but cannot contain host-specific records.
+        legacy_empty_origin = (not explicit_url and repo == current_identity
+                               and not explicit_current
+                               and not current_is_gitcode and not entry.get("pull_requests")
+                               and not entry.get("issues"))
+        entry_host = current_remote.host if legacy_empty_origin and current_remote else (web_repo.host if web_repo else "")
+        entry_port = (current_remote.port if current_remote and current_remote.scheme == "https" else 443) if legacy_empty_origin else (web_repo.port if web_repo else 443)
+        current_entry = bool(current_remote and repo == current_identity and entry_host == current_remote.host
+                             and (current_remote.scheme != "https" or entry_port == current_remote.port))
+        current_seen |= current_entry
+        key = (entry_host, entry_port, repo)
+        if key in repository_keys:
+            reporter.fail(f"metadata_tracking.yaml: duplicate repo entry: {repo} ({entry_host}:{entry_port})")
+        repository_keys.add(key)
 
         if "pull_requests" not in entry:
             reporter.fail(f"metadata_tracking.yaml: {repo or index} pull_requests is required")
@@ -1437,9 +1476,6 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
         if not isinstance(pull_requests, list):
             reporter.fail(f"metadata_tracking.yaml: {repo or index} pull_requests must be a list")
             pull_requests = []
-        if repo == current_identity and not current_is_gitcode and pull_requests:
-            reporter.fail("metadata_tracking.yaml: non-GitCode current repository requires pull_requests: []; "
-                          "same-path GitCode records cannot identify this source")
         for pr_index, pull_request in enumerate(pull_requests, start=1):
             if not isinstance(pull_request, dict):
                 reporter.fail(f"metadata_tracking.yaml: {repo or index} pull request {pr_index} must be a mapping")
@@ -1463,29 +1499,22 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
             if state and state not in {"open", "merged", "closed"}:
                 reporter.fail("metadata_tracking.yaml: pull request state must be open, merged, or closed")
             url = str(pull_request.get("url", "")).strip()
-            expected_pr_url = (
-                rf"https://gitcode\.com/{re.escape(repo)}/(?:pulls?|merge_requests)/\d+"
-            )
-            if url and (not repo_is_valid or not re.fullmatch(expected_pr_url, url)):
-                reporter.fail("metadata_tracking.yaml: pull request url must match its GitCode repository")
+            if url and (not repo_is_valid or not metadata_pr_url_matches(url, repo_url)):
+                reporter.fail("metadata_tracking.yaml: pull request url must match its repository host, port and path")
             commit = str(pull_request.get("commit", "")).strip()
             if commit and not re.fullmatch(r"[0-9a-fA-F]{40}", commit):
                 reporter.fail("metadata_tracking.yaml: pull request commit must be a full 40-digit hex SHA")
             elif (
                 required
                 and commit
-                and current_is_gitcode
-                and current_identity
-                and repo == current_identity
+                and current_entry
                 and current_head is None
             ):
                 reporter.fail("metadata_tracking.yaml: unable to resolve current repository HEAD")
             elif (
                 required
                 and commit
-                and current_is_gitcode
-                and current_identity
-                and repo == current_identity
+                and current_entry
                 and current_head is not None
                 and commit.lower() != current_head
             ):
@@ -1498,7 +1527,7 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
         if not isinstance(issues, list):
             reporter.fail(f"metadata_tracking.yaml: {repo or index} issues must be a list")
             issues = []
-        if repo == current_identity and not current_is_gitcode and issues:
+        if entry_host != "gitcode.com" and issues:
             reporter.fail("metadata_tracking.yaml: non-GitCode current repository cannot use GitCode issues; "
                           "omit issues or use an empty list")
         issue_ids: set[str] = set()
@@ -1558,7 +1587,7 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
         reporter.fail(
             "metadata_tracking.yaml: current Git origin must be a supported repository URL (HTTPS/SSH with namespace/repository)"
         )
-    elif current_identity and current_identity not in repository_names:
+    elif current_identity and not current_seen:
         reporter.fail(
             "metadata_tracking.yaml: repos must include the current Git origin repository "
             f"{current_identity}"

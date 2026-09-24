@@ -3,11 +3,11 @@
 All delivery artifacts are archived under:
 
 ```
-codespec/changes/<repo-name>/<req-id>/
+codespec/changes/<repo-name>/<proposal-id>/
 codespec/changes/<repo-name>/draft-<yyyymmdd>-<english-slug>/
 ```
 
-Resolve `<repo-name>` from the Git `origin` URL basename without `.git`; if `origin` is unavailable, use the Git worktree root directory name. A formal directory leaf is exactly `req-id`; the English slug exists only while the change is a draft.
+Resolve `<repo-name>` from the Git `origin` URL basename without `.git`; if `origin` is unavailable, use the Git worktree root directory name. A formal directory leaf is exactly `proposal-id`; the English slug exists only while the change is a draft.
 
 Each change directory is **populated by phase** — `odk-init` only seeds `proposal.md` as a frontmatter stub; the other main docs appear when their phase first runs (a missing main doc before its phase is expected, not an error):
 - `proposal.md` — (`odk-init` stub → `odk-propose` fills) requirements proposal with triage, 1+8 device variation, external dependencies, success criteria, and impact scope (YAML frontmatter with `target_release`)
@@ -16,9 +16,16 @@ Each change directory is **populated by phase** — `odk-init` only seeds `propo
 - `execution-plan.md` — (`odk-plan`) implementation plan with AC-Task traceability and task details
 - `spec-for-validation.md` — optional validation specification with integration/system scenarios derived from spec.md (parallel bypass, does not block main flow)
 - `threat-model.md` — optional deep threat analysis (bypass; high-risk security/privacy/compliance changes; produced by `odk-security-threat-model`)
-- `metadata_tracking.yaml` — generated or refreshed by `odk-submit-design-docs` when the formal five-base-file bundle plus required conditional evidence is submitted to design-docs; it may use `pull_requests: []` before a business-code PR exists
+- `metadata_tracking.yaml` — prepared locally from the confirmed source PR, then refreshed by `odk-submit-design-docs` before the five-base-file bundle plus required evidence is submitted; explicit standalone no-PR document submission may use `pull_requests: []`
 
 The recommended phase order is **Propose → Specify → Design → Plan → Implement**. Spec defines WHAT (behavior, ACs, business rules); Design defines HOW (architecture, error code values, interface signatures). Design references specific AC numbers from Spec, strengthening the traceability chain. After design, review and update spec's error codes and interfaces if design decisions changed them.
+
+After all implementation Tasks are complete, review and archive-readiness validation
+run automatically. After they pass the agent reminds the user of source PR submission
+and waits for the user to trigger it. After an actual PR succeeds it prepares local
+metadata and separately asks about the design-docs PR; confirmation triggers submission.
+See [the handoff policy](../delivery/handoff.md) when implementation completes.
+Review/validate remain individually callable. Neither PR submission implies merging.
 
 `reviews/` and `gates/` are optional process evidence, not part of the minimal archive contract. If needed, store them under an optional evidence directory such as `evidence/reviews/` and `evidence/gates/`.
 
@@ -45,7 +52,7 @@ Honour an explicitly user-named command over this default. Stay consistent withi
 
 ### Base Commands (standalone, no plugin required)
 
-Invoke via Skill tool: `odk-init` / `odk-propose` / `odk-spec` / `odk-design` / `odk-plan` / `odk-implement` / `odk-review` / `odk-validate` / `odk-submit-design-docs` / `odk-spec-for-validation` / `odk-security-threat-model` / `odk-link-req`.
+Invoke via Skill tool: `odk-init` / `odk-propose` / `odk-spec` / `odk-design` / `odk-plan` / `odk-implement` / `odk-review` / `odk-validate` / `odk-submit-design-docs` / `odk-spec-for-validation` / `odk-security-threat-model` / `odk-link-proposal`.
 Each skill loads its own full context. Base commands are template-driven with zero plugin dependencies.
 
 ### Bridge Commands (plugin-specific)

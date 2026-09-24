@@ -67,6 +67,33 @@ def repository_identity(remote: str) -> str | None:
     return parsed.repository if parsed else None
 
 
+def metadata_repository_url(value: str) -> GitRemote | None:
+    """Canonical HTTPS repository identity for cross-host tracking (not Git auth)."""
+    parsed = parse_git_remote(value)
+    if parsed is None or parsed.scheme != "https" or urlsplit(value).username is not None:
+        return None
+    return parsed
+
+
+def metadata_pr_url_matches(url: str, repository_url: str) -> bool:
+    """Validate repository ownership of common PR/MR URL shapes, without network."""
+    repository = metadata_repository_url(repository_url)
+    if repository is None or any(char.isspace() for char in url):
+        return False
+    try:
+        pr = urlsplit(url)
+        if (pr.scheme != "https" or pr.username is not None or pr.password is not None
+                or pr.query or pr.fragment or pr.hostname != repository.host
+                or (443 if pr.port is None else pr.port) != repository.port):
+            return False
+    except ValueError:
+        return False
+    return re.fullmatch(
+        rf"/{re.escape(repository.repository)}/(?:pulls?|merge_requests|-/merge_requests|pull-requests|pullrequest)/[0-9]+",
+        pr.path,
+    ) is not None
+
+
 def same_repository_endpoint(confirmed: str, checkout: str) -> bool:
     """Only normalize syntax/default ports; cross-transport aliases need consent."""
     left, right = parse_git_remote(confirmed), parse_git_remote(checkout)

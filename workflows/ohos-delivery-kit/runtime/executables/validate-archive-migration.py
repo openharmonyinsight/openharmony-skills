@@ -13,7 +13,7 @@ from pathlib import Path, PurePosixPath
 LEGACY_PATH_RE = re.compile(
     r"^\.codespec/changes/issue-[0-9]+-([a-z0-9]+(?:-[a-z0-9]+)*)$"
 )
-REQ_ID_RE = re.compile(r"^[0-9]+$")
+PROPOSAL_ID_RE = re.compile(r"^[0-9]+$")
 LEGACY_FORMAL_ID_RE = re.compile(r"^[A-Za-z0-9]+(?:[A-Za-z0-9-]*[A-Za-z0-9])?$")
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 LEGACY_FLAT_PATH_RE = re.compile(
@@ -66,7 +66,7 @@ def repository_scoped_legacy_path(path: str) -> tuple[str, str] | None:
     repository, identity = parts[2:]
     if (
         not REPOSITORY_NAME_RE.fullmatch(repository)
-        or REQ_ID_RE.fullmatch(identity)
+        or PROPOSAL_ID_RE.fullmatch(identity)
         or DRAFT_RE.fullmatch(identity)
         or not LEGACY_FORMAL_ID_RE.fullmatch(identity)
     ):
@@ -149,11 +149,11 @@ def build_plans(
 
         if is_flat_draft:
             if identity != "-":
-                fail(f"draft mapping must use '-' instead of a req-id: {old_path}")
+                fail(f"draft mapping must use '-' instead of a proposal-id: {old_path}")
             new_leaf = flat_draft
         else:
-            if not REQ_ID_RE.fullmatch(identity):
-                fail(f"invalid req-id: {identity}")
+            if not PROPOSAL_ID_RE.fullmatch(identity):
+                fail(f"invalid proposal-id: {identity}")
             flat_prefix = f"codespec/changes/{identity}-"
             legacy_flat_match = LEGACY_FLAT_PATH_RE.fullmatch(old_path)
             if issue_match:
@@ -161,9 +161,9 @@ def build_plans(
             elif old_path.startswith(flat_prefix):
                 slug = old_path[len(flat_prefix):]
             elif legacy_flat_match:
-                # Pre-0.11 archives may carry an alphanumeric requirement identity
+                # Pre-0.11 archives may carry an alphanumeric proposal identity
                 # in the directory name. The TSV mapping is the developer-confirmed
-                # source of truth for the new numeric req-id.
+                # source of truth for the new numeric proposal-id.
                 slug = legacy_flat_match.group("slug")
             elif scoped_match:
                 scoped_repository, _ = scoped_match
@@ -174,7 +174,7 @@ def build_plans(
                     )
                 slug = None
             else:
-                fail(f"invalid legacy path or req identity: {old_path}")
+                fail(f"invalid legacy path or proposal_id identity: {old_path}")
             if slug is not None and not SLUG_RE.fullmatch(slug):
                 fail(f"invalid slug: {slug}")
             new_leaf = identity
@@ -272,9 +272,9 @@ def discover_legacy_archives_in_head(root: Path) -> set[str]:
     return discovered
 
 
-def frontmatter_req_values(frontmatter: str) -> list[str]:
+def frontmatter_proposal_id_values(frontmatter: str) -> list[str]:
     values: list[str] = []
-    for match in re.finditer(r"(?m)^\s*req\s*:\s*(.*)$", frontmatter):
+    for match in re.finditer(r"(?m)^\s*proposal_id\s*:\s*(.*)$", frontmatter):
         value = re.sub(r"\s+#.*$", "", match.group(1)).strip()
         if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
             value = value[1:-1].strip()
@@ -353,28 +353,30 @@ def check_staged(root: Path, map_path: Path) -> None:
     for path in proposals:
         staged_text = git(root, "show", f":{path}").stdout
         frontmatter = proposal_frontmatter(staged_text, path)
+        if re.search(r'''(?m)^[ \t]*(?:req|req_id|"req"|"req_id"|'req'|'req_id')[ \t]*:''', frontmatter):
+            fail(f"{path}: legacy identity field; migrate to proposal_id")
         if re.search(r"(?m)^\s*issue\s*:", frontmatter):
             fail(f"{path}: staged proposal still contains legacy issue frontmatter")
-        req_values = frontmatter_req_values(frontmatter)
-        if len(req_values) > 1:
-            fail(f"{path}: staged proposal contains duplicate req fields")
+        proposal_id_values = frontmatter_proposal_id_values(frontmatter)
+        if len(proposal_id_values) > 1:
+            fail(f"{path}: staged proposal contains duplicate proposal_id fields")
         parts = PurePosixPath(path).parts
         if len(parts) != 5 or parts[:2] != ("codespec", "changes"):
-            fail(f"{path}: staged archive path must be codespec/changes/<repo-name>/<req-id>/proposal.md")
+            fail(f"{path}: staged archive path must be codespec/changes/<repo-name>/<proposal-id>/proposal.md")
         if parts[2] != repo_name:
             fail(f"{path}: staged repository layer does not match repository identity")
         leaf = parts[3]
         if DRAFT_RE.fullmatch(leaf):
-            if req_values and req_values[0]:
-                fail(f"{path}: staged draft proposal req must be empty or absent")
+            if proposal_id_values and proposal_id_values[0]:
+                fail(f"{path}: staged draft proposal proposal_id must be empty or absent")
         else:
-            if len(req_values) != 1 or not req_values[0]:
-                fail(f"{path}: staged proposal must contain exactly one non-empty req field")
-            req_id = req_values[0]
-            if not REQ_ID_RE.fullmatch(req_id):
-                fail(f"{path}: invalid staged req-id: {req_id}")
-            if leaf != req_id:
-                fail(f"{path}: staged req field does not match directory identity")
+            if len(proposal_id_values) != 1 or not proposal_id_values[0]:
+                fail(f"{path}: staged proposal must contain exactly one non-empty proposal_id field")
+            proposal_id = proposal_id_values[0]
+            if not PROPOSAL_ID_RE.fullmatch(proposal_id):
+                fail(f"{path}: invalid staged proposal-id: {proposal_id}")
+            if leaf != proposal_id:
+                fail(f"{path}: staged proposal_id field does not match directory identity")
 
     print(
         f"PASS staged migration: {len(proposals)} proposal(s), no unstaged/untracked edits, "

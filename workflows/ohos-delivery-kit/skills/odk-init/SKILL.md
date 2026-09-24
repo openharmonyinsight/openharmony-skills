@@ -11,27 +11,27 @@ license: MIT
 Ask the user for:
 1. **English short slug** — concise description of the requirement (e.g. `arkui-focus`)
 2. **目标发布版本 (target_release)** — 填发布版本号（如 `7.0`、`7.1`，可选 `7.1-Beta`），**不填分支名**（`master`/`dev` 不是发布版本）。可按发布惯例做委婉推断（见下），但**不要替用户自动填入**——必须由用户明确给出版本号。
-3. **Requirement ID (req)** (optional) — if not yet available, draft naming is used; link later via `{{CMD_PREFIX}}link-req`
+3. **Proposal ID (proposal_id)** (optional) — if not yet available, draft naming is used; link later via `{{CMD_PREFIX}}link-proposal`
 
 > **target_release 委婉推断（参考，不强制）**：OpenHarmony 每年一个大版本（`x.0`）+ 一个小版本（`x.1`）。按今天月份判窗口：7–10 月→小版本，11–12 月及 1–6 月→大版本；按年份查版本（2026：大=7.0、小=7.1）。向用户呈现为「按惯例推断是 X，请明确输入实际目标版本」，**等用户明确答复后再写入 frontmatter**，不替用户自动填入。详见 `oh-metadata-rules.md` R-OH-004。
 
 If arguments are provided, parse both coherent forms:
-- `<req> <slug> <target-release>` when the first argument is a valid requirement ID and the third argument is a target release
-- `<slug> <target-release> [req]` otherwise; the requirement ID remains optional
+- `<proposal-id> <slug> <target-release>` when the first argument is a valid proposal ID and the third argument is a target release
+- `<slug> <target-release> [proposal-id]` otherwise; the proposal ID remains optional
 
-Validate a supplied req against `^[0-9]+$`. Formal req IDs contain digits only, with no fixed length.
+Validate a supplied proposal_id against `^[0-9]+$`. Formal proposal IDs contain digits only, with no fixed length.
 Validate the slug against `^[a-z0-9]+(?:-[a-z0-9]+)*$` and a maximum length of 40. Do this before any directory or `.gitignore` mutation.
 
 ## Steps
 
 1. Resolve `<repo-name>` from the Git `origin` URL basename without `.git`; if `origin` is unavailable, use the Git worktree root directory name. Reject a name containing path separators or characters outside `[A-Za-z0-9._-]`.
-2. Create directory: `codespec/changes/<repo-name>/<req>/` (or `codespec/changes/<repo-name>/draft-<yyyymmdd>-<slug>/` if no req). The formal leaf is exactly the requirement ID and does not retain the slug. If the directory already exists, abort and ask the user to resolve the existing requirement directory.
+2. Create directory: `codespec/changes/<repo-name>/<proposal-id>/` (or `codespec/changes/<repo-name>/draft-<yyyymmdd>-<slug>/` if no proposal_id). The formal leaf is exactly the proposal ID and does not retain the slug. If the directory already exists, abort and ask the user to resolve the existing proposal directory.
 3. Create `proposal.md` as a **frontmatter-only stub** — no chapter skeleton, no template read. (`{{CMD_PREFIX}}propose` generates the full structure from the template; an empty skeleton here would only be read back and overwritten, wasting context.) Content:
 
    ```yaml
    ---
    target_release: <user-provided value>
-   req: "<req or empty>"
+   proposal_id: "<proposal_id or empty>"
    author: ""
    date: ""
    status: Draft

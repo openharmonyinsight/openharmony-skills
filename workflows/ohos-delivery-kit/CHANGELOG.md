@@ -4,6 +4,26 @@ All notable changes to the published `ohos-delivery-kit` workflow are documented
 this file. Source artifacts are synchronized from
 `oshunter/ohos-delivery-kit` `main` through the marketplace publisher.
 
+## [0.12.0] - 2026-09-24
+
+Source: `main@1ba43562551f551c4d9ee2feb5e0b3bada9ff849`.
+
+### Changed
+
+- **Breaking:** unify archive identity as `proposal_id`, `<proposal-id>` and
+  `odk-link-proposal`; preserve numeric IDs and document field migration.
+- Automatically review/validate after implementation; wait for an explicit source
+  PR instruction, prepare real PR metadata, then separately confirm a design-docs PR.
+- Non-GitCode sources require a documentation address supplied for this submission.
+- Track non-GitCode PR/MR URLs using `repository_url`, preserving legacy GitCode
+  records and distinguishing identical paths on different hosts.
+
+### Fixed
+
+- Reject legacy identity fields, including quoted/indented forms and mixed fields.
+- Preserve same-path cross-host records and normalize repository names consistently.
+- Align skill descriptions and action headings with distribution validation.
+
 ## [0.11.0] - 2026-09-04
 
 Source: `main@2e5b440fe9e138cd93ec9305c7f5362acedea12f`.

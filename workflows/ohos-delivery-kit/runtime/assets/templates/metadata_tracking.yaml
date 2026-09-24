@@ -1,8 +1,10 @@
-# Generated or refreshed when the ODK design-document bundle is submitted.
-req_id: "{{REQ_ID}}"
+# Prepared locally after a confirmed source PR; refreshed before design-docs submission.
+proposal_id: "{{PROPOSAL_ID}}"
 target_release: "{{TARGET_RELEASE}}"
 repos:
   - repo: "{{ORGANIZATION}}/{{REPOSITORY}}"
+    # Set for new records; required for non-GitCode PRs. Omission defaults to GitCode.
+    # repository_url: "https://github.com/{{ORGANIZATION}}/{{REPOSITORY}}"
     # An empty list is valid before the business-code PR has been created.
     pull_requests: []
     # Populated form:
@@ -11,7 +13,7 @@ repos:
     #     title: "Implement the requirement"
     #     state: "open" # open | merged | closed
     #     commit: "0123456789abcdef0123456789abcdef01234567"
-    # Optional extension; omit by default.
+    # Optional extension (GitCode only); omit by default.
     # issues:
     #   - issue: 12345
     #     url: "https://gitcode.com/{{ORGANIZATION}}/{{REPOSITORY}}/issues/12345"
