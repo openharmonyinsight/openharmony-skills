@@ -25,7 +25,7 @@ license: MIT
 
 ## Steps
 
-0. Check for subsystem profile: follow the Profile Detection rules in `using-odk` — if a profile matches, apply its `template_overrides.design` (additional sections, fragments) and `agent_instructions.design`
+0. Check for subsystem profile: read and follow `{{ASSET_ROOT}}/contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.design` (additional sections, fragments) and `agent_instructions.design`
 1. **Code fact baseline (conditional):** If the change modifies an existing module (not pure greenfield, pure docs, or config-only), search the codebase for key facts the design will reference:
    - Search for existing data structures, key function signatures, and runtime flows in the affected module(s)
    - Record findings as a brief code fact baseline: file:line references for key structures, signatures, and flow paths
@@ -72,7 +72,7 @@ license: MIT
 
 ## Output
 
-Write to `codespec/changes/<repo-name>/<req-id>/design.md`
+Write to `codespec/changes/<repo-name>/<proposal-id>/design.md`
 
 Confirm with the user that design decisions are aligned with requirements.
 

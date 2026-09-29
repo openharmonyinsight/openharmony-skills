@@ -12,6 +12,17 @@ import argparse
 import re
 from pathlib import Path
 
+if __package__:
+    from .odk_document import section_texts
+else:  # Direct CLI and importlib absolute-path callers need no sys.path setup.
+    import importlib.util
+    _document_spec = importlib.util.spec_from_file_location(
+        "_odk_yaml_document", Path(__file__).with_name("odk_document.py")
+    )
+    _document = importlib.util.module_from_spec(_document_spec)
+    _document_spec.loader.exec_module(_document)
+    section_texts = _document.section_texts
+
 
 def _unquote(value: str) -> str:
     value = value.strip()
@@ -22,6 +33,182 @@ def _unquote(value: str) -> str:
 
 def _lines(path: str) -> list[str]:
     return Path(path).read_text(encoding="utf-8").splitlines()
+
+
+def _metadata_scalar(value: str) -> str:
+    value = value.strip()
+    if value.startswith("'"):
+        result: list[str] = []
+        index = 1
+        while index < len(value):
+            if value[index] != "'":
+                result.append(value[index])
+                index += 1
+                continue
+            if index + 1 < len(value) and value[index + 1] == "'":
+                result.append("'")
+                index += 2
+                continue
+            suffix = value[index + 1 :].strip()
+            if suffix and not suffix.startswith("#"):
+                raise ValueError("invalid quoted scalar")
+            return "".join(result)
+        raise ValueError("invalid quoted scalar")
+    if value.startswith('"'):
+        escapes = {
+            "0": "\0",
+            "a": "\a",
+            "b": "\b",
+            "t": "\t",
+            "n": "\n",
+            "v": "\v",
+            "f": "\f",
+            "r": "\r",
+            "e": "\x1b",
+            " ": " ",
+            '"': '"',
+            "/": "/",
+            "\\": "\\",
+            "N": "\u0085",
+            "_": "\u00a0",
+            "L": "\u2028",
+            "P": "\u2029",
+        }
+        result = []
+        index = 1
+        while index < len(value):
+            char = value[index]
+            if char == '"':
+                suffix = value[index + 1 :].strip()
+                if suffix and not suffix.startswith("#"):
+                    raise ValueError("invalid quoted scalar")
+                return "".join(result)
+            if char != "\\":
+                result.append(char)
+                index += 1
+                continue
+            if index + 1 >= len(value):
+                raise ValueError("invalid quoted scalar")
+            escaped = value[index + 1]
+            if escaped in escapes:
+                result.append(escapes[escaped])
+                index += 2
+                continue
+            widths = {"x": 2, "u": 4, "U": 8}
+            width = widths.get(escaped)
+            digits = value[index + 2 : index + 2 + width] if width else ""
+            if width is None or len(digits) != width or not re.fullmatch(r"[0-9A-Fa-f]+", digits):
+                raise ValueError("invalid quoted scalar escape")
+            try:
+                result.append(chr(int(digits, 16)))
+            except ValueError as error:
+                raise ValueError("invalid quoted scalar escape") from error
+            index += 2 + width
+        raise ValueError("invalid quoted scalar")
+    return re.sub(r"\s+#.*$", "", value).strip()
+
+
+def parse_metadata_tracking(path: str) -> dict[str, object]:
+    """Parse the fixed metadata_tracking.yaml schema without external packages."""
+
+    result: dict[str, object] = {"repos": []}
+    repos = result["repos"]
+    assert isinstance(repos, list)
+    current_repo: dict[str, object] | None = None
+    current_section: str | None = None
+    current_item: dict[str, str] | None = None
+    seen_top: set[str] = set()
+    seen_repos_marker = False
+    seen_sections: set[str] = set()
+    last_line_number = 0
+
+    def require_nonempty_block(line_number: int) -> None:
+        if current_repo is None or current_section is None:
+            return
+        items = current_repo[current_section]
+        if isinstance(items, list) and not items:
+            raise ValueError(
+                f"{path}:{line_number}: {current_section} must use [] or contain at least one item"
+            )
+
+    for line_number, raw in enumerate(_lines(path), start=1):
+        last_line_number = line_number
+        line = raw.rstrip()
+        if not line or line.lstrip().startswith("#"):
+            continue
+
+        top = re.fullmatch(r"(proposal_id|target_release):\s*(.+)", line)
+        if top:
+            require_nonempty_block(line_number)
+            key, value = top.groups()
+            if key in seen_top:
+                raise ValueError(f"{path}:{line_number}: duplicate {key}")
+            seen_top.add(key)
+            result[key] = _metadata_scalar(value)
+            current_section = None
+            current_item = None
+            continue
+        if line == "repos:":
+            require_nonempty_block(line_number)
+            if seen_repos_marker:
+                raise ValueError(f"{path}:{line_number}: duplicate repos")
+            seen_repos_marker = True
+            current_section = None
+            current_item = None
+            continue
+
+        repo = re.fullmatch(r"  - repo:\s*(.+)", line)
+        if repo and seen_repos_marker:
+            require_nonempty_block(line_number)
+            current_repo = {"repo": _metadata_scalar(repo.group(1))}
+            repos.append(current_repo)
+            current_section = None
+            current_item = None
+            seen_sections = set()
+            continue
+
+        repository_url = re.fullmatch(r"    repository_url:\s*(.+)", line)
+        if repository_url and current_repo is not None:
+            require_nonempty_block(line_number)
+            if "repository_url" in current_repo:
+                raise ValueError(f"{path}:{line_number}: duplicate repository_url")
+            current_repo["repository_url"] = _metadata_scalar(repository_url.group(1))
+            current_section = None
+            current_item = None
+            continue
+
+        section = re.fullmatch(r"    (pull_requests|issues):(?:\s*(\[\]))?", line)
+        if section and current_repo is not None:
+            require_nonempty_block(line_number)
+            section_name = section.group(1)
+            if section_name in seen_sections:
+                raise ValueError(f"{path}:{line_number}: duplicate {section_name}")
+            seen_sections.add(section_name)
+            current_repo[section_name] = []
+            current_section = None if section.group(2) else section_name
+            current_item = None
+            continue
+
+        first_field = re.fullmatch(r"      - ([a-z_]+):\s*(.+)", line)
+        if first_field and current_repo is not None and current_section is not None:
+            current_item = {first_field.group(1): _metadata_scalar(first_field.group(2))}
+            items = current_repo[current_section]
+            assert isinstance(items, list)
+            items.append(current_item)
+            continue
+
+        field = re.fullmatch(r"        ([a-z_]+):\s*(.+)", line)
+        if field and current_item is not None:
+            key, value = field.groups()
+            if key in current_item:
+                raise ValueError(f"{path}:{line_number}: duplicate {key}")
+            current_item[key] = _metadata_scalar(value)
+            continue
+
+        raise ValueError(f"{path}:{line_number}: unsupported metadata syntax: {line.strip()}")
+
+    require_nonempty_block(last_line_number + 1)
+    return result
 
 
 def parse_contract_artifacts(path: str) -> dict[str, dict[str, object]]:
@@ -128,6 +315,45 @@ def parse_resource_contract(path: str) -> dict[str, str | list[str]]:
     return result
 
 
+def parse_api_spec_contract(path: str) -> dict[str, str | list[str]]:
+    """Parse the flat scalar/list api_spec_contract block."""
+
+    result: dict[str, str | list[str]] = {}
+    current_list: str | None = None
+    in_contract = False
+    for raw in _lines(path):
+        line = raw.rstrip()
+        if not line or line.lstrip().startswith("#"):
+            continue
+        if line == "api_spec_contract:":
+            in_contract = True
+            continue
+        if in_contract and re.match(r"^\S", line):
+            break
+        if not in_contract:
+            continue
+
+        list_key = re.match(r"^  ([A-Za-z0-9_]+):$", line)
+        if list_key:
+            current_list = list_key.group(1)
+            result[current_list] = []
+            continue
+        scalar = re.match(r"^  ([A-Za-z0-9_]+):\s*(.+)$", line)
+        if scalar:
+            current_list = None
+            result[scalar.group(1)] = _unquote(scalar.group(2))
+            continue
+        item = re.match(r"^    -\s*(.+)$", line)
+        if item and current_list:
+            values = result[current_list]
+            if isinstance(values, list):
+                values.append(_unquote(item.group(1)))
+
+    if not result:
+        raise ValueError(f"{path}: missing or empty api_spec_contract block")
+    return result
+
+
 def validate_resource_contract_schema(contract: dict[str, str | list[str]]) -> list[str]:
     """Validate the executable shape of the thin resource contract."""
 
@@ -217,13 +443,13 @@ def _markdown_table_headers(text: str) -> list[list[str]]:
     return result
 
 
+def _heading_sections(text: str, heading: str) -> list[str]:
+    return section_texts(text, heading)
+
+
 def _heading_section(text: str, heading: str) -> str:
-    match = re.search(
-        rf"^##\s+{re.escape(heading)}\s*$([\s\S]*?)(?=^##\s+|\Z)",
-        text,
-        flags=re.MULTILINE,
-    )
-    return match.group(1) if match else ""
+    sections = _heading_sections(text, heading)
+    return sections[0] if len(sections) == 1 else ""
 
 
 def contract_artifacts(path: str) -> None:
@@ -292,9 +518,10 @@ def validate_resource_templates(path: str, templates_root: str) -> list[str]:
             issues.append("missing resource template: proposal.md")
         else:
             proposal_text = proposal.read_text(encoding="utf-8")
-            section_text = _heading_section(proposal_text, proposal_section)
-            if not section_text:
-                issues.append("proposal.md resource heading differs from contract")
+            proposal_sections = _heading_sections(proposal_text, proposal_section)
+            if len(proposal_sections) != 1:
+                issues.append("proposal.md resource heading must appear exactly once")
+            section_text = proposal_sections[0] if len(proposal_sections) == 1 else ""
             expected_columns = values("proposal_columns")
             if expected_columns not in _markdown_table_headers(section_text):
                 issues.append("proposal.md resource table columns differ from contract")

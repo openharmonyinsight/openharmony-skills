@@ -3,7 +3,7 @@
 target_release: ""
 # change_type: 变更类型（new-feature/enhancement/optimization/bugfix/refactor/deprecation）
 change_type: ""
-req: ""
+proposal_id: ""
 author: ""
 date: ""
 status: Draft

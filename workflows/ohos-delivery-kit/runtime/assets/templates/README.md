@@ -7,6 +7,9 @@
 - **`ai/`** — AI 生成交付件模板，用于 AI agent 在各阶段自动产出标准文档
 - **`review/`** — 人工审核用模板，用于评审阶段记录审查结论
 
+根目录的 `metadata_tracking.yaml` 是 design-docs 提交元数据模板，由
+`odk-submit-design-docs` 在提交时生成或刷新，不在 init 阶段提前创建。
+
 ## ai/ — AI 生成交付件
 
 | 模板 | 用途 | 必需章节数 |

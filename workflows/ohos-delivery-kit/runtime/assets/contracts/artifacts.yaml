@@ -1,5 +1,5 @@
 version: 2
-archive_root: "codespec/changes/<repo-name>/<req-id>/"
+archive_root: "codespec/changes/<repo-name>/<proposal-id>/"
 minimum_contract:
   required_artifacts:
     - proposal
@@ -7,6 +7,7 @@ minimum_contract:
     - design
     - execution-plan
   optional_artifacts:
+    - metadata-tracking
     - spec-for-validation
     - threat-model
     - evidence/reviews
@@ -46,6 +47,57 @@ resource_contract:
     - "spec.md=资源验收契约"
     - "design.md=资源设计"
     - "execution-plan.md=资源验证矩阵"
+
+# Conditional, executable API specification contract. The validator activates
+# this shape from proposal.md's API/SDK row instead of treating the spec heading
+# alone as sufficient.
+api_spec_contract:
+  proposal_section: "不涉及项确认"
+  trigger_dimension: "API/SDK"
+  spec_section: "API 规格定义"
+  common_section: "公共规格属性"
+  per_api_section: "逐 API 规格"
+  # Signatures are opaque text; syntax and types belong to the source toolchain.
+  common_value_rules:
+    - "是否新增声明文件=boolean-decision"
+    - "API 类型=api-visibility"
+    - "编程语言=language"
+    - "@syscap=system-capability"
+    - "@since=api-version"
+    - "权限=permission"
+    - "跨平台/元服务/卡片=device-support"
+    - "FA/Stage 模型=application-model"
+  common_required_items:
+    - "是否新增声明文件"
+    - "API 类型"
+    - "编程语言"
+    - "@syscap"
+    - "@since"
+    - "权限"
+    - "跨平台/元服务/卡片"
+    - "FA/Stage 模型"
+  per_api_required_spec_items:
+    - "入参"
+    - "返回值"
+    - "错误码"
+  api_description_elements:
+    - "接口定义三要素=含义/功能"
+    - "接口定义三要素=使用场景"
+    - "接口定义三要素=使用后效果"
+    - "接口使用五要素=相似接口差异"
+    - "接口使用五要素=缺省配置"
+    - "接口使用五要素=规格限制"
+    - "接口使用五要素=生效机制"
+    - "接口使用五要素=注意事项"
+  supported_device_columns:
+    - "设备类型"
+    - "起始版本"
+    - "是否支持"
+  device_difference_columns:
+    - "设备类型"
+    - "行为表现"
+    - "差异原因"
+    - "差异描述"
 
 artifacts:
   proposal:
@@ -178,6 +230,24 @@ artifacts:
     conditional_sections:
       - section: "资源验证矩阵"
         required_when: "resource chain active (any dimension impact state in active_when_states)."
+
+  metadata-tracking:
+    file: "metadata_tracking.yaml"
+    template: "templates/metadata_tracking.yaml"
+    phase: "design-docs-submit"
+    required: false
+    owns:
+      - proposal_id
+      - target_release
+      - repositories
+      - pull_requests
+      - issues
+    requires:
+      - proposal
+      - spec
+      - design
+      - execution-plan
+    required_sections: []
 
   spec-for-validation:
     file: "spec-for-validation.md"

@@ -18,6 +18,7 @@ import re
 import subprocess
 import sys
 from argparse import ArgumentParser
+from datetime import date
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -32,34 +33,34 @@ _SOURCE_LIB = SCRIPT_DIR.parent / "scripts" / "lib"
 _PUBLISHED_LIB = SCRIPT_DIR / "lib"
 sys.path.insert(0, str(_SOURCE_LIB if _SOURCE_LIB.is_dir() else _PUBLISHED_LIB))
 
-from odk_yaml import parse_contract_artifacts, parse_resource_contract  # noqa: E402
+from odk_yaml import (  # noqa: E402
+    parse_api_spec_contract,
+    parse_contract_artifacts,
+    parse_metadata_tracking,
+    parse_resource_contract,
+)
+from odk_document import (  # noqa: E402
+    PLACEHOLDER_RE, BRACKET_PLACEHOLDER_RE, _visible_markdown, atx_heading, headings,
+    section_texts, section_text, normalize_cell, split_table_row,
+    is_separator_row, parsed_markdown_tables, markdown_tables, table_has_columns,
+    tables_with_columns, table_with_columns, unique_table_with_columns, meaningful,
+)
+from odk_repository import parse_git_remote, metadata_repository_url, metadata_pr_url_matches  # noqa: E402
+from odk_diff import valid_unified_diff  # noqa: E402
+# Re-export legacy entry points for callers that load this script as a module.
+from odk_api_signature import (  # noqa: E402
+    api_signature_complete, canonical_api_signature,
+)
 
 
 AC_RE = re.compile(r"\bAC-\d+(?:\.\d+)?\b")
 AC_DEF_RE = re.compile(r"^\s*[-*]\s+\*\*AC-\d+(?:\.\d+)?:\*\*", re.MULTILINE)
 TASK_RE = re.compile(r"\bTASK-\d+\b")
-PLACEHOLDER_RE = re.compile(
-    r"^\s*(?:"
-    r"|[-—]+"
-    r"|TBD"
-    r"|TODO"
-    r"|N/?A"
-    r"|待定"
-    r"|待补充"
-    r"|待实现"
-    r"|待验证"
-    r"|\[[^\]]+\]"
-    r")\s*$",
-    re.IGNORECASE,
-)
 ARCHIVE_MARKER_RE = re.compile(
     r"\b(?:TBD|TODO)\b|(?<![\u4e00-\u9fff])(?:待定|待补充|待实现|待验证)(?![\u4e00-\u9fff])",
     re.IGNORECASE,
 )
-BRACKET_PLACEHOLDER_RE = re.compile(
-    r"\[(?:[^\]\n]*(?:引用|标题|角色|功能|价值|条件|填写|描述|说明|编号|名称|路径|模块|文件|命令|证据|结果|对象|模式|策略|事件|待|TBD|TODO)[^\]\n]*)\]",
-    re.IGNORECASE,
-)
+ANGLE_PLACEHOLDER_RE = re.compile(r"<[^>\n]+>")
 ARCHIVE_READY_CLAIM_RE = re.compile(r"\b(?:PASS|Ready)\b|通过|可归档|归档就绪", re.IGNORECASE)
 LEGACY_TARGET_RELEASE_RE = re.compile(
     r"^OpenHarmony-\d+\.\d+(?:-(?:Release|Beta|Alpha|Dev))?$",
@@ -79,6 +80,7 @@ DFX_SOURCE_REF_RE = re.compile(
 
 
 RESOURCE_CONTRACT = parse_resource_contract(str(CONTRACT_PATH))
+API_SPEC_CONTRACT = parse_api_spec_contract(str(CONTRACT_PATH))
 
 
 def contract_scalar(key: str) -> str:
@@ -95,6 +97,20 @@ def contract_list(key: str) -> list[str]:
     return value
 
 
+def api_contract_scalar(key: str) -> str:
+    value = API_SPEC_CONTRACT.get(key)
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{CONTRACT_PATH}: api_spec_contract.{key} must be a scalar")
+    return value
+
+
+def api_contract_list(key: str) -> list[str]:
+    value = API_SPEC_CONTRACT.get(key)
+    if not isinstance(value, list) or not value:
+        raise ValueError(f"{CONTRACT_PATH}: api_spec_contract.{key} must be a non-empty list")
+    return value
+
+
 RESOURCE_SECTIONS = dict(item.split("=", 1) for item in contract_list("conditional_sections"))
 IMPACT_STATES = set(contract_list("impact_states"))
 ACTIVE_WHEN_STATES = set(contract_list("active_when_states"))
@@ -106,6 +122,22 @@ for dim_key, dim_label in DIMENSION_LABELS.items():
 PROPOSAL_SECTION = contract_scalar("proposal_section")
 PROPOSAL_COLUMNS = contract_list("proposal_columns")
 EVIDENCE_ROOT = contract_scalar("evidence_root")
+
+API_PROPOSAL_SECTION = api_contract_scalar("proposal_section")
+API_TRIGGER_DIMENSION = api_contract_scalar("trigger_dimension")
+API_SPEC_SECTION = api_contract_scalar("spec_section")
+API_COMMON_SECTION = api_contract_scalar("common_section")
+API_PER_API_SECTION = api_contract_scalar("per_api_section")
+API_COMMON_VALUE_RULES = dict(
+    item.split("=", 1) for item in api_contract_list("common_value_rules")
+)
+API_COMMON_REQUIRED_ITEMS = api_contract_list("common_required_items")
+API_REQUIRED_SPEC_ITEMS = api_contract_list("per_api_required_spec_items")
+API_DESCRIPTION_ELEMENTS = [
+    tuple(item.split("=", 1)) for item in api_contract_list("api_description_elements")
+]
+API_SUPPORTED_DEVICE_COLUMNS = api_contract_list("supported_device_columns")
+API_DEVICE_DIFFERENCE_COLUMNS = api_contract_list("device_difference_columns")
 
 DEVICE_VARIATION_SECTION = "1+8 设备差异规格"
 DEVICE_VARIATION_COLUMNS = ["设备/差异项", "是否存在差异", "差异说明"]
@@ -122,13 +154,12 @@ DEVICE_VARIATION_ROWS = (
 EXTERNAL_DEPENDENCIES_SECTION = "外部依赖"
 EXTERNAL_DEPENDENCIES_COLUMNS = ["子系统", "仓库", "模块/路径", "依赖类型"]
 
-REQ_ID_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$")
-LEGACY_ISSUE_REQ_RE = re.compile(r"^issue-\d+$", re.IGNORECASE)
+PROPOSAL_ID_RE = re.compile(r"^[0-9]+$")
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 DRAFT_RE = re.compile(r"^draft-\d{8}-(.+)$")
 REPOSITORY_NAME_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 MAX_SLUG_LENGTH = 40
-INVALID_REQ_SCALAR = "__invalid_req_scalar__"
+INVALID_PROPOSAL_ID_SCALAR = "__invalid_proposal_id_scalar__"
 ASCII_YAML_WHITESPACE = " \t\r\n"
 
 
@@ -204,11 +235,13 @@ def read_frontmatter(path: Path) -> Frontmatter:
             break
         if "\x00" in line:
             return Frontmatter("frontmatter contains NUL")
+        if re.match(r'''^[ \t]*(?:req|req_id|"req"|"req_id"|'req'|'req_id')[ \t]*:''', line):
+            return Frontmatter("legacy identity field; migrate to proposal_id")
         match = re.match(r"^([A-Za-z_][A-Za-z0-9_]*)[ \t\r]*:[ \t\r]*(.*)$", line)
         if match:
             key = match.group(1)
-            if key == "req" and key in result:
-                result[key] = INVALID_REQ_SCALAR
+            if key == "proposal_id" and key in result:
+                result[key] = INVALID_PROPOSAL_ID_SCALAR
                 continue
             raw = match.group(2)
             value = parse_simple_yaml_scalar(raw)
@@ -216,117 +249,333 @@ def read_frontmatter(path: Path) -> Frontmatter:
     return result if closed else Frontmatter("missing closing delimiter")
 
 
-def headings(text: str) -> set[str]:
-    result: set[str] = set()
-    for line in text.splitlines():
-        match = re.match(r"^#{2,6}\s+(.+?)\s*$", line)
-        if match:
-            result.add(match.group(1).strip())
+def normalized_table_key(value: str) -> str:
+    return value.replace("*", "").replace("`", "").strip()
+
+
+def api_sdk_involvement(proposal: str) -> str | None:
+    sections = section_texts(proposal, API_PROPOSAL_SECTION)
+    if len(sections) != 1:
+        return None
+    tables = tables_with_columns(sections[0], ["维度", "是否涉及"])
+    if len(tables) != 1:
+        return None
+    matches = [
+        row
+        for row in tables[0]
+        if normalized_table_key(row.get("维度", "")) == API_TRIGGER_DIMENSION
+    ]
+    if len(matches) != 1:
+        return None
+    value = normalized_table_key(matches[0].get("是否涉及", ""))
+    return value if value in {"是", "否"} else value or None
+
+
+def api_common_value_complete(item: str, value: str) -> bool:
+    if not meaningful(value) or ANGLE_PLACEHOLDER_RE.search(value) or re.search(
+        r"\b(?:TBD|TODO)\b|待确认|待定|待补充|待实现|待验证",
+        value,
+        flags=re.IGNORECASE,
+    ):
+        return False
+
+    normalized = " ".join(normalized_table_key(value).split())
+    rule = API_COMMON_VALUE_RULES.get(item)
+    annotation = r"(?:\s*[（(].+[）)])?"
+    if rule and re.search(r"或|任选|二选一|未确定|未决", normalized):
+        return False
+    if rule == "boolean-decision":
+        return bool(
+            re.fullmatch(
+                r"(?:是|否)(?:(?:\s*[：:].+)|(?:\s*[（(].+[）)]))?",
+                normalized,
+            )
+        )
+    if rule == "api-visibility":
+        return normalized in {"Public", "System"}
+    if rule == "language":
+        return normalized in {"ArkTS", "C", "两者"}
+    if rule == "system-capability":
+        return bool(
+            re.fullmatch(r"SystemCapability(?:\.[A-Za-z][A-Za-z0-9_]*)+", normalized)
+            or re.fullmatch(r"不适用\s*[（(].+[）)]", normalized)
+        )
+    if rule == "api-version":
+        return bool(
+            re.fullmatch(r"\d+(?:\.\d+){0,2}" + annotation, normalized)
+            or re.fullmatch(r"不适用\s*[（(].+[）)]", normalized)
+        )
+    if rule == "permission":
+        return bool(
+            re.fullmatch(r"无" + annotation, normalized)
+            or re.fullmatch(
+                r"ohos\.permission\.[A-Z][A-Z0-9_.]*(?:\s*[,，、;；+]\s*"
+                r"ohos\.permission\.[A-Z][A-Z0-9_.]*)*" + annotation,
+                normalized,
+            )
+            or re.fullmatch(r"服务侧校验\s*[：:]\s*\S.{2,}", normalized)
+        )
+    if rule == "device-support":
+        parts = re.split(r"[（(]", normalized, maxsplit=1)
+        status_text = parts[0].strip()
+        if len(parts) > 1 and re.search(r"[是否]", parts[1].replace("是否", "")):
+            return False
+        statuses = [part.strip() for part in re.split(r"[/／]", status_text)]
+        return len(statuses) in {1, 3} and all(status in {"是", "否"} for status in statuses)
+    if rule == "application-model":
+        marker = r"@(?:famodelonly|stagemodelonly|FaAndStageModel)"
+        markers = re.findall(marker, normalized)
+        if normalized.startswith("不适用"):
+            return not markers and bool(re.fullmatch(r"不适用\s*[（(].+[）)]", normalized))
+        return len(markers) == 1 and bool(re.fullmatch(rf"{marker}{annotation}", normalized))
+    return True
+
+
+def api_heading_signature(line: str) -> str | None:
+    """Return an opaque signature, including empty; None means no API heading."""
+    heading = atx_heading(line)
+    if heading is None or heading[0] != 4 or not heading[1].startswith("API:"):
+        return None
+    return heading[1][len("API:"):].strip()
+
+
+def api_entry_blocks(per_api_text: str) -> list[tuple[str, str]]:
+    lines = per_api_text.splitlines()
+    matches = [(index, signature) for index, line in enumerate(lines)
+               if (signature := api_heading_signature(line)) is not None]
+    entries: list[tuple[str, str]] = []
+    for index, (start, signature) in enumerate(matches):
+        end = matches[index + 1][0] if index + 1 < len(matches) else len(lines)
+        entries.append((signature, "\n".join(lines[start + 1:end])))
+    return entries
+
+
+def table_rows_by_key(
+    text: str,
+    columns: list[str],
+    key_column: str,
+) -> dict[str, list[dict[str, str]]]:
+    rows = unique_table_with_columns(text, columns) or []
+    result: dict[str, list[dict[str, str]]] = {}
+    for row in rows:
+        result.setdefault(normalized_table_key(row.get(key_column, "")), []).append(row)
     return result
 
 
-def section_text(text: str, title: str) -> str:
-    lines = text.splitlines()
-    start = None
-    start_level = 0
-
-    for idx, line in enumerate(lines):
-        match = re.match(r"^(#{2,6})\s+(.+?)\s*$", line)
-        if not match:
-            continue
-        if match.group(2).strip() == title:
-            start = idx + 1
-            start_level = len(match.group(1))
-            break
-
-    if start is None:
-        return ""
-
-    end = len(lines)
-    for idx in range(start, len(lines)):
-        match = re.match(r"^(#{2,6})\s+(.+?)\s*$", lines[idx])
-        if match and len(match.group(1)) <= start_level:
-            end = idx
-            break
-
-    return "\n".join(lines[start:end])
+def supported_device_table_issues(rows: list[dict[str, str]]) -> list[str]:
+    """Return decision errors for one per-API supported-device table."""
+    issues: list[str] = []
+    device_names: set[str] = set()
+    for row in rows:
+        device_name = normalized_table_key(row.get("设备类型", ""))
+        version = normalized_table_key(row.get("起始版本", ""))
+        support = normalized_table_key(row.get("是否支持", ""))
+        if device_name in device_names:
+            issues.append(f"duplicate supported device: {device_name}")
+        device_names.add(device_name)
+        if support not in {"是", "否"}:
+            issues.append(f"supported device '{device_name}' must state 是 or 否")
+        if not (
+            re.fullmatch(r"\d+(?:\.\d+){0,2}", version)
+            or re.fullmatch(r"不适用\s*[（(].+[）)]", version)
+        ):
+            issues.append(f"supported device '{device_name}' has invalid starting version")
+    return issues
 
 
-def normalize_cell(value: str) -> str:
-    return value.replace("<br>", " ").replace("<br/>", " ").replace("<br />", " ").strip()
+def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
+    proposal_path = change_dir / "proposal.md"
+    spec_path = change_dir / "spec.md"
+    if not proposal_path.is_file() or not spec_path.is_file():
+        return
+
+    involvement = api_sdk_involvement(_visible_markdown(read_text(proposal_path)))
+    spec_sections = section_texts(_visible_markdown(read_text(spec_path)), API_SPEC_SECTION)
+    issues: list[str] = []
+
+    if involvement not in {"是", "否"}:
+        reporter.fail(
+            f"proposal.md: {API_TRIGGER_DIMENSION} must state 是 or 否 in {API_PROPOSAL_SECTION}"
+        )
+        return
+
+    if len(spec_sections) != 1:
+        reporter.fail(f"spec.md: {API_SPEC_SECTION} section must appear exactly once")
+        return
+    spec_section = spec_sections[0]
+
+    if involvement == "否":
+        visible = "\n".join(
+            line
+            for line in _visible_markdown(spec_section).splitlines()
+            if not line.lstrip().startswith(">")
+        )
+        reason = re.search(r"不涉及(?:\s*[：:]\s*|\s+)(\S[^\n]*)", visible)
+        unresolved = (
+            reason
+            and (
+                ANGLE_PLACEHOLDER_RE.search(reason.group(1))
+                or re.search(
+                    r"\b(?:TBD|TODO)\b|待确认|待定|待补充|待实现|待验证",
+                    reason.group(1),
+                    flags=re.IGNORECASE,
+                )
+            )
+        )
+        if reason and meaningful(reason.group(1)) and not unresolved:
+            reporter.pass_("spec.md API/SDK=否 has an explicit not-applicable reason")
+        else:
+            reporter.fail("spec.md API/SDK=否 requires an explicit not-applicable reason")
+        return
+
+    common_sections = section_texts(spec_section, API_COMMON_SECTION)
+    if not common_sections:
+        issues.append(f"spec.md: {API_COMMON_SECTION} subsection missing")
+    elif len(common_sections) != 1:
+        issues.append(f"spec.md: {API_COMMON_SECTION} subsection must appear exactly once")
+    else:
+        common_tables = tables_with_columns(common_sections[0], ["规格项", "值"])
+        if len(common_tables) != 1:
+            issues.append(f"spec.md: {API_COMMON_SECTION} must contain exactly one specification table")
+        else:
+            common_rows = table_rows_by_key(common_sections[0], ["规格项", "值"], "规格项")
+            for item in API_COMMON_REQUIRED_ITEMS:
+                matches = common_rows.get(item, [])
+                if not matches:
+                    issues.append(f"spec.md: {API_COMMON_SECTION} missing item: {item}")
+                elif len(matches) > 1:
+                    issues.append(f"spec.md: {API_COMMON_SECTION} duplicate item: {item}")
+                elif not meaningful(matches[0].get("值", "")):
+                    issues.append(f"spec.md: {API_COMMON_SECTION} item has empty value: {item}")
+                elif not api_common_value_complete(item, matches[0].get("值", "")):
+                    issues.append(f"spec.md: {API_COMMON_SECTION} unresolved template choice: {item}")
+
+    per_api_sections = section_texts(spec_section, API_PER_API_SECTION)
+    if not per_api_sections:
+        issues.append(f"spec.md: {API_PER_API_SECTION} subsection has no API entries")
+    elif len(per_api_sections) != 1:
+        issues.append(f"spec.md: {API_PER_API_SECTION} subsection must appear exactly once")
+    per_api_text = per_api_sections[0] if len(per_api_sections) == 1 else ""
+    entries = api_entry_blocks(per_api_text)
+    if not entries and per_api_sections:
+        issues.append(f"spec.md: {API_PER_API_SECTION} subsection has no API entries")
+
+    signatures: set[str] = set()
+    for raw_signature, block in entries:
+        signature = canonical_api_signature(raw_signature)
+        if not api_signature_complete(raw_signature):
+            issues.append(f"spec.md: incomplete API signature: {raw_signature}")
+        if signature in signatures:
+            issues.append(f"spec.md: duplicate API signature: {raw_signature}")
+        signatures.add(signature)
+
+        spec_tables = tables_with_columns(block, ["规格项", "值"])
+        if len(spec_tables) != 1:
+            issues.append(f"spec.md API '{raw_signature}': must contain exactly one specification table")
+        else:
+            spec_rows = table_rows_by_key(block, ["规格项", "值"], "规格项")
+            for item in API_REQUIRED_SPEC_ITEMS:
+                matches = spec_rows.get(item, [])
+                if not matches:
+                    issues.append(f"spec.md API '{raw_signature}': missing specification item: {item}")
+                elif len(matches) > 1:
+                    issues.append(f"spec.md API '{raw_signature}': duplicate specification item: {item}")
+                elif not meaningful(matches[0].get("值", "")):
+                    issues.append(f"spec.md API '{raw_signature}': empty specification item: {item}")
+
+        description_tables = tables_with_columns(block, ["要素类别", "要素", "内容"])
+        if len(description_tables) != 1:
+            issues.append(f"spec.md API '{raw_signature}': must contain exactly one API description table")
+        description_rows = description_tables[0] if len(description_tables) == 1 else []
+        descriptions: dict[tuple[str, str], list[dict[str, str]]] = {}
+        for row in description_rows:
+            key = (
+                normalized_table_key(row.get("要素类别", "")),
+                normalized_table_key(row.get("要素", "")),
+            )
+            descriptions.setdefault(key, []).append(row)
+        for category, element in API_DESCRIPTION_ELEMENTS:
+            matches = descriptions.get((category, element), [])
+            label = f"{category}/{element}"
+            if not matches:
+                issues.append(
+                    f"spec.md API '{raw_signature}': missing API description element: {label}"
+                )
+            elif len(matches) > 1:
+                issues.append(
+                    f"spec.md API '{raw_signature}': duplicate API description element: {label}"
+                )
+            elif not meaningful(matches[0].get("内容", "")):
+                issues.append(f"spec.md API '{raw_signature}': empty API description element: {label}")
+
+        supported_tables = tables_with_columns(block, API_SUPPORTED_DEVICE_COLUMNS)
+        if len(supported_tables) != 1:
+            issues.append(f"spec.md API '{raw_signature}': must contain exactly one supported-device table")
+        supported = supported_tables[0] if len(supported_tables) == 1 else []
+        if not supported or any(
+            not meaningful(row.get(column, ""))
+            for row in supported
+            for column in API_SUPPORTED_DEVICE_COLUMNS
+        ):
+            issues.append(f"spec.md API '{raw_signature}': supported-device table missing or empty")
+        else:
+            issues.extend(
+                f"spec.md API '{raw_signature}': {issue}"
+                for issue in supported_device_table_issues(supported)
+            )
+
+        difference_tables = tables_with_columns(block, API_DEVICE_DIFFERENCE_COLUMNS)
+        if len(difference_tables) != 1:
+            issues.append(f"spec.md API '{raw_signature}': must contain exactly one device-difference table")
+        differences = difference_tables[0] if len(difference_tables) == 1 else []
+        if not differences or any(
+            not meaningful(row.get(column, ""))
+            for row in differences
+            for column in API_DEVICE_DIFFERENCE_COLUMNS
+        ):
+            issues.append(f"spec.md API '{raw_signature}': device-difference table missing or empty")
+
+    if issues:
+        for issue in issues:
+            reporter.fail(issue)
+    else:
+        reporter.pass_("spec.md per-API specification contract is complete")
 
 
-def split_table_row(line: str) -> list[str]:
-    return [normalize_cell(cell) for cell in line.strip().strip("|").split("|")]
-
-
-def is_separator_row(cells: list[str]) -> bool:
-    return bool(cells) and all(re.match(r"^:?-{3,}:?$", cell.strip()) for cell in cells)
-
-
-def parsed_markdown_tables(text: str) -> list[tuple[list[str], list[dict[str, str]]]]:
-    """Return Markdown pipe-table headers and row dictionaries.
-
-    The parser intentionally supports the simple pipe-table shape used by ODK
-    templates, including the valid form without leading/trailing pipes. It does
-    not attempt to handle escaped pipes inside cells.
-    """
-
-    lines = text.splitlines()
-    tables: list[tuple[list[str], list[dict[str, str]]]] = []
-    idx = 0
-
-    while idx < len(lines) - 1:
-        if "|" not in lines[idx] or "|" not in lines[idx + 1]:
-            idx += 1
-            continue
-
-        header = split_table_row(lines[idx])
-        separator = split_table_row(lines[idx + 1])
-        if not is_separator_row(separator) or len(separator) != len(header):
-            idx += 1
-            continue
-
-        idx += 2
-        rows: list[dict[str, str]] = []
-        while idx < len(lines) and "|" in lines[idx]:
-            cells = split_table_row(lines[idx])
-            if len(cells) == len(header) and not is_separator_row(cells):
-                rows.append(dict(zip(header, cells)))
-            idx += 1
-        tables.append((header, rows))
-
-    return tables
-
-
-def markdown_tables(text: str) -> list[list[dict[str, str]]]:
-    """Return Markdown pipe tables as row dictionaries."""
-    return [rows for _, rows in parsed_markdown_tables(text)]
-
-
-def table_has_columns(text: str, required_columns: list[str]) -> bool:
-    """Check if text contains a markdown table with the required column names (even if no data rows)."""
-    for header, _ in parsed_markdown_tables(text):
-        if all(column in header for column in required_columns):
-            return True
-    return False
-
-
-def tables_with_columns(text: str, required_columns: list[str]) -> list[list[dict[str, str]]]:
-    matches: list[list[dict[str, str]]] = []
-    for header, rows in parsed_markdown_tables(text):
-        if all(column in header for column in required_columns):
-            matches.append(rows)
-    return matches
-
-
-def table_with_columns(text: str, required_columns: list[str]) -> list[dict[str, str]]:
-    tables = tables_with_columns(text, required_columns)
-    return tables[0] if tables else []
-
-
-def meaningful(value: str) -> bool:
-    return bool(value.strip()) and not PLACEHOLDER_RE.match(value)
+def validate_api_declaration_diffs(change_dir: Path, reporter: Reporter, *, archive: bool) -> None:
+    """Require archived en/zh API declaration diffs when API/SDK is involved."""
+    proposal_path = change_dir / "proposal.md"
+    if not proposal_path.is_file():
+        return
+    involvement = api_sdk_involvement(_visible_markdown(read_text(proposal_path)))
+    if involvement != "是":
+        return
+    missing = [
+        name
+        for name in ("task1-api-declaration-en.diff", "task1-api-declaration-zh.diff")
+        if not (change_dir / "evidence" / name).is_file()
+    ]
+    if missing:
+        draft_warn_archive_fail(
+            reporter,
+            archive,
+            "API declaration diff evidence missing under evidence/: " + ", ".join(missing),
+        )
+        return
+    invalid = []
+    for language in ("en", "zh"):
+        path = change_dir / "evidence" / f"task1-api-declaration-{language}.diff"
+        try:
+            valid = valid_unified_diff(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError):
+            valid = False
+        if not valid:
+            invalid.append(path.name)
+    if invalid:
+        draft_warn_archive_fail(reporter, archive,
+            "API declaration diff evidence must contain nonempty valid unified diffs: " + ", ".join(invalid))
+    else:
+        reporter.pass_("API declaration diff evidence (en/zh) is archived")
 
 
 def validate_proposal_tables(proposal: str, reporter: Reporter, *, archive: bool) -> None:
@@ -406,11 +655,6 @@ def _parse_not_applicable_reason(subsection_text: str) -> str:
     """
     match = _NOT_APPLICABLE_REASON_RE.search(subsection_text)
     return match.group(1).strip() if match else ""
-
-
-def _visible_markdown(text: str) -> str:
-    """Remove template guidance that must not count as user-supplied evidence."""
-    return re.sub(r"<!--[\s\S]*?-->", "", text)
 
 
 def _parse_dfx_involved_repo_declarations(subsection_text: str) -> list[list[str]]:
@@ -889,6 +1133,14 @@ def unresolved_markers(text: str) -> list[str]:
         if in_fence:
             continue
 
+        # API text has its own explicit placeholder policy. Do not reinterpret
+        # source identifiers or quoted literals with generic prose heuristics.
+        api_signature = api_heading_signature(line)
+        if api_signature is not None:
+            if not api_signature_complete(api_signature):
+                markers.append(f"L{line_no}: unresolved API signature placeholder")
+            continue
+
         line_markers: list[str] = []
         line_markers.extend(match.group(0) for match in ARCHIVE_MARKER_RE.finditer(line))
         for match in BRACKET_PLACEHOLDER_RE.finditer(line):
@@ -958,6 +1210,78 @@ def expected_repository_name(repository_root: Path) -> str:
     return repository_root.name
 
 
+def repository_origin_url(repository_root: Path) -> str | None:
+    """Return origin only when repository_root itself is the Git top level."""
+
+    try:
+        top_level = subprocess.run(
+            ["git", "-C", str(repository_root), "rev-parse", "--show-toplevel"],
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=5,
+        )
+        if top_level.returncode != 0 or Path(top_level.stdout.strip()).resolve() != repository_root.resolve():
+            return None
+        result = subprocess.run(
+            ["git", "-C", str(repository_root), "remote", "get-url", "origin"],
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0:
+        return None
+
+    return result.stdout.strip() or None
+
+
+def repository_head_commit(repository_root: Path) -> str | None:
+    """Return the full HEAD commit only for the repository rooted at repository_root."""
+    try:
+        top_level = subprocess.run(
+            ["git", "-C", str(repository_root), "rev-parse", "--show-toplevel"],
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=5,
+        )
+        if (
+            top_level.returncode != 0
+            or Path(top_level.stdout.strip()).resolve() != repository_root.resolve()
+        ):
+            return None
+        result = subprocess.run(
+            ["git", "-C", str(repository_root), "rev-parse", "HEAD"],
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    commit = result.stdout.strip()
+    return commit.lower() if result.returncode == 0 and re.fullmatch(r"[0-9a-fA-F]{40}", commit) else None
+
+
+def gitcode_repository_identity(remote: str) -> str | None:
+    """Parse supported HTTPS, SSH URL, and SCP-style GitCode remotes."""
+
+    remote = remote.strip().rstrip("/")
+    if remote.endswith(".git"):
+        remote = remote[:-4]
+    match = re.search(
+        r"(?:^|@|//)gitcode\.com(?::\d+)?[/:]([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)$",
+        remote,
+        re.IGNORECASE,
+    )
+    if not match:
+        return None
+    return f"{match.group(1)}/{match.group(2)}"
+
+
 def validate_dir_name(change_dir: Path, reporter: Reporter) -> None:
     change_dir = change_dir.resolve()
     repository_segment = change_dir.parent
@@ -966,7 +1290,7 @@ def validate_dir_name(change_dir: Path, reporter: Reporter) -> None:
     repository_root = codespec_dir.parent
     if changes_dir.name != "changes" or codespec_dir.name != "codespec":
         reporter.fail(
-            "change directory layout must be exactly codespec/changes/<repo-name>/<req-id-or-draft>"
+            "change directory layout must be exactly codespec/changes/<repo-name>/<proposal-id-or-draft>"
         )
         return
 
@@ -984,30 +1308,30 @@ def validate_dir_name(change_dir: Path, reporter: Reporter) -> None:
     name = change_dir.name
     proposal = change_dir / "proposal.md"
     frontmatter = read_frontmatter(proposal)
+    if "req" in frontmatter or "req_id" in frontmatter:
+        reporter.fail("proposal.md: legacy identity field; migrate to proposal_id")
+        return
     if frontmatter.invalid_reason is not None:
         reporter.fail(f"proposal.md: invalid frontmatter ({frontmatter.invalid_reason})")
         return
-    req = trim_yaml_whitespace(frontmatter.get("req", ""))
+    proposal_id = trim_yaml_whitespace(frontmatter.get("proposal_id", ""))
     draft_match = DRAFT_RE.fullmatch(name)
-    if draft_match and not req:
+    if draft_match and not proposal_id:
         if validate_slug(draft_match.group(1), reporter):
             reporter.pass_(f"change directory name is valid draft path: {name}")
         return
 
-    if not req:
-        reporter.fail("proposal.md: req frontmatter is required for a formal change directory")
+    if not proposal_id:
+        reporter.fail("proposal.md: proposal_id frontmatter is required for a formal change directory")
         return
-    if not REQ_ID_RE.fullmatch(req):
-        reporter.fail(f"proposal.md: req '{req}' is invalid (letters, digits, and internal hyphens only)")
-        return
-    if LEGACY_ISSUE_REQ_RE.fullmatch(req):
-        reporter.fail(f"proposal.md: req '{req}' uses reserved legacy issue-<digits> format")
+    if not PROPOSAL_ID_RE.fullmatch(proposal_id):
+        reporter.fail(f"proposal.md: proposal_id '{proposal_id}' is invalid (formal proposal-id must contain digits only)")
         return
 
-    if name != req:
-        reporter.fail(f"change directory name must exactly match proposal.md req '{req}': {name}")
+    if name != proposal_id:
+        reporter.fail(f"change directory name must exactly match proposal.md proposal_id '{proposal_id}': {name}")
         return
-    reporter.pass_(f"change directory name is valid formal req path: {name}")
+    reporter.pass_(f"change directory name is valid formal proposal_id path: {name}")
 
 
 def validate_target_release(change_dir: Path, reporter: Reporter) -> None:
@@ -1032,6 +1356,246 @@ def validate_target_release(change_dir: Path, reporter: Reporter) -> None:
         f"proposal.md: target_release '{value}' does not match R-OH-003 (<major>.<minor>, "
         f"e.g. 7.1; or 7.1-Beta). Branch names (master/dev) are not release versions."
     )
+
+
+def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: bool = False) -> None:
+    """Validate the design-docs metadata sidecar when present or required."""
+
+    path = change_dir / "metadata_tracking.yaml"
+    print("\nLevel A2: Design-docs Metadata")
+    if not path.is_file():
+        if required:
+            reporter.fail("metadata_tracking.yaml missing for design-docs submission")
+        return
+
+    try:
+        metadata = parse_metadata_tracking(str(path))
+    except (OSError, ValueError) as error:
+        reporter.fail(f"metadata_tracking.yaml is invalid: {error}")
+        return
+
+    initial_failures = reporter.failed
+    proposal_id = str(metadata.get("proposal_id", "")).strip()
+    if not PROPOSAL_ID_RE.fullmatch(proposal_id):
+        reporter.fail("metadata_tracking.yaml: proposal_id must contain digits only")
+    elif proposal_id != change_dir.name:
+        reporter.fail("metadata_tracking.yaml: proposal_id does not match the change directory")
+    else:
+        frontmatter_proposal_id = trim_yaml_whitespace(read_frontmatter(change_dir / "proposal.md").get("proposal_id", ""))
+        if proposal_id != frontmatter_proposal_id:
+            reporter.fail("metadata_tracking.yaml: proposal_id does not match proposal.md")
+        else:
+            reporter.pass_("metadata_tracking.yaml: proposal_id matches directory and proposal.md")
+
+    target_release = str(metadata.get("target_release", "")).strip()
+    proposal_release = trim_yaml_whitespace(
+        read_frontmatter(change_dir / "proposal.md").get("target_release", "")
+    )
+    if not target_release:
+        reporter.fail("metadata_tracking.yaml: target_release is required")
+    elif target_release != proposal_release:
+        reporter.fail("metadata_tracking.yaml: target_release does not match proposal.md")
+    else:
+        reporter.pass_("metadata_tracking.yaml: target_release matches proposal.md")
+
+    repos = metadata.get("repos")
+    if not isinstance(repos, list) or not repos:
+        reporter.fail("metadata_tracking.yaml: repos must contain at least one repository")
+        return
+
+    repository_root = change_dir.resolve().parent.parent.parent.parent
+    origin = repository_origin_url(repository_root)
+    current_remote = parse_git_remote(origin) if origin else None
+    current_identity = current_remote.repository if current_remote else None
+    current_is_gitcode = bool(current_remote and current_remote.host == "gitcode.com")
+    current_head = repository_head_commit(repository_root) if current_identity else None
+
+    def is_current_repository(web_repo):
+        return bool(current_remote and web_repo
+                    and web_repo.repository == current_identity
+                    and web_repo.host == current_remote.host
+                    and (current_remote.scheme != "https" or web_repo.port == current_remote.port))
+
+    explicit_current = any(
+        isinstance(entry, dict)
+        and str(entry.get("repo", "")).strip() == current_identity
+        and is_current_repository(metadata_repository_url(str(entry.get("repository_url", ""))))
+        for entry in repos
+    )
+    repository_names: set[str] = set()
+    repository_keys: set[tuple[str, int, str]] = set()
+    current_seen = False
+    for index, entry in enumerate(repos, start=1):
+        if not isinstance(entry, dict):
+            reporter.fail(f"metadata_tracking.yaml: repos[{index}] must be a mapping")
+            continue
+        unknown_repo_fields = sorted(set(entry) - {"repo", "repository_url", "pull_requests", "issues"})
+        if unknown_repo_fields:
+            reporter.fail(
+                f"metadata_tracking.yaml: repos[{index}] has unknown fields: "
+                + ", ".join(unknown_repo_fields)
+            )
+        repo = str(entry.get("repo", "")).strip()
+        repo_is_valid = (
+            re.fullmatch(r"(?:[A-Za-z0-9_.-]+/)+[A-Za-z0-9_.-]+", repo) is not None
+            and all(part not in {".", ".."} for part in repo.split("/"))
+        )
+        if not repo_is_valid:
+            reporter.fail(
+                f"metadata_tracking.yaml: repos[{index}].repo must use organization/repository form"
+            )
+        else:
+            repository_names.add(repo)
+
+        explicit_url = "repository_url" in entry
+        repo_url = str(entry.get("repository_url", f"https://gitcode.com/{repo}")).strip()
+        web_repo = metadata_repository_url(repo_url)
+        if not web_repo or web_repo.repository != repo:
+            reporter.fail("metadata_tracking.yaml: repository_url must be a credential-free HTTPS repository URL matching repo")
+        # Backward compatibility: an unqualified empty current-origin entry may
+        # represent a non-GitCode source, but cannot contain host-specific records.
+        legacy_empty_origin = (not explicit_url and repo == current_identity
+                               and not explicit_current
+                               and not current_is_gitcode and not entry.get("pull_requests")
+                               and not entry.get("issues"))
+        entry_host = current_remote.host if legacy_empty_origin and current_remote else (web_repo.host if web_repo else "")
+        entry_port = (current_remote.port if current_remote and current_remote.scheme == "https" else 443) if legacy_empty_origin else (web_repo.port if web_repo else 443)
+        current_entry = bool(current_remote and repo == current_identity and entry_host == current_remote.host
+                             and (current_remote.scheme != "https" or entry_port == current_remote.port))
+        current_seen |= current_entry
+        key = (entry_host, entry_port, repo)
+        if key in repository_keys:
+            reporter.fail(f"metadata_tracking.yaml: duplicate repo entry: {repo} ({entry_host}:{entry_port})")
+        repository_keys.add(key)
+
+        if "pull_requests" not in entry:
+            reporter.fail(f"metadata_tracking.yaml: {repo or index} pull_requests is required")
+        pull_requests = entry.get("pull_requests", [])
+        if not isinstance(pull_requests, list):
+            reporter.fail(f"metadata_tracking.yaml: {repo or index} pull_requests must be a list")
+            pull_requests = []
+        for pr_index, pull_request in enumerate(pull_requests, start=1):
+            if not isinstance(pull_request, dict):
+                reporter.fail(f"metadata_tracking.yaml: {repo or index} pull request {pr_index} must be a mapping")
+                continue
+            unknown_pr_fields = sorted(set(pull_request) - {"url", "title", "state", "commit"})
+            if unknown_pr_fields:
+                reporter.fail(
+                    f"metadata_tracking.yaml: {repo or index} pull request {pr_index} "
+                    f"has unknown fields: {', '.join(unknown_pr_fields)}"
+                )
+            missing = [
+                key
+                for key in ("url", "title", "state", "commit")
+                if not str(pull_request.get(key, "")).strip()
+            ]
+            if missing:
+                reporter.fail(
+                    f"metadata_tracking.yaml: {repo or index} pull request {pr_index} missing: {', '.join(missing)}"
+                )
+            state = str(pull_request.get("state", "")).strip()
+            if state and state not in {"open", "merged", "closed"}:
+                reporter.fail("metadata_tracking.yaml: pull request state must be open, merged, or closed")
+            url = str(pull_request.get("url", "")).strip()
+            if url and (not repo_is_valid or not metadata_pr_url_matches(url, repo_url)):
+                reporter.fail("metadata_tracking.yaml: pull request url must match its repository host, port and path")
+            commit = str(pull_request.get("commit", "")).strip()
+            if commit and not re.fullmatch(r"[0-9a-fA-F]{40}", commit):
+                reporter.fail("metadata_tracking.yaml: pull request commit must be a full 40-digit hex SHA")
+            elif (
+                required
+                and commit
+                and current_entry
+                and current_head is None
+            ):
+                reporter.fail("metadata_tracking.yaml: unable to resolve current repository HEAD")
+            elif (
+                required
+                and commit
+                and current_entry
+                and current_head is not None
+                and commit.lower() != current_head
+            ):
+                reporter.fail(
+                    "metadata_tracking.yaml: current repository pull request commit "
+                    "must match git rev-parse HEAD"
+                )
+
+        issues = entry.get("issues", [])
+        if not isinstance(issues, list):
+            reporter.fail(f"metadata_tracking.yaml: {repo or index} issues must be a list")
+            issues = []
+        if entry_host != "gitcode.com" and issues:
+            reporter.fail("metadata_tracking.yaml: non-GitCode current repository cannot use GitCode issues; "
+                          "omit issues or use an empty list")
+        issue_ids: set[str] = set()
+        for issue_index, issue in enumerate(issues, start=1):
+            if not isinstance(issue, dict):
+                reporter.fail(f"metadata_tracking.yaml: {repo or index} issue {issue_index} must be a mapping")
+                continue
+            unknown_issue_fields = sorted(
+                set(issue) - {"issue", "url", "title", "type", "state", "closed_at"}
+            )
+            if unknown_issue_fields:
+                reporter.fail(
+                    f"metadata_tracking.yaml: {repo or index} issue {issue_index} "
+                    f"has unknown fields: {', '.join(unknown_issue_fields)}"
+                )
+            missing = [
+                key
+                for key in ("issue", "url", "title", "type", "state")
+                if not str(issue.get(key, "")).strip()
+            ]
+            if missing:
+                reporter.fail(
+                    f"metadata_tracking.yaml: {repo or index} issue {issue_index} "
+                    f"missing: {', '.join(missing)}"
+                )
+            issue_id = str(issue.get("issue", "")).strip()
+            if issue_id and not issue_id.isdigit():
+                reporter.fail("metadata_tracking.yaml: issue must contain digits only")
+            elif issue_id in issue_ids:
+                reporter.fail(f"metadata_tracking.yaml: duplicate issue entry: {issue_id}")
+            elif issue_id:
+                issue_ids.add(issue_id)
+            issue_type = str(issue.get("type", "")).strip()
+            if issue_type and issue_type not in {"requirement", "bug", "task", "epic"}:
+                reporter.fail("metadata_tracking.yaml: issue type must be requirement, bug, task, or epic")
+            state = str(issue.get("state", "")).strip()
+            if state and state not in {"open", "closed"}:
+                reporter.fail("metadata_tracking.yaml: issue state must be open or closed")
+            closed_at = str(issue.get("closed_at", "")).strip()
+            if closed_at:
+                try:
+                    date.fromisoformat(closed_at)
+                except ValueError:
+                    reporter.fail("metadata_tracking.yaml: closed_at must be a valid YYYY-MM-DD date")
+                if state != "closed":
+                    reporter.fail(
+                        "metadata_tracking.yaml: closed_at is only valid when issue state is closed"
+                    )
+            url = str(issue.get("url", "")).strip()
+            expected_issue_url = rf"https://gitcode\.com/{re.escape(repo)}/issues/\d+"
+            if url and (not repo_is_valid or not re.fullmatch(expected_issue_url, url)):
+                reporter.fail("metadata_tracking.yaml: issue url must match its GitCode repository")
+            elif url and issue_id and url.rsplit("/", 1)[-1] != issue_id:
+                reporter.fail("metadata_tracking.yaml: issue id must match its GitCode URL")
+
+    if origin and not current_identity:
+        reporter.fail(
+            "metadata_tracking.yaml: current Git origin must be a supported repository URL (HTTPS/SSH with namespace/repository)"
+        )
+    elif current_identity and not current_seen:
+        reporter.fail(
+            "metadata_tracking.yaml: repos must include the current Git origin repository "
+            f"{current_identity}"
+        )
+    elif not current_identity and change_dir.parent.name not in {
+        repo.rsplit("/", 1)[-1] for repo in repository_names
+    }:
+        reporter.fail("metadata_tracking.yaml: repos must include the current business repository")
+    elif reporter.failed == initial_failures:
+        reporter.pass_("metadata_tracking.yaml matches the design-docs submission contract")
 
 
 def validate_required_artifacts(
@@ -1567,12 +2131,22 @@ def validate_archive_readiness(
 
 
 def main(argv: list[str]) -> int:
-    parser = ArgumentParser(description="Validate one ODK change directory against the active artifacts contract.")
-    parser.add_argument("change_dir", help="ODK change directory, for example codespec/changes/arkui/REQ-123")
+    parser = ArgumentParser(
+        description="Validate one ODK change directory against the active artifacts contract.",
+        epilog=("PASS means document-contract completeness only. API signatures are opaque "
+                "documentation, not checked by a C/ArkTS compiler. Language/toolchain validation is NOT VERIFIED; "
+                "run the target repository's SDK/build checks separately. Exit codes remain 0/1."),
+    )
+    parser.add_argument("change_dir", help="ODK change directory, for example codespec/changes/arkui/12345")
     parser.add_argument(
         "--archive",
         action="store_true",
         help="Enable strict final-readiness checks: unresolved placeholders, filled code mapping, and Actual Result evidence.",
+    )
+    parser.add_argument(
+        "--design-docs-submit",
+        action="store_true",
+        help="Require the five base design-docs files plus conditional evidence and enforce archive-equivalent final-readiness checks.",
     )
     args = parser.parse_args(argv[1:])
 
@@ -1584,26 +2158,35 @@ def main(argv: list[str]) -> int:
         return 1
 
     artifacts = parse_contract_artifacts(str(CONTRACT_PATH))
+    strict_delivery = args.archive or args.design_docs_submit
 
-    mode = "archive" if args.archive else "draft"
+    mode = "archive" if args.archive else ("design-docs-submit" if args.design_docs_submit else "draft")
     print(f"Validating ODK artifact contract ({mode} mode): {change_dir}")
     print("\nLevel A: Change Directory")
     validate_dir_name(change_dir, reporter)
     validate_target_release(change_dir, reporter)
     files = validate_required_artifacts(change_dir, artifacts, reporter)
+    validate_metadata_tracking(change_dir, reporter, required=args.design_docs_submit)
     validate_sections(change_dir, artifacts, files, reporter)
+    validate_api_spec_contract(change_dir, reporter)
+    validate_api_declaration_diffs(change_dir, reporter, archive=strict_delivery)
     proposal_path = change_dir / "proposal.md"
     if proposal_path.is_file():
-        validate_proposal_tables(read_text(proposal_path), reporter, archive=args.archive)
+        validate_proposal_tables(read_text(proposal_path), reporter, archive=strict_delivery)
     validate_present_optional_sections(change_dir, artifacts, reporter)
     validate_traceability(change_dir, reporter)
-    validate_dfx_constraints(change_dir, reporter, args.archive)
+    validate_dfx_constraints(change_dir, reporter, strict_delivery)
     validate_optional_evidence(change_dir, reporter)
     print("\nResource Constraints")
-    validate_resource_constraints(change_dir, reporter, archive=args.archive)
-    if args.archive:
+    validate_resource_constraints(change_dir, reporter, archive=strict_delivery)
+    if strict_delivery:
         validate_archive_readiness(change_dir, artifacts, files, reporter)
 
+    # Informational scope, not a new warning/failure or a compiler success claim.
+    print("\nVerification scope:")
+    print("  Document contract: checked (API signature presence/placeholders/duplicates only)")
+    print("  NOT VERIFIED language/toolchain: no target SDK/compiler validation was run; "
+          "run the target repository's build checks separately")
     print("\nSummary:")
     print(f"  Passed:   {reporter.passed}")
     print(f"  Warnings: {reporter.warned}")

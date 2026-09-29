@@ -31,7 +31,7 @@ Run this skill when `proposal` 的 `安全/权限` 维度 = 「是」 **且** �
 | **Auth/Authz Changes** | Modifies authentication, authorization, permission models |
 | **Compliance Requirements** | Involves GDPR, personal information protection law, data export |
 | **Critical Infrastructure** | Changes to security-critical components (kernel, security framework) |
-| **Explicit Call** | User explicitly invokes `/odk-security-threat-model` (bypasses the high-risk gate) |
+| **Explicit Call** | User explicitly invokes `{{CMD_PREFIX}}security-threat-model` (bypasses the high-risk gate) |
 
 > `安全/权限` = "是" without a high-risk signal stays at the `安全基础检查` level in `design.md`; only the high-risk combination escalates to a standalone `threat-model.md`. Each threat's mitigation must be traceable to a `spec.md` AC / `execution-plan.md` Task.
 
@@ -89,7 +89,7 @@ Run this skill when `proposal` 的 `安全/权限` 维度 = 「是」 **且** �
 
 ## Output
 
-Write to `codespec/changes/<repo-name>/<req-id>/threat-model.md`
+Write to `codespec/changes/<repo-name>/<proposal-id>/threat-model.md`
 
 Report summary to user:
 - Number of threats identified by priority (P0/P1/P2)

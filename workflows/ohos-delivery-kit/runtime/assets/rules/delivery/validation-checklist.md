@@ -7,8 +7,8 @@
 ## Level A: Init (初始化后)
 
 - [ ] `codespec/changes/` 目录存在
-- [ ] 路径为 `codespec/changes/<repo-name>/<req-id-or-draft>/`，仓名与 Git `origin`（无 origin 时为工作树根目录名）一致
-- [ ] 正式目录叶子为 `<req-id>`；`proposal.md` frontmatter 的 `req:` 必须有效、不是保留旧格式 `issue-<digits>`，且与目录名完全一致
+- [ ] 路径为 `codespec/changes/<repo-name>/<proposal-id-or-draft>/`，仓名与 Git `origin`（无 origin 时为工作树根目录名）一致
+- [ ] 正式目录叶子为纯数字 `<proposal-id>`（不限制长度）；`proposal.md` frontmatter 的 `proposal_id:` 必须与目录名完全一致
 - [ ] 草稿目录名格式正确（`draft-<yyyymmdd>-<english-slug>`），且位于 `<repo-name>` 层下
 - [ ] `english-slug` 仅含小写字母、数字和分隔非空片段的连字符，长度不超过 40；目录名在 `codespec/` 下唯一
 - [ ] 必需归档文件列表存在 (proposal.md + spec.md + design.md + execution-plan.md)
@@ -33,8 +33,13 @@
 - [ ] 如存在可选 review/verification 证据，应包含 spec-compliance + code-quality + verification
 - [ ] 如存在可选 verification 证据，应有明确的「代码与规格一致性结论」
 - [ ] 追溯链完整 (AC → Task → code → commit → review)
-- [ ] 实现的 commit message 包含关联的 `req-id`
+- [ ] 实现的 commit message 包含关联的 `proposal-id`
 - [ ] 准备向 GitCode 提交代码时，已提醒用户将 `codespec/` 文档单独提交到 `codespec/profile.yaml` 的 `design_docs_repository`；地址缺失时明确标记“待开发者填写”，不得猜测或自动跨仓推送
+- [ ] 实际提交 design-docs 前已生成或刷新 `metadata_tracking.yaml`，并用 `--design-docs-submit` 验证 `proposal.md`、`spec.md`、`design.md`、`execution-plan.md` 与该文件组成的五件套；业务代码 PR 未创建时 `pull_requests: []` 合法
 - [ ] **API 设计校验**：
-  - 校验 `proposal.md` 的 `## API 设计属性` 与 `spec.md` 的 `## API 规格定义` 已填写（`API/SDK` = 否时均标注"不涉及"）。API 仓库路径/commit、既有声明格式参考为过程信息，不要求体现在 spec.md 中。
-  - 如 `API/SDK` = 是，校验声明文件修改 diff 已归档到 `codespec/changes/<repo-name>/<req-id>/`（声明文件 PR 由开发者自行管理）。
+  - 校验 `proposal.md` 的 `## API 设计属性` 与 `spec.md` 的 `## API 规格定义` 已填写（`API/SDK` = 否时按 `不涉及：<具体理由>` 填写）。API 仓库路径/commit、既有声明格式参考为过程信息，不要求体现在 spec.md 中。
+  - 如 `API/SDK` = 是，校验以下子节已填写：
+    - `### 公共规格属性` 表（是否新增声明文件、API 类型、编程语言、@syscap、@since、权限、跨平台/元服务/卡片、FA/Stage 模型）
+    - 每个 `#### API: <完整签名>` 子节包含：规格表（入参、返回值、错误码等）、API 描述（接口定义三要素 + 接口使用五要素）、设备行为差异（支持设备表始终必填；无差异时差异明细表填"所有支持设备行为一致"）
+    - API 描述内容无占位符，错误码有精确数值和触发条件
+  - 如 `API/SDK` = 是，校验英文声明注释 diff 与中文声明注释 diff 均已归档（`validate-artifacts-contract.py` 自动检查：Draft 缺失 WARN / Archive 缺失 FAIL；文件名固定为 `evidence/task1-api-declaration-en.diff` 与 `evidence/task1-api-declaration-zh.diff`；两者签名、代码与标记完全一致，仅注释描述语言不同；中文版仅作为归档证据，不写回 API 仓。声明文件 PR 由开发者自行管理）。
