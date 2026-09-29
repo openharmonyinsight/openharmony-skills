@@ -6,9 +6,12 @@ this file. Source artifacts are synchronized from
 
 ## [0.12.0] - 2026-09-24
 
-Source: `main@242776e801cbce245275f07026478856e2e78e2a`.
+Source: `main@e48ec3f7aa7940fefb7b2fd188dec5a4976122f3`.
 
 ### Changed
+
+- Refresh source provenance on 2026-09-29 after source PR #143 removed the
+  repository-local placeholder archive. Published runtime content is unchanged.
 
 - Normalize Markdown API headings consistently in Draft and Archive: accept
   0–3 spaces of indentation and strip closing hashes before presence, template
