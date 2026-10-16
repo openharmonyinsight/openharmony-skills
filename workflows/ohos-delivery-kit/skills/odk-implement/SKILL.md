@@ -53,6 +53,7 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
       - **中文声明注释 diff**（文件名固定为 `task1-api-declaration-zh.diff`）：签名、代码、版权头与标记（`@syscap`/`@since`/`@kit`/`@permission` 等）与英文版完全一致，仅将声明注释的描述正文改为中文；中文内容以 `spec.md` 逐 API 子节的 `**API 描述**`（三要素+五要素）为源头，与英文注释保持语义一致
       - **约束**：中文版仅作为归档证据，不写回 API 声明仓库、不替代英文声明文件。两份 diff 均不得改变任何签名、入参、返回值、错误码或标记
    - Run the verification command and confirm it matches the Task's expected result.
+   - **FM AC 故障闭环（条件触发）**：若本 Task 承接的 AC 被 `design.md` `### DFX 故障模式处置` 的 `关联 AC` 列引用，验证必须走故障注入或异常路径测试（按处置表"验证方式/证据"列执行），不得以正常路径测试替代；`Actual Result` 记录注入手段与观测结果（`手段｜注入点｜注入内容` → 预期日志/事件/错误码/恢复行为）。
    - After each Task, update `execution-plan.md` 代码范围映射 with actual files, tests, and commit references.
    - Backfill the Task's `Actual Result` and anti-fake completion evidence.
    - Mark the Task as completed in `execution-plan.md`: change all `- [ ]` checkboxes to `- [x]` in the Task's Steps section. If the Task list table has a `状态` column, update it to `Done`; otherwise add the column first.

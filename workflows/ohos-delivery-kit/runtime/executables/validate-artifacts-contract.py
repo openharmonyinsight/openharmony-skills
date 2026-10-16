@@ -77,6 +77,35 @@ _DFX_READ_NO_HIT_REASONS = {"知识库无命中", "知识库无匹配命中"}
 DFX_SOURCE_REF_RE = re.compile(
     r"^[^@\s|]+@[0-9a-fA-F]{7,40}:docs/dfx/fmea\.yaml#[^#\s|]+$"
 )
+_DFX_FAULT_COLUMNS = [
+    "分析对象", "故障模式", "故障影响", "故障原因",
+    "严酷度", "恢复措施", "关键日志", "大数据打点事件", "来源",
+]
+_DFX_DISPOSITION_COLUMNS = ["编号", "分析对象", "故障模式", "处置", "关联 AC", "验证方式/证据"]
+_DFX_DISPOSITIONS = {"新增 AC", "复用 AC", "纳入设计约束", "现有控制覆盖", "本变更不触及"}
+_DFX_AC_DISPOSITIONS = {"新增 AC", "复用 AC"}
+_DFX_DESIGN_CONSTRAINT_DISPOSITION = "纳入设计约束"
+_DFX_CONSTRAINT_REF_RE = re.compile(r"D-\d+|约束|决策|不变量")
+_DFX_FM_ID_RE = re.compile(r"^FM-\d+$")
+_DFX_AD_ID_RE = re.compile(r"^AD-\d+$")
+_HEADING_RE = re.compile(r"^(#{2,6})\s+(.+?)\s*$")
+
+# 66-column library export table header (mirrors the template row in
+# core/skills/odk-fmea/references/output-format.md "故障模式库导出表格";
+# keep both in sync when the platform import template changes).
+_DFX_EXPORT_COLUMNS = [
+    "一级对象ID", "一级对象", "一级对象类型", "二级对象ID", "二级对象", "二级对象类型",
+    "三级对象ID", "三级对象", "三级对象类型", "四级对象ID", "四级对象", "四级对象类型",
+    "五级对象ID", "五级对象", "五级对象类型", "六级对象ID", "六级对象", "六级对象类型",
+    "七级对象ID", "七级对象", "七级对象类型", "八级对象ID", "八级对象", "八级对象类型",
+    "九级对象ID", "九级对象", "九级对象类型", "十级对象ID", "十级对象", "十级对象类型",
+    "故障模式ID", "故障模式", "描述", "严酷度", "发生频度", "可检测度",
+    "SIL等级", "故障原因", "故障影响", "改进措施", "典型日志", "引发故障的对象ID",
+    "引发故障的对象", "引发故障的行为ID", "引发故障的行为", "受影响的对象ID", "受影响的对象", "所受影响ID",
+    "所受影响", "故障检测ID", "故障检测", "事件打点", "故障诊断ID", "故障诊断",
+    "故障隔离ID", "故障隔离", "故障恢复ID", "故障恢复", "故障预防ID", "故障预防",
+    "使用补偿措施ID", "使用补偿措施", "验证测试要求ID", "验证测试要求", "其他ID", "其他",
+]
 
 
 RESOURCE_CONTRACT = parse_resource_contract(str(CONTRACT_PATH))
@@ -181,17 +210,21 @@ class Reporter:
         self.passed = 0
         self.failed = 0
         self.warned = 0
+        self.messages: list[str] = []
 
     def pass_(self, message: str) -> None:
         print(f"  PASS {message}")
+        self.messages.append(f"PASS {message}")
         self.passed += 1
 
     def fail(self, message: str) -> None:
         print(f"  FAIL {message}")
+        self.messages.append(f"FAIL {message}")
         self.failed += 1
 
     def warn(self, message: str) -> None:
         print(f"  WARN {message}")
+        self.messages.append(f"WARN {message}")
         self.warned += 1
 
 
@@ -1821,6 +1854,262 @@ def validate_traceability(change_dir: Path, reporter: Reporter) -> None:
         reporter.pass_("execution-plan.md Task details include file scopes and expected verification")
 
 
+def _dfx_main_table_pairs(design: str) -> list[tuple[str, str]]:
+    """Return (分析对象, 故障模式) pairs from DFX main-table data rows."""
+    dfx_section = section_text(design, "DFX 设计")
+    if not dfx_section:
+        return []
+    fault_subsection = section_text(dfx_section, "DFX 故障模式分析")
+    if not fault_subsection:
+        return []
+    visible = _visible_markdown(fault_subsection)
+    if not table_has_columns(visible, _DFX_FAULT_COLUMNS):
+        return []
+    rows = table_with_columns(visible, _DFX_FAULT_COLUMNS)
+    return [
+        (row.get("分析对象", "").strip(), row.get("故障模式", "").strip())
+        for row in rows
+        if meaningful(row.get("分析对象", ""))
+    ]
+
+
+def _strip_subsection(section: str, title: str) -> str:
+    """Remove one titled subsection (heading to next same-or-higher level) from section text."""
+    out: list[str] = []
+    skipping = False
+    level = 0
+    for line in section.splitlines():
+        match = _HEADING_RE.match(line)
+        if match:
+            if skipping and len(match.group(1)) <= level:
+                skipping = False
+            elif match.group(2).strip() == title:
+                skipping = True
+                level = len(match.group(1))
+        if not skipping:
+            out.append(line)
+    return "\n".join(out)
+
+
+def _dfx_ad_entries(design: str) -> tuple[dict[str, tuple[str, str]], list[str]]:
+    """AD entries defined by AD layer tables under ## DFX 设计 (disposition
+    subsection excluded), located via the unified Markdown table parser so
+    indented and border-less tables are handled identically.
+
+    Returns ({AD id: (对象列值, 故障模式值)}, duplicate ids with conflicting content)."""
+    dfx_section = section_text(design, "DFX 设计")
+    if not dfx_section:
+        return {}, []
+    visible = _strip_subsection(dfx_section, "DFX 故障模式处置")
+    entries: dict[str, tuple[str, str]] = {}
+    duplicates: list[str] = []
+    for header, rows in parsed_markdown_tables(visible):
+        if len(header) < 3 or header[0].strip() != "编号" or "故障模式" not in header:
+            continue
+        object_column = header[1]  # 结构元素（标准 12 列）或 分析对象（委托回填布局）
+        for row in rows:
+            rid = row.get("编号", "").strip()
+            if not _DFX_AD_ID_RE.match(rid):
+                continue
+            pair = (row.get(object_column, "").strip(), row.get("故障模式", "").strip())
+            if rid in entries:
+                if entries[rid] != pair:
+                    duplicates.append(rid)
+            else:
+                entries[rid] = pair
+    return entries, sorted(set(duplicates))
+
+
+def validate_dfx_ac_gate(change_dir: Path, reporter: Reporter, archive_mode: bool) -> None:
+    """Level C3: every DFX fault mode (main-table hit or AD entry) must be dispositioned,
+    AC-linked dispositions must reference spec-defined ACs, and archive requires those
+    ACs to be traced Pass in execution-plan.md."""
+    design_path = change_dir / "design.md"
+    if not design_path.is_file():
+        return
+
+    design = read_text(design_path)
+    dfx_section = section_text(design, "DFX 设计")
+    if not dfx_section:
+        return
+
+    main_pairs = _dfx_main_table_pairs(design)
+    ad_entries, ad_duplicates = _dfx_ad_entries(design)
+    ad_ids = set(ad_entries)
+    if not main_pairs and not ad_ids:
+        # 不涉及 branch (or missing subsection — reported by Level C2): gate silent.
+        return
+
+    print("\nLevel C3: DFX Fault-Mode → AC Gate")
+
+    disposition_sub = section_text(dfx_section, "DFX 故障模式处置")
+    if not disposition_sub:
+        draft_warn_archive_fail(
+            reporter,
+            archive_mode,
+            "design.md: DFX fault modes found (main-table hits or AD entries) but "
+            "'### DFX 故障模式处置' missing — disposition every entry as "
+            "新增 AC / 复用 AC / 现有控制覆盖 / 本变更不触及",
+        )
+        return
+
+    if not table_has_columns(disposition_sub, _DFX_DISPOSITION_COLUMNS):
+        missing = [
+            c for c in _DFX_DISPOSITION_COLUMNS
+            if not table_has_columns(disposition_sub, [c])
+        ]
+        reporter.fail(
+            "design.md: DFX 故障模式处置 table missing required columns: " + ", ".join(missing)
+        )
+        return
+
+    rows = table_with_columns(disposition_sub, _DFX_DISPOSITION_COLUMNS)
+
+    issues: list[str] = []
+    seen_ids: set[str] = set()
+    disposed_pairs: set[tuple[str, str]] = set()
+    disposed_ads: set[str] = set()
+    linked_acs: set[str] = set()
+    design_constraint_tasks: set[str] = set()
+
+    for row in rows:
+        if not any(meaningful(str(value)) for value in row.values()):
+            continue  # template placeholder row
+        rid = row.get("编号", "").strip()
+        obj = row.get("分析对象", "").strip()
+        mode = row.get("故障模式", "").strip()
+        disposition = row.get("处置", "").strip()
+        ac_cell = row.get("关联 AC", "").strip()
+        evidence = row.get("验证方式/证据", "").strip()
+
+        if not (_DFX_FM_ID_RE.match(rid) or _DFX_AD_ID_RE.match(rid)):
+            issues.append(f"{rid or '<empty>'}: 编号 must be FM-n (main-table row) or AD-n (derived entry)")
+            continue
+        if rid in seen_ids:
+            issues.append(f"{rid}: duplicate 编号")
+            continue
+        seen_ids.add(rid)
+        if disposition not in _DFX_DISPOSITIONS:
+            issues.append(f"{rid}: invalid 处置 '{disposition}' (expected one of {'/'.join(sorted(_DFX_DISPOSITIONS))})")
+            continue
+        if not meaningful(evidence):
+            issues.append(f"{rid}: 验证方式/证据 empty (fault-injection/error-path method, file:line, or reason required)")
+        if disposition in _DFX_AC_DISPOSITIONS:
+            acs = sorted_ids(set(AC_RE.findall(ac_cell)))
+            if not acs:
+                issues.append(f"{rid}: 处置={disposition} requires 关联 AC")
+            linked_acs.update(acs)
+        if disposition == _DFX_DESIGN_CONSTRAINT_DISPOSITION:
+            # Internal control measures land as design decisions/constraints plus a
+            # traced Task with verification evidence — not as a new spec AC.
+            tasks = sorted(set(TASK_RE.findall(evidence)))
+            if not tasks:
+                issues.append(f"{rid}: 处置=纳入设计约束 requires a 关联 TASK id in 验证方式/证据")
+            if not _DFX_CONSTRAINT_REF_RE.search(evidence):
+                issues.append(f"{rid}: 处置=纳入设计约束 requires a design decision/constraint reference (e.g. D-xx / 约束 / 不变量)")
+            design_constraint_tasks.update(tasks)
+        if _DFX_FM_ID_RE.match(rid):
+            if not meaningful(obj) or not meaningful(mode):
+                issues.append(f"{rid}: 分析对象/故障模式 must be copied from the main table")
+            else:
+                disposed_pairs.add((obj, mode))
+        else:
+            # AD disposition must mirror the AD layer entry's object and fault mode.
+            if rid in ad_entries:
+                expected = ad_entries[rid]
+                if not meaningful(obj) or not meaningful(mode):
+                    issues.append(f"{rid}: 处置行分析对象/故障模式 must be copied from the AD layer entry")
+                elif (obj, mode) != expected:
+                    issues.append(
+                        f"{rid}: 处置行分析对象/故障模式与 AD 条目不匹配 "
+                        f"(expected {expected[0]} / {expected[1]})"
+                    )
+            disposed_ads.add(rid)
+
+    if ad_duplicates:
+        issues.append("AD entries with duplicate ids and conflicting content: " + ", ".join(ad_duplicates))
+    for pair in main_pairs:
+        if pair not in disposed_pairs:
+            issues.append(f"main-table hit not dispositioned: {pair[0]} / {pair[1]}")
+    for obj, mode in sorted(disposed_pairs - set(main_pairs)):
+        issues.append(f"disposition row not found in main table: {obj} / {mode}")
+    for ad in sorted_ids(ad_ids):
+        if ad not in disposed_ads:
+            issues.append(f"{ad}: AD entry not dispositioned")
+    for ad in sorted_ids(disposed_ads - ad_ids):
+        issues.append(f"{ad}: disposition references unknown AD entry")
+
+    if linked_acs:
+        spec_acs: set[str] = set()
+        spec_path = change_dir / "spec.md"
+        if spec_path.is_file():
+            spec = read_text(spec_path)
+            spec_acs = set(AC_RE.findall("\n".join(AC_DEF_RE.findall(spec))))
+        dangling = [ac for ac in sorted_ids(linked_acs) if ac not in spec_acs]
+        if dangling:
+            issues.append("关联 AC not defined in spec.md: " + ", ".join(dangling))
+
+    if issues:
+        reporter.fail("design.md: DFX 故障模式处置 gate: " + "; ".join(issues))
+        return
+
+    detail = f"{len(main_pairs)} hit row(s), {len(ad_ids)} AD entr(ies)"
+    if linked_acs:
+        detail += f", {len(linked_acs)} linked AC(s)"
+    if design_constraint_tasks:
+        detail += f", {len(design_constraint_tasks)} design-constraint Task(s)"
+    reporter.pass_(f"DFX 故障模式处置 complete ({detail})")
+
+    if not (archive_mode and (linked_acs or design_constraint_tasks)):
+        return
+
+    plan_path = change_dir / "execution-plan.md"
+    if not plan_path.is_file():
+        reporter.fail(
+            "execution-plan.md missing — FM ACs/design-constraint Tasks cannot be "
+            "verified for archive: "
+            + ", ".join(sorted_ids(linked_acs) + sorted(design_constraint_tasks))
+        )
+        return
+    plan = read_text(plan_path)
+    ac_task = section_text(plan, "AC 到 Task 追溯")
+    trace_rows = table_with_columns(ac_task, ["AC", "Task", "验证状态（Pass/Fail/Blocked）"])
+    # Aggregate every trace row per AC (and per Task): one AC may span several
+    # Tasks and the gate passes only when ALL of its rows are Pass (a later
+    # Pass must not mask an earlier Fail/Blocked).
+    statuses_by_ac: dict[str, set[str]] = {}
+    statuses_by_task: dict[str, set[str]] = {}
+    for trace_row in trace_rows:
+        status = trace_row.get("验证状态（Pass/Fail/Blocked）", "").strip().lower()
+        for ac in AC_RE.findall(trace_row.get("AC", "")):
+            statuses_by_ac.setdefault(ac, set()).add(status)
+        for task in TASK_RE.findall(trace_row.get("Task", "")):
+            statuses_by_task.setdefault(task, set()).add(status)
+    not_pass = [
+        ac for ac in sorted_ids(linked_acs)
+        if statuses_by_ac.get(ac) != {"pass"}
+    ]
+    if not_pass:
+        reporter.fail(
+            "FM AC not Pass in execution-plan.md AC-to-Task traceability (archive gate; "
+            "all trace rows for the AC must be Pass): " + ", ".join(not_pass)
+        )
+    elif linked_acs:
+        reporter.pass_("FM ACs all Pass in AC-to-Task traceability (archive gate)")
+
+    constraint_not_pass = [
+        task for task in sorted(design_constraint_tasks)
+        if statuses_by_task.get(task) != {"pass"}
+    ]
+    if constraint_not_pass:
+        reporter.fail(
+            "设计约束 Task not Pass in execution-plan.md AC-to-Task traceability "
+            "(archive gate): " + ", ".join(constraint_not_pass)
+        )
+    elif design_constraint_tasks:
+        reporter.pass_("design-constraint Tasks all Pass in AC-to-Task traceability (archive gate)")
+
+
 def validate_dfx_constraints(change_dir: Path, reporter: Reporter, archive_mode: bool) -> None:
     design_path = change_dir / "design.md"
     if not design_path.is_file():
@@ -1851,10 +2140,7 @@ def validate_dfx_constraints(change_dir: Path, reporter: Reporter, archive_mode:
         return
 
     # Every hit must include a pinned repository/commit/path/record provenance.
-    required_dfx_columns = [
-        "分析对象", "故障模式", "故障影响", "故障原因",
-        "严酷度", "恢复措施", "关键日志", "大数据打点事件", "来源",
-    ]
+    required_dfx_columns = _DFX_FAULT_COLUMNS
     visible_fault_subsection = _visible_markdown(fault_subsection)
     if not table_has_columns(visible_fault_subsection, required_dfx_columns):
         missing = [
@@ -1944,6 +2230,109 @@ def validate_dfx_constraints(change_dir: Path, reporter: Reporter, archive_mode:
                 "design.md: DFX 故障模式分析 has no data rows and no 不涉及 — "
                 "请填写不涉及并附理由"
             )
+
+
+def validate_dfx_export_table(change_dir: Path, reporter: Reporter) -> None:
+    """Structural WARN for the optional 66-column library export table.
+
+    The export table is not an archive gate object (presence never affects
+    archive decisions), but a malformed one cannot be parsed by Markdown or
+    the import platform — flag structure drift as a Draft WARN."""
+    design_path = change_dir / "design.md"
+    if not design_path.is_file():
+        return
+    design = read_text(design_path)
+    dfx_section = section_text(design, "DFX 设计")
+    if not dfx_section:
+        return
+    export_sub = section_text(dfx_section, "故障模式库导出表格")
+    if not export_sub:
+        return  # absent export table is a valid state
+
+    print("\nLevel C2: Library Export Table (structure)")
+    lines = [
+        line for line in _visible_markdown(export_sub).splitlines()
+        if "|" in line
+    ]
+    if not lines:
+        reporter.warn("design.md: ### 故障模式库导出表格 exists but contains no table")
+        return
+
+    issues: list[str] = []
+    header = split_table_row(lines[0])
+    if len(lines) < 2:
+        issues.append("table has no separator row (header only)")
+        separator: list[str] = []
+    else:
+        separator = split_table_row(lines[1])
+        if not is_separator_row(separator):
+            issues.append("second table row is not a valid separator row — not a parseable Markdown table")
+        elif len(separator) != len(header):
+            issues.append(
+                f"separator row has {len(separator)} columns but header has {len(header)} — table cannot be parsed"
+            )
+    data_lines = lines[2:] if len(lines) >= 2 else []
+    for index, line in enumerate(data_lines, start=3):
+        cells = split_table_row(line)
+        if is_separator_row(cells):
+            continue
+        if len(cells) != len(header):
+            issues.append(f"data row {index} has {len(cells)} columns (header has {len(header)})")
+    if len(header) != 66:
+        issues.append(f"expected 66 columns, found {len(header)} (empty columns must be kept as placeholders)")
+    elif header != _DFX_EXPORT_COLUMNS:
+        missing = [c for c in _DFX_EXPORT_COLUMNS if c not in header]
+        extra = [c for c in header if c not in _DFX_EXPORT_COLUMNS]
+        detail = []
+        if missing:
+            detail.append("missing: " + ", ".join(missing[:8]) + ("…" if len(missing) > 8 else ""))
+        if extra:
+            detail.append("non-contract columns: " + ", ".join(extra[:8]) + ("…" if len(extra) > 8 else ""))
+        issues.append("column names/order deviate from the 66-column template (" + "; ".join(detail) + ")")
+    if issues:
+        reporter.warn("design.md: 故障模式库导出表格 structure: " + "; ".join(issues))
+    else:
+        reporter.pass_("library export table is a well-formed 66-column table")
+
+
+def validate_dfx_ad_library_basis(change_dir: Path, reporter: Reporter) -> None:
+    """Draft WARN: every AD entry under ## DFX 设计 must carry a library-basis
+    annotation (（库依据：…） or （无库依据…）) so derived entries are auditable
+    against the generic fault-mode library. Uses the unified table parser so
+    indented/border-less AD tables are covered identically."""
+    design_path = change_dir / "design.md"
+    if not design_path.is_file():
+        return
+    design = read_text(design_path)
+    dfx_section = section_text(design, "DFX 设计")
+    if not dfx_section:
+        return
+    ad_entries, _ = _dfx_ad_entries(design)
+    if not ad_entries:
+        return
+    visible = _visible_markdown(_strip_subsection(dfx_section, "DFX 故障模式处置"))
+    missing = []
+    for header, rows in parsed_markdown_tables(visible):
+        if len(header) < 3 or header[0].strip() != "编号" or "故障原因" not in header:
+            continue
+        for row in rows:
+            rid = row.get("编号", "").strip()
+            if _DFX_AD_ID_RE.match(rid) and "库依据" not in row.get("故障原因", ""):
+                missing.append(rid)
+    if not missing and not any(
+        "故障原因" in header for header, _ in parsed_markdown_tables(visible)
+    ):
+        return  # no AD table with a 故障原因 column found; nothing to annotate
+
+    print("\nLevel C2: AD Library Basis (annotation)")
+    if missing:
+        reporter.warn(
+            "design.md: AD 分层表 rows without library-basis annotation "
+            "(append 库依据：<库编号> or 无库依据：本次特有推导 to 故障原因): "
+            + ", ".join(sorted(set(missing)))
+        )
+    else:
+        reporter.pass_("AD rows all carry library-basis annotations")
 
 
 def validate_optional_evidence(change_dir: Path, reporter: Reporter) -> None:
@@ -2176,6 +2565,9 @@ def main(argv: list[str]) -> int:
     validate_present_optional_sections(change_dir, artifacts, reporter)
     validate_traceability(change_dir, reporter)
     validate_dfx_constraints(change_dir, reporter, strict_delivery)
+    validate_dfx_ac_gate(change_dir, reporter, strict_delivery)
+    validate_dfx_export_table(change_dir, reporter)
+    validate_dfx_ad_library_basis(change_dir, reporter)
     validate_optional_evidence(change_dir, reporter)
     print("\nResource Constraints")
     validate_resource_constraints(change_dir, reporter, archive=strict_delivery)

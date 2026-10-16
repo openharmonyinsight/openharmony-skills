@@ -16,7 +16,7 @@ license: MIT
 
 1. Read `spec.md` AC list
 2. Read `execution-plan.md` Task list and code scope
-3. Read review templates from `{{ASSET_ROOT}}/templates/review/`
+3. Read review templates from `{{PLUGIN_ROOT}}/templates/review/`
 
 ## Steps
 
@@ -24,7 +24,9 @@ license: MIT
 
 2. Reuse existing implementation evidence for unchanged inputs; correct missing or inaccurate code mapping/AC-Task status rather than regenerating it. Report concrete findings with file references and verification gaps; do not claim unexecuted checks passed.
 
-3. Return PASS or actionable findings to the caller. In the automatic handoff, the coordinator owns source-PR confirmation and the later design-docs reminder; do not ask a second publishing question here. Standalone review never authorizes a source or document push.
+3. If `design.md` contains `### DFX 故障模式处置`, check every disposition row referencing an AC against fault-injection/error-path evidence; a missing or happy-path-only verification is an unresolved deviation (archive blocks on non-Pass FM ACs). Record it via the review template's `## DFX 故障模式覆盖` section when written.
+
+4. Return PASS or actionable findings to the caller. In the automatic handoff, the coordinator owns source-PR confirmation and the later design-docs reminder; do not ask a second publishing question here. Standalone review never authorizes a source or document push.
 
 ## Output
 

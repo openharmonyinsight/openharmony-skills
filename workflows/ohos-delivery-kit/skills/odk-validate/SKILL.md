@@ -13,8 +13,8 @@ license: MIT
 
 ## Sources
 
-- Artifact contract: installed `contracts/artifacts.yaml` (OpenCode: `{{ASSET_ROOT}}/contracts/artifacts.yaml`)
-- Templates: installed `templates/ai/` (OpenCode: `{{ASSET_ROOT}}/templates/ai/`)
+- Artifact contract: installed `contracts/artifacts.yaml` (OpenCode: `{{PLUGIN_ROOT}}/contracts/artifacts.yaml`)
+- Templates: installed `templates/ai/` (OpenCode: `{{PLUGIN_ROOT}}/templates/ai/`)
 - Strict validator: `{{EXECUTABLE_ROOT}}/validate-artifacts-contract.py`. It is installed with ODK on every supported platform; use this skill to explain and remediate its findings.
 - Archive migration validator: `{{EXECUTABLE_ROOT}}/validate-archive-migration.py`. Use `plan --map <map.tsv>` before moving legacy archives and `check-staged --map <the-same-map.tsv>` before committing so old-source deletion and planned-target conservation are verified.
 
@@ -28,6 +28,7 @@ license: MIT
    - every traced Task has a Task list row and Task detail section with Files and Verification tables
    - every traced Task in `execution-plan.md` 代码范围映射 has a non-empty file (AC→Task→code closure)
    - **DFX 故障模式分析**：`design.md` 必须包含 `### DFX 故障模式分析` 子节，其表格列必须为：分析对象/故障模式/故障影响/故障原因/严酷度/恢复措施/关键日志/大数据打点事件/来源。每个命中行必须完整，且来源符合 `<repo>@<commit>:docs/dfx/fmea.yaml#<record-id>`；空数据行 → WARN。
+   - **DFX 故障模式处置（Level C3，故障模式拦截项）**：主表有命中行或存在 AD 推导条目时，`### DFX 故障模式处置` 必须存在且逐条覆盖（漏处置行、悬空 AC 引用、非法处置值、空证据列、AD 处置行对象/故障模式与原条目不符 → FAIL；整表缺失 → Draft WARN / Archive FAIL）。处置为「新增 AC/复用 AC」的关联 AC 必须存在于 spec.md；处置为「纳入设计约束」的证据列须含设计决策/约束引用与关联 TASK 编号；Archive 时关联 AC 与设计约束 Task 在「AC 到 Task 追溯」的全部行验证状态必须为 Pass（同一 AC/Task 多行时后续 Pass 不得掩盖 Fail/Blocked）。
 4. Check Level D archive readiness:
    - no critical placeholders remain in required archive content
    - implementation files, Task links, verification status, and Actual Result are backfilled where implementation has happened

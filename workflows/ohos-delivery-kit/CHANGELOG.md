@@ -4,48 +4,49 @@ All notable changes to the published `ohos-delivery-kit` workflow are documented
 this file. Source artifacts are synchronized from
 `oshunter/ohos-delivery-kit` `main` through the marketplace publisher.
 
-## [0.12.0] - 2026-09-24
+## [0.12.1] - 2026-10-15
 
-Source: `main@e48ec3f7aa7940fefb7b2fd188dec5a4976122f3`.
+Source: `main@81489b83490c5eb7e211a51308b237d940426bea`.
+
+### Added
+
+- New `odk-fmea` skill: AIAG-VDA 7-step FMEA engine with repository-level
+  `docs/dfx/fmea.yaml` knowledge base discovery, 18-class generic fault-mode
+  library with two-stage loading (trigger index → detail on match), DFX table
+  compatible backfill, and library export table (66-column template).
+- DFX fault-mode → AC gate (validator Level C3): every main-table hit and AD
+  derived entry must be dispositioned in `### DFX 故障模式处置` table
+  (新增 AC / 复用 AC / 纳入设计约束 / 现有控制覆盖 / 本变更不触及);
+  dangling AC references fail in Draft; archive requires linked ACs traced Pass.
+- `odk-design` Step 6 now delegates to `odk-fmea` in subagent (isolated context);
+  new Step 6.4 adds disposition decision and spec.md US-DFX backfill.
+- `odk-spec` preserves US-DFX backfill content on regeneration.
+- `odk-plan` Self-Review adds FM coverage check; FM ACs cannot be deferred.
+- `odk-implement` requires fault-injection/error-path verification for FM ACs.
+- `odk-review` adds DFX fault-mode coverage check.
+- `odk-validate` documents Level C3 gate.
+- 66 test cases in `test-validate-dfx.py` covering C3 gate and export table.
 
 ### Changed
 
-- Refresh source provenance on 2026-09-29 after source PR #143 removed the
-  repository-local placeholder archive. Published runtime content is unchanged.
-
-- Normalize Markdown API headings consistently in Draft and Archive: accept
-  0–3 spaces of indentation and strip closing hashes before presence, template
-  marker and duplicate checks, preserving literal signature content.
-
-- Keep API validation within the document contract: signatures are opaque text,
-  not parsed as C/ArkTS syntax, types or array-bound expressions. Source review
-  and the target toolchain own language correctness; no GCC dependency is added.
-- Preserve empty/duplicate/explicit-placeholder checks. Draft and archive share
-  the signature marker policy, accepting identifier substrings and quoted text
-  while rejecting template markers such as `<完整签名>`.
-
-- **Breaking:** unify archive identity as `proposal_id`, `<proposal-id>` and
-  `odk-link-proposal`; preserve numeric IDs and document field migration.
-- Automatically review/validate after implementation; wait for an explicit source
-  PR instruction, prepare real PR metadata, then separately confirm a design-docs PR.
-- Non-GitCode sources require a documentation address supplied for this submission.
-- Track non-GitCode PR/MR URLs using `repository_url`, preserving legacy GitCode
-  records and distinguishing identical paths on different hosts.
-
-### Fixed
-
-- Reject legacy identity fields, including quoted/indented forms and mixed fields.
-- Preserve same-path cross-host records and normalize repository names consistently.
-- Align skill descriptions and action headings with distribution validation.
+- `distribute-skills.sh` now copies skill auxiliary files (references/) via
+  `copy_skill_assets`; description length measured in bytes (not characters)
+  to match truncation threshold under UTF-8 locales.
+- `validate-doc-drift.sh` excludes history sections from skill count checks.
+- `validate-skill-descriptions.sh` forces LC_ALL=C for byte-accurate length.
+- `validate-skill-references.py` checks skill asset files exist byte-identical
+  in all four platform copies; validates relative Markdown links in skill trees.
+- AD-level derived entries require library-basis annotation.
+- Export table enforces 66-column structure (WARN on drift, not FAIL).
 
 ## [0.11.0] - 2026-09-04
 
-Source: `main@2e5b440fe9e138cd93ec9305c7f5362acedea12f`.
+Source: `main@b4686f444d8550489a0e8cfcb0fd0ee9100736c9`.
 
 ### Added
 
 - `odk-submit-design-docs` generates `metadata_tracking.yaml` before design-docs
-  submission and validates the five base files plus required conditional evidence.
+  submission and validates the formal five-file bundle.
 - The metadata template supports `pull_requests: []` before a pull request is created.
 - A release-documentation regression check keeps the published README and changelog
   aligned with the shipped workflow contract.
@@ -54,22 +55,6 @@ Source: `main@2e5b440fe9e138cd93ec9305c7f5362acedea12f`.
 
 ### Changed
 
-- Confirm the design-docs target before submission. An unconfigured GitCode origin
-  offers `https://gitcode.com/OpenHarmonyAI/design-docs`; other origins require a
-  developer-supplied address. Existing profile configuration remains authoritative.
-- Verify the checkout and every effective push URL against the confirmed endpoint,
-  including protocol, port, SSH user, and path semantics. Non-GitCode business
-  repositories must not generate unsupported GitCode PR/issue metadata.
-- Task 1 API declaration gates require English and Chinese diff evidence.
-- Split the artifact validator's Markdown and API-signature helpers into runtime
-  libraries while preserving document gates and exit codes. Reports explicitly
-  mark target language/toolchain validation as NOT VERIFIED.
-- Publish all Python runtime libraries and verify their inventory against the
-  pinned source commit, rejecting ignored local modules and incomplete bundles.
-- Workflow/profile routing and API specification details load on demand from
-  shared `runtime/assets/contracts/skill-guides/`; existing rules and approval
-  gates are retained. Profile-consuming phase skills reference the shared guide
-  directly, with its relative-path base explicitly defined.
 - **Breaking:** formal `req-id` values are digits only. The archive directory,
   `proposal.md` `req`, and `metadata_tracking.yaml` `req_id` must match.
 - The formal design-docs submission gate requires `proposal.md`, `spec.md`,
@@ -82,27 +67,6 @@ Source: `main@2e5b440fe9e138cd93ec9305c7f5362acedea12f`.
 
 ### Fixed
 
-- Recognize indented and closing-hash ATX headings when rejecting duplicate API
-  and resource contract sections.
-- Accept arithmetic C array bounds while rejecting dangling operators and adjacent
-  operands. Keep type validation separate from bound expressions.
-- Require nonempty unified-diff API evidence with complete hunks and actual changes;
-  include both language variants in the design-docs submission bundle.
-- Preserve standalone absolute-path loading of the YAML helper. The source focus
-  example now includes explicitly illustrative declaration fixtures and aligned scope.
-
-- C array dimensions reject adjacent operands such as `4 4`, for both named
-  and abstract parameters, including multidimensional and nested callbacks.
-
-- C callbacks accept named array parameters, including unsized, multidimensional
-  and nested callback declarations, without dropping array dimensions.
-
-- C callback parameter declarations support names, including nested callbacks;
-  ArkTS arrow types reject empty parameters recursively while preserving tuple types.
-
-- C function-pointer validation recursively rejects empty parameter entries and
-  accepts qualified pointers such as `void (* const)(const char *)`.
-
 - Local archive-migration validation detects legacy non-numeric formal IDs before
   they are submitted with the 0.11.0 contract.
 - Per-API validation ignores HTML comments and fenced examples, rejects duplicate or
@@ -111,10 +75,3 @@ Source: `main@2e5b440fe9e138cd93ec9305c7f5362acedea12f`.
 - Design-docs metadata requires complete populated PR/issue entries, accepts GitCode
   `merge_requests` URLs, rejects unknown fields, correlates issue IDs with URLs, and
   enforces issue state consistency.
-
-### Known limitations
-
-- Signature/bound checks are bounded lexical checks, not target SDK/compiler checks.
-  Diff structure validation does not establish applicability, bilingual semantic
-  equivalence, or genuine business provenance. Illustrative source examples are not
-  production evidence and are not included in this publishing channel.

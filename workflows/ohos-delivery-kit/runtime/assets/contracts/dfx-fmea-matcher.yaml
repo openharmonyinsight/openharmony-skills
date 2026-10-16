@@ -16,8 +16,12 @@ discovery:
   network_failure_status: "UNREACHABLE"
 
 execution:
-  subagent: "optional"
-  fallback: "current agent sequential scan"
+  subagent: "default"
+  subagent_handoff:
+    input: "design.md path (or code scope) + involved repos + change search summary (involved_repos/modules_and_symbols/business_process_tags/associated_acs) + domain value"
+    output: "hit records + AD derived entries + per-repo statuses + backfill content or written paths"
+    constraint: "trigger tables and class files load only inside the subagent; the calling session receives structured results and never loads corpus content"
+  fallback: "current agent sequential scan (only when no subagent facility exists; two-stage loading is mandatory then)"
   semantic_match_inputs:
     - "modules_and_symbols"
     - "business_process_tags"
@@ -43,6 +47,18 @@ output:
     - "repository"
     - "status"
     - "reason"
+  library_export_table:
+    section: "### 故障模式库导出表格"
+    scope: "all entries (hits + derived)"
+    placement: "sibling subsection under ## DFX 设计 in design.md"
+    gate_note: "column set intentionally omits 5 of the 9 main-table required columns; archive main-table discovery never matches it"
+  fault_disposition_table:
+    section: "### DFX 故障模式处置"
+    producer: "odk-design Step 6.4 (not engine output)"
+    scope: "every main-table hit row (FM-nn) and every in-design AD entry (AD-nn)"
+    dispositions: ["新增 AC", "复用 AC", "纳入设计约束", "现有控制覆盖", "本变更不触及"]
+    gate: "validator Level C3 — structural errors fail in Draft; missing table is Draft WARN / Archive FAIL; archive requires linked ACs and 纳入设计约束 Tasks traced Pass"
+    gate_note: "column set shares only 2 of the 9 main-table required columns and lives in its own subsection; main-table discovery never matches it"
   statistics:
     - "total_scanned"
     - "hit_count"

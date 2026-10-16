@@ -25,7 +25,7 @@ license: MIT
    - Confirm interface details are accurate before writing ACs
    - If code facts contradict assumptions from `proposal.md`, surface and resolve before writing ACs
    - Skip this step for pure new features with no existing code dependencies, pure documentation changes, or config-only changes
-4. Read template from `{{ASSET_ROOT}}/templates/ai/spec.md`
+4. Read template from `{{PLUGIN_ROOT}}/templates/ai/spec.md`
 5. Generate `spec.md` per the template. Fill in error code values and interface signatures with concrete values where discoverable from the code fact check (Step 3); mark genuinely unknown values as `TBD` with a reason.
 6. If any proposal `资源开销审视` dimension is `required`, expand `资源验收契约` (`contracts/artifacts.yaml#resource_contract`). Table detail is subsystem-owned; ODK requires meaningful, non-placeholder content without imposing a measurement schema. Each 验收口径 must be an observable target (latency / fps / throughput / startup time / peak RAM / image delta) — never vague goals like「优化性能」.
 
@@ -36,6 +36,7 @@ license: MIT
 - **API 描述完整性**：若 proposal.md `API/SDK` = 「是」，必须在 spec.md 的逐 API 子节中定义接口定义三要素（含义/功能、使用场景、使用后效果）和接口使用五要素（相似接口差异、缺省配置、规格限制、生效机制、注意事项）。这些内容直接供 implement 阶段编写声明文件注释 使用，必须与开发者确认，不得臆造或自行推断。
 - Do not invent API signatures, error code values, or data structures. Resolve contradictions from code facts before writing ACs.
 - Keep ACs concrete enough for the template's verification mapping; code mapping (AC→implementation files) lives in `execution-plan.md`.
+- **保留 US-DFX 回填内容**：`spec.md` 可能在 design 阶段被 `odk-design` 第 6.4 步回填 `### US-DFX: 故障模式响应` 子节（故障模式 AC）及 `异常与边界规则`/`验证映射`/`测试设计提示` 的关联行。重新生成 `spec.md` 时必须保留该子节与关联行，不得因重建而丢失（design.md `### DFX 故障模式处置` 的关联 AC 悬空会使校验 FAIL）。
 - AC 使用 Given/When/Then 格式：Given 前置条件；When 用户/业务可操作动作；Then 通过三层接口边界（public/system/inner API + 终端用户可感知）可观测的结果。
 - AC 的 Then 禁止部件内部实现（数据结构/状态机/内部流程/算法）——移 `design.md`「状态归属与不变量」。判定：Then 能否仅凭公开接口判定？需查内部状态则移 design。
 - **API 支持属性确认（条件触发）**：若 proposal.md `API/SDK` 维度 = 「是」，需在 `## API 规格定义` 中填写跨平台/元服务/卡片/FA-Stage 模型支持属性。
