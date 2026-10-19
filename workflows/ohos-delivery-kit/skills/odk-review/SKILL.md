@@ -16,7 +16,7 @@ license: MIT
 
 1. Read `spec.md` AC list
 2. Read `execution-plan.md` Task list and code scope
-3. Read review templates from `{{PLUGIN_ROOT}}/templates/review/`
+3. Read review templates from `{{ASSET_ROOT}}/templates/review/`
 
 ## Steps
 

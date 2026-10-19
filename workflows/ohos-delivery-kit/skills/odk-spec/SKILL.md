@@ -25,7 +25,7 @@ license: MIT
    - Confirm interface details are accurate before writing ACs
    - If code facts contradict assumptions from `proposal.md`, surface and resolve before writing ACs
    - Skip this step for pure new features with no existing code dependencies, pure documentation changes, or config-only changes
-4. Read template from `{{PLUGIN_ROOT}}/templates/ai/spec.md`
+4. Read template from `{{ASSET_ROOT}}/templates/ai/spec.md`
 5. Generate `spec.md` per the template. Fill in error code values and interface signatures with concrete values where discoverable from the code fact check (Step 3); mark genuinely unknown values as `TBD` with a reason.
 6. If any proposal `资源开销审视` dimension is `required`, expand `资源验收契约` (`contracts/artifacts.yaml#resource_contract`). Table detail is subsystem-owned; ODK requires meaningful, non-placeholder content without imposing a measurement schema. Each 验收口径 must be an observable target (latency / fps / throughput / startup time / peak RAM / image delta) — never vague goals like「优化性能」.
 
