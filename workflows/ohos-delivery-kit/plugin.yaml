@@ -8,7 +8,6 @@ license: MIT
 provenance: provenance.yaml
 
 variables:
-  ASSET_ROOT: runtime/assets
   EXECUTABLE_ROOT: runtime/executables
   CMD_PREFIX:
     claude-code: /odk-

@@ -22,18 +22,18 @@ Inputs are `proposal.md` and `spec.md` (no code dependency).
 - `proposal.md` exists (success criteria for system-level scenarios)
 - `spec.md` exists (AC list, error codes, exception rules)
 - `design.md` exists (optional — enhances integration validation scenarios with module details and ADR traceability)
-- Load `using-odk` first. Read `{{ASSET_ROOT}}/contracts/skill-guides/router/workflow.md` for archive structure.
+- Load `using-odk` first. Read `contracts/skill-guides/router/workflow.md` for archive structure.
 
 ## Input
 
 1. Read `proposal.md` — success criteria, end-to-end flows, non-functional requirements
 2. Read `spec.md` — AC numbers, error codes, exception rules
 3. Read `design.md` (optional) — architecture decisions, module impact table
-4. Read template from `{{ASSET_ROOT}}/templates/ai/spec-for-validation.md`
+4. Read template from `templates/ai/spec-for-validation.md`
 
 ## Steps
 
-0. Profile Detection: read and follow `{{ASSET_ROOT}}/contracts/skill-guides/router/profiles.md`; apply `template_overrides.spec_for_validation` if matched
+0. Profile Detection: read and follow `contracts/skill-guides/router/profiles.md`; apply `template_overrides.spec_for_validation` if matched
 1. Derive AC range and validation level (L2/L3/L4) from spec.md scope; populate the overview table (associated ACs, validation level, tags)
 2. Generate incremental validation scenarios (SC-N) — **conditional, not mandatory**:
    - **Integration**: cross-module interaction derived from **spec.md AC** (interface-observable behavior) + spec.md error codes; enhance with design.md module impact if available

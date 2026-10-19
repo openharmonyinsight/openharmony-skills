@@ -25,13 +25,13 @@ license: MIT
 
 ## Steps
 
-0. Check for subsystem profile: read and follow `{{ASSET_ROOT}}/contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.design` (additional sections, fragments) and `agent_instructions.design`
+0. Check for subsystem profile: read and follow `contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.design` (additional sections, fragments) and `agent_instructions.design`
 1. **Code fact baseline (conditional):** If the change modifies an existing module (not pure greenfield, pure docs, or config-only), search the codebase for key facts the design will reference:
    - Search for existing data structures, key function signatures, and runtime flows in the affected module(s)
    - Record findings as a brief code fact baseline: file:line references for key structures, signatures, and flow paths
    - If search results contradict assumptions from `proposal.md` or `spec.md`, surface the discrepancy to the user before proceeding to generate design
    - Skip this step for brand-new modules with no existing code, pure documentation changes, or config-only changes
-2. Read template from `{{ASSET_ROOT}}/templates/ai/design.md`
+2. Read template from `templates/ai/design.md`
 3. Generate `design.md` per the template. Conditionally include `代码事实基线`, `类图`, and `状态归属与不变量` when applicable — add `类图` (Mermaid `classDiagram`) when the change involves class/interface inheritance or implementation hierarchies (e.g. IPC interface→proxy→stub→impl) or cross-module composition. Reference specific `spec.md` AC numbers in design decisions.
    If any proposal `资源开销审视` dimension is `required`, expand `资源设计` (`contracts/artifacts.yaml#resource_contract`). Content detail is subsystem-owned; ODK requires the section and meaningful, non-placeholder content without imposing a subsystem design schema.
 4. If Step 1 produced code facts, populate `代码事实基线`; otherwise omit it.
@@ -48,7 +48,7 @@ license: MIT
           - `design.md` 路径与第 1 步的涉及仓库清单（作为其逐仓探测 `docs/dfx/fmea.yaml` 的范围；对象抽取与关键词生成按其 `references/design-doc-routing.md` 所定义的流程，从代码事实基线、模块影响表、实现入口表、时序图、状态归属与不变量等段落自动执行）；领域取值（故障模式库导出表的二级对象；若需求或用户交互中已给出则随调用传入，未给出由其向用户询问，仍未获回答则该列留空）
           - 变更检索摘要：`involved_repos`、`modules_and_symbols`（实现入口表中的模块/类/接口名）、`business_process_tags`（方案概述的业务流程短语）、`associated_acs`（关联 AC 编号）
           - 输出要求：按其"DFX 表兼容模式"产出 `### DFX 故障模式分析` 回填内容与涉及仓状态表；推导记录仅取架构与设计问题（AD 级）条目，单点编码问题（SC 级）表格不再生成
-        - **降级路径**：skill 无法加载或调用失败时，读取 `{{ASSET_ROOT}}/contracts/dfx-fmea-matcher.yaml`，由当前 Agent 按该契约执行等价的仓内匹配（仓库发现顺序、执行降级、匹配规则、输出字段与来源格式以契约为唯一事实来源）。
+        - **降级路径**：skill 无法加载或调用失败时，读取 `contracts/dfx-fmea-matcher.yaml`，由当前 Agent 按该契约执行等价的仓内匹配（仓库发现顺序、执行降级、匹配规则、输出字段与来源格式以契约为唯一事实来源）。
         - **消费其输出**：命中记录（每条含 `matched_object`、`fault_mode`、`fault_effect`、`fault_cause`、`severity`、`recovery`、`key_log`、`big_data_event`、`source_ref`，`source_ref` 格式 `<repo>@<commit>:docs/dfx/fmea.yaml#<record-id>`）；推导记录（其标注"本次推导"，含仓无 `fmea.yaml` 时的全量推演与有库时的增量补充）；逐仓状态（`READ` / `NO_HIT` / `NO_DFX_KNOWLEDGE` / `UNREACHABLE`）；故障模式库导出表格（全列模板表，命中与推导条目全部进入，承载于 `## DFX 设计` 之下独立小节 `### 故障模式库导出表格`）。所有仓不可达/无 DFX 知识且无命中时，第 3 步走"不涉及"分支。
 
      3. **回填 `### DFX 故障模式分析` 表并按 ODK 落盘契约复核**（H3，9 列：分析对象/故障模式/故障影响/故障原因/严酷度/恢复措施/关键日志/大数据打点事件/来源；`odk-fmea` 可能已按兼容模式直接回填，此时逐条复核以下契约）：

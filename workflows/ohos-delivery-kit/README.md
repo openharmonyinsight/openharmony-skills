@@ -103,6 +103,5 @@ Synced from `oshunter/ohos-delivery-kit` branch `main` via
 
 ## Variables
 
-- `{{ASSET_ROOT}}` — resolved to `runtime/assets` at build time
 - `{{EXECUTABLE_ROOT}}` — resolved to `runtime/executables` at build time
 - `{{CMD_PREFIX}}` — resolved per-host (`/odk-` for claude, `odk-` for codex/opencode)
