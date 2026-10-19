@@ -102,7 +102,7 @@ api_spec_contract:
 artifacts:
   proposal:
     file: "proposal.md"
-    template: "{{ASSET_ROOT}}/templates/ai/proposal.md"
+    template: "templates/ai/proposal.md"
     phase: "define"
     required: true
     owns:
@@ -133,7 +133,7 @@ artifacts:
 
   spec:
     file: "spec.md"
-    template: "{{ASSET_ROOT}}/templates/ai/spec.md"
+    template: "templates/ai/spec.md"
     phase: "specify"
     required: true
     owns:
@@ -161,7 +161,7 @@ artifacts:
 
   design:
     file: "design.md"
-    template: "{{ASSET_ROOT}}/templates/ai/design.md"
+    template: "templates/ai/design.md"
     phase: "design"
     required: true
     owns:
@@ -203,7 +203,7 @@ artifacts:
 
   execution-plan:
     file: "execution-plan.md"
-    template: "{{ASSET_ROOT}}/templates/ai/execution-plan.md"
+    template: "templates/ai/execution-plan.md"
     phase: "plan"
     required: true
     owns:
@@ -234,7 +234,7 @@ artifacts:
 
   metadata-tracking:
     file: "metadata_tracking.yaml"
-    template: "{{ASSET_ROOT}}/templates/metadata_tracking.yaml"
+    template: "templates/metadata_tracking.yaml"
     phase: "design-docs-submit"
     required: false
     owns:
@@ -252,7 +252,7 @@ artifacts:
 
   spec-for-validation:
     file: "spec-for-validation.md"
-    template: "{{ASSET_ROOT}}/templates/ai/spec-for-validation.md"
+    template: "templates/ai/spec-for-validation.md"
     phase: "validation"
     required: false
     bypass: true
@@ -268,7 +268,7 @@ artifacts:
 
   threat-model:
     file: "threat-model.md"
-    template: "{{ASSET_ROOT}}/templates/ai/threat-model.md"
+    template: "templates/ai/threat-model.md"
     phase: "security"
     required: false
     bypass: true
@@ -293,6 +293,6 @@ evidence_policy:
   minimum_archive_required: false
   recommended_root: "evidence/"
   review_templates:
-    - "{{ASSET_ROOT}}/templates/review/review-spec-compliance.md"
-    - "{{ASSET_ROOT}}/templates/review/review-code-quality.md"
-    - "{{ASSET_ROOT}}/templates/review/review-verification.md"
+    - "templates/review/review-spec-compliance.md"
+    - "templates/review/review-code-quality.md"
+    - "templates/review/review-verification.md"
