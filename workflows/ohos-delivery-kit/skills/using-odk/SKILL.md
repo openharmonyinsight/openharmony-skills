@@ -28,7 +28,7 @@ After activation, follow the Context Loading rules below to determine the active
 <!-- ODK:reference contracts/skill-guides/router/workflow.md -->
 ## Workflow (on activation)
 
-After ODK activates, read `contracts/skill-guides/router/workflow.md` before selecting a phase, archive, or base/bridge command. It defines the unchanged archive layout, phase order, available commands, plugin preference and fallback. Do not load it for ordinary coding or when ODK is disabled.
+After ODK activates, read `{{ASSET_ROOT}}/contracts/skill-guides/router/workflow.md` before selecting a phase, archive, or base/bridge command. It defines the unchanged archive layout, phase order, available commands, plugin preference and fallback. Do not load it for ordinary coding or when ODK is disabled.
 <!-- /ODK:reference -->
 ## Key Rules
 
@@ -54,12 +54,12 @@ For actual design-document submission, `odk-submit-design-docs` resolves and con
 - When spawning subagents (e.g. via bridge commands), run them in isolated contexts — never fork the main session history; the main session only dispatches tasks and receives summaries
 - Pass evidence by file path, not by content — artifacts land on disk once (`evidence/`, `pr-diff.txt`, `findings.json`); later references pass the path, not the full text
 - Cap parallel fan-out at ≤4 subagents per layer; batch or narrow task scope if more are needed
-- Template files are located at `templates/` (installed with the plugin)
+- Template files are located at `{{ASSET_ROOT}}/templates/` (installed with the plugin)
 
 <!-- ODK:reference contracts/skill-guides/router/profiles.md -->
 ## Profile Detection
 
-When generating ODK artifacts for a module, read `contracts/skill-guides/router/profiles.md` before applying profile overrides; resolve its relative paths from that guide's directory. It defines profile selection, phase mappings, fragment composition and conflict precedence. Routing-only requests do not need this reference.
+When generating ODK artifacts for a module, read `{{ASSET_ROOT}}/contracts/skill-guides/router/profiles.md` before applying profile overrides; resolve its relative paths from that guide's directory. It defines profile selection, phase mappings, fragment composition and conflict precedence. Routing-only requests do not need this reference.
 <!-- /ODK:reference -->
 ## Bypass Documents (Design Phase)
 
@@ -76,6 +76,6 @@ When using bridge commands, `using-odk-bridge` is loaded automatically and provi
 
 ## Template Reference
 
-- AI artifact templates: `templates/ai/` (proposal, spec, design, execution-plan, spec-for-validation, threat-model)
-- Review templates: `templates/review/` (spec-compliance, code-quality, verification)
-- Design-docs submission metadata: `templates/metadata_tracking.yaml`
+- AI artifact templates: `{{ASSET_ROOT}}/templates/ai/` (proposal, spec, design, execution-plan, spec-for-validation, threat-model)
+- Review templates: `{{ASSET_ROOT}}/templates/review/` (spec-compliance, code-quality, verification)
+- Design-docs submission metadata: `{{ASSET_ROOT}}/templates/metadata_tracking.yaml`

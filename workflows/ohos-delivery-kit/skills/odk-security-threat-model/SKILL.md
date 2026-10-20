@@ -83,7 +83,7 @@ Run this skill when `proposal` 的 `安全/权限` 维度 = 「是」 **且** �
    - For gaps, document remediation measures
 
 5. **Generate Threat Model Document**:
-   - Read template from `templates/ai/threat-model.md`
+   - Read template from `{{ASSET_ROOT}}/templates/ai/threat-model.md`
    - Generate comprehensive threat model document per template
    - Include Mermaid DFD diagrams, STRIDE analysis tables, compliance matrix
 
@@ -103,7 +103,7 @@ Suggest integration:
 
 ## Template Reference
 
-Base template: `templates/ai/threat-model.md`
+Base template: `{{ASSET_ROOT}}/templates/ai/threat-model.md`
 
 ## STRIDE Quick Reference
 

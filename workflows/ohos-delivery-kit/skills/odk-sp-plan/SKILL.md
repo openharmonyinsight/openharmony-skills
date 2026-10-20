@@ -15,7 +15,7 @@ Invoke Superpowers `writing-plans` for task decomposition and file-level boundar
 - Load `using-odk` first.
 - Load `using-odk-bridge` for output redirection and mode selection.
 - `spec.md` must exist with numbered ACs.
-- If Superpowers skills are unavailable, use the fallback chain declared in `adapters/superpowers.yaml` and clearly report the degradation.
+- If Superpowers skills are unavailable, use the fallback chain declared in `{{ASSET_ROOT}}/adapters/superpowers.yaml` and clearly report the degradation.
 
 ## Steps
 

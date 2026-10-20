@@ -15,7 +15,7 @@ Invoke MatrixSpec `/matspec.validation` for validation execution. Redirect outpu
 - Load `using-odk` first.
 - Load `using-odk-bridge` for output redirection and mode selection.
 - `codespec/changes/<repo-name>/<proposal-id>/execution-plan.md` must exist (run `{{CMD_PREFIX}}ms-tasks` first).
-- If MatrixSpec is unavailable, use the fallback chain declared in `adapters/matrixspec.yaml` and clearly report the degradation.
+- If MatrixSpec is unavailable, use the fallback chain declared in `{{ASSET_ROOT}}/adapters/matrixspec.yaml` and clearly report the degradation.
 
 ## Steps
 

@@ -33,7 +33,7 @@ implementation handoff, before any design-docs submission authorization. In that
 context perform only metadata preparation, not destination checkout or submission.
 
 <!-- ODK:reference contracts/skill-guides/delivery/metadata.md -->
-Read `contracts/skill-guides/delivery/metadata.md` to generate or refresh
+Read `{{ASSET_ROOT}}/contracts/skill-guides/delivery/metadata.md` to generate or refresh
 `metadata_tracking.yaml`. Verify the current branch and upstream, `git rev-parse HEAD`,
 and actual source-host PR results. Preserve valid existing tracking and distinguish the
 standalone `pull_requests: []` case from failed automatic PR publication.

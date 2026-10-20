@@ -17,13 +17,13 @@ Invoke Superpowers `requesting-code-review` and `verification-before-completion`
 - Implementation code exists (committed).
 - `spec.md` with AC list.
 - `execution-plan.md` with Task list and code scope.
-- If Superpowers skills are unavailable, use the fallback chain declared in `adapters/superpowers.yaml` and clearly report the degradation.
+- If Superpowers skills are unavailable, use the fallback chain declared in `{{ASSET_ROOT}}/adapters/superpowers.yaml` and clearly report the degradation.
 
 ## Steps
 
 1. Invoke Superpowers `requesting-code-review` to review the implementation against `spec.md` and `execution-plan.md`.
 2. Invoke Superpowers `verification-before-completion` before making any readiness claim.
-3. Generate 3 review documents from templates in `templates/review/`, using the Superpowers review and verification results as the primary evidence:
+3. Generate 3 review documents from templates in `{{ASSET_ROOT}}/templates/review/`, using the Superpowers review and verification results as the primary evidence:
    - **spec-compliance-YYYYMMDD.md** — Check every AC against implementation
    - **code-review-YYYYMMDD.md** — Code quality review; verify code scope matches execution-plan boundaries
    - **verification-YYYYMMDD.md** — Verification evidence; explicit code-vs-spec consistency conclusion

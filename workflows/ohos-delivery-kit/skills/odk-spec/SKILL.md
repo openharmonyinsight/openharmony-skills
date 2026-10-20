@@ -16,18 +16,18 @@ license: MIT
 
 ## Steps
 
-0. Check for subsystem profile: read and follow `contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.spec` (additional AC categories, fragments) and `agent_instructions.specify` before generating content
+0. Check for subsystem profile: read and follow `{{ASSET_ROOT}}/contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.spec` (additional AC categories, fragments) and `agent_instructions.specify` before generating content
 <!-- ODK:reference contracts/skill-guides/spec/api-specification.md -->
-**Steps 1–2.5 — API workflow (conditional):** If proposal.md `API/SDK` = 「是」, read and follow `contracts/skill-guides/spec/api-specification.md` in full before Steps 3–6. Steps 1, 2 and 2.5 and their cross-references are local to that guide: repository readiness, declaration guidance/fallbacks, developer-confirmed @since and API descriptions, and device scope/difference confirmation. If `API/SDK` = 「否」, skip these steps; keep the fixed API section and its non-involvement reason as required below.
+**Steps 1–2.5 — API workflow (conditional):** If proposal.md `API/SDK` = 「是」, read and follow `{{ASSET_ROOT}}/contracts/skill-guides/spec/api-specification.md` in full before Steps 3–6. Steps 1, 2 and 2.5 and their cross-references are local to that guide: repository readiness, declaration guidance/fallbacks, developer-confirmed @since and API descriptions, and device scope/difference confirmation. If `API/SDK` = 「否」, skip these steps; keep the fixed API section and its non-involvement reason as required below.
 <!-- /ODK:reference -->
 3. **Code fact check (conditional):** If the change involves existing APIs, error codes, or data structures, search the codebase before generating spec:
    - Search for existing API signatures, error code definitions, and data structures referenced in the AC scope
    - Confirm interface details are accurate before writing ACs
    - If code facts contradict assumptions from `proposal.md`, surface and resolve before writing ACs
    - Skip this step for pure new features with no existing code dependencies, pure documentation changes, or config-only changes
-4. Read template from `templates/ai/spec.md`
+4. Read template from `{{ASSET_ROOT}}/templates/ai/spec.md`
 5. Generate `spec.md` per the template. Fill in error code values and interface signatures with concrete values where discoverable from the code fact check (Step 3); mark genuinely unknown values as `TBD` with a reason.
-6. If any proposal `资源开销审视` dimension is `required`, expand `资源验收契约` (`contracts/artifacts.yaml#resource_contract`). Table detail is subsystem-owned; ODK requires meaningful, non-placeholder content without imposing a measurement schema. Each 验收口径 must be an observable target (latency / fps / throughput / startup time / peak RAM / image delta) — never vague goals like「优化性能」.
+6. If any proposal `资源开销审视` dimension is `required`, expand `资源验收契约` (`{{ASSET_ROOT}}/contracts/artifacts.yaml#resource_contract`). Table detail is subsystem-owned; ODK requires meaningful, non-placeholder content without imposing a measurement schema. Each 验收口径 must be an observable target (latency / fps / throughput / startup time / peak RAM / image delta) — never vague goals like「优化性能」.
 
 ## Key Rules
 
