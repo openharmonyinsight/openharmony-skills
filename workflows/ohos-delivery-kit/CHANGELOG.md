@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.12.1] - 2026-10-15
 
-Source: `main@81489b83490c5eb7e211a51308b237d940426bea`.
+Source: `main@9f14e1b65c40aad1f32f2a233865a84aaa6aa34e`.
 
 ### Added
 
@@ -42,6 +42,10 @@ Source: `main@81489b83490c5eb7e211a51308b237d940426bea`.
 
 ### Fixed
 
+- Refresh the import from merged `main@9f14e1b`; retain the existing
+  shared runtime/assets layout and declared host asset/executable variables.
+- Use `proposal_id` / `PROPOSAL_ID` and `odk-link-proposal` consistently; legacy
+  identity names remain only in migration instructions and rejection checks.
 - Preserve the 0.12.0 proposal ID, API validation, and delivery handoff contracts.
 - Register `odk-fmea` alongside `odk-link-proposal` and align the manifest version
   with sourceVersion 0.12.1.
