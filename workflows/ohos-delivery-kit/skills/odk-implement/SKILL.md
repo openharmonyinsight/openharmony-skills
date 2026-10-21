@@ -62,13 +62,13 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
    - If any Task is incomplete, inform the user and do NOT suggest moving to review — wait for user direction
 5. If implementation reveals missing ACs or changed scope, pause and update `spec.md` / `execution-plan.md` before continuing.
 6. Keep changes within the Task file scope unless the user approves an execution-plan update.
-7. When any `资源开销审视` dimension is `required` (`{{ASSET_ROOT}}/contracts/artifacts.yaml#resource_contract`), complete subsystem measurement/evidence Tasks and the business-repo `odk_resource_gate` (commonly under `evidence/resource/`).
+7. When any `资源开销审视` dimension is `required` (`contracts/artifacts.yaml#resource_contract`), complete subsystem measurement/evidence Tasks and the business-repo `odk_resource_gate` (commonly under `evidence/resource/`).
 8. After all Tasks are Done, automatically follow the handoff below; do not require separate review/validate commands from the user.
 
 ## Output
 
 <!-- ODK:reference contracts/skill-guides/delivery/handoff.md -->
-When implementation is complete, read and follow `{{ASSET_ROOT}}/contracts/skill-guides/delivery/handoff.md`: automatically review and validate, remind and wait for the user to trigger source PR submission, prepare metadata from the actual PR, then ask separately about design-docs. No automatic merge.
+When implementation is complete, read and follow `contracts/skill-guides/delivery/handoff.md`: automatically review and validate, remind and wait for the user to trigger source PR submission, prepare metadata from the actual PR, then ask separately about design-docs. No automatic merge.
 <!-- /ODK:reference -->
 
 Report:

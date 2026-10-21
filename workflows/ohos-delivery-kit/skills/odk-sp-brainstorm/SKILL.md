@@ -15,14 +15,14 @@ Invoke Superpowers `brainstorming` for requirement clarification and approach se
 - Load `using-odk` first.
 - Load `using-odk-bridge` for output redirection and mode selection.
 - `codespec/changes/<repo-name>/<proposal-id>/` skeleton must exist (run `{{CMD_PREFIX}}init` first).
-- If Superpowers skills are unavailable, use the fallback chain declared in `{{ASSET_ROOT}}/adapters/superpowers.yaml` and clearly report the degradation.
+- If Superpowers skills are unavailable, use the fallback chain declared in `adapters/superpowers.yaml` and clearly report the degradation.
 
 ## Steps
 
 1. Invoke Superpowers `brainstorming` for requirement clarification and approach selection.
 2. Apply `using-odk-bridge` Output Redirection Rules when brainstorming tries to write to `docs/superpowers/specs/`.
 3. Process output per active mode: ensure `proposal.md`, `spec.md`, `design.md` conform to ODK templates in strict mode; preserve plugin format in passthrough mode; append ODK sections in merge mode. Strict/merge `proposal.md` must include `1+8 设备差异规格` and `外部依赖`. For `design.md`, rely on `using-odk-bridge` Design State Ownership Rules so complex state changes include explicit ownership and checkable invariants. In strict mode, also inherit `odk-design`'s DFX design and security steps:
-   - DFX 设计（必填，Step 6）：执行 4 步故障模式分析流程（识别涉及仓库 → 委托内置 `odk-fmea` skill 执行故障模式分析 → 按落盘契约回填故障模式分析表 → 处置决策与 AC 回填），详见 `odk-design/SKILL.md` Step 6；降级路径契约见 `{{ASSET_ROOT}}/contracts/dfx-fmea-matcher.yaml`。
+   - DFX 设计（必填，Step 6）：执行 4 步故障模式分析流程（识别涉及仓库 → 委托内置 `odk-fmea` skill 执行故障模式分析 → 按落盘契约回填故障模式分析表 → 处置决策与 AC 回填），详见 `odk-design/SKILL.md` Step 6；降级路径契约见 `contracts/dfx-fmea-matcher.yaml`。
    - Security baseline check (conditional, Step 7): when `proposal.md`「安全/权限」=「是」, expand `design.md`「安全基础检查」; if high-risk criteria are hit, produce `threat-model.md` (see `odk-security-threat-model`).
 
 ## Output

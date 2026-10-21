@@ -15,14 +15,14 @@ Invoke MatrixSpec `/matspec.tasks` for task breakdown generation. Redirect outpu
 - Load `using-odk` first.
 - Load `using-odk-bridge` for output redirection and mode selection.
 - `codespec/changes/<repo-name>/<proposal-id>/design.md` must exist (run `{{CMD_PREFIX}}ms-delta-design` first).
-- If MatrixSpec is unavailable, use the fallback chain declared in `{{ASSET_ROOT}}/adapters/matrixspec.yaml` and clearly report the degradation.
+- If MatrixSpec is unavailable, use the fallback chain declared in `adapters/matrixspec.yaml` and clearly report the degradation.
 
 ## Steps
 
 1. Invoke MatrixSpec `/matspec.tasks` for layered task generation (Data -> Domain -> Application -> Infrastructure -> Interface -> Tests -> Docs -> Verification).
 2. When MatrixSpec tries to write to `matspec/changes/`, apply `using-odk-bridge` Output Redirection Rules instead.
 3. Process output per active mode:
-   - strict: Transform to ODK execution-plan format at `{{ASSET_ROOT}}/templates/ai/execution-plan.md`. Add AC-Task traceability table, code scope per task (file-level paths), completion criteria.
+   - strict: Transform to ODK execution-plan format at `templates/ai/execution-plan.md`. Add AC-Task traceability table, code scope per task (file-level paths), completion criteria.
    - passthrough: Copy to `codespec/changes/<repo-name>/<proposal-id>/execution-plan.md` unchanged.
    - merge: Use MatrixSpec layered format, append AC-Task traceability table and code scope column.
 4. Confirm with user.

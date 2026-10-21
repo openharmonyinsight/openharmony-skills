@@ -17,7 +17,7 @@ Use after `execution-plan.md` has been approved and the user wants implementatio
 - `spec.md` exists with numbered ACs.
 - `execution-plan.md` exists with Task IDs, AC-Task traceability, file-level scope, and verification commands.
 - The user has approved implementation.
-- If Superpowers skills are unavailable, use the fallback chain declared in `{{ASSET_ROOT}}/adapters/superpowers.yaml` and clearly report the degradation.
+- If Superpowers skills are unavailable, use the fallback chain declared in `adapters/superpowers.yaml` and clearly report the degradation.
 
 ## Steps
 
@@ -44,7 +44,7 @@ Use after `execution-plan.md` has been approved and the user wants implementatio
 ## Output
 
 <!-- ODK:reference contracts/skill-guides/delivery/handoff.md -->
-When implementation is complete, read and follow `{{ASSET_ROOT}}/contracts/skill-guides/delivery/handoff.md`: automatically review and validate, remind and wait for the user to trigger source PR submission, prepare metadata from the actual PR, then ask separately about design-docs. No automatic merge.
+When implementation is complete, read and follow `contracts/skill-guides/delivery/handoff.md`: automatically review and validate, remind and wait for the user to trigger source PR submission, prepare metadata from the actual PR, then ask separately about design-docs. No automatic merge.
 <!-- /ODK:reference -->
 
 Report:

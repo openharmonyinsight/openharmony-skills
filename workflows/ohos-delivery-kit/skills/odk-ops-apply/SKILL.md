@@ -16,7 +16,7 @@ Invoke OpenSpec `/opsx:apply` to implement tasks from the execution plan, apply 
 - Load `using-odk-bridge` for output redirection and mode selection.
 - `spec.md` and `execution-plan.md` must exist in `codespec/changes/<repo-name>/<proposal-id>/`.
 - `execution-plan.md` must be approved by the user — do NOT implement before plan approval. If the plan is not yet approved, stop and ask the user to review and approve it first.
-- If OpenSpec is unavailable, use the fallback chain declared in `{{ASSET_ROOT}}/adapters/openspec.yaml` and clearly report the degradation.
+- If OpenSpec is unavailable, use the fallback chain declared in `adapters/openspec.yaml` and clearly report the degradation.
 
 ## Steps
 
@@ -29,7 +29,7 @@ Invoke OpenSpec `/opsx:apply` to implement tasks from the execution plan, apply 
 ## Output
 
 <!-- ODK:reference contracts/skill-guides/delivery/handoff.md -->
-When implementation is complete, read and follow `{{ASSET_ROOT}}/contracts/skill-guides/delivery/handoff.md`: automatically review and validate, remind and wait for the user to trigger source PR submission, prepare metadata from the actual PR, then ask separately about design-docs. No automatic merge.
+When implementation is complete, read and follow `contracts/skill-guides/delivery/handoff.md`: automatically review and validate, remind and wait for the user to trigger source PR submission, prepare metadata from the actual PR, then ask separately about design-docs. No automatic merge.
 <!-- /ODK:reference -->
 
 - Code changes applied to the codebase.

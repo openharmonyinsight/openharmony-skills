@@ -17,7 +17,7 @@ license: MIT
 
 Read the business repository's `git remote get-url origin` (not the design-docs checkout's remote) and developer-owned `codespec/profile.yaml` key `design_docs_repository`. If `origin` is missing or ambiguous, ask which source remote applies; never select another remote silently.
 
-Use the read-only resolver `{{EXECUTABLE_ROOT}}/lib/odk_repository.py` with `--remote` and, when configured, `--configured` to obtain `action`, `repository`, and `source`. It performs no network access or writes.
+Use the read-only resolver `runtime/executables/lib/odk_repository.py` with `--remote` and, when configured, `--configured` to obtain `action`, `repository`, and `source`. It performs no network access or writes.
 
 - For a GitCode business origin and a valid configured address, show that address and request confirmation; never silently replace an explicit configuration with the default.
 - Without a configured address, a GitCode source (`gitcode.com` exact host; HTTPS, SSH URL, or SCP-style `git@gitcode.com:org/repo.git`) prompts: “是否将当前设计文档提交到 https://gitcode.com/OpenHarmonyAI/design-docs ？” The URL is a suggestion, not authorization. Do not match `gitcode.com` substrings in paths or other hostnames.
@@ -33,7 +33,7 @@ implementation handoff, before any design-docs submission authorization. In that
 context perform only metadata preparation, not destination checkout or submission.
 
 <!-- ODK:reference contracts/skill-guides/delivery/metadata.md -->
-Read `{{ASSET_ROOT}}/contracts/skill-guides/delivery/metadata.md` to generate or refresh
+Read `contracts/skill-guides/delivery/metadata.md` to generate or refresh
 `metadata_tracking.yaml`. Verify the current branch and upstream, `git rev-parse HEAD`,
 and actual source-host PR results. Preserve valid existing tracking and distinguish the
 standalone `pull_requests: []` case from failed automatic PR publication.
@@ -60,7 +60,7 @@ language correctness; review these against the actual declaration changes.
 Run:
 
 ```bash
-python3 "{{EXECUTABLE_ROOT}}/validate-artifacts-contract.py" \
+python3 "runtime/executables/validate-artifacts-contract.py" \
   "codespec/changes/<repo-name>/<proposal-id>" --design-docs-submit
 ```
 
