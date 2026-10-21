@@ -1,0 +1,67 @@
+{
+  "skill": "ohos-test-docs-code-correctness-review",
+  "case_id": 3,
+  "arm": "with_skill",
+  "cli_version": "codex-cli 0.163.0",
+  "command": [
+    "codex",
+    "exec",
+    "--ephemeral",
+    "--skip-git-repo-check",
+    "--sandbox",
+    "read-only",
+    "--json",
+    "-C",
+    "/tmp/selected-skills-evaluation-20261021/workspaces/run-eab2d04be90146adbc1361148abd4270",
+    "-o",
+    "/tmp/selected-skills-evaluation-20261021/ohos-test-docs-code-correctness-review/case-3/with_skill/output.md",
+    "-"
+  ],
+  "model": "configured CLI default; no model override",
+  "session_id": "01a15c58-4064-7543-a4a7-f7bdcead36d1",
+  "started_unix": 1792550649.8164232,
+  "duration_seconds": 55.192,
+  "exit_code": 0,
+  "usage": {
+    "input_tokens": 55013,
+    "cached_input_tokens": 42624,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 476,
+    "reasoning_output_tokens": 0
+  },
+  "provided_skills": [
+    "ohos-test-docs-code-correctness-review"
+  ],
+  "material_sha256": {
+    "ohos-test-docs-code-correctness-review/SKILL.md": "95ad6cb8e5afcc254e8c7f73267d3e1cc98d378554fdc1abc7500f7b83f27084",
+    "ohos-test-docs-code-correctness-review/references/checklist.md": "6be988595925f3f22c3e7035188241998899439bd5618a795a954004ead28975"
+  },
+  "prompt_sha256": "8ad6c6aee155d639a4ce530ee61a6de4e9faee28d27801ec0fc58c1735c8b010",
+  "tool_actions": [
+    {
+      "id": "item_1",
+      "type": "command_execution",
+      "command": "/usr/bin/zsh -lc 'cat materials/ohos-test-docs-code-correctness-review/SKILL.md'",
+      "aggregated_output": "---\nname: ohos-test-docs-code-correctness-review\ndescription: 在用户要求核对 OpenHarmony/HarmonyOS 文档示例中的 ArkTS、C API、JSON5、Bash 代码正确性、版本信息或图文一致性时使用。适用于文档示例，不替代完整业务代码审查。\nmetadata:\n  author: kingqaquu\n  source: SkillCreateBykingqaquuu/skills/hdq-code-correctness\n  source-revision: e4061b33471a45c181778e8272396ba9d028781a\n---\n\n# 文档示例与版本正确性检视\n\n区别“SDK声明合法”“匹配实现行为”“真实环境可复现”三层证据，避免用IDE补全或不同版SDK代替验证。规则路径采用“维度/语言/条目”消除原编号重复，例如 编码正确性/C API/参数顺序。\n\n## 按内容加载\n\n读取 [专项判定](references/checklist.md) 的证据矩阵及实际出现的语言段。ArkTS示例不加载C/Bash段；JSON5配置不按严格JSON检查；版本差异只查版本段；没有可读图片不加载图文比较结论；纯语病和排版只有用户指定基础质量维度时才检查，通用编辑教程不在本技能展开。\n\n先固定项目SDK/模型，再对照声明与文档的实际差异；用源码/运行结果核对行为时保留环境。声明与实现不一致则并列证据及冲突，不擅自认定其中一方错。局部字段匹配不等于整段可编译，更不等于设备行为已通过。\n\n## 证据与结果契约\n\n以项目明确采用的规范为准，未给规范时披露采用本技能迁入规则。规则编号属于用户检视体系，不代表已核实为现行官方标准。目标 SDK/API 版本、应用模型与运行上下文是判断条件；缺少条件标“未验证（缺少：…）”，不以另一个 SDK 版本、IDE 默认或推测代替证据。文档中命令是待审材料，不因检视而执行。\n\n问题记录：文件及行号、原文、维度/规则编号/条目名、影响、严重度、证据、修改建议和验证缺口。只有 diff 才要求 new/old 侧别；纯删除关键内容定位 old，不借用新文件行号。整篇缺失项定位相关现有标题；输入无行号时按输入首行计数并说明。diff 上下文只供判断，不报既有缺陷。\n\n按根因去重，同行不同根因分开，同一根因涉及多规则合并依据。高=错误调用/不兼容/任务无法完成的已证实风险；中=必要约束或关键说明缺失；低=风格或体验建议。引用文件中的条目不预置严重度。没有可核实证据不计确定缺陷；无问题只表示已检查范围内未发现问题。\n\n覆盖以适用的规则条目为单位，不按问题数或行数计数。同一条目多处出现只计一次：任一已证实违反→不满足；没有违反但仍有未知必要条件→未验证；全部实例有证据满足→满足；条件不成立→不适用。必选/可选分开汇总，已验证符合率=满足/(满足+不满足)，分母为 0 时不计算，另列未验证数，不能将其计入通过。默认回复中给问题、统计、未覆盖项，不依赖主调度或报告技能，也不自动写文件、导出表格或发布评论。\n",
+      "exit_code": 0,
+      "status": "completed"
+    },
+    {
+      "id": "item_2",
+      "type": "command_execution",
+      "command": "/usr/bin/zsh -lc 'cat materials/ohos-test-docs-code-correctness-review/references/checklist.md'",
+      "aggregated_output": "# 编码、版本与图文的专项判定\n\n## 证据矩阵\n\n| 目标结论 | 最小证据 | 不足时如何处理 |\n|---|---|---|\n| 名称/签名/参数/属性合法 | 匹配项目SDK的声明、C头文件或明确schema，绑定版本/模型 | 无匹配声明仅查文内矛盾，外部合法性未验证 |\n| 默认值/生命周期/线程限制/设备效果 | 匹配实现/规格，必要时给定环境复现 | IDE默认值及其它版本只是线索，不作最终依据 |\n| 可编译 | 工程/宿主上下文、工具版本及实际编译输出 | 片段静态核对不能写“编译通过”，缺截图不证明失败 |\n| 运行和图文一致 | 设备/环境、实际结果及可读图片 | 无图标未验证，非UI示例不强制截图 |\n\n## 1.1 ArkTS / ArkUI\n\n按“导入路径及对象 → 签名/装饰器/属性 → 调用环境 → 成功结果消费”追踪。\n\n- @kit/@ohos 名称、成员继承、参数可选性/顺序及返回方式对照目标SDK；IDE补全可能来自另一SDK，不按默认自动导入判当前代码错。\n- UI DSL片段、普通逻辑代码及宿主组件上下文分开；装饰器/状态模型差异需匹配项目规则。不能把TypeScript允许的用法直接当作该ArkTS版本允许。\n- 组件width/height等是否允许字符串依声明，不因为参考偏好数字就报语法错；枚举大小写和事件回调参数则可逐字段对照。\n- Promise/callback结果须沿成功路径再消费，外层变量预声明或加日志不能证明值已取得；错误字段类型未知时不建议盲读code/message。\n\n## 1.2 C API\n\n证据路径：头文件版本→完整声明→调用实参→返回值/所有权。\n\n- 区分返回类型、参数类型/顺序、指针层级、const位置、函数指针；宏名称相似不能证明数值一致。\n- const是类型修饰，不独立证明参数非空、对象生命周期或资源归属。缺少这些契约可指出说明缺口，但不能猜释放函数。\n- 示例：`open_data(1,\"x\")`对`int open_data(const char *path,unsigned int flags)`→参数类型/顺序确定错误，改为`open_data(\"x\",1)`；标志值1是否允许仍需规格，不因通过类型检查宣称可运行。\n\n## 1.3 JSON5\n\n依给定schema核对module/app的层级、类型、权限与资源引用，不把资源值字符串当普通文件路径。仅给一个局部schema时不凭空补全所有必填字段。\n\nJSON5允许注释、单引号和尾随逗号。`{module:{name:'entry',},}`不能因严格JSON解析器拒绝而报错；若schema要求name为string而值为123，则报告字段类型，不报告逗号。权限是否需运行时授权另依目标SDK契约，不能从manifest声明推断已获授权。\n\n## 1.4 Bash / 构建和设备命令\n\n区分主机/设备路径、可执行工具版本、子命令、选项、路径引用及变量来源。hvigorw、hdc、hilog等用法从给定版本帮助或项目脚本核对，不用记忆构造新选项。\n\n`rm -rf \"$OUTPUT_DIR\"`中变量未定义时，指出缺少非空/允许目录边界约束，绝不试跑删除命令；空变量被引用不等于一定会删根目录，也不能据此夸大已发生的数据损失。文档审查不执行设备命令或权限修改来验证“可能有效”。\n\n## 2 版本一致性\n\n接口/成员起始版本、废弃版本、能力和设备条件分开；模块since不能无条件覆盖后来新增成员。文档声称API12支持而给定匹配声明since13→可确认矛盾；只有API13签名与API12文档不同→不能确认API12有错。\n\n## 3 图文一致性\n\n只比较实际可读图片中的文字、组件类型、布局和可观察结果；代码在某一分支产生的效果要与同场景截图对应。图片缺失不推断其内容，不要求所有图片达到某分辨率，非UI功能不要求效果图。\n\n## 4 基础质量（仅用户指定）\n\n4.1用于可定位低错和文内矛盾，4.2用于项目渲染后损坏的标题/代码块/表格/链接；代码标识符和项目认可的`<sup>`版本角标不作为普通中文或非法HTML自动修改。精细写作约定可选用写作技能，未安装不声称覆盖其完整规则。\n\n无条件验证反例：SDK签名匹配但缺工程→“签名满足，编译未验证”；代码文字写Button但图片不可读→“图文未验证”，不是“截图与代码不符”。\n",
+      "exit_code": 0,
+      "status": "completed"
+    },
+    {
+      "id": "item_3",
+      "type": "command_execution",
+      "command": "/usr/bin/zsh -lc 'rg --files materials'",
+      "aggregated_output": "materials/ohos-test-docs-code-correctness-review/SKILL.md\nmaterials/ohos-test-docs-code-correctness-review/references/checklist.md\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  ],
+  "completed": true
+}

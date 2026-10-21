@@ -1,0 +1,37 @@
+{
+  "skill": "ohos-test-docs-code-correctness-review",
+  "case_id": 2,
+  "arm": "without_skill",
+  "cli_version": "codex-cli 0.163.0",
+  "command": [
+    "codex",
+    "exec",
+    "--ephemeral",
+    "--skip-git-repo-check",
+    "--sandbox",
+    "read-only",
+    "--json",
+    "-C",
+    "/tmp/selected-skills-evaluation-20261021/workspaces/run-044",
+    "-o",
+    "/tmp/selected-skills-evaluation-20261021/ohos-test-docs-code-correctness-review/case-2/without_skill/output.md",
+    "-"
+  ],
+  "model": "configured CLI default; no model override",
+  "session_id": "01a15c44-1364-7f01-9620-5449e02d301f",
+  "started_unix": 1792549327.5858934,
+  "duration_seconds": 31.983,
+  "exit_code": 0,
+  "usage": {
+    "input_tokens": 17123,
+    "cached_input_tokens": 12288,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 119,
+    "reasoning_output_tokens": 0
+  },
+  "provided_skills": [],
+  "material_sha256": {},
+  "prompt_sha256": "5195b6b014ff90bd47d008a6e2b4b5a439929a35e536203fde1eb9f68e17a23a",
+  "tool_actions": [],
+  "completed": true
+}

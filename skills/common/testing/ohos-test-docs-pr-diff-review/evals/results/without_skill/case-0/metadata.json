@@ -1,0 +1,37 @@
+{
+  "skill": "ohos-test-docs-pr-diff-review",
+  "case_id": 0,
+  "arm": "without_skill",
+  "cli_version": "codex-cli 0.163.0",
+  "command": [
+    "codex",
+    "exec",
+    "--ephemeral",
+    "--skip-git-repo-check",
+    "--sandbox",
+    "read-only",
+    "--json",
+    "-C",
+    "/tmp/selected-skills-evaluation-20261021/workspaces/run-008",
+    "-o",
+    "/tmp/selected-skills-evaluation-20261021/ohos-test-docs-pr-diff-review/case-0/without_skill/output.md",
+    "-"
+  ],
+  "model": "configured CLI default; no model override",
+  "session_id": "01a15c3a-d4f8-7472-b315-95ec1e8a22ad",
+  "started_unix": 1792548721.783214,
+  "duration_seconds": 42.373,
+  "exit_code": 0,
+  "usage": {
+    "input_tokens": 17914,
+    "cached_input_tokens": 12416,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 109,
+    "reasoning_output_tokens": 66
+  },
+  "provided_skills": [],
+  "material_sha256": {},
+  "prompt_sha256": "3974b747f4580071a7c9569c056a70375179b1a1c553071cbafb948300dfbed1",
+  "tool_actions": [],
+  "completed": true
+}

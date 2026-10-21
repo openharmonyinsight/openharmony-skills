@@ -1,0 +1,6 @@
+请完成下列实际用户任务，直接给出中文结果。仅使用题面和当前工作目录 materials/ 中可用的资料；不读取其它工作区、会话、评估预期或结果。本次允许只读工具核对提供的资料，不允许网络、调用子代理或写入用户仓库/远端。对于题面要求命令或方案的任务，只给可审阅内容。
+
+本次使用 materials/ohos-test-docs-code-correctness-review/SKILL.md，先读取该入口，再按需读取其 references。同目录其它已提供的专项技能可按入口说明使用。
+
+用户任务：
+核对 C API 示例第 12 行 open_data(1, "x");。匹配版本头文件：int open_data(const char *path, unsigned int flags);。未提供设备环境。

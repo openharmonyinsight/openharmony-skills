@@ -1,0 +1,21 @@
+{
+  "source_branch": "feat/kingqaquu-selected-skills",
+  "source_commit": "f18e61d",
+  "release_path": "skills/common/testing/ohos-test-docs-api-reference-review",
+  "changes": [
+    "directory placement",
+    "governance metadata",
+    "maintainer README and website metadata"
+  ],
+  "name_and_trigger_description_unchanged": true,
+  "execution_body_unchanged": true,
+  "execution_body_sha256": "a28c5a61db94e2252e26303801c98c60d8f4930b69119bd0af4173f71c89a392",
+  "reference_sha256": {
+    "references/sdk-review.md": "f4f2fbd90404fd68e08152ed3c73e1353338d5e6b43d45bd9919d35ede3bb722",
+    "references/rest-and-usage.md": "a3471f937578c8e17a6778e0566744df50f663a8917604bda34a724e91517882"
+  },
+  "evaluated_entrypoint_sha256": "4bf440a7be727ad08c2aaefe7876bd5c099ad87cc76bd54c65fccb76f9cdc069",
+  "release_entrypoint_sha256": "01c18e1a27ac006b5ee1662938288492a1639169f6ba92dacc00cf3e001510cb",
+  "model_evaluation_rerun": false,
+  "reason": "迁入release仅改变目录和治理/展示资料；执行正文、触发描述及参考规则逐字节相同。原模型会话及其哈希作为历史证据原样保留，另做release结构/元数据校验。"
+}

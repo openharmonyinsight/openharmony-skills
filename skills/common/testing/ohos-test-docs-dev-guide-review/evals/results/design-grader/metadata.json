@@ -1,0 +1,17 @@
+{
+  "mode": "design",
+  "skill": "ohos-test-docs-dev-guide-review",
+  "exit_code": 0,
+  "duration_seconds": 77.395,
+  "cli_version": "codex-cli 0.163.0",
+  "model": "configured CLI default; no model override",
+  "rubric": {
+    "skill": "skill-judge",
+    "source_url": "https://raw.githubusercontent.com/softaworks/agent-toolkit/40d4469f7357347d11cbea77729ec137f51d5dde/skills/skill-judge/SKILL.md",
+    "revision": "40d4469f7357347d11cbea77729ec137f51d5dde",
+    "sha256": "737ef3628f0e11353114c3bd05a1c9d0c448dbfec1ae85db839253cbe93198b6",
+    "rubric_points": 120,
+    "b_minimum": 96
+  },
+  "prompt_sha256": "942e80721606795ab9b2ca7fdc4ead1893d7c63ae8be93d8aded2156d68927e4"
+}

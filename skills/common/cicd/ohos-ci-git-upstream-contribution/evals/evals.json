@@ -1,0 +1,68 @@
+{
+  "skill_name": "ohos-ci-git-upstream-contribution",
+  "evals": [
+    {
+      "id": 0,
+      "name": "draft-only",
+      "prompt": "请只整理上游 PR 草稿，不创建 Issue、不提交也不推送。目标仓无模板。已有 Issue https://gitcode.com/openharmony/example/issues/12，修改仅为文档错别字；没有执行测试。",
+      "files": [],
+      "expected_output": "交付草稿并复用 Issue 12，不进行任何外部写操作或本地提交。；明确测试未执行，不填写全部通过或固定邮箱。；草稿包含原因、最终行为与验证状态。",
+      "expectations": [
+        "交付草稿并复用 Issue 12，不进行任何外部写操作或本地提交。",
+        "明确测试未执行，不填写全部通过或固定邮箱。",
+        "草稿包含原因、最终行为与验证状态。"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "multi-target",
+      "prompt": "将同一个修复提交到上游 release-a 和 release-b。请先给执行方案，暂不执行。origin 实际指向上游，fork remote 名为 personal。release-a 对应 Issue 31，release-b 对应 Issue 32；当前 master 有无关提交，工作区有未提交文件。",
+      "files": [],
+      "expected_output": "两条功能分支分别基于 release-a/release-b，不基于当前 master。；使用 personal 作为 fork 推送目标，各消息只关联自己的 Issue。；不 stash/reset 用户修改，采用隔离 worktree。；按分支检查，不声称未执行测试通过。",
+      "expectations": [
+        "两条功能分支分别基于 release-a/release-b，不基于当前 master。",
+        "使用 personal 作为 fork 推送目标，各消息只关联自己的 Issue。",
+        "不 stash/reset 用户修改，采用隔离 worktree。",
+        "按分支检查，不声称未执行测试通过。"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "update-lease",
+      "prompt": "请为更新已有 PR 给出命令但不要执行。仓库要求单提交，用户已授权 amend 及改写自己的 PR 分支。fork 分支 fix-a，刚核对远端 head 为 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa。Signed-off-by 与 Issue 均正确。",
+      "files": [],
+      "expected_output": "采用 amend 保持单提交与正确 trailers。；非快进更新使用带 expected-old-sha 的显式 force-with-lease，而不是无条件 force。；远端 SHA 变化导致拒绝时重新读取，不覆盖他人更新。；给出可审阅命令，不执行写操作，也不重复索取已有改写授权；允许补充必要说明。",
+      "expectations": [
+        "采用 amend 保持单提交与正确 trailers。",
+        "非快进更新使用带 expected-old-sha 的显式 force-with-lease，而不是无条件 force。",
+        "远端 SHA 变化导致拒绝时重新读取，不覆盖他人更新。",
+        "给出可审阅命令，不执行写操作，也不重复索取已有改写授权；允许补充必要说明。"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "template-discovery",
+      "prompt": "贡献仓库有 .gitcode/ISSUE_TEMPLATE/task.yaml 和 .github/PULL_REQUEST_TEMPLATE.zh-CN.md。请说明如何为一次性能修复准备 Issue/PR。没有 CI 结果，GitCode 工具未连接。",
+      "files": [],
+      "expected_output": "发现三级 YAML Issue 模板及带语言后缀的大写 PR 模板。；按模板准备材料，无法连接时交付草稿并说明缺少能力。；不套用固定编译器模板、不虚构 CI、不用 gh 访问 GitCode。",
+      "expectations": [
+        "发现三级 YAML Issue 模板及带语言后缀的大写 PR 模板。",
+        "按模板准备材料，无法连接时交付草稿并说明缺少能力。",
+        "不套用固定编译器模板、不虚构 CI、不用 gh 访问 GitCode。"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "preserve-unrelated-index",
+      "prompt": "请仅给出提交方案，不执行。我要只提交 guide.md。当前 guide.md 有本次改动，一部分已暂存、一部分未暂存；unrelated.cpp 中另一个任务的改动已暂存。原暂存状态都需要保留，另一个未跟踪文件 notes.txt 不属于本次任务。目标分支已明确为 upstream/main。如何避免误提交其它任务？",
+      "files": [],
+      "expected_output": "提交方案不会将 unrelated.cpp 纳入提交，也不在含无关暂存内容的原索引上执行普通 git commit；不要求使用固定解释句式，worktree、独立索引或等效隔离方案均可。；给出隔离提交环境及选定改动迁移方案（独立 worktree 或等效方案均可），不污染原工作区的 HEAD、暂存区和未暂存内容。；处理 guide.md 同时存在 staged/unstaged 改动的情况；不自动 stash、reset 或 unstage unrelated.cpp。；仅给执行方案，不实际提交、推送或修改工作区。",
+      "expectations": [
+        "提交方案不会将 unrelated.cpp 纳入提交，也不在含无关暂存内容的原索引上执行普通 git commit；不要求使用固定解释句式，worktree、独立索引或等效隔离方案均可。",
+        "给出隔离提交环境及选定改动迁移方案（独立 worktree 或等效方案均可），不污染原工作区的 HEAD、暂存区和未暂存内容。",
+        "处理 guide.md 同时存在 staged/unstaged 改动的情况；不自动 stash、reset 或 unstage unrelated.cpp。",
+        "仅给执行方案，不实际提交、推送或修改工作区。"
+      ]
+    }
+  ]
+}

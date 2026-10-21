@@ -1,0 +1,4 @@
+{"type":"thread.started","thread_id":"01a15c3e-9cf5-71f1-ac64-acd80594e49d"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"无法判定写作合规：该行 Markdown 链接语法正确，但未提供参考说明正文，且当前禁止联网核验。"}}
+{"type":"turn.completed","usage":{"input_tokens":17973,"cached_input_tokens":16896,"cache_write_input_tokens":0,"output_tokens":113,"reasoning_output_tokens":76}}

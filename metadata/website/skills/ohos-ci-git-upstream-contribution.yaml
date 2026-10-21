@@ -1,0 +1,50 @@
+schemaVersion: 1
+id: ohos-ci-git-upstream-contribution
+title: 上游贡献流程
+summary: 协助开发者向 OpenHarmony 上游提交改动，维护目标分支、对应 Issue、签名提交和 PR 的一致性，并保护原有暂存内容。
+category:
+  scope: common
+  namespace: cicd
+  stage: cicd
+  domain: git
+  capability: upstream-contribution
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+tags:
+- git
+- gitcode
+- pr
+audience:
+- OpenHarmony 贡献者
+- 仓库维护者
+useCases:
+- title: 上游贡献流程
+  description: 协助开发者向 OpenHarmony 上游提交改动，维护目标分支、对应 Issue、签名提交和 PR 的一致性，并保护原有暂存内容。
+whenToUse:
+- 在用户要求将 OpenHarmony 改动提交到上游 GitCode、创建或更新贡献 PR，或向多个目标分支提交同一修复时使用。处理 Issue 关联、签名提交、fork 推送与 PR 模板。
+whenNotToUse:
+- 仅需要本地 Git 教程，不涉及上游贡献或 GitCode 协作
+inputs:
+  required:
+  - 目标仓库及本次改动范围
+  optional:
+  - 项目规范
+  - API/SDK版本及匹配声明
+  - 目标分支、Issue 或PR信息
+outputs:
+- 可审阅的贡献方案或授权范围内的提交与 PR 结果
+quickStart:
+  steps:
+  - 准备目标仓库及本次改动范围。
+  - 确认 upstream、fork、目标分支和已有 Issue。
+  - 说明需要草稿还是完整提交流程，并核对输出结果。
+  examplePrompt: 请使用 ohos-ci-git-upstream-contribution，为当前改动准备向 OpenHarmony 上游提交的方案，保留其它任务的暂存内容。
+related:
+  skills: []
+  docs:
+  - title: 维护者说明
+    path: README.md
+  - title: 评估报告
+    path: evals/report.md

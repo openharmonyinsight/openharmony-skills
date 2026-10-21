@@ -1,0 +1,46 @@
+{
+  "skill": "ohos-test-docs-writing-compliance-review",
+  "case_id": 1,
+  "arm": "without_skill",
+  "cli_version": "codex-cli 0.163.0",
+  "command": [
+    "codex",
+    "exec",
+    "--ephemeral",
+    "--skip-git-repo-check",
+    "--sandbox",
+    "read-only",
+    "--json",
+    "-C",
+    "/tmp/selected-skills-evaluation-20261021/workspaces/run-018",
+    "-o",
+    "/tmp/selected-skills-evaluation-20261021/ohos-test-docs-writing-compliance-review/case-1/without_skill/output.md",
+    "-"
+  ],
+  "model": "configured CLI default; no model override",
+  "session_id": "01a15c3d-7076-7111-89ab-9f7b849e5b4e",
+  "started_unix": 1792548892.643535,
+  "duration_seconds": 43.089,
+  "exit_code": 0,
+  "usage": {
+    "input_tokens": 36129,
+    "cached_input_tokens": 30080,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 117,
+    "reasoning_output_tokens": 40
+  },
+  "provided_skills": [],
+  "material_sha256": {},
+  "prompt_sha256": "94270241b88cdcdd324c97208c4740654b16587eb13ad98f233010064be64ed6",
+  "tool_actions": [
+    {
+      "id": "item_1",
+      "type": "command_execution",
+      "command": "/usr/bin/zsh -lc 'rg --files materials'",
+      "aggregated_output": "",
+      "exit_code": 1,
+      "status": "failed"
+    }
+  ],
+  "completed": true
+}

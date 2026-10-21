@@ -1,0 +1,51 @@
+schemaVersion: 1
+id: ohos-test-docs-api-reference-review
+title: API 参考文档检视
+summary: 核对 OpenHarmony API 参考文档与匹配版本 SDK 的一致性，检查参数、返回值、错误码及接口使用说明的完整性。
+category:
+  scope: common
+  namespace: testing
+  stage: testing
+  domain: docs
+  capability: api-reference-review
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+tags:
+- docs
+- quality-review
+audience:
+- OpenHarmony 文档作者
+- 文档评审人员
+useCases:
+- title: API 参考文档检视
+  description: 核对 OpenHarmony API 参考文档与匹配版本 SDK 的一致性，检查参数、返回值、错误码及接口使用说明的完整性。
+whenToUse:
+- 在用户要求评审 OpenHarmony/HarmonyOS 的 ArkTS、JS、C 或 REST API 参考文档，检查签名一致性、参数约束、返回值、错误码和易用性时使用。
+whenNotToUse:
+- 需要实际编译部署或设备运行，而非文档检视
+- 与文档质量无关的完整业务代码审查
+inputs:
+  required:
+  - 待检视文档或补丁
+  optional:
+  - 项目规范
+  - API/SDK版本及匹配声明
+  - 目标分支、Issue 或PR信息
+outputs:
+- 问题清单、精确定位与修改建议
+- 检查覆盖情况和验证限制
+quickStart:
+  steps:
+  - 准备待检视文档或补丁。
+  - 说明检视范围、项目规范及可用的 SDK 信息。
+  - 使用该技能检视，并核对问题证据和未验证项。
+  examplePrompt: 请使用 ohos-test-docs-api-reference-review，对照提供的 API 版本和 SDK 声明检查这份 API 文档。
+related:
+  skills: []
+  docs:
+  - title: 维护者说明
+    path: README.md
+  - title: 评估报告
+    path: evals/report.md

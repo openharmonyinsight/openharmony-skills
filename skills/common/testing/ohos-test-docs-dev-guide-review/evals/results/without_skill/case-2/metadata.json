@@ -1,0 +1,54 @@
+{
+  "skill": "ohos-test-docs-dev-guide-review",
+  "case_id": 2,
+  "arm": "without_skill",
+  "cli_version": "codex-cli 0.163.0",
+  "command": [
+    "codex",
+    "exec",
+    "--ephemeral",
+    "--skip-git-repo-check",
+    "--sandbox",
+    "read-only",
+    "--json",
+    "-C",
+    "/tmp/selected-skills-evaluation-20261021/workspaces/run-036",
+    "-o",
+    "/tmp/selected-skills-evaluation-20261021/ohos-test-docs-dev-guide-review/case-2/without_skill/output.md",
+    "-"
+  ],
+  "model": "configured CLI default; no model override",
+  "session_id": "01a15c42-1a9d-7b43-bbfc-1aeab3ea0c80",
+  "started_unix": 1792549198.3549345,
+  "duration_seconds": 64.135,
+  "exit_code": 0,
+  "usage": {
+    "input_tokens": 51515,
+    "cached_input_tokens": 29312,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 481,
+    "reasoning_output_tokens": 0
+  },
+  "provided_skills": [],
+  "material_sha256": {},
+  "prompt_sha256": "cf2155a75fed4fe8b94112d3e1f5f4cc9bb2349a009a6a0e0fb12006d11ec5e9",
+  "tool_actions": [
+    {
+      "id": "item_1",
+      "type": "command_execution",
+      "command": "/usr/bin/zsh -lc 'pwd; rg --files materials'",
+      "aggregated_output": "/tmp/selected-skills-evaluation-20261021/workspaces/run-036\n",
+      "exit_code": 1,
+      "status": "failed"
+    },
+    {
+      "id": "item_2",
+      "type": "command_execution",
+      "command": "/usr/bin/zsh -lc 'ls -la materials'",
+      "aggregated_output": "total 8\ndrwxr-xr-x 2 duyuhan duyuhan 4096 Oct 21 10:19 .\ndrwxr-xr-x 3 duyuhan duyuhan 4096 Oct 21 10:19 ..\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  ],
+  "completed": true
+}

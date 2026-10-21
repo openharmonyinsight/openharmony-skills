@@ -1,0 +1,19 @@
+请完成下列实际用户任务，直接给出中文结果。仅使用题面和当前工作目录 materials/ 中可用的资料；不读取其它工作区、会话、评估预期或结果。本次允许只读工具核对提供的资料，不允许网络、调用子代理或写入用户仓库/远端。对于题面要求命令或方案的任务，只给可审阅内容。
+
+本次使用 materials/ohos-test-docs-pr-diff-review/SKILL.md，先读取该入口，再按需读取其 references。同目录其它已提供的专项技能可按入口说明使用。
+
+用户任务：
+仅评审此补丁，JSON5 是唯一内容变更。
+```diff
+diff --git a/old-guide.md b/new-guide.md
+similarity index 100%
+rename from old-guide.md
+rename to new-guide.md
+diff --git a/module.json5 b/module.json5
+--- a/module.json5
++++ b/module.json5
+@@ -1 +1 @@
+-{ module: { name: 'entry' } }
++{ module: { name: 123, }, }
+```
+提供匹配版本 schema：module.name 必须为 string。

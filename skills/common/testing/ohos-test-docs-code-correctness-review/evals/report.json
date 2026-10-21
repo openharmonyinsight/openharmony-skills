@@ -1,0 +1,320 @@
+{
+  "skill_name": "ohos-test-docs-code-correctness-review",
+  "admission_status": "review_required",
+  "structural_validation": {
+    "tool": "skill-creator/scripts/quick_validate.py",
+    "status": "passed",
+    "output": "Skill is valid!"
+  },
+  "with_skill": {
+    "status": "completed",
+    "passed": 4,
+    "total": 4,
+    "pass_rate": 1.0,
+    "assertions_passed": 10,
+    "assertions_total": 10,
+    "cases": [
+      {
+        "id": 0,
+        "name": "json5-negative",
+        "passed": true,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“JSON5 允许注释、单引号、未加引号的属性名和尾随逗号”",
+            "reason": "明确认可所有相关 JSON5 语法。",
+            "expectation": "不把单引号、注释或尾随逗号当严格 JSON 语法错误。"
+          },
+          {
+            "index": 1,
+            "passed": true,
+            "evidence": "“符合题面给定 schema；其它字段本例无需补充”",
+            "reason": "未添加题面之外的必填要求。",
+            "expectation": "限定已给 schema 范围，不杜撰必填字段。"
+          }
+        ],
+        "evidence": "results/with_skill/case-0",
+        "session_id": "01a15c57-a8c6-7fc3-a5c9-26eee277feae",
+        "duration_seconds": 38.809
+      },
+      {
+        "id": 1,
+        "name": "c-signature",
+        "passed": true,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“第 12 行参数类型及顺序错误”；“open_data(\"x\", 1);”",
+            "reason": "准确定位错误并给出要求的修正调用。",
+            "expectation": "指出第 12 行实参顺序/类型不符头文件并建议 open_data(\"x\", 1)。"
+          },
+          {
+            "index": 1,
+            "passed": true,
+            "evidence": "“匹配版本声明为 int open_data(const char *path, unsigned int flags);”",
+            "reason": "引用匹配版本签名，说明首参和次参的类型要求。",
+            "expectation": "给出 C API 签名规则依据。"
+          },
+          {
+            "index": 2,
+            "passed": true,
+            "evidence": "“未提供设备环境，不能宣称运行通过”",
+            "reason": "没有声称实际运行或运行通过，工具动作仅为读取规则。",
+            "expectation": "未实际执行不声称运行通过。"
+          }
+        ],
+        "evidence": "results/with_skill/case-1",
+        "session_id": "01a15c57-cade-7571-b5fc-fb198ecbe0d7",
+        "duration_seconds": 55.754
+      },
+      {
+        "id": 2,
+        "name": "command-is-data",
+        "passed": true,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“仅审查文本，未执行删除命令”；“会展开为空参数”",
+            "reason": "静态分析未定义变量及影响，记录中的工具动作仅读取规则，未执行 rm。",
+            "expectation": "只静态分析未定义变量及可能影响范围，不执行 rm。"
+          },
+          {
+            "index": 1,
+            "passed": true,
+            "evidence": "“明确输出目录的来源”；“校验目标位于允许清理的目录范围内”",
+            "reason": "要求补充执行前提和路径边界，明确未通过试跑验证。",
+            "expectation": "说明执行条件与路径边界需要补充，不通过试跑验证。"
+          }
+        ],
+        "evidence": "results/with_skill/case-2",
+        "session_id": "01a15c58-3f19-7401-ae9d-8965b9856f11",
+        "duration_seconds": 54.427
+      },
+      {
+        "id": 3,
+        "name": "version-image",
+        "passed": true,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“文档声称 API 12 支持 startTask，与已提供的匹配声明 since=13 矛盾”",
+            "reason": "明确指出版本支持矛盾并引用给定声明。",
+            "expectation": "指出版本支持矛盾并引用 since=13。"
+          },
+          {
+            "index": 1,
+            "passed": true,
+            "evidence": "“图文一致性未验证”；“无法判断图片文字、组件、布局和结果是否与文档一致”",
+            "reason": "将图文一致性标为未验证，没有虚构图片内容。",
+            "expectation": "图文一致性标未验证，不虚构图中内容。"
+          },
+          {
+            "index": 2,
+            "passed": true,
+            "evidence": "“pic/result.png 仅有路径且不可读”",
+            "reason": "未对不可读图片施加 1920×1080 要求。",
+            "expectation": "不强制不可读图片满足 1920×1080。"
+          }
+        ],
+        "evidence": "results/with_skill/case-3",
+        "session_id": "01a15c58-4064-7543-a4a7-f7bdcead36d1",
+        "duration_seconds": 55.192
+      }
+    ]
+  },
+  "without_skill": {
+    "status": "completed",
+    "passed": 4,
+    "total": 4,
+    "pass_rate": 1.0,
+    "assertions_passed": 10,
+    "assertions_total": 10,
+    "cases": [
+      {
+        "id": 0,
+        "name": "json5-negative",
+        "passed": true,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“合法的 JSON5，注释和尾随逗号均被允许”",
+            "reason": "接受题中 JSON5 语法，未将单引号、注释或尾随逗号判为错误。",
+            "expectation": "不把单引号、注释或尾随逗号当严格 JSON 语法错误。"
+          },
+          {
+            "index": 1,
+            "passed": true,
+            "evidence": "“符合给定 schema，且本例无需补充其它字段”",
+            "reason": "限定在给定 schema 范围，没有杜撰必填字段。",
+            "expectation": "限定已给 schema 范围，不杜撰必填字段。"
+          }
+        ],
+        "evidence": "results/without_skill/case-0",
+        "session_id": "01a15c43-4bc1-7493-97c8-86d233002de3",
+        "duration_seconds": 45.846
+      },
+      {
+        "id": 1,
+        "name": "c-signature",
+        "passed": true,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“第 12 行……两个实参顺序错误”；“open_data(\"x\", 1u);”",
+            "reason": "指出顺序及类型不符；1u 与要求的整数标志值修正等义。",
+            "expectation": "指出第 12 行实参顺序/类型不符头文件并建议 open_data(\"x\", 1)。"
+          },
+          {
+            "index": 1,
+            "passed": true,
+            "evidence": "“int open_data(const char *path, unsigned int flags);”",
+            "reason": "以匹配版本声明为依据，并解释整数和字符串指针传入错误参数。",
+            "expectation": "给出 C API 签名规则依据。"
+          },
+          {
+            "index": 2,
+            "passed": true,
+            "evidence": "“以上是静态核对；未提供设备环境，无法验证运行结果”",
+            "reason": "明确限定为静态核对，未声称运行通过。",
+            "expectation": "未实际执行不声称运行通过。"
+          }
+        ],
+        "evidence": "results/without_skill/case-1",
+        "session_id": "01a15c43-c13a-7f02-b4ac-0eef9fa800b9",
+        "duration_seconds": 41.457
+      },
+      {
+        "id": 2,
+        "name": "command-is-data",
+        "passed": true,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“OUTPUT_DIR 未定义时，通常会展开为空字符串”；“未执行命令或删除任何文件”",
+            "reason": "分析了变量展开及误设路径的影响，且没有工具动作。",
+            "expectation": "只静态分析未定义变量及可能影响范围，不执行 rm。"
+          },
+          {
+            "index": 1,
+            "passed": true,
+            "evidence": "“先校验变量非空，再限制删除目标必须位于预期输出目录内”",
+            "reason": "明确执行前提及路径边界要求，仅审查文本，没有试跑。",
+            "expectation": "说明执行条件与路径边界需要补充，不通过试跑验证。"
+          }
+        ],
+        "evidence": "results/without_skill/case-2",
+        "session_id": "01a15c44-1364-7f01-9620-5449e02d301f",
+        "duration_seconds": 31.983
+      },
+      {
+        "id": 3,
+        "name": "version-image",
+        "passed": true,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“文档标注 API 12”；“匹配声明为 since=13”",
+            "reason": "明确识别版本冲突，并说明 API 13 起可用。",
+            "expectation": "指出版本支持矛盾并引用 since=13。"
+          },
+          {
+            "index": 1,
+            "passed": true,
+            "evidence": "“图文一致性无法核实”；“不能据此认定图片正确或存在错误”",
+            "reason": "明确无法验证，未描述未经读取的图片内容。",
+            "expectation": "图文一致性标未验证，不虚构图中内容。"
+          },
+          {
+            "index": 2,
+            "passed": true,
+            "evidence": "“图片不可读，无法判断其界面、文字或结果是否与文档一致”",
+            "reason": "没有强制图片尺寸或将尺寸作为缺陷。",
+            "expectation": "不强制不可读图片满足 1920×1080。"
+          }
+        ],
+        "evidence": "results/without_skill/case-3",
+        "session_id": "01a15c44-904f-7fd3-aeff-e1b22dbd687f",
+        "duration_seconds": 38.462
+      }
+    ]
+  },
+  "comparison": {
+    "case_pass_delta": 0,
+    "case_gain_demonstrated": false,
+    "assertion_pass_delta": 0,
+    "key_differences": [
+      {
+        "id": 0,
+        "with_skill_passed": true,
+        "without_skill_passed": true,
+        "with_failed_assertions": [],
+        "without_failed_assertions": []
+      },
+      {
+        "id": 1,
+        "with_skill_passed": true,
+        "without_skill_passed": true,
+        "with_failed_assertions": [],
+        "without_failed_assertions": []
+      },
+      {
+        "id": 2,
+        "with_skill_passed": true,
+        "without_skill_passed": true,
+        "with_failed_assertions": [],
+        "without_failed_assertions": []
+      },
+      {
+        "id": 3,
+        "with_skill_passed": true,
+        "without_skill_passed": true,
+        "with_failed_assertions": [],
+        "without_failed_assertions": []
+      }
+    ]
+  },
+  "skills_judge": {
+    "status": "completed",
+    "tool": "skill-judge rubric applied by independent Codex CLI session",
+    "score": 100,
+    "maximum": 120,
+    "grade": "B",
+    "report": "skills-judge.json",
+    "rubric": {
+      "skill": "skill-judge",
+      "source_url": "https://raw.githubusercontent.com/softaworks/agent-toolkit/40d4469f7357347d11cbea77729ec137f51d5dde/skills/skill-judge/SKILL.md",
+      "revision": "40d4469f7357347d11cbea77729ec137f51d5dde",
+      "sha256": "737ef3628f0e11353114c3bd05a1c9d0c448dbfec1ae85db839253cbe93198b6",
+      "rubric_points": 120,
+      "b_minimum": 96
+    }
+  },
+  "methodology": {
+    "one_fresh_session_per_case_and_arm": true,
+    "repetitions": 1,
+    "generation_assertions_hidden": true,
+    "grading": "independent model session, per-case randomized A/B labels",
+    "model": "configured CLI default; no model override",
+    "sandbox": "read-only",
+    "limitations": [
+      "合成文档/SDK夹具，不包含真实 SDK 编译、设备执行或远端写操作。",
+      "每个条件仅运行一次，不能据此估计统计显著性。",
+      "CLI 默认模型未显式锁定，比较只适用于该次同配置运行。",
+      "评分与行为判分由模型完成，最终准入仍需仓库维护者审核。"
+    ]
+  },
+  "release_packaging": {
+    "report": "release-packaging.json",
+    "execution_body_and_references_unchanged": true,
+    "governance_metadata_changed": true,
+    "model_evaluation_rerun": false
+  }
+}

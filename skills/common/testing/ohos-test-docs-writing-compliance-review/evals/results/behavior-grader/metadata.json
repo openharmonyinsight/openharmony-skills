@@ -1,0 +1,10 @@
+{
+  "mode": "behavior",
+  "skill": "ohos-test-docs-writing-compliance-review",
+  "exit_code": 0,
+  "duration_seconds": 61.095,
+  "cli_version": "codex-cli 0.163.0",
+  "model": "configured CLI default; no model override",
+  "rubric": null,
+  "prompt_sha256": "2cf7fb9d04de71d72b000010b02f0754b257d0f6d0c12474927507aba03c8b8b"
+}

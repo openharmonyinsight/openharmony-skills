@@ -1,0 +1,10 @@
+{
+  "mode": "behavior",
+  "skill": "ohos-test-docs-pr-diff-review",
+  "exit_code": 0,
+  "duration_seconds": 63.088,
+  "cli_version": "codex-cli 0.163.0",
+  "model": "configured CLI default; no model override",
+  "rubric": null,
+  "prompt_sha256": "044aaeeec922271e455fecc78440f204bb7dd9bed99c79068a92c5380bc175f2"
+}

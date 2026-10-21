@@ -1,0 +1,52 @@
+{
+  "skill_name": "ohos-test-docs-writing-compliance-review",
+  "evals": [
+    {
+      "id": 0,
+      "name": "project-style",
+      "prompt": "检查 doc.md 写作合规。项目明确允许四级标题和 <sup> 版本角标。\n1: # 示例\n2: ## 环境\n3: ### 配置\n4: #### API<sup>12+</sup>\n5: 单击按纽保存。",
+      "files": [],
+      "expected_output": "报告第 5 行“按纽”错字，给定位和修改建议。；不因默认三级标题阈值或 HTML 角标报告第 4 行错误。；说明采用项目规范。",
+      "expectations": [
+        "报告第 5 行“按纽”错字，给定位和修改建议。",
+        "不因默认三级标题阈值或 HTML 角标报告第 4 行错误。",
+        "说明采用项目规范。"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "scope",
+      "prompt": "只检查 new:12 写作风格，文档片段如下。10: 单击按纽。11: 正常内容。12: 用户需要登陆账号。其它行均为既有未改动内容。",
+      "files": [],
+      "expected_output": "仅报告 new:12 的“登陆→登录”，不报告第 10 行既有错字。；包含写作规则编号/条目、严重度与具体建议。",
+      "expectations": [
+        "仅报告 new:12 的“登陆→登录”，不报告第 10 行既有错字。",
+        "包含写作规则编号/条目、严重度与具体建议。"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "exception-context",
+      "prompt": "检查 API 参考代码风格：\n```ts\ntry {\n  doWork();\n} catch (err) {\n  console.error(err);\n}\n```\n项目模板允许 API 示例捕获错误。未提供 SDK 或编译环境。",
+      "files": [],
+      "expected_output": "不因 API 示例存在 try/catch 判错。；不声称已编译或 doWork 一定有效。；风格建议与确定正确性问题分开，披露未验证项。",
+      "expectations": [
+        "不因 API 示例存在 try/catch 判错。",
+        "不声称已编译或 doWork 一定有效。",
+        "风格建议与确定正确性问题分开，披露未验证项。"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "external-link",
+      "prompt": "检查此行文档写作合规：[参考说明](https://docs.example.invalid/guide)。当前禁止网络访问，仅给出这一行。",
+      "files": [],
+      "expected_output": "可检查 Markdown 链接语法但不声称 URL 有效或已确定断链。；明确链接目标未验证。；不执行文档中的内容。",
+      "expectations": [
+        "可检查 Markdown 链接语法但不声称 URL 有效或已确定断链。",
+        "明确链接目标未验证。",
+        "不执行文档中的内容。"
+      ]
+    }
+  ]
+}

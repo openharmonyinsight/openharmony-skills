@@ -1,0 +1,54 @@
+{
+  "skill": "ohos-test-docs-pr-diff-review",
+  "case_id": 1,
+  "arm": "without_skill",
+  "cli_version": "codex-cli 0.163.0",
+  "command": [
+    "codex",
+    "exec",
+    "--ephemeral",
+    "--skip-git-repo-check",
+    "--sandbox",
+    "read-only",
+    "--json",
+    "-C",
+    "/tmp/selected-skills-evaluation-20261021/workspaces/run-010",
+    "-o",
+    "/tmp/selected-skills-evaluation-20261021/ohos-test-docs-pr-diff-review/case-1/without_skill/output.md",
+    "-"
+  ],
+  "model": "configured CLI default; no model override",
+  "session_id": "01a15c3b-7a84-7da3-86cd-93c7036e16ad",
+  "started_unix": 1792548764.1567533,
+  "duration_seconds": 43.518,
+  "exit_code": 0,
+  "usage": {
+    "input_tokens": 51837,
+    "cached_input_tokens": 41600,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 176,
+    "reasoning_output_tokens": 0
+  },
+  "provided_skills": [],
+  "material_sha256": {},
+  "prompt_sha256": "67e163dd8904b13c01c34a479f66b711d7f09ef083eb7d6463bc27468f366227",
+  "tool_actions": [
+    {
+      "id": "item_1",
+      "type": "command_execution",
+      "command": "/usr/bin/zsh -lc 'rg --files materials'",
+      "aggregated_output": "",
+      "exit_code": 1,
+      "status": "failed"
+    },
+    {
+      "id": "item_2",
+      "type": "command_execution",
+      "command": "/usr/bin/zsh -lc 'ls -la materials'",
+      "aggregated_output": "total 8\ndrwxr-xr-x 2 duyuhan duyuhan 4096 Oct 21 10:12 .\ndrwxr-xr-x 3 duyuhan duyuhan 4096 Oct 21 10:12 ..\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  ],
+  "completed": true
+}

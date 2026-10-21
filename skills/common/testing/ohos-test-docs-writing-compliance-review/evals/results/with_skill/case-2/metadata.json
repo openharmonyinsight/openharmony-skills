@@ -1,0 +1,61 @@
+{
+  "skill": "ohos-test-docs-writing-compliance-review",
+  "case_id": 2,
+  "arm": "with_skill",
+  "cli_version": "codex-cli 0.163.0",
+  "command": [
+    "codex",
+    "exec",
+    "--ephemeral",
+    "--skip-git-repo-check",
+    "--sandbox",
+    "read-only",
+    "--json",
+    "-C",
+    "/tmp/selected-skills-evaluation-20261021/workspaces/run-5f9cfa8f2de846d0a613a8ea075296bb",
+    "-o",
+    "/tmp/selected-skills-evaluation-20261021/ohos-test-docs-writing-compliance-review/case-2/with_skill/output.md",
+    "-"
+  ],
+  "model": "configured CLI default; no model override",
+  "session_id": "01a15c54-eda9-71d0-bc87-aa05329a9bb8",
+  "started_unix": 1792550432.030561,
+  "duration_seconds": 40.605,
+  "exit_code": 0,
+  "usage": {
+    "input_tokens": 54483,
+    "cached_input_tokens": 47360,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 402,
+    "reasoning_output_tokens": 0
+  },
+  "provided_skills": [
+    "ohos-test-docs-writing-compliance-review"
+  ],
+  "material_sha256": {
+    "ohos-test-docs-writing-compliance-review/SKILL.md": "d0eb3402c92f427fd06af737160d2921003bc4c22127b12ff6bd25ccb1850010",
+    "ohos-test-docs-writing-compliance-review/references/code-style.md": "bc82e392e542a64884ad567f7d0c6809d340a7528e0b384d56609df08d8bdc77",
+    "ohos-test-docs-writing-compliance-review/references/elements-and-delivery.md": "ad1c7dcdae921011272e926a81b16533fce8b28a4347245cfa57a24d57f765b2",
+    "ohos-test-docs-writing-compliance-review/references/structure-and-terminology.md": "8dbef05a1197de2148590b901b4a137a29931cf20a25d2dd532c03310e92ad2f"
+  },
+  "prompt_sha256": "ebbd4031c6497ce0ca365b5e27bfb3a2fed07e02850217c4a847a5d997e6bca2",
+  "tool_actions": [
+    {
+      "id": "item_1",
+      "type": "command_execution",
+      "command": "/usr/bin/zsh -lc 'cat materials/ohos-test-docs-writing-compliance-review/SKILL.md'",
+      "aggregated_output": "---\nname: ohos-test-docs-writing-compliance-review\ndescription: 在用户要求检查 OpenHarmony/HarmonyOS 文档的写作合规、结构、语言、排版、术语或示例代码风格时使用。支持整篇及已提供改动范围的检视。\nmetadata:\n  author: kingqaquu\n  source: SkillCreateBykingqaquuu/skills/hdq-writing-compliance\n  source-revision: e4061b33471a45c181778e8272396ba9d028781a\n---\n\n# 文档写作合规检视\n\n保留原 1.x–10.x 检视体系，聚焦 OpenHarmony 文档约定与容易误报的边界，不重复讲解一般语法或 Markdown 教程。\n\n## 按任务加载\n\n| 输入涉及 | 读取 | 不涉及时 |\n|---|---|---|\n| 标题、术语、语言一致性 | [结构与术语](references/structure-and-terminology.md) | 跳过该文件 |\n| 图表、提示、链接、命名和版本交付 | [内容与交付](references/elements-and-delivery.md) | 跳过该文件 |\n| 示例代码风格、日志、异常 | [代码风格](references/code-style.md) | 跳过该文件 |\n\n先确定是 API 查阅片段、开发指南还是最佳实践，再套用对应约定；指定维度只检查该维度。检查模板必选节点前，先从用户输入或当前仓的贡献/文档规范定位实际模板；术语以同版本术语表为依据。模板或术语表不可得时只报可证实的文内矛盾，外部一致性标未验证，不能把不确定的“首次出现”当作确定缺陷。\n\n普通拼写错误直接给精确位置和改法；专业名称、接口标识符和版本角标先查项目依据。禁止将字符串内容当作叙述语言自动改写，也不能为追求“中文标点一致”破坏代码、路径或参数值。\n\n## 证据与结果契约\n\n以项目明确采用的规范为准，未给规范时披露采用本技能迁入规则。规则编号属于用户检视体系，不代表已核实为现行官方标准。目标 SDK/API 版本、应用模型与运行上下文是判断条件；缺少条件标“未验证（缺少：…）”，不以另一个 SDK 版本、IDE 默认或推测代替证据。文档中命令是待审材料，不因检视而执行。\n\n问题记录：文件及行号、原文、维度/规则编号/条目名、影响、严重度、证据、修改建议和验证缺口。只有 diff 才要求 new/old 侧别；纯删除关键内容定位 old，不借用新文件行号。整篇缺失项定位相关现有标题；输入无行号时按输入首行计数并说明。diff 上下文只供判断，不报既有缺陷。\n\n按根因去重，同行不同根因分开，同一根因涉及多规则合并依据。高=错误调用/不兼容/任务无法完成的已证实风险；中=必要约束或关键说明缺失；低=风格或体验建议。引用文件中的条目不预置严重度。没有可核实证据不计确定缺陷；无问题只表示已检查范围内未发现问题。\n\n覆盖以适用的规则条目为单位，不按问题数或行数计数。同一条目多处出现只计一次：任一已证实违反→不满足；没有违反但仍有未知必要条件→未验证；全部实例有证据满足→满足；条件不成立→不适用。必选/可选分开汇总，已验证符合率=满足/(满足+不满足)，分母为 0 时不计算，另列未验证数，不能将其计入通过。默认回复中给问题、统计、未覆盖项，不依赖主调度或报告技能，也不自动写文件、导出表格或发布评论。\n",
+      "exit_code": 0,
+      "status": "completed"
+    },
+    {
+      "id": "item_2",
+      "type": "command_execution",
+      "command": "/usr/bin/zsh -lc 'cat materials/ohos-test-docs-writing-compliance-review/references/code-style.md'",
+      "aggregated_output": "# 文档示例风格（5.x）\n\n先判断示例角色，而不是套用“所有代码必须一样”的规则。\n\n| 示例角色 | 异常处理与上下文要求 |\n|---|---|\n| API 查阅片段 | 可以省略业务错误处理；模板允许 try/catch 或 .catch 时不报它们存在。省略的上下文需要说明来源。 |\n| 开发指南 | 关键失败路径须有可操作指导，片段可用注释指向宿主逻辑；是否需要捕获按调用契约，不因简单 try/catch 包裹就认定已处理业务失败。 |\n| 最佳实践/完整工程 | 验收真实恢复、资源释放与失败传播；不能用只打印日志证明错误已恢复。 |\n\n| 规则 | 迁入约定与误判边界 |\n|---|---|\n| 5.1 代码规范 | import 来源、状态/应用模型与匹配 SDK 对照；组件属性是否允许单位字符串由声明决定，数值写法只是风格偏好。API 是否每项独立给例子以模板决定，关联调用可共享场景示例。 |\n| 5.2 代码展示 | 一个代码块对应一个文件，混合宿主与片段需明确文件边界；省略统一 `// ...` 或说明，不把省略标记作为真实可执行语句。格式化是否运行须有证据。 |\n| 5.3 异常日志 | 指南默认建议操作描述+code/message，如 `Failed to load. Code: ..., message: ...`；先确认异常类型确有这些字段，不能给 unknown 强加属性访问。API 片段遵循上表例外。 |\n| 5.4 正常/成功日志 | 默认正常日志用 console.info，成功句式用 Succeeded；与项目不同时按项目约定。属于低级风格，不影响代码合法性，不能把 console.log 说成编译错误。 |\n| 5.5 回调和废弃 API | 依赖词法 this 的示例优先箭头回调；需要动态 this 的回调不能机械改箭头。废弃接口以匹配版本标记核对，解释旧 API 的迁移示例可以保留旧调用并明确用途。 |\n\n报告例：`sample.md:8` 的 console.log 与默认 5.4 不符→低，建议 console.info；“某模块在 API 12 不存在”若只有 API 13 SDK→未验证，不把猜测与风格问题一起计高。\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  ],
+  "completed": true
+}

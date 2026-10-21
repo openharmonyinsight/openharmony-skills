@@ -1,0 +1,46 @@
+{
+  "skill": "ohos-test-docs-code-correctness-review",
+  "case_id": 1,
+  "arm": "without_skill",
+  "cli_version": "codex-cli 0.163.0",
+  "command": [
+    "codex",
+    "exec",
+    "--ephemeral",
+    "--skip-git-repo-check",
+    "--sandbox",
+    "read-only",
+    "--json",
+    "-C",
+    "/tmp/selected-skills-evaluation-20261021/workspaces/run-042",
+    "-o",
+    "/tmp/selected-skills-evaluation-20261021/ohos-test-docs-code-correctness-review/case-1/without_skill/output.md",
+    "-"
+  ],
+  "model": "configured CLI default; no model override",
+  "session_id": "01a15c43-c13a-7f02-b4ac-0eef9fa800b9",
+  "started_unix": 1792549306.5517192,
+  "duration_seconds": 41.457,
+  "exit_code": 0,
+  "usage": {
+    "input_tokens": 36080,
+    "cached_input_tokens": 30080,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 190,
+    "reasoning_output_tokens": 0
+  },
+  "provided_skills": [],
+  "material_sha256": {},
+  "prompt_sha256": "b3d7a9d1d2a2926fe79b439bd5e6e49b524968ac8d128ff20d40dfb2e3dce565",
+  "tool_actions": [
+    {
+      "id": "item_1",
+      "type": "command_execution",
+      "command": "/usr/bin/zsh -lc 'rg --files materials'",
+      "aggregated_output": "",
+      "exit_code": 1,
+      "status": "failed"
+    }
+  ],
+  "completed": true
+}

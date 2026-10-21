@@ -1,0 +1,227 @@
+{
+  "skill_name": "ohos-test-docs-writing-compliance-review",
+  "pattern": {
+    "primary": "Navigation",
+    "secondary": "Process",
+    "knowledge_delta_scan": [
+      {
+        "section": "SKILL.md：按任务加载",
+        "classification": "Expert 为主，Activation 为辅",
+        "basis": "按文档角色选择审查要求，并区分模板、术语表缺失时能够确认和不能确认的问题。"
+      },
+      {
+        "section": "SKILL.md：证据与结果契约",
+        "classification": "Expert 为主",
+        "basis": "提供 diff 侧别、未知条件、根因去重及覆盖统计的具体判定机制，明显超出通用审查提醒。"
+      },
+      {
+        "section": "references/code-style.md",
+        "classification": "Expert 为主",
+        "basis": "区分 API 片段、指南和完整工程，明确异常字段、动态 this、旧 API 迁移示例等误报边界。"
+      },
+      {
+        "section": "references/elements-and-delivery.md",
+        "classification": "Expert 与 Activation 混合",
+        "basis": "渲染器锚点、交付范围、目录迁移边界有增量；路径引用、警告前置等属于通用知识提醒。"
+      },
+      {
+        "section": "references/structure-and-terminology.md",
+        "classification": "Expert 为主，少量 Redundant",
+        "basis": "术语证据顺序和 PR hunk 首现限制有价值；不编造数据、不破坏标识符等内容存在通用性及跨文件重复。"
+      }
+    ],
+    "structure_analysis": {
+      "frontmatter": "所给 YAML 结构有效；name 符合字符及长度要求；description 包含能力、使用场景与领域关键词。",
+      "skill_md_lines": 34,
+      "references": [
+        {
+          "file": "references/code-style.md",
+          "size": "短篇；包含角色矩阵、5 项规则和报告示例。"
+        },
+        {
+          "file": "references/elements-and-delivery.md",
+          "size": "短篇；包含 13 个规则分组和链接判定示例。"
+        },
+        {
+          "file": "references/structure-and-terminology.md",
+          "size": "短篇；包含 9 个规则分组、术语取证顺序和反例。"
+        }
+      ],
+      "loading_triggers": "主文件提供按输入维度读取及跳过条件；但跨文件依赖和整篇审查时的完整加载要求仍不够明确。",
+      "pattern_fit": "以短主文件路由三个领域参考文件，辅以统一证据和输出契约，适合 Navigation 主模式。"
+    }
+  },
+  "knowledge_ratio": {
+    "expert": 75,
+    "activation": 20,
+    "redundant": 5
+  },
+  "dimensions": [
+    {
+      "id": "D1",
+      "score": 17,
+      "maximum": 20,
+      "evidence": [
+        {
+          "file": "SKILL.md",
+          "quote": "任一已证实违反→不满足；没有违反但仍有未知必要条件→未验证"
+        },
+        {
+          "file": "references/structure-and-terminology.md",
+          "quote": "仅有 PR hunk 时不能推定它是全文首现"
+        },
+        {
+          "file": "references/elements-and-delivery.md",
+          "quote": "命令中的空格路径需要正确引用"
+        }
+      ],
+      "reason": "主要价值来自证据边界、版本条件和误报控制，知识增量较高；部分基础提醒及反复出现的项目优先、未知不定罪原则降低了密度。比例为内容估计，并非实测。",
+      "improvement": "集中定义通用证据原则，参考文件只保留各规则独有的判断条件，压缩常见路径和语言提醒。"
+    },
+    {
+      "id": "D2",
+      "score": 13,
+      "maximum": 15,
+      "evidence": [
+        {
+          "file": "SKILL.md",
+          "quote": "先确定是 API 查阅片段、开发指南还是最佳实践，再套用对应约定"
+        },
+        {
+          "file": "references/code-style.md",
+          "quote": "不能用只打印日志证明错误已恢复"
+        }
+      ],
+      "reason": "明确传递先辨角色、再核契约、最后定性的审查思路，并提供领域程序；但尚未将规则来源、适用性、证据状态和严重度串成完整执行路径。",
+      "improvement": "补充一个简短决策流程：确定范围与角色→确定规则来源→判断适用性→核验证据→定性与统计。"
+    },
+    {
+      "id": "D3",
+      "score": 14,
+      "maximum": 15,
+      "evidence": [
+        {
+          "file": "references/code-style.md",
+          "quote": "需要动态 this 的回调不能机械改箭头"
+        },
+        {
+          "file": "references/structure-and-terminology.md",
+          "quote": "将 API 名 `onClick` 改成中文以“统一语言”会损坏查阅"
+        },
+        {
+          "file": "references/elements-and-delivery.md",
+          "quote": "网络不可用不等于断链"
+        }
+      ],
+      "reason": "反模式具体，覆盖真实误报风险，并多处解释损害或判定原因；少数条目仍只有禁止语句，缺乏说明和替代操作。",
+      "improvement": "为缺少原因的关键禁令补充一句误报机制或正确替代判断，避免扩展为重复警告清单。"
+    },
+    {
+      "id": "D4",
+      "score": 14,
+      "maximum": 15,
+      "evidence": [
+        {
+          "file": "SKILL.md",
+          "quote": "name: ohos-test-docs-writing-compliance-review"
+        },
+        {
+          "file": "SKILL.md",
+          "quote": "在用户要求检查 OpenHarmony/HarmonyOS 文档的写作合规、结构、语言、排版、术语或示例代码风格时使用。"
+        }
+      ],
+      "reason": "元数据有效，WHAT、WHEN 和关键词齐全，支持整篇及改动范围的说明也有帮助；尚可更明确区分文档代码风格审查与实际编译验证。",
+      "improvement": "在 description 中简短注明适用于文档审查及 PR diff，实际编译验证属于其他能力。"
+    },
+    {
+      "id": "D5",
+      "score": 12,
+      "maximum": 15,
+      "evidence": [
+        {
+          "file": "SKILL.md",
+          "quote": "| 示例代码风格、日志、异常 | [代码风格](references/code-style.md) | 跳过该文件 |"
+        },
+        {
+          "file": "references/elements-and-delivery.md",
+          "quote": "使用结构与术语文件的证据顺序"
+        }
+      ],
+      "reason": "主文件短，参考文件职责清楚，并有明确跳过条件；但术语跨文件依赖未转成显式读取动作，整篇审查也没有明确要求加载所有适用文件。",
+      "improvement": "加入整篇审查的加载规则；在 4.6 处明确要求读取术语取证段落，或将该共用段落提升到主文件。"
+    },
+    {
+      "id": "D6",
+      "score": 14,
+      "maximum": 15,
+      "evidence": [
+        {
+          "file": "references/structure-and-terminology.md",
+          "quote": "默认段落≤7行、句内逗号≤5是建议阈值，不是正确性门禁"
+        },
+        {
+          "file": "references/code-style.md",
+          "quote": "属于低级风格，不影响代码合法性，不能把 console.log 说成编译错误"
+        },
+        {
+          "file": "SKILL.md",
+          "quote": "以项目明确采用的规范为准"
+        }
+      ],
+      "reason": "对风格保留项目裁量，对版本、合法性和确定缺陷要求证据，约束强度匹配审查风险；但多个项目规范发生冲突时缺少裁决规则。",
+      "improvement": "规定冲突时按明确适用范围和版本选择依据；无法消解时报告规范冲突并保留未验证状态。"
+    },
+    {
+      "id": "D7",
+      "score": 9,
+      "maximum": 10,
+      "evidence": [
+        {
+          "file": "SKILL.md",
+          "quote": "## 按任务加载"
+        },
+        {
+          "file": "SKILL.md",
+          "quote": "## 证据与结果契约"
+        }
+      ],
+      "reason": "Navigation 主模式清晰，统一契约避免三个子文件各自定义输出；少量跨文件跳转和隐含流程使路由闭环尚不完整。",
+      "improvement": "保留现有结构，补齐跨文件依赖和全量审查入口，无需增加辅助说明文件。"
+    },
+    {
+      "id": "D8",
+      "score": 12,
+      "maximum": 15,
+      "evidence": [
+        {
+          "file": "SKILL.md",
+          "quote": "必选/可选分开汇总，已验证符合率=满足/(满足+不满足)"
+        },
+        {
+          "file": "references/structure-and-terminology.md",
+          "quote": "| 3.1–3.7 语言 |"
+        },
+        {
+          "file": "SKILL.md",
+          "quote": "高=错误调用/不兼容/任务无法完成的已证实风险；中=必要约束或关键说明缺失；低=风格或体验建议。"
+        }
+      ],
+      "reason": "位置、去重、严重度和未知条件处理可直接使用；但覆盖单位和必选/可选映射不完整，合并编号无法稳定展开统计。用户仅提供文本时，部分样式或渲染检查也缺少明确的统计归属。未据此推断任何测试已通过。",
+      "improvement": "提供最小规则清单，明确每个统计单位、必选/可选来源，以及缺少图片、渲染器或规则原文时应列为未验证还是未覆盖；附一个统计完整的报告示例。"
+    }
+  ],
+  "total": 105,
+  "percentage": 87.5,
+  "grade": "B",
+  "verdict": "具备较高知识增量和成熟的误报控制，按固定规则评为 B；主要不足是规则覆盖统计尚未形成可复现清单，以及加载依赖仍有隐含条件。领域约定按用户检视体系评价，不视为已核实的官方现行标准。",
+  "critical_issues": [
+    "覆盖统计要求以规则条目为单位，但参考材料存在“3.1–3.7”“9.x”等合并编号，未定义展开方式，可能导致不同代理得到不同分母。",
+    "要求必选/可选分开汇总，却未完整定义分类来源及来源不可得时的处理，统计契约尚不闭合。",
+    "4.6 依赖另一参考文件的证据顺序，缺少明确加载指令；整篇审查的加载范围也应显式说明。"
+  ],
+  "top_improvements": [
+    "建立轻量规则清单，明确统计单位、适用条件和必选/可选依据；无法取得原始细目时只报告实际提供的分组覆盖，避免暗示完整覆盖 1.x–10.x。",
+    "补齐整篇审查及跨文件术语依赖的条件加载指令，保留现有不涉及时跳过的设计。",
+    "增加一个包含确定缺陷、未验证、不适用和零分母处理的完整报告示例，并集中去除跨文件重复的通用提醒。"
+  ]
+}

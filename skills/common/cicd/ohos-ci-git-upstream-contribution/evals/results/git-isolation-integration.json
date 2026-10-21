@@ -1,0 +1,255 @@
+{
+  "status": "passed",
+  "fixture": "isolated synthetic local Git repository; no remote used",
+  "git_version": "git version 2.34.1",
+  "invariants": {
+    "source_head_unchanged": true,
+    "source_index_bytes_unchanged": true,
+    "source_staged_diff_unchanged": true,
+    "source_unstaged_diff_unchanged": true,
+    "source_file_bytes_unchanged": true,
+    "only_selected_file_committed": true,
+    "selected_staged_and_unstaged_content_combined": true,
+    "unrelated_staged_and_untracked_files_excluded": true
+  },
+  "before": {
+    "head": "f2c01dc70245b2f27a77e80a7ad44748147695fd",
+    "status": "MM guide.md\nM  unrelated.cpp\n?? notes.txt\n",
+    "index_sha256": "5aeaea43e9ac22ef1c7d18f5e0d569db866b620d99a41bf09bce059b76fc38de",
+    "staged": "diff --git a/guide.md b/guide.md\nindex 4b48dee..c8d11e9 100644\n--- a/guide.md\n+++ b/guide.md\n@@ -1 +1 @@\n-original\n+selected staged\ndiff --git a/unrelated.cpp b/unrelated.cpp\nindex 4b48dee..a31caa6 100644\n--- a/unrelated.cpp\n+++ b/unrelated.cpp\n@@ -1 +1 @@\n-original\n+other task staged\n",
+    "unstaged": "diff --git a/guide.md b/guide.md\nindex c8d11e9..3d90b4d 100644\n--- a/guide.md\n+++ b/guide.md\n@@ -1 +1 @@\n-selected staged\n+selected staged and unstaged final\n",
+    "files": {
+      "notes.txt": "387e204153cc4ade398243a3d6364356ce054c21c1faba71d5bd7ebd1d575a00",
+      "unrelated.cpp": "e5bc606aa5ffdb48831c35ea37182759ac27e2cd41204bd200a7c6c5d65fc6a1",
+      "guide.md": "f42da3964136bc0c1ee419915524aa1276c9b2fef389e8bb28e2f5efeaeddef2"
+    }
+  },
+  "after": {
+    "head": "f2c01dc70245b2f27a77e80a7ad44748147695fd",
+    "status": "MM guide.md\nM  unrelated.cpp\n?? notes.txt\n",
+    "index_sha256": "5aeaea43e9ac22ef1c7d18f5e0d569db866b620d99a41bf09bce059b76fc38de",
+    "staged": "diff --git a/guide.md b/guide.md\nindex 4b48dee..c8d11e9 100644\n--- a/guide.md\n+++ b/guide.md\n@@ -1 +1 @@\n-original\n+selected staged\ndiff --git a/unrelated.cpp b/unrelated.cpp\nindex 4b48dee..a31caa6 100644\n--- a/unrelated.cpp\n+++ b/unrelated.cpp\n@@ -1 +1 @@\n-original\n+other task staged\n",
+    "unstaged": "diff --git a/guide.md b/guide.md\nindex c8d11e9..3d90b4d 100644\n--- a/guide.md\n+++ b/guide.md\n@@ -1 +1 @@\n-selected staged\n+selected staged and unstaged final\n",
+    "files": {
+      "notes.txt": "387e204153cc4ade398243a3d6364356ce054c21c1faba71d5bd7ebd1d575a00",
+      "unrelated.cpp": "e5bc606aa5ffdb48831c35ea37182759ac27e2cd41204bd200a7c6c5d65fc6a1",
+      "guide.md": "f42da3964136bc0c1ee419915524aa1276c9b2fef389e8bb28e2f5efeaeddef2"
+    }
+  },
+  "commands": [
+    {
+      "args": [
+        "init",
+        "-b",
+        "main"
+      ],
+      "workspace": "source",
+      "exit_code": 0,
+      "stdout": "Initialized empty Git repository in /tmp/skill-git-isolation-h2bnqtts/source/.git/"
+    },
+    {
+      "args": [
+        "config",
+        "user.name",
+        "Synthetic Evaluation"
+      ],
+      "workspace": "source",
+      "exit_code": 0,
+      "stdout": ""
+    },
+    {
+      "args": [
+        "config",
+        "user.email",
+        "eval@example.com"
+      ],
+      "workspace": "source",
+      "exit_code": 0,
+      "stdout": ""
+    },
+    {
+      "args": [
+        "add",
+        "guide.md",
+        "unrelated.cpp"
+      ],
+      "workspace": "source",
+      "exit_code": 0,
+      "stdout": ""
+    },
+    {
+      "args": [
+        "commit",
+        "-m",
+        "fixture base"
+      ],
+      "workspace": "source",
+      "exit_code": 0,
+      "stdout": "[main (root-commit) f2c01dc] fixture base\n 2 files changed, 2 insertions(+)\n create mode 100644 guide.md\n create mode 100644 unrelated.cpp"
+    },
+    {
+      "args": [
+        "add",
+        "guide.md",
+        "unrelated.cpp"
+      ],
+      "workspace": "source",
+      "exit_code": 0,
+      "stdout": ""
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "workspace": "source",
+      "exit_code": 0,
+      "stdout": "f2c01dc70245b2f27a77e80a7ad44748147695fd"
+    },
+    {
+      "args": [
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "workspace": "source",
+      "exit_code": 0,
+      "stdout": "MM guide.md\nM  unrelated.cpp\n?? notes.txt"
+    },
+    {
+      "args": [
+        "diff",
+        "--cached",
+        "--binary"
+      ],
+      "workspace": "source",
+      "exit_code": 0,
+      "stdout": "diff --git a/guide.md b/guide.md\nindex 4b48dee..c8d11e9 100644\n--- a/guide.md\n+++ b/guide.md\n@@ -1 +1 @@\n-original\n+selected staged\ndiff --git a/unrelated.cpp b/unrelated.cpp\nindex 4b48dee..a31caa6 100644\n--- a/unrelated.cpp\n+++ b/unrelated.cpp\n@@ -1 +1 @@\n-original\n+other task staged"
+    },
+    {
+      "args": [
+        "diff",
+        "--binary"
+      ],
+      "workspace": "source",
+      "exit_code": 0,
+      "stdout": "diff --git a/guide.md b/guide.md\nindex c8d11e9..3d90b4d 100644\n--- a/guide.md\n+++ b/guide.md\n@@ -1 +1 @@\n-selected staged\n+selected staged and unstaged final"
+    },
+    {
+      "args": [
+        "diff",
+        "HEAD",
+        "--binary",
+        "--",
+        "guide.md"
+      ],
+      "workspace": "source",
+      "exit_code": 0,
+      "stdout": "diff --git a/guide.md b/guide.md\nindex 4b48dee..3d90b4d 100644\n--- a/guide.md\n+++ b/guide.md\n@@ -1 +1 @@\n-original\n+selected staged and unstaged final"
+    },
+    {
+      "args": [
+        "worktree",
+        "add",
+        "--detach",
+        "/tmp/skill-git-isolation-h2bnqtts/isolated",
+        "HEAD"
+      ],
+      "workspace": "source",
+      "exit_code": 0,
+      "stdout": "Preparing worktree (detached HEAD f2c01dc)\nHEAD is now at f2c01dc fixture base"
+    },
+    {
+      "args": [
+        "apply",
+        "--check",
+        "--index",
+        "/tmp/skill-git-isolation-h2bnqtts/selected.patch"
+      ],
+      "workspace": "isolated",
+      "exit_code": 0,
+      "stdout": ""
+    },
+    {
+      "args": [
+        "apply",
+        "--index",
+        "/tmp/skill-git-isolation-h2bnqtts/selected.patch"
+      ],
+      "workspace": "isolated",
+      "exit_code": 0,
+      "stdout": ""
+    },
+    {
+      "args": [
+        "diff",
+        "--cached",
+        "--name-only"
+      ],
+      "workspace": "isolated",
+      "exit_code": 0,
+      "stdout": "guide.md"
+    },
+    {
+      "args": [
+        "commit",
+        "--signoff",
+        "-m",
+        "selected documentation change"
+      ],
+      "workspace": "isolated",
+      "exit_code": 0,
+      "stdout": "[detached HEAD 96af0a9] selected documentation change\n 1 file changed, 1 insertion(+), 1 deletion(-)"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "workspace": "source",
+      "exit_code": 0,
+      "stdout": "f2c01dc70245b2f27a77e80a7ad44748147695fd"
+    },
+    {
+      "args": [
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "workspace": "source",
+      "exit_code": 0,
+      "stdout": "MM guide.md\nM  unrelated.cpp\n?? notes.txt"
+    },
+    {
+      "args": [
+        "diff",
+        "--cached",
+        "--binary"
+      ],
+      "workspace": "source",
+      "exit_code": 0,
+      "stdout": "diff --git a/guide.md b/guide.md\nindex 4b48dee..c8d11e9 100644\n--- a/guide.md\n+++ b/guide.md\n@@ -1 +1 @@\n-original\n+selected staged\ndiff --git a/unrelated.cpp b/unrelated.cpp\nindex 4b48dee..a31caa6 100644\n--- a/unrelated.cpp\n+++ b/unrelated.cpp\n@@ -1 +1 @@\n-original\n+other task staged"
+    },
+    {
+      "args": [
+        "diff",
+        "--binary"
+      ],
+      "workspace": "source",
+      "exit_code": 0,
+      "stdout": "diff --git a/guide.md b/guide.md\nindex c8d11e9..3d90b4d 100644\n--- a/guide.md\n+++ b/guide.md\n@@ -1 +1 @@\n-selected staged\n+selected staged and unstaged final"
+    },
+    {
+      "args": [
+        "diff-tree",
+        "--no-commit-id",
+        "--name-only",
+        "-r",
+        "HEAD"
+      ],
+      "workspace": "isolated",
+      "exit_code": 0,
+      "stdout": "guide.md"
+    }
+  ]
+}

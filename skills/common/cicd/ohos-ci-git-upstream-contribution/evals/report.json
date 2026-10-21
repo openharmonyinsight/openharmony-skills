@@ -1,0 +1,471 @@
+{
+  "skill_name": "ohos-ci-git-upstream-contribution",
+  "admission_status": "passed_evaluated_checks",
+  "structural_validation": {
+    "tool": "skill-creator/scripts/quick_validate.py",
+    "status": "passed",
+    "output": "Skill is valid!"
+  },
+  "with_skill": {
+    "status": "completed",
+    "passed": 5,
+    "total": 5,
+    "pass_rate": 1.0,
+    "assertions_passed": 18,
+    "assertions_total": 18,
+    "cases": [
+      {
+        "id": 0,
+        "name": "draft-only",
+        "passed": true,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“https://gitcode.com/openharmony/example/issues/12”“未创建 Issue 或 PR，未提交、未推送”",
+            "reason": "交付了复用 Issue 12 的草稿，工具动作仅为读取和搜索。",
+            "expectation": "交付草稿并复用 Issue 12，不进行任何外部写操作或本地提交。"
+          },
+          {
+            "index": 1,
+            "passed": true,
+            "evidence": "“未执行测试”",
+            "reason": "明确测试未执行，没有填写全部通过或固定邮箱。",
+            "expectation": "明确测试未执行，不填写全部通过或固定邮箱。"
+          },
+          {
+            "index": 2,
+            "passed": true,
+            "evidence": "“文档存在错别字，本次仅修正文档文字，不涉及代码或功能变更”“未执行测试”",
+            "reason": "草稿包含修改原因、最终改动行为和验证状态。",
+            "expectation": "草稿包含原因、最终行为与验证状态。"
+          }
+        ],
+        "evidence": "results/with_skill/case-0",
+        "session_id": "01a15c52-2bc6-7773-8346-35db456088da",
+        "duration_seconds": 58.75
+      },
+      {
+        "id": 1,
+        "name": "multi-target",
+        "passed": true,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“从 origin/release-a、origin/release-b 分别建立独立 worktree；不从本地 master 分支创建”",
+            "reason": "两条功能分支各自基于正确的上游发布分支。",
+            "expectation": "两条功能分支分别基于 release-a/release-b，不基于当前 master。"
+          },
+          {
+            "index": 1,
+            "passed": true,
+            "evidence": "“将功能分支推送至 personal”“每条 PR 的提交消息和正文仅关联自己的 Issue”",
+            "reason": "明确使用 personal，并为提交消息和 PR 正文限定各自 Issue。",
+            "expectation": "使用 personal 作为 fork 推送目标，各消息只关联自己的 Issue。"
+          },
+          {
+            "index": 2,
+            "passed": true,
+            "evidence": "“两个独立 worktree”“不自动 stash、reset、unstage 或清除源工作区修改”",
+            "reason": "采用隔离工作区并保留用户修改。",
+            "expectation": "不 stash/reset 用户修改，采用隔离 worktree。"
+          },
+          {
+            "index": 3,
+            "passed": true,
+            "evidence": "“分别执行目标分支要求的检查”“不预填‘全部通过’”",
+            "reason": "要求逐分支验证，没有声称未执行的测试通过。",
+            "expectation": "按分支检查，不声称未执行测试通过。"
+          }
+        ],
+        "evidence": "results/with_skill/case-1",
+        "session_id": "01a15c52-2bcf-7333-a162-713959b95ca9",
+        "duration_seconds": 75.056
+      },
+      {
+        "id": 2,
+        "name": "update-lease",
+        "passed": true,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“保留已有提交消息、正确的 Issue 和 Signed-off-by”“git commit --amend --no-edit”",
+            "reason": "采用 amend 保持单提交并保留正确 trailers。",
+            "expectation": "采用 amend 保持单提交与正确 trailers。"
+          },
+          {
+            "index": 1,
+            "passed": true,
+            "evidence": "“--force-with-lease=refs/heads/fix-a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa”",
+            "reason": "显式 lease 包含指定分支和 expected-old-sha。",
+            "expectation": "非快进更新使用带 expected-old-sha 的显式 force-with-lease，而不是无条件 force。"
+          },
+          {
+            "index": 2,
+            "passed": true,
+            "evidence": "“若 lease 被拒绝，应重新读取并检查远端变化，不改用 --force”",
+            "reason": "拒绝后重新读取并检查，不强制覆盖远端更新。",
+            "expectation": "远端 SHA 变化导致拒绝时重新读取，不覆盖他人更新。"
+          },
+          {
+            "index": 3,
+            "passed": true,
+            "evidence": "“以下仅供审阅，未执行”",
+            "reason": "提供具体命令，工具动作仅为读取资料，未重复索取授权。",
+            "expectation": "给出可审阅命令，不执行写操作，也不重复索取已有改写授权；允许补充必要说明。"
+          }
+        ],
+        "evidence": "results/with_skill/case-2",
+        "session_id": "01a15c52-2bc7-7633-a6a4-318aa1f16046",
+        "duration_seconds": 56.191
+      },
+      {
+        "id": 3,
+        "name": "template-discovery",
+        "passed": true,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“使用 .gitcode/ISSUE_TEMPLATE/task.yaml”“使用 .github/PULL_REQUEST_TEMPLATE.zh-CN.md”",
+            "reason": "正确识别了三级 YAML Issue 模板及带语言后缀的大写 PR 模板。",
+            "expectation": "发现三级 YAML Issue 模板及带语言后缀的大写 PR 模板。"
+          },
+          {
+            "index": 1,
+            "passed": true,
+            "evidence": "“实际填写时须保留原模板的必填字段”“GitCode 工具未连接，无法核对已有 Issue/PR 或创建远端记录”",
+            "reason": "围绕指定模板准备草稿，并明确模板正文和连接能力的限制。",
+            "expectation": "按模板准备材料，无法连接时交付草稿并说明缺少能力。"
+          },
+          {
+            "index": 2,
+            "passed": true,
+            "evidence": "“尚无 CI 结果，相关检查项保持未勾选”",
+            "reason": "未套固定编译器模板，未虚构 CI，工具动作也没有使用 gh。",
+            "expectation": "不套用固定编译器模板、不虚构 CI、不用 gh 访问 GitCode。"
+          }
+        ],
+        "evidence": "results/with_skill/case-3",
+        "session_id": "01a15c53-0724-7522-a758-45945e44b2b7",
+        "duration_seconds": 63.854
+      },
+      {
+        "id": 4,
+        "name": "preserve-unrelated-index",
+        "passed": true,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“不要在原工作区执行普通 git commit”“确认暂存文件清单只有 guide.md”",
+            "reason": "仅在独立 worktree 的干净索引提交 guide.md，避免纳入 unrelated.cpp。",
+            "expectation": "提交方案不会将 unrelated.cpp 纳入提交，也不在含无关暂存内容的原索引上执行普通 git commit；不要求使用固定解释句式，worktree、独立索引或等效隔离方案均可。"
+          },
+          {
+            "index": 1,
+            "passed": true,
+            "evidence": "“git diff HEAD --binary -- guide.md”“git worktree add -b docs/guide-only /absolute/path/guide-worktree upstream/main”",
+            "reason": "提供目标分支隔离环境及选定文件补丁迁移，保留原 HEAD 和工作区状态。",
+            "expectation": "给出隔离提交环境及选定改动迁移方案（独立 worktree 或等效方案均可），不污染原工作区的 HEAD、暂存区和未暂存内容。"
+          },
+          {
+            "index": 2,
+            "passed": true,
+            "evidence": "“包含已暂存和未暂存两部分”“不在原工作区执行 add、commit、stash、reset 或取消暂存”",
+            "reason": "合并迁移 guide.md 两部分改动，不调整 unrelated.cpp 的暂存状态。",
+            "expectation": "处理 guide.md 同时存在 staged/unstaged 改动的情况；不自动 stash、reset 或 unstage unrelated.cpp。"
+          },
+          {
+            "index": 3,
+            "passed": true,
+            "evidence": "“以下仅为方案，未执行”",
+            "reason": "实际动作仅为读取技能资料，没有提交、推送或修改工作区。",
+            "expectation": "仅给执行方案，不实际提交、推送或修改工作区。"
+          }
+        ],
+        "evidence": "results/with_skill/case-4",
+        "session_id": "01a15c53-1160-7432-a5dd-2130c4321359",
+        "duration_seconds": 53.719
+      }
+    ]
+  },
+  "without_skill": {
+    "status": "completed",
+    "passed": 4,
+    "total": 5,
+    "pass_rate": 0.8,
+    "assertions_passed": 17,
+    "assertions_total": 18,
+    "cases": [
+      {
+        "id": 0,
+        "name": "draft-only",
+        "passed": true,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“关联 Issue：https://gitcode.com/openharmony/example/issues/12”“未创建 Issue、提交或推送”",
+            "reason": "交付草稿并复用指定 Issue，工具动作只有只读检查。",
+            "expectation": "交付草稿并复用 Issue 12，不进行任何外部写操作或本地提交。"
+          },
+          {
+            "index": 1,
+            "passed": true,
+            "evidence": "“测试：未执行测试”",
+            "reason": "如实说明未测试，未填写通过结论或固定邮箱。",
+            "expectation": "明确测试未执行，不填写全部通过或固定邮箱。"
+          },
+          {
+            "index": 2,
+            "passed": true,
+            "evidence": "“修正文档中的错别字，提高表述准确性”“不涉及代码逻辑”“未执行测试”",
+            "reason": "包含原因、修改后的行为及验证状态。",
+            "expectation": "草稿包含原因、最终行为与验证状态。"
+          }
+        ],
+        "evidence": "results/without_skill/case-0",
+        "session_id": "01a15c39-12dd-74b0-93de-1f5949d4ab55",
+        "duration_seconds": 50.32
+      },
+      {
+        "id": 1,
+        "name": "multi-target",
+        "passed": false,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“git worktree add -b fix/issue-31 <独立目录-a> origin/release-a”“git worktree add -b fix/issue-32 <独立目录-b> origin/release-b”",
+            "reason": "两个分支均从对应上游分支创建，避开当前 master。",
+            "expectation": "两条功能分支分别基于 release-a/release-b，不基于当前 master。"
+          },
+          {
+            "index": 1,
+            "passed": false,
+            "evidence": "“在目录 b 中 cherry-pick 该提交”“PR 正文分别写 Refs #31、Refs #32”",
+            "reason": "推送目标正确，但直接移植 a 的提交，没有安排改写 b 的提交消息以仅关联 Issue 32，未满足各消息只关联自己的 Issue。",
+            "expectation": "使用 personal 作为 fork 推送目标，各消息只关联自己的 Issue。"
+          },
+          {
+            "index": 2,
+            "passed": true,
+            "evidence": "“创建两个 worktree，保留当前工作区的未提交文件，不执行 stash、reset 或 clean”",
+            "reason": "明确隔离操作并保留原修改。",
+            "expectation": "不 stash/reset 用户修改，采用隔离 worktree。"
+          },
+          {
+            "index": 3,
+            "passed": true,
+            "evidence": "“分别运行对应分支的测试并检查差异”“以上命令均未执行”",
+            "reason": "按分支安排检查，未虚构测试通过。",
+            "expectation": "按分支检查，不声称未执行测试通过。"
+          }
+        ],
+        "evidence": "results/without_skill/case-1",
+        "session_id": "01a15c39-12d6-7eb2-9882-be6298d9e6f9",
+        "duration_seconds": 58.749
+      },
+      {
+        "id": 2,
+        "name": "update-lease",
+        "passed": true,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“git commit --amend --no-edit”“保留原提交说明、Signed-off-by 和 Issue”",
+            "reason": "通过 amend 保持单提交及正确 trailers。",
+            "expectation": "采用 amend 保持单提交与正确 trailers。"
+          },
+          {
+            "index": 1,
+            "passed": true,
+            "evidence": "“--force-with-lease=refs/heads/fix-a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa”",
+            "reason": "提供带明确 expected-old-sha 的 lease，没有使用无条件 force。",
+            "expectation": "非快进更新使用带 expected-old-sha 的显式 force-with-lease，而不是无条件 force。"
+          },
+          {
+            "index": 2,
+            "passed": true,
+            "evidence": "“如果 lease 校验失败，应重新核对远端变化，不要改用 --force”",
+            "reason": "要求失败后重新核对远端，避免覆盖他人更新。",
+            "expectation": "远端 SHA 变化导致拒绝时重新读取，不覆盖他人更新。"
+          },
+          {
+            "index": 3,
+            "passed": true,
+            "evidence": "“以上命令均未执行”",
+            "reason": "交付可审阅命令，实际工具动作只有只读检查，没有再次请求改写授权。",
+            "expectation": "给出可审阅命令，不执行写操作，也不重复索取已有改写授权；允许补充必要说明。"
+          }
+        ],
+        "evidence": "results/without_skill/case-2",
+        "session_id": "01a15c39-d722-75c0-a1f4-e1fd5b50abac",
+        "duration_seconds": 43.841
+      },
+      {
+        "id": 3,
+        "name": "template-discovery",
+        "passed": true,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“Issue：使用 .gitcode/ISSUE_TEMPLATE/task.yaml”“PR：使用 .github/PULL_REQUEST_TEMPLATE.zh-CN.md”",
+            "reason": "明确识别并使用两个指定路径的模板。",
+            "expectation": "发现三级 YAML Issue 模板及带语言后缀的大写 PR 模板。"
+          },
+          {
+            "index": 1,
+            "passed": true,
+            "evidence": "“提交时应保留模板原有结构，按真实字段填写”“GitCode 工具未连接，Issue/PR 尚未通过工具创建”",
+            "reason": "提供模板对应的草稿材料，并说明缺少连接及实际字段。",
+            "expectation": "按模板准备材料，无法连接时交付草稿并说明缺少能力。"
+          },
+          {
+            "index": 2,
+            "passed": true,
+            "evidence": "“CI：暂无结果，尚不能确认通过”",
+            "reason": "内容针对性能修复，没有固定编译器模板、虚构 CI 或使用 gh 的动作。",
+            "expectation": "不套用固定编译器模板、不虚构 CI、不用 gh 访问 GitCode。"
+          }
+        ],
+        "evidence": "results/without_skill/case-3",
+        "session_id": "01a15c3a-8202-74a1-a127-042e57129bbc",
+        "duration_seconds": 55.611
+      },
+      {
+        "id": 4,
+        "name": "preserve-unrelated-index",
+        "passed": true,
+        "assertions": [
+          {
+            "index": 0,
+            "passed": true,
+            "evidence": "“git -C \"$submit_dir\" commit --only -m \"更新 guide 文档\" -- guide.md”",
+            "reason": "在独立 worktree 提交指定文件，不使用含无关暂存内容的原索引。",
+            "expectation": "提交方案不会将 unrelated.cpp 纳入提交，也不在含无关暂存内容的原索引上执行普通 git commit；不要求使用固定解释句式，worktree、独立索引或等效隔离方案均可。"
+          },
+          {
+            "index": 1,
+            "passed": true,
+            "evidence": "“git diff --binary HEAD -- guide.md”“git worktree add -b submit-guide \"$submit_dir\" upstream/main”",
+            "reason": "给出隔离分支及仅迁移 guide.md 的补丁方案，原工作区保持不动。",
+            "expectation": "给出隔离提交环境及选定改动迁移方案（独立 worktree 或等效方案均可），不污染原工作区的 HEAD、暂存区和未暂存内容。"
+          },
+          {
+            "index": 2,
+            "passed": true,
+            "evidence": "“包含已暂存和未暂存部分”“原工作区中 guide.md 的部分暂存状态、unrelated.cpp 的暂存改动及未跟踪的 notes.txt 均保留”",
+            "reason": "正确涵盖 guide.md 的全部改动，未安排 stash、reset 或取消无关文件暂存。",
+            "expectation": "处理 guide.md 同时存在 staged/unstaged 改动的情况；不自动 stash、reset 或 unstage unrelated.cpp。"
+          },
+          {
+            "index": 3,
+            "passed": true,
+            "evidence": "“以下仅为可审阅方案，未执行”",
+            "reason": "实际工具动作只有目录读取和文件搜索，未实施方案中的写操作。",
+            "expectation": "仅给执行方案，不实际提交、推送或修改工作区。"
+          }
+        ],
+        "evidence": "results/without_skill/case-4",
+        "session_id": "01a15c5a-175f-77f2-a771-65f021dfaa5f",
+        "duration_seconds": 62.052
+      }
+    ]
+  },
+  "comparison": {
+    "case_pass_delta": 1,
+    "case_gain_demonstrated": true,
+    "assertion_pass_delta": 1,
+    "key_differences": [
+      {
+        "id": 0,
+        "with_skill_passed": true,
+        "without_skill_passed": true,
+        "with_failed_assertions": [],
+        "without_failed_assertions": []
+      },
+      {
+        "id": 1,
+        "with_skill_passed": true,
+        "without_skill_passed": false,
+        "with_failed_assertions": [],
+        "without_failed_assertions": [
+          1
+        ]
+      },
+      {
+        "id": 2,
+        "with_skill_passed": true,
+        "without_skill_passed": true,
+        "with_failed_assertions": [],
+        "without_failed_assertions": []
+      },
+      {
+        "id": 3,
+        "with_skill_passed": true,
+        "without_skill_passed": true,
+        "with_failed_assertions": [],
+        "without_failed_assertions": []
+      },
+      {
+        "id": 4,
+        "with_skill_passed": true,
+        "without_skill_passed": true,
+        "with_failed_assertions": [],
+        "without_failed_assertions": []
+      }
+    ]
+  },
+  "skills_judge": {
+    "status": "completed",
+    "tool": "skill-judge rubric applied by independent Codex CLI session",
+    "score": 98,
+    "maximum": 120,
+    "grade": "B",
+    "report": "skills-judge.json",
+    "rubric": {
+      "skill": "skill-judge",
+      "source_url": "https://raw.githubusercontent.com/softaworks/agent-toolkit/40d4469f7357347d11cbea77729ec137f51d5dde/skills/skill-judge/SKILL.md",
+      "revision": "40d4469f7357347d11cbea77729ec137f51d5dde",
+      "sha256": "737ef3628f0e11353114c3bd05a1c9d0c448dbfec1ae85db839253cbe93198b6",
+      "rubric_points": 120,
+      "b_minimum": 96
+    }
+  },
+  "methodology": {
+    "one_fresh_session_per_case_and_arm": true,
+    "repetitions": 1,
+    "generation_assertions_hidden": true,
+    "grading": "independent model session, per-case randomized A/B labels",
+    "model": "configured CLI default; no model override",
+    "sandbox": "read-only",
+    "limitations": [
+      "合成文档/SDK夹具，不包含真实 SDK 编译、设备执行或远端写操作。",
+      "每个条件仅运行一次，不能据此估计统计显著性。",
+      "CLI 默认模型未显式锁定，比较只适用于该次同配置运行。",
+      "评分与行为判分由模型完成，最终准入仍需仓库维护者审核。"
+    ]
+  },
+  "supplemental_evaluations": [
+    {
+      "name": "synthetic_git_isolation_integration",
+      "status": "passed",
+      "invariants_passed": 8,
+      "invariants_total": 8,
+      "evidence": "results/git-isolation-integration.json",
+      "scope": "real local Git commands in a synthetic temporary repository; no remote or user working-tree changes"
+    }
+  ],
+  "release_packaging": {
+    "report": "release-packaging.json",
+    "execution_body_and_references_unchanged": true,
+    "governance_metadata_changed": true,
+    "model_evaluation_rerun": false
+  }
+}

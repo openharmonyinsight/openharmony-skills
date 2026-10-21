@@ -1,0 +1,250 @@
+{
+  "skill_name": "ohos-test-docs-api-reference-review",
+  "knowledge_ratio": {
+    "expert": 70,
+    "activation": 24,
+    "redundant": 6,
+    "basis": "按所给全文的语义段落粗估，非实测 token 比例；先分类，再进行结构分析和评分。",
+    "classification": [
+      {
+        "section": "SKILL.md：条件加载与核对顺序",
+        "type": "Expert",
+        "reason": "版本绑定、声明与行为分轨、跨维度去重具有明确的领域决策价值。"
+      },
+      {
+        "section": "SKILL.md：证据与结果契约",
+        "type": "Expert 为主，Activation 为辅",
+        "reason": "diff 定位、未验证状态、条目级覆盖聚合提供具体判断规则；问题记录字段与严重度框架部分属于通用审查提醒。"
+      },
+      {
+        "section": "references/sdk-review.md：证据矩阵与语言分支",
+        "type": "Expert",
+        "reason": "明确 SDK 声明的证明边界，以及版本、this、const、所有权等容易误判的细节。"
+      },
+      {
+        "section": "references/sdk-review.md：40维度索引",
+        "type": "Expert 与 Activation 混合",
+        "reason": "用户体系的编号映射和具体误判边界有增量；排版、错字、链接、注释等常规检查主要是激活已有知识。"
+      },
+      {
+        "section": "references/rest-and-usage.md：使用契约与模板",
+        "type": "Expert 与 Activation 混合",
+        "reason": "固定要素映射和缺省行为判定有价值；参数范围、单位、默认值等基本检查已属常见 API 审查知识。"
+      },
+      {
+        "section": "references/rest-and-usage.md：REST 分支",
+        "type": "Activation 为主",
+        "reason": "核对方法、鉴权、请求响应和区分业务码属于常见审查知识，内容简短，冗余成本有限。"
+      },
+      {
+        "section": "跨文件反复出现的去重、禁止编造和证据不足提醒",
+        "type": "部分 Redundant",
+        "reason": "主文件已设统一规则，部分引用文件再次完整复述，存在可压缩空间。"
+      }
+    ]
+  },
+  "pattern": {
+    "primary": "Navigation",
+    "secondary": "Process",
+    "structure_analysis": {
+      "frontmatter": "有效；name 符合小写连字符及长度要求，description 包含任务、触发情境和语言关键词。",
+      "skill_md_lines": 32,
+      "references": [
+        {
+          "file": "references/sdk-review.md",
+          "size": "证据矩阵、三个语言分支条目、40项维度索引及示例；中等体量。"
+        },
+        {
+          "file": "references/rest-and-usage.md",
+          "size": "八要素映射表、九要素清单、三个模板、REST和体验分支；较短。"
+        }
+      ],
+      "loading": "具有条件加载及明确的不加载指示，但相关维度如何选择、加载到什么范围仍依赖代理自行判断。",
+      "structural_risk": "REST 路由未明确继承公共证据矩阵；完整性审查与体验提升的加载边界存在措辞歧义。"
+    }
+  },
+  "dimensions": [
+    {
+      "id": "D1",
+      "score": 17,
+      "maximum": 20,
+      "evidence": [
+        {
+          "file": "references/sdk-review.md",
+          "quote": "模块起始版本不能无条件套给后续新增成员。"
+        },
+        {
+          "file": "references/sdk-review.md",
+          "quote": "不能从 const 推导必定无副作用。"
+        },
+        {
+          "file": "references/rest-and-usage.md",
+          "quote": "HTTP状态码与响应体业务码分开"
+        }
+      ],
+      "reason": "核心包含有用的版本、证据和语言误判边界，知识增量较高；REST清单和部分编辑维度主要是通用提醒，未达到每段都有专家增量。",
+      "improvement": "压缩常规 REST 与编辑检查，把篇幅用于 SDK 元数据缺失、重载匹配和契约冲突的具体决策案例。"
+    },
+    {
+      "id": "D2",
+      "score": 13,
+      "maximum": 15,
+      "evidence": [
+        {
+          "file": "SKILL.md",
+          "quote": "先固定 API 版本、SDK 来源和文档子类型，再比较声明/元数据"
+        },
+        {
+          "file": "SKILL.md",
+          "quote": "SDK 与实现冲突时分别报告“声明一致性”和“已复现行为”"
+        }
+      ],
+      "reason": "建立了先绑定上下文、再区分声明和行为、最后检查完整性的思考顺序。缺少版本无法确定、多个声明候选或输入只有局部片段时的完整分流。",
+      "improvement": "增加证据不足决策表，明确何时继续内部一致性检查、何时请求补充材料，以及哪些结论必须暂缓。"
+    },
+    {
+      "id": "D3",
+      "score": 14,
+      "maximum": 15,
+      "evidence": [
+        {
+          "file": "references/sdk-review.md",
+          "quote": "不可用“新增重载没出现在旧文档”判旧文档遗漏。"
+        },
+        {
+          "file": "references/sdk-review.md",
+          "quote": "宿主变量可能在截取范围外使用，不推断全工程未用。"
+        },
+        {
+          "file": "references/sdk-review.md",
+          "quote": "风格偏好不升为编译错误。"
+        }
+      ],
+      "reason": "反模式具体，且多处提供误判原因，能有效约束审查越界。少数禁令只有结论，没有展示正确替代判断。",
+      "improvement": "为省略标记、类型链接等条目补充简短的误报与正确处理对照，保持现有紧凑度。"
+    },
+    {
+      "id": "D4",
+      "score": 15,
+      "maximum": 15,
+      "evidence": [
+        {
+          "file": "SKILL.md",
+          "quote": "name: ohos-test-docs-api-reference-review"
+        },
+        {
+          "file": "SKILL.md",
+          "quote": "在用户要求评审 OpenHarmony/HarmonyOS 的 ArkTS、JS、C 或 REST API 参考文档"
+        },
+        {
+          "file": "SKILL.md",
+          "quote": "检查签名一致性、参数约束、返回值、错误码和易用性时使用。"
+        }
+      ],
+      "reason": "frontmatter 合法，描述清楚回答做什么、何时使用，并包含平台、语言和审查目标关键词。",
+      "improvement": "无需必改；可选补充 diff 审查关键词以提升该场景的发现率。"
+    },
+    {
+      "id": "D5",
+      "score": 12,
+      "maximum": 15,
+      "evidence": [
+        {
+          "file": "SKILL.md",
+          "quote": "对应语言分支及与本次任务有关的维度。不读取 REST 章节。"
+        },
+        {
+          "file": "SKILL.md",
+          "quote": "普通签名核对不加载体验提升规则。"
+        },
+        {
+          "file": "SKILL.md",
+          "quote": "REST 或需要核对接口使用/参数完整性"
+        }
+      ],
+      "reason": "主文件短，资源拆分合理，并有正反加载条件。但“有关的维度”缺少选择映射；REST 分支不会明确加载位于 SDK 文件中的公共证据段，跨文件公共规则组织仍有缺口。",
+      "improvement": "把公共证据规则独立为所有分支必读段，增加任务类型到具体标题或维度编号的路由表，并统一完整性与体验分支的触发措辞。"
+    },
+    {
+      "id": "D6",
+      "score": 13,
+      "maximum": 15,
+      "evidence": [
+        {
+          "file": "SKILL.md",
+          "quote": "以项目明确采用的规范为准"
+        },
+        {
+          "file": "references/sdk-review.md",
+          "quote": "实际渲染可读性优先于机械阈值。"
+        },
+        {
+          "file": "references/rest-and-usage.md",
+          "quote": "先证明对应解释对使用任务必要，才报缺口"
+        }
+      ],
+      "reason": "证据、定位和统计采用较强约束，风格与体验保留项目判断，符合文档审查的中等自由度。必要性、关键性和严重度边界仍较依赖主观解释。",
+      "improvement": "用少量边界案例校准必要约束、可选体验建议及严重度，不把项目风格偏好固化为编译或语法门禁。"
+    },
+    {
+      "id": "D7",
+      "score": 8,
+      "maximum": 10,
+      "evidence": [
+        {
+          "file": "SKILL.md",
+          "quote": "## 条件加载与核对顺序"
+        },
+        {
+          "file": "SKILL.md",
+          "quote": "## 证据与结果契约"
+        },
+        {
+          "file": "references/sdk-review.md",
+          "quote": "## 40个验证维度索引"
+        }
+      ],
+      "reason": "清晰采用 Navigation 路由和 Process 审查顺序，模式适合多语言多证据场景。公共逻辑与语言资源耦合，分支出口和完成检查尚未形成完整闭环。",
+      "improvement": "明确各分支的最小输入、必读资源和结束条件，使导航本身足以指导一次完整审查。"
+    },
+    {
+      "id": "D8",
+      "score": 10,
+      "maximum": 15,
+      "evidence": [
+        {
+          "file": "SKILL.md",
+          "quote": "没有可核实证据不计确定缺陷"
+        },
+        {
+          "file": "references/sdk-review.md",
+          "quote": "所有权和可空性未给说明时标契约缺口"
+        },
+        {
+          "file": "references/sdk-review.md",
+          "quote": "默认契约未验证/文档缺失"
+        },
+        {
+          "file": "SKILL.md",
+          "quote": "覆盖以适用的规则条目为单位"
+        }
+      ],
+      "reason": "可直接用于常见审查，且未验证、去重和覆盖公式较清楚。但契约缺失何时是确定缺陷、何时只是未验证，尚未完全统一；40维度、子条目和 RULE-04 的统计粒度及重叠处理不够明确。现有示例也未展示完整报告与统计，不能据此推定流程已经测试通过。",
+      "improvement": "增加一个含确定缺陷、未验证、不适用和可选项的完整演算案例；明确文档义务证据与行为取值证据的区别，并固定覆盖条目的规范标识及去重关系。"
+    }
+  ],
+  "total": 102,
+  "percentage": 85,
+  "grade": "B",
+  "verdict": "具备较强领域增量和审查边界意识，按固定规则为 B；主要改进点是加载路由、契约缺失的判定一致性和覆盖统计的可复现性。领域编号按用户检视体系评价，不视为已核实的官方现行标准。",
+  "critical_issues": [
+    "“契约缺口”“文档缺失”“未验证”的判定关系不够明确，可能让不同代理对同一材料产生不同缺陷结论。",
+    "覆盖统计未固定维度、子条目和 RULE-04 重叠时的规范计数单位，可能出现问题已去重但覆盖分母仍重复的情况。",
+    "公共证据规则放在 SDK 引用文件中，REST 路由未明确要求读取；完整性与体验提升的加载措辞也需要统一。"
+  ],
+  "top_improvements": [
+    "建立缺陷判定表：文档必须说明的义务是否有依据、内容是否缺失、具体行为是否已验证分别判断；缺少实现证据不自动否定可证实的文档遗漏。",
+    "定义唯一覆盖条目标识、必选与可选属性、跨框架映射及聚合规则，提供一次完整统计演算。",
+    "完善按任务和语言分支的加载矩阵，抽出公共证据规则，补充版本不明、局部输入和声明冲突的分流出口，同时压缩重复提醒。"
+  ]
+}

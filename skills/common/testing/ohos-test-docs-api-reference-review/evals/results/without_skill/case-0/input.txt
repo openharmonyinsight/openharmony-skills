@@ -1,0 +1,4 @@
+请完成下列实际用户任务，直接给出中文结果。仅使用题面和当前工作目录 materials/ 中可用的资料；不读取其它工作区、会话、评估预期或结果。本次允许只读工具核对提供的资料，不允许网络、调用子代理或写入用户仓库/远端。对于题面要求命令或方案的任务，只给可审阅内容。
+
+用户任务：
+检查 js-apis-demo.md。匹配版本 SDK：/** @since 12 */ export function open(path: string, flags?: number): number; 文档第 7 行：从 API 10 支持；第 9 行：open(flags: number, path: string): string；第 10 行：flags 必填。

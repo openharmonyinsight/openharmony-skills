@@ -1,0 +1,51 @@
+schemaVersion: 1
+id: ohos-test-docs-writing-compliance-review
+title: 文档写作合规检视
+summary: 检查 OpenHarmony 文档的结构、术语、内容元素和示例代码风格，结合项目约定区分确定缺陷、风格建议与未验证项。
+category:
+  scope: common
+  namespace: testing
+  stage: testing
+  domain: docs
+  capability: writing-compliance-review
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+tags:
+- docs
+- quality-review
+audience:
+- OpenHarmony 文档作者
+- 文档评审人员
+useCases:
+- title: 文档写作合规检视
+  description: 检查 OpenHarmony 文档的结构、术语、内容元素和示例代码风格，结合项目约定区分确定缺陷、风格建议与未验证项。
+whenToUse:
+- 在用户要求检查 OpenHarmony/HarmonyOS 文档的写作合规、结构、语言、排版、术语或示例代码风格时使用。支持整篇及已提供改动范围的检视。
+whenNotToUse:
+- 需要实际编译部署或设备运行，而非文档检视
+- 与文档质量无关的完整业务代码审查
+inputs:
+  required:
+  - 待检视文档或补丁
+  optional:
+  - 项目规范
+  - API/SDK版本及匹配声明
+  - 目标分支、Issue 或PR信息
+outputs:
+- 问题清单、精确定位与修改建议
+- 检查覆盖情况和验证限制
+quickStart:
+  steps:
+  - 准备待检视文档或补丁。
+  - 说明检视范围、项目规范及可用的 SDK 信息。
+  - 使用该技能检视，并核对问题证据和未验证项。
+  examplePrompt: 请使用 ohos-test-docs-writing-compliance-review 检查 guide.md 的写作合规，采用当前仓库文档规范。
+related:
+  skills: []
+  docs:
+  - title: 维护者说明
+    path: README.md
+  - title: 评估报告
+    path: evals/report.md
