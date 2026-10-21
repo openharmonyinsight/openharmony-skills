@@ -88,7 +88,6 @@ _DFX_DESIGN_CONSTRAINT_DISPOSITION = "纳入设计约束"
 _DFX_CONSTRAINT_REF_RE = re.compile(r"D-\d+|约束|决策|不变量")
 _DFX_FM_ID_RE = re.compile(r"^FM-\d+$")
 _DFX_AD_ID_RE = re.compile(r"^AD-\d+$")
-_HEADING_RE = re.compile(r"^(#{2,6})\s+(.+?)\s*$")
 
 # 66-column library export table header (mirrors the template row in
 # core/skills/odk-fmea/references/output-format.md "故障模式库导出表格";
@@ -1879,13 +1878,14 @@ def _strip_subsection(section: str, title: str) -> str:
     skipping = False
     level = 0
     for line in section.splitlines():
-        match = _HEADING_RE.match(line)
+        match = atx_heading(line)
         if match:
-            if skipping and len(match.group(1)) <= level:
+            heading_level, heading_title = match
+            if skipping and heading_level <= level:
                 skipping = False
-            elif match.group(2).strip() == title:
+            if heading_title == title:
                 skipping = True
-                level = len(match.group(1))
+                level = heading_level
         if not skipping:
             out.append(line)
     return "\n".join(out)
