@@ -16,6 +16,14 @@ license: MIT
 
 ## Steps
 
+-1. **Active clarification (skip if answers are already in `proposal.md`):** Before writing ACs, read `proposal.md` and identify any dimension where the behavior would have to be invented rather than derived. For each such gap, ask one focused question at a time in plain text with 2–4 concrete options — wait for the answer before asking the next. Typical gaps that require a question:
+   - A success criterion stated as a vague goal (「优化响应速度」) with no measurable target
+   - An error case that is mentioned but whose expected behavior is unspecified
+   - A device-variation row marked 「是」in proposal without describing what the difference actually is
+   - An API parameter whose valid range or default was not confirmed with the developer
+
+   If `proposal.md` answers every relevant dimension concretely, skip this step entirely. Do not ask about things you can determine by exploring the codebase.
+
 0. Check for subsystem profile: read and follow `contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.spec` (additional AC categories, fragments) and `agent_instructions.specify` before generating content
 <!-- ODK:reference contracts/skill-guides/spec/api-specification.md -->
 **Steps 1–2.5 — API workflow (conditional):** If proposal.md `API/SDK` = 「是」, read and follow `contracts/skill-guides/spec/api-specification.md` in full before Steps 3–6. Steps 1, 2 and 2.5 and their cross-references are local to that guide: repository readiness, declaration guidance/fallbacks, developer-confirmed @since and API descriptions, and device scope/difference confirmation. If `API/SDK` = 「否」, skip these steps; keep the fixed API section and its non-involvement reason as required below.

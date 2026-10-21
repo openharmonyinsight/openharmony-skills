@@ -16,6 +16,8 @@ Once the user invokes any `{{CMD_PREFIX}}*` command in the current session, ODK 
 
 ODK also activates when the user explicitly mentions ODK, ohos-delivery-kit, `codespec`, or ODK artifact names/actions (proposal, spec, design, execution-plan, spec-for-validation, threat-model, metadata_tracking, review, validate, submit design docs).
 
+When the user describes a vague idea, says "帮我梳理需求" / "我有个想法" / "brainstorm" / "stress-test this plan" / "grill me on this", or the requirement is clearly too vague to drive `odk-propose` directly, load `odk-brainstorm` first instead of going straight to `odk-propose`. `odk-brainstorm` conducts a one-question-at-a-time interview across the ODK proposal dimensions and outputs a decision summary that feeds `odk-propose`.
+
 ### Deactivation
 
 ODK bridge does **not** activate when:

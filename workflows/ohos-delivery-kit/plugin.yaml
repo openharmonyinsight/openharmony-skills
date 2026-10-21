@@ -2,7 +2,7 @@ schemaVersion: 1
 kind: Plugin
 id: ohos-delivery-kit
 name: ohos-delivery-kit
-version: 0.12.1
+version: 0.13.0
 description: OpenHarmony delivery artifact specification layer with ODK skills, session routing, validator executables, and passive runtime assets.
 license: MIT
 provenance: provenance.yaml
@@ -27,6 +27,7 @@ components:
     - id: odk-base
       include:
         - skills/odk-init/SKILL.md
+        - skills/odk-brainstorm/SKILL.md
         - skills/odk-propose/SKILL.md
         - skills/odk-spec/SKILL.md
         - skills/odk-design/SKILL.md
@@ -137,6 +138,7 @@ commandProjection:
   generatedByHostAdapter: true
   commands:
     - skill: odk-init
+    - skill: odk-brainstorm
     - skill: odk-propose
     - skill: odk-spec
     - skill: odk-design

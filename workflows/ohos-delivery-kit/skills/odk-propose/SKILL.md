@@ -26,6 +26,17 @@ Read the change context from the user's request. If the user describes a require
 
 ## Steps
 
+-1. **Active interview (skip if `brainstorm.md` exists):** Before generating, check whether `brainstorm.md` exists in the active change directory. If it does, read it and proceed directly to Step 0 — the interview is already done. If it does not exist, conduct a structured interview: ask the following questions one at a time in plain text, wait for the answer before the next, and explore the codebase yourself for anything you can determine without asking the user.
+
+   Questions to ask (stop early if an answer makes later ones irrelevant):
+   1. 这次变更的核心目标是什么？（一句话描述，明确非目标）
+   2. 变更类型是什么？（new-feature / enhancement / optimization / bugfix / refactor / deprecation）
+   3. 这次变更是否涉及 API/SDK？即是否需要新增、修改或废弃 API 声明文件（.d.ts / .h）？（此项必须与开发者确认，不可推断）
+   4. 是否跨信任边界（IPC/Binder/共享内存/Socket）、跨安全层级、处理敏感数据、或使用加密/认证/授权/权限？
+   5. 成功标准是什么？（可观测的目标，避免「优化性能」等模糊表述）
+
+   Each question: provide 2–4 concrete options grounded in what the user is likely building; generic Yes/No only for genuinely binary questions. After all answers, write a brief decision summary inline, then proceed to Step 0.
+
 0. Check for subsystem profile: read and follow `contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.proposal` (required/optional dimensions, fragments) and `agent_instructions.define` before generating content
 1. Read template from `templates/ai/proposal.md`
 2. Generate `proposal.md` per the template.

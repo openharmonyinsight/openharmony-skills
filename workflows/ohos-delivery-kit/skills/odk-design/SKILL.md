@@ -25,6 +25,14 @@ license: MIT
 
 ## Steps
 
+-1. **Active clarification (skip if answers are already in `spec.md`):** Before generating the design, read `spec.md` and identify any architecture decision you would have to guess rather than derive. For each such gap, ask one focused question at a time in plain text with 2–4 concrete options — wait for the answer before asking the next. Typical gaps that require a question:
+   - State ownership is unspecified (who owns a registry, cache, or lifecycle object)
+   - A concurrency boundary is mentioned in the ACs but not described (which thread/queue, what the synchronisation contract is)
+   - A migration or compatibility path is required by the ACs but the approach is open
+   - A DFX fault mode is listed in the proposal without a recovery strategy
+
+   If `spec.md` provides enough context to make defensible design decisions without guessing, skip this step entirely. Do not ask about things you can determine by exploring the codebase.
+
 0. Check for subsystem profile: read and follow `contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.design` (additional sections, fragments) and `agent_instructions.design`
 1. **Code fact baseline (conditional):** If the change modifies an existing module (not pure greenfield, pure docs, or config-only), search the codebase for key facts the design will reference:
    - Search for existing data structures, key function signatures, and runtime flows in the affected module(s)

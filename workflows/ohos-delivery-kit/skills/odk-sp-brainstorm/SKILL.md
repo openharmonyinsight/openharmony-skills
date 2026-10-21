@@ -15,7 +15,7 @@ Invoke Superpowers `brainstorming` for requirement clarification and approach se
 - Load `using-odk` first.
 - Load `using-odk-bridge` for output redirection and mode selection.
 - `codespec/changes/<repo-name>/<proposal-id>/` skeleton must exist (run `{{CMD_PREFIX}}init` first).
-- If Superpowers skills are unavailable, use the fallback chain declared in `adapters/superpowers.yaml` and clearly report the degradation.
+- If Superpowers skills are unavailable, fall back to `odk-brainstorm` (built-in lightweight interview skill, zero dependencies) instead of jumping straight to `odk-propose`. Clearly report the degradation and load `odk-brainstorm` to run the interview first.
 
 ## Steps
 
