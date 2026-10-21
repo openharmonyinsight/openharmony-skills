@@ -4,6 +4,27 @@ All notable changes to the published `ohos-delivery-kit` workflow are documented
 this file. Source artifacts are synchronized from
 `oshunter/ohos-delivery-kit` `main` through the marketplace publisher.
 
+## [0.13.0] - 2026-10-21
+
+Source: `main@c85abe290808fac290a2bce596b53ca9d4751887`.
+
+### Added
+
+- Register `odk-brainstorm`, bringing the release to 27 skills. Add structured
+  clarification before proposal, specification and design generation.
+- Add an opt-in real-installation check for Claude Code, Codex and OpenCode:
+  verify relocated paths, execute the validator outside the source tree, and
+  compare all skill auxiliary files with the shipped source.
+
+### Fixed
+
+- Normalize DFX subsection headings with the shared ATX parser, preventing
+  indentation or closing hashes from hiding undispositioned AD entries.
+- Align published reference tests with literal resource paths; retain ordinary
+  path instructions without restoring resource-root placeholders.
+- Document the installer requirement to preserve skill auxiliary directories,
+  including the complete FMEA reference library, and relocate runtime paths.
+
 ## [0.12.1] - 2026-10-15
 
 Source: `main@9f14e1b65c40aad1f32f2a233865a84aaa6aa34e`.

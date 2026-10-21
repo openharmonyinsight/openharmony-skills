@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
 import re
+import subprocess
 import unittest
 
 WORKFLOW_ROOT = Path(__file__).resolve().parents[1]
@@ -36,20 +38,40 @@ class ReleaseDocumentationTest(unittest.TestCase):
     def test_shared_skill_references_resolve_to_declared_assets(self) -> None:
         manifest = (WORKFLOW_ROOT / "plugin.yaml").read_text(encoding="utf-8")
         asset_root = WORKFLOW_ROOT / re.search(r"^  ASSET_ROOT: (\S+)$", manifest, re.MULTILINE).group(1)
+        executable_root = WORKFLOW_ROOT / "runtime/executables"
         references = 0
         for skill in (WORKFLOW_ROOT / "skills").glob("*/SKILL.md"):
             text = skill.read_text(encoding="utf-8")
-            self.assertNotIn("{{PLUGIN_ROOT}}", text)
-            self.assertNotRegex(text, r"`(?:templates|contracts|profiles|rules|adapters)/")
-            for target in re.findall(r"`\{\{ASSET_ROOT\}\}/([^`\n]+)`", text):
-                if "<" in target or "*" in target:
-                    continue  # Runtime-selected phase/profile, not a literal file.
+            self.assertNotRegex(text, r"\{\{(?:PLUGIN_ROOT|ASSET_ROOT|EXECUTABLE_ROOT)\}\}")
+            paths = re.findall(r"`((?:templates|contracts|profiles|rules|adapters|runtime/assets|runtime/executables)/[^`\n]+)`", text)
+            paths += re.findall(r'\bpython3\s+"?(runtime/executables/[^\s`"]+)', text)
+            for target in paths:
+                if target.startswith("runtime/executables/"):
+                    root, target = executable_root, target.removeprefix("runtime/executables/")
+                else:
+                    root, target = asset_root, target.removeprefix("runtime/assets/")
+                target = target.split("#", 1)[0]
+                dynamic = re.search(r"[<*]", target)
+                if dynamic:
+                    target = target[:target.rfind("/", 0, dynamic.start()) + 1]
                 references += 1
-                self.assertTrue((asset_root / target.split("#", 1)[0]).exists(), f"{skill}: {target}")
+                resolved = (root / target).resolve()
+                self.assertTrue(resolved.is_relative_to(root.resolve()), f"{skill}: escaping reference {target}")
+                self.assertTrue(resolved.exists(), f"{skill}: {target}")
         self.assertGreater(references, 0)
         contract = (asset_root / "contracts/artifacts.yaml").read_text(encoding="utf-8")
         for target in re.findall(r'^    template: "([^"]+)"$', contract, re.MULTILINE):
             self.assertTrue((asset_root / target).is_file(), target)
+
+    @unittest.skipUnless(os.environ.get("OH_SKILLHUB_PACKAGE_ROOT"),
+                         "set OH_SKILLHUB_PACKAGE_ROOT to validate real installer artifacts")
+    def test_installed_runtime_paths_and_skill_assets(self) -> None:
+        result = subprocess.run(
+            ["node", str(WORKFLOW_ROOT / "tests/check_installed_runtime.cjs"),
+             os.environ["OH_SKILLHUB_PACKAGE_ROOT"]],
+            capture_output=True, text=True, timeout=90,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_current_contract_is_documented(self) -> None:
         readme = (WORKFLOW_ROOT / "README.md").read_text(encoding="utf-8")

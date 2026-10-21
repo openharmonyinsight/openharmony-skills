@@ -3,6 +3,13 @@
 Neutral-source plugin providing OpenHarmony delivery artifact specification skills,
 session routing, validator executables, and runtime assets.
 
+## 0.13.0 structured clarification
+
+Adds the standalone `odk-brainstorm` interview and active clarification in
+propose/spec/design. This release ships 27 ODK skills, including the FMEA engine
+and its complete `references/` library. Installers must copy skill auxiliary
+files and relocate literal runtime paths before this release is distributed.
+
 ## 0.12.1 FMEA analysis and AC traceability
 
 Adds `odk-fmea` with an 18-class fault-mode library and a DFX disposition gate.
@@ -131,7 +138,7 @@ Synced from `oshunter/ohos-delivery-kit` branch `main` via
 - `provenance.yaml` — source tracking (auto-updated by publish script)
 - `hooks/session-router.yaml` — declarative session-start hook
 - `prompts/session-router.md` — router prompt
-- `skills/` — 26 ODK skills (synced from `core/skills/`)
+- `skills/` — 27 ODK skills (synced from `core/skills/`)
 - `runtime/assets/` — templates, profiles, contracts (including skill-guides), rules, adapters
 - `runtime/executables/` — artifact and archive-migration validators
 
@@ -142,16 +149,31 @@ Templates define document structure; contracts define validation and workflow ru
 profiles add subsystem-specific guidance; rules and adapters provide shared policies
 and bridge mappings. Skills and validators share these files to avoid divergent copies.
 
-`{{ASSET_ROOT}}` in skill instructions is a build-time variable declared in
-`plugin.yaml`. The host adapter resolves it to the installed `runtime/assets/`
-directory. When reading this source tree directly, resolve it from the workflow
-root, not the business repository working directory. Paths within a loaded guide
-remain relative to that guide. The `template` values in `contracts/artifacts.yaml`
-are asset-relative paths consumed separately by the validator and remain
-`templates/...`, without build-time placeholders.
+Skill instructions use literal asset-relative paths such as `templates/ai/design.md`
+and `contracts/artifacts.yaml`, or workflow-relative `runtime/assets/...` and
+`runtime/executables/...`. Installers relocate these references to the installed
+`assets/` and `executables/` directories. No resource-root placeholders are needed.
+When reading this source tree, asset-relative paths start at `runtime/assets/`.
+The business repository working directory is not the plugin root. Paths within
+a loaded guide remain relative to that guide. The `template` values in
+`contracts/artifacts.yaml` stay asset-relative `templates/...` paths consumed
+separately by the validator. Skill-local files such as `odk-fmea/references/`
+must be installed alongside the rendered `SKILL.md`, preserving relative links.
+
+To check real V1 and V2 installation artifacts without registering plugins in
+your agents, provide a local installer source or unpacked npm package:
+
+```bash
+OH_SKILLHUB_PACKAGE_ROOT=/path/to/oh-skillhub \
+  python3 -m unittest discover -s workflows/ohos-delivery-kit/tests -v
+```
+
+The installation check verifies runtime references, runs the rendered validator
+from outside the source tree, and compares every skill auxiliary file byte for byte.
+It uses temporary directories and performs no network access or host registration.
 
 ## Variables
 
-- `{{ASSET_ROOT}}` — resolved to `runtime/assets` at build time
-- `{{EXECUTABLE_ROOT}}` — resolved to `runtime/executables` at build time
+- `ASSET_ROOT` — source asset root declared as `runtime/assets`
+- `EXECUTABLE_ROOT` — source executable root declared as `runtime/executables`
 - `{{CMD_PREFIX}}` — resolved per-host (`/odk-` for claude, `odk-` for codex/opencode)
