@@ -11,3 +11,13 @@
 - [ohos-dev-gitcode-pr-review](ohos-dev-gitcode-pr-review/)：结合 `oh-gc` 与本地代码上下文执行 GitCode PR 深度评审并准备评论草稿。
 - [ohos-dev-hdc-command-usage](ohos-dev-hdc-command-usage/)：HarmonyOS `hdc` 命令使用、设备连接、文件传输、应用安装、日志与常见问题排查。
 - [ohos-dev-security-code-review](ohos-dev-security-code-review/)：OpenHarmony C++ 系统服务安全代码审查，覆盖 IPC、并发、敏感日志和权限校验。
+
+## 文档质量检视
+
+| Skill | 说明 |
+| --- | --- |
+| [ohos-dev-docs-api-reference-review/](ohos-dev-docs-api-reference-review/) | API 参考文档检视 |
+| [ohos-dev-docs-code-correctness-review/](ohos-dev-docs-code-correctness-review/) | 文档代码正确性检视 |
+| [ohos-dev-docs-dev-guide-review/](ohos-dev-docs-dev-guide-review/) | 开发指南检视 |
+| [ohos-dev-docs-pr-diff-review/](ohos-dev-docs-pr-diff-review/) | 文档 PR 改动检视 |
+| [ohos-dev-docs-writing-compliance-review/](ohos-dev-docs-writing-compliance-review/) | 文档写作合规检视 |

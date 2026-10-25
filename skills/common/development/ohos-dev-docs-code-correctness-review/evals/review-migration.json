@@ -1,0 +1,24 @@
+{
+  "source_commit": "7e2ff54016f4395e0c2740eb58d1306c65413e86",
+  "previous_name": "ohos-test-docs-code-correctness-review",
+  "current_name": "ohos-dev-docs-code-correctness-review",
+  "previous_path": "skills/common/testing/ohos-test-docs-code-correctness-review",
+  "current_path": "skills/common/development/ohos-dev-docs-code-correctness-review",
+  "changes": [
+    "directory and stage",
+    "skill name and companion references",
+    "website registration and indexes"
+  ],
+  "review_rules_unchanged_after_name_substitution": true,
+  "trigger_description_unchanged": true,
+  "previous_entrypoint_sha256": "5ab8e04c3e95fc8517e0bfb64129b4123d25ed857498fe26eee49890b3615e3b",
+  "current_entrypoint_sha256": "9fed25298945bc661171da80383b1039da983e30e1cc8b91698d2afd4497ef58",
+  "references": {
+    "references/checklist.md": {
+      "before_sha256": "6be988595925f3f22c3e7035188241998899439bd5618a795a954004ead28975",
+      "after_sha256": "6be988595925f3f22c3e7035188241998899439bd5618a795a954004ead28975"
+    }
+  },
+  "model_evaluation_rerun": false,
+  "reason": "仅迁移分类并替换技能标识及引用；规则内容不变。既有评估描述迁移前版本，原始证据与release-packaging.json保持原样，不声称对新名称重新运行模型评估。"
+}

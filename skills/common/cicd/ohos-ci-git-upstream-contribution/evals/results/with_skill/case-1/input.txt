@@ -1,6 +1,0 @@
-请完成下列实际用户任务，直接给出中文结果。仅使用题面和当前工作目录 materials/ 中可用的资料；不读取其它工作区、会话、评估预期或结果。本次允许只读工具核对提供的资料，不允许网络、调用子代理或写入用户仓库/远端。对于题面要求命令或方案的任务，只给可审阅内容。
-
-本次使用 materials/ohos-ci-git-upstream-contribution/SKILL.md，先读取该入口，再按需读取其 references。同目录其它已提供的专项技能可按入口说明使用。
-
-用户任务：
-将同一个修复提交到上游 release-a 和 release-b。请先给执行方案，暂不执行。origin 实际指向上游，fork remote 名为 personal。release-a 对应 Issue 31，release-b 对应 Issue 32；当前 master 有无关提交，工作区有未提交文件。

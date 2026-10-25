@@ -1,0 +1,24 @@
+{
+  "source_commit": "7e2ff54016f4395e0c2740eb58d1306c65413e86",
+  "previous_name": "ohos-test-docs-pr-diff-review",
+  "current_name": "ohos-dev-docs-pr-diff-review",
+  "previous_path": "skills/common/testing/ohos-test-docs-pr-diff-review",
+  "current_path": "skills/common/development/ohos-dev-docs-pr-diff-review",
+  "changes": [
+    "directory and stage",
+    "skill name and companion references",
+    "website registration and indexes"
+  ],
+  "review_rules_unchanged_after_name_substitution": true,
+  "trigger_description_unchanged": true,
+  "previous_entrypoint_sha256": "914f2e98b2e0c7a5ed869073af4302293b8e06df3607963dfc3da27e8dcab44b",
+  "current_entrypoint_sha256": "424da19d50fc41d25c0003577df20fe9b27a473ed4d60d45c3a914022a8cc00b",
+  "references": {
+    "references/diff-contract.md": {
+      "before_sha256": "535069c416ed46baf19f8f826b40fd4f88a22a9bd67259a3549f21778f6c4c7a",
+      "after_sha256": "535069c416ed46baf19f8f826b40fd4f88a22a9bd67259a3549f21778f6c4c7a"
+    }
+  },
+  "model_evaluation_rerun": false,
+  "reason": "仅迁移分类并替换技能标识及引用；规则内容不变。既有评估描述迁移前版本，原始证据与release-packaging.json保持原样，不声称对新名称重新运行模型评估。"
+}

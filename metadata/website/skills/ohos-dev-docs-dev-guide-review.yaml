@@ -1,0 +1,51 @@
+schemaVersion: 1
+id: ohos-dev-docs-dev-guide-review
+title: 开发指南检视
+summary: 沿 OpenHarmony 开发任务链检查指南的工程依赖、权限、调用前提与结果验证，识别会阻断用户操作的内容缺口。
+category:
+  scope: common
+  namespace: development
+  stage: development
+  domain: docs
+  capability: dev-guide-review
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+tags:
+- docs
+- quality-review
+audience:
+- OpenHarmony 文档作者
+- 文档评审人员
+useCases:
+- title: 开发指南检视
+  description: 沿 OpenHarmony 开发任务链检查指南的工程依赖、权限、调用前提与结果验证，识别会阻断用户操作的内容缺口。
+whenToUse:
+- 在用户要求检查 OpenHarmony/HarmonyOS 开发指南、教程或最佳实践的场景完整性、操作断点、前置条件、约束及调测指导时使用。
+whenNotToUse:
+- 需要实际编译部署或设备运行，而非文档检视
+- 与文档质量无关的完整业务代码审查
+inputs:
+  required:
+  - 待检视文档或补丁
+  optional:
+  - 项目规范
+  - API/SDK版本及匹配声明
+  - 目标分支、Issue 或PR信息
+outputs:
+- 问题清单、精确定位与修改建议
+- 检查覆盖情况和验证限制
+quickStart:
+  steps:
+  - 准备待检视文档或补丁。
+  - 说明检视范围、项目规范及可用的 SDK 信息。
+  - 使用该技能检视，并核对问题证据和未验证项。
+  examplePrompt: 请使用 ohos-dev-docs-dev-guide-review 检查开发指南中的前置条件和操作断点，只检查必选项。
+related:
+  skills: []
+  docs:
+  - title: 维护者说明
+    path: README.md
+  - title: 评估报告
+    path: evals/report.md

@@ -1,4 +1,0 @@
-interface:
-  display_name: "文档代码正确性检视"
-  short_description: "面向 OpenHarmony 的文档代码正确性检视，提供适用规则、证据定位与验证边界。"
-  default_prompt: "使用 $ohos-test-docs-code-correctness-review 处理当前任务，给出实际证据和未验证项。"
