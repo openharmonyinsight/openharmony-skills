@@ -27,7 +27,8 @@
 
 | 配置项 | 值 |
 |--------|----|
-| 编译产品 | [build_product] |
+| 可选编译产品 | [build_products 去重后的完整列表，空格分隔] |
+| 编译产品 | [用户从列表中确认的单个产品] |
 | 设备版本策略 | [arm64_virt 填「不适用（QEMU）」；其他产品经用户确认填 daily 或 existing] |
 | 设备版本准备方式 | [QEMU 填「不适用（QEMU）」；daily 填支持当前产品的具体 skill 或经确认的手动准备步骤；existing 填「使用设备现有版本，不获取 daily、不刷机」] |
 | 编译命令（全量） | [build_command with {product} resolved] |

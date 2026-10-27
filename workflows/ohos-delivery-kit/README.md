@@ -146,7 +146,7 @@ repository-scoped layout.
 
 Synced from `oshunter/ohos-delivery-kit` branch `main` via
 `ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills --plugin ohos-delivery-kit`.
-Current source: `main@ca98f5494b5ec4075d539bc09340261d856441d6`.
+Current source: `main@fec9666a20195dd22df920c3eb3997b89af1e16f`.
 The current publisher needs the default config, archive-migration entrypoint and
 all Python runtime libraries supplemented; the source release gate verifies the
 final package against this pinned revision.
@@ -204,3 +204,22 @@ It uses temporary directories and performs no network access or host registratio
 - `ASSET_ROOT` — source asset root declared as `runtime/assets`
 - `EXECUTABLE_ROOT` — source executable root declared as `runtime/executables`
 - `{{CMD_PREFIX}}` — resolved per-host (`/odk-` for claude, `odk-` for codex/opencode)
+
+## Build product selection
+
+Set a space-separated candidate list and its preferred default in the override configuration:
+
+```yaml
+build_products: arm64_virt rk3568 my_board
+build_product: rk3568
+```
+
+Planning presents the configured choices and waits for one confirmed product.
+The plan records the list and selection for implementation to reuse. QEMU skips
+firmware selection; other products ask daily versus existing firmware.
+
+**Upgrade limitation:** oh-skillhub 0.1.43 does not preserve user-added
+`odk_config_ext.yaml` inside the installed assets directory when rebuilding the
+plugin during an update. Back up this file before updating and restore it after
+installation. The bundled configuration's promise of automatic preservation is
+not supported by this installer; persistent configuration remains a known issue.

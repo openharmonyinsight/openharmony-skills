@@ -6,9 +6,13 @@ this file. Source artifacts are synchronized from
 
 ## [0.14.0] - 2026-10-27
 
-Source: `main@ca98f5494b5ec4075d539bc09340261d856441d6`.
+Source: `main@fec9666a20195dd22df920c3eb3997b89af1e16f`.
 
 ### Added
+
+- Configure an ordered product menu with `build_products`; retain `build_product`
+  as the preferred default. Plans record the candidate list and one confirmed
+  product; implementation reuses the selection or resolves a requested switch.
 
 - Configurable build/test commands, review hooks, source/design-docs PR tools,
   CI and online-test triggers, and physical-device preparation settings.
@@ -39,7 +43,7 @@ Source: `main@ca98f5494b5ec4075d539bc09340261d856441d6`.
 
 ### Installation verification
 
-- Re-synchronized the unchanged source main revision and verified installation
+- Re-synchronized source main after merging configurable product selection and verified installation
   with the official npm oh-skillhub 0.1.43 release containing the auxiliary-file
   copy fix. All 40 workflow regression tests pass, including V1/V2 installation
   for Claude Code, Codex and OpenCode, FMEA's 44 reference files, default config
