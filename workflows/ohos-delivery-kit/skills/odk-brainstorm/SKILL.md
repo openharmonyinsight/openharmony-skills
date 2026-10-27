@@ -1,6 +1,6 @@
 ---
 name: odk-brainstorm
-description: "Use before odk-propose when the requirement is vague and needs structured clarification. Pure-text one-question-at-a-time interview across the ODK proposal dimensions; outputs a decision summary that feeds directly into proposal.md. Zero plugin dependencies — works on all four platforms."
+description: "Use before any ODK phase skill (odk-propose/odk-spec/odk-design) to stress-test a plan or design. Explores the decision tree relentlessly — code-structure and flow-level questions, not classification forms. Outputs a decision summary that feeds directly into the next phase document. Zero plugin dependencies — works on all four platforms."
 license: MIT
 ---
 
@@ -8,20 +8,20 @@ license: MIT
 
 ## Purpose
 
-Interview the user one question at a time to resolve the ODK proposal dimensions before drafting `proposal.md`. This is the lightweight, dependency-free alternative to `odk-sp-brainstorm` (which requires Superpowers). Use it when the user describes a vague idea, says "帮我梳理需求" / "I have an idea but don't know how to write it" / "stress-test this plan", or asks for a brainstorm before proposing.
+Interview the user relentlessly about every aspect of their plan until all branches of the design decision tree are resolved. This is **not a form to fill in** — it is an adversarial design review. The model explores the decision tree depth-first, challenges vague answers, and does not move on until each decision can stand on its own.
+
+Focus on decisions the model **cannot derive from code** — architecture ownership, failure semantics, concurrency contracts, rollback strategy, success criteria with real numbers. Infer everything that can be inferred from the codebase; only ask the user what only they can decide.
 
 ## Preconditions
 
 - Load `using-odk` first.
-- `codespec/changes/<repo-name>/<proposal-id>/` skeleton should exist (run `odk-init` first if not). If it does not exist yet, you may still interview; tell the user to run `odk-init` before `odk-propose` consumes the summary.
+- `codespec/changes/<repo-name>/<proposal-id>/` skeleton should exist (run `odk-init` first if not).
 
 ## How to ask questions
 
-Ask **one question at a time** as plain text, and wait for the user's answer before the next question. Each question offers 2–4 concrete options the user can pick by typing the letter/number or writing their own. Never dump multiple questions at once.
+Ask **one question at a time** as plain text, and wait for the user's answer before the next. Each question offers 2–4 concrete options grounded in what the user is actually building. Never dump multiple questions at once.
 
-Do not call any platform-specific popup or tool-call UI for these questions — use ordinary text so the flow works identically on Claude Code, Codex, OpenCode, and OpenClaw.
-
-Example format for each question:
+Do not call any platform-specific tool for these questions — use ordinary text so the flow works identically on Claude Code, Codex, OpenCode, and OpenClaw.
 
 ```
 问题：<the question>
@@ -33,39 +33,85 @@ C) <option>
 （可直接输入你的答案，或选上面的编号）
 ```
 
-Generic Yes/No options are only acceptable when the question is genuinely binary. Prefer options grounded in what the user is actually building.
+**On every answer:**
+1. Briefly acknowledge the decision (1–2 sentences).
+2. If the answer opens a new branch (a dependency, an unresolved sub-decision, a risk), go down that branch immediately before moving to the next top-level topic.
+3. If the answer is vague ("先这样", "看情况", "大概"), do not accept it — name the ambiguity and re-ask with sharper options.
+4. If the answer contradicts an earlier answer, surface the contradiction and ask which one stands.
 
-If a question can be answered by exploring the codebase or existing files, explore it yourself instead of asking the user. Only ask the user what only they can decide (intent, business constraints, target devices, security stance, success criteria).
+## Flow
 
-## Interview dimensions
+### Step 1 — Baseline from code
 
-Walk the decision tree across the proposal's dimensions, in this order. Skip any dimension the user's earlier answers already resolved; do not re-ask. For each dimension, ask only what is still ambiguous.
+Before asking the user anything, explore the codebase yourself:
+- Identify the modules, files, and call chains the change touches
+- Note existing ownership patterns (who owns state, lifecycle, error recovery)
+- Note existing concurrency contracts (which thread, which queue, which lock)
+- Note existing failure patterns (how errors propagate, what callers expect)
+- Note existing interface contracts (sync/async, return types, side effects)
 
-1. **功能需求 (core capability)** — What is the change doing, in one sentence? What is explicitly out of scope (non-goals)?
-2. **变更类型 (change type)** — new-feature / enhancement / optimization / bugfix / refactor / deprecation. Confirm the primary driver.
-3. **1+8 设备差异规格** — Does behavior differ across phone / tablet / pc-2in1 / wearable / tv / car / `default（其他设备）` / non-category? Ask only about devices where the user has not already stated a difference.
-4. **API/SDK** — Does the change add, modify, or deprecate API declarations (`.d.ts` / `.h`)? This dimension **must always be confirmed with the user, never inferred.** If yes, gather Kit, API type (public/system), and language (ArkTS/C).
-5. **安全/权限** — Does the change cross a trust boundary (IPC/Binder/shared memory/Socket), cross a security level (user↔kernel, sandbox, SELinux domain), handle sensitive data, or use crypto/auth/permission? Hit any → 「是」. This is the single downstream trigger for design 安全基础检查 and threat-model.
-6. **性能 / 内存(RAM) / 存储(ROM)** — Hot path, per-frame/per-event cost, wakeup frequency, lock duration, IPC round-trips; resident/peak RAM, large buffers; image artifacts (`.so`/`.abc`/resources/preset packages), data-partition persistence. Triage each as required / review-required / not-applicable / waived. Unknown risk → review-required (never silent not-applicable).
-7. **DFX (故障模式)** — Which repositories are touched? Any known failure modes or fault-handling concerns the design must address?
-8. **外部依赖** — Dependent subsystems / repositories / modules / external services. If none, record an explicit `不涉及` row with the reason.
-9. **兼容性 / IPC·跨进程 / 构建·组件 / 国际化·无障碍 / 数据迁移** — Confirm each as 涉及 / 不涉及 with a concrete reason; no blanks.
-10. **成功标准 (success criteria)** — What observable outcome means this change is done? Prefer measurable targets over vague goals.
+State what you found in 2–4 sentences, then open the first question based on what is **not answerable from code**. Skip this step only for pure new modules with no existing code to reference; state "新模块，无现有代码基线" and proceed directly to Step 2.
 
-## Steps
+### Step 2 — Explore the decision tree
 
-1. Acknowledge the user's idea in one sentence, then start the interview at dimension 1.
-2. After each answer, acknowledge the decision in 1–2 sentences, then ask the next open question via the plain-text format above.
-3. Explore the codebase yourself for any question you can answer without the user (existing signatures, existing dependencies, current device support). State what you found, then continue.
-4. When all dimensions above are resolved, write a structured **决策摘要 (decision summary)** to `proposal.md` as a front-matter-free scratch section, or to a `brainstorm.md` next to it, covering every dimension's verdict and the user's stated reasoning. Keep it concise — this summary is input for `odk-propose`, not the final proposal.
-5. Suggest the next step explicitly: invoke `odk-propose` (or `odk-sp-brainstorm` if Superpowers is installed and the user wants the heavier flow) to turn the summary into a formal `proposal.md`.
+Walk every branch of the design decision tree depth-first. Resolve dependencies between decisions one by one. The tree typically includes:
+
+**Structural decisions** (go deep on each that is relevant):
+- Module/component boundary: where does this change begin and end? Who calls in, who is called?
+- State ownership: who creates, mutates, and destroys the relevant state? Is ownership changing?
+- Interface contract: sync or async? Who handles errors — caller or callee? What are the invariants after the call?
+- Lifecycle management: who allocates, who frees? What happens on early exit or exception?
+
+**Flow decisions** (go deep on each that is relevant):
+- Happy path: walk it step by step; confirm each handoff
+- Failure path: for each failure mode, what is the recovery strategy? Retry, rollback, surface to caller, silent fail?
+- Concurrency: which thread/queue/process executes this? Is there shared mutable state? What is the synchronisation contract?
+- Ordering and timing: are there race windows? What happens if two calls interleave?
+
+**Boundary decisions** (always ask these if not already answered):
+- **API/SDK**: does this add, modify, or deprecate `.d.ts` / `.h` declarations? **Must be confirmed with the user — never inferred.**
+- **Security/trust boundary**: does this cross an IPC/Binder/socket/shared-memory boundary, change a security level, or handle sensitive data? **Must be confirmed — one yes to any sub-question → 「是」.**
+- **1+8 device variation**: does the behaviour differ across phone / tablet / pc-2in1 / wearable / tv / car / `default（其他设备）` / non-category? This is a product/business decision — **cannot be inferred from code, must be confirmed with the user for each form factor.** For each device row, get a concrete `是`/`否` with a reason; a blank is not accepted.
+- **资源开销审视 (performance/RAM/ROM)**: triage each of the three dimensions as `required` / `review-required` / `not-applicable` / `waived`. Unknown risk → `review-required`, never silent `not-applicable`. Signal hints: 性能 — hot path, per-frame/event cost, wakeup frequency, lock duration, IPC round-trips; RAM — resident/peak memory, large buffers; ROM — `.so`/`.abc`/resource artifacts, large data-partition persistence. **Must be confirmed — cannot be defaulted to `not-applicable` without a named confirmer and reason.**
+- **外部依赖 (external dependencies)**: what subsystems, repositories, modules, or external services does this change depend on for delivery? If none, record an explicit `不涉及` with the reason — a blank is not accepted. **Must be confirmed with the user.**
+- **兼容性 (compatibility)**: does this change affect backward compatibility, wire-format compatibility, IPC protocol versioning, build/component dependencies, i18n/accessibility, or data migration? For each sub-dimension, confirm 涉及/不涉及 with a concrete reason — blank is not accepted.
+- **Success criteria**: what observable outcome, with a real number or a concrete system behaviour, means this change is done?
+
+**Open questions and non-goals**: after the tree is explored, explicitly name what is out of scope and why.
+
+### Step 3 — Cross-check for contradictions
+
+After all branches are resolved, do one pass across the decisions:
+- Do the failure-path decisions contradict the ownership decisions?
+- Does the concurrency contract contradict the interface contract?
+- Does the success criterion actually validate the happy path end-to-end?
+- Does the security answer contradict the IPC/boundary answer from the structural decisions?
+- Do the device-variation answers contradict the interface contract? (e.g. a device row marked 「是」 but the interface has no variant path)
+- Do the resource verdicts contradict the hot-path/concurrency conclusions? (e.g. a high-frequency IPC path triaged as `not-applicable` for 性能)
+
+Surface any contradiction and re-ask the relevant decision.
+
+### Step 4 — Present summary and confirm
+
+Present a structured **决策摘要** inline, covering:
+- Each structural decision with its verdict and the reason the alternatives were rejected
+- Each flow decision with its failure semantics
+- API/SDK and security verdicts
+- Success criteria (with numbers or observable outcomes)
+- Explicit non-goals
+
+Ask the user to confirm: "以上是访谈摘要，确认后继续生成下一阶段文档。如需调整请说明。"
+
+If invoked standalone before `proposal.md` exists, next skill is `odk-propose`. If invoked inline from `odk-spec` Step -1, continue into odk-spec Step 0. If invoked inline from `odk-design` Step -1, continue into odk-design Step 0.
+
+If the session is interrupted, tell the user: "访谈中断了。请重新输入 /odk-brainstorm 继续；模型会从对话历史里恢复已确认的决策，如历史不可用则从 Step 1 重新开始。"
 
 ## Output
 
-- A decision summary covering all dimensions, written to `brainstorm.md` (or appended to the proposal skeleton).
-- The summary is structured by dimension with verdict + one-line reason each, plus the non-goals and success criteria.
-- Do NOT generate the full `proposal.md` — that is `odk-propose`'s job. This skill only clarifies intent.
+- A decision summary presented inline in the conversation, structured by decision with verdict + rejected-alternative + one-line reason each.
+- Do NOT write to a separate `brainstorm.md` file — the summary lives in the conversation context as direct input to the next phase skill.
+- Do NOT generate the full `proposal.md` / `spec.md` / `design.md` — those are the next phase skills' jobs.
 
 ## Cross-plugin note
 
-If the user's environment has a dedicated grilling skill (e.g. `/grill-me` on Claude Code) and they prefer it for free-form stress-testing, they may run that first; `odk-brainstorm` then focuses on mapping its conclusions onto the ODK dimensions above. This is a user choice, not a dependency.
+If the user's environment has `/grill-me`, they may run it first for free-form stress-testing; `odk-brainstorm` then maps its conclusions onto the ODK structural/flow/boundary dimensions above.

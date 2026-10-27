@@ -14,7 +14,7 @@ license: MIT
 ## Sources
 
 - Artifact contract: installed `contracts/artifacts.yaml` (OpenCode: `contracts/artifacts.yaml`)
-- Templates: installed `templates/ai/` (OpenCode: `templates/ai/`)
+- Templates: installed `runtime/assets/templates/ai/` (OpenCode: `runtime/assets/templates/ai/`)
 - Strict validator: `runtime/executables/validate-artifacts-contract.py`. It is installed with ODK on every supported platform; use this skill to explain and remediate its findings.
 - Archive migration validator: `runtime/executables/validate-archive-migration.py`. Use `plan --map <map.tsv>` before moving legacy archives and `check-staged --map <the-same-map.tsv>` before committing so old-source deletion and planned-target conservation are verified.
 
@@ -34,11 +34,11 @@ license: MIT
    - implementation files, Task links, verification status, and Actual Result are backfilled where implementation has happened
    - optional evidence under `evidence/reviews/` and `evidence/gates/` is non-empty and supports any passing conclusion
    - `API/SDK=是` changes must archive `evidence/task1-api-declaration-en.diff` and `evidence/task1-api-declaration-zh.diff` (validator enforcement: Draft missing → WARN, Archive missing → FAIL)
-5. Report PASS/WARN/FAIL by level. Warnings do not block draft review, but archive readiness requires explicit resolution or accepted risk. API signatures are opaque document text: check presence, placeholders and duplicates only, not C/ArkTS syntax, types or array bounds. Document PASS is not compilation success. Source review and target toolchain/CI own language correctness; report unrun checks as NOT VERIFIED. Do not require GCC for document validation.
+5. Report PASS（通过）/WARN（警告）/FAIL（失败）by level. Warnings do not block draft review, but archive readiness requires explicit resolution or accepted risk. API signatures are opaque document text: check presence, placeholders and duplicates only, not C/ArkTS syntax, types or array bounds. Document PASS is not compilation success. Source review and target toolchain/CI own language correctness; report unrun checks as NOT VERIFIED. Do not require GCC for document validation.
 6. Resource constraints (`contracts/artifacts.yaml#resource_contract`): parse `资源开销审视`; `review-required` blocks archive; `required` needs meaningful, non-placeholder Spec/Design/Plan resource sections. Archive runs root `AGENTS.md` `odk_resource_gate` (missing/non-zero/timeout fails). ODK orchestrates the subsystem gate but does not recompute its measurements.
 7. Run `python3 runtime/executables/validate-artifacts-contract.py <change-dir>` for Draft validation, or add `--archive` before `<change-dir>` for the archive gate. Report the exact command and result.
    In the automatic post-implementation/pre-PR handoff, use `--archive`: metadata is not required yet. Do not use `--design-docs-submit` or create dummy PR entries before a real PR exists. Return results to the calling coordinator; do not recursively invoke review/implement or independently start submission. Keep standalone Draft/archive validation available.
-8. If validation is the final step before a GitCode commit, push, or PR, read `design_docs_repository` from `codespec/profile.yaml` and remind the user that `codespec/` documents must be submitted separately to that design-docs repository. If absent, report “待开发者填写”; do not guess or automatically push across repositories. For actual design-docs submission, require `metadata_tracking.yaml` and run the validator with `--design-docs-submit`.
+8. If validation is the final step before a GitCode commit, push, or PR, resolve the design-docs repository address (priority: `codespec/profile.yaml` if present → `odk_config_ext.yaml` → `odk_config.yaml`; do not warn if `codespec/profile.yaml` is absent) and remind the user that `codespec/` documents must be submitted separately to that design-docs repository. If no address can be resolved, report “待开发者填写”; do not guess or automatically push across repositories. For actual design-docs submission, require `metadata_tracking.yaml` and run the validator with `--design-docs-submit`.
 
 ## Output
 

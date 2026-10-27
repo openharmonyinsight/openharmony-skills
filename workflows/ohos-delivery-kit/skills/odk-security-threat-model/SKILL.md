@@ -1,117 +1,261 @@
 ---
 name: odk-security-threat-model
-description: "Use when a change touches security/privacy/compliance and needs threat-model.md (STRIDE + regulatory checks). Bypass skill, triggered by proposal's security/permission dimension. Zero plugin dependencies."
+description: "当变更涉及安全/隐私/合规且需要 threat-model.md（STRIDE + 法规检查）时使用。绕过技能触发条件，由提案的安全/权限维度触发。零插件依赖。"
 license: MIT
 ---
 
-# ODK Security Threat Model
+# ODK 安全威胁模型
 
-## Key Rules
+## 关键规则
 
-- Use for high-risk changes that involve security, privacy, or compliance requirements
-- STRIDE analysis must be grounded in actual data flows identified from code/spec
-- Each threat must have a verifiable mitigation strategy traceable to a Task
-- Compliance gaps must be documented with remediation plans
+- 用于涉及安全、隐私或合规要求的高风险变更
+- STRIDE 分析必须基于从代码/规范中识别出的实际数据流
+- 每个威胁都必须有可验证的缓解策略，并可追溯到某个 Task
+- 合规差距必须记录并附上整改方案
+- 威胁分析必须与 OpenHarmony 平台威胁模式（`references/openharmony-threat-patterns.md`）交叉核对
 
-## Prerequisites
+## 前置条件
 
-- `proposal.md` exists and change meets trigger conditions (see below)
-- `spec.md` exists with acceptance criteria and business rules
-- Preferably `design.md` exists for architecture context
+- `proposal.md` 存在且变更满足触发条件（见下文）
+- `spec.md` 存在，包含验收标准和业务规则
+- 最好存在 `design.md`，提供架构上下文
 
-## Trigger Conditions
+## 触发条件
 
-Run this skill when `proposal` 的 `安全/权限` 维度 = 「是」 **且** 命中任一高风险判据，**或** 用户显式调用：
+当 `proposal` 的 `安全/权限` 维度 = 「是」 **且** 命中任一高风险判据时运行此技能，**或** 用户显式调用：
 
-| Category | Trigger Condition |
+| 类别 | 触发条件 |
 |----------|-------------------|
-| **Single-source trigger + high-risk** | `proposal.md` `安全/权限` dimension = "是" **AND** any high-risk criterion below is met |
-| **Sensitive Data** | Involves user data (PII), biometrics, location, contacts, payment info |
-| **Network Exposure** | Adds network interfaces, remote APIs, cloud sync, external connectivity |
-| **Auth/Authz Changes** | Modifies authentication, authorization, permission models |
-| **Compliance Requirements** | Involves GDPR, personal information protection law, data export |
-| **Critical Infrastructure** | Changes to security-critical components (kernel, security framework) |
-| **Explicit Call** | User explicitly invokes `{{CMD_PREFIX}}security-threat-model` (bypasses the high-risk gate) |
+| **单一来源触发 + 高风险** | `proposal.md` 的 `安全/权限` 维度 = "是" **且** 满足以下任一高风险判据 |
+| **敏感数据** | 涉及用户数据（PII）、生物特征、位置、通讯录、支付信息、密钥、认证凭证 |
+| **网络暴露** | 新增网络接口、远程 API、云同步、外部连接 |
+| **认证/授权变更** | 修改身份验证、授权、权限模型，新增特权操作 |
+| **合规要求** | 涉及 GDPR、个人信息保护法、数据出境 |
+| **关键基础设施** | 对安全关键组件（内核、安全框架）的变更 |
+| **显式调用** | 用户显式调用 `{{CMD_PREFIX}}security-threat-model`（绕过高风险门槛） |
 
-> `安全/权限` = "是" without a high-risk signal stays at the `安全基础检查` level in `design.md`; only the high-risk combination escalates to a standalone `threat-model.md`. Each threat's mitigation must be traceable to a `spec.md` AC / `execution-plan.md` Task.
+> `安全/权限` = "是" 但无高风险信号时，保持在 `design.md` 中的 `安全基础检查` 级别；只有高风险组合才会升级为独立的 `threat-model.md`。每个威胁的缓解措施必须可追溯到 `spec.md` 的 AC / `execution-plan.md` 的 Task。
 
-## Input
+## 输入
 
-1. Read `proposal.md` to understand change scope, impact, and security dimensions
-2. Read `spec.md` to identify security-relevant ACs and business rules
-3. Read `design.md` (if exists) for architecture context and data flows
-4. Analyze codebase to identify:
-   - External entities, processes, data stores, data flows
-   - Trust boundaries (user/kernel, sandbox, SELinux domains, network)
-   - Security controls (authentication, authorization, encryption)
+1. 阅读 `proposal.md` 以了解变更范围、影响和安全维度
+2. 阅读 `spec.md` 以识别与安全相关的 AC 和业务规则
+3. 阅读 `design.md`（如存在）以获取架构上下文和数据流
+4. 分析代码库以识别：
+   - 外部实体、进程、数据存储、数据流
+   - 信任边界（用户/内核、沙箱、SELinux 域、网络）
+   - 安全控制（身份验证、授权、加密）
+5. 读取 `references/openharmony-threat-patterns.md`（SKILL.md 同级 `references/` 目录）获取 OH 平台威胁模式清单
 
-## Steps
+## 步骤
 
-1. **Trigger Verification**:
-   - Verify change meets trigger conditions
-   - If not met, suggest using base security check in `design.md` instead and ask for confirmation
+1. **触发验证**：
+   - 验证变更是否满足触发条件
+   - 若不满足，建议改用 `design.md` 中的基础安全检查，并征求确认
 
-2. **Data Flow Analysis**:
-   - Identify all external entities (users, external systems, services)
-   - Identify all processes (components, modules, services)
-   - Identify all data stores (databases, files, memory regions)
-   - Identify all data flows (IPC, network, local calls)
-   - Map trust boundaries with clear annotations
+2. **数据流分析**：
+   - 识别所有外部实体（三方应用、外部设备、外部系统、服务、用户）
+   - 识别所有处理进程（组件、模块、服务、系统 SA）
+   - 识别所有数据存储（数据库、文件、内存区域、配置文件、缓存、日志文件等持久化数据）
+   - 识别所有数据流（IPC、网络、本地调用、文件读写等）
+   - 用清晰的标注映射信任边界
+   - 数据流分析粒度规则：细化到进程级别；同一进程内的模块交互流程无需体现
+   - 信任边界识别原则：
+     - 以进程为最小信任单元，不细化到进程内部
+     - 边界类型明确化：用户态/内核态、应用沙箱、SELinux 域、网络边界
+     - 每一条穿越信任边界的数据流，必须列出其方向、承载数据及现有控制（鉴权/加密/完整性）
+     - 跨进程、跨域的交互点（IPC、分布式软总线、文件读写）一律视为边界穿越点
+   - 按「绘制标准化数据流图」章节规范绘制 DFD
 
-3. **STRIDE Analysis**:
-   - Apply STRIDE to each DFD element type:
-     - **External Entity**: Spoofing, Repudiation
-     - **Process**: Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege
-     - **Data Store**: Tampering, Information Disclosure, Denial of Service
-     - **Data Flow**: Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service
-   - For each applicable threat, document:
-     - Threat scenario (concrete attack description)
-     - Impact (High/Medium/Low)
-     - Likelihood (High/Medium/Low)
-     - Existing controls (what already mitigates this)
-     - Recommended controls (what should be added)
-     - Priority (P0/P1/P2 based on risk)
-     - Associated AC/Task for traceability
+3. **STRIDE 分析**：
+   - 对每种 DFD 元素类型应用 STRIDE：
+     - **外部实体**：欺骗（Spoofing）、抵赖（Repudiation）
+     - **进程**：欺骗、篡改、抵赖、信息泄露、拒绝服务、权限提升
+     - **数据存储**：篡改、信息泄露、拒绝服务
+     - **数据流**：欺骗、篡改、抵赖、信息泄露、拒绝服务
+   - 按「对 DFD 元素应用 STRIDE 威胁分析矩阵」章节，对每个 DFD 元素实例生成威胁矩阵行
+   - 对每个适用的威胁，记录：
+      - 威胁场景（具体的攻击描述）
+      - 影响（高/中/低）
+      - 可能性（高/中/低）
+      - 现有控制（当前已有哪些缓解措施）
+      - 建议控制（应新增哪些措施）
+      - 优先级（基于风险的 P0/P1/P2）
+      - 关联的 AC/Task 以确保可追溯性
+   - 按「高优先级威胁分析」章节规范，对 P0/P1 高优先级威胁做汇总与逐条详细分析
 
-4. **Compliance Check**:
-   - Check against security regulations checklist:
-     - **个人信息保护法**: 最小必要、知情同意、匿名化、用户权利
-     - **数据安全法**: 数据分类分级、数据出境安全
-     - **网络安全法**: 等级保护、关键信息基础设施
-     - **GDPR**: Lawful Basis, Data Subject Rights, DPIA
-   - Document compliance status (✅ compliant, ⚠️ partial, ❌ non-compliant)
-   - For gaps, document remediation measures
+4. **高优先级威胁分析**：
+   - 从 STRIDE 威胁矩阵中筛选所有 P0/P1 威胁，生成**高优先级威胁汇总表**
+   - 对每条高优先级威胁逐条展开**详细说明**，必须覆盖：
+     - 攻击场景（具体的攻击路径，含前置条件与步骤）
+     - 影响（受影响的数据/功能/系统，影响等级）
+     - 验证方法（可执行的验证手段：代码审查点、测试用例、工具）
+     - 缓解措施（现有控制 + 建议控制）
+     - 优先级与关联的 AC/Task
+   - 高优先级威胁必须全部有可验证的缓解措施，不得存在未缓解的 P0/P1 威胁
 
-5. **Generate Threat Model Document**:
-   - Read template from `templates/ai/threat-model.md`
-   - Generate comprehensive threat model document per template
-   - Include Mermaid DFD diagrams, STRIDE analysis tables, compliance matrix
+5. **OpenHarmony 平台威胁模式交叉检查**：
+   - 读取 `references/openharmony-threat-patterns.md` 中的威胁模式清单
+   - 对已识别的每个 DFD 元素，逐一对照威胁模式核对：
+     - 命中：记录命中的威胁模式、风险及应对措施
+     - 未命中：记录判定说明
+   - 命中且未被 STRIDE 分析覆盖的威胁，作为增量威胁纳入 STRIDE × DFD 威胁矩阵；若为 P0/P1 需补充高优先级详细说明
+   - 输出 OH 威胁模式交叉检查矩阵
 
-## Output
+6. **合规检查**：
+   - 对照安全法规检查清单进行检查：
+     - **个人信息保护法**：最小必要、知情同意、匿名化、用户权利
+     - **数据安全法**：数据分类分级、数据出境安全
+     - **网络安全法**：等级保护、关键信息基础设施
+     - **GDPR**：合法依据（Lawful Basis）、数据主体权利（Data Subject Rights）、数据保护影响评估（DPIA）
+   - 记录合规状态（✅ 合规、⚠️ 部分合规、❌ 不合规）
+   - 对差距项，记录整改措施
 
-Write to `codespec/changes/<repo-name>/<proposal-id>/threat-model.md`
+7. **生成威胁模型文档**：
+   - 从 `runtime/assets/templates/ai/threat-model.md` 读取模板
+   - 按照模板生成完整的威胁模型文档
+   - 包含 Mermaid 标准化 DFD 图（按「绘制标准化数据流图」规范）、STRIDE × DFD 威胁矩阵、高优先级威胁汇总表与逐条详细说明、OH 威胁模式交叉检查矩阵、合规矩阵
 
-Report summary to user:
-- Number of threats identified by priority (P0/P1/P2)
-- Compliance status with any gaps
-- Recommendations for next steps
+## 输出
 
-Suggest integration:
-- High priority threats should be added to `design.md` "风险与缓解" section
-- Compliance requirements should be reflected in `spec.md` ACs
-- Mitigation tasks should be tracked in `execution-plan.md`
+写入 `codespec/changes/<repo-name>/<proposal-id>/threat-model.md`
 
-## Template Reference
+向用户汇报摘要：
+- 按优先级识别出的威胁数量（P0/P1/P2）
+- 高优先级威胁汇总表（P0/P1 威胁 ID、名称、优先级、关联 AC/Task）
+- OH 威胁模式交叉检查命中项数量
+- 合规状态及存在的差距
+- 下一步行动建议
 
-Base template: `templates/ai/threat-model.md`
+建议集成：
+- 高优先级威胁应添加到 `design.md` 的「风险与缓解」部分
+- 合规要求应体现在 `spec.md` 的 AC 中
+- 缓解任务应在 `execution-plan.md` 中跟踪
 
-## STRIDE Quick Reference
+## 模板参考
 
-| Threat Type | Description | DFD Element | Key Questions |
+基础模板：`runtime/assets/templates/ai/threat-model.md`
+
+OH 平台威胁模式清单：`references/openharmony-threat-patterns.md`（SKILL.md 同级 `references/` 目录）
+
+## 绘制标准化数据流图
+
+### 图形元素标准化约定
+
+| DFD 元素 | 图形表示 | 命名规范 | 示例 |
+|----------|----------|----------|------|
+| 外部实体 | 矩形 | `EE<序号>_<名称>` | `EE1_三方应用` |
+| 处理进程 | 圆形 | `P<序号>_<名称>` | `P1_认证服务` |
+| 数据存储 | 圆柱 | `DS<序号>_<名称>` | `DS1_用户数据库` |
+| 数据流 | 带箭头连线 | `F<序号>_<名称>` | `F1_用户凭证` |
+
+### 数据流命名规则
+
+统一采用「源 → 目的 + 数据内容」格式，如 `P1→SA1 用户凭证`。
+
+### 信任边界标注规范
+
+- 使用 Mermaid `subgraph` 分区标识信任边界，边界内包含其管辖的元素
+- 边界命名规范：「应用沙箱边界」「SELinux 域边界」「网络边界」「用户态/内核态边界」等
+- 穿越边界的数据流必须在该连线上标注传输方向与数据内容
+
+### 粒度要求
+
+- 与数据流分析粒度一致：只画到进程级别，不体现进程内模块交互
+
+### 绘制步骤
+
+1. 列出全部 DFD 元素清单（外部实体、处理进程、数据存储、数据流）
+2. 布局各元素节点
+3. 标注数据流（命名、方向、内容）
+4. 标注信任边界（subgraph 分区）
+5. 自检：对照元素清单确认无遗漏
+
+## 对 DFD 元素应用 STRIDE 威胁分析矩阵
+
+### STRIDE × DFD 元素类型固定映射矩阵
+
+| DFD 元素类型 | 欺骗 S | 篡改 T | 抵赖 R | 信息泄露 I | 拒绝服务 D | 权限提升 E |
+|---|---|---|---|---|---|---|
+| **外部实体**（矩形） | ✓ | | ✓ | | | |
+| **处理进程**（圆形） | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **数据存储**（圆柱） | | ✓ | | ✓ | ✓ | |
+| **数据流**（连线） | ✓ | ✓ | ✓ | ✓ | ✓ | |
+
+### 威胁矩阵行生成
+
+对标准化 DFD 中的每个元素实例（`EE1`、`P1`、`DS1`、`F1`…）逐行展开：
+
+| DFD 元素 | 适用 STRIDE 类别 | 威胁场景 | 影响 | 可能性 | 现有控制 | 建议控制 | 优先级 | 关联 AC/Task |
+|---|---|---|---|---|---|---|---|---|
+| `P1_认证服务` | T, I, E | … | 高/中/低 | 高/中/低 | … | … | P0/P1/P2 | AC-xx / Task-xx |
+
+### 应用流程约定
+
+- 按固定映射矩阵确定每个元素「必须覆盖」的 STRIDE 类别，不得遗漏
+- 对映射中标 ✓ 的类别逐一评估；标留空的类别不必强行填写
+- 实际分析中若发现映射外的新威胁，标记为「映射外增量威胁」，并回填映射矩阵（保持矩阵演进）
+- 与「OH 威胁模式交叉检查」衔接：OH 交叉检查命中的增量威胁同样进入该矩阵
+
+## 高优先级威胁分析
+
+> 针对 STRIDE 威胁矩阵中优先级为 P0/P1 的威胁，进行汇总与逐条详细说明，确保高风险项全部可验证、可缓解、可追溯。未缓解的 P0/P1 威胁不得进入交付评审。
+
+### 1. 高优先级威胁汇总表
+
+按优先级（P0 → P1）从威胁矩阵中筛选，汇总所有 P0/P1 威胁：
+
+| 威胁 ID | 威胁名称 | DFD 元素 | STRIDE 类别 | 影响 | 可能性 | 优先级 | 关联 AC/Task |
+|---|---|---|---|---|---|---|---|
+| T-01 | 伪造 backup_sa 调用 | EE1 | S, R | 高 | 低 | P1 | AC-1.1 / TASK-4 |
+| T-02 | 备份数据泄露 PII | P2 | I | 高 | 低 | P1 | AC-1.1 / TASK-3 |
+
+### 2. 高优先级威胁逐条详细说明
+
+对汇总表中的每条威胁，按以下模板逐条展开（每条一个章节）：
+
+```
+### T-01：<威胁名称>
+
+- **DFD 元素 / STRIDE 类别**：`EE1` / 欺骗（S）, 抵赖（R）
+- **优先级**：P1
+
+**攻击场景**：
+（具体攻击路径描述：攻击者是谁、利用哪个数据流/接口/存储、前置条件、攻击步骤）
+
+**影响**：
+- 受影响数据：<具体数据项及敏感级别>
+- 受影响功能/系统：<组件、系统稳定性>
+- 影响等级：<高/中/低>
+
+**验证方法**：
+- 代码审查点：<关键代码位置、需检查的校验逻辑>
+- 测试用例：<可执行的攻击/异常注入用例>
+- 工具/命令：<可选的安全测试工具、命令>
+
+**缓解措施**：
+- 现有控制：<当前已有哪些缓解>
+- 建议控制：<应新增的缓解措施>
+- 验证方式：<如何验证缓解有效>
+
+**关联**：AC-xx / TASK-xx
+```
+
+### 3. 应用流程约定
+
+- 汇总表必须覆盖威胁矩阵中**全部** P0/P1 威胁，不得遗漏
+- 每条 P0/P1 威胁必须有完整的攻击场景、影响、验证方法、缓解措施；缺失任何一项须标记为「待补充」并列出责任人
+- 验证方法必须可执行（具体到代码审查点或测试用例），不得使用「需加强」「待评估」等不可执行描述
+- 若某 P0/P1 威胁无现有或建议缓解措施，须标记为「未缓解风险」，并给出接受或升级决策（接受理由 / 升级到设计评审）
+- OH 交叉检查命中的增量威胁若为 P0/P1，必须同步补入汇总表与详细说明
+
+## STRIDE 快速参考
+
+| 威胁类型 | 描述 | DFD 元素 | 关键问题 |
 |-------------|-------------|-------------|---------------|
-| **Spoofing** | Attacker impersonates legitimate entity | External Entity, Process, Data Flow | How is caller identity verified? |
-| **Tampering** | Unauthorized modification of data/code | Data Store, Data Flow, Process | How is data integrity protected? |
-| **Repudiation** | User denies their actions | External Entity, Process, Data Flow | How are non-repudiable audit logs maintained? |
-| **Information Disclosure** | Sensitive info exposed to unauthorized parties | Data Store, Data Flow, Process | What data needs encryption? Access controls? |
-| **Denial of Service** | Service availability compromised | Process, Data Store, Data Flow | How are resource consumption and abuse limited? |
-| **Elevation of Privilege** | Attacker gains higher privileges | Process, Data Flow | How are privilege escalation paths prevented? |
+| **欺骗（Spoofing）** | 攻击者冒充合法实体 | 外部实体、进程、数据流 | 如何验证调用方身份？ |
+| **篡改（Tampering）** | 未经授权修改数据/代码 | 数据存储、数据流、进程 | 如何保护数据完整性？ |
+| **抵赖（Repudiation）** | 用户否认自己的行为 | 外部实体、进程、数据流 | 如何维护不可抵赖的审计日志？ |
+| **信息泄露（Information Disclosure）** | 敏感信息暴露给未授权方 | 数据存储、数据流、进程 | 哪些数据需要加密？访问控制？ |
+| **拒绝服务（Denial of Service）** | 服务可用性受损 | 进程、数据存储、数据流 | 如何限制资源消耗和滥用？ |
+| **权限提升（Elevation of Privilege）** | 攻击者获得更高权限 | 进程、数据流 | 如何防止权限提升路径？ |

@@ -11,7 +11,7 @@
 ## 执行原则
 
 <!-- SYNC: execution-principles -->
-- **Spec 权威：** 若实现细节与 `spec.md` 的 AC、错误码或兼容性声明冲突，先更新 spec/design，再继续实现。
+- **Spec 权威：** 若实现细节与 `spec.md` 的 AC（验收标准）、错误码或兼容性声明冲突，先更新 spec/design，再继续实现。
 - **测试/证据先行：** 每个 Task 先写失败测试；无法单测的集成行为必须先写明可复现证据缺口。
 - **任务小型化：** 一个 Task 只覆盖一个独立闭环。跨 API、事件链、状态缓存、渲染链、生命周期的需求必须拆成多个 Task。
 - **文件边界：** Task 只能修改 `Files` 表列出的文件；若构建暴露额外声明或 fixture 需求，先更新本计划。
@@ -20,6 +20,19 @@
 - **反伪完成：** 只补声明、只写存储结构、只覆盖 happy path、只跑非相关测试，都不能替代 AC 闭环。
 - **可交接执行（Agent 执行契约）：** 本计划须能被新 Agent 在无历史对话上下文下逐 Task 执行；执行契约由各 Task 结构承载——`只读上下文`/`Files`/`禁止修改文件`（上下文打包）、`Steps` 的 RED→GREEN（测试优先）、`Verification` 的 Expected/Actual（期望输出）、`Review Handoff`（评审交接）；每 Step 为含命令或代码方向的 2–5 分钟动作。
 <!-- /SYNC: execution-principles -->
+
+## 构建与验证环境
+
+<!-- 由 odk-plan 在生成计划时从 config 读取并解析，写入具体命令。实现阶段直接读本节，不再查 config。 -->
+
+| 配置项 | 值 |
+|--------|----|
+| 编译产品 | [build_product] |
+| 编译命令（全量） | [build_command with {product} resolved] |
+| 模拟器命令（仅 arm64_virt） | [emulator_command with {product} resolved, 仅编译产品为 arm64_virt 时填写] |
+| 测试命令 | [test_command with {product} resolved, 或「见各 Task 验证命令」] |
+
+<!-- 每个 Task 的验证命令字段写带 --target 的窄编译命令（单模块）或引用全量编译命令（跨模块）。 -->
 
 ## AC 到 Task 追溯
 

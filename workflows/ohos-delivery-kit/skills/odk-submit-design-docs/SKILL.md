@@ -15,12 +15,12 @@ license: MIT
 
 ### Confirm Destination
 
-Read the business repository's `git remote get-url origin` (not the design-docs checkout's remote) and developer-owned `codespec/profile.yaml` key `design_docs_repository`. If `origin` is missing or ambiguous, ask which source remote applies; never select another remote silently.
+Read the business repository's `git remote get-url origin` (not the design-docs checkout's remote) and resolve the design-docs repository address using priority order: (1) `codespec/profile.yaml` key `design_docs_repository` if the file exists — skip silently if absent, do not warn; (2) `odk_config_ext.yaml` key `design_docs_repository`; (3) `odk_config.yaml` key `design_docs_repository`; (4) address supplied by the user in the current request. If `origin` is missing or ambiguous, ask which source remote applies; never select another remote silently.
 
 Use the read-only resolver `runtime/executables/lib/odk_repository.py` with `--remote` and, when configured, `--configured` to obtain `action`, `repository`, and `source`. It performs no network access or writes.
 
 - For a GitCode business origin and a valid configured address, show that address and request confirmation; never silently replace an explicit configuration with the default.
-- Without a configured address, a GitCode source (`gitcode.com` exact host; HTTPS, SSH URL, or SCP-style `git@gitcode.com:org/repo.git`) prompts: “是否将当前设计文档提交到 https://gitcode.com/OpenHarmonyAI/design-docs ？” The URL is a suggestion, not authorization. Do not match `gitcode.com` substrings in paths or other hostnames.
+- Without a configured address, a GitCode source (`gitcode.com` exact host; HTTPS, SSH URL, or SCP-style `git@gitcode.com:org/repo.git`) suggests the default design-docs repository (read from odk_config_ext.yaml in runtime/assets/ if present, else odk_config.yaml). Show the resolved URL and ask for confirmation — it is a suggestion, not authorization. Do not match `gitcode.com` substrings in paths or other hostnames. To change the default permanently without modifying ODK files, place a `odk_config_ext.yaml` file in the same directory as `odk_config.yaml` with the key `design_docs_repository: <your-url>`; `odk_config_ext.yaml` is never overwritten by ODK updates.
 - For any other source or unavailable remote, require the user to supply a design-docs repository address for this submission, even when a profile has a previous address. An address explicitly supplied in the current request counts; otherwise report “design-docs 仓地址：待开发者填写”. Do not default to OpenHarmonyAI or the business repository. Pass the supplied address as `--configured` to validate/reuse the chosen target. Invalid configuration also requires a valid user-supplied address.
 - If the user declines the suggested destination, ask for another address or cancel. No answer is not consent. Before confirmation, do not clone, copy, stage, commit, or push design documents. A confirmed target may be used for this submission; only persist it to the developer-owned profile when the user requests that change.
 - Before reusing a checkout, run the resolver with `--configured` set to the confirmed address and `--checkout-remote` set to that checkout's origin. Reuse only when `checkout_matches` is true. It compares transport, host, effective port, account and full repository path, including SSH absolute versus home-relative paths. Different ports, accounts, paths, or HTTPS/SSH transports are not automatic aliases: use a matching checkout, or show the actual endpoint and obtain explicit confirmation for it, then recheck. Confirm branch and commit/push/PR scope; never infer permission to push a protected/default branch.
@@ -77,7 +77,7 @@ An explicit request to submit or publish the design documents authorizes prepari
 
 When the user confirms “提交 design-docs 仓的 PR” (including the automatic handoff's
 prompt), complete the document PR workflow automatically once target and branch/base
-are known: prepare a scoped branch, stage only this bundle, commit, verify effective
+are known: read `design_docs_cli` from config (`odk_config_ext.yaml` overrides `odk_config.yaml`; default `oh-gc`) — use it for all PR create/list/query operations. Prepare a scoped branch, stage only this bundle, commit, verify effective
 push URLs, push, and create/update the unique matching open PR. Reuse a matching PR
 rather than duplicate it; ask on ambiguous or closed/merged matches. Verify the remote
 PR URL and head before reporting success. If push or PR creation/query fails, report

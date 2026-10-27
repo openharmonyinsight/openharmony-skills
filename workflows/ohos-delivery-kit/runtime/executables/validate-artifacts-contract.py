@@ -1920,6 +1920,293 @@ def _dfx_ad_entries(design: str) -> tuple[dict[str, tuple[str, str]], list[str]]
     return entries, sorted(set(duplicates))
 
 
+GOAL_ID_RE = re.compile(r"\bG-(\d+)\b")
+GOAL_DEF_RE = re.compile(r"^\s*[-*]\s+\*\*G-(\d+):\*\*", re.MULTILINE)
+
+# US_GOAL_RE: match **来源目标：** only at the start of a line (after optional whitespace),
+# and capture only the rest of THAT line (no cross-line capture via \s).
+# [^\S\n] matches spaces and tabs but NOT newlines, keeping the value on one line.
+US_GOAL_RE = re.compile(r"^[^\S\n]*\*\*来源目标[：:]\*\*[^\S\n]*([^\n]+)", re.MULTILINE)
+
+
+def _strip_code_spans(text: str) -> str:
+    """Strip CommonMark code spans using proper equal-length backtick fence matching.
+
+    A code span is opened by a backtick string of length N and closed by the
+    next backtick string of exactly the same length.  Content may span lines.
+    This correctly handles: `x`, ``x`y`z``, `` `x` ``, `` x``y ``z`` ``.
+
+    Reference: CommonMark spec §6.1
+    https://spec.commonmark.org/0.31.2/#code-spans
+    """
+    result: list[str] = []
+    i = 0
+    while i < len(text):
+        if text[i] != "`":
+            result.append(text[i])
+            i += 1
+            continue
+        # Count the opening backtick run
+        j = i
+        while j < len(text) and text[j] == "`":
+            j += 1
+        fence_len = j - i
+        # Search for the closing run of the same length (no longer run in between)
+        k = j
+        found = False
+        while k < len(text):
+            if text[k] == "`":
+                # Count this backtick run
+                m = k
+                while m < len(text) and text[m] == "`":
+                    m += 1
+                run_len = m - k
+                if run_len == fence_len:
+                    # Matched: replace the whole span with empty string
+                    result.append("")
+                    i = m
+                    found = True
+                    break
+                else:
+                    # Different length — skip this run and continue
+                    k = m
+            else:
+                k += 1
+        if not found:
+            # No closing fence found — treat backticks as literal
+            result.append(text[i:j])
+            i = j
+    return "".join(result)
+
+
+def _extract_goal_refs(
+    us_text: str,
+    defined_goals: set[str],
+    covered_goals: set[str],
+    invalid_refs: list[str],
+) -> None:
+    """Parse 来源目标 fields from one US section.
+
+    Processes the text line by line so that:
+    1. Indented code blocks (4-space / tab prefix) are skipped entirely —
+       their content never participates in field matching.
+    2. Each line is stripped of inline code spans INDEPENDENTLY before
+       field detection, so cross-paragraph backtick pairing cannot delete
+       real fields or manufacture fake ones.
+    3. A field is recognised only when **来源目标：** appears at the start
+       of the stripped line (after optional non-newline whitespace).  If
+       stripping inline code reveals a bare **来源目标：** that was previously
+       hidden behind a code-span prefix, the original line is also checked:
+       the field must already be at line-start in the ORIGINAL text too.
+    """
+    US_FIELD_RE = re.compile(r"^[^\S\n]*\*\*来源目标[：:]\*\*[^\S\n]*([^\n]+)")
+    in_fence = False
+    fence_char: str = ""
+    fence_len: int = 0
+
+    for line in us_text.splitlines():
+        # Track fenced code blocks (``` or ~~~)
+        stripped = line.strip()
+        if not in_fence:
+            fence_m = re.match(r"^(`{3,}|~{3,})", stripped)
+            if fence_m:
+                in_fence = True
+                fence_char = fence_m.group(1)[0]
+                fence_len = len(fence_m.group(1))
+                continue
+        else:
+            close_m = re.match(rf"^[^\S\n]*{re.escape(fence_char)}{{{fence_len},}}[^\S\n]*$", line)
+            if close_m:
+                in_fence = False
+            continue  # inside fence — skip
+
+        # Skip CommonMark indented code blocks (4 spaces or 1 tab)
+        if line.startswith("    ") or line.startswith("\t"):
+            continue
+
+        # Check field existence in ORIGINAL line first (prevents code-removal
+        # from manufacturing a field that wasn't there before stripping).
+        # The field marker **来源目标：** must already appear at the start of
+        # the line in the original text — not revealed only after code removal.
+        if not US_FIELD_RE.match(line):
+            continue
+
+        # Now strip inline code spans on this line only, then match the field
+        clean_line = _strip_code_spans(line)
+        m = US_FIELD_RE.match(clean_line)
+        if not m:
+            continue
+
+        raw_value = m.group(1)
+        for ref in GOAL_ID_RE.findall(raw_value):
+            if ref in defined_goals:
+                covered_goals.add(ref)
+            else:
+                invalid_refs.append(f"G-{ref}")
+_HEADING_RE = re.compile(r"^#{1,6}\s+(.+?)(?:\s+#+)?\s*$", re.MULTILINE)
+
+
+def _has_visible_heading(text: str, heading_text: str) -> bool:
+    """Return True only when heading_text appears as a real ATX heading in visible markdown."""
+    visible = _visible_markdown(text)
+    for line in visible.splitlines():
+        parsed = atx_heading(line)
+        if parsed is not None and heading_text in parsed[1]:
+            return True
+    return False
+
+
+def validate_goal_us_coverage(change_dir: Path, reporter: Reporter) -> None:
+    """Level C: every proposal goal (G-N) must be covered by at least one spec US.
+
+    Triggered only when proposal.md has a visible '用户场景与业务触发' heading
+    (skips pure-internal refactors).  Old deliverables without G-N IDs are warned
+    but not hard-failed so that existing archives are not broken.
+    """
+    proposal_path = change_dir / "proposal.md"
+    spec_path = change_dir / "spec.md"
+    if not proposal_path.is_file() or not spec_path.is_file():
+        return
+
+    proposal_raw = read_text(proposal_path)
+
+    # P2-2 fix: use visible heading detection, not plain string contains
+    if not _has_visible_heading(proposal_raw, "用户场景与业务触发"):
+        return
+
+    print("\nLevel C: Goal → US coverage")
+
+    # Parse visible text only — strips HTML comments and fenced code blocks
+    proposal_visible = _visible_markdown(proposal_raw)
+
+    # P2-2 fix: detect duplicate ## 目标 sections (structural error, not old doc)
+    goal_sections = section_texts(proposal_visible, "目标")
+    if len(goal_sections) > 1:
+        reporter.fail(
+            f"proposal.md has {len(goal_sections)} '## 目标' sections — expected exactly one; "
+            "fix the duplicate headings before goal→US coverage can be checked"
+        )
+        return
+    goal_section = goal_sections[0] if goal_sections else ""
+
+    # P2-2 fix: G-? placeholder means migration is in progress — block archive
+    #  word boundary does not work around '?' (non-word char), so match literally
+    if re.search(r"G-\?", goal_section):
+        reporter.fail(
+            "proposal.md 目标 section contains 'G-?' placeholder — "
+            "replace with real G-N numbered goals before archiving"
+        )
+        return
+
+    defined_goals_list = GOAL_DEF_RE.findall(goal_section)
+
+    # P1 fix: no G-N IDs → warn only (backwards compatibility for pre-feature deliverables)
+    if not defined_goals_list:
+        reporter.warn(
+            "proposal.md 目标 section has no G-N goal IDs — goal→US coverage not checked. "
+            "Add '- **G-1:** …' numbered entries to enable traceability validation."
+        )
+        return
+
+    # P2-3 fix: check for duplicate goal IDs
+    seen: set[str] = set()
+    duplicates: list[str] = []
+    for g in defined_goals_list:
+        if g in seen:
+            duplicates.append(f"G-{g}")
+        seen.add(g)
+    if duplicates:
+        reporter.fail(
+            "proposal.md 目标 section has duplicate goal IDs: " + ", ".join(duplicates)
+        )
+        return
+    defined_goals = seen
+    reporter.pass_(
+        f"proposal.md defines {len(defined_goals)} unique goal ids: "
+        + ", ".join(f"G-{g}" for g in sorted(defined_goals, key=int))
+    )
+
+    # P2-1 fix: scan visible spec text only
+    spec_visible = _visible_markdown(read_text(spec_path))
+
+    # P1 fix: only extract 来源目标 from legitimate ### US-<digits> sections.
+    # Reject fake US headings (e.g. '### US-99' inserted under ## Notes) by
+    # requiring a real US section under the spec's '## 用户故事或场景' heading.
+    us_scope = section_text(spec_visible, "用户故事或场景")
+    if not us_scope:
+        reporter.fail("spec.md missing '## 用户故事或场景' section — goal→US coverage cannot be checked")
+        return
+
+    # P2-2 fix: check spec 来源目标 field VALUES for G-? placeholders too.
+    # Only inspect values matched by US_GOAL_RE (real 来源目标 fields), not the
+    # whole US section — a literal "G-?" in an AC input example must not trigger.
+    # P2-2 fix: check spec 来源目标 field VALUES for G-? placeholders.
+    # Use the same line-by-line approach as _extract_goal_refs so that
+    # indented code blocks and inline-code-prefix removal cannot manufacture
+    # or suppress placeholder detections.
+    _placeholder_found = False
+    _US_FIELD_RE_PLACEHOLDER = re.compile(r"^[^\S\n]*\*\*来源目标[：:]\*\*[^\S\n]*([^\n]+)")
+    for _line in us_scope.splitlines():
+        if _line.startswith("    ") or _line.startswith("\t"):
+            continue
+        if "来源目标" not in _line:
+            continue
+        _clean = _strip_code_spans(_line)
+        _m = _US_FIELD_RE_PLACEHOLDER.match(_clean)
+        if _m and "G-?" in _m.group(1):
+            _placeholder_found = True
+            break
+    if _placeholder_found:
+        reporter.fail(
+            "spec.md US 来源目标 contains 'G-?' placeholder — "
+            "replace with real G-N ids from proposal.md before archiving"
+        )
+        return
+
+    covered_goals: set[str] = set()
+    invalid_refs: list[str] = []
+    # Split the US scope into US-<digits> sub-sections; only ### headings whose
+    # title matches US-<digits> (or US-DFX) are accepted as real user stories.
+    US_TITLE_RE = re.compile(r"^US-(\d+)(?:\b|:)", re.MULTILINE)
+    us_lines = us_scope.splitlines()
+    current_us: list[str] | None = None
+    for line in us_lines:
+        h = atx_heading(line)
+        if h and h[0] == 3:
+            title = h[1]
+            if US_TITLE_RE.match(title) or title.startswith("US-DFX"):
+                if current_us is not None:
+                    _extract_goal_refs("\n".join(current_us), defined_goals, covered_goals, invalid_refs)
+                current_us = [line]
+            else:
+                # non-US ### heading ends the current US section
+                if current_us is not None:
+                    _extract_goal_refs("\n".join(current_us), defined_goals, covered_goals, invalid_refs)
+                    current_us = None
+        elif current_us is not None:
+            current_us.append(line)
+    if current_us is not None:
+        _extract_goal_refs("\n".join(current_us), defined_goals, covered_goal_refs, invalid_refs) if False else _extract_goal_refs("\n".join(current_us), defined_goals, covered_goals, invalid_refs)
+
+    # P2-3 fix: reject references to undefined goals
+    if invalid_refs:
+        reporter.fail(
+            "spec.md references goal IDs not defined in proposal.md: "
+            + ", ".join(sorted(set(invalid_refs)))
+        )
+        return
+
+    missing = sorted(defined_goals - covered_goals, key=int)
+    if missing:
+        reporter.fail(
+            "spec.md US entries do not cover proposal goals: "
+            + ", ".join(f"G-{g}" for g in missing)
+            + " — add '**来源目标：** G-N' to the relevant US sections"
+        )
+    else:
+        reporter.pass_(f"spec.md US entries cover all {len(defined_goals)} proposal goal ids")
+
+
 def validate_dfx_ac_gate(change_dir: Path, reporter: Reporter, archive_mode: bool) -> None:
     """Level C3: every DFX fault mode (main-table hit or AD entry) must be dispositioned,
     AC-linked dispositions must reference spec-defined ACs, and archive requires those
@@ -2564,6 +2851,7 @@ def main(argv: list[str]) -> int:
         validate_proposal_tables(read_text(proposal_path), reporter, archive=strict_delivery)
     validate_present_optional_sections(change_dir, artifacts, reporter)
     validate_traceability(change_dir, reporter)
+    validate_goal_us_coverage(change_dir, reporter)
     validate_dfx_constraints(change_dir, reporter, strict_delivery)
     validate_dfx_ac_gate(change_dir, reporter, strict_delivery)
     validate_dfx_export_table(change_dir, reporter)

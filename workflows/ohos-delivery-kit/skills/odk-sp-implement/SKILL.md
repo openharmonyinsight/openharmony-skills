@@ -1,6 +1,6 @@
 ---
 name: odk-sp-implement
-description: "Use when Superpowers is installed AND the user wants TDD + subagent-driven execution of an approved execution-plan.md. ODK keeps traceability; Superpowers runs red/green cycles. Falls back to odk-implement if unavailable."
+description: "Use when Superpowers is installed AND the user wants TDD 失败/通过循环（Red/Green）+ subagent 驱动执行的 execution-plan.md。ODK 保持可追溯性；Superpowers 执行失败/通过循环。 Falls back to odk-implement if unavailable."
 license: MIT
 ---
 
@@ -30,12 +30,12 @@ Use after `execution-plan.md` has been approved and the user wants implementatio
    - Write or update failing tests first.
    - Run the targeted verification command and confirm the expected failure.
    - Implement the minimal code required for the Task.
-   - Run the targeted verification command and confirm it passes.
+   - Run the targeted verification command and confirm it passes. For the build and test steps, read the `## 构建与验证环境` table from `execution-plan.md` — use the Task's `验证命令` field to determine whether to build, start the emulator (arm64_virt only), and run tests, exactly as `odk-implement` does. Before the first build in this session, confirm the target product with the user once (same prompt as `odk-implement`; reuse for all subsequent Tasks unless the user requests a switch; if the product changes, re-resolve it in the table and remaining Task `验证命令` fields; also clear the `模拟器命令` row when switching away from arm64_virt). Daily flash via `device_flash_skill` only applies when the confirmed product is `rk3568` — skip for all other products including arm64_virt.
    - Keep changes within the Task file scope unless the user approves an execution-plan update.
    - Backfill the Task's `Actual Result` and anti-fake completion evidence in `execution-plan.md`.
    - Mark the Task as completed in `execution-plan.md`: change all `- [ ]` checkboxes to `- [x]` in the Task's Steps section. If the Task list table has a `状态` column, update it to `Done`; otherwise add the column first.
 6. After all Tasks are attempted, produce an **Execution Summary**:
-   - List every Task with status: ✅ Done / ❌ Blocked / ⚠️ Skipped (with reason)
+   - List every Task with status: ✅ 已完成（Done） / ❌ 阻塞（Blocked） / ⚠️ 跳过（Skipped，附原因）
    - If any Task is incomplete, inform the user and do NOT suggest moving to review — wait for user direction
 7. After implementation, update `execution-plan.md` 代码范围映射 and AC-Task 验证状态 with actual files, tests, and commit references.
 8. If implementation reveals missing ACs or changed scope, pause and update `spec.md` / `execution-plan.md` before continuing.
@@ -44,7 +44,7 @@ Use after `execution-plan.md` has been approved and the user wants implementatio
 ## Output
 
 <!-- ODK:reference contracts/skill-guides/delivery/handoff.md -->
-When implementation is complete, read and follow `contracts/skill-guides/delivery/handoff.md`: automatically review and validate, remind and wait for the user to trigger source PR submission, prepare metadata from the actual PR, then ask separately about design-docs. No automatic merge.
+When implementation is complete, read and follow `contracts/skill-guides/delivery/handoff.md`: automatically review and validate using the skills listed in `pre_commit_reviews` (config), remind and wait for the user to trigger source PR submission, prepare `metadata_tracking.yaml` from the actual PR, invoke any `post_commit_reviews` skills after PR URL is confirmed, then ask separately about design-docs. No automatic merge.
 <!-- /ODK:reference -->
 
 Report:

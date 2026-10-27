@@ -16,7 +16,7 @@ Once the user invokes any `{{CMD_PREFIX}}*` command in the current session, ODK 
 
 ODK also activates when the user explicitly mentions ODK, ohos-delivery-kit, `codespec`, or ODK artifact names/actions (proposal, spec, design, execution-plan, spec-for-validation, threat-model, metadata_tracking, review, validate, submit design docs).
 
-When the user describes a vague idea, says "帮我梳理需求" / "我有个想法" / "brainstorm" / "stress-test this plan" / "grill me on this", or the requirement is clearly too vague to drive `odk-propose` directly, load `odk-brainstorm` first instead of going straight to `odk-propose`. `odk-brainstorm` conducts a one-question-at-a-time interview across the ODK proposal dimensions and outputs a decision summary that feeds `odk-propose`.
+When the user is describing or discussing a requirement, feature idea, or non-trivial change — and no `proposal.md` exists yet in the active change directory — load `odk-brainstorm` first instead of going straight to `odk-propose`. This matches Superpowers `brainstorming` trigger strength: any requirement articulation, not just specific keywords. Trigger does not require the user to say "brainstorm", "帮我梳理需求", "I have an idea", or any fixed phrase — the mere act of describing what they want to build is enough. **The escape conditions below take priority over the trigger — check them first:** only fire the trigger when none of the escapes apply. Skip `odk-brainstorm` when any of these hold: (a) `proposal.md` already exists, (b) the user explicitly says their requirement is fully-formed and wants to go straight to `odk-propose`, (c) the change is a self-contained bug fix with a single clear root cause (e.g. "null check missing", "off-by-one in index", "wrong return value"), (d) the user is doing ordinary coding, debugging, refactoring, or a revert with no new feature scope, or (e) the user is already mid-spec or mid-design and `proposal.md` exists. `odk-brainstorm` conducts a one-question-at-a-time interview across the ODK proposal dimensions and outputs a decision summary that feeds `odk-propose`.
 
 ### Deactivation
 
@@ -26,6 +26,41 @@ ODK bridge does **not** activate when:
 - The user explicitly says "不用ODK" / "skip ODK" / "don't use ODK"
 
 After activation, follow the Context Loading rules below to determine the active change.
+
+### Resource Self-Check
+
+Run this check at most once per session (on first activation only); if the conversation history already contains an "ODK Resource Check" block from this session, skip this step entirely. Before proceeding with any ODK phase, verify that critical resources are accessible from the plugin root (`${OHOS_PLUGIN_ROOT}`). The variable `${OHOS_PLUGIN_ROOT}` is injected by the platform session-start hook — on Claude Code/Codex it resolves to the plugin installation directory; on OpenCode it resolves to `.opencode/ohos-delivery-kit/`. If `${OHOS_PLUGIN_ROOT}` appears unexpanded (i.e. the literal string `${OHOS_PLUGIN_ROOT}` is still present rather than a real path), stop and warn: "OHOS_PLUGIN_ROOT 未注入，跳过资源自检 — 请确认插件已正确安装并重启会话。" Do not attempt file existence checks with an unexpanded variable. If the variable is resolved, check each file below and warn if any is missing:
+
+```
+## ODK Resource Check
+Checking critical resources at plugin root: ${OHOS_PLUGIN_ROOT}
+
+Required templates:
+  ${OHOS_PLUGIN_ROOT}/templates/ai/proposal.md
+  ${OHOS_PLUGIN_ROOT}/templates/ai/spec.md
+  ${OHOS_PLUGIN_ROOT}/templates/ai/design.md
+  ${OHOS_PLUGIN_ROOT}/templates/ai/execution-plan.md
+  ${OHOS_PLUGIN_ROOT}/templates/ai/spec-for-validation.md
+  ${OHOS_PLUGIN_ROOT}/templates/ai/threat-model.md
+
+Required contracts:
+  ${OHOS_PLUGIN_ROOT}/contracts/skill-guides/router/workflow.md
+  ${OHOS_PLUGIN_ROOT}/contracts/skill-guides/router/profiles.md
+  ${OHOS_PLUGIN_ROOT}/contracts/skill-guides/delivery/handoff.md
+  ${OHOS_PLUGIN_ROOT}/contracts/skill-guides/delivery/metadata.md
+  ${OHOS_PLUGIN_ROOT}/contracts/skill-guides/spec/api-specification.md
+  ${OHOS_PLUGIN_ROOT}/contracts/artifacts.yaml
+  ${OHOS_PLUGIN_ROOT}/contracts/dfx-fmea-matcher.yaml
+
+Required config:
+  ${OHOS_PLUGIN_ROOT}/runtime/assets/odk_config.yaml
+```
+
+If any file is missing:
+1. Do NOT silently degrade — inform the user: "ODK 资源文件缺失，可能导致模板/契约/配置不可用"
+2. Suggest: "请重新安装 ohos-delivery-kit 插件，或运行 `bash scripts/distribute-skills.sh` 重新生成分发"
+3. List the missing files with their expected paths
+4. Only proceed if the user explicitly confirms to continue with degraded resources
 
 <!-- ODK:reference contracts/skill-guides/router/workflow.md -->
 ## Workflow (on activation)
@@ -37,8 +72,8 @@ After ODK activates, read `contracts/skill-guides/router/workflow.md` before sel
 - **target_release** is the single source of truth for version, stored in `proposal.md` YAML frontmatter
 - Traceability chain: `proposal → spec AC → execution-plan Task → code → commit → review`. Any broken link fails validation.
 - **Post-implementation**: completed Tasks automatically enter review and validation through the implementation skill's shared handoff. Source PR submission waits for an explicit user trigger after a reminder; confirmed PR results drive local metadata, followed by separate design-docs confirmation. Do not auto-merge or recursively restart the handoff from review/validate.
-- **GitCode submission reminder**: when implementation is complete and the user is about to commit, push, or open a GitCode PR, remind them that documents under `codespec/` must be submitted to the separate design-docs repository. Read its address from developer-owned `codespec/profile.yaml` key `design_docs_repository`. If the key is absent or empty, show it as “待开发者填写” and ask the developer to provide it; never guess a repository or automatically push across repositories. This reminder does not by itself block the business-code submission. When the user explicitly requests design-document submission, invoke `odk-submit-design-docs`: generate `metadata_tracking.yaml`, validate the five-base-file bundle plus required conditional evidence, and submit `proposal.md`, `spec.md`, `design.md`, `execution-plan.md`, and `metadata_tracking.yaml` together.
-- **Phase Gate**: Artifact phases (propose, spec, design, plan) produce documents for approval. When the user confirms an artifact ("没问题", "looks good", etc.), it means the document is approved — it does NOT authorize skipping to implementation. After each artifact is approved, suggest the next phase command explicitly and wait for the user to invoke it. Do not write implementation code until `execution-plan.md` is approved and the user explicitly invokes an implement command (`{{CMD_PREFIX}}implement`, `{{CMD_PREFIX}}sp-implement`, etc.). This applies regardless of perceived simplicity.
+- **GitCode submission reminder**: when implementation is complete and the user is about to commit, push, or open a GitCode PR, remind them that documents under `codespec/` must be submitted to the separate design-docs repository. Resolve its address using priority order: `codespec/profile.yaml` if present → `odk_config_ext.yaml` → `odk_config.yaml`. Do not warn if `codespec/profile.yaml` is absent. If no address can be resolved, show “待开发者填写” and ask the developer to provide it; never guess a repository or automatically push across repositories. This reminder does not by itself block the business-code submission. When the user explicitly requests design-document submission, invoke `odk-submit-design-docs`: generate `metadata_tracking.yaml`, validate the five-base-file bundle plus required conditional evidence, and submit `proposal.md`, `spec.md`, `design.md`, `execution-plan.md`, and `metadata_tracking.yaml` together.
+- **Phase Gate**: Artifact phases (propose, spec, design, plan) produce documents for approval. When the user confirms an artifact ("没问题", "looks good", etc.), it means the document is approved — it does NOT authorize skipping to implementation. After each artifact is approved, suggest the next phase command explicitly and wait for the user to invoke it. Do not write implementation code until `execution-plan.md` is approved and the user explicitly invokes an implement command (`{{CMD_PREFIX}}implement`, `{{CMD_PREFIX}}sp-implement`, etc.). This applies regardless of perceived simplicity. **Default implementation approach is TDD**（失败/通过循环，Red/Green——先写失败测试，再实现最少代码让其通过）: `odk-implement` enforces this by default; Tasks that genuinely cannot be tested must declare degradation explicitly.
 
 ## Context Loading
 
@@ -56,7 +91,7 @@ For actual design-document submission, `odk-submit-design-docs` resolves and con
 - When spawning subagents (e.g. via bridge commands), run them in isolated contexts — never fork the main session history; the main session only dispatches tasks and receives summaries
 - Pass evidence by file path, not by content — artifacts land on disk once (`evidence/`, `pr-diff.txt`, `findings.json`); later references pass the path, not the full text
 - Cap parallel fan-out at ≤4 subagents per layer; batch or narrow task scope if more are needed
-- Template files are located at `templates/` (installed with the plugin)
+- Template files are located at `runtime/assets/templates/` (installed with the plugin)
 
 <!-- ODK:reference contracts/skill-guides/router/profiles.md -->
 ## Profile Detection
@@ -78,6 +113,6 @@ When using bridge commands, `using-odk-bridge` is loaded automatically and provi
 
 ## Template Reference
 
-- AI artifact templates: `templates/ai/` (proposal, spec, design, execution-plan, spec-for-validation, threat-model)
-- Review templates: `templates/review/` (spec-compliance, code-quality, verification)
-- Design-docs submission metadata: `templates/metadata_tracking.yaml`
+- AI artifact templates: `runtime/assets/templates/ai/` (proposal, spec, design, execution-plan, spec-for-validation, threat-model)
+- Review templates: `runtime/assets/templates/review/` (spec-compliance, code-quality, verification)
+- Design-docs submission metadata: `runtime/assets/templates/metadata_tracking.yaml`

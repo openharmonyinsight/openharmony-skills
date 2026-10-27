@@ -168,8 +168,8 @@ graph TD
 
 | 风险/威胁 ID | 类型 | 可能性 | 影响 | 缓解措施 | 验证方法 | 关联 Task | 状态 |
 |-------------|------|--------|------|----------|----------|-----------|------|
-| TH-001 | [STRIDE类型] | High/Med/Low | High/Med/Low | [具体措施] | [测试方法] | [Task-ID] | Open/Done |
-| COMP-001 | [合规差距] | High/Med/Low | High/Med/Low | [具体措施] | [验证方法] | [Task-ID] | Open/Done |
+| TH-001 | [STRIDE类型] | High/Med/Low | High/Med/Low | [具体措施] | [测试方法] | [Task-ID] | 待处理（Open）/已完成（Done） |
+| COMP-001 | [合规差距] | High/Med/Low | High/Med/Low | [具体措施] | [验证方法] | [Task-ID] | 待处理（Open）/已完成（Done） |
 
 ## 安全验证计划
 

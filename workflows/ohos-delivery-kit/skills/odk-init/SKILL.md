@@ -42,10 +42,9 @@ Validate the slug against `^[a-z0-9]+(?:-[a-z0-9]+)*$` and a maximum length of 4
 
 4. Do **not** create `spec.md`, `design.md`, or `execution-plan.md` here — each is generated on first run by its own command (`{{CMD_PREFIX}}spec` / `{{CMD_PREFIX}}design` / `{{CMD_PREFIX}}plan`), which regenerates fully from its template. Pre-building empty skeletons would only be read back and overwritten (wasted context).
 5. Do not create `reviews/` or `gates/` by default. They are optional process evidence directories, not part of the minimal archive contract.
-6. Ensure the repo `.gitignore` ignores the bridge plugin workspaces ODK redirects output away from:
-   - Entries to ensure, **idempotently** (append only missing ones; never overwrite or remove existing content): `openspec/`, `docs/superpowers/`, `matspec/`, `.matspec-cli/`
+6. Ensure the repo `.gitignore` ignores the bridge plugin workspaces ODK redirects output away from, **and also ignores `codespec/`**:
+   - Entries to ensure, **idempotently** (append only missing ones; never overwrite or remove existing content): `codespec/`, `openspec/`, `docs/superpowers/`, `matspec/`, `.matspec-cli/`
    - If `.gitignore` does not exist, create it with a short `# ODK bridge workspaces` header followed by the entries.
-   - **Do NOT add `codespec/`** — it is the delivery archive. At GitCode submission time it is submitted to the separate design-docs repository named by developer-owned `codespec/profile.yaml` key `design_docs_repository`, not silently bundled into the business-code commit. `odk-submit-design-docs` generates `metadata_tracking.yaml` and validates the five-base-file bundle plus required conditional evidence before that submission.
    - **Do NOT add adapter install dirs** (`.claude/`, `.codex/`, `.opencode/`, `opencode.json`, etc.) — committing those is a team choice, not ODK's to decide.
 
 ## Output
@@ -58,7 +57,7 @@ codespec/changes/arkui/12345/   (or codespec/changes/arkui/draft-20260522-arkui-
 `spec.md`, `design.md`, and `execution-plan.md` are **not** created by init — each appears when its command first runs. (Repo-root `.gitignore` bridge-workspace entries are ensured separately.)
 
 After creating the stub:
-- Report the `.gitignore` state (created / already had the bridge-workspace entries / appended missing ones), and remind: `codespec/` goes to the developer-configured `design_docs_repository` on GitCode, bridge workspaces are ignored, and adapter install dirs are the team's choice. If the address is absent, display “待开发者填写”; do not guess it.
+- Report the `.gitignore` state (created / already had the bridge-workspace entries / appended missing ones), and remind: `codespec/` goes to the developer-configured `design_docs_repository` on GitCode, bridge workspaces are ignored, and adapter install dirs are the team's choice. `odk-submit-design-docs` generates `metadata_tracking.yaml` and validates the five-base-file bundle plus required conditional evidence before submission. If the address is absent, display “待开发者填写”; do not guess it. Mention that the design-docs default address can be overridden persistently by placing a `odk_config_ext.yaml` (same keys as `config.yaml`) in the plugin's `runtime/assets/` directory; `odk_config_ext.yaml` is never touched by ODK updates.
 - Suggest: "Next: run `{{CMD_PREFIX}}propose` to generate the requirements proposal."
 
 Confirm with the user that the structure is correct before proceeding.
