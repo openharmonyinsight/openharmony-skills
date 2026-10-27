@@ -21,7 +21,7 @@ license: MIT
 ## Steps
 
 0. Check for subsystem profile: read and follow `contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.execution-plan` (additional prohibitions) and `agent_instructions.plan` before generating content
-1. Read template from `runtime/assets/templates/ai/execution-plan.md`
+1. Read template from `templates/ai/execution-plan.md`
 2. **API 声明文件任务（条件触发）**：若 proposal.md `API/SDK` = 「是」，必须在所有任务的最前面插入一个 API 声明文件修改任务（排在 Task-1），任务内容为"根据 spec.md `## API 规格定义` 修改声明文件"。该任务排在第一位的原因是：后续功能实现任务依赖声明文件的修改结果，声明文件未完成时其他任务无法开展。
 3. Generate `execution-plan.md` per the template. Fill the required traceability, task detail, verification, and code-scope fields enough to pass artifact contract validation. For each Task, fill「任务间接口」（Produces=供后续 Task 依赖的接口签名/错误码/innerAPI/数据结构，Consumes=来自前置 Task 的契约；无跨 Task 契约写「无」），让只读单 Task 的执行者也能对齐跨 Task 命名与签名。
    **构建与验证环境（必填）**：在生成 `execution-plan.md` 之前，先从 config 读取 `build_product`、`build_command`、`emulator_command`、`test_command`（`odk_config_ext.yaml` 覆盖 `odk_config.yaml`），然后**立即暂停，向用户提示选择编译产品**，格式如下，等待回答后再继续生成内容：
@@ -32,10 +32,14 @@ license: MIT
    A) arm64_virt — qemu 模拟器验证
    B) rk3568    — 物理板验证
 
-   请选择（直接回车确认默认值，或输入 A/B 切换）：
+   请选择（明确确认默认值、输入 A/B，或填写其他产品名）：
    ```
+   确认产品后、写计划前，执行设备版本选择：
+   <!-- ODK:reference contracts/skill-guides/delivery/device-version.md -->
+   Read `contracts/skill-guides/delivery/device-version.md`: QEMU (`arm64_virt`) skips the daily question; every other product asks daily versus existing firmware. Record the user's choice and preparation method in the plan, even when no automatic flashing skill is available.
+   <!-- /ODK:reference -->
    用确认后的产品名替换 `{product}` 占位符，然后：
-   - 向用户确认或切换编译产品（默认 `arm64_virt`，备选 `rk3568`）
+   - 向用户确认或切换编译产品（默认 `arm64_virt`，备选 `rk3568`，也接受用户指定的其他产品）
    - 将解析后的具体命令写入 `## 构建与验证环境` 表；`emulator_command` 仅当编译产品为 `arm64_virt` 时填入，其他产品（rk3568 等物理板）该行留空或省略；`test_command` 若为空则根据 Task 的文件范围、测试框架约定推断并填入，推断结果需标注「推断：<理由>」
    - 实现阶段直接读本表，不再查 config
    For each Task's `验证命令` field: write the full concrete build + test command for that Task specifically:

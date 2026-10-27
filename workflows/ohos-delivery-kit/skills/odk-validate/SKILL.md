@@ -14,7 +14,7 @@ license: MIT
 ## Sources
 
 - Artifact contract: installed `contracts/artifacts.yaml` (OpenCode: `contracts/artifacts.yaml`)
-- Templates: installed `runtime/assets/templates/ai/` (OpenCode: `runtime/assets/templates/ai/`)
+- Templates: installed `templates/ai/` (OpenCode: `templates/ai/`)
 - Strict validator: `runtime/executables/validate-artifacts-contract.py`. It is installed with ODK on every supported platform; use this skill to explain and remediate its findings.
 - Archive migration validator: `runtime/executables/validate-archive-migration.py`. Use `plan --map <map.tsv>` before moving legacy archives and `check-staged --map <the-same-map.tsv>` before committing so old-source deletion and planned-target conservation are verified.
 

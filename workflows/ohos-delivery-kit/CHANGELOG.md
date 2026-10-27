@@ -4,6 +4,46 @@ All notable changes to the published `ohos-delivery-kit` workflow are documented
 this file. Source artifacts are synchronized from
 `oshunter/ohos-delivery-kit` `main` through the marketplace publisher.
 
+## [0.14.0] - 2026-10-27
+
+Source: `main@ca98f5494b5ec4075d539bc09340261d856441d6`.
+
+### Added
+
+- Configurable build/test commands, review hooks, source/design-docs PR tools,
+  CI and online-test triggers, and physical-device preparation settings.
+- Goal-to-user-story coverage validation and code-grounded brainstorming before
+  proposal, specification and design generation.
+
+### Changed
+
+- Confirm device firmware strategy while writing the execution plan: QEMU skips
+  daily selection; other products ask daily versus existing firmware and persist
+  the preparation method. Implementation and final verification reuse the choice.
+- Preserve the daily choice when automatic flashing is unavailable by confirming
+  a supported manual preparation method. Bridge planning paths follow the same rule.
+
+### Fixed
+
+- Resolve resource self-checks relative to the actual guide location in source,
+  native and neutral layouts, without restoring resource-root placeholders.
+- Require rk3568 and a configured flashing skill before automatic flashing;
+  confirm the target device and avoid repeated firmware preparation.
+- Resume brainstorm using its installed skill name rather than a Claude command.
+- Ship the default configuration, archive migration validator and all Python
+  runtime libraries; align release metadata with the merged source revision.
+- Declare the complete asset tree so installation includes the default config,
+  retaining named asset components for literal-path relocation. Remove stale
+  skill-local symlinks pointing to a maintainer's machine; keep FMEA references
+  as real files alongside the skill.
+
+### Installation limitation
+
+- oh-skillhub 0.1.42 resolves the shared runtime paths, but its workflow-plugin
+  projection does not copy FMEA skill-local references. The full installation
+  regression remains failing until the installer supports this path; source
+  publication and three-host resource projection checks pass.
+
 ## [0.13.0] - 2026-10-21
 
 Source: `main@c85abe290808fac290a2bce596b53ca9d4751887`.

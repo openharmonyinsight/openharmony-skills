@@ -91,6 +91,12 @@ components:
       path: hooks/session-router.yaml
 
   assets:
+    # Include root-level config as well as the named resource path mappings.
+    - id: runtime-assets
+      path: runtime/assets
+      usedBy:
+        - skills
+        - validator
     - id: templates
       path: runtime/assets/templates
       usedBy:

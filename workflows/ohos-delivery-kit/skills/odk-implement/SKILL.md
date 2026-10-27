@@ -45,7 +45,10 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
         B) rk3568    — 物理板验证
         ```
         If the user switches product: (1) update the `## 构建与验证环境` table's `编译产品` row; (2) re-resolve `{product}` in all remaining Task `验证命令` fields that still contain the old product name — replace the old product name with the new one; (3) when switching away from `arm64_virt`, clear the `模拟器命令（仅 arm64_virt）` row (mark N/A) so the plan does not leave a stale emulator command under a non-arm64_virt product; when switching to `arm64_virt`, populate the `模拟器命令` row from config. Do not re-ask on subsequent Tasks unless the user requests another switch. Determine the shape of the Task's `验证命令` field first, then execute the sub-steps labelled a–d below accordingly:
-        - **Test-only Task** (验证命令 does not begin with a build tool invocation such as `./build.sh`, `ninja`, `make`, or similar — only contains a test runner command): skip sub-steps a and b; execute c (arm64_virt only) then **d** (the test runner).
+        <!-- ODK:reference contracts/skill-guides/delivery/device-version.md -->
+        Read `contracts/skill-guides/delivery/device-version.md` and consume the plan's `设备版本策略` and `设备版本准备方式`. For old plans, fill missing rows before device verification; on product switches, clear the previous choice and apply the guide again. QEMU never asks for or fetches daily firmware. Reuse a confirmed choice rather than asking on each Task.
+        <!-- /ODK:reference -->
+        - **Test-only Task** (验证命令 does not begin with a build tool invocation such as `./build.sh`, `ninja`, `make`, or similar — only contains a test runner command): skip compilation (a) and artifact pushing in b; if the test runner uses a physical device, still complete b's device selection and recorded version preparation before testing. Execute c for arm64_virt only, then **d** (the test runner).
         - **Build+test Task** (验证命令 contains `&&` separating a build and test command): execute all four sub-steps a → b → c → **d**.
         - **Build-only Task** (验证命令 contains only a build command, no `&&` test step): execute a → b → c, then use `测试命令` from `## 构建与验证环境` as sub-step **d**.
 
@@ -53,31 +56,15 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
 
         a. **编译**：run the build portion of the Task's `验证命令` field (single-module `--target <module>` or full build). Stop if the build fails.
         b. **设备准备（物理板路径，arm64_virt 跳过此步）**：
-           - **刷入 daily 镜像（仅 rk3568，其他产品跳过）**：if `device_flash_skill` is non-empty in config AND the confirmed product is `rk3568`, confirm with the user before invoking the skill:
-             ```
-             准备获取今日 daily 镜像并刷机到 rk3568 设备，请确认。
-             （当前选择：<confirmed product from session>）
-             此操作将调用 <device_flash_skill>，会覆盖设备数据，请确认。
-             ```
-             Only invoke the skill after explicit user confirmation. Skip if the developer confirms the device already runs today's daily. For any product other than rk3568, skip this sub-step entirely — `device_flash_skill` only supports rk3568.
+           - **刷机适用条件（所有入口共用）**：automatic daily flashing is available only when the confirmed product is `rk3568` AND `device_flash_skill` is non-empty after applying config overrides. Check both conditions before offering or invoking it, including the per-Task choice below and final integration verification. Other products use existing firmware or a separately agreed manual preparation procedure. Do not flash before selecting the target device; offer flashing only once for that device during a Task, and skip it if the developer confirms the current daily firmware is already suitable.
            - **推送编译产物**：find the `.so` files produced by this Task's build that correspond to the Task's changed source files:
              - **产物目录**：if `device_so_dirs` is non-empty use those paths; otherwise infer from `build_product` — search `out/{product}/lib/` and `out/{product}/lib64/` for `.so` files whose name contains the `name` field from the component's `BUILD.gn`. When multiple candidates exist, list them and ask the user to confirm before pushing.
              - **服务推断**：if `device_service_restart` is non-empty use that command (replace `{service}`); otherwise look up the component's init `.cfg` file or systemd unit filename for the service name. If the service name cannot be determined, fall back to `hdc shell reboot` and wait for the device to return — record "service inference failed, used full reboot" in `Actual Result`.
              - **设备连接检测**：before pushing, run `hdc list targets` to detect connected devices. Filter out emulator entries (any device ID that appeared in sub-step c's emulator boot) — only consider physical board devices:
-             - **发现设备**：if one or more physical devices are listed, select the first one (or ask the user to choose if multiple). Then prompt whether to fetch today's daily build or use the existing firmware on the device:
-               ```
-               检测到设备：<device-id>
-
-               请选择设备上的版本：
-               A) 获取今日 daily 版本并刷机（需配置 device_flash_skill）
-               B) 使用设备现有版本，直接推送 .so（默认）
-               C) 跳过设备验证
-
-               （无输入默认选 B）
-               ```
-               - If the user picks A: check whether `device_flash_skill` is non-empty in config (`odk_config_ext.yaml` overrides `odk_config.yaml`). If it is, invoke the configured skill — the skill handles downloading the daily build and flashing the device. If `device_flash_skill` is empty, warn: "device_flash_skill 未配置，无法自动获取 daily 版本，请在 odk_config_ext.yaml 中配置 device_flash_skill，或手动刷机后重试。" and fall back to B.
-               - If the user picks B or gives no response, proceed to 推送步骤 below with the existing device firmware.
-               - If the user picks C, skip the 推送步骤 below and proceed to sub-step d.
+             - **发现设备**：if one or more physical devices are listed, select the target device (ask the user to choose if multiple), then apply the plan's recorded version strategy:
+               - `existing`: use the firmware already on the device and proceed to 推送步骤. Do not offer daily again or claim the firmware is today's daily.
+               - `daily`: if preparation has already succeeded for this device and is recorded in `Actual Result`, reuse it. Otherwise follow the plan's `设备版本准备方式`. For an automatic skill, recheck the rk3568/config conditions above, pass the selected device ID, and obtain explicit confirmation before overwriting device data. If the conditions fail, do not invoke the skill; confirm a supported manual preparation method and update the plan. For manual preparation, wait for the user to confirm completion. Do not silently fall back to existing firmware when preparation fails or is incomplete.
+               - After flashing, re-detect and confirm the target device before pushing. Record the preparation outcome and device ID for subsequent Tasks.
              - **未发现设备**：if `hdc list targets` returns no physical devices or returns an error, prompt:
                ```
                未检测到 hdc 设备，请选择：
@@ -86,7 +73,7 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
 
                设备 IP：
                ```
-               If the user provides an IP, run `hdc tconn <ip>:7777` (or the port the user specifies), wait for the connection to succeed, then re-run `hdc list targets` to confirm. If connection fails, report the error and offer to retry or skip. If the user picks B, skip the 推送步骤 below and proceed to sub-step d.
+               If the user provides an IP, run `hdc tconn <ip>:7777` (or the port the user specifies), wait for the connection to succeed, then re-run `hdc list targets` to confirm and apply the same recorded version strategy under 发现设备 before pushing. If connection fails, report the error and offer to retry or skip. If the user picks B, skip the 推送步骤 below and proceed to sub-step d.
            - **推送步骤**：`hdc -t <device-id> shell mount -o rw,remount /`, push each confirmed `.so` via `hdc -t <device-id> file send <local> /system/lib/<name>` (use `/system/lib64/` for 64-bit libs), then execute the restart command. Record the resolved paths, device-id, and service name in `Actual Result`.
         c. **模拟器启动与 hdc 推包（仅 arm64_virt）**：only when `编译产品` row value is `arm64_virt`:
            1. Before starting the emulator, run `hdc list targets` once and record the current device list as the **pre-boot baseline**. Any device already present is a physical board — do not treat it as the emulator.
@@ -136,21 +123,8 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
 5. If implementation reveals missing ACs or changed scope, pause and update `spec.md` / `execution-plan.md` before continuing.
 6. Keep changes within the Task file scope unless the user approves an execution-plan update.
 7. When any `资源开销审视` dimension is `required` (`contracts/artifacts.yaml#resource_contract`), complete subsystem measurement/evidence Tasks and the business-repo `odk_resource_gate` (commonly under `evidence/resource/`).
-8. After all Tasks are Done, **prompt the user about device verification** before starting the automatic handoff — this is a one-time final integration verification, separate from the per-Task `.so` pushes already done in sub-step b. Choose A or B if you want to verify the fully-integrated build end-to-end (e.g. all changed `.so` together, fresh daily base); choose C if per-Task verification was sufficient. Only applies when the confirmed build product is a physical board (not arm64_virt):
-   ```
-   所有 Task 已完成。是否需要最终设备集成验证？
-   （此步骤与实现过程中的逐 Task .so 推送独立，用于验证完整集成构建）
-   A) 获取今日 daily 版本并刷机到本地设备，然后推送本次变更涉及的 .so 并重启服务
-   B) 仅推送本次变更涉及的 .so 并重启服务（设备已运行今日 daily）
-   C) 跳过设备验证，直接进入 review
-
-   （当前编译产品：<confirmed product>）
-   ```
-   Option A is only shown when `device_flash_skill` is non-empty in config AND the confirmed product is `rk3568`. If `device_flash_skill` is empty (the default) or the product is not rk3568, omit option A — present only B and C. This mirrors the same guard as per-Task sub-step b.
-   - If the user chooses A: invoke `device_flash_skill` (only rk3568 supported), then push `.so` files and restart service as described in sub-step b.
-   - If the user chooses B: skip flashing, push `.so` files and restart service as described in sub-step b.
-   - If the user chooses C: skip device verification entirely.
-   - If the confirmed product is `arm64_virt`, skip this prompt (qemu verification was done per-Task in sub-steps c/d).
+8. After all Tasks are Done, **prompt the user about final device integration verification** before starting the automatic handoff. For physical products, show the plan's recorded version strategy and preparation result, then ask whether to run integrated verification on that device or skip it because per-Task verification was sufficient. Reuse the selected firmware; do not ask daily versus existing again, reflash automatically, or assume existing firmware is today's daily. If preparation is still needed, follow sub-step b and the plan's preparation method; automatic flashing still requires product `rk3568` AND non-empty `device_flash_skill`, plus explicit selected-device flashing confirmation. If the user requests a different version or device, update the plan and prepare it before testing.
+   For `arm64_virt`, skip this physical-device prompt and all daily preparation (qemu verification was done per-Task in sub-steps c/d).
    After this prompt, automatically follow the handoff below; do not require separate review/validate commands from the user.
 
 ## Output

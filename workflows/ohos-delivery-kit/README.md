@@ -3,6 +3,21 @@
 Neutral-source plugin providing OpenHarmony delivery artifact specification skills,
 session routing, validator executables, and runtime assets.
 
+## 0.14.0 configurable execution and device-version planning
+
+Build/test commands, review hooks, PR tools and CI/online-test triggers can be
+configured through `runtime/assets/odk_config.yaml` and an optional sibling
+`odk_config_ext.yaml`. Planning records the resolved commands and device-version
+strategy: QEMU (`arm64_virt`) needs no daily firmware; every other product asks
+whether to obtain daily or use existing firmware. Implementation reuses the
+recorded choice; manual preparation remains available when automatic flashing
+is unsupported. Automatic flashing requires rk3568 and a configured skill.
+
+Resource self-checks resolve files from the loaded guide location and do not
+require resource-root variable injection. Brainstorm recovery uses the installed
+skill name on every host. Goal-to-US coverage checks accompany document validation.
+CI/online-test triggers do not by themselves attest that remote tests have passed.
+
 ## 0.13.0 structured clarification
 
 Adds the standalone `odk-brainstorm` interview and active clarification in
@@ -130,7 +145,11 @@ repository-scoped layout.
 ## Source
 
 Synced from `oshunter/ohos-delivery-kit` branch `main` via
-`ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills`.
+`ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills --plugin ohos-delivery-kit`.
+Current source: `main@ca98f5494b5ec4075d539bc09340261d856441d6`.
+The current publisher needs the default config, archive-migration entrypoint and
+all Python runtime libraries supplemented; the source release gate verifies the
+final package against this pinned revision.
 
 ## Structure
 
@@ -161,7 +180,12 @@ separately by the validator. Skill-local files such as `odk-fmea/references/`
 must be installed alongside the rendered `SKILL.md`, preserving relative links.
 
 To check real V1 and V2 installation artifacts without registering plugins in
-your agents, provide a local installer source or unpacked npm package:
+your agents, provide a local installer source or unpacked npm package.
+Runtime path relocation was verified with oh-skillhub 0.1.42; 0.1.40 does not
+support these literal references. Version 0.1.42 still omits skill-local
+auxiliary files in its workflow-plugin projection, so the installation check
+currently fails for FMEA references. Use an installer that passes this check
+before relying on the installed FMEA workflow:
 
 ```bash
 OH_SKILLHUB_PACKAGE_ROOT=/path/to/oh-skillhub \

@@ -28,6 +28,8 @@
 | 配置项 | 值 |
 |--------|----|
 | 编译产品 | [build_product] |
+| 设备版本策略 | [arm64_virt 填「不适用（QEMU）」；其他产品经用户确认填 daily 或 existing] |
+| 设备版本准备方式 | [QEMU 填「不适用（QEMU）」；daily 填支持当前产品的具体 skill 或经确认的手动准备步骤；existing 填「使用设备现有版本，不获取 daily、不刷机」] |
 | 编译命令（全量） | [build_command with {product} resolved] |
 | 模拟器命令（仅 arm64_virt） | [emulator_command with {product} resolved, 仅编译产品为 arm64_virt 时填写] |
 | 测试命令 | [test_command with {product} resolved, 或「见各 Task 验证命令」] |

@@ -29,38 +29,9 @@ After activation, follow the Context Loading rules below to determine the active
 
 ### Resource Self-Check
 
-Run this check at most once per session (on first activation only); if the conversation history already contains an "ODK Resource Check" block from this session, skip this step entirely. Before proceeding with any ODK phase, verify that critical resources are accessible from the plugin root (`${OHOS_PLUGIN_ROOT}`). The variable `${OHOS_PLUGIN_ROOT}` is injected by the platform session-start hook — on Claude Code/Codex it resolves to the plugin installation directory; on OpenCode it resolves to `.opencode/ohos-delivery-kit/`. If `${OHOS_PLUGIN_ROOT}` appears unexpanded (i.e. the literal string `${OHOS_PLUGIN_ROOT}` is still present rather than a real path), stop and warn: "OHOS_PLUGIN_ROOT 未注入，跳过资源自检 — 请确认插件已正确安装并重启会话。" Do not attempt file existence checks with an unexpanded variable. If the variable is resolved, check each file below and warn if any is missing:
-
-```
-## ODK Resource Check
-Checking critical resources at plugin root: ${OHOS_PLUGIN_ROOT}
-
-Required templates:
-  ${OHOS_PLUGIN_ROOT}/templates/ai/proposal.md
-  ${OHOS_PLUGIN_ROOT}/templates/ai/spec.md
-  ${OHOS_PLUGIN_ROOT}/templates/ai/design.md
-  ${OHOS_PLUGIN_ROOT}/templates/ai/execution-plan.md
-  ${OHOS_PLUGIN_ROOT}/templates/ai/spec-for-validation.md
-  ${OHOS_PLUGIN_ROOT}/templates/ai/threat-model.md
-
-Required contracts:
-  ${OHOS_PLUGIN_ROOT}/contracts/skill-guides/router/workflow.md
-  ${OHOS_PLUGIN_ROOT}/contracts/skill-guides/router/profiles.md
-  ${OHOS_PLUGIN_ROOT}/contracts/skill-guides/delivery/handoff.md
-  ${OHOS_PLUGIN_ROOT}/contracts/skill-guides/delivery/metadata.md
-  ${OHOS_PLUGIN_ROOT}/contracts/skill-guides/spec/api-specification.md
-  ${OHOS_PLUGIN_ROOT}/contracts/artifacts.yaml
-  ${OHOS_PLUGIN_ROOT}/contracts/dfx-fmea-matcher.yaml
-
-Required config:
-  ${OHOS_PLUGIN_ROOT}/runtime/assets/odk_config.yaml
-```
-
-If any file is missing:
-1. Do NOT silently degrade — inform the user: "ODK 资源文件缺失，可能导致模板/契约/配置不可用"
-2. Suggest: "请重新安装 ohos-delivery-kit 插件，或运行 `bash scripts/distribute-skills.sh` 重新生成分发"
-3. List the missing files with their expected paths
-4. Only proceed if the user explicitly confirms to continue with degraded resources
+<!-- ODK:reference contracts/skill-guides/router/resource-check.md -->
+On first activation in a session, read `contracts/skill-guides/router/resource-check.md` and check the resources relative to that guide's actual file location. Locate the guide from the loaded skill directory: use `../../contracts/skill-guides/router/resource-check.md` for source/native packages, or `../../runtime/assets/contracts/skill-guides/router/resource-check.md` for neutral packages. Do not resolve these paths against the business repository or require an injected environment variable. If neither location exists, report the missing guide and the inspected paths. Reuse a successful check in this session unless the installation changes.
+<!-- /ODK:reference -->
 
 <!-- ODK:reference contracts/skill-guides/router/workflow.md -->
 ## Workflow (on activation)
@@ -91,7 +62,7 @@ For actual design-document submission, `odk-submit-design-docs` resolves and con
 - When spawning subagents (e.g. via bridge commands), run them in isolated contexts — never fork the main session history; the main session only dispatches tasks and receives summaries
 - Pass evidence by file path, not by content — artifacts land on disk once (`evidence/`, `pr-diff.txt`, `findings.json`); later references pass the path, not the full text
 - Cap parallel fan-out at ≤4 subagents per layer; batch or narrow task scope if more are needed
-- Template files are located at `runtime/assets/templates/` (installed with the plugin)
+- Template files are located at `templates/` (installed with the plugin)
 
 <!-- ODK:reference contracts/skill-guides/router/profiles.md -->
 ## Profile Detection
@@ -113,6 +84,6 @@ When using bridge commands, `using-odk-bridge` is loaded automatically and provi
 
 ## Template Reference
 
-- AI artifact templates: `runtime/assets/templates/ai/` (proposal, spec, design, execution-plan, spec-for-validation, threat-model)
-- Review templates: `runtime/assets/templates/review/` (spec-compliance, code-quality, verification)
-- Design-docs submission metadata: `runtime/assets/templates/metadata_tracking.yaml`
+- AI artifact templates: `templates/ai/` (proposal, spec, design, execution-plan, spec-for-validation, threat-model)
+- Review templates: `templates/review/` (spec-compliance, code-quality, verification)
+- Design-docs submission metadata: `templates/metadata_tracking.yaml`

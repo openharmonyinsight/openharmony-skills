@@ -112,7 +112,7 @@ license: MIT
    - 对差距项，记录整改措施
 
 7. **生成威胁模型文档**：
-   - 从 `runtime/assets/templates/ai/threat-model.md` 读取模板
+   - 从 `templates/ai/threat-model.md` 读取模板
    - 按照模板生成完整的威胁模型文档
    - 包含 Mermaid 标准化 DFD 图（按「绘制标准化数据流图」规范）、STRIDE × DFD 威胁矩阵、高优先级威胁汇总表与逐条详细说明、OH 威胁模式交叉检查矩阵、合规矩阵
 
@@ -134,7 +134,7 @@ license: MIT
 
 ## 模板参考
 
-基础模板：`runtime/assets/templates/ai/threat-model.md`
+基础模板：`templates/ai/threat-model.md`
 
 OH 平台威胁模式清单：`references/openharmony-threat-patterns.md`（SKILL.md 同级 `references/` 目录）
 

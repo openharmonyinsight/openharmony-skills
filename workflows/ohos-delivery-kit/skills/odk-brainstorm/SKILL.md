@@ -1,6 +1,6 @@
 ---
 name: odk-brainstorm
-description: "Use before any ODK phase skill (odk-propose/odk-spec/odk-design) to stress-test a plan or design. Explores the decision tree relentlessly — code-structure and flow-level questions, not classification forms. Outputs a decision summary that feeds directly into the next phase document. Zero plugin dependencies — works on all four platforms."
+description: "Use when clarifying requirements or stress-testing decisions before odk-propose, odk-spec, or odk-design. Explore code-grounded alternatives, failure paths, and unresolved constraints before drafting documents. Zero plugin dependencies."
 license: MIT
 ---
 
@@ -104,7 +104,7 @@ Ask the user to confirm: "以上是访谈摘要，确认后继续生成下一阶
 
 If invoked standalone before `proposal.md` exists, next skill is `odk-propose`. If invoked inline from `odk-spec` Step -1, continue into odk-spec Step 0. If invoked inline from `odk-design` Step -1, continue into odk-design Step 0.
 
-If the session is interrupted, tell the user: "访谈中断了。请重新输入 /odk-brainstorm 继续；模型会从对话历史里恢复已确认的决策，如历史不可用则从 Step 1 重新开始。"
+If the session is interrupted, tell the user: "访谈中断了。请重新调用已安装的 odk-brainstorm 技能继续；模型会从对话历史里恢复已确认的决策，如历史不可用则从 Step 1 重新开始。"
 
 ## Output
 

@@ -22,7 +22,7 @@ One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta s
 1. Invoke OpenSpec `/opsx:propose` which produces proposal + delta specs + design + tasks in one call.
 2. When OpenSpec tries to write to `openspec/changes/`, apply `using-odk-bridge` Output Redirection Rules instead.
 3. Process output per the active output mode (strict/passthrough/merge, default strict):
-   - **strict**: Transform each artifact to conform to ODK templates at `runtime/assets/templates/ai/`.
+   - **strict**: Transform each artifact to conform to ODK templates at `templates/ai/`.
    - **passthrough**: Copy original format to `codespec/changes/<repo-name>/<proposal-id>/` unchanged.
    - **merge**: Use OpenSpec format as base, append ODK-required sections.
 4. In strict mode, ensure ODK-required fields are present:
@@ -32,6 +32,11 @@ One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta s
      - Security baseline check (conditional, Step 7): when `proposal.md`「安全/权限」=「是」, expand `design.md`「安全基础检查」; if high-risk criteria are hit, produce `threat-model.md` (see `odk-security-threat-model`).
    - spec: AC numbering (AC-X.Y format), compatibility declaration, verification mapping.
    - execution-plan: AC-Task traceability table, code scope per task.
+
+Before writing `execution-plan.md`, apply `odk-plan`'s build-product and command resolution step (without replacing the active bridge's task decomposition).
+<!-- ODK:reference contracts/skill-guides/delivery/device-version.md -->
+Read `contracts/skill-guides/delivery/device-version.md` to skip daily selection for QEMU, ask daily versus existing for every other product, and persist the choice and preparation method in `## 构建与验证环境`. Preserve this environment section in every output mode.
+<!-- /ODK:reference -->
 
 ## Output
 

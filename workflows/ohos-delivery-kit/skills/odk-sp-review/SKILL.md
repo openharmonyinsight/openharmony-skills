@@ -23,7 +23,7 @@ Invoke Superpowers `requesting-code-review` and `verification-before-completion`
 
 1. Invoke Superpowers `requesting-code-review` to review the implementation against `spec.md` and `execution-plan.md`.
 2. Invoke Superpowers `verification-before-completion` before making any readiness claim.
-3. Generate 3 review documents from templates in `runtime/assets/templates/review/`, using the Superpowers review and verification results as the primary evidence:
+3. Generate 3 review documents from templates in `templates/review/`, using the Superpowers review and verification results as the primary evidence:
    - **spec-compliance-YYYYMMDD.md** — Check every AC against implementation
    - **code-review-YYYYMMDD.md** — Code quality review; verify code scope matches execution-plan boundaries
    - **verification-YYYYMMDD.md** — Verification evidence; explicit code-vs-spec consistency conclusion
