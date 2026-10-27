@@ -37,12 +37,15 @@ Source: `main@ca98f5494b5ec4075d539bc09340261d856441d6`.
   skill-local symlinks pointing to a maintainer's machine; keep FMEA references
   as real files alongside the skill.
 
-### Installation limitation
+### Installation verification
 
-- oh-skillhub 0.1.42 resolves the shared runtime paths, but its workflow-plugin
-  projection does not copy FMEA skill-local references. The full installation
-  regression remains failing until the installer supports this path; source
-  publication and three-host resource projection checks pass.
+- Re-synchronized the unchanged source main revision and verified installation
+  with the official npm oh-skillhub 0.1.43 release containing the auxiliary-file
+  copy fix. All 40 workflow regression tests pass, including V1/V2 installation
+  for Claude Code, Codex and OpenCode, FMEA's 44 reference files, default config
+  and runtime references. The source release gate also passes for all three hosts.
+- oh-skillhub 0.1.42 still omits skill-local files in workflow-plugin projections;
+  use 0.1.43 or a later version passing the installation check.
 
 ## [0.13.0] - 2026-10-21
 

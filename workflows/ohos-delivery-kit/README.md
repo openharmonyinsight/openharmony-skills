@@ -181,11 +181,14 @@ must be installed alongside the rendered `SKILL.md`, preserving relative links.
 
 To check real V1 and V2 installation artifacts without registering plugins in
 your agents, provide a local installer source or unpacked npm package.
-Runtime path relocation was verified with oh-skillhub 0.1.42; 0.1.40 does not
-support these literal references. Version 0.1.42 still omits skill-local
-auxiliary files in its workflow-plugin projection, so the installation check
-currently fails for FMEA references. Use an installer that passes this check
-before relying on the installed FMEA workflow:
+Installation was verified with the official npm package oh-skillhub 0.1.43:
+all 40 workflow regression tests pass, including V1 and V2 installation for
+Claude Code, Codex and OpenCode. Skill-local auxiliary files, including all 44
+FMEA reference files, are copied alongside SKILL.md; the default configuration
+and shared runtime references also resolve correctly. Use 0.1.43 or a later
+version that passes this check. Version 0.1.42 omits skill-local auxiliary files
+in workflow-plugin projections; 0.1.40 also lacks literal-path relocation.
+Reproduce the installation check with:
 
 ```bash
 OH_SKILLHUB_PACKAGE_ROOT=/path/to/oh-skillhub \
