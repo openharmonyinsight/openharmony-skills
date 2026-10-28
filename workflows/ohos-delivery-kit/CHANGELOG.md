@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.14.0] - 2026-10-28
 
-Source: `main@9f4ffea7b61a1ef12e2eed79177ae3f07e1f9cdf`.
+Source: `main@bfcaabbbea79835569dbf93d61925083a001d570`.
 
 ### Added
 
@@ -38,6 +38,9 @@ Source: `main@9f4ffea7b61a1ef12e2eed79177ae3f07e1f9cdf`.
   a supported manual preparation method. Bridge planning paths follow the same rule.
 
 ### Fixed
+
+- Reject duplicate nine-column DFX main tables so an ambiguous layout cannot
+  bypass the C2/C3 gates (source PR !178).
 
 - Import the source revision containing PR !174 contract-gate repairs (bare template paths and migrated regression fixtures).
 

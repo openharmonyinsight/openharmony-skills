@@ -43,7 +43,8 @@ from odk_document import (  # noqa: E402
     PLACEHOLDER_RE, BRACKET_PLACEHOLDER_RE, _visible_markdown, atx_heading, headings,
     section_texts, section_text, require_unique_section, normalize_cell, split_table_row,
     is_separator_row, parsed_markdown_tables, markdown_tables, table_has_columns,
-    tables_with_columns, table_with_columns, unique_table_with_columns, meaningful,
+    tables_with_columns, table_with_columns, unique_table_with_columns,
+    require_unique_table_with_columns, meaningful,
 )
 from odk_repository import parse_git_remote, metadata_repository_url, metadata_pr_url_matches  # noqa: E402
 from odk_diff import valid_unified_diff  # noqa: E402
@@ -2049,9 +2050,7 @@ def _dfx_main_table_pairs(design: str) -> list[tuple[str, str]]:
     if not fault_subsection:
         return []
     visible = _visible_markdown(fault_subsection)
-    if not table_has_columns(visible, _DFX_FAULT_COLUMNS):
-        return []
-    rows = table_with_columns(visible, _DFX_FAULT_COLUMNS)
+    rows = require_unique_table_with_columns(visible, _DFX_FAULT_COLUMNS) or []
     return [
         (row.get("分析对象", "").strip(), row.get("故障模式", "").strip())
         for row in rows
@@ -2395,12 +2394,18 @@ def validate_goal_us_coverage(change_dir: Path, reporter: Reporter) -> None:
 
 
 def validated_dfx_section(design: str, reporter: Reporter) -> str | None:
-    """Preserve absent/empty sections, but fail closed on ambiguous DFX parents."""
+    """Fail closed on ambiguous DFX sections or main tables before either gate."""
     try:
         section = require_unique_section(design, "DFX 设计")
         if section is not None:
             for title in ("DFX 故障模式分析", "DFX 故障模式处置", "DFX 约束清单"):
                 require_unique_section(section, title)
+            fault_section = require_unique_section(section, "DFX 故障模式分析")
+            if fault_section is not None:
+                try:
+                    require_unique_table_with_columns(fault_section, _DFX_FAULT_COLUMNS)
+                except ValueError as error:
+                    raise ValueError(f"DFX 故障模式分析: {error}") from error
         return section
     except ValueError as error:
         reporter.fail_once(f"design.md: {error}")
@@ -2639,7 +2644,7 @@ def validate_dfx_constraints(change_dir: Path, reporter: Reporter, archive_mode:
         )
         return
 
-    fault_rows = table_with_columns(visible_fault_subsection, required_dfx_columns)
+    fault_rows = require_unique_table_with_columns(visible_fault_subsection, required_dfx_columns) or []
 
     has_data_rows = False
     invalid_rows: list[str] = []

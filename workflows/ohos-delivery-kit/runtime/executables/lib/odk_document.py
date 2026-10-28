@@ -227,6 +227,19 @@ def tables_with_columns(text: str, required_columns: list[str]) -> list[list[dic
     return matches
 
 
+def require_unique_table_with_columns(
+    text: str, required_columns: list[str]
+) -> list[dict[str, str]] | None:
+    """Preserve absent/empty tables and reject multiple matching tables."""
+    tables = tables_with_columns(text, required_columns)
+    if len(tables) > 1:
+        raise ValueError(
+            f"duplicate tables matching required columns ({len(tables)}); "
+            "expected one unambiguous table"
+        )
+    return tables[0] if tables else None
+
+
 def table_with_columns(text: str, required_columns: list[str]) -> list[dict[str, str]]:
     tables = tables_with_columns(text, required_columns)
     return tables[0] if len(tables) == 1 else []
