@@ -105,7 +105,7 @@ For actual design-document submission, `odk-submit-design-docs` resolves and con
 - When spawning subagents (e.g. via bridge commands), run them in isolated contexts — never fork the main session history; the main session only dispatches tasks and receives summaries
 - Pass evidence by file path, not by content — artifacts land on disk once (`evidence/`, `pr-diff.txt`, `findings.json`); later references pass the path, not the full text
 - Cap parallel fan-out at ≤4 subagents per layer; batch or narrow task scope if more are needed
-- Template files are located at `runtime/assets/templates/` (installed with the plugin)
+- Template files are located at `templates/` (installed with the plugin)
 
 <!-- ODK:reference contracts/skill-guides/router/profiles.md -->
 ## Profile Detection
@@ -127,6 +127,6 @@ When using bridge commands, `using-odk-bridge` is loaded automatically and provi
 
 ## Template Reference
 
-- AI artifact templates: `runtime/assets/templates/ai/` (proposal, spec, design, execution-plan, spec-for-validation, threat-model)
-- Review templates: `runtime/assets/templates/review/` (spec-compliance, code-quality, verification)
-- Design-docs submission metadata: `runtime/assets/templates/metadata_tracking.yaml`
+- AI artifact templates: `templates/ai/` (proposal, spec, design, execution-plan, spec-for-validation, threat-model)
+- Review templates: `templates/review/` (spec-compliance, code-quality, verification)
+- Design-docs submission metadata: `templates/metadata_tracking.yaml`

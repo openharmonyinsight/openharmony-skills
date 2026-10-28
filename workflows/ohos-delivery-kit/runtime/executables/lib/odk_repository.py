@@ -6,7 +6,7 @@ import json
 import re
 from pathlib import Path
 from typing import NamedTuple
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 # Shipped fallback; user overrides are beside the active default configuration.
 DEFAULT_DESIGN_DOCS_REPOSITORY = "https://gitcode.com/OpenHarmonyAI/design-docs"
@@ -159,9 +159,16 @@ def metadata_repository_url(value: str) -> GitRemote | None:
 
 
 def metadata_pr_url_matches(url: str, repository_url: str) -> bool:
-    """Validate repository ownership of common PR/MR URL shapes, without network."""
+    """Check an HTTPS endpoint and repository path boundary, without network.
+
+    PR route names and identifier formats are platform-owned. This structural
+    check does not prove that the resource exists, is a PR, or belongs to this
+    repository; the publishing workflow must query the actual platform for that.
+    """
     repository = metadata_repository_url(repository_url)
-    if repository is None or any(char.isspace() for char in url):
+    if repository is None or '\\' in url or any(
+        char.isspace() or ord(char) < 32 or ord(char) == 127 for char in url
+    ):
         return False
     try:
         pr = urlsplit(url)
@@ -171,10 +178,24 @@ def metadata_pr_url_matches(url: str, repository_url: str) -> bool:
             return False
     except ValueError:
         return False
-    return re.fullmatch(
-        rf"/{re.escape(repository.repository)}/(?:pulls?|merge_requests|-/merge_requests|pull-requests|pullrequest)/[0-9]+",
-        pr.path,
-    ) is not None
+    prefix = f"/{repository.repository}/"
+    if not pr.path.startswith(prefix):
+        return False
+    suffix = pr.path[len(prefix):]
+    if suffix.endswith('/'):
+        suffix = suffix[:-1]
+    # Reject navigation and encoded delimiters rather than normalizing a URL
+    # into a different resource. Percent-encoded opaque Unicode IDs remain valid.
+    try:
+        for segment in suffix.split('/'):
+            decoded = unquote(segment, errors='strict')
+            if (not segment or decoded in {'.', '..'}
+                    or any(char in decoded for char in '/\\%')
+                    or any(ord(char) < 32 or ord(char) == 127 for char in decoded)):
+                return False
+    except UnicodeDecodeError:
+        return False
+    return True
 
 
 def same_repository_endpoint(confirmed: str, checkout: str) -> bool:

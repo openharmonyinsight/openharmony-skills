@@ -4,13 +4,21 @@ All notable changes to the published `ohos-delivery-kit` workflow are documented
 this file. Source artifacts are synchronized from
 `oshunter/ohos-delivery-kit` `main` through the marketplace publisher.
 
-## [0.14.0] - 2026-10-27
+## [0.14.0] - 2026-10-28
 
-Source: `main@3efc661b7696b7015c65e5d0020d21a7974c0687`.
+Source: `main@9f4ffea7b61a1ef12e2eed79177ae3f07e1f9cdf`.
 
 ### Added
 
 - Internationalization scope criteria, design sections and validation from source PR !168.
+
+- Reject ambiguous document sections: a duplicated required or conditional
+  section (including `DFX 设计` and its fault-mode subsections) now fails closed
+  and is reported once, instead of being read as absent and silently skipping the
+  DFX gates (source PR !177).
+- Accept private PR/MR route names and opaque IDs in `metadata_tracking.yaml`,
+  validating credential-free HTTPS, host and repository path boundary while
+  rejecting navigation segments and encoded delimiters.
 
 - Configure an ordered product menu with `build_products`; retain `build_product`
   as the preferred default. Plans record the candidate list and one confirmed
@@ -40,6 +48,9 @@ Source: `main@3efc661b7696b7015c65e5d0020d21a7974c0687`.
 - Resume brainstorm using its installed skill name rather than a Claude command.
 - Ship the default configuration, archive migration validator and all Python
   runtime libraries; align release metadata with the merged source revision.
+- Ship the shared `require_unique_section` runtime helper so gates can tell a
+  duplicate section from a missing one, and make `repository_url` an explicit
+  template field so non-GitCode PRs record their real target repository URL.
 - Declare the complete asset tree so installation includes the default config,
   retaining named asset components for literal-path relocation. Remove stale
   skill-local symlinks pointing to a maintainer's machine; keep FMEA references

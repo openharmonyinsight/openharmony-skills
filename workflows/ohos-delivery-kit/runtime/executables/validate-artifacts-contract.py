@@ -41,7 +41,7 @@ from odk_yaml import (  # noqa: E402
 )
 from odk_document import (  # noqa: E402
     PLACEHOLDER_RE, BRACKET_PLACEHOLDER_RE, _visible_markdown, atx_heading, headings,
-    section_texts, section_text, normalize_cell, split_table_row,
+    section_texts, section_text, require_unique_section, normalize_cell, split_table_row,
     is_separator_row, parsed_markdown_tables, markdown_tables, table_has_columns,
     tables_with_columns, table_with_columns, unique_table_with_columns, meaningful,
 )
@@ -233,6 +233,11 @@ class Reporter:
         print(f"  FAIL {message}")
         self.messages.append(f"FAIL {message}")
         self.failed += 1
+
+    def fail_once(self, message: str) -> None:
+        """Several gates may depend on the same invalid document section."""
+        if f"FAIL {message}" not in self.messages:
+            self.fail(message)
 
     def warn(self, message: str) -> None:
         print(f"  WARN {message}")
@@ -1646,8 +1651,17 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
             if state and state not in {"open", "merged", "closed"}:
                 reporter.fail("metadata_tracking.yaml: pull request state must be open, merged, or closed")
             url = str(pull_request.get("url", "")).strip()
-            if url and (not repo_is_valid or not metadata_pr_url_matches(url, repo_url)):
-                reporter.fail("metadata_tracking.yaml: pull request url must match its repository host, port and path")
+            pr_remote = parse_git_remote(url) if url else None
+            if url and not explicit_url and pr_remote and pr_remote.host != "gitcode.com":
+                reporter.fail(
+                    "metadata_tracking.yaml: repository_url is required for non-GitCode pull requests; "
+                    "set it to the actual target repository URL and preserve the real PR URL"
+                )
+            elif url and (not repo_is_valid or not metadata_pr_url_matches(url, repo_url)):
+                reporter.fail(
+                    "metadata_tracking.yaml: pull request url must be credential-free HTTPS, "
+                    "match its repository host and port, and stay within its repository path boundary"
+                )
             commit = str(pull_request.get("commit", "")).strip()
             if commit and not re.fullmatch(r"[0-9a-fA-F]{40}", commit):
                 reporter.fail("metadata_tracking.yaml: pull request commit must be a full 40-digit hex SHA")
@@ -1810,21 +1824,30 @@ def validate_sections(
         if not path.is_file():
             continue
         text = read_text(path)
-        present = headings(text)
         exemptions = conditional_section_exemptions(text)
 
         required = artifacts[name].get("required_sections", [])
         for section in required:  # type: ignore[assignment]
-            if section in present:
+            try:
+                body = require_unique_section(text, str(section))
+            except ValueError as error:
+                reporter.fail_once(f"{file_name}: {error}")
+                continue
+            if body is not None:
                 reporter.pass_(f"{file_name}: required section present: {section}")
             else:
                 reporter.fail(f"{file_name}: required section missing: {section}")
 
         conditional = artifacts[name].get("conditional_sections", [])
         for section in conditional:  # type: ignore[assignment]
+            try:
+                body = require_unique_section(text, str(section))
+            except ValueError as error:
+                reporter.fail_once(f"{file_name}: {error}")
+                continue
             if section in RESOURCE_SECTIONS.values():
                 continue  # trigger-aware checks live in validate_resource_constraints
-            if section in present:
+            if body is not None:
                 reporter.pass_(f"{file_name}: conditional section present: {section}")
             else:
                 if section in exemptions:
@@ -1859,12 +1882,15 @@ def validate_present_optional_sections(
         if not required:
             continue
         text = read_text(path)
-        present = headings(text)
         for section in required:  # type: ignore[assignment]
-            if section in present:
+            try:
+                body = require_unique_section(text, str(section))
+            except ValueError as error:
+                reporter.fail_once(f"{file_name}: {error}")
+                continue
+            if body is not None:
                 reporter.pass_(f"{file_name} (present optional): section present: {section}")
                 # Also check that section's tables have non-placeholder data rows
-                body = section_text(text, str(section))
                 all_tables = markdown_tables(body)
                 if all_tables:
                     for table in all_tables:
@@ -2368,6 +2394,19 @@ def validate_goal_us_coverage(change_dir: Path, reporter: Reporter) -> None:
         reporter.pass_(f"spec.md US entries cover all {len(defined_goals)} proposal goal ids")
 
 
+def validated_dfx_section(design: str, reporter: Reporter) -> str | None:
+    """Preserve absent/empty sections, but fail closed on ambiguous DFX parents."""
+    try:
+        section = require_unique_section(design, "DFX 设计")
+        if section is not None:
+            for title in ("DFX 故障模式分析", "DFX 故障模式处置", "DFX 约束清单"):
+                require_unique_section(section, title)
+        return section
+    except ValueError as error:
+        reporter.fail_once(f"design.md: {error}")
+        return None
+
+
 def validate_dfx_ac_gate(change_dir: Path, reporter: Reporter, archive_mode: bool) -> None:
     """Level C3: every DFX fault mode (main-table hit or AD entry) must be dispositioned,
     AC-linked dispositions must reference spec-defined ACs, and archive requires those
@@ -2377,8 +2416,8 @@ def validate_dfx_ac_gate(change_dir: Path, reporter: Reporter, archive_mode: boo
         return
 
     design = read_text(design_path)
-    dfx_section = section_text(design, "DFX 设计")
-    if not dfx_section:
+    dfx_section = validated_dfx_section(design, reporter)
+    if dfx_section is None:
         return
 
     main_pairs = _dfx_main_table_pairs(design)
@@ -2566,8 +2605,8 @@ def validate_dfx_constraints(change_dir: Path, reporter: Reporter, archive_mode:
     print("\nLevel C2: DFX Fault Mode Coverage")
 
     design = read_text(design_path)
-    dfx_section = section_text(design, "DFX 设计")
-    if not dfx_section:
+    dfx_section = validated_dfx_section(design, reporter)
+    if dfx_section is None:
         # design.md missing the DFX H2 is reported by the section validator.
         return
 

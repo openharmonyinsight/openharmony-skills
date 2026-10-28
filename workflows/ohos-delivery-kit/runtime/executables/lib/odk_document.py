@@ -111,6 +111,20 @@ def section_text(text: str, title: str) -> str:
     return sections[0] if len(sections) == 1 else ""
 
 
+def require_unique_section(text: str, title: str) -> str | None:
+    """Return None for absence, preserve empty bodies, and reject ambiguity.
+
+    Gate callers use this instead of the legacy section_text compatibility API,
+    whose empty-string result does not distinguish duplicate and missing titles.
+    """
+    sections = section_texts(text, title)
+    if len(sections) > 1:
+        raise ValueError(
+            f"duplicate {title} sections ({len(sections)}); expected one unambiguous section"
+        )
+    return sections[0] if sections else None
+
+
 def normalize_cell(value: str) -> str:
     return value.replace("<br>", " ").replace("<br/>", " ").replace("<br />", " ").strip()
 

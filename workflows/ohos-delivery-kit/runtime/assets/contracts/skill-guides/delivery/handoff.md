@@ -79,8 +79,10 @@ Once the source PR is confirmed, **immediately generate `metadata_tracking.yaml`
 
 Track non-GitCode PRs using their real URLs and an explicit `repository_url` as
 specified in the metadata guide. Do not convert them to GitCode URLs or represent
-successful tracking as an empty list. Unsupported URL formats or unavailable host
-access stop the handoff with an explanation. Standalone document submission
+successful tracking as an empty list. Authentication/query failures or repository/SHA
+conflicts stop the handoff with a specific explanation. Unfamiliar private PR route
+names or opaque IDs alone do not require allowlist approval or a fabricated URL alias.
+Standalone document submission
 retains its documented no-PR mode.
 
 After `metadata_tracking.yaml` is generated and verified, **immediately prompt the user about design-docs submission** with an explicit choice — do not bury this as a side note:

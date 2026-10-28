@@ -48,7 +48,7 @@ license: MIT
 
 0. Check for subsystem profile: read and follow `contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.design` (additional sections, fragments) and `agent_instructions.design`
 1. **Code fact baseline:** Consolidate the findings from Step -1 Sub-step A into a structured baseline: file:line references for key data structures, entry-point signatures, call chain hops, concurrency boundaries, and failure paths. Use this baseline to populate `代码事实基线` in `design.md`. Skip only for pure greenfield modules, pure documentation changes, or config-only changes.
-2. Read template from `runtime/assets/templates/ai/design.md`
+2. Read template from `templates/ai/design.md`
 3. Generate `design.md` per the template. Conditionally include `代码事实基线`, `类图`, and `状态归属与不变量` when applicable — add `类图` (Mermaid `classDiagram`) when the change involves class/interface inheritance or implementation hierarchies (e.g. IPC interface→proxy→stub→impl) or cross-module composition. Reference specific `spec.md` AC numbers in design decisions.
    If any proposal `资源开销审视` dimension is `required`, expand `资源设计` (`contracts/artifacts.yaml#resource_contract`). Content detail is subsystem-owned; ODK requires the section and meaningful, non-placeholder content without imposing a subsystem design schema.
 4. If Step 1 produced code facts, populate `代码事实基线`; otherwise omit it.
