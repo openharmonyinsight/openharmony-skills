@@ -200,6 +200,8 @@ artifacts:
         required_when: "The proposal 8-dimension eval marks 安全/权限 as 是 — the single trigger source. propose sets 安全/权限=是 when the change crosses trust boundaries (IPC/Binder/shared-mem/socket), crosses security layers (user↔kernel, sandbox, SELinux domains), handles sensitive data, or uses crypto/auth/authorization; those are the judgment basis at propose, not separate triggers (see odk-propose)."
       - section: "资源设计"
         required_when: "resource chain active (any dimension impact state in active_when_states)."
+      - section: "国际化依赖分析"
+        required_when: "The proposal 8-dimension eval marks 国际化/无障碍 as 是 — the single trigger source (see odk-propose/reference/i18n-scope-criteria.md)."
 
   execution-plan:
     file: "execution-plan.md"

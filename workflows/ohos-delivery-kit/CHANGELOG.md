@@ -6,9 +6,11 @@ this file. Source artifacts are synchronized from
 
 ## [0.14.0] - 2026-10-27
 
-Source: `main@fec9666a20195dd22df920c3eb3997b89af1e16f`.
+Source: `main@3efc661b7696b7015c65e5d0020d21a7974c0687`.
 
 ### Added
+
+- Internationalization scope criteria, design sections and validation from source PR !168.
 
 - Configure an ordered product menu with `build_products`; retain `build_product`
   as the preferred default. Plans record the candidate list and one confirmed
@@ -28,6 +30,8 @@ Source: `main@fec9666a20195dd22df920c3eb3997b89af1e16f`.
   a supported manual preparation method. Bridge planning paths follow the same rule.
 
 ### Fixed
+
+- Import the source revision containing PR !174 contract-gate repairs (bare template paths and migrated regression fixtures).
 
 - Resolve resource self-checks relative to the actual guide location in source,
   native and neutral layouts, without restoring resource-root placeholders.

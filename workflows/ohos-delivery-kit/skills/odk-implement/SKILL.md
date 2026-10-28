@@ -23,7 +23,9 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
 1. Read the active `codespec/changes/<repo-name>/<proposal-id>/spec.md` AC list and `execution-plan.md` 代码范围映射 (Task → file).
 2. Read `codespec/changes/<repo-name>/<proposal-id>/execution-plan.md` Task list, dependency graph, file scope, and each Task's「任务间接口」（Produces/Consumes）—align cross-task naming and signatures to it.
    Treat the `spec.md` ACs and the execution principles in `execution-plan.md` as authoritative, then proceed in Task order.
-3. For each Task (respecting dependency order):
+3. **读取 execution-plan.md 国际化依赖（proposal中 i18n = 「是」时）**：
+   从 plan 生成的 `execution-plan.md` 的 Task 详情中提取 i18n 调用信息（调用场景、仓路径、接口/方法）。
+4. For each Task (respecting dependency order):
    - Present the Task description and planned file scope.
    - Read only the Task's declared read-only context before editing.
    - **Analyze existing code patterns** for the Task's file scope:
@@ -113,13 +115,13 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
    - After each Task, update `execution-plan.md` 代码范围映射 with actual files, tests, and commit references.
    - Backfill the Task's `Actual Result` with final completion evidence, appending after any `[失败 Red]` and `[验证 Verify]` entries already recorded — do not overwrite them.
    - Mark the Task as completed in `execution-plan.md`: change all `- [ ]` checkboxes to `- [x]` in the Task's Steps section. If the Task list table has a `状态` column, update it to `Done`; otherwise add the column first.
-4. After all Tasks are attempted, produce an **Execution Summary**:
+5. After all Tasks are attempted, produce an **Execution Summary**:
    - List every Task with status: ✅ 已完成（Done） / ❌ 阻塞（Blocked） / ⚠️ 跳过（Skipped，附原因）
    - If any Task is incomplete, inform the user and do NOT suggest moving to review — wait for user direction
-5. If implementation reveals missing ACs or changed scope, pause and update `spec.md` / `execution-plan.md` before continuing.
-6. Keep changes within the Task file scope unless the user approves an execution-plan update.
-7. When any `资源开销审视` dimension is `required` (`contracts/artifacts.yaml#resource_contract`), complete subsystem measurement/evidence Tasks and the business-repo `odk_resource_gate` (commonly under `evidence/resource/`).
-8. After all Tasks are Done, **prompt the user about final device integration verification** before starting the automatic handoff. For physical products, show the plan's recorded version strategy and preparation result, then ask whether to run integrated verification on that device or skip it because per-Task verification was sufficient. Reuse the selected firmware; do not ask daily versus existing again, reflash automatically, or assume existing firmware is today's daily. If preparation is still needed, follow sub-step b and the plan's preparation method; automatic flashing still requires product `rk3568` AND non-empty `device_flash_skill`, plus explicit selected-device flashing confirmation. If the user requests a different version or device, update the plan and prepare it before testing.
+6. If implementation reveals missing ACs or changed scope, pause and update `spec.md` / `execution-plan.md` before continuing.
+7. Keep changes within the Task file scope unless the user approves an execution-plan update.
+8. When any `资源开销审视` dimension is `required` (`contracts/artifacts.yaml#resource_contract`), complete subsystem measurement/evidence Tasks and the business-repo `odk_resource_gate` (commonly under `evidence/resource/`).
+9. After all Tasks are Done, **prompt the user about final device integration verification** before starting the automatic handoff. For physical products, show the plan's recorded version strategy and preparation result, then ask whether to run integrated verification on that device or skip it because per-Task verification was sufficient. Reuse the selected firmware; do not ask daily versus existing again, reflash automatically, or assume existing firmware is today's daily. If preparation is still needed, follow sub-step b and the plan's preparation method; automatic flashing still requires product `rk3568` AND non-empty `device_flash_skill`, plus explicit selected-device flashing confirmation. If the user requests a different version or device, update the plan and prepare it before testing.
    For `arm64_virt`, skip this physical-device prompt and all daily preparation (qemu verification was done per-Task in sub-steps c/d).
    After this prompt, automatically follow the handoff below; do not require separate review/validate commands from the user.
 

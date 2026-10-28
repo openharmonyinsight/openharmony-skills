@@ -17,6 +17,7 @@ license: MIT
 2. Read `spec.md` AC list
 3. If `design.md` contains `状态归属与不变量`, read the declared dimensions — these map to the state ownership fields each Task must fill in
 4. If `design.md` contains `### DFX 故障模式处置`, read the disposition rows — ACs in the `关联 AC` column are fault-mode interception items and must be traced to Tasks (see Self-Review)
+5. **国际化依赖分析（`proposal.md` 的 `国际化·无障碍` 维度中判断国际化 = 「是」 时）**：读取 `design.md` 的 `## 国际化依赖分析` 章节，提取调用场景、仓路径、接口/方法，按仓路径分组作为任务生成输入
 
 ## Steps
 
@@ -43,6 +44,7 @@ license: MIT
      - 仅修改测试文件、配置文件或 API 声明文件（无 C++/ArkTS 业务代码改动）→ `验证命令` 字段只写测试命令，不写编译命令（`odk-implement` 会识别此形状并跳过编译步骤）
    - 将推断结果和理由写入 Task 的 `验证命令` 字段，格式：`<build_cmd> [--target <module>] && <test_cmd>`，不写占位符
    If any proposal `资源开销审视` dimension is `required`, expand `资源验证矩阵` (`contracts/artifacts.yaml#resource_contract`). Commands/evidence layout are subsystem-owned (often `evidence/resource/`); ODK requires the section and meaningful, non-placeholder content without imposing a subsystem measurement schema.
+   涉及国际化接口调用的任务时，在「任务间接口」或备注中记录调用场景、仓路径、接口/方法，便于 implement 阶段使用。 **禁止遗漏或虚构**
 4. Populate `execution-plan.md` AC-to-Task 追溯 (AC / Task / 验证状态) with the Task assignments.
 5. Self-Review the generated `execution-plan.md` before handing off — find issues and fix them inline, then move on without a second self-review pass. Self-review is an AI self-check only; it does not replace human approval or `odk-review`, and the Phase Gate in `using-odk` still applies:
    - **跨 Task 契约一致性**：逐 Task 比对「任务间接口」——后续 Task 的 Consumes 是否对得上某个前置 Task 的 Produces（函数名/参数/错误码/数据结构）；`clearLayers()` 在 TASK-3 产出、TASK-7 却写成 `clearFullLayers()` 就是 bug，就地改正。

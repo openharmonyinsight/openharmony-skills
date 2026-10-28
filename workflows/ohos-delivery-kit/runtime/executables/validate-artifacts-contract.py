@@ -182,6 +182,15 @@ DEVICE_VARIATION_ROWS = (
 EXTERNAL_DEPENDENCIES_SECTION = "外部依赖"
 EXTERNAL_DEPENDENCIES_COLUMNS = ["子系统", "仓库", "模块/路径", "依赖类型"]
 
+I18N_TRIGGER_DIMENSION = "国际化/无障碍"
+I18N_SECTION = "国际化依赖分析"
+I18N_TABLE_COLUMNS = ["调用场景", "i18n API 类型", "依赖类型", "仓路径", "接口/方法", "备注"]
+I18N_DEPENDENCY_TYPES = {"仓内封装", "外部依赖"}
+I18N_SUMMARY_RE = re.compile(
+    r"^\s*\|\s*合计\s*\|\s*\d+\s*个调用点\s*\|\s*仓内[:：]\s*\d+\s*/\s*外部[:：]\s*\d+\s*\|",
+    re.IGNORECASE,
+)
+
 PROPOSAL_ID_RE = re.compile(r"^[0-9]+$")
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 DRAFT_RE = re.compile(r"^draft-\d{8}-(.+)$")
@@ -896,6 +905,28 @@ def parse_eight_dim_performance_involvement(proposal: str) -> str | None:
     rows = table_with_columns(section, ["维度", "是否涉及"])
     for row in rows:
         if row.get("维度", "").strip() != "性能":
+            continue
+        cell = row.get("是否涉及", "").strip()
+        if not cell:
+            return None
+        first = cell.split()[0] if cell.split() else cell
+        if first.startswith("是"):
+            return "是"
+        if first.startswith("否"):
+            return "否"
+        return first
+    return None
+
+
+def parse_eight_dim_involvement(proposal: str, dimension: str) -> str | None:
+    """Return 是/否 from one 不涉及项确认 dimension row, or None if the row is absent."""
+
+    section = section_text(proposal, "不涉及项确认")
+    if not section:
+        return None
+    rows = table_with_columns(section, ["维度", "是否涉及"])
+    for row in rows:
+        if row.get("维度", "").strip() != dimension:
             continue
         cell = row.get("是否涉及", "").strip()
         if not cell:
@@ -2794,6 +2825,75 @@ def validate_archive_evidence_claims(change_dir: Path, unresolved_required: bool
         reporter.pass_("evidence does not claim readiness while required artifacts have unresolved markers")
 
 
+def validate_i18n_constraints(change_dir: Path, reporter: Reporter, archive_mode: bool) -> None:
+    proposal_path = change_dir / "proposal.md"
+    design_path = change_dir / "design.md"
+    if not proposal_path.is_file() or not design_path.is_file():
+        return
+
+    proposal = _visible_markdown(read_text(proposal_path))
+    involvement = parse_eight_dim_involvement(proposal, I18N_TRIGGER_DIMENSION)
+    if involvement != "是":
+        reporter.pass_("i18n constraints not triggered")
+        return
+
+    design = _visible_markdown(read_text(design_path))
+    body = section_text(design, I18N_SECTION)
+    if not body:
+        draft_warn_archive_fail(
+            reporter,
+            archive_mode,
+            f"design.md missing {I18N_SECTION} section while 国际化/无障碍 = 是",
+        )
+        return
+
+    issues: list[str] = []
+    if not table_has_columns(body, I18N_TABLE_COLUMNS):
+        missing = [
+            c for c in I18N_TABLE_COLUMNS
+            if not table_has_columns(body, [c])
+        ]
+        issues.append(
+            f"{I18N_SECTION} table missing required column: {', '.join(missing)}"
+        )
+    else:
+        rows = table_with_columns(body, I18N_TABLE_COLUMNS)
+        has_data_rows = False
+        for row in rows:
+            scene = row.get("调用场景", "").strip()
+            if not meaningful(scene):
+                continue
+            has_data_rows = True
+            dep_type = row.get("依赖类型", "").strip()
+            if dep_type not in I18N_DEPENDENCY_TYPES:
+                issues.append(f"{I18N_SECTION} row '{scene}' has invalid 依赖类型: {dep_type or '<empty>'}")
+            for column in ("仓路径", "接口/方法"):
+                value = row.get(column, "").strip()
+                if not meaningful(value) or unresolved_markers(value):
+                    issues.append(
+                        f"{I18N_SECTION} row 'scene' has unresolved {column}: {value or '<empty>'}"
+                    )
+        if not has_data_rows:
+            issues.append(f"{I18N_SECTION} has no data rows (all placeholder/empty)")
+
+        summary_found = any(
+            I18N_SUMMARY_RE.match(line)
+            for line in body.splitlines()
+            if line.lstrip().startswith("|")
+        )
+        if not summary_found:
+            issues.append(f"{I18N_SECTION} missing concrete 合计 summary row (N/X/Y)")
+
+    if issues:
+        draft_warn_archive_fail(
+            reporter,
+            archive_mode,
+            "design.md i18n constraints: " + "; ".join(issues),
+        )
+    else:
+        reporter.pass_("design.md i18n dependency analysis has complete, confirmed rows")
+
+
 def validate_archive_readiness(
     change_dir: Path,
     artifacts: dict[str, dict[str, object]],
@@ -2859,6 +2959,8 @@ def main(argv: list[str]) -> int:
     validate_optional_evidence(change_dir, reporter)
     print("\nResource Constraints")
     validate_resource_constraints(change_dir, reporter, archive=strict_delivery)
+    print("\ni18n Constraints")
+    validate_i18n_constraints(change_dir, reporter, strict_delivery)
     if strict_delivery:
         validate_archive_readiness(change_dir, artifacts, files, reporter)
 
