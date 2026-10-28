@@ -6,12 +6,66 @@ from pathlib import Path
 import os
 import re
 import subprocess
+import tempfile
 import unittest
 
 WORKFLOW_ROOT = Path(__file__).resolve().parents[1]
 
 
 class ReleaseDocumentationTest(unittest.TestCase):
+    def test_migration_09_examples_run_with_the_shipped_tool(self) -> None:
+        guide = (WORKFLOW_ROOT / "MIGRATION-0.9.0.md").read_text(encoding="utf-8")
+        self.assertIn("odk-link-proposal", guide)
+        self.assertIn("proposal_id:", guide)
+        self.assertNotIn("odk-link-req", guide)
+        self.assertNotRegex(guide, r"\breq:")
+        mapping_rows = re.findall(r"^((?:\.codespec|codespec)/changes/[^\n]+\t[^\n]+)$",
+                                  guide, re.MULTILINE)
+        self.assertEqual(4, len(mapping_rows))
+        commands = re.findall(r"^python3 (runtime/executables/\S+) (plan|check-staged) --map (\S+) --repo \.$",
+                              guide, re.MULTILINE)
+        self.assertEqual(["plan", "check-staged"], [c[1] for c in commands])
+        self.assertEqual(commands[0][2], commands[1][2])
+        with tempfile.TemporaryDirectory(prefix="odk-migration-guide-") as temporary:
+            root = Path(temporary) / "sample"
+            root.mkdir()
+            mapping = root.parent / "archive-map.tsv"
+            mapping.write_text("\n".join(mapping_rows) + "\n", encoding="utf-8")
+            for row in mapping_rows:
+                source, proposal_id = row.split("\t")
+                self.assertTrue(proposal_id == "-" or proposal_id.isdigit(), row)
+                change = root / source
+                change.mkdir(parents=True)
+                (change / "proposal.md").write_text(
+                    '---\nproposal_id: "' + ("" if proposal_id == "-" else proposal_id)
+                    + '"\ntarget_release: "1.0"\n---\n', encoding="utf-8")
+            def git(*args):
+                subprocess.run(["git", "-C", str(root), *args], check=True,
+                               capture_output=True, text=True, timeout=30)
+            git("init", "-q")
+            git("add", ".")
+            git("-c", "user.name=Test", "-c", "user.email=test@example.com",
+                "-c", "commit.gpgsign=false", "commit", "-qm", "migration fixture")
+            result = subprocess.run(
+                ["python3", "-I", "-B", str(WORKFLOW_ROOT / commands[0][0]),
+                 "plan", "--map", str(mapping), "--repo", str(root)],
+                capture_output=True, text=True, timeout=30)
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+            self.assertIn("PASS migration plan: 4 archive(s)", result.stdout)
+            for proposal_id in ("9988", "12345", "88", "draft-20260831-new-focus"):
+                self.assertIn("codespec/changes/sample/" + proposal_id, result.stdout)
+            for line in result.stdout.splitlines():
+                if line.startswith("PLAN\t"):
+                    _, source, target = line.split("\t")
+                    (root / target).parent.mkdir(parents=True, exist_ok=True)
+                    git("mv", source, target)
+            result = subprocess.run(
+                ["python3", "-I", "-B", str(WORKFLOW_ROOT / commands[1][0]),
+                 "check-staged", "--map", str(mapping), "--repo", str(root)],
+                capture_output=True, text=True, timeout=30)
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+            self.assertIn("PASS staged migration: 4 proposal(s)", result.stdout)
+
     def test_manifest_registers_every_shipped_skill_and_command(self) -> None:
         manifest = (WORKFLOW_ROOT / "plugin.yaml").read_text(encoding="utf-8")
         registered = re.findall(r"(?:path: | - )(skills/[^\s]+/SKILL\.md)", manifest)
