@@ -1,6 +1,6 @@
 ---
 name: odk-security-threat-model
-description: "当变更涉及安全/隐私/合规且需要 threat-model.md（STRIDE + 法规检查）时使用。绕过技能触发条件，由提案的安全/权限维度触发。零插件依赖。"
+description: "Use when a proposal involves security, privacy, permissions, or compliance and requires threat-model.md with STRIDE analysis and regulatory checks. Trigger from the proposal security dimensions. Zero plugin dependencies."
 license: MIT
 ---
 
@@ -47,7 +47,7 @@ license: MIT
    - 安全控制（身份验证、授权、加密）
 5. 读取 `references/openharmony-threat-patterns.md`（SKILL.md 同级 `references/` 目录）获取 OH 平台威胁模式清单
 
-## 步骤
+## Steps
 
 1. **触发验证**：
    - 验证变更是否满足触发条件
@@ -112,11 +112,11 @@ license: MIT
    - 对差距项，记录整改措施
 
 7. **生成威胁模型文档**：
-   - 从 `templates/ai/threat-model.md` 读取模板
+   - 从 `runtime/assets/templates/ai/threat-model.md` 读取模板
    - 按照模板生成完整的威胁模型文档
    - 包含 Mermaid 标准化 DFD 图（按「绘制标准化数据流图」规范）、STRIDE × DFD 威胁矩阵、高优先级威胁汇总表与逐条详细说明、OH 威胁模式交叉检查矩阵、合规矩阵
 
-## 输出
+## Output
 
 写入 `codespec/changes/<repo-name>/<proposal-id>/threat-model.md`
 
@@ -134,7 +134,7 @@ license: MIT
 
 ## 模板参考
 
-基础模板：`templates/ai/threat-model.md`
+基础模板：`runtime/assets/templates/ai/threat-model.md`
 
 OH 平台威胁模式清单：`references/openharmony-threat-patterns.md`（SKILL.md 同级 `references/` 目录）
 

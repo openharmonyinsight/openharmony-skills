@@ -17,12 +17,16 @@ license: MIT
 2. Read `spec.md` AC list
 3. If `design.md` contains `状态归属与不变量`, read the declared dimensions — these map to the state ownership fields each Task must fill in
 4. If `design.md` contains `### DFX 故障模式处置`, read the disposition rows — ACs in the `关联 AC` column are fault-mode interception items and must be traced to Tasks (see Self-Review)
-5. **国际化依赖分析（`proposal.md` 的 `国际化·无障碍` 维度中判断国际化 = 「是」 时）**：读取 `design.md` 的 `## 国际化依赖分析` 章节，提取调用场景、仓路径、接口/方法，按仓路径分组作为任务生成输入
+5. **国际化依赖分析（`proposal.md` 的 `国际化` 维度中判断国际化 = 「是」 时）**：读取 `design.md` 的 `## 国际化依赖分析` 章节，提取调用场景、仓路径、接口/方法，按仓路径分组作为任务生成输入
 
 ## Steps
 
+Task 列表的「AC 映射」必须填写 AC 编号；不直接关闭 AC 的文档/基础设施 Task 填 `N/A（简短理由）`，不可留空、只写 `N/A` 或用 `—`。每条 AC 仍须在追溯表中关联 Task 和验证方式。
+
+For configuration-dependent steps, use the effective-configuration command defined in `using-odk`; do not merge installation files independently. Stop on config errors. Existing execution-plan commands remain authoritative until explicitly changed.
+
 0. Check for subsystem profile: read and follow `contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.execution-plan` (additional prohibitions) and `agent_instructions.plan` before generating content
-1. Read template from `templates/ai/execution-plan.md`
+1. Read template from `runtime/assets/templates/ai/execution-plan.md`
 2. **API 声明文件任务（条件触发）**：若 proposal.md `API/SDK` = 「是」，必须在所有任务的最前面插入一个 API 声明文件修改任务（排在 Task-1），任务内容为"根据 spec.md `## API 规格定义` 修改声明文件"。该任务排在第一位的原因是：后续功能实现任务依赖声明文件的修改结果，声明文件未完成时其他任务无法开展。
 3. Generate `execution-plan.md` per the template. Fill the required traceability, task detail, verification, and code-scope fields enough to pass artifact contract validation. For each Task, fill「任务间接口」（Produces=供后续 Task 依赖的接口签名/错误码/innerAPI/数据结构，Consumes=来自前置 Task 的契约；无跨 Task 契约写「无」），让只读单 Task 的执行者也能对齐跨 Task 命名与签名。
    **构建与验证环境（必填）**：在生成 `execution-plan.md` 前读取 `build_products`、`build_product`、`build_command`、`emulator_command`、`test_command`（`odk_config_ext.yaml` 覆盖默认配置），先确认本次产品，再生成具体命令。

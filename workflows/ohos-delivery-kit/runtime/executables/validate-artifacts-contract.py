@@ -53,8 +53,12 @@ from odk_api_signature import (  # noqa: E402
 )
 
 
-AC_RE = re.compile(r"\bAC-\d+(?:\.\d+)?\b")
-AC_DEF_RE = re.compile(r"^\s*[-*]\s+\*\*AC-\d+(?:\.\d+)?:\*\*", re.MULTILINE)
+# Keep legacy reference extraction for Draft compatibility; validate_ac_ids owns
+# definition format severity so a malformed ID cannot disappear from Archive gates.
+AC_ID_RE = re.compile(r"AC-(?:[0-9]+|DFX)\.[0-9]+")
+AC_DEFINITION_ID_RE = re.compile(r"^[ \t]*[-*][ \t]+\*\*(AC-[^:\n*]*):\*\*", re.MULTILINE)
+AC_RE = re.compile(r"\bAC-(?:DFX\.[0-9]+|\d+(?:\.\d+)?)\b")
+AC_DEF_RE = re.compile(r"^\s*[-*]\s+\*\*AC-(?:DFX\.[0-9]+|\d+(?:\.\d+)?):\*\*", re.MULTILINE)
 TASK_RE = re.compile(r"\bTASK-\d+\b")
 ARCHIVE_MARKER_RE = re.compile(
     r"\b(?:TBD|TODO)\b|(?<![\u4e00-\u9fff])(?:待定|待补充|待实现|待验证)(?![\u4e00-\u9fff])",
@@ -182,7 +186,7 @@ DEVICE_VARIATION_ROWS = (
 EXTERNAL_DEPENDENCIES_SECTION = "外部依赖"
 EXTERNAL_DEPENDENCIES_COLUMNS = ["子系统", "仓库", "模块/路径", "依赖类型"]
 
-I18N_TRIGGER_DIMENSION = "国际化/无障碍"
+I18N_TRIGGER_DIMENSION = "国际化"
 I18N_SECTION = "国际化依赖分析"
 I18N_TABLE_COLUMNS = ["调用场景", "i18n API 类型", "依赖类型", "仓路径", "接口/方法", "备注"]
 I18N_DEPENDENCY_TYPES = {"仓内封装", "外部依赖"}
@@ -793,7 +797,7 @@ def validate_dfx_no_hit_closure(
         elif status == "READ" and reason not in _DFX_READ_NO_HIT_REASONS:
             issues.append(f"{repo}: READ no-hit closure has non-canonical reason '{reason}'")
         elif status == "NO_DFX_KNOWLEDGE" and reason != "仓无 DFX 知识":
-            issues.append(f"{repo}: NO_DFX_KNOWLEDGE requires a 仓无 DFX 知识 reason")
+            issues.append(f"{repo}: NO_DFX_KNOWLEDGE reason must be exactly '仓无 DFX 知识'; put additional explanation outside the table")
         if not meaningful(reason):
             issues.append(f"{repo}: missing 理由")
 
@@ -832,6 +836,84 @@ def validate_dfx_no_hit_closure(
 
 def draft_warn_archive_fail(reporter: Reporter, archive: bool, message: str) -> None:
     reporter.fail(message) if archive else reporter.warn(message)
+
+
+_DEFAULT_AC_ID_PATTERN = rf"^{AC_ID_RE.pattern}$"
+AC_REFERENCE_CANDIDATE_RE = re.compile(r"(?<![\w-])AC-[^\s,，、;；]*")
+
+
+def _get_ac_id_pattern() -> str:
+    """Read the configured syntax constraint; retain the canonical ASCII default."""
+    try:
+        return contract_scalar("ac_id_pattern")
+    except (ValueError, KeyError):
+        return ""
+
+
+def ac_reference_candidates(cell: str) -> list[str]:
+    """Remove paired Markdown formatting, preserving each complete candidate id.
+
+    Only whitespace and explicit list separators terminate an id. In particular,
+    a hyphen, underscore or trailing dot remains in the candidate for fullmatch.
+    """
+    text = re.sub(r"(`+)([^\n]*?)\1", lambda match: match[2], cell)
+    text = re.sub(r"(\*\*|__|~~)([^\n]*?)\1", lambda match: match[2], text)
+    return AC_REFERENCE_CANDIDATE_RE.findall(text)
+
+
+def defined_ac_ids(spec: str) -> set[str]:
+    """Shared definition set for traceability and DFX closure; examples are inert."""
+    visible = _visible_markdown(spec)
+    return set(AC_RE.findall("\n".join(AC_DEF_RE.findall(visible))))
+
+
+def validate_ac_id_format(change_dir: Path, reporter: Reporter, *, archive: bool) -> None:
+    """Check visible definitions and complete ids in verification/Task mappings.
+
+    Draft warns; Archive/design-docs submission fails. The same check is used by
+    the existing validate_ac_ids entry point before downstream artifact checks.
+    """
+    raw = _get_ac_id_pattern()
+    try:
+        pattern = re.compile(raw or _DEFAULT_AC_ID_PATTERN)
+    except re.error:
+        draft_warn_archive_fail(
+            reporter, archive,
+            f"artifacts.yaml resource_contract.ac_id_pattern 包含非法正则 '{raw}'，"
+            f"已回退默认 {_DEFAULT_AC_ID_PATTERN}",
+        )
+        pattern = re.compile(_DEFAULT_AC_ID_PATTERN)
+
+    spec_path = change_dir / "spec.md"
+    if spec_path.is_file():
+        spec = read_text(spec_path)
+        definitions = AC_DEFINITION_ID_RE.findall(_visible_markdown(spec))
+        invalid = sorted(set(token for token in definitions if not pattern.fullmatch(token)))
+        if invalid:
+            draft_warn_archive_fail(
+                reporter, archive,
+                "spec.md invalid AC identifiers: " + ", ".join(invalid)
+                + "; expected AC-<用户故事号>.<序号>; format rule: " + pattern.pattern,
+            )
+        elif definitions:
+            reporter.pass_(f"spec.md AC identifier format valid ({len(definitions)} definitions)")
+
+    sources = (
+        ("spec.md", "验证映射", ["AC", "验证方式"]),
+        ("execution-plan.md", "AC 到 Task 追溯", ["AC", "Task", "验证方式"]),
+    )
+    for filename, section, columns in sources:
+        path = change_dir / filename
+        if not path.is_file():
+            continue
+        body = section_text(read_text(path), section)
+        for row in table_with_columns(body, columns):
+            for token in ac_reference_candidates(row.get("AC", "")):
+                if not pattern.fullmatch(token):
+                    draft_warn_archive_fail(
+                        reporter, archive,
+                        f"{filename} {section}: AC 编号 '{token}' 不符合格式规则 {pattern.pattern}",
+                    )
 
 
 def resource_decision_fields(value: str) -> dict[str, str]:
@@ -925,18 +1007,22 @@ def parse_eight_dim_involvement(proposal: str, dimension: str) -> str | None:
     if not section:
         return None
     rows = table_with_columns(section, ["维度", "是否涉及"])
-    for row in rows:
-        if row.get("维度", "").strip() != dimension:
-            continue
-        cell = row.get("是否涉及", "").strip()
-        if not cell:
-            return None
-        first = cell.split()[0] if cell.split() else cell
-        if first.startswith("是"):
-            return "是"
-        if first.startswith("否"):
-            return "否"
-        return first
+    # New artifacts use 国际化. Read the previous label only when the canonical
+    # row is absent, so upgrading the validator cannot silently disable old gates.
+    labels = (dimension, "国际化/无障碍") if dimension == I18N_TRIGGER_DIMENSION else (dimension,)
+    for label in labels:
+        for row in rows:
+            if row.get("维度", "").strip() != label:
+                continue
+            cell = row.get("是否涉及", "").strip()
+            if not cell:
+                return None
+            first = cell.split()[0]
+            if first.startswith("是"):
+                return "是"
+            if first.startswith("否"):
+                return "否"
+            return first
     return None
 
 
@@ -1685,6 +1771,33 @@ def validate_required_artifacts(
     return files
 
 
+def conditional_section_exemptions(text: str) -> dict[str, str]:
+    """Accept standalone, named declarations outside examples/template comments."""
+    reasons: dict[str, tuple[str, str]] = {}
+
+    def replace_comment(match: re.Match[str]) -> str:
+        declaration = re.fullmatch(
+            r"<!--[ \t]*不涉及[：:][ \t]*([^;；\n]+)[;；][ \t]*理由[：:][ \t]*([^\n]*?)[ \t]*-->",
+            match[0],
+        )
+        if not declaration:
+            return match[0]
+        section, reason = (value.strip() for value in declaration.groups())
+        if not meaningful(reason) or ARCHIVE_MARKER_RE.search(reason) or ANGLE_PLACEHOLDER_RE.search(reason):
+            return match[0]
+        marker = f"ODK_CONDITIONAL_EXEMPTION_{len(reasons)}"
+        reasons[marker] = (section, reason)
+        return marker
+
+    marked = re.sub(r"<!--[\s\S]*?-->", replace_comment, text)
+    visible = set(line.strip() for line in _visible_markdown(marked).splitlines())
+    declarations: dict[str, list[str]] = {}
+    for marker, (section, reason) in reasons.items():
+        if marker in visible:
+            declarations.setdefault(section, []).append(reason)
+    return {section: values[0] for section, values in declarations.items() if len(values) == 1}
+
+
 def validate_sections(
     change_dir: Path,
     artifacts: dict[str, dict[str, object]],
@@ -1696,7 +1809,9 @@ def validate_sections(
         path = change_dir / file_name
         if not path.is_file():
             continue
-        present = headings(read_text(path))
+        text = read_text(path)
+        present = headings(text)
+        exemptions = conditional_section_exemptions(text)
 
         required = artifacts[name].get("required_sections", [])
         for section in required:  # type: ignore[assignment]
@@ -1712,7 +1827,17 @@ def validate_sections(
             if section in present:
                 reporter.pass_(f"{file_name}: conditional section present: {section}")
             else:
-                reporter.warn(f"{file_name}: conditional section absent: {section}")
+                if section in exemptions:
+                    dimension = {"安全基础检查": "安全/权限", "国际化依赖分析": I18N_TRIGGER_DIMENSION}.get(section)
+                    proposal_path = change_dir / "proposal.md"
+                    triggered = (dimension and proposal_path.is_file()
+                                 and parse_eight_dim_involvement(read_text(proposal_path), dimension) == "是")
+                    if triggered:
+                        reporter.fail(f"{file_name}: conditional exclusion conflicts with active {dimension}: {section}")
+                    else:
+                        reporter.pass_(f"{file_name}: conditional section not applicable: {section}; reason: {exemptions[section]}")
+                else:
+                    reporter.warn(f"{file_name}: conditional section absent: {section}")
 
 
 def validate_present_optional_sections(
@@ -1753,6 +1878,11 @@ def validate_present_optional_sections(
                 reporter.fail(f"{file_name} (present optional): required section missing: {section}")
 
 
+def validate_ac_ids(change_dir: Path, reporter: Reporter, archive_mode: bool) -> None:
+    """Compatibility entry point; the shared format check also validates mappings."""
+    validate_ac_id_format(change_dir, reporter, archive=archive_mode)
+
+
 def validate_traceability(change_dir: Path, reporter: Reporter) -> None:
     spec_path = change_dir / "spec.md"
     plan_path = change_dir / "execution-plan.md"
@@ -1764,7 +1894,7 @@ def validate_traceability(change_dir: Path, reporter: Reporter) -> None:
     spec = read_text(spec_path)
     plan = read_text(plan_path)
 
-    spec_acs = set(AC_RE.findall("\n".join(AC_DEF_RE.findall(spec))))
+    spec_acs = defined_ac_ids(spec)
     if spec_acs:
         reporter.pass_(f"spec.md defines {len(spec_acs)} AC ids")
     else:
@@ -2362,7 +2492,7 @@ def validate_dfx_ac_gate(change_dir: Path, reporter: Reporter, archive_mode: boo
         spec_path = change_dir / "spec.md"
         if spec_path.is_file():
             spec = read_text(spec_path)
-            spec_acs = set(AC_RE.findall("\n".join(AC_DEF_RE.findall(spec))))
+            spec_acs = defined_ac_ids(spec)
         dangling = [ac for ac in sorted_ids(linked_acs) if ac not in spec_acs]
         if dangling:
             issues.append("关联 AC not defined in spec.md: " + ", ".join(dangling))
@@ -2843,7 +2973,7 @@ def validate_i18n_constraints(change_dir: Path, reporter: Reporter, archive_mode
         draft_warn_archive_fail(
             reporter,
             archive_mode,
-            f"design.md missing {I18N_SECTION} section while 国际化/无障碍 = 是",
+            f"design.md missing {I18N_SECTION} section while 国际化 = 是",
         )
         return
 
@@ -2950,6 +3080,7 @@ def main(argv: list[str]) -> int:
     if proposal_path.is_file():
         validate_proposal_tables(read_text(proposal_path), reporter, archive=strict_delivery)
     validate_present_optional_sections(change_dir, artifacts, reporter)
+    validate_ac_ids(change_dir, reporter, strict_delivery)
     validate_traceability(change_dir, reporter)
     validate_goal_us_coverage(change_dir, reporter)
     validate_dfx_constraints(change_dir, reporter, strict_delivery)

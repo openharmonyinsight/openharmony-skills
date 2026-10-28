@@ -14,15 +14,19 @@ license: MIT
 ## Sources
 
 - Artifact contract: installed `contracts/artifacts.yaml` (OpenCode: `contracts/artifacts.yaml`)
-- Templates: installed `templates/ai/` (OpenCode: `templates/ai/`)
-- Strict validator: `runtime/executables/validate-artifacts-contract.py`. It is installed with ODK on every supported platform; use this skill to explain and remediate its findings.
+- Templates: installed `runtime/assets/templates/ai/` (OpenCode: `runtime/assets/templates/ai/`)
+- Strict validator: `runtime/executables/validate-artifacts-contract.py`. It is installed with ODK on every supported platform; execute it directly and use this skill to explain and remediate its findings.
 - Archive migration validator: `runtime/executables/validate-archive-migration.py`. Use `plan --map <map.tsv>` before moving legacy archives and `check-staged --map <the-same-map.tsv>` before committing so old-source deletion and planned-target conservation are verified.
 
 ## Steps
 
-1. Resolve the target change directory and load the artifact contract.
-2. Check Level A/B: repository segment and directory name (formal leaf exactly matches `<proposal-id>`, or draft matches `draft-<yyyymmdd>-<slug>`), required files, required sections, and conditional-section warnings per `artifacts.yaml`.
+For configuration-dependent steps, use the effective-configuration command defined in `using-odk`; do not merge installation files independently. Stop on config errors. Existing execution-plan commands remain authoritative until explicitly changed.
+
+1. Resolve the target change directory and load the artifact contract. Invoking this skill authorizes the agent to run the packaged document validator through the available shell/terminal tool and parse its stdout, stderr and exit code; do not merely print a command for the user to copy. Resolve the executable from the installation selected by the `using-odk` resource check, including symlinked host skills. Quote the absolute executable and change-directory paths. If no execution tool exists, report NOT RUN and the exact command; never report PASS from reading instructions alone. Archive validation may execute the repository's declared resource gate; preserve its existing authorization requirements.
+2. Check Level A/B: repository segment and directory name (formal leaf exactly matches `<proposal-id>`, or draft matches `draft-<yyyymmdd>-<slug>`), required files, required sections, and conditional-section warnings per `artifacts.yaml`. A standalone `<!-- 不涉及：章节名；理由：具体原因 -->` closes only the named optional condition; it cannot waive required sections or trigger-specific gates.
 3. Check Level C traceability:
+   - AC definition IDs use `AC-<用户故事号>.<序号>`: ASCII digits or `DFX` for the story and ASCII digits for the sequence (e.g. `AC-1.1`, `AC-DFX.1`); both forms participate in verification/Task/DFX traceability; malformed IDs warn in Draft and fail Archive/design-docs submission
+   - The format gate checks visible spec definitions, verification mapping AC cells and execution-plan traceability AC cells against `resource_contract.ac_id_pattern` in the installed artifact contract. The default uses ASCII digits and the DFX namespace; a missing pattern falls back to that default, while an invalid regex reports a Draft warning / Archive failure and then uses the default.
    - every `spec.md` AC appears in the verification mapping with a non-empty verification method
    - every AC appears in `execution-plan.md` AC-to-Task traceability with a Task and verification method
    - every traced Task has a Task list row and Task detail section with Files and Verification tables

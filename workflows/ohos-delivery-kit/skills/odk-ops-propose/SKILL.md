@@ -22,7 +22,7 @@ One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta s
 1. Invoke OpenSpec `/opsx:propose` which produces proposal + delta specs + design + tasks in one call.
 2. When OpenSpec tries to write to `openspec/changes/`, apply `using-odk-bridge` Output Redirection Rules instead.
 3. Process output per the active output mode (strict/passthrough/merge, default strict):
-   - **strict**: Transform each artifact to conform to ODK templates at `templates/ai/`.
+   - **strict**: Transform each artifact to conform to ODK templates at `runtime/assets/templates/ai/`.
    - **passthrough**: Copy original format to `codespec/changes/<repo-name>/<proposal-id>/` unchanged.
    - **merge**: Use OpenSpec format as base, append ODK-required sections.
 4. In strict mode, ensure ODK-required fields are present:

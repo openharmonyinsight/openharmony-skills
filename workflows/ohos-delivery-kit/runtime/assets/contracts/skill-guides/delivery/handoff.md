@@ -7,7 +7,7 @@ installed names; do not ask the user to type the next review/validation command.
 
 ## 1. Review and validate without publishing
 
-- Read `pre_commit_reviews` from config (odk_config_ext.yaml (optional, in runtime/assets/) overrides odk_config.yaml; absent or empty → defaults to `odk-review`). It is a space-separated list of skill names to invoke in order before the source PR. Invoke each listed skill in sequence; each must return PASS or actionable findings. All must pass before the PR reminder in Step 2. The default `odk-review` does a fresh AC/code-quality review of the actual working-tree diff, including untracked implementation files. A commit is not a prerequisite. Review code, tests, error paths and deviations, not just document structure.
+- Run the effective-configuration command defined in `using-odk` and follow [configuration.md](../router/configuration.md). Read `pre_commit_reviews` from its merged `config` (missing → `odk-review`; explicit empty → skip configured review hooks, while archive validation still runs). It is a space-separated list of skill names to invoke in order before the source PR. Invoke each listed skill in sequence; each must return PASS or actionable findings. All must pass before the PR reminder in Step 2. The default `odk-review` does a fresh AC/code-quality review of the actual working-tree diff, including untracked implementation files. A commit is not a prerequisite. Review code, tests, error paths and deviations, not just document structure.
 - Then invoke `odk-validate` with the pre-PR archive gate: use the installed
   `validate-artifacts-contract.py <change-dir> --archive`. Do not use
   `--design-docs-submit` yet or fabricate PR metadata to satisfy the gate.

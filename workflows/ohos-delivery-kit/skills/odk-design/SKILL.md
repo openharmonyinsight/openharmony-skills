@@ -48,7 +48,7 @@ license: MIT
 
 0. Check for subsystem profile: read and follow `contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.design` (additional sections, fragments) and `agent_instructions.design`
 1. **Code fact baseline:** Consolidate the findings from Step -1 Sub-step A into a structured baseline: file:line references for key data structures, entry-point signatures, call chain hops, concurrency boundaries, and failure paths. Use this baseline to populate `代码事实基线` in `design.md`. Skip only for pure greenfield modules, pure documentation changes, or config-only changes.
-2. Read template from `templates/ai/design.md`
+2. Read template from `runtime/assets/templates/ai/design.md`
 3. Generate `design.md` per the template. Conditionally include `代码事实基线`, `类图`, and `状态归属与不变量` when applicable — add `类图` (Mermaid `classDiagram`) when the change involves class/interface inheritance or implementation hierarchies (e.g. IPC interface→proxy→stub→impl) or cross-module composition. Reference specific `spec.md` AC numbers in design decisions.
    If any proposal `资源开销审视` dimension is `required`, expand `资源设计` (`contracts/artifacts.yaml#resource_contract`). Content detail is subsystem-owned; ODK requires the section and meaningful, non-placeholder content without imposing a subsystem design schema.
 4. If Step 1 produced code facts, populate `代码事实基线`; otherwise omit it.
@@ -74,15 +74,15 @@ license: MIT
         - **故障模式库导出表格不受主表契约约束**：`odk-fmea` 产出的 `### 故障模式库导出表格`（全列模板表，命中与推导条目全部进入）作为独立小节与主表并列；其列集不含主表 9 必需列中的 5 列，归档校验的主表发现逻辑不会匹配它——存在与否、行数多少均不影响归档判定，复核时不必按主表规则检查该表。
         - 同一故障模式被多个业务对象触发时，分多条记录。
         - 有命中时，只将命中记录填入主表，不提及未命中的知识条目。
-        - 集合为空时，不填故障模式表，写"不涉及"；随后用 `> 涉及仓库：repo-a, repo-b` 声明第 1 步得到的完整仓库集合，并填写逐仓闭包表 `仓库 | 状态 | 理由`。闭包状态只允许 `READ`（理由须为知识库无命中；`odk-fmea` 的 `NO_HIT` 映射到此）、`NO_DFX_KNOWLEDGE`（理由须为仓无 DFX 知识）、`UNREACHABLE`（仓不可达）。Archive 时闭包表必须精确覆盖全部涉及仓库；任一不可达、未知、缺失、重复或未分析状态均阻塞归档。
+        - 集合为空时，不填故障模式表，写"不涉及"；随后用 `> 涉及仓库：repo-a, repo-b` 声明第 1 步得到的完整仓库集合，并填写逐仓闭包表 `仓库 | 状态 | 理由`。闭包状态只允许 `READ`（理由必须逐字为 `知识库无命中` 或 `知识库无匹配命中`，补充说明放表外；`odk-fmea` 的 `NO_HIT` 映射到此）、`NO_DFX_KNOWLEDGE`（理由必须逐字等于 `仓无 DFX 知识`，不得附加括号或说明；补充证据放在表格后的段落）、`UNREACHABLE`（仓不可达）。Archive 时闭包表必须精确覆盖全部涉及仓库；任一不可达、未知、缺失、重复或未分析状态均阻塞归档。
 
      4. **处置决策与 AC 回填（`### DFX 故障模式处置`，主表有命中行或存在 AD 条目时必填）**：对主表每条命中行与每条 AD 推导条目逐条确定处置，填入处置表（6 列：编号、分析对象、故障模式、处置、关联 AC、验证方式/证据）。这一步是把故障模式设计落入代码的拦截入口——漏处置条目、悬空 AC 引用在 Draft 校验即 FAIL；归档时关联 AC 的验证状态必须为 Pass（`validate-artifacts-contract.py` Level C3）。
         - **编号与匹配键**：主表命中行新分配 `FM-01`、`FM-02`…；AD 推导条目沿用其分层表原编号 `AD-xx`。`分析对象/故障模式` 从来源表照录（校验按该二元组与主表逐字匹配，改写会导致匹配失败）。
-        - **处置五选一**（逐条与用户确认；按控制措施语义定落点）：
+        - **处置五选一**（交互模式逐条与用户确认；自主模式在授权范围内选择并汇总理由；按控制措施语义定落点）：
           - 控制措施**改变对外可观测行为**（超时返回明确错误码、故障后恢复到约定状态等）→ `新增 AC`（回填 spec US-DFX）或既有 AC 足够覆盖时 `复用 AC`；
           - 控制措施是**内部实现约束**（锁顺序、对象所有权、生命周期不变量等，为满足既有行为服务）→ `纳入设计约束`（写入 design 关键设计决策/状态归属与不变量等约束段，关联 Task 与单元测试/故障注入证据；不为通过 FM 门禁把内部机制写成新验收标准）；
           - 命中条目恢复措施已在代码中存在 → `现有控制覆盖`；该模式触发条件不在本次改动面 → `本变更不触及`。
-        - **新增 AC 时回填 spec.md**：在 `## 用户故事或场景` 末尾追加 `### US-DFX: 故障模式响应` 子节，按全局编号顺延新增 `- **AC-N.M:** Given [故障注入条件] When [异常/边界动作] Then [可观测的恢复行为：错误码/恢复/关键日志/打点]`；同步补 `异常与边界规则`、`验证映射`、`测试设计提示` 的关联行。回填后明确告知用户 spec.md 已变更、需重新确认（Phase Gate），并提示 `{{CMD_PREFIX}}plan` 将为这些 AC 生成故障注入/异常路径 Task（不得列入「可后置」）。
+        - **新增 AC 时回填 spec.md**：在 `## 用户故事或场景` 末尾追加 `### US-DFX: 故障模式响应` 子节，新 DFX AC 按分组序号顺延为 `- **AC-DFX.N:** Given [故障注入条件] When [异常/边界动作] Then [可观测的恢复行为：错误码/恢复/关键日志/打点]`；既有数字 AC 保持原编号。同步补 `异常与边界规则`、`验证映射`、`测试设计提示` 的关联行。回填后明确告知用户 spec.md 已变更；按 `using-odk` 的交互模式重新确认或在自主授权范围内自检后继续，超出原授权范围则停下确认，并提示 `{{CMD_PREFIX}}plan` 将为这些 AC 生成故障注入/异常路径 Task（不得列入「可后置」）。
         - **证据要求**：`现有控制覆盖` 给 文件:行 或既有测试引用；`本变更不触及` 给理由；`新增 AC`/`复用 AC` 给故障注入或异常路径验证方式。证据列空白的处置行会在校验 FAIL。
         - `不涉及` 分支（主表无命中且无 AD 条目）不填处置表，校验门静默。
 
@@ -93,7 +93,7 @@ license: MIT
    - 如不满足，在章节中填写"不涉及"并说明理由。
 
 8. **国际化依赖分析（条件触发）**:
-   **触发条件**：`proposal.md` 的 `国际化·无障碍` 维度中判断国际化 = 「是」（单一来源）
+   **触发条件**：`proposal.md` 的 `国际化` 维度中判断国际化 = 「是」（单一来源）
    当需求涉及国际化接口调用时，design 阶段需要明确 i18n 调用所依赖的代码仓路径，确保后续 plan 和implement 能准确调用正确接口。
 
    **约束**：

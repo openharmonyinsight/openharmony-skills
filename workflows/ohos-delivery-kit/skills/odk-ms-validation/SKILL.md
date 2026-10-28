@@ -19,6 +19,8 @@ Invoke MatrixSpec `/matspec.validation` for validation execution. Redirect outpu
 
 ## Steps
 
+For configuration-dependent steps, use the effective-configuration command defined in `using-odk`; do not merge installation files independently. Stop on config errors. Existing execution-plan commands remain authoritative until explicitly changed.
+
 1. Invoke MatrixSpec `/matspec.validation` for 6-dimension validation execution.
 2. When MatrixSpec tries to write to `matspec/changes/`, apply `using-odk-bridge` Output Redirection Rules instead.
 3. Process output per active mode:

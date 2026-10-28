@@ -47,6 +47,9 @@ resource_contract:
     - "spec.md=资源验收契约"
     - "design.md=资源设计"
     - "execution-plan.md=资源验证矩阵"
+  # AC 编号格式校验正则（fullmatch）。缺失或非法时校验器回退内置默认
+  # 默认仅允许 ASCII 数字或 DFX 用户故事号，以及 ASCII 数字序号。
+  ac_id_pattern: '^AC-(?:[0-9]+|DFX)\.[0-9]+$'
 
 # Conditional, executable API specification contract. The validator activates
 # this shape from proposal.md's API/SDK row instead of treating the spec heading
@@ -99,6 +102,9 @@ api_spec_contract:
     - "差异原因"
     - "差异描述"
 
+# Named conditional-section exclusions may use a standalone HTML comment:
+# <!-- 不涉及：章节名；理由：具体原因 -->
+# This does not waive required sections or trigger-specific validation.
 artifacts:
   proposal:
     file: "proposal.md"
@@ -201,7 +207,7 @@ artifacts:
       - section: "资源设计"
         required_when: "resource chain active (any dimension impact state in active_when_states)."
       - section: "国际化依赖分析"
-        required_when: "The proposal 8-dimension eval marks 国际化/无障碍 as 是 — the single trigger source (see odk-propose/reference/i18n-scope-criteria.md)."
+        required_when: "The proposal 8-dimension eval marks 国际化 as 是 — the single trigger source (see odk-propose/reference/i18n-scope-criteria.md)."
 
   execution-plan:
     file: "execution-plan.md"

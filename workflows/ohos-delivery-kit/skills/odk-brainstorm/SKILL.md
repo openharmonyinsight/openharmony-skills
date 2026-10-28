@@ -39,7 +39,7 @@ C) <option>
 3. If the answer is vague ("先这样", "看情况", "大概"), do not accept it — name the ambiguity and re-ask with sharper options.
 4. If the answer contradicts an earlier answer, surface the contradiction and ask which one stands.
 
-## Flow
+## Steps
 
 ### Step 1 — Baseline from code
 
@@ -74,7 +74,7 @@ Walk every branch of the design decision tree depth-first. Resolve dependencies 
 - **1+8 device variation**: does the behaviour differ across phone / tablet / pc-2in1 / wearable / tv / car / `default（其他设备）` / non-category? This is a product/business decision — **cannot be inferred from code, must be confirmed with the user for each form factor.** For each device row, get a concrete `是`/`否` with a reason; a blank is not accepted.
 - **资源开销审视 (performance/RAM/ROM)**: triage each of the three dimensions as `required` / `review-required` / `not-applicable` / `waived`. Unknown risk → `review-required`, never silent `not-applicable`. Signal hints: 性能 — hot path, per-frame/event cost, wakeup frequency, lock duration, IPC round-trips; RAM — resident/peak memory, large buffers; ROM — `.so`/`.abc`/resource artifacts, large data-partition persistence. **Must be confirmed — cannot be defaulted to `not-applicable` without a named confirmer and reason.**
 - **外部依赖 (external dependencies)**: what subsystems, repositories, modules, or external services does this change depend on for delivery? If none, record an explicit `不涉及` with the reason — a blank is not accepted. **Must be confirmed with the user.**
-- **兼容性 (compatibility)**: does this change affect backward compatibility, wire-format compatibility, IPC protocol versioning, build/component dependencies, i18n/accessibility, or data migration? For each sub-dimension, confirm 涉及/不涉及 with a concrete reason — blank is not accepted.
+- **兼容性 (compatibility)**: does this change affect backward compatibility, wire-format compatibility, IPC protocol versioning, build/component dependencies, i18n, or data migration? For each sub-dimension, confirm 涉及/不涉及 with a concrete reason — blank is not accepted.
 - **Success criteria**: what observable outcome, with a real number or a concrete system behaviour, means this change is done?
 
 **Open questions and non-goals**: after the tree is explored, explicitly name what is out of scope and why.

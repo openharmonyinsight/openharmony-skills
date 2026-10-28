@@ -1,4 +1,4 @@
-"""Read-only Git remote identity and design-document destination suggestions."""
+"""Read-only Git destination suggestions and effective ODK configuration."""
 from __future__ import annotations
 
 import argparse
@@ -8,88 +8,89 @@ from pathlib import Path
 from typing import NamedTuple
 from urllib.parse import urlsplit
 
-# Built-in default, kept as the last-resort fallback when no config file
-# supplies a design_docs_repository. See core/config/odk_config.yaml for the canonical
-# default and core/config/odk_config_ext.yaml for the user override path.
+# Shipped fallback; user overrides are beside the active default configuration.
 DEFAULT_DESIGN_DOCS_REPOSITORY = "https://gitcode.com/OpenHarmonyAI/design-docs"
 _CONFIG_FILENAME = "odk_config.yaml"
 _CONFIG_EXT_FILENAME = "odk_config_ext.yaml"
 
 
 def _parse_simple_yaml(text: str) -> dict[str, str]:
-    """Parse a flat key: value YAML file without PyYAML.
+    """Parse ODK's flat string-scalar YAML, preserving quoted # and empty values.
 
-    Handles only the subset used by odk_config.yaml: top-level scalar string
-    assignments with optional single or double quotes, and comment lines.
+    Reject malformed/duplicate keys and structured YAML instead of silently
+    running default commands when an override was intended.
     """
     result: dict[str, str] = {}
-    for line in text.splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#"):
+    for number, line in enumerate(text.splitlines(), 1):
+        if not line.strip() or line.lstrip().startswith("#"):
             continue
-        if ":" not in stripped:
-            continue
-        key, _, raw_value = stripped.partition(":")
-        key = key.strip()
-        value = raw_value.strip()
-        # Strip inline comments (space/tab + #) before and after unquoting.
-        # Handles: url # note, "url" # note, url<TAB># note
-        # URLs may contain # so only ' #' and '<TAB>#' are comment delimiters.
-        def _strip_comment(s: str) -> str:
-            for sep in (" #", "\t#"):
-                idx = s.find(sep)
-                if idx != -1:
-                    s = s[:idx]
-            return s.strip()
-
-        # Strip trailing comment FIRST (before quote detection), because a
-        # quoted value with a trailing comment ends in the comment, not the
-        # closing quote:  "url" # note  →  "url"  →  url
-        value = _strip_comment(value)
-        if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
-            value = value[1:-1]
-        if key:
-            result[key] = value
+        match = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_]*):[ \t]*(.*)", line)
+        if not match:
+            raise ValueError(f"config line {number}: expected a top-level scalar key: value")
+        key, raw = match.groups()
+        if key in result:
+            raise ValueError(f"config line {number}: duplicate key {key}")
+        raw = raw.strip()
+        if raw.startswith('"'):
+            try:
+                value, end = json.JSONDecoder().raw_decode(raw)
+            except ValueError as error:
+                raise ValueError(f"config line {number}: invalid quoted value") from error
+            suffix = raw[end:]
+            if not isinstance(value, str) or (suffix.strip() and not re.fullmatch(r"[ \t]+#.*", suffix)):
+                raise ValueError(f"config line {number}: invalid quoted scalar")
+        elif raw.startswith("'"):
+            quoted = re.fullmatch(r"'((?:[^']|'')*)'(?:[ \t]+#.*)?", raw)
+            if not quoted:
+                raise ValueError(f"config line {number}: invalid single-quoted scalar")
+            value = quoted[1].replace("''", "'")
+        else:
+            value = re.split(r"[ \t]+#", raw, maxsplit=1)[0].rstrip()
+            if not value or value[0] in "[{|>&*!#" or value in {"null", "Null", "NULL", "~"}:
+                raise ValueError(f"config line {number}: use a string scalar (quote empty values)")
+        result[key] = value
     return result
 
 
 def _config_search_dirs() -> list[Path]:
-    """Directories that may hold odk_config.yaml / odk_config_ext.yaml.
+    """Source, native/neutral runtime, and SkillHub projection layouts."""
+    root = Path(__file__).absolute().parent.parent.parent
+    return [d for d in (root / "core/config", root / "assets/config", root / "assets") if d.is_dir()]
 
-    Source layout:  scripts/lib/odk_repository.py → repo root / core/config/
-    Published layout: runtime/executables/lib/odk_repository.py → runtime/assets/
-    """
-    here = Path(__file__).resolve()
-    source_assets = here.parent.parent.parent / "core" / "config"
-    # Published: runtime/executables/lib/ → go up three levels to runtime/, then assets/
-    published_assets = here.parent.parent.parent / "assets"
-    return [d for d in (source_assets, published_assets) if d.is_dir()]
+
+def _read_config(path: Path) -> dict[str, str]:
+    try:
+        return _parse_simple_yaml(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise ValueError(f"Cannot read ODK config {path}: {error}") from error
+
+
+def _default_config_path() -> Path:
+    for directory in _config_search_dirs():
+        path = directory / _CONFIG_FILENAME
+        if path.is_file():
+            return path
+    raise ValueError("Cannot find shipped odk_config.yaml for this ODK installation")
+
+
+def user_config_path() -> Path:
+    return _default_config_path().with_name(_CONFIG_EXT_FILENAME)
 
 
 def load_odk_config() -> tuple[dict[str, str], dict[str, str]]:
-    """Read odk_config.yaml (shipped default) and odk_config_ext.yaml (user override).
+    """Read defaults and their sibling user override without modifying either.
 
-    Returns (base, ext) where ext contains only keys defined in odk_config_ext.yaml.
-    Callers that need the merged view can do {**base, **ext}.
-    Keys in ext win over base on conflict.
-    Missing files are silently skipped. Performs no network access and no writes.
+    Missing override keys inherit defaults; explicit empty strings override them.
+    Never search another installation or the business working directory for ext.
     """
-    base: dict[str, str] = {}
-    ext: dict[str, str] = {}
-    for directory in _config_search_dirs():
-        path_base = directory / "odk_config.yaml"
-        if path_base.is_file():
-            try:
-                base.update(_parse_simple_yaml(path_base.read_text(encoding="utf-8")))
-            except OSError:
-                pass
-        path_ext = directory / "odk_config_ext.yaml"
-        if path_ext.is_file():
-            try:
-                ext.update(_parse_simple_yaml(path_ext.read_text(encoding="utf-8")))
-            except OSError:
-                pass
-    return base, ext
+    default = _default_config_path()
+    override = default.with_name(_CONFIG_EXT_FILENAME)
+    return _read_config(default), _read_config(override) if override.exists() else {}
+
+
+def effective_odk_config() -> dict[str, str]:
+    base, ext = load_odk_config()
+    return {**base, **ext}
 
 
 class GitRemote(NamedTuple):
@@ -197,13 +198,11 @@ def design_docs_target(remote: str, configured: str = "") -> dict[str, str]:
     parsed = parse_git_remote(remote)
     if parsed and parsed.host == "gitcode.com":
         base, ext = load_odk_config()
-        override = ext.get("design_docs_repository", "").strip()
-        if override and parse_git_remote(override):
-            return {"action": "confirm", "repository": override, "source": "config-ext"}
-        default = base.get("design_docs_repository", DEFAULT_DESIGN_DOCS_REPOSITORY).strip()
-        if not default or not parse_git_remote(default):
-            default = DEFAULT_DESIGN_DOCS_REPOSITORY
-        return {"action": "confirm", "repository": default, "source": "gitcode-default"}
+        source = "config-ext" if "design_docs_repository" in ext else "gitcode-default"
+        destination = {**base, **ext}.get("design_docs_repository", DEFAULT_DESIGN_DOCS_REPOSITORY).strip()
+        if not destination or not parse_git_remote(destination):
+            return {"action": "ask-address", "repository": "", "source": "invalid-config"}
+        return {"action": "confirm", "repository": destination, "source": source}
     return {"action": "ask-address", "repository": "", "source": "unconfigured"}
 
 
@@ -213,8 +212,18 @@ if __name__ == "__main__":
     parser.add_argument("--configured", default="", help="Developer-provided design_docs_repository, if any")
     parser.add_argument("--checkout-remote", help="Compare an existing checkout against the suggested/confirmed target")
     parser.add_argument("--push-url", action="append", help="Each effective push URL from git remote get-url --push --all; repeat for all URLs")
+    parser.add_argument("--effective-config", action="store_true", help="Print merged ODK configuration as JSON")
     args = parser.parse_args()
-    target = design_docs_target(args.remote, args.configured)
+    if args.effective_config:
+        try:
+            print(json.dumps({"config": effective_odk_config(), "user_config_path": str(user_config_path())}, ensure_ascii=False))
+        except (OSError, ValueError) as error:
+            parser.exit(1, f"{error}\n")
+        raise SystemExit(0)
+    try:
+        target = design_docs_target(args.remote, args.configured)
+    except (OSError, ValueError) as error:
+        parser.exit(1, f"{error}\n")
     result: dict[str, str | bool] = dict(target)
     if args.checkout_remote is not None:
         result["checkout_matches"] = same_repository_endpoint(target["repository"], args.checkout_remote)
