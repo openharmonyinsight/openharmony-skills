@@ -5,10 +5,10 @@ id: ohos-delivery-kit
 source:
   repository: https://gitcode.com/oshunter/ohos-delivery-kit.git
   branch: main
-  commit: e48ec3f7aa7940fefb7b2fd188dec5a4976122f3
-  sourceVersion: 0.12.0
-  commitDate: 2026-09-29T20:21:04+08:00
-  importedAt: 2026-09-29
+  commit: bfcaabbbea79835569dbf93d61925083a001d570
+  sourceVersion: 0.14.0
+  commitDate: 2026-10-28T19:23:45+08:00
+  importedAt: 2026-10-28
 
 license:
   declared: MIT
@@ -26,14 +26,11 @@ included:
     - core/contracts
     - core/rules
     - core/adapters
+    - core/config/odk_config.yaml
   executables:
     - scripts/validate-artifacts-contract.py
     - scripts/validate-archive-migration.py
-    - scripts/lib/odk_yaml.py
-    - scripts/lib/odk_document.py
-    - scripts/lib/odk_api_signature.py
-    - scripts/lib/odk_diff.py
-    - scripts/lib/odk_repository.py
+    - scripts/lib/*.py
   router:
     prompt: packaging/*/hooks/session-start context
     hook: packaging/*/hooks/hooks.json semantics

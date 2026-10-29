@@ -11,7 +11,7 @@
 ## 执行原则
 
 <!-- SYNC: execution-principles -->
-- **Spec 权威：** 若实现细节与 `spec.md` 的 AC、错误码或兼容性声明冲突，先更新 spec/design，再继续实现。
+- **Spec 权威：** 若实现细节与 `spec.md` 的 AC（验收标准）、错误码或兼容性声明冲突，先更新 spec/design，再继续实现。
 - **测试/证据先行：** 每个 Task 先写失败测试；无法单测的集成行为必须先写明可复现证据缺口。
 - **任务小型化：** 一个 Task 只覆盖一个独立闭环。跨 API、事件链、状态缓存、渲染链、生命周期的需求必须拆成多个 Task。
 - **文件边界：** Task 只能修改 `Files` 表列出的文件；若构建暴露额外声明或 fixture 需求，先更新本计划。
@@ -20,6 +20,22 @@
 - **反伪完成：** 只补声明、只写存储结构、只覆盖 happy path、只跑非相关测试，都不能替代 AC 闭环。
 - **可交接执行（Agent 执行契约）：** 本计划须能被新 Agent 在无历史对话上下文下逐 Task 执行；执行契约由各 Task 结构承载——`只读上下文`/`Files`/`禁止修改文件`（上下文打包）、`Steps` 的 RED→GREEN（测试优先）、`Verification` 的 Expected/Actual（期望输出）、`Review Handoff`（评审交接）；每 Step 为含命令或代码方向的 2–5 分钟动作。
 <!-- /SYNC: execution-principles -->
+
+## 构建与验证环境
+
+<!-- 由 odk-plan 在生成计划时从 config 读取并解析，写入具体命令。实现阶段直接读本节，不再查 config。 -->
+
+| 配置项 | 值 |
+|--------|----|
+| 可选编译产品 | [build_products 去重后的完整列表，空格分隔] |
+| 编译产品 | [用户从列表中确认的单个产品] |
+| 设备版本策略 | [arm64_virt 填「不适用（QEMU）」；其他产品经用户确认填 daily 或 existing] |
+| 设备版本准备方式 | [QEMU 填「不适用（QEMU）」；daily 填支持当前产品的具体 skill 或经确认的手动准备步骤；existing 填「使用设备现有版本，不获取 daily、不刷机」] |
+| 编译命令（全量） | [build_command with {product} resolved] |
+| 模拟器命令（仅 arm64_virt） | [emulator_command with {product} resolved, 仅编译产品为 arm64_virt 时填写] |
+| 测试命令 | [test_command with {product} resolved, 或「见各 Task 验证命令」] |
+
+<!-- 每个 Task 的验证命令字段写带 --target 的窄编译命令（单模块）或引用全量编译命令（跨模块）。 -->
 
 ## AC 到 Task 追溯
 
@@ -37,6 +53,7 @@
 ## 禁止项
 
 - 每个 AC 必须有明确的验证方式。
+- design.md `### DFX 故障模式处置` 关联的 AC（故障模式拦截项）不得列入「实现边界 → 可后置」，且其 Task 验证必须走故障注入或异常路径。
 - Agent 不得自行寻找未列出的上下文文件作为修改依据；需要新增上下文时先更新 Task。
 - 不得修改 Task 列出范围外的文件。
 - 不得在未通过验证时标记 Task 完成。
@@ -62,6 +79,8 @@ graph TD
 
 ## Task 列表
 
+> AC 映射填写 `AC-1.1` 等编号。纯文档/基础设施 Task 不直接关闭 AC 时，填写 `N/A（仅更新使用说明，不直接关闭 AC）` 这类带简短理由的值；不得留空、只填 `N/A` 或使用 `—`。每条 AC 仍必须在「AC 到 Task 追溯」中映射到有验证方式的 Task。
+
 <!--
 条件约束：若 proposal.md 标记 API/SDK = 是，必须将所有 API 声明文件修改任务排在 Task-1。
 后续功能实现任务以 Task-2 开始。
@@ -81,7 +100,7 @@ graph TD
 
 **目标：** [本 Task 必须交付的最小能力闭环]
 
-**AC 映射：** [AC-1, AC-2]
+**AC 映射：** [AC-1.1, AC-1.2；无直接 AC 时填 N/A（简短理由）]
 
 **前置依赖：** [依赖的 Task/规则/上下文]
 

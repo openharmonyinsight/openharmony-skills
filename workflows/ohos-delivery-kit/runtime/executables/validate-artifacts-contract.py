@@ -41,9 +41,10 @@ from odk_yaml import (  # noqa: E402
 )
 from odk_document import (  # noqa: E402
     PLACEHOLDER_RE, BRACKET_PLACEHOLDER_RE, _visible_markdown, atx_heading, headings,
-    section_texts, section_text, normalize_cell, split_table_row,
+    section_texts, section_text, require_unique_section, normalize_cell, split_table_row,
     is_separator_row, parsed_markdown_tables, markdown_tables, table_has_columns,
-    tables_with_columns, table_with_columns, unique_table_with_columns, meaningful,
+    tables_with_columns, table_with_columns, unique_table_with_columns,
+    require_unique_table_with_columns, meaningful,
 )
 from odk_repository import parse_git_remote, metadata_repository_url, metadata_pr_url_matches  # noqa: E402
 from odk_diff import valid_unified_diff  # noqa: E402
@@ -53,8 +54,12 @@ from odk_api_signature import (  # noqa: E402
 )
 
 
-AC_RE = re.compile(r"\bAC-\d+(?:\.\d+)?\b")
-AC_DEF_RE = re.compile(r"^\s*[-*]\s+\*\*AC-\d+(?:\.\d+)?:\*\*", re.MULTILINE)
+# Keep legacy reference extraction for Draft compatibility; validate_ac_ids owns
+# definition format severity so a malformed ID cannot disappear from Archive gates.
+AC_ID_RE = re.compile(r"AC-(?:[0-9]+|DFX)\.[0-9]+")
+AC_DEFINITION_ID_RE = re.compile(r"^[ \t]*[-*][ \t]+\*\*(AC-[^:\n*]*):\*\*", re.MULTILINE)
+AC_RE = re.compile(r"\bAC-(?:DFX\.[0-9]+|\d+(?:\.\d+)?)\b")
+AC_DEF_RE = re.compile(r"^\s*[-*]\s+\*\*AC-(?:DFX\.[0-9]+|\d+(?:\.\d+)?):\*\*", re.MULTILINE)
 TASK_RE = re.compile(r"\bTASK-\d+\b")
 ARCHIVE_MARKER_RE = re.compile(
     r"\b(?:TBD|TODO)\b|(?<![\u4e00-\u9fff])(?:待定|待补充|待实现|待验证)(?![\u4e00-\u9fff])",
@@ -77,6 +82,34 @@ _DFX_READ_NO_HIT_REASONS = {"知识库无命中", "知识库无匹配命中"}
 DFX_SOURCE_REF_RE = re.compile(
     r"^[^@\s|]+@[0-9a-fA-F]{7,40}:docs/dfx/fmea\.yaml#[^#\s|]+$"
 )
+_DFX_FAULT_COLUMNS = [
+    "分析对象", "故障模式", "故障影响", "故障原因",
+    "严酷度", "恢复措施", "关键日志", "大数据打点事件", "来源",
+]
+_DFX_DISPOSITION_COLUMNS = ["编号", "分析对象", "故障模式", "处置", "关联 AC", "验证方式/证据"]
+_DFX_DISPOSITIONS = {"新增 AC", "复用 AC", "纳入设计约束", "现有控制覆盖", "本变更不触及"}
+_DFX_AC_DISPOSITIONS = {"新增 AC", "复用 AC"}
+_DFX_DESIGN_CONSTRAINT_DISPOSITION = "纳入设计约束"
+_DFX_CONSTRAINT_REF_RE = re.compile(r"D-\d+|约束|决策|不变量")
+_DFX_FM_ID_RE = re.compile(r"^FM-\d+$")
+_DFX_AD_ID_RE = re.compile(r"^AD-\d+$")
+
+# 66-column library export table header (mirrors the template row in
+# core/skills/odk-fmea/references/output-format.md "故障模式库导出表格";
+# keep both in sync when the platform import template changes).
+_DFX_EXPORT_COLUMNS = [
+    "一级对象ID", "一级对象", "一级对象类型", "二级对象ID", "二级对象", "二级对象类型",
+    "三级对象ID", "三级对象", "三级对象类型", "四级对象ID", "四级对象", "四级对象类型",
+    "五级对象ID", "五级对象", "五级对象类型", "六级对象ID", "六级对象", "六级对象类型",
+    "七级对象ID", "七级对象", "七级对象类型", "八级对象ID", "八级对象", "八级对象类型",
+    "九级对象ID", "九级对象", "九级对象类型", "十级对象ID", "十级对象", "十级对象类型",
+    "故障模式ID", "故障模式", "描述", "严酷度", "发生频度", "可检测度",
+    "SIL等级", "故障原因", "故障影响", "改进措施", "典型日志", "引发故障的对象ID",
+    "引发故障的对象", "引发故障的行为ID", "引发故障的行为", "受影响的对象ID", "受影响的对象", "所受影响ID",
+    "所受影响", "故障检测ID", "故障检测", "事件打点", "故障诊断ID", "故障诊断",
+    "故障隔离ID", "故障隔离", "故障恢复ID", "故障恢复", "故障预防ID", "故障预防",
+    "使用补偿措施ID", "使用补偿措施", "验证测试要求ID", "验证测试要求", "其他ID", "其他",
+]
 
 
 RESOURCE_CONTRACT = parse_resource_contract(str(CONTRACT_PATH))
@@ -154,6 +187,15 @@ DEVICE_VARIATION_ROWS = (
 EXTERNAL_DEPENDENCIES_SECTION = "外部依赖"
 EXTERNAL_DEPENDENCIES_COLUMNS = ["子系统", "仓库", "模块/路径", "依赖类型"]
 
+I18N_TRIGGER_DIMENSION = "国际化"
+I18N_SECTION = "国际化依赖分析"
+I18N_TABLE_COLUMNS = ["调用场景", "i18n API 类型", "依赖类型", "仓路径", "接口/方法", "备注"]
+I18N_DEPENDENCY_TYPES = {"仓内封装", "外部依赖"}
+I18N_SUMMARY_RE = re.compile(
+    r"^\s*\|\s*合计\s*\|\s*\d+\s*个调用点\s*\|\s*仓内[:：]\s*\d+\s*/\s*外部[:：]\s*\d+\s*\|",
+    re.IGNORECASE,
+)
+
 PROPOSAL_ID_RE = re.compile(r"^[0-9]+$")
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 DRAFT_RE = re.compile(r"^draft-\d{8}-(.+)$")
@@ -181,17 +223,26 @@ class Reporter:
         self.passed = 0
         self.failed = 0
         self.warned = 0
+        self.messages: list[str] = []
 
     def pass_(self, message: str) -> None:
         print(f"  PASS {message}")
+        self.messages.append(f"PASS {message}")
         self.passed += 1
 
     def fail(self, message: str) -> None:
         print(f"  FAIL {message}")
+        self.messages.append(f"FAIL {message}")
         self.failed += 1
+
+    def fail_once(self, message: str) -> None:
+        """Several gates may depend on the same invalid document section."""
+        if f"FAIL {message}" not in self.messages:
+            self.fail(message)
 
     def warn(self, message: str) -> None:
         print(f"  WARN {message}")
+        self.messages.append(f"WARN {message}")
         self.warned += 1
 
 
@@ -752,7 +803,7 @@ def validate_dfx_no_hit_closure(
         elif status == "READ" and reason not in _DFX_READ_NO_HIT_REASONS:
             issues.append(f"{repo}: READ no-hit closure has non-canonical reason '{reason}'")
         elif status == "NO_DFX_KNOWLEDGE" and reason != "仓无 DFX 知识":
-            issues.append(f"{repo}: NO_DFX_KNOWLEDGE requires a 仓无 DFX 知识 reason")
+            issues.append(f"{repo}: NO_DFX_KNOWLEDGE reason must be exactly '仓无 DFX 知识'; put additional explanation outside the table")
         if not meaningful(reason):
             issues.append(f"{repo}: missing 理由")
 
@@ -791,6 +842,84 @@ def validate_dfx_no_hit_closure(
 
 def draft_warn_archive_fail(reporter: Reporter, archive: bool, message: str) -> None:
     reporter.fail(message) if archive else reporter.warn(message)
+
+
+_DEFAULT_AC_ID_PATTERN = rf"^{AC_ID_RE.pattern}$"
+AC_REFERENCE_CANDIDATE_RE = re.compile(r"(?<![\w-])AC-[^\s,，、;；]*")
+
+
+def _get_ac_id_pattern() -> str:
+    """Read the configured syntax constraint; retain the canonical ASCII default."""
+    try:
+        return contract_scalar("ac_id_pattern")
+    except (ValueError, KeyError):
+        return ""
+
+
+def ac_reference_candidates(cell: str) -> list[str]:
+    """Remove paired Markdown formatting, preserving each complete candidate id.
+
+    Only whitespace and explicit list separators terminate an id. In particular,
+    a hyphen, underscore or trailing dot remains in the candidate for fullmatch.
+    """
+    text = re.sub(r"(`+)([^\n]*?)\1", lambda match: match[2], cell)
+    text = re.sub(r"(\*\*|__|~~)([^\n]*?)\1", lambda match: match[2], text)
+    return AC_REFERENCE_CANDIDATE_RE.findall(text)
+
+
+def defined_ac_ids(spec: str) -> set[str]:
+    """Shared definition set for traceability and DFX closure; examples are inert."""
+    visible = _visible_markdown(spec)
+    return set(AC_RE.findall("\n".join(AC_DEF_RE.findall(visible))))
+
+
+def validate_ac_id_format(change_dir: Path, reporter: Reporter, *, archive: bool) -> None:
+    """Check visible definitions and complete ids in verification/Task mappings.
+
+    Draft warns; Archive/design-docs submission fails. The same check is used by
+    the existing validate_ac_ids entry point before downstream artifact checks.
+    """
+    raw = _get_ac_id_pattern()
+    try:
+        pattern = re.compile(raw or _DEFAULT_AC_ID_PATTERN)
+    except re.error:
+        draft_warn_archive_fail(
+            reporter, archive,
+            f"artifacts.yaml resource_contract.ac_id_pattern 包含非法正则 '{raw}'，"
+            f"已回退默认 {_DEFAULT_AC_ID_PATTERN}",
+        )
+        pattern = re.compile(_DEFAULT_AC_ID_PATTERN)
+
+    spec_path = change_dir / "spec.md"
+    if spec_path.is_file():
+        spec = read_text(spec_path)
+        definitions = AC_DEFINITION_ID_RE.findall(_visible_markdown(spec))
+        invalid = sorted(set(token for token in definitions if not pattern.fullmatch(token)))
+        if invalid:
+            draft_warn_archive_fail(
+                reporter, archive,
+                "spec.md invalid AC identifiers: " + ", ".join(invalid)
+                + "; expected AC-<用户故事号>.<序号>; format rule: " + pattern.pattern,
+            )
+        elif definitions:
+            reporter.pass_(f"spec.md AC identifier format valid ({len(definitions)} definitions)")
+
+    sources = (
+        ("spec.md", "验证映射", ["AC", "验证方式"]),
+        ("execution-plan.md", "AC 到 Task 追溯", ["AC", "Task", "验证方式"]),
+    )
+    for filename, section, columns in sources:
+        path = change_dir / filename
+        if not path.is_file():
+            continue
+        body = section_text(read_text(path), section)
+        for row in table_with_columns(body, columns):
+            for token in ac_reference_candidates(row.get("AC", "")):
+                if not pattern.fullmatch(token):
+                    draft_warn_archive_fail(
+                        reporter, archive,
+                        f"{filename} {section}: AC 编号 '{token}' 不符合格式规则 {pattern.pattern}",
+                    )
 
 
 def resource_decision_fields(value: str) -> dict[str, str]:
@@ -874,6 +1003,32 @@ def parse_eight_dim_performance_involvement(proposal: str) -> str | None:
         if first.startswith("否"):
             return "否"
         return first
+    return None
+
+
+def parse_eight_dim_involvement(proposal: str, dimension: str) -> str | None:
+    """Return 是/否 from one 不涉及项确认 dimension row, or None if the row is absent."""
+
+    section = section_text(proposal, "不涉及项确认")
+    if not section:
+        return None
+    rows = table_with_columns(section, ["维度", "是否涉及"])
+    # New artifacts use 国际化. Read the previous label only when the canonical
+    # row is absent, so upgrading the validator cannot silently disable old gates.
+    labels = (dimension, "国际化/无障碍") if dimension == I18N_TRIGGER_DIMENSION else (dimension,)
+    for label in labels:
+        for row in rows:
+            if row.get("维度", "").strip() != label:
+                continue
+            cell = row.get("是否涉及", "").strip()
+            if not cell:
+                return None
+            first = cell.split()[0]
+            if first.startswith("是"):
+                return "是"
+            if first.startswith("否"):
+                return "否"
+            return first
     return None
 
 
@@ -1497,8 +1652,17 @@ def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: b
             if state and state not in {"open", "merged", "closed"}:
                 reporter.fail("metadata_tracking.yaml: pull request state must be open, merged, or closed")
             url = str(pull_request.get("url", "")).strip()
-            if url and (not repo_is_valid or not metadata_pr_url_matches(url, repo_url)):
-                reporter.fail("metadata_tracking.yaml: pull request url must match its repository host, port and path")
+            pr_remote = parse_git_remote(url) if url else None
+            if url and not explicit_url and pr_remote and pr_remote.host != "gitcode.com":
+                reporter.fail(
+                    "metadata_tracking.yaml: repository_url is required for non-GitCode pull requests; "
+                    "set it to the actual target repository URL and preserve the real PR URL"
+                )
+            elif url and (not repo_is_valid or not metadata_pr_url_matches(url, repo_url)):
+                reporter.fail(
+                    "metadata_tracking.yaml: pull request url must be credential-free HTTPS, "
+                    "match its repository host and port, and stay within its repository path boundary"
+                )
             commit = str(pull_request.get("commit", "")).strip()
             if commit and not re.fullmatch(r"[0-9a-fA-F]{40}", commit):
                 reporter.fail("metadata_tracking.yaml: pull request commit must be a full 40-digit hex SHA")
@@ -1622,6 +1786,33 @@ def validate_required_artifacts(
     return files
 
 
+def conditional_section_exemptions(text: str) -> dict[str, str]:
+    """Accept standalone, named declarations outside examples/template comments."""
+    reasons: dict[str, tuple[str, str]] = {}
+
+    def replace_comment(match: re.Match[str]) -> str:
+        declaration = re.fullmatch(
+            r"<!--[ \t]*不涉及[：:][ \t]*([^;；\n]+)[;；][ \t]*理由[：:][ \t]*([^\n]*?)[ \t]*-->",
+            match[0],
+        )
+        if not declaration:
+            return match[0]
+        section, reason = (value.strip() for value in declaration.groups())
+        if not meaningful(reason) or ARCHIVE_MARKER_RE.search(reason) or ANGLE_PLACEHOLDER_RE.search(reason):
+            return match[0]
+        marker = f"ODK_CONDITIONAL_EXEMPTION_{len(reasons)}"
+        reasons[marker] = (section, reason)
+        return marker
+
+    marked = re.sub(r"<!--[\s\S]*?-->", replace_comment, text)
+    visible = set(line.strip() for line in _visible_markdown(marked).splitlines())
+    declarations: dict[str, list[str]] = {}
+    for marker, (section, reason) in reasons.items():
+        if marker in visible:
+            declarations.setdefault(section, []).append(reason)
+    return {section: values[0] for section, values in declarations.items() if len(values) == 1}
+
+
 def validate_sections(
     change_dir: Path,
     artifacts: dict[str, dict[str, object]],
@@ -1633,23 +1824,44 @@ def validate_sections(
         path = change_dir / file_name
         if not path.is_file():
             continue
-        present = headings(read_text(path))
+        text = read_text(path)
+        exemptions = conditional_section_exemptions(text)
 
         required = artifacts[name].get("required_sections", [])
         for section in required:  # type: ignore[assignment]
-            if section in present:
+            try:
+                body = require_unique_section(text, str(section))
+            except ValueError as error:
+                reporter.fail_once(f"{file_name}: {error}")
+                continue
+            if body is not None:
                 reporter.pass_(f"{file_name}: required section present: {section}")
             else:
                 reporter.fail(f"{file_name}: required section missing: {section}")
 
         conditional = artifacts[name].get("conditional_sections", [])
         for section in conditional:  # type: ignore[assignment]
+            try:
+                body = require_unique_section(text, str(section))
+            except ValueError as error:
+                reporter.fail_once(f"{file_name}: {error}")
+                continue
             if section in RESOURCE_SECTIONS.values():
                 continue  # trigger-aware checks live in validate_resource_constraints
-            if section in present:
+            if body is not None:
                 reporter.pass_(f"{file_name}: conditional section present: {section}")
             else:
-                reporter.warn(f"{file_name}: conditional section absent: {section}")
+                if section in exemptions:
+                    dimension = {"安全基础检查": "安全/权限", "国际化依赖分析": I18N_TRIGGER_DIMENSION}.get(section)
+                    proposal_path = change_dir / "proposal.md"
+                    triggered = (dimension and proposal_path.is_file()
+                                 and parse_eight_dim_involvement(read_text(proposal_path), dimension) == "是")
+                    if triggered:
+                        reporter.fail(f"{file_name}: conditional exclusion conflicts with active {dimension}: {section}")
+                    else:
+                        reporter.pass_(f"{file_name}: conditional section not applicable: {section}; reason: {exemptions[section]}")
+                else:
+                    reporter.warn(f"{file_name}: conditional section absent: {section}")
 
 
 def validate_present_optional_sections(
@@ -1671,12 +1883,15 @@ def validate_present_optional_sections(
         if not required:
             continue
         text = read_text(path)
-        present = headings(text)
         for section in required:  # type: ignore[assignment]
-            if section in present:
+            try:
+                body = require_unique_section(text, str(section))
+            except ValueError as error:
+                reporter.fail_once(f"{file_name}: {error}")
+                continue
+            if body is not None:
                 reporter.pass_(f"{file_name} (present optional): section present: {section}")
                 # Also check that section's tables have non-placeholder data rows
-                body = section_text(text, str(section))
                 all_tables = markdown_tables(body)
                 if all_tables:
                     for table in all_tables:
@@ -1690,6 +1905,11 @@ def validate_present_optional_sections(
                 reporter.fail(f"{file_name} (present optional): required section missing: {section}")
 
 
+def validate_ac_ids(change_dir: Path, reporter: Reporter, archive_mode: bool) -> None:
+    """Compatibility entry point; the shared format check also validates mappings."""
+    validate_ac_id_format(change_dir, reporter, archive=archive_mode)
+
+
 def validate_traceability(change_dir: Path, reporter: Reporter) -> None:
     spec_path = change_dir / "spec.md"
     plan_path = change_dir / "execution-plan.md"
@@ -1701,7 +1921,7 @@ def validate_traceability(change_dir: Path, reporter: Reporter) -> None:
     spec = read_text(spec_path)
     plan = read_text(plan_path)
 
-    spec_acs = set(AC_RE.findall("\n".join(AC_DEF_RE.findall(spec))))
+    spec_acs = defined_ac_ids(spec)
     if spec_acs:
         reporter.pass_(f"spec.md defines {len(spec_acs)} AC ids")
     else:
@@ -1821,6 +2041,567 @@ def validate_traceability(change_dir: Path, reporter: Reporter) -> None:
         reporter.pass_("execution-plan.md Task details include file scopes and expected verification")
 
 
+def _dfx_main_table_pairs(design: str) -> list[tuple[str, str]]:
+    """Return (分析对象, 故障模式) pairs from DFX main-table data rows."""
+    dfx_section = section_text(design, "DFX 设计")
+    if not dfx_section:
+        return []
+    fault_subsection = section_text(dfx_section, "DFX 故障模式分析")
+    if not fault_subsection:
+        return []
+    visible = _visible_markdown(fault_subsection)
+    rows = require_unique_table_with_columns(visible, _DFX_FAULT_COLUMNS) or []
+    return [
+        (row.get("分析对象", "").strip(), row.get("故障模式", "").strip())
+        for row in rows
+        if meaningful(row.get("分析对象", ""))
+    ]
+
+
+def _strip_subsection(section: str, title: str) -> str:
+    """Remove one titled subsection (heading to next same-or-higher level) from section text."""
+    out: list[str] = []
+    skipping = False
+    level = 0
+    for line in section.splitlines():
+        match = atx_heading(line)
+        if match:
+            heading_level, heading_title = match
+            if skipping and heading_level <= level:
+                skipping = False
+            if heading_title == title:
+                skipping = True
+                level = heading_level
+        if not skipping:
+            out.append(line)
+    return "\n".join(out)
+
+
+def _dfx_ad_entries(design: str) -> tuple[dict[str, tuple[str, str]], list[str]]:
+    """AD entries defined by AD layer tables under ## DFX 设计 (disposition
+    subsection excluded), located via the unified Markdown table parser so
+    indented and border-less tables are handled identically.
+
+    Returns ({AD id: (对象列值, 故障模式值)}, duplicate ids with conflicting content)."""
+    dfx_section = section_text(design, "DFX 设计")
+    if not dfx_section:
+        return {}, []
+    visible = _strip_subsection(dfx_section, "DFX 故障模式处置")
+    entries: dict[str, tuple[str, str]] = {}
+    duplicates: list[str] = []
+    for header, rows in parsed_markdown_tables(visible):
+        if len(header) < 3 or header[0].strip() != "编号" or "故障模式" not in header:
+            continue
+        object_column = header[1]  # 结构元素（标准 12 列）或 分析对象（委托回填布局）
+        for row in rows:
+            rid = row.get("编号", "").strip()
+            if not _DFX_AD_ID_RE.match(rid):
+                continue
+            pair = (row.get(object_column, "").strip(), row.get("故障模式", "").strip())
+            if rid in entries:
+                if entries[rid] != pair:
+                    duplicates.append(rid)
+            else:
+                entries[rid] = pair
+    return entries, sorted(set(duplicates))
+
+
+GOAL_ID_RE = re.compile(r"\bG-(\d+)\b")
+GOAL_DEF_RE = re.compile(r"^\s*[-*]\s+\*\*G-(\d+):\*\*", re.MULTILINE)
+
+# US_GOAL_RE: match **来源目标：** only at the start of a line (after optional whitespace),
+# and capture only the rest of THAT line (no cross-line capture via \s).
+# [^\S\n] matches spaces and tabs but NOT newlines, keeping the value on one line.
+US_GOAL_RE = re.compile(r"^[^\S\n]*\*\*来源目标[：:]\*\*[^\S\n]*([^\n]+)", re.MULTILINE)
+
+
+def _strip_code_spans(text: str) -> str:
+    """Strip CommonMark code spans using proper equal-length backtick fence matching.
+
+    A code span is opened by a backtick string of length N and closed by the
+    next backtick string of exactly the same length.  Content may span lines.
+    This correctly handles: `x`, ``x`y`z``, `` `x` ``, `` x``y ``z`` ``.
+
+    Reference: CommonMark spec §6.1
+    https://spec.commonmark.org/0.31.2/#code-spans
+    """
+    result: list[str] = []
+    i = 0
+    while i < len(text):
+        if text[i] != "`":
+            result.append(text[i])
+            i += 1
+            continue
+        # Count the opening backtick run
+        j = i
+        while j < len(text) and text[j] == "`":
+            j += 1
+        fence_len = j - i
+        # Search for the closing run of the same length (no longer run in between)
+        k = j
+        found = False
+        while k < len(text):
+            if text[k] == "`":
+                # Count this backtick run
+                m = k
+                while m < len(text) and text[m] == "`":
+                    m += 1
+                run_len = m - k
+                if run_len == fence_len:
+                    # Matched: replace the whole span with empty string
+                    result.append("")
+                    i = m
+                    found = True
+                    break
+                else:
+                    # Different length — skip this run and continue
+                    k = m
+            else:
+                k += 1
+        if not found:
+            # No closing fence found — treat backticks as literal
+            result.append(text[i:j])
+            i = j
+    return "".join(result)
+
+
+def _extract_goal_refs(
+    us_text: str,
+    defined_goals: set[str],
+    covered_goals: set[str],
+    invalid_refs: list[str],
+) -> None:
+    """Parse 来源目标 fields from one US section.
+
+    Processes the text line by line so that:
+    1. Indented code blocks (4-space / tab prefix) are skipped entirely —
+       their content never participates in field matching.
+    2. Each line is stripped of inline code spans INDEPENDENTLY before
+       field detection, so cross-paragraph backtick pairing cannot delete
+       real fields or manufacture fake ones.
+    3. A field is recognised only when **来源目标：** appears at the start
+       of the stripped line (after optional non-newline whitespace).  If
+       stripping inline code reveals a bare **来源目标：** that was previously
+       hidden behind a code-span prefix, the original line is also checked:
+       the field must already be at line-start in the ORIGINAL text too.
+    """
+    US_FIELD_RE = re.compile(r"^[^\S\n]*\*\*来源目标[：:]\*\*[^\S\n]*([^\n]+)")
+    in_fence = False
+    fence_char: str = ""
+    fence_len: int = 0
+
+    for line in us_text.splitlines():
+        # Track fenced code blocks (``` or ~~~)
+        stripped = line.strip()
+        if not in_fence:
+            fence_m = re.match(r"^(`{3,}|~{3,})", stripped)
+            if fence_m:
+                in_fence = True
+                fence_char = fence_m.group(1)[0]
+                fence_len = len(fence_m.group(1))
+                continue
+        else:
+            close_m = re.match(rf"^[^\S\n]*{re.escape(fence_char)}{{{fence_len},}}[^\S\n]*$", line)
+            if close_m:
+                in_fence = False
+            continue  # inside fence — skip
+
+        # Skip CommonMark indented code blocks (4 spaces or 1 tab)
+        if line.startswith("    ") or line.startswith("\t"):
+            continue
+
+        # Check field existence in ORIGINAL line first (prevents code-removal
+        # from manufacturing a field that wasn't there before stripping).
+        # The field marker **来源目标：** must already appear at the start of
+        # the line in the original text — not revealed only after code removal.
+        if not US_FIELD_RE.match(line):
+            continue
+
+        # Now strip inline code spans on this line only, then match the field
+        clean_line = _strip_code_spans(line)
+        m = US_FIELD_RE.match(clean_line)
+        if not m:
+            continue
+
+        raw_value = m.group(1)
+        for ref in GOAL_ID_RE.findall(raw_value):
+            if ref in defined_goals:
+                covered_goals.add(ref)
+            else:
+                invalid_refs.append(f"G-{ref}")
+_HEADING_RE = re.compile(r"^#{1,6}\s+(.+?)(?:\s+#+)?\s*$", re.MULTILINE)
+
+
+def _has_visible_heading(text: str, heading_text: str) -> bool:
+    """Return True only when heading_text appears as a real ATX heading in visible markdown."""
+    visible = _visible_markdown(text)
+    for line in visible.splitlines():
+        parsed = atx_heading(line)
+        if parsed is not None and heading_text in parsed[1]:
+            return True
+    return False
+
+
+def validate_goal_us_coverage(change_dir: Path, reporter: Reporter) -> None:
+    """Level C: every proposal goal (G-N) must be covered by at least one spec US.
+
+    Triggered only when proposal.md has a visible '用户场景与业务触发' heading
+    (skips pure-internal refactors).  Old deliverables without G-N IDs are warned
+    but not hard-failed so that existing archives are not broken.
+    """
+    proposal_path = change_dir / "proposal.md"
+    spec_path = change_dir / "spec.md"
+    if not proposal_path.is_file() or not spec_path.is_file():
+        return
+
+    proposal_raw = read_text(proposal_path)
+
+    # P2-2 fix: use visible heading detection, not plain string contains
+    if not _has_visible_heading(proposal_raw, "用户场景与业务触发"):
+        return
+
+    print("\nLevel C: Goal → US coverage")
+
+    # Parse visible text only — strips HTML comments and fenced code blocks
+    proposal_visible = _visible_markdown(proposal_raw)
+
+    # P2-2 fix: detect duplicate ## 目标 sections (structural error, not old doc)
+    goal_sections = section_texts(proposal_visible, "目标")
+    if len(goal_sections) > 1:
+        reporter.fail(
+            f"proposal.md has {len(goal_sections)} '## 目标' sections — expected exactly one; "
+            "fix the duplicate headings before goal→US coverage can be checked"
+        )
+        return
+    goal_section = goal_sections[0] if goal_sections else ""
+
+    # P2-2 fix: G-? placeholder means migration is in progress — block archive
+    #  word boundary does not work around '?' (non-word char), so match literally
+    if re.search(r"G-\?", goal_section):
+        reporter.fail(
+            "proposal.md 目标 section contains 'G-?' placeholder — "
+            "replace with real G-N numbered goals before archiving"
+        )
+        return
+
+    defined_goals_list = GOAL_DEF_RE.findall(goal_section)
+
+    # P1 fix: no G-N IDs → warn only (backwards compatibility for pre-feature deliverables)
+    if not defined_goals_list:
+        reporter.warn(
+            "proposal.md 目标 section has no G-N goal IDs — goal→US coverage not checked. "
+            "Add '- **G-1:** …' numbered entries to enable traceability validation."
+        )
+        return
+
+    # P2-3 fix: check for duplicate goal IDs
+    seen: set[str] = set()
+    duplicates: list[str] = []
+    for g in defined_goals_list:
+        if g in seen:
+            duplicates.append(f"G-{g}")
+        seen.add(g)
+    if duplicates:
+        reporter.fail(
+            "proposal.md 目标 section has duplicate goal IDs: " + ", ".join(duplicates)
+        )
+        return
+    defined_goals = seen
+    reporter.pass_(
+        f"proposal.md defines {len(defined_goals)} unique goal ids: "
+        + ", ".join(f"G-{g}" for g in sorted(defined_goals, key=int))
+    )
+
+    # P2-1 fix: scan visible spec text only
+    spec_visible = _visible_markdown(read_text(spec_path))
+
+    # P1 fix: only extract 来源目标 from legitimate ### US-<digits> sections.
+    # Reject fake US headings (e.g. '### US-99' inserted under ## Notes) by
+    # requiring a real US section under the spec's '## 用户故事或场景' heading.
+    us_scope = section_text(spec_visible, "用户故事或场景")
+    if not us_scope:
+        reporter.fail("spec.md missing '## 用户故事或场景' section — goal→US coverage cannot be checked")
+        return
+
+    # P2-2 fix: check spec 来源目标 field VALUES for G-? placeholders too.
+    # Only inspect values matched by US_GOAL_RE (real 来源目标 fields), not the
+    # whole US section — a literal "G-?" in an AC input example must not trigger.
+    # P2-2 fix: check spec 来源目标 field VALUES for G-? placeholders.
+    # Use the same line-by-line approach as _extract_goal_refs so that
+    # indented code blocks and inline-code-prefix removal cannot manufacture
+    # or suppress placeholder detections.
+    _placeholder_found = False
+    _US_FIELD_RE_PLACEHOLDER = re.compile(r"^[^\S\n]*\*\*来源目标[：:]\*\*[^\S\n]*([^\n]+)")
+    for _line in us_scope.splitlines():
+        if _line.startswith("    ") or _line.startswith("\t"):
+            continue
+        if "来源目标" not in _line:
+            continue
+        _clean = _strip_code_spans(_line)
+        _m = _US_FIELD_RE_PLACEHOLDER.match(_clean)
+        if _m and "G-?" in _m.group(1):
+            _placeholder_found = True
+            break
+    if _placeholder_found:
+        reporter.fail(
+            "spec.md US 来源目标 contains 'G-?' placeholder — "
+            "replace with real G-N ids from proposal.md before archiving"
+        )
+        return
+
+    covered_goals: set[str] = set()
+    invalid_refs: list[str] = []
+    # Split the US scope into US-<digits> sub-sections; only ### headings whose
+    # title matches US-<digits> (or US-DFX) are accepted as real user stories.
+    US_TITLE_RE = re.compile(r"^US-(\d+)(?:\b|:)", re.MULTILINE)
+    us_lines = us_scope.splitlines()
+    current_us: list[str] | None = None
+    for line in us_lines:
+        h = atx_heading(line)
+        if h and h[0] == 3:
+            title = h[1]
+            if US_TITLE_RE.match(title) or title.startswith("US-DFX"):
+                if current_us is not None:
+                    _extract_goal_refs("\n".join(current_us), defined_goals, covered_goals, invalid_refs)
+                current_us = [line]
+            else:
+                # non-US ### heading ends the current US section
+                if current_us is not None:
+                    _extract_goal_refs("\n".join(current_us), defined_goals, covered_goals, invalid_refs)
+                    current_us = None
+        elif current_us is not None:
+            current_us.append(line)
+    if current_us is not None:
+        _extract_goal_refs("\n".join(current_us), defined_goals, covered_goal_refs, invalid_refs) if False else _extract_goal_refs("\n".join(current_us), defined_goals, covered_goals, invalid_refs)
+
+    # P2-3 fix: reject references to undefined goals
+    if invalid_refs:
+        reporter.fail(
+            "spec.md references goal IDs not defined in proposal.md: "
+            + ", ".join(sorted(set(invalid_refs)))
+        )
+        return
+
+    missing = sorted(defined_goals - covered_goals, key=int)
+    if missing:
+        reporter.fail(
+            "spec.md US entries do not cover proposal goals: "
+            + ", ".join(f"G-{g}" for g in missing)
+            + " — add '**来源目标：** G-N' to the relevant US sections"
+        )
+    else:
+        reporter.pass_(f"spec.md US entries cover all {len(defined_goals)} proposal goal ids")
+
+
+def validated_dfx_section(design: str, reporter: Reporter) -> str | None:
+    """Fail closed on ambiguous DFX sections or main tables before either gate."""
+    try:
+        section = require_unique_section(design, "DFX 设计")
+        if section is not None:
+            for title in ("DFX 故障模式分析", "DFX 故障模式处置", "DFX 约束清单"):
+                require_unique_section(section, title)
+            fault_section = require_unique_section(section, "DFX 故障模式分析")
+            if fault_section is not None:
+                try:
+                    require_unique_table_with_columns(fault_section, _DFX_FAULT_COLUMNS)
+                except ValueError as error:
+                    raise ValueError(f"DFX 故障模式分析: {error}") from error
+        return section
+    except ValueError as error:
+        reporter.fail_once(f"design.md: {error}")
+        return None
+
+
+def validate_dfx_ac_gate(change_dir: Path, reporter: Reporter, archive_mode: bool) -> None:
+    """Level C3: every DFX fault mode (main-table hit or AD entry) must be dispositioned,
+    AC-linked dispositions must reference spec-defined ACs, and archive requires those
+    ACs to be traced Pass in execution-plan.md."""
+    design_path = change_dir / "design.md"
+    if not design_path.is_file():
+        return
+
+    design = read_text(design_path)
+    dfx_section = validated_dfx_section(design, reporter)
+    if dfx_section is None:
+        return
+
+    main_pairs = _dfx_main_table_pairs(design)
+    ad_entries, ad_duplicates = _dfx_ad_entries(design)
+    ad_ids = set(ad_entries)
+    if not main_pairs and not ad_ids:
+        # 不涉及 branch (or missing subsection — reported by Level C2): gate silent.
+        return
+
+    print("\nLevel C3: DFX Fault-Mode → AC Gate")
+
+    disposition_sub = section_text(dfx_section, "DFX 故障模式处置")
+    if not disposition_sub:
+        draft_warn_archive_fail(
+            reporter,
+            archive_mode,
+            "design.md: DFX fault modes found (main-table hits or AD entries) but "
+            "'### DFX 故障模式处置' missing — disposition every entry as "
+            "新增 AC / 复用 AC / 现有控制覆盖 / 本变更不触及",
+        )
+        return
+
+    if not table_has_columns(disposition_sub, _DFX_DISPOSITION_COLUMNS):
+        missing = [
+            c for c in _DFX_DISPOSITION_COLUMNS
+            if not table_has_columns(disposition_sub, [c])
+        ]
+        reporter.fail(
+            "design.md: DFX 故障模式处置 table missing required columns: " + ", ".join(missing)
+        )
+        return
+
+    rows = table_with_columns(disposition_sub, _DFX_DISPOSITION_COLUMNS)
+
+    issues: list[str] = []
+    seen_ids: set[str] = set()
+    disposed_pairs: set[tuple[str, str]] = set()
+    disposed_ads: set[str] = set()
+    linked_acs: set[str] = set()
+    design_constraint_tasks: set[str] = set()
+
+    for row in rows:
+        if not any(meaningful(str(value)) for value in row.values()):
+            continue  # template placeholder row
+        rid = row.get("编号", "").strip()
+        obj = row.get("分析对象", "").strip()
+        mode = row.get("故障模式", "").strip()
+        disposition = row.get("处置", "").strip()
+        ac_cell = row.get("关联 AC", "").strip()
+        evidence = row.get("验证方式/证据", "").strip()
+
+        if not (_DFX_FM_ID_RE.match(rid) or _DFX_AD_ID_RE.match(rid)):
+            issues.append(f"{rid or '<empty>'}: 编号 must be FM-n (main-table row) or AD-n (derived entry)")
+            continue
+        if rid in seen_ids:
+            issues.append(f"{rid}: duplicate 编号")
+            continue
+        seen_ids.add(rid)
+        if disposition not in _DFX_DISPOSITIONS:
+            issues.append(f"{rid}: invalid 处置 '{disposition}' (expected one of {'/'.join(sorted(_DFX_DISPOSITIONS))})")
+            continue
+        if not meaningful(evidence):
+            issues.append(f"{rid}: 验证方式/证据 empty (fault-injection/error-path method, file:line, or reason required)")
+        if disposition in _DFX_AC_DISPOSITIONS:
+            acs = sorted_ids(set(AC_RE.findall(ac_cell)))
+            if not acs:
+                issues.append(f"{rid}: 处置={disposition} requires 关联 AC")
+            linked_acs.update(acs)
+        if disposition == _DFX_DESIGN_CONSTRAINT_DISPOSITION:
+            # Internal control measures land as design decisions/constraints plus a
+            # traced Task with verification evidence — not as a new spec AC.
+            tasks = sorted(set(TASK_RE.findall(evidence)))
+            if not tasks:
+                issues.append(f"{rid}: 处置=纳入设计约束 requires a 关联 TASK id in 验证方式/证据")
+            if not _DFX_CONSTRAINT_REF_RE.search(evidence):
+                issues.append(f"{rid}: 处置=纳入设计约束 requires a design decision/constraint reference (e.g. D-xx / 约束 / 不变量)")
+            design_constraint_tasks.update(tasks)
+        if _DFX_FM_ID_RE.match(rid):
+            if not meaningful(obj) or not meaningful(mode):
+                issues.append(f"{rid}: 分析对象/故障模式 must be copied from the main table")
+            else:
+                disposed_pairs.add((obj, mode))
+        else:
+            # AD disposition must mirror the AD layer entry's object and fault mode.
+            if rid in ad_entries:
+                expected = ad_entries[rid]
+                if not meaningful(obj) or not meaningful(mode):
+                    issues.append(f"{rid}: 处置行分析对象/故障模式 must be copied from the AD layer entry")
+                elif (obj, mode) != expected:
+                    issues.append(
+                        f"{rid}: 处置行分析对象/故障模式与 AD 条目不匹配 "
+                        f"(expected {expected[0]} / {expected[1]})"
+                    )
+            disposed_ads.add(rid)
+
+    if ad_duplicates:
+        issues.append("AD entries with duplicate ids and conflicting content: " + ", ".join(ad_duplicates))
+    for pair in main_pairs:
+        if pair not in disposed_pairs:
+            issues.append(f"main-table hit not dispositioned: {pair[0]} / {pair[1]}")
+    for obj, mode in sorted(disposed_pairs - set(main_pairs)):
+        issues.append(f"disposition row not found in main table: {obj} / {mode}")
+    for ad in sorted_ids(ad_ids):
+        if ad not in disposed_ads:
+            issues.append(f"{ad}: AD entry not dispositioned")
+    for ad in sorted_ids(disposed_ads - ad_ids):
+        issues.append(f"{ad}: disposition references unknown AD entry")
+
+    if linked_acs:
+        spec_acs: set[str] = set()
+        spec_path = change_dir / "spec.md"
+        if spec_path.is_file():
+            spec = read_text(spec_path)
+            spec_acs = defined_ac_ids(spec)
+        dangling = [ac for ac in sorted_ids(linked_acs) if ac not in spec_acs]
+        if dangling:
+            issues.append("关联 AC not defined in spec.md: " + ", ".join(dangling))
+
+    if issues:
+        reporter.fail("design.md: DFX 故障模式处置 gate: " + "; ".join(issues))
+        return
+
+    detail = f"{len(main_pairs)} hit row(s), {len(ad_ids)} AD entr(ies)"
+    if linked_acs:
+        detail += f", {len(linked_acs)} linked AC(s)"
+    if design_constraint_tasks:
+        detail += f", {len(design_constraint_tasks)} design-constraint Task(s)"
+    reporter.pass_(f"DFX 故障模式处置 complete ({detail})")
+
+    if not (archive_mode and (linked_acs or design_constraint_tasks)):
+        return
+
+    plan_path = change_dir / "execution-plan.md"
+    if not plan_path.is_file():
+        reporter.fail(
+            "execution-plan.md missing — FM ACs/design-constraint Tasks cannot be "
+            "verified for archive: "
+            + ", ".join(sorted_ids(linked_acs) + sorted(design_constraint_tasks))
+        )
+        return
+    plan = read_text(plan_path)
+    ac_task = section_text(plan, "AC 到 Task 追溯")
+    trace_rows = table_with_columns(ac_task, ["AC", "Task", "验证状态（Pass/Fail/Blocked）"])
+    # Aggregate every trace row per AC (and per Task): one AC may span several
+    # Tasks and the gate passes only when ALL of its rows are Pass (a later
+    # Pass must not mask an earlier Fail/Blocked).
+    statuses_by_ac: dict[str, set[str]] = {}
+    statuses_by_task: dict[str, set[str]] = {}
+    for trace_row in trace_rows:
+        status = trace_row.get("验证状态（Pass/Fail/Blocked）", "").strip().lower()
+        for ac in AC_RE.findall(trace_row.get("AC", "")):
+            statuses_by_ac.setdefault(ac, set()).add(status)
+        for task in TASK_RE.findall(trace_row.get("Task", "")):
+            statuses_by_task.setdefault(task, set()).add(status)
+    not_pass = [
+        ac for ac in sorted_ids(linked_acs)
+        if statuses_by_ac.get(ac) != {"pass"}
+    ]
+    if not_pass:
+        reporter.fail(
+            "FM AC not Pass in execution-plan.md AC-to-Task traceability (archive gate; "
+            "all trace rows for the AC must be Pass): " + ", ".join(not_pass)
+        )
+    elif linked_acs:
+        reporter.pass_("FM ACs all Pass in AC-to-Task traceability (archive gate)")
+
+    constraint_not_pass = [
+        task for task in sorted(design_constraint_tasks)
+        if statuses_by_task.get(task) != {"pass"}
+    ]
+    if constraint_not_pass:
+        reporter.fail(
+            "设计约束 Task not Pass in execution-plan.md AC-to-Task traceability "
+            "(archive gate): " + ", ".join(constraint_not_pass)
+        )
+    elif design_constraint_tasks:
+        reporter.pass_("design-constraint Tasks all Pass in AC-to-Task traceability (archive gate)")
+
+
 def validate_dfx_constraints(change_dir: Path, reporter: Reporter, archive_mode: bool) -> None:
     design_path = change_dir / "design.md"
     if not design_path.is_file():
@@ -1829,8 +2610,8 @@ def validate_dfx_constraints(change_dir: Path, reporter: Reporter, archive_mode:
     print("\nLevel C2: DFX Fault Mode Coverage")
 
     design = read_text(design_path)
-    dfx_section = section_text(design, "DFX 设计")
-    if not dfx_section:
+    dfx_section = validated_dfx_section(design, reporter)
+    if dfx_section is None:
         # design.md missing the DFX H2 is reported by the section validator.
         return
 
@@ -1851,10 +2632,7 @@ def validate_dfx_constraints(change_dir: Path, reporter: Reporter, archive_mode:
         return
 
     # Every hit must include a pinned repository/commit/path/record provenance.
-    required_dfx_columns = [
-        "分析对象", "故障模式", "故障影响", "故障原因",
-        "严酷度", "恢复措施", "关键日志", "大数据打点事件", "来源",
-    ]
+    required_dfx_columns = _DFX_FAULT_COLUMNS
     visible_fault_subsection = _visible_markdown(fault_subsection)
     if not table_has_columns(visible_fault_subsection, required_dfx_columns):
         missing = [
@@ -1866,7 +2644,7 @@ def validate_dfx_constraints(change_dir: Path, reporter: Reporter, archive_mode:
         )
         return
 
-    fault_rows = table_with_columns(visible_fault_subsection, required_dfx_columns)
+    fault_rows = require_unique_table_with_columns(visible_fault_subsection, required_dfx_columns) or []
 
     has_data_rows = False
     invalid_rows: list[str] = []
@@ -1944,6 +2722,109 @@ def validate_dfx_constraints(change_dir: Path, reporter: Reporter, archive_mode:
                 "design.md: DFX 故障模式分析 has no data rows and no 不涉及 — "
                 "请填写不涉及并附理由"
             )
+
+
+def validate_dfx_export_table(change_dir: Path, reporter: Reporter) -> None:
+    """Structural WARN for the optional 66-column library export table.
+
+    The export table is not an archive gate object (presence never affects
+    archive decisions), but a malformed one cannot be parsed by Markdown or
+    the import platform — flag structure drift as a Draft WARN."""
+    design_path = change_dir / "design.md"
+    if not design_path.is_file():
+        return
+    design = read_text(design_path)
+    dfx_section = section_text(design, "DFX 设计")
+    if not dfx_section:
+        return
+    export_sub = section_text(dfx_section, "故障模式库导出表格")
+    if not export_sub:
+        return  # absent export table is a valid state
+
+    print("\nLevel C2: Library Export Table (structure)")
+    lines = [
+        line for line in _visible_markdown(export_sub).splitlines()
+        if "|" in line
+    ]
+    if not lines:
+        reporter.warn("design.md: ### 故障模式库导出表格 exists but contains no table")
+        return
+
+    issues: list[str] = []
+    header = split_table_row(lines[0])
+    if len(lines) < 2:
+        issues.append("table has no separator row (header only)")
+        separator: list[str] = []
+    else:
+        separator = split_table_row(lines[1])
+        if not is_separator_row(separator):
+            issues.append("second table row is not a valid separator row — not a parseable Markdown table")
+        elif len(separator) != len(header):
+            issues.append(
+                f"separator row has {len(separator)} columns but header has {len(header)} — table cannot be parsed"
+            )
+    data_lines = lines[2:] if len(lines) >= 2 else []
+    for index, line in enumerate(data_lines, start=3):
+        cells = split_table_row(line)
+        if is_separator_row(cells):
+            continue
+        if len(cells) != len(header):
+            issues.append(f"data row {index} has {len(cells)} columns (header has {len(header)})")
+    if len(header) != 66:
+        issues.append(f"expected 66 columns, found {len(header)} (empty columns must be kept as placeholders)")
+    elif header != _DFX_EXPORT_COLUMNS:
+        missing = [c for c in _DFX_EXPORT_COLUMNS if c not in header]
+        extra = [c for c in header if c not in _DFX_EXPORT_COLUMNS]
+        detail = []
+        if missing:
+            detail.append("missing: " + ", ".join(missing[:8]) + ("…" if len(missing) > 8 else ""))
+        if extra:
+            detail.append("non-contract columns: " + ", ".join(extra[:8]) + ("…" if len(extra) > 8 else ""))
+        issues.append("column names/order deviate from the 66-column template (" + "; ".join(detail) + ")")
+    if issues:
+        reporter.warn("design.md: 故障模式库导出表格 structure: " + "; ".join(issues))
+    else:
+        reporter.pass_("library export table is a well-formed 66-column table")
+
+
+def validate_dfx_ad_library_basis(change_dir: Path, reporter: Reporter) -> None:
+    """Draft WARN: every AD entry under ## DFX 设计 must carry a library-basis
+    annotation (（库依据：…） or （无库依据…）) so derived entries are auditable
+    against the generic fault-mode library. Uses the unified table parser so
+    indented/border-less AD tables are covered identically."""
+    design_path = change_dir / "design.md"
+    if not design_path.is_file():
+        return
+    design = read_text(design_path)
+    dfx_section = section_text(design, "DFX 设计")
+    if not dfx_section:
+        return
+    ad_entries, _ = _dfx_ad_entries(design)
+    if not ad_entries:
+        return
+    visible = _visible_markdown(_strip_subsection(dfx_section, "DFX 故障模式处置"))
+    missing = []
+    for header, rows in parsed_markdown_tables(visible):
+        if len(header) < 3 or header[0].strip() != "编号" or "故障原因" not in header:
+            continue
+        for row in rows:
+            rid = row.get("编号", "").strip()
+            if _DFX_AD_ID_RE.match(rid) and "库依据" not in row.get("故障原因", ""):
+                missing.append(rid)
+    if not missing and not any(
+        "故障原因" in header for header, _ in parsed_markdown_tables(visible)
+    ):
+        return  # no AD table with a 故障原因 column found; nothing to annotate
+
+    print("\nLevel C2: AD Library Basis (annotation)")
+    if missing:
+        reporter.warn(
+            "design.md: AD 分层表 rows without library-basis annotation "
+            "(append 库依据：<库编号> or 无库依据：本次特有推导 to 故障原因): "
+            + ", ".join(sorted(set(missing)))
+        )
+    else:
+        reporter.pass_("AD rows all carry library-basis annotations")
 
 
 def validate_optional_evidence(change_dir: Path, reporter: Reporter) -> None:
@@ -2118,6 +2999,75 @@ def validate_archive_evidence_claims(change_dir: Path, unresolved_required: bool
         reporter.pass_("evidence does not claim readiness while required artifacts have unresolved markers")
 
 
+def validate_i18n_constraints(change_dir: Path, reporter: Reporter, archive_mode: bool) -> None:
+    proposal_path = change_dir / "proposal.md"
+    design_path = change_dir / "design.md"
+    if not proposal_path.is_file() or not design_path.is_file():
+        return
+
+    proposal = _visible_markdown(read_text(proposal_path))
+    involvement = parse_eight_dim_involvement(proposal, I18N_TRIGGER_DIMENSION)
+    if involvement != "是":
+        reporter.pass_("i18n constraints not triggered")
+        return
+
+    design = _visible_markdown(read_text(design_path))
+    body = section_text(design, I18N_SECTION)
+    if not body:
+        draft_warn_archive_fail(
+            reporter,
+            archive_mode,
+            f"design.md missing {I18N_SECTION} section while 国际化 = 是",
+        )
+        return
+
+    issues: list[str] = []
+    if not table_has_columns(body, I18N_TABLE_COLUMNS):
+        missing = [
+            c for c in I18N_TABLE_COLUMNS
+            if not table_has_columns(body, [c])
+        ]
+        issues.append(
+            f"{I18N_SECTION} table missing required column: {', '.join(missing)}"
+        )
+    else:
+        rows = table_with_columns(body, I18N_TABLE_COLUMNS)
+        has_data_rows = False
+        for row in rows:
+            scene = row.get("调用场景", "").strip()
+            if not meaningful(scene):
+                continue
+            has_data_rows = True
+            dep_type = row.get("依赖类型", "").strip()
+            if dep_type not in I18N_DEPENDENCY_TYPES:
+                issues.append(f"{I18N_SECTION} row '{scene}' has invalid 依赖类型: {dep_type or '<empty>'}")
+            for column in ("仓路径", "接口/方法"):
+                value = row.get(column, "").strip()
+                if not meaningful(value) or unresolved_markers(value):
+                    issues.append(
+                        f"{I18N_SECTION} row 'scene' has unresolved {column}: {value or '<empty>'}"
+                    )
+        if not has_data_rows:
+            issues.append(f"{I18N_SECTION} has no data rows (all placeholder/empty)")
+
+        summary_found = any(
+            I18N_SUMMARY_RE.match(line)
+            for line in body.splitlines()
+            if line.lstrip().startswith("|")
+        )
+        if not summary_found:
+            issues.append(f"{I18N_SECTION} missing concrete 合计 summary row (N/X/Y)")
+
+    if issues:
+        draft_warn_archive_fail(
+            reporter,
+            archive_mode,
+            "design.md i18n constraints: " + "; ".join(issues),
+        )
+    else:
+        reporter.pass_("design.md i18n dependency analysis has complete, confirmed rows")
+
+
 def validate_archive_readiness(
     change_dir: Path,
     artifacts: dict[str, dict[str, object]],
@@ -2174,11 +3124,18 @@ def main(argv: list[str]) -> int:
     if proposal_path.is_file():
         validate_proposal_tables(read_text(proposal_path), reporter, archive=strict_delivery)
     validate_present_optional_sections(change_dir, artifacts, reporter)
+    validate_ac_ids(change_dir, reporter, strict_delivery)
     validate_traceability(change_dir, reporter)
+    validate_goal_us_coverage(change_dir, reporter)
     validate_dfx_constraints(change_dir, reporter, strict_delivery)
+    validate_dfx_ac_gate(change_dir, reporter, strict_delivery)
+    validate_dfx_export_table(change_dir, reporter)
+    validate_dfx_ad_library_basis(change_dir, reporter)
     validate_optional_evidence(change_dir, reporter)
     print("\nResource Constraints")
     validate_resource_constraints(change_dir, reporter, archive=strict_delivery)
+    print("\ni18n Constraints")
+    validate_i18n_constraints(change_dir, reporter, strict_delivery)
     if strict_delivery:
         validate_archive_readiness(change_dir, artifacts, files, reporter)
 

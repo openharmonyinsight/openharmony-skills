@@ -29,7 +29,7 @@ Invoke OpenSpec `/opsx:apply` to implement tasks from the execution plan, apply 
 ## Output
 
 <!-- ODK:reference contracts/skill-guides/delivery/handoff.md -->
-When implementation is complete, read and follow `{{ASSET_ROOT}}/contracts/skill-guides/delivery/handoff.md`: automatically review and validate, remind and wait for the user to trigger source PR submission, prepare metadata from the actual PR, then ask separately about design-docs. No automatic merge.
+When implementation is complete, read and follow `contracts/skill-guides/delivery/handoff.md`: automatically review and validate, remind and wait for the user to trigger source PR submission, prepare `metadata_tracking.yaml` from the actual PR, then ask separately about design-docs. No automatic merge.
 <!-- /ODK:reference -->
 
 - Code changes applied to the codebase.

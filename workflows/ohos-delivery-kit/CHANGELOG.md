@@ -4,6 +4,140 @@ All notable changes to the published `ohos-delivery-kit` workflow are documented
 this file. Source artifacts are synchronized from
 `oshunter/ohos-delivery-kit` `main` through the marketplace publisher.
 
+## [0.14.0] - 2026-10-28
+
+Source: `main@bfcaabbbea79835569dbf93d61925083a001d570`.
+
+### Added
+
+- Internationalization scope criteria, design sections and validation from source PR !168.
+
+- Reject ambiguous document sections: a duplicated required or conditional
+  section (including `DFX 设计` and its fault-mode subsections) now fails closed
+  and is reported once, instead of being read as absent and silently skipping the
+  DFX gates (source PR !177).
+- Accept private PR/MR route names and opaque IDs in `metadata_tracking.yaml`,
+  validating credential-free HTTPS, host and repository path boundary while
+  rejecting navigation segments and encoded delimiters.
+
+- Configure an ordered product menu with `build_products`; retain `build_product`
+  as the preferred default. Plans record the candidate list and one confirmed
+  product; implementation reuses the selection or resolves a requested switch.
+
+- Configurable build/test commands, review hooks, source/design-docs PR tools,
+  CI and online-test triggers, and physical-device preparation settings.
+- Goal-to-user-story coverage validation and code-grounded brainstorming before
+  proposal, specification and design generation.
+
+### Changed
+
+- Confirm device firmware strategy while writing the execution plan: QEMU skips
+  daily selection; other products ask daily versus existing firmware and persist
+  the preparation method. Implementation and final verification reuse the choice.
+- Preserve the daily choice when automatic flashing is unavailable by confirming
+  a supported manual preparation method. Bridge planning paths follow the same rule.
+
+### Fixed
+
+- Reject duplicate nine-column DFX main tables so an ambiguous layout cannot
+  bypass the C2/C3 gates (source PR !178).
+
+- Import the source revision containing PR !174 contract-gate repairs (bare template paths and migrated regression fixtures).
+
+- Resolve resource self-checks relative to the actual guide location in source,
+  native and neutral layouts, without restoring resource-root placeholders.
+- Require rk3568 and a configured flashing skill before automatic flashing;
+  confirm the target device and avoid repeated firmware preparation.
+- Resume brainstorm using its installed skill name rather than a Claude command.
+- Ship the default configuration, archive migration validator and all Python
+  runtime libraries; align release metadata with the merged source revision.
+- Ship the shared `require_unique_section` runtime helper so gates can tell a
+  duplicate section from a missing one, and make `repository_url` an explicit
+  template field so non-GitCode PRs record their real target repository URL.
+- Declare the complete asset tree so installation includes the default config,
+  retaining named asset components for literal-path relocation. Remove stale
+  skill-local symlinks pointing to a maintainer's machine; keep FMEA references
+  as real files alongside the skill.
+
+### Installation verification
+
+- Re-synchronized source main after merging configurable product selection and verified installation
+  with the official npm oh-skillhub 0.1.43 release containing the auxiliary-file
+  copy fix. All 40 workflow regression tests pass, including V1/V2 installation
+  for Claude Code, Codex and OpenCode, FMEA's 44 reference files, default config
+  and runtime references. The source release gate also passes for all three hosts.
+- oh-skillhub 0.1.42 still omits skill-local files in workflow-plugin projections;
+  use 0.1.43 or a later version passing the installation check.
+
+## [0.13.0] - 2026-10-21
+
+Source: `main@c85abe290808fac290a2bce596b53ca9d4751887`.
+
+### Added
+
+- Register `odk-brainstorm`, bringing the release to 27 skills. Add structured
+  clarification before proposal, specification and design generation.
+- Add an opt-in real-installation check for Claude Code, Codex and OpenCode:
+  verify relocated paths, execute the validator outside the source tree, and
+  compare all skill auxiliary files with the shipped source.
+
+### Fixed
+
+- Normalize DFX subsection headings with the shared ATX parser, preventing
+  indentation or closing hashes from hiding undispositioned AD entries.
+- Align published reference tests with literal resource paths; retain ordinary
+  path instructions without restoring resource-root placeholders.
+- Document the installer requirement to preserve skill auxiliary directories,
+  including the complete FMEA reference library, and relocate runtime paths.
+
+## [0.12.1] - 2026-10-15
+
+Source: `main@9f14e1b65c40aad1f32f2a233865a84aaa6aa34e`.
+
+### Added
+
+- New `odk-fmea` skill: AIAG-VDA 7-step FMEA engine with repository-level
+  `docs/dfx/fmea.yaml` knowledge base discovery, 18-class generic fault-mode
+  library with two-stage loading (trigger index → detail on match), DFX table
+  compatible backfill, and library export table (66-column template).
+- DFX fault-mode → AC gate (validator Level C3): every main-table hit and AD
+  derived entry must be dispositioned in `### DFX 故障模式处置` table
+  (新增 AC / 复用 AC / 纳入设计约束 / 现有控制覆盖 / 本变更不触及);
+  dangling AC references fail in Draft; archive requires linked ACs traced Pass.
+- `odk-design` Step 6 now delegates to `odk-fmea` in subagent (isolated context);
+  new Step 6.4 adds disposition decision and spec.md US-DFX backfill.
+- `odk-spec` preserves US-DFX backfill content on regeneration.
+- `odk-plan` Self-Review adds FM coverage check; FM ACs cannot be deferred.
+- `odk-implement` requires fault-injection/error-path verification for FM ACs.
+- `odk-review` adds DFX fault-mode coverage check.
+- `odk-validate` documents Level C3 gate.
+- Published regression tests cover DFX dispositions, linked AC archive status,
+  skill registration, and shared asset paths.
+
+### Changed
+
+- `distribute-skills.sh` now copies skill auxiliary files (references/) via
+  `copy_skill_assets`; description length measured in bytes (not characters)
+  to match truncation threshold under UTF-8 locales.
+- `validate-doc-drift.sh` excludes history sections from skill count checks.
+- `validate-skill-descriptions.sh` forces LC_ALL=C for byte-accurate length.
+- `validate-skill-references.py` checks skill asset files exist byte-identical
+  in all four platform copies; validates relative Markdown links in skill trees.
+- AD-level derived entries require library-basis annotation.
+- Export table enforces 66-column structure (WARN on drift, not FAIL).
+
+### Fixed
+
+- Refresh the import from merged `main@9f14e1b`; retain the existing
+  shared runtime/assets layout and declared host asset/executable variables.
+- Use `proposal_id` / `PROPOSAL_ID` and `odk-link-proposal` consistently; legacy
+  identity names remain only in migration instructions and rejection checks.
+- Preserve the 0.12.0 proposal ID, API validation, and delivery handoff contracts.
+- Register `odk-fmea` alongside `odk-link-proposal` and align the manifest version
+  with sourceVersion 0.12.1.
+- Resolve shared skill references through the declared `ASSET_ROOT` variable;
+  retain asset-relative template paths in artifacts.yaml for the validator.
+
 ## [0.12.0] - 2026-09-24
 
 Source: `main@e48ec3f7aa7940fefb7b2fd188dec5a4976122f3`.

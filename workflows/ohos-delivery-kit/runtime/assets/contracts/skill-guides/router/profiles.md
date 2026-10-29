@@ -13,7 +13,7 @@ When generating ODK artifacts for a specific OpenHarmony module, apply subsystem
    - Spec: `additional_ac_categories` → add to user story AC categories
    - Execution-plan: `additional_prohibitions` → append to 禁止项
 
-   Dimension mapping: perf→性能, security→安全/权限, compatibility→兼容性, api-sdk→API/SDK, ipc→IPC/跨进程, build→构建/组件, i18n→国际化/无障碍, data-migration→数据迁移
+   Dimension mapping: perf→性能, security→安全/权限, compatibility→兼容性, api-sdk→API/SDK, ipc→IPC/跨进程, build→构建/组件, i18n→国际化, data-migration→数据迁移
 5. Apply `agent_instructions` for the current phase (define/specify/design/plan) to add domain-specific constraints
 6. If a profile provides `fragments` with a composition strategy (prepend/append/wrap), apply to the generated artifact
 

@@ -21,14 +21,16 @@ Invoke Superpowers `requesting-code-review` and `verification-before-completion`
 
 ## Steps
 
+For configuration-dependent steps, use the effective-configuration command defined in `using-odk`; do not merge installation files independently. Stop on config errors. Existing execution-plan commands remain authoritative until explicitly changed.
+
 1. Invoke Superpowers `requesting-code-review` to review the implementation against `spec.md` and `execution-plan.md`.
 2. Invoke Superpowers `verification-before-completion` before making any readiness claim.
-3. Generate 3 review documents from templates in `{{ASSET_ROOT}}/templates/review/`, using the Superpowers review and verification results as the primary evidence:
+3. Generate 3 review documents from templates in `templates/review/`, using the Superpowers review and verification results as the primary evidence:
    - **spec-compliance-YYYYMMDD.md** — Check every AC against implementation
    - **code-review-YYYYMMDD.md** — Code quality review; verify code scope matches execution-plan boundaries
    - **verification-YYYYMMDD.md** — Verification evidence; explicit code-vs-spec consistency conclusion
 4. Persist to `codespec/changes/<repo-name>/<proposal-id>/evidence/reviews/`.
-5. If the next action is a GitCode commit, push, or PR, read `design_docs_repository` from `codespec/profile.yaml` and remind the user to submit `codespec/` documents to that separate design-docs repository. If absent, report “待开发者填写”; never guess or automatically push across repositories. Actual submission uses `odk-submit-design-docs` to generate `metadata_tracking.yaml` and validate the five-base-file bundle plus required conditional evidence.
+5. If the next action is a GitCode commit, push, or PR, resolve the design-docs repository address (priority: `codespec/profile.yaml` if present → `odk_config_ext.yaml` → `odk_config.yaml`; do not warn if `codespec/profile.yaml` is absent) and remind the user to submit `codespec/` documents to that separate design-docs repository. If no address can be resolved, report “待开发者填写”; never guess or automatically push across repositories. Actual submission uses `odk-submit-design-docs` to generate `metadata_tracking.yaml` and validate the five-base-file bundle plus required conditional evidence.
 
 ## Output
 

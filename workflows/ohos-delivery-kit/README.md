@@ -3,6 +3,35 @@
 Neutral-source plugin providing OpenHarmony delivery artifact specification skills,
 session routing, validator executables, and runtime assets.
 
+## 0.14.0 configurable execution and device-version planning
+
+Build/test commands, review hooks, PR tools and CI/online-test triggers can be
+configured through `runtime/assets/odk_config.yaml` and an optional sibling
+`odk_config_ext.yaml`. Planning records the resolved commands and device-version
+strategy: QEMU (`arm64_virt`) needs no daily firmware; every other product asks
+whether to obtain daily or use existing firmware. Implementation reuses the
+recorded choice; manual preparation remains available when automatic flashing
+is unsupported. Automatic flashing requires rk3568 and a configured skill.
+
+Resource self-checks resolve files from the loaded guide location and do not
+require resource-root variable injection. Brainstorm recovery uses the installed
+skill name on every host. Goal-to-US coverage checks accompany document validation.
+CI/online-test triggers do not by themselves attest that remote tests have passed.
+
+## 0.13.0 structured clarification
+
+Adds the standalone `odk-brainstorm` interview and active clarification in
+propose/spec/design. This release ships 27 ODK skills, including the FMEA engine
+and its complete `references/` library. Installers must copy skill auxiliary
+files and relocate literal runtime paths before this release is distributed.
+
+## 0.12.1 FMEA analysis and AC traceability
+
+Adds `odk-fmea` with an 18-class fault-mode library and a DFX disposition gate.
+Every knowledge-base hit and AD entry must have a disposition; linked ACs must
+exist in spec.md and all their traceability rows must be Pass before archive.
+The proposal ID and delivery handoff contracts from 0.12.0 remain in force.
+
 ## 0.12.0 proposal ID / delivery handoff
 
 **Migration required:** proposal frontmatter and metadata now use `proposal_id`;
@@ -116,7 +145,11 @@ repository-scoped layout.
 ## Source
 
 Synced from `oshunter/ohos-delivery-kit` branch `main` via
-`ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills`.
+`ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills --plugin ohos-delivery-kit`.
+Current source: `main@3efc661b7696b7015c65e5d0020d21a7974c0687`.
+The current publisher needs the default config, archive-migration entrypoint and
+all Python runtime libraries supplemented; the source release gate verifies the
+final package against this pinned revision.
 
 ## Structure
 
@@ -124,12 +157,69 @@ Synced from `oshunter/ohos-delivery-kit` branch `main` via
 - `provenance.yaml` — source tracking (auto-updated by publish script)
 - `hooks/session-router.yaml` — declarative session-start hook
 - `prompts/session-router.md` — router prompt
-- `skills/` — 25 ODK skills (synced from `core/skills/`)
+- `skills/` — 27 ODK skills (synced from `core/skills/`)
 - `runtime/assets/` — templates, profiles, contracts (including skill-guides), rules, adapters
 - `runtime/executables/` — artifact and archive-migration validators
 
+## Shared runtime assets
+
+These are passive files read on demand, not generated business-repository artifacts.
+Templates define document structure; contracts define validation and workflow rules;
+profiles add subsystem-specific guidance; rules and adapters provide shared policies
+and bridge mappings. Skills and validators share these files to avoid divergent copies.
+
+Skill instructions use literal asset-relative paths such as `templates/ai/design.md`
+and `contracts/artifacts.yaml`, or workflow-relative `runtime/assets/...` and
+`runtime/executables/...`. Installers relocate these references to the installed
+`assets/` and `executables/` directories. No resource-root placeholders are needed.
+When reading this source tree, asset-relative paths start at `runtime/assets/`.
+The business repository working directory is not the plugin root. Paths within
+a loaded guide remain relative to that guide. The `template` values in
+`contracts/artifacts.yaml` stay asset-relative `templates/...` paths consumed
+separately by the validator. Skill-local files such as `odk-fmea/references/`
+must be installed alongside the rendered `SKILL.md`, preserving relative links.
+
+To check real V1 and V2 installation artifacts without registering plugins in
+your agents, provide a local installer source or unpacked npm package.
+Installation was verified with the official npm package oh-skillhub 0.1.43:
+all 40 workflow regression tests pass, including V1 and V2 installation for
+Claude Code, Codex and OpenCode. Skill-local auxiliary files, including all 44
+FMEA reference files, are copied alongside SKILL.md; the default configuration
+and shared runtime references also resolve correctly. Use 0.1.43 or a later
+version that passes this check. Version 0.1.42 omits skill-local auxiliary files
+in workflow-plugin projections; 0.1.40 also lacks literal-path relocation.
+Reproduce the installation check with:
+
+```bash
+OH_SKILLHUB_PACKAGE_ROOT=/path/to/oh-skillhub \
+  python3 -m unittest discover -s workflows/ohos-delivery-kit/tests -v
+```
+
+The installation check verifies runtime references, runs the rendered validator
+from outside the source tree, and compares every skill auxiliary file byte for byte.
+It uses temporary directories and performs no network access or host registration.
+
 ## Variables
 
-- `{{ASSET_ROOT}}` — resolved to `runtime/assets` at build time
-- `{{EXECUTABLE_ROOT}}` — resolved to `runtime/executables` at build time
+- `ASSET_ROOT` — source asset root declared as `runtime/assets`
+- `EXECUTABLE_ROOT` — source executable root declared as `runtime/executables`
 - `{{CMD_PREFIX}}` — resolved per-host (`/odk-` for claude, `odk-` for codex/opencode)
+
+## Build product selection
+
+Set a space-separated candidate list and its preferred default in the override configuration:
+
+```yaml
+build_products: arm64_virt rk3568 my_board
+build_product: rk3568
+```
+
+Planning presents the configured choices and waits for one confirmed product.
+The plan records the list and selection for implementation to reuse. QEMU skips
+firmware selection; other products ask daily versus existing firmware.
+
+**Upgrade limitation:** oh-skillhub 0.1.43 does not preserve user-added
+`odk_config_ext.yaml` inside the installed assets directory when rebuilding the
+plugin during an update. Back up this file before updating and restore it after
+installation. The bundled configuration's promise of automatic preservation is
+not supported by this installer; persistent configuration remains a known issue.

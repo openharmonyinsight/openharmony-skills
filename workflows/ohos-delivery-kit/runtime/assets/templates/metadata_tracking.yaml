@@ -3,8 +3,9 @@ proposal_id: "{{PROPOSAL_ID}}"
 target_release: "{{TARGET_RELEASE}}"
 repos:
   - repo: "{{ORGANIZATION}}/{{REPOSITORY}}"
-    # Set for new records; required for non-GitCode PRs. Omission defaults to GitCode.
-    # repository_url: "https://github.com/{{ORGANIZATION}}/{{REPOSITORY}}"
+    # Use the actual target repository's credential-free HTTPS web URL.
+    # Keep the platform-returned PR URL; never invent a merge_requests alias.
+    repository_url: "{{REPOSITORY_URL}}"
     # An empty list is valid before the business-code PR has been created.
     pull_requests: []
     # Populated form:

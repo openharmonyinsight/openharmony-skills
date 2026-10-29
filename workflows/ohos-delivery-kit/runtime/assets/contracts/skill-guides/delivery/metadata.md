@@ -6,7 +6,7 @@ Generate or refresh local `metadata_tracking.yaml` using [the metadata template]
 2. Set `target_release` from `proposal.md` frontmatter.
 3. Resolve the business repository as full `namespace/repository` from the Git `origin` URL (preserve subgroup paths). Do not store only the repository basename or replace the business identity with the design-docs destination. If a local/unsupported remote cannot provide this identity, ask for a supported business remote; do not guess it.
 4. Run `git rev-parse HEAD` in the business repository. Inspect the current branch and its upstream. Query the actual PR using that host's available API/tool and its confirmed URL or unambiguous source repository/branch and target/base. Use its remote source head SHA, not a predicted local commit or merge SHA; require agreement with business HEAD before submission. A push-time rewrite must preserve the reviewed tree. Never query GitCode for another host or invent a PR number, title, state, or commit.
-5. Add verified business-code PR entries with the real URL, title, normalized state (`open`, `merged`, or `closed`), and full commit SHA. Set `repository_url` to the credential-free HTTPS web repository address for every newly generated repository entry, including empty origin entries. It must match `repo` and the PR's host, port and repository path. A fork PR's URL belongs to the target repository: store it under that target repository, and retain a separate origin entry (possibly `pull_requests: []`) when different. Never relabel the PR URL as belonging to the fork. If the host cannot be queried, preserve valid existing records and report the limitation.
+5. Add verified business-code PR entries with the real URL, title, normalized state (`open`, `merged`, or `closed`), and full commit SHA. Set `repository_url` to the credential-free HTTPS web repository address for every newly generated repository entry, including empty origin entries. Resolve it from the platform's actual target-repository data; fill a missing value automatically when that data is unambiguous, without asking about a URL allowlist. It must match `repo` and the PR's host, port and repository path. A fork PR's URL belongs to the target repository: store it under that target repository, and retain a separate origin entry (possibly `pull_requests: []`) when different. Never relabel the PR URL as belonging to the fork. If the host cannot be queried, preserve valid existing records and report the limitation.
 6. Write the explicit key `pull_requests: []` only when no matching business-code PR exists or PR discovery is unavailable and the file has no valid existing PR entry. This is a valid submission state; report which condition applied.
 7. Do not add `issues` by default. Treat it as an optional extension: preserve existing valid issue entries, or add them only when the user explicitly requests issue tracking. When used, include known `issue`, GitCode URL, title, type (`requirement`, `bug`, `task`, or `epic`), state (`open` or `closed`), and `closed_at: YYYY-MM-DD` values.
 8. Preserve valid entries for other involved repositories when refreshing an existing file. Never discard cross-repository tracking data merely because it cannot be re-derived locally.
@@ -28,9 +28,19 @@ exists; otherwise an unqualified entry retains its default GitCode identity.
 Write explicit URLs when refreshing.
 Repository identity includes host, HTTPS port and full namespace/path, so identical
 paths on different hosts are distinct. Never relabel ambiguous existing records.
-Supported numeric PR/MR paths are `/pull/`, `/pulls/`, `/merge_requests/`,
-`/-/merge_requests/`, `/pull-requests/`, and `/pullrequest/` after the repository
-path (GitHub, GitLab, Gitea, Bitbucket and compatible hosts). Do not rewrite an
-unsupported URL to fit: report the unsupported format and stop for resolution.
+The offline validator has no platform/domain allowlist, fixed PR route names, or
+numeric-ID requirement. Private platforms can use their actual repository-scoped
+routes and opaque IDs. It checks credential-free HTTPS, matching host/port and a
+nonempty path beneath the exact repository path boundary; it rejects navigation
+segments and encoded delimiters. This is a structural check only: it cannot prove
+that a descendant URL exists, is a PR, or belongs to the declared target repository.
+Establish those facts from the authorized platform API/tool in steps 4–5, including
+the actual remote source-head SHA. Use each tool's own command syntax (for example,
+GitLab uses `glab mr`, not `glab pr`) and instance authentication.
+Keep the platform-returned URL exactly; never fabricate a `merge_requests` alias,
+change its host, or invent another path to make validation pass. An unfamiliar
+route alone is not a reason to stop or ask for allowlist approval. Report actual
+authentication, discovery or identity failures precisely; do not claim unqueried
+records are verified. Ordinary Git commit/push does not require a PR URL.
 URLs must have no credentials, query or fragment. This extension covers PRs;
 `issues` remain a GitCode-only extension and must be absent/empty on other hosts.

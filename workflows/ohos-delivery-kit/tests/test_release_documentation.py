@@ -3,13 +3,130 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
 import re
+import subprocess
+import tempfile
 import unittest
 
 WORKFLOW_ROOT = Path(__file__).resolve().parents[1]
 
 
 class ReleaseDocumentationTest(unittest.TestCase):
+    def test_migration_09_examples_run_with_the_shipped_tool(self) -> None:
+        guide = (WORKFLOW_ROOT / "MIGRATION-0.9.0.md").read_text(encoding="utf-8")
+        self.assertIn("odk-link-proposal", guide)
+        self.assertIn("proposal_id:", guide)
+        self.assertNotIn("odk-link-req", guide)
+        self.assertNotRegex(guide, r"\breq:")
+        mapping_rows = re.findall(r"^((?:\.codespec|codespec)/changes/[^\n]+\t[^\n]+)$",
+                                  guide, re.MULTILINE)
+        self.assertEqual(4, len(mapping_rows))
+        commands = re.findall(r"^python3 (runtime/executables/\S+) (plan|check-staged) --map (\S+) --repo \.$",
+                              guide, re.MULTILINE)
+        self.assertEqual(["plan", "check-staged"], [c[1] for c in commands])
+        self.assertEqual(commands[0][2], commands[1][2])
+        with tempfile.TemporaryDirectory(prefix="odk-migration-guide-") as temporary:
+            root = Path(temporary) / "sample"
+            root.mkdir()
+            mapping = root.parent / "archive-map.tsv"
+            mapping.write_text("\n".join(mapping_rows) + "\n", encoding="utf-8")
+            for row in mapping_rows:
+                source, proposal_id = row.split("\t")
+                self.assertTrue(proposal_id == "-" or proposal_id.isdigit(), row)
+                change = root / source
+                change.mkdir(parents=True)
+                (change / "proposal.md").write_text(
+                    '---\nproposal_id: "' + ("" if proposal_id == "-" else proposal_id)
+                    + '"\ntarget_release: "1.0"\n---\n', encoding="utf-8")
+            def git(*args):
+                subprocess.run(["git", "-C", str(root), *args], check=True,
+                               capture_output=True, text=True, timeout=30)
+            git("init", "-q")
+            git("add", ".")
+            git("-c", "user.name=Test", "-c", "user.email=test@example.com",
+                "-c", "commit.gpgsign=false", "commit", "-qm", "migration fixture")
+            result = subprocess.run(
+                ["python3", "-I", "-B", str(WORKFLOW_ROOT / commands[0][0]),
+                 "plan", "--map", str(mapping), "--repo", str(root)],
+                capture_output=True, text=True, timeout=30)
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+            self.assertIn("PASS migration plan: 4 archive(s)", result.stdout)
+            for proposal_id in ("9988", "12345", "88", "draft-20260831-new-focus"):
+                self.assertIn("codespec/changes/sample/" + proposal_id, result.stdout)
+            for line in result.stdout.splitlines():
+                if line.startswith("PLAN\t"):
+                    _, source, target = line.split("\t")
+                    (root / target).parent.mkdir(parents=True, exist_ok=True)
+                    git("mv", source, target)
+            result = subprocess.run(
+                ["python3", "-I", "-B", str(WORKFLOW_ROOT / commands[1][0]),
+                 "check-staged", "--map", str(mapping), "--repo", str(root)],
+                capture_output=True, text=True, timeout=30)
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+            self.assertIn("PASS staged migration: 4 proposal(s)", result.stdout)
+
+    def test_manifest_registers_every_shipped_skill_and_command(self) -> None:
+        manifest = (WORKFLOW_ROOT / "plugin.yaml").read_text(encoding="utf-8")
+        registered = re.findall(r"(?:path: | - )(skills/[^\s]+/SKILL\.md)", manifest)
+        shipped = {
+            path.relative_to(WORKFLOW_ROOT).as_posix()
+            for path in (WORKFLOW_ROOT / "skills").glob("*/SKILL.md")
+        }
+        self.assertEqual(shipped, set(registered))
+        self.assertEqual(len(registered), len(set(registered)))
+        commands = re.findall(r"^    - skill: (\S+)$", manifest, re.MULTILINE)
+        public = {Path(path).parent.name for path in shipped} - {"using-odk", "using-odk-bridge"}
+        self.assertEqual(public, set(commands))
+        self.assertEqual(len(commands), len(set(commands)))
+
+    def test_release_version_matches_provenance(self) -> None:
+        manifest = (WORKFLOW_ROOT / "plugin.yaml").read_text(encoding="utf-8")
+        provenance = (WORKFLOW_ROOT / "provenance.yaml").read_text(encoding="utf-8")
+        version = re.search(r"^version: (\S+)$", manifest, re.MULTILINE).group(1)
+        source_version = re.search(r"^  sourceVersion: (\S+)$", provenance, re.MULTILINE).group(1)
+        self.assertEqual(source_version, version)
+        changelog = (WORKFLOW_ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+        self.assertEqual(version, re.search(r"^## \[([^]]+)\]", changelog, re.MULTILINE).group(1))
+
+    def test_shared_skill_references_resolve_to_declared_assets(self) -> None:
+        manifest = (WORKFLOW_ROOT / "plugin.yaml").read_text(encoding="utf-8")
+        asset_root = WORKFLOW_ROOT / re.search(r"^  ASSET_ROOT: (\S+)$", manifest, re.MULTILINE).group(1)
+        executable_root = WORKFLOW_ROOT / "runtime/executables"
+        references = 0
+        for skill in (WORKFLOW_ROOT / "skills").glob("*/SKILL.md"):
+            text = skill.read_text(encoding="utf-8")
+            self.assertNotRegex(text, r"\{\{(?:PLUGIN_ROOT|ASSET_ROOT|EXECUTABLE_ROOT)\}\}")
+            paths = re.findall(r"`((?:templates|contracts|profiles|rules|adapters|runtime/assets|runtime/executables)/[^`\n]+)`", text)
+            paths += re.findall(r'\bpython3\s+"?(runtime/executables/[^\s`"]+)', text)
+            for target in paths:
+                if target.startswith("runtime/executables/"):
+                    root, target = executable_root, target.removeprefix("runtime/executables/")
+                else:
+                    root, target = asset_root, target.removeprefix("runtime/assets/")
+                target = target.split("#", 1)[0]
+                dynamic = re.search(r"[<*]", target)
+                if dynamic:
+                    target = target[:target.rfind("/", 0, dynamic.start()) + 1]
+                references += 1
+                resolved = (root / target).resolve()
+                self.assertTrue(resolved.is_relative_to(root.resolve()), f"{skill}: escaping reference {target}")
+                self.assertTrue(resolved.exists(), f"{skill}: {target}")
+        self.assertGreater(references, 0)
+        contract = (asset_root / "contracts/artifacts.yaml").read_text(encoding="utf-8")
+        for target in re.findall(r'^    template: "([^"]+)"$', contract, re.MULTILINE):
+            self.assertTrue((asset_root / target).is_file(), target)
+
+    @unittest.skipUnless(os.environ.get("OH_SKILLHUB_PACKAGE_ROOT"),
+                         "set OH_SKILLHUB_PACKAGE_ROOT to validate real installer artifacts")
+    def test_installed_runtime_paths_and_skill_assets(self) -> None:
+        result = subprocess.run(
+            ["node", str(WORKFLOW_ROOT / "tests/check_installed_runtime.cjs"),
+             os.environ["OH_SKILLHUB_PACKAGE_ROOT"]],
+            capture_output=True, text=True, timeout=90,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_current_contract_is_documented(self) -> None:
         readme = (WORKFLOW_ROOT / "README.md").read_text(encoding="utf-8")
         changelog = (WORKFLOW_ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
