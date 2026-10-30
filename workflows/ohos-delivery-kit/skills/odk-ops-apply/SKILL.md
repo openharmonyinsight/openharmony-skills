@@ -18,6 +18,15 @@ Invoke OpenSpec `/opsx:apply` to implement tasks from the execution plan, apply 
 - `execution-plan.md` must be approved by the user — do NOT implement before plan approval. If the plan is not yet approved, stop and ask the user to review and approve it first.
 - If OpenSpec is unavailable, use the fallback chain declared in `adapters/openspec.yaml` and clearly report the degradation.
 
+## Confirm the build product before invoking the bridge
+
+<!-- ODK:reference contracts/skill-guides/delivery/build-products.md -->
+Read `contracts/skill-guides/delivery/build-products.md`. Before invoking
+opsx:apply, verify the plan's actual product choice and `产品选择确认`. Recover
+a real prior user answer or ask once when confirmation is missing, including
+old plans. A configured default or a generated command does not confirm it.
+<!-- /ODK:reference -->
+
 ## Steps
 
 1. Invoke OpenSpec `/opsx:apply` to implement tasks from the execution plan.

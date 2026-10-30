@@ -19,7 +19,18 @@ Use after `execution-plan.md` has been approved and the user wants implementatio
 - The user has approved implementation.
 - If Superpowers skills are unavailable, use the fallback chain declared in `adapters/superpowers.yaml` and clearly report the degradation.
 
+## Confirm the build product before execution
+
+<!-- ODK:reference contracts/skill-guides/delivery/build-products.md -->
+Read `contracts/skill-guides/delivery/build-products.md` before delegating any
+Task. Reuse the approved plan's actual product choice and `产品选择确认`; if
+that evidence is absent, recover a real prior user answer or ask once before
+compilation. A configured default or a generated command does not confirm it.
+<!-- /ODK:reference -->
+
 ## Steps
+
+Before an applicable, explicitly confirmed device flash invokes `device_flash_skill`, read `contracts/skill-guides/router/configured-skills.md`; install it from matching config comment links if missing in the current agent, verify availability, then resume. Apply the same product, daily-strategy, selected-device and overwrite-confirmation conditions as `odk-implement`; pending installation blocks device preparation.
 
 0. Read `codespec/changes/<repo-name>/<proposal-id>/execution-plan.md` Task list and list all Tasks as an explicit inventory before starting implementation. All task types — code modification, test writing, configuration update, and verification — are equally mandatory. No task type may be skipped without explicit user consent.
 1. Read the active `codespec/changes/<repo-name>/<proposal-id>/spec.md` AC list and `execution-plan.md` 代码范围映射.
@@ -30,7 +41,7 @@ Use after `execution-plan.md` has been approved and the user wants implementatio
    - Write or update failing tests first.
    - Run the targeted verification command and confirm the expected failure.
    - Implement the minimal code required for the Task.
-   - Run the targeted verification command and confirm it passes. For the build and test steps, read the `## 构建与验证环境` table from `execution-plan.md` — use the Task's `验证命令` field to determine whether to build, start the emulator (arm64_virt only), and run tests, exactly as `odk-implement` does. Before the first build in this session, confirm the target product with the user once (same prompt as `odk-implement`; reuse for all subsequent Tasks unless the user requests a switch; if the product changes, re-resolve it in the table and remaining Task `验证命令` fields; also clear the `模拟器命令` row when switching away from arm64_virt). Daily flash via `device_flash_skill` only applies when the confirmed product is `rk3568` — skip for all other products including arm64_virt.
+   - Run the targeted verification command and confirm it passes. For the build and test steps, read the `## 构建与验证环境` table from `execution-plan.md` — use the Task's `验证命令` field to determine whether to build, start the emulator (arm64_virt only), and run tests, exactly as `odk-implement` does. Reuse the product explicitly confirmed during planning; missing confirmation must be resolved before the first build. Reuse that choice for subsequent Tasks unless the user requests a switch; if it changes, re-resolve it in the table and remaining Task commands and clear the emulator command when switching away from arm64_virt. Daily flash via `device_flash_skill` only applies when the confirmed product is `rk3568` — skip for all other products including arm64_virt.
    - Keep changes within the Task file scope unless the user approves an execution-plan update.
    - Backfill the Task's `Actual Result` and anti-fake completion evidence in `execution-plan.md`.
    - Mark the Task as completed in `execution-plan.md`: change all `- [ ]` checkboxes to `- [x]` in the Task's Steps section. If the Task list table has a `状态` column, update it to `Done`; otherwise add the column first.

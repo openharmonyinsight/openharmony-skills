@@ -6,6 +6,13 @@ license: MIT
 
 # ODK Init
 
+## Check for updates first
+
+Before collecting inputs or changing any files, follow
+[the shared update check](../using-odk/references/update-check.md). Reuse a check
+and user choice already made by `using-odk` in this request; direct invocation
+must run the check itself. Continue only when the shared procedure says to.
+
 ## Input
 
 Ask the user for:

@@ -16,6 +16,7 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
 - `spec.md` exists with numbered ACs.
 - `execution-plan.md` exists with Task IDs, AC-Task traceability, file-level scope, and verification commands.
 - The user has approved implementation.
+- Before the first build, verify the plan's `产品选择确认` against the user's actual product choice. A product copied from config or a generated command is not confirmation; missing evidence must be resolved using the shared build-product guide before compilation.
 
 ## Steps
 
@@ -40,9 +41,9 @@ For configuration-dependent steps, use the effective-configuration command defin
    - **TDD 失败/通过循环（Red/Green，所有代码 Task 的默认方式；降级规则见下）：**
      1. **Red（失败）** — Write or update the failing test(s) covering this Task's ACs. **For Tasks whose ACs appear in `design.md` `### DFX 故障模式处置` `关联 AC` column, the Red step IS the fault-injection test** — write the fault-injection/exception-path test first (per the 验证方式/证据 column), confirm it fails for the right reason, and use that failure output as the Red evidence. Record the failure output as the first entry in `Actual Result` under a `[失败 Red]` label; do not erase it in later steps.
      2. **Green（通过）** — Implement the minimal code required to make the failing test(s) pass. Do not write more code than needed to pass the tests.
-     3. **Build & Verify（编译与验证）** — Read the resolved commands from `execution-plan.md` `## 构建与验证环境` table (populated by `odk-plan`; do not re-read config). If the section is absent (plans created before ODK 0.14.0), read `build_products`, `build_product`, `build_command`, `emulator_command`, `test_command` directly from config (odk_config_ext.yaml overrides odk_config.yaml), resolve `{product}`, append the `## 构建与验证环境` table into the plan, and proceed — so the plan is upgraded in place rather than failing.
+     3. **Build & Verify（编译与验证）** — Read the resolved commands from `execution-plan.md` `## 构建与验证环境` table (populated by `odk-plan`; do not re-read config for a confirmed snapshot). If the section is absent, follow the product-selection guide below first; obtain or recover an explicit choice, then resolve `{product}` and append the environment table. Never fill and execute an old plan directly from the configured default.
         <!-- ODK:reference contracts/skill-guides/delivery/build-products.md -->
-        Read `contracts/skill-guides/delivery/build-products.md`. Reuse the plan's resolved `编译产品` and `可选编译产品` rows. If a selection is missing or the user requests a switch, show a numbered menu from the configured list and wait for an explicit choice; do not use a hard-coded arm64_virt/rk3568 menu. A resolved approved selection is not asked again for subsequent Tasks. For old plans, preserve an existing confirmed product while filling the missing list as described in the guide.
+        Read `contracts/skill-guides/delivery/build-products.md`. Reuse the plan's `编译产品`, `可选编译产品` and actual `产品选择确认`. If confirmation is missing or the user requests a switch, show the configured menu and wait for an explicit choice; configuration, generic plan approval or a generated build command alone does not confirm a product. Reuse a real confirmed choice for subsequent Tasks. For old plans, recover actual prior confirmation or ask once before compiling.
         <!-- /ODK:reference -->
         If the user switches product: (1) update the `## 构建与验证环境` table's `编译产品` row; (2) re-resolve `{product}` in all remaining Task `验证命令` fields that still contain the old product name — replace the old product name with the new one; (3) when switching away from `arm64_virt`, clear the `模拟器命令（仅 arm64_virt）` row (mark N/A) so the plan does not leave a stale emulator command under a non-arm64_virt product; when switching to `arm64_virt`, populate the `模拟器命令` row from config. Do not re-ask on subsequent Tasks unless the user requests another switch. Determine the shape of the Task's `验证命令` field first, then execute the sub-steps labelled a–d below accordingly:
         <!-- ODK:reference contracts/skill-guides/delivery/device-version.md -->
@@ -53,6 +54,8 @@ For configuration-dependent steps, use the effective-configuration command defin
         - **Build-only Task** (验证命令 contains only a build command, no `&&` test step): execute a → b → c, then use `测试命令` from `## 构建与验证环境` as sub-step **d**.
 
         Sub-steps b and c are independent conditions — b fires on physical boards, c fires on arm64_virt; they never both apply to the same product.
+
+        Before an applicable, explicitly confirmed flash invokes its configured skill, read `contracts/skill-guides/router/configured-skills.md`; install it from matching config comment links if missing in the current agent, verify availability, then resume. Pending installation blocks device preparation.
 
         a. **编译**：run the build portion of the Task's `验证命令` field (single-module `--target <module>` or full build). Stop if the build fails.
         b. **设备准备（物理板路径，arm64_virt 跳过此步）**：

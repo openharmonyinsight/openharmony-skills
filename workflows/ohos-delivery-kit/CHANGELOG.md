@@ -4,6 +4,40 @@ All notable changes to the published `ohos-delivery-kit` workflow are documented
 this file. Source artifacts are synchronized from
 `oshunter/ohos-delivery-kit` `main` through the marketplace publisher.
 
+## [0.14.2] - 2026-10-30
+
+Source: `main@cd4e605670c2d0c537754630cb99c14ad018c700`.
+
+### Added
+
+- Entry commands check for ODK updates before running and compare the session
+  snapshot instead of on-disk versions, so an update already seen in this session
+  is not reported again (source PR !182).
+- Configured skills are installed on demand: when a configured skill is missing
+  for the current agent, ODK reads the install link from the comment above the
+  parameter (user override first, then the default config), verifies it, installs
+  it and continues. Covers review hooks, post-CR/MR/PR hooks, device flashing and
+  CI/online-test triggers; a step that needs a restart stays pending (source
+  PR !186).
+- brainstorm, propose, spec and design share one decision-interview protocol that
+  separates code facts, confirmed goals and assumptions, tracks open questions,
+  decisions, contradictions and their dependencies between rounds, and reopens
+  the affected decisions when a premise changes (source PR !179).
+
+### Changed
+
+- `post_pr_hooks` is renamed to `post_cr_mr_pr_hooks`. The legacy name stays
+  readable in user overrides, and the new key wins when both appear in the same
+  file, including an explicit empty value (source PR !185).
+
+### Fixed
+
+- plan requires explicit confirmation of the build product before writing the
+  execution plan instead of silently adopting the configured default, and records
+  the candidate list with the confirmed product (source PR !183).
+- The update flow verifies each agent's installation after updating and keeps the
+  pending step when a restart or a later round is required (source PR !184).
+
 ## [0.14.0] - 2026-10-28
 
 Source: `main@bfcaabbbea79835569dbf93d61925083a001d570`.

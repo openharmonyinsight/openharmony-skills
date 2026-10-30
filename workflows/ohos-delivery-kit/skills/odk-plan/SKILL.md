@@ -11,6 +11,23 @@ license: MIT
 - `spec.md` with numbered AC list
 - `design.md` with architecture decisions (required for state ownership fields when design declares complex state)
 
+## Confirm the build product before planning
+
+Before generating a plan, resolving `{product}`, or invoking any planning bridge,
+run `python3 runtime/executables/lib/odk_repository.py --build-product-options`
+(source checkout: `python3 scripts/lib/odk_repository.py --build-product-options`).
+This returns the effective candidate list and menu default, with no product selected.
+
+<!-- ODK:reference contracts/skill-guides/delivery/build-products.md -->
+Read `contracts/skill-guides/delivery/build-products.md`. Present the numbered
+menu and wait for the user's explicit product choice before writing the plan.
+Reuse an actual product choice already made for this plan; configuration alone,
+autonomous mode or a general request to use recommendations does not confirm it.
+<!-- /ODK:reference -->
+
+Planning records commands; it does not execute compilation. Without a confirmed
+product, stop before generating the build environment or any build command.
+
 ## Input
 
 1. Read `proposal.md` to check `API/SDK` dimension
@@ -30,9 +47,7 @@ For configuration-dependent steps, use the effective-configuration command defin
 2. **API 声明文件任务（条件触发）**：若 proposal.md `API/SDK` = 「是」，必须在所有任务的最前面插入一个 API 声明文件修改任务（排在 Task-1），任务内容为"根据 spec.md `## API 规格定义` 修改声明文件"。该任务排在第一位的原因是：后续功能实现任务依赖声明文件的修改结果，声明文件未完成时其他任务无法开展。
 3. Generate `execution-plan.md` per the template. Fill the required traceability, task detail, verification, and code-scope fields enough to pass artifact contract validation. For each Task, fill「任务间接口」（Produces=供后续 Task 依赖的接口签名/错误码/innerAPI/数据结构，Consumes=来自前置 Task 的契约；无跨 Task 契约写「无」），让只读单 Task 的执行者也能对齐跨 Task 命名与签名。
    **构建与验证环境（必填）**：在生成 `execution-plan.md` 前读取 `build_products`、`build_product`、`build_command`、`emulator_command`、`test_command`（`odk_config_ext.yaml` 覆盖默认配置），先确认本次产品，再生成具体命令。
-   <!-- ODK:reference contracts/skill-guides/delivery/build-products.md -->
-   Read `contracts/skill-guides/delivery/build-products.md` to resolve the configured list, generate a numbered selection menu, and record the list and selected product. Do not hard-code a two-product menu or build every listed product.
-   <!-- /ODK:reference -->
+   Reuse the product confirmed in the pre-planning step; do not substitute `build_product` directly. Record the actual user response in `产品选择确认`.
    确认产品后、写计划前，执行设备版本选择：
    <!-- ODK:reference contracts/skill-guides/delivery/device-version.md -->
    Read `contracts/skill-guides/delivery/device-version.md`: QEMU (`arm64_virt`) skips the daily question; every other product asks daily versus existing firmware. Record the user's choice and preparation method in the plan, even when no automatic flashing skill is available.

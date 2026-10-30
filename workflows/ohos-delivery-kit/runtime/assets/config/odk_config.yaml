@@ -27,8 +27,9 @@ design_docs_repository: https://gitcode.com/OpenHarmonyAI/design-docs
 #   Select one product per plan, not a build matrix. This is a scalar, not a YAML array.
 #   Legacy configs without this key use build_product as the sole option.
 #
-# build_product: preferred default within build_products. The user must confirm
-#   a selection before planning. If it is absent from the list, ask without a
+# build_product: menu default within build_products, never an approved selection.
+#   Ask and wait for an explicit product choice before planning, even in autonomous
+#   mode. If the default is absent from the list, ask without a
 #   default; never silently add it or select the first entry.
 #
 # build_command: compile only — no test, no push. {product} is replaced with
@@ -60,17 +61,26 @@ test_command: ""
 # Review skill hooks.
 #
 # pre_commit_reviews: space-separated list of skill names to invoke in order
-#   before source-code PR submission (handoff Step 1). Each skill must return
-#   PASS or actionable findings. All skills must pass before the PR reminder.
+#   before source-code CR/MR/PR submission (handoff Step 1). Each skill must return
+#   PASS or actionable findings. All skills must pass before the submission reminder.
 #   Default: odk-review (ODK's built-in AC/code-quality review).
 #
 # post_commit_reviews: space-separated list of skill names to invoke in order
-#   after the source PR is confirmed (handoff Step 2, after PR URL is verified).
+#   after the source CR/MR/PR is confirmed (handoff Step 2, after its URL is verified).
 #   Leave empty ("") to skip post-commit review.
 #   Override in odk_config_ext.yaml to add compliance, security, or API checks.
 #
-# Community C++ review skills for reference (install per their docs, then list
-# the skill name here):
+# Missing configured skills: before an applicable invocation ODK checks the
+# current agent, looks for matching installation links in this parameter's
+# preceding comment section (ext first, then defaults), installs and verifies
+# the skill, then runs it. If discovery requires restart, the step stays pending.
+# In odk_config_ext.yaml, prefer an explicit comment above the corresponding key:
+#   # skill-install: my-security-review https://github.com/your-team/reviews/tree/main/skills/my-security-review
+#   pre_commit_reviews: odk-review my-security-review
+# The same convention applies to post_commit_reviews, post_cr_mr_pr_hooks,
+# device_flash_skill, and the skill: modes of CI/online-test triggers.
+# Community C++ review skill sources for reference (inspect their docs to find
+# the exact configured skill; collection links do not install every skill):
 #   googs1025/code-review-skill — structured PR/diff review with
 #     Critical/Major/Minor grading and a merge recommendation.
 #     https://github.com/googs1025/code-review-skill
@@ -85,14 +95,14 @@ test_command: ""
 pre_commit_reviews: odk-review
 post_commit_reviews: ""
 
-# PR and commit CLI tools.
+# CR/MR/PR and commit CLI tools.
 #
-# source_cli: command-line tool used to create/query/update the source-code PR.
+# source_cli: command-line tool used to create/query/update the source-code CR/MR/PR.
 #   The agent passes subcommands such as `pr create`, `pr list`, `pr merge`.
 #   Default: oh-gc (GitCode CLI).
 #   Override in odk_config_ext.yaml for GitHub (gh), GitLab (glab), or internal tools.
 #
-# design_docs_cli: command-line tool used to create/query/update the design-docs PR.
+# design_docs_cli: command-line tool used to create/query/update the design-docs CR/MR/PR.
 #   Default: oh-gc. Override separately when source code and design docs live on
 #   different platforms. Note: changing source_cli does NOT automatically change
 #   design_docs_cli — set both explicitly in odk_config_ext.yaml when needed.
@@ -111,15 +121,15 @@ design_docs_cli: oh-gc
 
 # CI gate trigger.
 #
-# ci_trigger: how to start the CI gate after a source PR is created/updated.
-#   The agent asks the user whether to trigger CI after the PR URL is confirmed,
+# ci_trigger: how to start the CI gate after a source CR/MR/PR is created/updated.
+#   The agent asks the user whether to trigger CI after its URL is confirmed,
 #   then executes the configured action if the user says yes.
 #
 # Supported modes:
-#   comment:<text>  — post a PR comment with the given text to trigger CI.
+#   comment:<text>  — post a CR/MR/PR comment with the given text to trigger CI.
 #                     Default: comment:start build
-#   label:<name>    — add a label to the PR (e.g. label:ci-trigger).
-#   skill:<name>    — invoke a named skill, passing the confirmed PR URL as context.
+#   label:<name>    — add a label to the CR/MR/PR (e.g. label:ci-trigger).
+#   skill:<name>    — invoke a named skill, passing its confirmed URL as context.
 #   none            — do not trigger CI; leave it to the platform.
 #
 # Override in odk_config_ext.yaml to match your team's gate convention.
@@ -141,9 +151,9 @@ ci_trigger: comment:start build
 #   skipped entirely — no action is possible and the user is not asked.
 #
 # Supported modes:
-#   comment:<text>  — post a PR comment with the given text to trigger online tests.
-#   label:<name>    — add a label to the PR (e.g. label:run-online-test).
-#   skill:<name>    — invoke a named skill, passing the confirmed PR URL as context.
+#   comment:<text>  — post a CR/MR/PR comment with the given text to trigger online tests.
+#   label:<name>    — add a label to the CR/MR/PR (e.g. label:run-online-test).
+#   skill:<name>    — invoke a named skill, passing its confirmed URL as context.
 #   none            — do not trigger online tests automatically (default); prompt skipped.
 #
 # Default: none (skip — developer triggers online tests manually).
@@ -192,16 +202,18 @@ device_flash_skill: ""
 device_so_dirs: ""
 device_service_restart: ""
 
-# Post-PR custom hooks.
+# Post-CR/MR/PR custom hooks.
 #
-# post_pr_hooks: space-separated list of skill names to invoke in order after
+# post_cr_mr_pr_hooks: space-separated list of skill names to invoke in order after
 #   the CI gate and online-test actions are resolved (handoff Step 2), and before
 #   the design-docs submission prompt. Use this to chain team-specific skills such
 #   as compliance checks, security scans, notification senders, or metrics uploads.
-#   Each skill receives the confirmed source PR URL as context.
+#   Each skill receives the confirmed source CR/MR/PR URL as context.
 #   Leave empty ("") to skip. Override in odk_config_ext.yaml.
+#   Legacy post_pr_hooks remains readable in user overrides. When both names
+#   appear in the same file, the new key wins, including an explicit empty value.
 #
 # Example odk_config_ext.yaml:
-#   post_pr_hooks: my-compliance-check my-notify-slack
+#   post_cr_mr_pr_hooks: my-compliance-check my-notify-slack
 
-post_pr_hooks: ""
+post_cr_mr_pr_hooks: ""

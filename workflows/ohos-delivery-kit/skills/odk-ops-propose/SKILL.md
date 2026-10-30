@@ -17,6 +17,18 @@ One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta s
 - `codespec/changes/<repo-name>/<proposal-id>/` skeleton must exist (run `{{CMD_PREFIX}}init` first).
 - If OpenSpec is unavailable, use the fallback chain declared in `adapters/openspec.yaml` and clearly report the degradation.
 
+## Confirm the build product before invoking the bridge
+
+Run `python3 runtime/executables/lib/odk_repository.py --build-product-options`
+(source checkout: `python3 scripts/lib/odk_repository.py --build-product-options`).
+<!-- ODK:reference contracts/skill-guides/delivery/build-products.md -->
+Read `contracts/skill-guides/delivery/build-products.md`, show the configured
+menu and wait for an explicit product choice before invoking opsx:propose,
+because it also generates the execution plan. Reuse a real choice already made
+for this plan; a configured default or general autonomous/recommended-options
+authorization does not confirm a product.
+<!-- /ODK:reference -->
+
 ## Steps
 
 1. Invoke OpenSpec `/opsx:propose` which produces proposal + delta specs + design + tasks in one call.

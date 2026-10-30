@@ -6,6 +6,13 @@ license: MIT
 
 # ODK Propose
 
+## Check for updates first
+
+Before checking prerequisites, loading templates or writing the proposal, follow
+[the shared update check](../using-odk/references/update-check.md). Reuse a check
+and user choice already made by `using-odk` in this request; direct invocation
+must run the check itself. Continue only when the shared procedure says to.
+
 ## Prerequisites
 
 - `codespec/changes/<repo-name>/<proposal-id>/` directory exists (run `odk-init` first if not)
@@ -27,7 +34,13 @@ Read the change context from the user's request. If the user describes a require
 
 ## Steps
 
--1. **Brainstorm interview (run odk-brainstorm inline before generating):** **Explicit escapes — check these first:** skip the interview entirely and proceed to Step 0 if: (a) the user explicitly says "跳过访谈" / "skip the interview" / "直接写 proposal" / provides a complete requirements document, or (b) all decisions in the brainstorm decision tree can be derived from existing context without guessing. Otherwise run `odk-brainstorm` inline in this session using the decision-tree exploration protocol — do not require the user to invoke it separately. Walk the decision tree (structural decisions: module boundary, state ownership, interface contract, lifecycle; flow decisions: happy/failure path, concurrency, ordering; boundary decisions: API/SDK, security, 1+8 device variation, 资源开销审视, 外部依赖, success criteria), skipping any branch already answered from the user's input or codebase exploration. When the tree is fully resolved and the decision summary is confirmed, proceed to Step 0 immediately.
+-1. **Shared brainstorm gate:** Run the same interview as standalone `odk-brainstorm` inline; the user need not invoke it separately. Focus on the problem, goals, scope, credible alternatives, observable success and the decisions needed to choose a direction. Investigate implementation constraints that affect those choices without prematurely specifying the whole architecture.
+
+<!-- ODK:reference contracts/skill-guides/brainstorm/interview.md -->
+Read `contracts/skill-guides/brainstorm/interview.md` in full and apply its decision state, questioning, ODK coverage and completion gate before generating the proposal.
+<!-- /ODK:reference -->
+
+   Reuse explicit decisions from a complete requirements document; its existence alone does not close missing branches. Respect explicit interview skips using the protocol's bypass rule. Proceed to Step 0 only after completion or that explicit bypass, carrying any unresolved items into the draft.
 
 0. Check for subsystem profile: read and follow `contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.proposal` (required/optional dimensions, fragments) and `agent_instructions.define` before generating content
 1. Read template from `templates/ai/proposal.md`

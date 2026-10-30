@@ -17,6 +17,17 @@ Invoke Superpowers `writing-plans` for task decomposition and file-level boundar
 - `spec.md` must exist with numbered ACs.
 - If Superpowers skills are unavailable, use the fallback chain declared in `adapters/superpowers.yaml` and clearly report the degradation.
 
+## Confirm the build product before invoking the bridge
+
+Run `python3 runtime/executables/lib/odk_repository.py --build-product-options`
+(source checkout: `python3 scripts/lib/odk_repository.py --build-product-options`).
+<!-- ODK:reference contracts/skill-guides/delivery/build-products.md -->
+Read `contracts/skill-guides/delivery/build-products.md`, show the configured
+menu and wait for an explicit product choice before invoking writing-plans.
+Reuse a real choice already made for this plan; a configured default or general
+autonomous/recommended-options authorization does not confirm a product.
+<!-- /ODK:reference -->
+
 ## Steps
 
 1. Invoke Superpowers `writing-plans` for task discipline and file-level task boundaries.

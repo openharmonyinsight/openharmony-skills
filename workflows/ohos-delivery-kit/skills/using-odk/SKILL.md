@@ -16,7 +16,7 @@ Once the user invokes any `{{CMD_PREFIX}}*` command in the current session, ODK 
 
 ODK also activates when the user explicitly mentions ODK, ohos-delivery-kit, `codespec`, or ODK artifact names/actions (proposal, spec, design, execution-plan, spec-for-validation, threat-model, metadata_tracking, review, validate, submit design docs).
 
-When the user is describing or discussing a requirement, feature idea, or non-trivial change — and no `proposal.md` exists yet in the active change directory — load `odk-brainstorm` first instead of going straight to `odk-propose`. This matches Superpowers `brainstorming` trigger strength: any requirement articulation, not just specific keywords. Trigger does not require the user to say "brainstorm", "帮我梳理需求", "I have an idea", or any fixed phrase — the mere act of describing what they want to build is enough. **The escape conditions below take priority over the trigger — check them first:** only fire the trigger when none of the escapes apply. Skip `odk-brainstorm` when any of these hold: (a) `proposal.md` already exists, (b) the user explicitly says their requirement is fully-formed and wants to go straight to `odk-propose`, (c) the change is a self-contained bug fix with a single clear root cause (e.g. "null check missing", "off-by-one in index", "wrong return value"), (d) the user is doing ordinary coding, debugging, refactoring, or a revert with no new feature scope, or (e) the user is already mid-spec or mid-design and `proposal.md` exists. `odk-brainstorm` conducts a one-question-at-a-time interview across the ODK proposal dimensions and outputs a decision summary that feeds `odk-propose`.
+When the user is describing or discussing a requirement, feature idea, or non-trivial change, load `odk-brainstorm` before drafting new artifact decisions; no special trigger phrase is required. Standalone brainstorm and the propose/spec/design inline gates share one interview protocol. An existing `proposal.md`, an initialization stub, or a later phase is not proof that its decisions were explored: reuse confirmed decisions and investigate only new or unresolved branches. **Check escapes first:** ordinary coding, debugging, refactoring or reverts without new feature scope, and self-contained bug fixes with a clear root cause, do not start an artifact interview. Honor explicit requests to skip the interview or go directly to a draft by carrying unresolved choices as assumptions/open questions; do not fabricate confirmations. A fully specified request can close the shared gate from explicit evidence without redundant questions.
 
 ### Deactivation
 
@@ -26,6 +26,13 @@ ODK bridge does **not** activate when:
 - The user explicitly says "不用ODK" / "skip ODK" / "don't use ODK"
 
 After activation, follow the Context Loading rules below to determine the active change.
+
+### Check for updates first
+
+Before resource self-check, configuration loading or phase routing, follow
+[the shared update check](references/update-check.md). Reuse its result and the
+user's choice when this activation routes to `odk-init` or `odk-propose` in the
+same request. A successful upgrade ends this request with a restart reminder.
 
 ### Resource Self-Check
 

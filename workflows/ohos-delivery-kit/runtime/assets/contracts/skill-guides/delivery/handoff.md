@@ -5,6 +5,13 @@ Applies after all approved implementation Tasks are Done. Explicit user limits
 agent orchestration policy, not a background daemon. Invoke skills by their
 installed names; do not ask the user to type the next review/validation command.
 
+Before each configured review, hook or authorized `skill:` trigger invocation,
+read and follow [configured-skills.md](../router/configured-skills.md): check the
+current agent, install a missing matching skill from the parameter's comment
+links, verify availability, then execute the pending invocation. Preserve list
+order. A failed/pending installation blocks that step; it is not a passed or
+skipped review. Resolve CI/online-test consent before any skill installation.
+
 ## 1. Review and validate without publishing
 
 - Run the effective-configuration command defined in `using-odk` and follow [configuration.md](../router/configuration.md). Read `pre_commit_reviews` from its merged `config` (missing → `odk-review`; explicit empty → skip configured review hooks, while archive validation still runs). It is a space-separated list of skill names to invoke in order before the source PR. Invoke each listed skill in sequence; each must return PASS or actionable findings. All must pass before the PR reminder in Step 2. The default `odk-review` does a fresh AC/code-quality review of the actual working-tree diff, including untracked implementation files. A commit is not a prerequisite. Review code, tests, error paths and deviations, not just document structure.
@@ -71,7 +78,7 @@ changed since the checks, re-review/revalidate affected inputs before publishing
   （online_test_trigger = <config 中的值>）
   ```
   If the user chooses A, execute the mode using the same comment/label/skill semantics as ci_trigger. Report the result.
-- After the online-test action is resolved, **execute any custom post-PR hooks** configured in `post_pr_hooks` (from config; odk_config_ext.yaml overrides odk_config.yaml; default `""`). If `post_pr_hooks` is empty, skip silently. Otherwise invoke each skill listed (space-separated) in order, passing the confirmed source PR URL as context. Report each skill's findings. Unresolved findings are surfaced to the user but do not roll back the PR.
+- After the online-test action is resolved, **execute any custom post-CR/MR/PR hooks** configured in `post_cr_mr_pr_hooks` (from config; odk_config_ext.yaml overrides odk_config.yaml; default `""`). If `post_cr_mr_pr_hooks` is empty, skip silently. Otherwise invoke each skill listed (space-separated) in order, passing the confirmed source CR/MR/PR URL as context. Report each skill's findings. Unresolved findings are surfaced to the user but do not roll back the CR/MR/PR.
 
 ## 3. Generate local metadata, then ask about design-docs
 
