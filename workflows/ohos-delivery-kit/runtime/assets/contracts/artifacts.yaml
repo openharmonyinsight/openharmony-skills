@@ -225,6 +225,9 @@ artifacts:
       - proposal
       - spec
       - design
+    # Current plans must include 构建与验证环境 per odk-plan/template; examples
+    # enforce its populated fields through check-examples.sh. Keep it out of
+    # global required_sections so legacy plans retain implement-time backfill.
     required_sections:
       - "输入状态"
       - "执行原则"

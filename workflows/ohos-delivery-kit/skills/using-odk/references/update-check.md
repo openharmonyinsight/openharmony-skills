@@ -50,10 +50,20 @@ loaded by this session. Use these files only to locate/diagnose the installation
 never substitute their versions for `loaded-version`.
 
 If the managed installation has no valid snapshot in the loaded context, its
-loaded version is unknown. Explain that the session version cannot be verified,
-ask the user to restart the client and rerun the command, then stop this request.
-Do not guess a version or report `up-to-date`. Never use `proposal.md`'s
-`target_release`, an arbitrary checkout or the newest cache as a substitute.
+loaded version is unknown. Older installers may never inject a snapshot, so a
+restart alone cannot repair this condition. Say **“当前会话缺少可验证的 ODK 版本快照，
+已跳过更新检查，将继续原操作。”**, skip the optional check and upgrade, and continue
+the original command. Do not ask for a restart merely because the snapshot is
+missing, guess a version from disk, or report `up-to-date`. Never use
+`proposal.md`'s `target_release`, an arbitrary checkout or the newest cache as a
+substitute. Explain that automatic checks require a compatible installer and a
+refreshed installation; do not automatically install or switch channels.
+
+An already established pending restart or incomplete upgrade takes precedence:
+keep that request stopped and report the actual pending step. Missing snapshot
+support does not clear a restart required by an observed version mismatch, a
+successful upgrade, or a partially failed host refresh. A valid snapshot still
+uses the normal check below; `restart-required` continues to stop phase work.
 
 ## Check without upgrading
 

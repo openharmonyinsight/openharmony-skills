@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.14.2] - 2026-10-30
 
-Source: `main@37c964c37991373c37737ab85351d9045385555b`.
+Source: `main@616700154a6e15e8550462510b32012924495571`.
 
 ### Added
 
@@ -29,9 +29,26 @@ Source: `main@37c964c37991373c37737ab85351d9045385555b`.
 - `post_pr_hooks` is renamed to `post_cr_mr_pr_hooks`. The legacy name stays
   readable in user overrides, and the new key wins when both appear in the same
   file, including an explicit empty value (source PR !185).
+- `构建与验证环境` is no longer a globally required `execution-plan.md` section.
+  Current plans still fill it through the plan template and the example check,
+  while legacy plans keep the implement-time backfill (source PR !148).
 
 ### Fixed
 
+- Archive validation distinguishes real unfinished values from prohibition
+  examples: `TBD` / `TODO` quoted after 不得/禁止/请勿 + 使用/出现 no longer blocks
+  archiving, and markers written next to Chinese text are detected too (source
+  PR !191, issues #149/#150).
+- Archive placeholder diagnostics report the section name and the file line
+  (from 1) instead of a section-relative offset, for required and optional
+  documents alike (source PR !191, issue #150).
+- Entry commands continue the original request when a legacy installer never
+  injects a session version snapshot, rather than asking for a restart that
+  cannot help. A genuine pending restart or incomplete upgrade still stops the
+  step (source PR !188).
+- Distribution works with macOS system tools: no GNU sed, BSD `find` and Bash 3.2
+  are supported, and shared resource replacement uses a Python POSIX file lock
+  (source PR !189).
 - plan requires explicit confirmation of the build product before writing the
   execution plan instead of silently adopting the configured default, and records
   the candidate list with the confirmed product (source PR !183).

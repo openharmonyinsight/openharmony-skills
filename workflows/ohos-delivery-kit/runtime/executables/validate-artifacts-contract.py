@@ -41,7 +41,8 @@ from odk_yaml import (  # noqa: E402
 )
 from odk_document import (  # noqa: E402
     PLACEHOLDER_RE, BRACKET_PLACEHOLDER_RE, _visible_markdown, atx_heading, headings,
-    section_texts, section_text, require_unique_section, normalize_cell, split_table_row,
+    section_texts, section_texts_with_lines, section_text, require_unique_section,
+    normalize_cell, split_table_row,
     is_separator_row, parsed_markdown_tables, markdown_tables, table_has_columns,
     tables_with_columns, table_with_columns, unique_table_with_columns,
     require_unique_table_with_columns, meaningful,
@@ -62,7 +63,19 @@ AC_RE = re.compile(r"\bAC-(?:DFX\.[0-9]+|\d+(?:\.\d+)?)\b")
 AC_DEF_RE = re.compile(r"^\s*[-*]\s+\*\*AC-(?:DFX\.[0-9]+|\d+(?:\.\d+)?):\*\*", re.MULTILINE)
 TASK_RE = re.compile(r"\bTASK-\d+\b")
 ARCHIVE_MARKER_RE = re.compile(
-    r"\b(?:TBD|TODO)\b|(?<![\u4e00-\u9fff])(?:待定|待补充|待实现|待验证)(?![\u4e00-\u9fff])",
+    # Python's Unicode word boundary joins CJK prose to ASCII markers. Protect
+    # identifier substrings explicitly while still recognizing 状态TODO.
+    r"(?<![A-Za-z0-9_])(?:TBD|TODO)(?![A-Za-z0-9_])"
+    r"|(?<![\u4e00-\u9fff])(?:待定|待补充|待实现|待验证)(?![\u4e00-\u9fff])",
+    re.IGNORECASE,
+)
+# Exempt examples immediately following an explicit prohibition. Unquoted
+# examples are limited to known archive markers, not arbitrary field values.
+# Never skip the whole line/section, which may contain real unfinished work.
+PROHIBITED_LITERAL_PATTERN = rf"(?:`[^`\r\n]+`|{ARCHIVE_MARKER_RE.pattern})"
+PROHIBITED_LITERAL_LIST_RE = re.compile(
+    rf"(?:不得|禁止|请勿)[ \t]*(?:使用|出现)[ \t]*{PROHIBITED_LITERAL_PATTERN}"
+    rf"(?:[ \t]*(?:、|，|,|/|或|和|及)[ \t]*{PROHIBITED_LITERAL_PATTERN})*",
     re.IGNORECASE,
 )
 ANGLE_PLACEHOLDER_RE = re.compile(r"<[^>\n]+>")
@@ -1276,11 +1289,11 @@ def validate_resource_constraints(
         reporter.pass_(f"resource gate passed: {gate.relative_to(repository)}")
 
 
-def unresolved_markers(text: str) -> list[str]:
+def unresolved_markers(text: str, *, start_line: int = 1) -> list[str]:
     markers: list[str] = []
     in_fence = False
 
-    for line_no, line in enumerate(text.splitlines(), start=1):
+    for line_no, line in enumerate(text.splitlines(), start=start_line):
         stripped = line.strip()
         if stripped.startswith("```"):
             in_fence = not in_fence
@@ -1296,6 +1309,7 @@ def unresolved_markers(text: str) -> list[str]:
                 markers.append(f"L{line_no}: unresolved API signature placeholder")
             continue
 
+        line = PROHIBITED_LITERAL_LIST_RE.sub(lambda match: " " * len(match[0]), line)
         line_markers: list[str] = []
         line_markers.extend(match.group(0) for match in ARCHIVE_MARKER_RE.finditer(line))
         for match in BRACKET_PLACEHOLDER_RE.finditer(line):
@@ -1307,6 +1321,16 @@ def unresolved_markers(text: str) -> list[str]:
         if line_markers:
             markers.append(f"L{line_no}: {', '.join(line_markers)}")
 
+    return markers
+
+
+def unresolved_section_markers(text: str, sections: list[str]) -> list[str]:
+    markers: list[str] = []
+    for section in sections:
+        title = str(section)
+        for body, start_line in section_texts_with_lines(text, title):
+            markers.extend(f"{title} {marker}"
+                           for marker in unresolved_markers(body, start_line=start_line))
     return markers
 
 
@@ -2861,10 +2885,7 @@ def validate_archive_placeholders(
 
         text = read_text(path)
         sections = list(artifacts[name].get("required_sections", []))  # type: ignore[arg-type]
-        file_markers: list[str] = []
-        for section in sections:
-            body = section_text(text, str(section))
-            file_markers.extend(unresolved_markers(body))
+        file_markers = unresolved_section_markers(text, sections)
 
         if file_markers:
             unresolved = True
@@ -2885,10 +2906,7 @@ def validate_archive_placeholders(
 
         text = read_text(path)
         sections = list(data.get("required_sections", []))  # type: ignore[arg-type]
-        file_markers: list[str] = []
-        for section in sections:
-            body = section_text(text, str(section))
-            file_markers.extend(unresolved_markers(body))
+        file_markers = unresolved_section_markers(text, sections)
 
         if file_markers:
             unresolved = True

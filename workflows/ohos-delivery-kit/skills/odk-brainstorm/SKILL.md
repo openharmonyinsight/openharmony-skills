@@ -21,6 +21,8 @@ have been asked or an ODK template can be filled.
   resolves architecture, ownership, concurrency and recovery. Follow dependencies
   across those boundaries when needed, without designing unrelated components.
 
+## Steps
+
 <!-- ODK:reference contracts/skill-guides/brainstorm/interview.md -->
 Read `contracts/skill-guides/brainstorm/interview.md` in full for decision state, questioning, ODK coverage and the completion gate.
 <!-- /ODK:reference -->
