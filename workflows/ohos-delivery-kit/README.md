@@ -3,10 +3,30 @@
 Neutral-source plugin providing OpenHarmony delivery artifact specification skills,
 session routing, validator executables, and runtime assets.
 
+## 0.14.2 current release
+
+Adds optional update checks at the `using-odk`, `odk-init` and `odk-propose`
+entries, on-demand installation of configured skills, and explicit build-product
+confirmation. The canonical post-submission hook key is `post_cr_mr_pr_hooks`;
+legacy `post_pr_hooks` overrides remain readable. Archive validation distinguishes
+prohibited placeholder examples from unfinished work and reports source-file
+line numbers with section names.
+
+Automatic update checking requires an installer that supplies loaded-version
+snapshots and the update-check command. The official oh-skillhub 0.1.43 package
+supplies neither: ODK reports the loaded version as unknown, skips the optional
+update check and continues the original request. A confirmed pending restart or
+incomplete upgrade still stops the step. Before upgrading with this installer,
+back up `odk_config_ext.yaml` at the loader's reported `user_config_path` and
+restore it afterward; automatic preservation is not available in 0.1.43.
+
+See [CHANGELOG.md](CHANGELOG.md) for the complete release summary and
+[provenance.yaml](provenance.yaml) for the exact source revision.
+
 ## 0.14.0 configurable execution and device-version planning
 
 Build/test commands, review hooks, PR tools and CI/online-test triggers can be
-configured through `runtime/assets/odk_config.yaml` and an optional sibling
+configured through `runtime/assets/config/odk_config.yaml` and an optional sibling
 `odk_config_ext.yaml`. Planning records the resolved commands and device-version
 strategy: QEMU (`arm64_virt`) needs no daily firmware; every other product asks
 whether to obtain daily or use existing firmware. Implementation reuses the
@@ -146,7 +166,7 @@ repository-scoped layout.
 
 Synced from `oshunter/ohos-delivery-kit` branch `main` via
 `ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills --plugin ohos-delivery-kit`.
-Current source: `main@3efc661b7696b7015c65e5d0020d21a7974c0687`.
+Current source: `main@616700154a6e15e8550462510b32012924495571`.
 The current publisher needs the default config, archive-migration entrypoint and
 all Python runtime libraries supplemented; the source release gate verifies the
 final package against this pinned revision.
@@ -182,7 +202,7 @@ must be installed alongside the rendered `SKILL.md`, preserving relative links.
 To check real V1 and V2 installation artifacts without registering plugins in
 your agents, provide a local installer source or unpacked npm package.
 Installation was verified with the official npm package oh-skillhub 0.1.43:
-all 40 workflow regression tests pass, including V1 and V2 installation for
+the workflow regression suite passes, including V1 and V2 installation for
 Claude Code, Codex and OpenCode. Skill-local auxiliary files, including all 44
 FMEA reference files, are copied alongside SKILL.md; the default configuration
 and shared runtime references also resolve correctly. Use 0.1.43 or a later
