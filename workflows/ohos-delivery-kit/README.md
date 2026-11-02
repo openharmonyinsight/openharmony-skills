@@ -3,7 +3,17 @@
 Neutral-source plugin providing OpenHarmony delivery artifact specification skills,
 session routing, validator executables, and runtime assets.
 
-## 0.14.2 current release
+## 0.14.3 current release
+
+Adds one effective delivery contract shared by generation and validation,
+`lite` / `standard` / `critical` delivery levels, and a native-first OpenSpec
+bridge that keeps OpenSpec's own state. Every skill now reads existing artifacts
+before revising them in place. Review, test and validation findings feed back
+into the affected artifacts, and post-PR repairs must be re-verified against the
+real source head. The Codex installer and uninstaller share resource and path
+rules while preserving unlisted user files and configuration.
+
+## 0.14.2 update checks, configured skills and archive precision
 
 Adds optional update checks at the `using-odk`, `odk-init` and `odk-propose`
 entries, on-demand installation of configured skills, and explicit build-product
@@ -166,7 +176,7 @@ repository-scoped layout.
 
 Synced from `oshunter/ohos-delivery-kit` branch `main` via
 `ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills --plugin ohos-delivery-kit`.
-Current source: `main@b7b728353dad9a546ba74049155f365493e08159`.
+Current source: `main@a9e6235bb2fbf788a7706c0e0ad22565e66cbc69`.
 The current publisher needs the default config, archive-migration entrypoint and
 all Python runtime libraries supplemented; the source release gate verifies the
 final package against this pinned revision.

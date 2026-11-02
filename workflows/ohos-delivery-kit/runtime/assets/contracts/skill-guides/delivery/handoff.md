@@ -24,13 +24,24 @@ skipped review. Resolve CI/online-test consent before any skill installation.
   checks not run; script exit 0 alone does not establish functional correctness
   or resolve warnings. Required tests and unresolved review findings must not
   be silently waived.
-- On failure, report findings and fix only within the approved Task scope, then
-  re-review and rerun affected checks. Stop for user direction on scope/design
-  changes, missing prerequisites, or a repeated finding after one repair pass;
-  never loop indefinitely. Any unfinished Task prevents the handoff.
+- On review/test/validation failure, follow [the feedback procedure](feedback.md):
+  record the finding in the existing plan, identify the owning artifacts, repair
+  within the authorized scope and backfill those artifacts before closure. Mark
+  affected AC/Task/final verification and approval states pending, preserve the
+  earlier evidence, then rerun affected tests and review code plus artifact diffs.
+  Rerun archive validation on the final document set. Continue while making
+  progress; stop for a genuinely unresolved scope/design decision, missing
+  prerequisite or repeated failure with no progress, not for routine backfill.
+  Unfinished Tasks or blocking findings prevent the handoff.
 - Called review/validate skills return results to this coordinator; they do not
   recursively restart it or each initiate a publishing flow. Standalone calls
   remain supported and do not imply approval to commit or publish.
+
+The same coordinator handles findings received after the PR exists. Every such
+source repair must complete the feedback guide's PR-backed synchronization check
+before publication readiness is restored: commit/push the authorized fix to the
+existing PR, confirm its actual new head/content, and rerun affected review/CI/test
+checks for that source version. Local Resolved status does not prove publication.
 
 ## 2. Remind, then wait for the user to trigger the source PR
 
@@ -58,7 +69,7 @@ changed since the checks, re-review/revalidate affected inputs before publishing
   result and stop; never claim PR success or replace it with empty PR metadata.
 - Check that any push-time SHA rewrite preserved the reviewed source tree. If
   remote content differs, stop and re-review/revalidate; do not label it verified.
-- After the source PR URL is confirmed, invoke each skill listed in `post_commit_reviews` (from config; space-separated) in order. Each skill receives the confirmed PR URL as context. Report findings; unresolved findings from post-commit reviews are surfaced to the user but do not roll back the PR.
+- After the source PR URL is confirmed, invoke each skill listed in `post_commit_reviews` (from config; space-separated) in order. Each skill receives the confirmed PR URL as context. Feed findings through the same repair/backfill/reverification procedure; unresolved findings reopen local readiness and block document submission, without rolling back the existing PR.
 - After post-commit reviews, **ask the user whether to trigger the CI gate** before executing it — unless `ci_trigger` is `none`, in which case skip the prompt entirely. Read `ci_trigger` from config (odk_config_ext.yaml overrides odk_config.yaml; default `comment:start build`). Prompt (only when ci_trigger ≠ none):
   ```
   源码 PR 已确认：<PR URL>
@@ -77,12 +88,12 @@ changed since the checks, re-review/revalidate affected inputs before publishing
 
   （online_test_trigger = <config 中的值>）
   ```
-  If the user chooses A, execute the mode using the same comment/label/skill semantics as ci_trigger. Report the result.
-- After the online-test action is resolved, **execute any custom post-CR/MR/PR hooks** configured in `post_cr_mr_pr_hooks` (from config; odk_config_ext.yaml overrides odk_config.yaml; default `""`). If `post_cr_mr_pr_hooks` is empty, skip silently. Otherwise invoke each skill listed (space-separated) in order, passing the confirmed source CR/MR/PR URL as context. Report each skill's findings. Unresolved findings are surfaced to the user but do not roll back the CR/MR/PR.
+  If the user chooses A, execute the mode using the same comment/label/skill semantics as ci_trigger. Report the result. Any resulting CI/test findings use the same feedback procedure before readiness is restored.
+- After the online-test action is resolved, **execute any custom post-CR/MR/PR hooks** configured in `post_cr_mr_pr_hooks` (from config; odk_config_ext.yaml overrides odk_config.yaml; default `""`). If `post_cr_mr_pr_hooks` is empty, skip silently. Otherwise invoke each skill listed (space-separated) in order, passing the confirmed source CR/MR/PR URL as context. Apply the same feedback procedure to findings; unresolved blocking findings reopen readiness and prevent document submission without rolling back the existing CR/MR/PR.
 
 ## 3. Generate local metadata, then ask about design-docs
 
-Once the source PR is confirmed, **immediately generate `metadata_tracking.yaml`** from that actual PR before doing anything else in this step. Follow [metadata.md](metadata.md) to generate or refresh it. This is mandatory — do not skip or defer it. Preparation is part of the approved source-PR handoff; it does not authorize a write to another repository. Preserve unrelated repository/issue records. Confirm the remote head SHA agrees with the business checkout HEAD; stop on a mismatch rather than inventing a SHA.
+Once the current source PR and the feedback guide's executable source-publication check are verified, **immediately generate `metadata_tracking.yaml`** from that actual PR. Follow [metadata.md](metadata.md) to generate or refresh it. This is mandatory — do not skip or defer it. Preparation is part of the approved source-PR handoff; it does not authorize a write to another repository. Preserve unrelated repository/issue records. The remote head must agree with business HEAD and the reviewed source contents; stop on a mismatch or unpublished repair. Recheck before copying the document bundle, even if metadata was generated earlier.
 
 Track non-GitCode PRs using their real URLs and an explicit `repository_url` as
 specified in the metadata guide. Do not convert them to GitCode URLs or represent

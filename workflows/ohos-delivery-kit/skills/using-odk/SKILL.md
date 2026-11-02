@@ -8,11 +8,20 @@ license: MIT
 
 You are working in a project that uses **ohos-delivery-kit** — a lightweight delivery artifact specification layer for OpenHarmony.
 
+## Existing artifacts first
+
+<!-- ODK:reference contracts/skill-guides/router/document-updates.md -->
+Before this skill's interview, template loading, delegation or writes, read
+`contracts/skill-guides/router/document-updates.md`. Read every existing target's
+full frontmatter and body first; revise it in place and preserve confirmed
+content, stable IDs and evidence. Create a target only when it does not exist.
+<!-- /ODK:reference -->
+
 ## Activation
 
 ### Bridge Mode (session-scoped)
 
-Once the user invokes any `{{CMD_PREFIX}}*` command in the current session, ODK bridge activates for the remainder of the session: Output Redirection Rules (see Phase-Artifact Mapping below) override all other plugins' default output paths. Ends when the session ends.
+Once the user invokes any `{{CMD_PREFIX}}*` command in the current session, ODK bridge activates for the remainder of the session: Output Redirection Rules (see Phase-Artifact Mapping below) apply to stateless document output paths; OpenSpec retains its native workspace and publishes an ODK projection. Ends when the session ends.
 
 ODK also activates when the user explicitly mentions ODK, ohos-delivery-kit, `codespec`, or ODK artifact names/actions (proposal, spec, design, execution-plan, spec-for-validation, threat-model, metadata_tracking, review, validate, submit design docs).
 
@@ -89,11 +98,18 @@ Read `contracts/skill-guides/router/configuration.md` for same-directory user ov
 - **GitCode submission reminder**: when implementation is complete and the user is about to commit, push, or open a GitCode PR, remind them that documents under `codespec/` must be submitted to the separate design-docs repository. Resolve its address using priority order: `codespec/profile.yaml` if present → `odk_config_ext.yaml` → `odk_config.yaml`. Do not warn if `codespec/profile.yaml` is absent. If no address can be resolved, show “待开发者填写” and ask the developer to provide it; never guess a repository or automatically push across repositories. This reminder does not by itself block the business-code submission. When the user explicitly requests design-document submission, invoke `odk-submit-design-docs`: generate `metadata_tracking.yaml`, validate the five-base-file bundle plus required conditional evidence, and submit `proposal.md`, `spec.md`, `design.md`, `execution-plan.md`, and `metadata_tracking.yaml` together.
 - **Phase Gate**: Use the interaction mode below. In interactive mode, artifact approval approves only that document: suggest the next command and wait. Implementation requires an approved execution plan and a user request to implement (natural language or an implement command). In autonomous mode, an explicit end-to-end request authorizes sequential phases within its stated scope: generate and self-check each artifact, summarize decisions, then continue to the authorized next phase. Never infer implementation authorization solely from document approval. TDD remains the default for implementation; untestable Tasks must declare degradation.
 
+## Effective contract and delivery level
+
+<!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
+Read `contracts/skill-guides/router/delivery-levels.md` and use the validator's
+`--effective-contract` JSON before selecting required artifacts or phases.
+<!-- /ODK:reference -->
+
 ## Interaction Mode
 
 Default to **interactive** mode. If the user asks to automate, use recommended options, or run through the workflow ("自动", "全选推荐", "跑完"), use **autonomous** mode within the requested endpoint. Record the mode, authorized endpoint and assumptions at the start; summarize artifact changes, selected recommendations and validation results at every phase, then invoke the next phase without requiring another slash command. "全选推荐" changes how choices are made; it authorizes code changes only when the task also includes implementation. A request to finish design stops at design; an explicit request to implement and deliver may continue through plan, implementation, review and validation.
 
-Self-check every generated artifact and run the packaged validator after each artifact phase (missing downstream artifacts before their phases are expected; report those findings separately). Fix issues in available artifacts before continuing. Stop for missing essential facts, conflicting requirements, failures that cannot be resolved, or a material scope expansion. Previously granted authorization stays effective; neither mode authorizes new publication destinations, merging, destructive operations or separate design-docs submission. Follow the shared delivery handoff for those steps and honor any source-PR submission already requested by the user.
+Self-check every updated/new artifact and run the packaged validator with the current `--phase define|specify|design|plan` after each artifact phase; future artifacts are outside that check. Fix issues in available artifacts before continuing. Stop for missing essential facts, conflicting requirements, failures that cannot be resolved, or a material scope expansion. Previously granted authorization stays effective; neither mode authorizes new publication destinations, merging, destructive operations or separate design-docs submission. Follow the shared delivery handoff for those steps and honor any source-PR submission already requested by the user.
 
 
 ## Context Loading
@@ -106,9 +122,8 @@ For actual design-document submission, `odk-submit-design-docs` resolves and con
 - If it has multiple change directories, ask the user which one to operate on before proceeding
 - Once determined, read `target_release` from the active change's `proposal.md` frontmatter
 - Do not load full documents into context — use summaries (≤15 lines) when passing between phases
-- Two distinct read cases, do not conflate them:
-  - **Regenerating your own target file** (e.g. `odk-propose` reading an existing `proposal.md`): read **only its YAML frontmatter** to preserve fields — never load the body, since you regenerate it fresh from the template + inputs; a stale body only biases the output and wastes context.
-  - **Reading an upstream artifact for context** (e.g. `odk-spec` ← filled `proposal.md`, `odk-design` ← `spec.md`, `odk-plan` ← `design.md`): the body carries the requirements/AC/state you depend on — read the relevant sections in full (still prefer summaries ≤15 lines when only passing between phases).
+- Existing targets: read full frontmatter and body before revising; preserve confirmed decisions, stable IDs, custom sections, progress and evidence. Templates fill missing structure. See the document-updates guide above.
+- Upstream context: read the relevant sections in full; summaries (≤15 lines) are for handoff only.
 - When spawning subagents (e.g. via bridge commands), run them in isolated contexts — never fork the main session history; the main session only dispatches tasks and receives summaries
 - Pass evidence by file path, not by content — artifacts land on disk once (`evidence/`, `pr-diff.txt`, `findings.json`); later references pass the path, not the full text
 - Cap parallel fan-out at ≤4 subagents per layer; batch or narrow task scope if more are needed

@@ -6,6 +6,29 @@ license: MIT
 
 # ODK OPS Apply
 
+## Existing artifacts first
+
+<!-- ODK:reference contracts/skill-guides/router/document-updates.md -->
+Before this skill's interview, template loading, delegation or writes, read
+`contracts/skill-guides/router/document-updates.md`. Read every existing target's
+full frontmatter and body first; revise it in place and preserve confirmed
+content, stable IDs and evidence. Create a target only when it does not exist.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
+Read `contracts/skill-guides/router/delivery-levels.md` and use the effective
+contract. It takes precedence over standard-only artifact lists below; native
+OpenSpec schemas remain standard/critical and lite uses the base flow.
+<!-- /ODK:reference -->
+
+## Native OpenSpec state
+
+<!-- ODK:reference contracts/skill-guides/router/openspec-state.md -->
+Read `contracts/skill-guides/router/openspec-state.md` before invoking OpenSpec.
+Keep the native workspace and task file authoritative; capture native CLI state
+and reconcile existing ODK artifacts without replacing either side.
+<!-- /ODK:reference -->
+
 ## Purpose
 
 Invoke OpenSpec `/opsx:apply` to implement tasks from the execution plan, apply code changes, and backfill execution-plan 代码范围映射.
@@ -20,6 +43,9 @@ Invoke OpenSpec `/opsx:apply` to implement tasks from the execution plan, apply 
 
 ## Confirm the build product before invoking the bridge
 
+First apply the host-only exception in the delivery-level and product guides.
+Only target-build/device plans require the menu and firmware selection below.
+
 <!-- ODK:reference contracts/skill-guides/delivery/build-products.md -->
 Read `contracts/skill-guides/delivery/build-products.md`. Before invoking
 opsx:apply, verify the plan's actual product choice and `产品选择确认`. Recover
@@ -29,11 +55,11 @@ old plans. A configured default or a generated command does not confirm it.
 
 ## Steps
 
-1. Invoke OpenSpec `/opsx:apply` to implement tasks from the execution plan.
-2. After code generation, backfill `execution-plan.md` 代码范围映射 with actual files modified or created.
-3. Update `execution-plan.md` task checkboxes as tasks complete.
-4. Verify AC-Task traceability: every AC has at least one completed task, every task links back to an AC.
-5. After all Tasks are Done, automatically follow the handoff below; do not require separate review/validate commands from the user.
+1. Invoke OpenSpec `/opsx:apply` to implement its native tracked tasks. Read/revise native targets in place and refresh native instructions after task completion. Capture the native state again before reconciling ODK.
+2. Read the existing ODK plan, reconcile task_map against native tasks, and backfill `execution-plan.md` 代码范围映射 with actual files modified or created.
+3. Synchronize `execution-plan.md` progress from the native tasks and actual verification evidence, including per-row Final Status. Follow `contracts/skill-guides/delivery/feedback.md` for findings: correct/reopen native tasks or delta artifacts first, then reconcile ODK backfill and dispositions. Keep blocked tasks pending; do not maintain an independent completion state.
+4. Verify AC-Task traceability: every AC's required tasks are complete and verification passes. Tasks link to ACs, or use a justified N/A for document/infrastructure work that does not close an AC.
+5. Only after native state is `all_done` and the ODK projection is reconciled, automatically follow the handoff below; do not require separate review/validate commands from the user.
 
 ## Output
 

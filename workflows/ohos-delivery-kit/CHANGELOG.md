@@ -4,6 +4,70 @@ All notable changes to the published `ohos-delivery-kit` workflow are documented
 this file. Source artifacts are synchronized from
 `oshunter/ohos-delivery-kit` `main` through the marketplace publisher.
 
+## [0.14.3] - 2026-10-31
+
+Source: `main@a9e6235bb2fbf788a7706c0e0ad22565e66cbc69`.
+
+### Added
+
+- Query one effective delivery contract and validate by phase: base rules,
+  recorded profiles, artifact dependencies and conditional triggers merge into a
+  single result shared by generation and validation (source PR !193).
+- Add `lite` / `standard` / `critical` delivery levels. Lite changes need fewer
+  sections and may omit a standalone design; critical changes add a validation
+  spec and the applicable threat analysis. A host-only verification plan may
+  declare `host-only` without choosing a target product or device (source
+  PR !193).
+- The OpenSpec bridge collects native CLI state, immutable source snapshots and
+  task mapping, keeps its native directory, delta and task progress, then syncs
+  the ODK delivery artifacts separately (source PR !193).
+
+### Changed
+
+- Clarify the boundaries of Chinese placeholder markers and how to fill status
+  values, with regressions for ordinary Chinese prose and explicit status values
+  (source PR !193).
+- Refresh quick-start, user guide and handoff docs for version checks,
+  configured-skill installation and initialization, and state that the source
+  version is not the published version (source PR !193).
+
+### Fixed
+
+- Every skill reads the complete existing target document before revising it in
+  place, preserving confirmed decisions, stable IDs, progress and evidence, and
+  creates a file only when it is missing; init also reuses an existing proposal
+  (source PR !193).
+- Profile-added sections, AC categories, prohibitions and required dimensions
+  participate in programmatic validation; resource, security and i18n trigger
+  results enter the effective contract; OpenSpec native writes are no longer
+  redirected into ODK directories (source PR !193).
+- Review, test, validate and bridge findings are written back to the affected
+  artifacts and recorded with re-verification in the existing execution plan;
+  changing an input invalidates affected earlier conclusions. Archive requires
+  all ACs and verifications to pass, tasks complete and blocking issues closed,
+  keeps historical Red evidence and adds a Verification Final Status (source
+  PR !194).
+- Post-PR repairs must be synced to the original source PR and re-verified
+  against its actual head; a new read-only source-publication check blocks
+  uncommitted or unpushed repairs. Incomplete Steps recognize ordered and
+  unordered lists, and a clean result omits the closure section without a
+  warning (source PR !194).
+- The Codex uninstaller includes `.codex/runtime/` in the manifest path scope,
+  cleans runtime files still recorded in the manifest on upgrade, and removes
+  runtime libraries and assets on uninstall while preserving unlisted user
+  tools, skills and configuration; adds install/upgrade/uninstall regressions
+  (source PR !195, issue #151).
+- Codex deletes manifest-owned files after a preflight and never follows
+  directory links; unsafe paths keep the manifest and stop the upgrade. User
+  extension configuration is never deleted even if it appears in the manifest,
+  and missing-manifest guidance plus Codex install docs are added (source
+  PR !195).
+- Codex first install, upgrade and uninstall share resource and path rules;
+  installation rejects directory links before writing and before backing up
+  configuration; unknown or illegal manifest entries fail and keep the
+  manifest. Errors report the concrete path and errno, and whole-package
+  manifest coverage is checked (source PR !195).
+
 ## [0.14.2] - 2026-10-30
 
 Source: `main@b7b728353dad9a546ba74049155f365493e08159`.

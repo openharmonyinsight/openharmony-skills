@@ -3,6 +3,8 @@
 target_release: ""
 # change_type: 变更类型（new-feature/enhancement/optimization/bugfix/refactor/deprecation）
 change_type: ""
+# lite/standard/critical；旧提案缺省 standard。见有效契约，不以降级规避门禁。
+delivery_level: "standard"
 proposal_id: ""
 author: ""
 date: ""

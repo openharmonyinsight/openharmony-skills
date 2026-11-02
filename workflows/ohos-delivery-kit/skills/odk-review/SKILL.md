@@ -6,6 +6,21 @@ license: MIT
 
 # ODK Review
 
+## Existing artifacts first
+
+<!-- ODK:reference contracts/skill-guides/router/document-updates.md -->
+Before this skill's interview, template loading, delegation or writes, read
+`contracts/skill-guides/router/document-updates.md`. Read every existing target's
+full frontmatter and body first; revise it in place and preserve confirmed
+content, stable IDs and evidence. Create a target only when it does not exist.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
+Read `contracts/skill-guides/router/delivery-levels.md` and use the effective
+contract. It takes precedence over standard-only artifact lists below; native
+OpenSpec schemas remain standard/critical and lite uses the base flow.
+<!-- /ODK:reference -->
+
 ## Prerequisites
 
 - `spec.md` with AC list
@@ -14,19 +29,25 @@ license: MIT
 
 ## Input
 
-1. Read `spec.md` AC list
-2. Read `execution-plan.md` Task list and code scope
-3. Read review templates from `templates/review/`
+1. Read `proposal.md` goals/success criteria, `spec.md` ACs and verification mapping, applicable `design.md` decisions, and `execution-plan.md` Task list, code scope and existing findings. Read related validation/security artifacts when affected; honor lite's optional design.
+2. Read actual implementation files, relevant diff and test/evidence inputs.
+3. Read review templates from `templates/review/` as applicable checklists.
+
+<!-- ODK:reference contracts/skill-guides/delivery/feedback.md -->
+Read `contracts/skill-guides/delivery/feedback.md`. Review both implementation
+and baseline completeness; route findings to their owning artifacts, record
+dispositions in the existing plan and invalidate/reverify affected results.
+<!-- /ODK:reference -->
 
 ## Steps
 
 1. Review actual implementation files and the full relevant diff (including untracked files) against each AC. Inspect correctness, failure paths, tests and regressions. Use templates as checklists, not as a substitute for examining code. Do not commit merely to start review.
 
-2. Reuse existing implementation evidence for unchanged inputs; correct missing or inaccurate code mapping/AC-Task status rather than regenerating it. Report concrete findings with file references and verification gaps; do not claim unexecuted checks passed.
+2. Challenge missing ACs, design deviations and verification assumptions as well as implementation bugs. Apply the feedback procedure: report cause/impact and file references, identify affected artifacts, and update the plan's problem dispositions. The authorized repair coordinator backfills the owning artifacts; a report-only explanation cannot close a real baseline deviation. Reuse evidence only for unchanged inputs; do not claim unexecuted checks passed.
 
 3. If `design.md` contains `### DFX 故障模式处置`, check every disposition row referencing an AC against fault-injection/error-path evidence; a missing or happy-path-only verification is an unresolved deviation (archive blocks on non-Pass FM ACs). Record it via the review template's `## DFX 故障模式覆盖` section when written.
 
-4. Return PASS or actionable findings to the caller. In the automatic handoff, the coordinator owns source-PR confirmation and the later design-docs reminder; do not ask a second publishing question here. Standalone review never authorizes a source or document push.
+4. Return PASS only when required ACs/checks pass, blocking findings are resolved and affected artifact diffs have been reviewed against the final implementation. Otherwise return actionable findings with disposition IDs and remaining backfill/reverification. In the automatic handoff, the coordinator owns repairs, source-PR confirmation and the later design-docs reminder; do not ask a second publishing question here. Standalone review never authorizes a source or document push.
 
 ## Output
 

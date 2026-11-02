@@ -6,6 +6,20 @@ license: MIT
 
 # ODK Implement
 
+## Existing artifacts first
+
+<!-- ODK:reference contracts/skill-guides/router/document-updates.md -->
+Before this skill's interview, template loading, delegation or writes, read
+`contracts/skill-guides/router/document-updates.md`. Read every existing target's
+full frontmatter and body first; revise it in place and preserve confirmed
+content, stable IDs and evidence. Create a target only when it does not exist.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
+Read `contracts/skill-guides/router/delivery-levels.md` and obtain the effective
+contract before choosing artifacts, sections or phase prerequisites.
+<!-- /ODK:reference -->
+
 ## Purpose
 
 Use after `execution-plan.md` has been approved. This is the **base layer** command — AI-assisted implementation guided by the plan, with zero plugin dependencies.
@@ -19,6 +33,18 @@ Use after `execution-plan.md` has been approved. This is the **base layer** comm
 - Before the first build, verify the plan's `产品选择确认` against the user's actual product choice. A product copied from config or a generated command is not confirmation; missing evidence must be resolved using the shared build-product guide before compilation.
 
 ## Steps
+
+<!-- ODK:reference contracts/skill-guides/delivery/feedback.md -->
+Read `contracts/skill-guides/delivery/feedback.md` for test failures or deviations.
+Route corrections to their owning artifacts, record findings in the existing
+plan, and set Verification Final Status from the current verification outcome.
+<!-- /ODK:reference -->
+
+For a plan explicitly scoped `host-only`, verify that every Task's command is a
+repository-local host/document/configuration check with no target build, emulator,
+flashing or device dependency. Execute and record those commands directly; skip
+product selection, firmware preparation and final device integration. If any Task
+needs a target/device, update the plan and follow the existing product safeguards.
 
 For configuration-dependent steps, use the effective-configuration command defined in `using-odk`; do not merge installation files independently. Stop on config errors. Existing execution-plan commands remain authoritative until explicitly changed.
 
@@ -123,7 +149,7 @@ For configuration-dependent steps, use the effective-configuration command defin
 5. After all Tasks are attempted, produce an **Execution Summary**:
    - List every Task with status: ✅ 已完成（Done） / ❌ 阻塞（Blocked） / ⚠️ 跳过（Skipped，附原因）
    - If any Task is incomplete, inform the user and do NOT suggest moving to review — wait for user direction
-6. If implementation reveals missing ACs or changed scope, pause and update `spec.md` / `execution-plan.md` before continuing.
+6. If implementation reveals missing ACs, a design deviation or changed verification assumptions, apply the feedback procedure to the affected proposal/spec/design/plan and existing dependent artifacts. Resolve only genuinely new scope/design decisions with the user; do not weaken ACs to fit a bug or leave the correction solely in a report.
 7. Keep changes within the Task file scope unless the user approves an execution-plan update.
 8. When any `资源开销审视` dimension is `required` (`contracts/artifacts.yaml#resource_contract`), complete subsystem measurement/evidence Tasks and the business-repo `odk_resource_gate` (commonly under `evidence/resource/`).
 9. After all Tasks are Done, **prompt the user about final device integration verification** before starting the automatic handoff. For physical products, show the plan's recorded version strategy and preparation result, then ask whether to run integrated verification on that device or skip it because per-Task verification was sufficient. Reuse the selected firmware; do not ask daily versus existing again, reflash automatically, or assume existing firmware is today's daily. If preparation is still needed, follow sub-step b and the plan's preparation method; automatic flashing still requires product `rk3568` AND non-empty `device_flash_skill`, plus explicit selected-device flashing confirmation. If the user requests a different version or device, update the plan and prepare it before testing.

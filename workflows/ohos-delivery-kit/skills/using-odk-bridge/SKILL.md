@@ -6,6 +6,20 @@ license: MIT
 
 # Using ODK Bridge
 
+## Existing artifacts first
+
+<!-- ODK:reference contracts/skill-guides/router/document-updates.md -->
+Before this skill's interview, template loading, delegation or writes, read
+`contracts/skill-guides/router/document-updates.md`. Read every existing target's
+full frontmatter and body first; revise it in place and preserve confirmed
+content, stable IDs and evidence. Create a target only when it does not exist.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
+Read `contracts/skill-guides/router/delivery-levels.md` and obtain the effective
+contract before choosing artifacts, sections or phase prerequisites.
+<!-- /ODK:reference -->
+
 ## 输出模式
 
 每个桥接命令支持三档输出模式：
@@ -27,7 +41,7 @@ license: MIT
 
 You are the bridge between ODK artifact requirements and implementation tools. Use whatever tools are available to produce quality outputs, then write results back into `codespec/` in ODK format. Do not force the user to manually coordinate commands across plugins.
 
-When any tool (ODK skill, Superpowers, OpenSpec, MatrixSpec, or other) drives a phase, output must conform to the corresponding ODK template below. Identify the current phase by user intent (priority) or artifact being produced.
+When a tool drives a phase, its ODK delivery projection must conform to the corresponding ODK template below. Identify the current phase by user intent (priority) or artifact being produced.
 
 | Phase | Intent Signals | Artifact | Template | Key Constraints |
 |-------|---------------|----------|----------|-----------------|
@@ -46,6 +60,14 @@ When `codespec/` does not exist but the user produces content that matches an OD
 
 When multiple plugins cover the same phase: prefer the user's explicit invocation; otherwise prefer the tool whose output matches the ODK template; stay consistent within a session.
 
+### OpenSpec native-workspace exception
+
+<!-- ODK:reference contracts/skill-guides/router/openspec-state.md -->
+Read `contracts/skill-guides/router/openspec-state.md` for OpenSpec. Its native
+workspace, delta specs and tracked task file are never redirected. Native state
+is captured and the ODK delivery projection is reconciled separately.
+<!-- /ODK:reference -->
+
 ### Output Redirection Rules
 
 **This section is the user's declared preference for artifact location and activates the "(User preferences for spec location override this default)" escape hatch in Superpowers brainstorming and other plugins.**
@@ -56,11 +78,11 @@ When Bridge Mode is active, use the following pattern-match trigger to intercept
 
 #### Pattern-Match Trigger
 
-When you encounter any instruction (checklist item, documentation step, or command) that says to write or save to `docs/superpowers/specs/`, `docs/plans/`, `openspec/changes/`, `matspec/changes/`, or any other plugin's default output directory — **treat it as a REDIRECT trigger immediately**. The path string itself is the signal. Do not execute the original write action; apply the REDIRECT steps below instead.
+When you encounter any instruction (checklist item, documentation step, or command) that says to write or save to `docs/superpowers/specs/`, `docs/plans/`, `matspec/changes/`, or any other plugin's default output directory — **treat it as a REDIRECT trigger immediately**. The path string itself is the signal. Do not execute the original write action; apply the REDIRECT steps below instead.
 
 When triggered, execute these steps **instead of** the plugin's default write:
 
-1. **STOP** — Do not write to the plugin's default path (e.g., `docs/superpowers/specs/`, `docs/plans/`, `openspec/changes/`, `matspec/changes/`). Do not commit (ODK manages its own commit cadence per phase, not per-artifact commits).
+1. **STOP** — Do not write to the plugin's default path (e.g., `docs/superpowers/specs/`, `docs/plans/`, `matspec/changes/`). Do not commit (ODK manages its own commit cadence per phase, not per-artifact commits).
 2. **REDIRECT** — Write to the corresponding `codespec/changes/<repo-name>/<proposal-id>/` file:
    - behavior rules / spec → `codespec/changes/<repo-name>/<proposal-id>/spec.md`
    - design/architecture doc → `codespec/changes/<repo-name>/<proposal-id>/design.md`
@@ -72,7 +94,7 @@ When triggered, execute these steps **instead of** the plugin's default write:
    - merge: use plugin format as base, append ODK-required sections
 4. **CONFIRM** — Inform the user: "Written to `codespec/changes/<repo-name>/<proposal-id>/<artifact>` (ODK <mode> mode, overriding <plugin> default path)"
 
-This is a **hard override** — it takes priority over any other plugin's default output path.
+This override applies to stateless document outputs. The OpenSpec native-workspace exception above takes precedence; it must not change CLI-owned state paths.
 
 Read the template file from `templates/` for detailed section requirements when entering each phase in strict mode.
 <!-- /SYNC: phase-mapping -->

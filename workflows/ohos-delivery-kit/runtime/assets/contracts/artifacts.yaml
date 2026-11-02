@@ -1,4 +1,4 @@
-version: 2
+version: 3
 archive_root: "codespec/changes/<repo-name>/<proposal-id>/"
 minimum_contract:
   required_artifacts:
@@ -163,6 +163,7 @@ artifacts:
       - "API 规格定义"
     conditional_sections:
       - section: "资源验收契约"
+        trigger: resource-active
         required_when: "resource chain active (any dimension impact state in active_when_states)."
 
   design:
@@ -203,10 +204,13 @@ artifacts:
       - section: "类图"
         required_when: "The change involves class inheritance hierarchies, interface implementation layers (e.g. IPC interface/proxy/stub/impl), or cross-module composition relationships."
       - section: "安全基础检查"
+        trigger: security
         required_when: "The proposal 8-dimension eval marks 安全/权限 as 是 — the single trigger source. propose sets 安全/权限=是 when the change crosses trust boundaries (IPC/Binder/shared-mem/socket), crosses security layers (user↔kernel, sandbox, SELinux domains), handles sensitive data, or uses crypto/auth/authorization; those are the judgment basis at propose, not separate triggers (see odk-propose)."
       - section: "资源设计"
+        trigger: resource-active
         required_when: "resource chain active (any dimension impact state in active_when_states)."
       - section: "国际化依赖分析"
+        trigger: i18n
         required_when: "The proposal 8-dimension eval marks 国际化 as 是 — the single trigger source (see odk-propose/reference/i18n-scope-criteria.md)."
 
   execution-plan:
@@ -220,14 +224,17 @@ artifacts:
       - task_dependencies
       - verification_commands
       - actual_results
+      - verification_outcomes
+      - finding_dispositions
       - code_mapping
     requires:
       - proposal
       - spec
       - design
     # Current plans must include 构建与验证环境 per odk-plan/template; examples
-    # enforce its populated fields through check-examples.sh. Keep it out of
-    # global required_sections so legacy plans retain implement-time backfill.
+    # enforce its populated fields through the shared environment validator. Keep it out of
+    # global required_sections so legacy plans retain implement-time backfill;
+    # when present, validate-artifacts-contract.py checks it in every mode.
     required_sections:
       - "输入状态"
       - "执行原则"
@@ -240,7 +247,10 @@ artifacts:
       - "Review Gates"
       - "代码范围映射"
     conditional_sections:
+      - section: "问题闭环"
+        required_when: "Review, tests, validation or CI reported findings; omit when there are no findings."
       - section: "资源验证矩阵"
+        trigger: resource-active
         required_when: "resource chain active (any dimension impact state in active_when_states)."
 
   metadata-tracking:

@@ -6,12 +6,32 @@ license: MIT
 
 # ODK Plan
 
+## Existing artifacts first
+
+<!-- ODK:reference contracts/skill-guides/router/document-updates.md -->
+Before this skill's interview, template loading, delegation or writes, read
+`contracts/skill-guides/router/document-updates.md`. Read every existing target's
+full frontmatter and body first; revise it in place and preserve confirmed
+content, stable IDs and evidence. Create a target only when it does not exist.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
+Read `contracts/skill-guides/router/delivery-levels.md` and obtain the effective
+contract before choosing artifacts, sections or phase prerequisites.
+<!-- /ODK:reference -->
+
 ## Prerequisites
 
 - `spec.md` with numbered AC list
-- `design.md` with architecture decisions (required for state ownership fields when design declares complex state)
+- `design.md` when required by the effective contract; lite may omit it and record concise design constraints in the plan. Read and retain any existing design regardless of level.
 
 ## Confirm the build product before planning
+
+First classify the plan's verification scope. If every Task uses repository-local
+host tests/document checks and no target build, emulator or device, record
+`验证范围=host-only` plus actual commands in the environment section and skip
+product/firmware selection below. Do not invent a product for that scope.
+For every target-build/device plan, the following selection remains mandatory.
 
 Before generating a plan, resolving `{product}`, or invoking any planning bridge,
 run `python3 runtime/executables/lib/odk_repository.py --build-product-options`
@@ -46,7 +66,7 @@ For configuration-dependent steps, use the effective-configuration command defin
 1. Read template from `templates/ai/execution-plan.md`
 2. **API 声明文件任务（条件触发）**：若 proposal.md `API/SDK` = 「是」，必须在所有任务的最前面插入一个 API 声明文件修改任务（排在 Task-1），任务内容为"根据 spec.md `## API 规格定义` 修改声明文件"。该任务排在第一位的原因是：后续功能实现任务依赖声明文件的修改结果，声明文件未完成时其他任务无法开展。
 3. Generate `execution-plan.md` per the template. Fill the required traceability, task detail, verification, and code-scope fields enough to pass artifact contract validation. For each Task, fill「任务间接口」（Produces=供后续 Task 依赖的接口签名/错误码/innerAPI/数据结构，Consumes=来自前置 Task 的契约；无跨 Task 契约写「无」），让只读单 Task 的执行者也能对齐跨 Task 命名与签名。
-   **构建与验证环境（必填）**：在生成 `execution-plan.md` 前读取 `build_products`、`build_product`、`build_command`、`emulator_command`、`test_command`（`odk_config_ext.yaml` 覆盖默认配置），先确认本次产品，再生成具体命令。
+   **构建与验证环境（必填；host-only 按上述例外记录实际主机验证）**：在生成 `execution-plan.md` 前读取 `build_products`、`build_product`、`build_command`、`emulator_command`、`test_command`（`odk_config_ext.yaml` 覆盖默认配置），先确认本次产品，再生成具体命令。
    Reuse the product confirmed in the pre-planning step; do not substitute `build_product` directly. Record the actual user response in `产品选择确认`.
    确认产品后、写计划前，执行设备版本选择：
    <!-- ODK:reference contracts/skill-guides/delivery/device-version.md -->
@@ -64,7 +84,7 @@ For configuration-dependent steps, use the effective-configuration command defin
    - 将推断结果和理由写入 Task 的 `验证命令` 字段，格式：`<build_cmd> [--target <module>] && <test_cmd>`，不写占位符
    If any proposal `资源开销审视` dimension is `required`, expand `资源验证矩阵` (`contracts/artifacts.yaml#resource_contract`). Commands/evidence layout are subsystem-owned (often `evidence/resource/`); ODK requires the section and meaningful, non-placeholder content without imposing a subsystem measurement schema.
    涉及国际化接口调用的任务时，在「任务间接口」或备注中记录调用场景、仓路径、接口/方法，便于 implement 阶段使用。 **禁止遗漏或虚构**
-4. Populate `execution-plan.md` AC-to-Task 追溯 (AC / Task / 验证状态) with the Task assignments.
+4. Populate `execution-plan.md` AC-to-Task 追溯 (AC / Task / 验证状态) with the Task assignments. Include Verification Final Status=Blocked until executed; preserve existing results only for unchanged inputs. Keep any existing 问题闭环 dispositions and create rows only for real findings under `contracts/skill-guides/delivery/feedback.md`.
 5. Self-Review the generated `execution-plan.md` before handing off — find issues and fix them inline, then move on without a second self-review pass. Self-review is an AI self-check only; it does not replace human approval or `odk-review`, and the Phase Gate in `using-odk` still applies:
    - **跨 Task 契约一致性**：逐 Task 比对「任务间接口」——后续 Task 的 Consumes 是否对得上某个前置 Task 的 Produces（函数名/参数/错误码/数据结构）；`clearLayers()` 在 TASK-3 产出、TASK-7 却写成 `clearFullLayers()` 就是 bug，就地改正。
    - **占位符扫描**：确认无 `TBD`/`TODO`/`适当处理`/`补充测试`/`参考上文` 等不可执行占位（见「禁止项」）。

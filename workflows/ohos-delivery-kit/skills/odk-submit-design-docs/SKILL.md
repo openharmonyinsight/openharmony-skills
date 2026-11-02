@@ -6,6 +6,21 @@ license: MIT
 
 # ODK Submit Design Documents
 
+## Existing artifacts first
+
+<!-- ODK:reference contracts/skill-guides/router/document-updates.md -->
+Before this skill's interview, template loading, delegation or writes, read
+`contracts/skill-guides/router/document-updates.md`. Read every existing target's
+full frontmatter and body first; revise it in place and preserve confirmed
+content, stable IDs and evidence. Create a target only when it does not exist.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
+Read `contracts/skill-guides/router/delivery-levels.md` and use the effective
+contract. It takes precedence over standard-only artifact lists below; native
+OpenSpec schemas remain standard/critical and lite uses the base flow.
+<!-- /ODK:reference -->
+
 ## Preconditions
 
 - Resolve the active directory as `codespec/changes/<repo-name>/<proposal-id>/`.
@@ -65,6 +80,14 @@ python3 "runtime/executables/validate-artifacts-contract.py" \
 ```
 
 `--design-docs-submit` automatically enables the same final-readiness checks as `--archive`, including unresolved placeholders, code mapping, per-task `Actual Result`, DFX closure, and resource constraints.
+
+For a current source PR, re-query its actual source head and execute
+`runtime/executables/lib/odk_source_state.py` as specified by the metadata/feedback
+guides immediately before copying the bundle. Require exit 0 and ready=true for
+every reviewed business source/test/fixture file. Unpublished local repairs block
+submission even when metadata SHA equals HEAD and document validation passes.
+Return the repair to the authorized source coordinator; updating documents alone
+does not authorize a source push. The genuine standalone no-PR mode is unchanged.
 
 Do not submit if validation fails. Copy the five base files and required conditional
 evidence to the same relative path under the confirmed design-docs checkout:

@@ -211,7 +211,19 @@ def parse_metadata_tracking(path: str) -> dict[str, object]:
     return result
 
 
+def contract_version(path: str) -> int:
+    versions = [line.split(":", 1)[1].split("#", 1)[0].strip() for line in _lines(path)
+                if re.match(r"^version:", line)]
+    # Older embedded contracts omitted their version; keep that legacy format.
+    if not versions:
+        return 2
+    if len(versions) != 1 or versions[0] not in {"1", "2", "3"}:
+        raise ValueError(f"{path}: unsupported artifacts contract version (supported: 1, 2, 3)")
+    return int(versions[0])
+
+
 def parse_contract_artifacts(path: str) -> dict[str, dict[str, object]]:
+    contract_version(path)
     artifacts: dict[str, dict[str, object]] = {}
     current: str | None = None
     mode: str | None = None
@@ -238,13 +250,16 @@ def parse_contract_artifacts(path: str) -> dict[str, dict[str, object]]:
                 "required": "true",
                 "required_sections": [],
                 "conditional_sections": [],
+                "conditions": {},
+                "owns": [],
+                "requires": [],
             }
             mode = None
             continue
         if current is None:
             continue
 
-        key_value = re.match(r"^    (file|template):\s*(.+)$", line)
+        key_value = re.match(r"^    (file|template|phase):\s*(.+)$", line)
         if key_value:
             artifacts[current][key_value.group(1)] = _unquote(key_value.group(2))
             continue
@@ -252,19 +267,25 @@ def parse_contract_artifacts(path: str) -> dict[str, dict[str, object]]:
         if required:
             artifacts[current]["required"] = required.group(1)
             continue
-        if line == "    required_sections:":
-            mode = "required_sections"
+        list_key = re.match(r"^    (required_sections|owns|requires):(?:\s*\[\])?$", line)
+        if list_key:
+            mode = list_key[1]
             continue
         if line == "    conditional_sections:":
             mode = "conditional_sections"
             continue
         section = re.match(r"^      - (.+)$", line)
-        if section and mode == "required_sections":
+        if section and mode in {"required_sections", "owns", "requires"}:
             artifacts[current][mode].append(_unquote(section.group(1)))  # type: ignore[index]
             continue
         conditional = re.match(r"^      - section:\s*(.+)$", line)
         if conditional and mode == "conditional_sections":
             artifacts[current][mode].append(_unquote(conditional.group(1)))  # type: ignore[index]
+            continue
+        condition = re.match(r"^        (required_when|trigger):\s*(.+)$", line)
+        if condition and mode == "conditional_sections" and artifacts[current][mode]:
+            title = artifacts[current][mode][-1]
+            artifacts[current]["conditions"].setdefault(title, {})[condition[1]] = _unquote(condition[2])
 
     if not artifacts:
         raise ValueError(
