@@ -15,7 +15,7 @@ DIMENSIONS = dict(perf="性能", security="安全/权限", compatibility="兼容
 
 def canonical_dimension(label: str) -> str:
     label = label.replace("*", "").replace("`", "").strip()
-    return label
+    return "国际化" if label == "国际化/无障碍" else label
 
 
 def involvement_value(cell: str) -> str | None:

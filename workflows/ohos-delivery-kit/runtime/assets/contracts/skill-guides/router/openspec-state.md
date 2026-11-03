@@ -10,8 +10,10 @@ The strict/passthrough/merge choice applies only to the ODK projection.
    change and optional `--store` selection on every native command. Reuse an
    existing change; do not run `new change` over an existing one. If CLI/project
    initialization is unavailable, report fallback to ODK base skills explicitly.
-2. In an initialized project, install/select the shipped `ohos-spec-driven`
-   schema through OpenSpec's supported custom-schema mechanism; preserve an
+2. In an initialized project, locate the shipped `ohos-spec-driven` schema at
+   `../../../adapters/openspec-schemas/ohos-spec-driven/schema.yaml`, relative to
+   this guide. Install its entire directory, including `templates/`, through
+   OpenSpec's supported custom-schema mechanism and select it; preserve an
    existing schema/config and edit only the requested setting. Verify the
    selected `schemaName` with `openspec status --change NAME --json`. The schema
    preserves native proposal.md, specs/**/*.md, design.md and tasks.md paths.

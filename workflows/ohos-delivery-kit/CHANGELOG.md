@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.14.3] - 2026-10-31
 
-Source: `main@a9e6235bb2fbf788a7706c0e0ad22565e66cbc69`.
+Source: `main@c0d4959a79f4ab224c1124ca4308b220e0ac664b`.
 
 ### Added
 
@@ -67,6 +67,12 @@ Source: `main@a9e6235bb2fbf788a7706c0e0ad22565e66cbc69`.
   configuration; unknown or illegal manifest entries fail and keep the
   manifest. Errors report the concrete path and errno, and whole-package
   manifest coverage is checked (source PR !195).
+- Ship the OpenSpec `ohos-spec-driven` schema and its templates under
+  `runtime/assets/adapters/openspec-schemas/`, so bridge skills can install the
+  complete schema from the published package instead of a source-only path
+  (source PR !198).
+- Treat the legacy `国际化/无障碍` involvement label as `国际化` when reading
+  existing artifacts, so previously written tables stay valid (source PR !198).
 
 ## [0.14.2] - 2026-10-30
 
