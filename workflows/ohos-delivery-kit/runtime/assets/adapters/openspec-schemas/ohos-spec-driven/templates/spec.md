@@ -1,6 +1,6 @@
 # Spec
 
-<!-- OpenSpec delta sections: ADDED / MODIFIED / REMOVED -->
+<!-- Keep OpenSpec's native Requirements/Requirement/Scenario structure. -->
 
 ## 概述
 
@@ -10,25 +10,31 @@
 | 优先级 | P0/P1/P2/P3 |
 | 目标版本 | |
 
-## ADDED
+## ADDED Requirements
 
-### US-1: [标题]
+### Requirement: US-1 - [标题]
 
 **作为** [角色], **我想要** [功能], **以便** [价值].
 
-**验收标准：**
+The system SHALL [可观测的规范行为].
 
-> 使用 AC-X.Y 编号格式。WHEN 描述精确的触发条件，THEN 描述可观测的系统行为。
-- **AC-1.1:** WHEN [条件] THEN [可验证结果]
-- **AC-1.2:** WHEN [异常条件] THEN [异常处理行为]
+#### Scenario: AC-1.1 - [成功场景]
 
-## MODIFIED
+- **WHEN** [精确触发条件]
+- **THEN** [可验证的系统行为]
 
-<!-- 变更的现有需求 -->
+#### Scenario: AC-1.2 - [异常场景]
 
-## REMOVED
+- **WHEN** [异常条件]
+- **THEN** [可验证的异常处理行为]
 
-<!-- 移除的需求 -->
+## MODIFIED Requirements
+
+<!-- 修改现有需求时保留其 Requirement 标题，填写完整规范行为和全部 Scenario。 -->
+
+## REMOVED Requirements
+
+<!-- 移除现有需求时使用其完整 Requirement 标题，并说明 Reason 和 Migration。 -->
 
 ## 兼容性声明
 

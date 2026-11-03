@@ -20,6 +20,9 @@ artifacts:
     instruction: |
       Generate delta specs (ADDED/MODIFIED/REMOVED requirements) following ODK template structure.
       Must include: numbered ACs (AC-1.1 format), compatibility declaration, verification mapping table.
+      Preserve native ## ADDED Requirements, ## MODIFIED Requirements and ## REMOVED Requirements sections.
+      Use ### Requirement: titles containing US IDs and normative SHALL or MUST text.
+      Put AC IDs in #### Scenario: titles with WHEN/THEN bullets; an AC list alone is not a native scenario.
     requires: [proposal]
 
   - id: design

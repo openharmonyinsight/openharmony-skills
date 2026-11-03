@@ -40,6 +40,12 @@ selected schema through the OpenSpec CLI. Native artifacts stay under the select
 OpenSpec root: do not redirect `openspec/changes/`, rename tasks.md, or flatten
 native delta specs. OpenSpec owns task progress and main-spec merging.
 
+Native delta sections use `ADDED Requirements`, `MODIFIED Requirements` and
+`REMOVED Requirements`. Keep US IDs in `### Requirement:` titles and AC IDs in
+`#### Scenario:` titles, with normative SHALL/MUST text and WHEN/THEN behavior.
+Status/apply completion does not validate these deltas; run native validation
+before an explicitly authorized archive or main-spec merge.
+
 The packaged `lib/odk_openspec.py` captures native status and apply instructions,
 with immutable source snapshots. The agent then reads existing ODK artifacts and
 reconciles the delivery projection in place. Output modes affect that projection
@@ -47,7 +53,8 @@ only. See `../../contracts/skill-guides/router/openspec-state.md`, relative to
 this README, for the complete lifecycle. Lite delivery uses ODK base commands.
 
 Integration was checked against OpenSpec 1.16.0 with the shipped schema:
-project-local blocked/ready/all_done transitions and an external `--store` capture.
+project-local blocked/ready/all_done transitions, template-driven validation and
+ADDED/MODIFIED/REMOVED archive updates, and an external `--store` capture.
 Snapshots use paths relative to the selected OpenSpec root and bindings use a
 project path relative to the ODK change directory. Binding replacement is atomic
 and captures are serialized. Other CLI versions and store topologies need their

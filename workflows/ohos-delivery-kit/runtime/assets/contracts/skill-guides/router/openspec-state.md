@@ -17,6 +17,8 @@ The strict/passthrough/merge choice applies only to the ODK projection.
    existing schema/config and edit only the requested setting. Verify the
    selected `schemaName` with `openspec status --change NAME --json`. The schema
    preserves native proposal.md, specs/**/*.md, design.md and tasks.md paths.
+   Preserve native Requirements delta sections, Requirement titles and Scenario
+   blocks; carry US IDs in Requirement titles and AC IDs in Scenario titles.
    It requires standard/critical delivery; lite uses the ODK base flow to avoid
    inventing a native schema that can omit the design artifact.
 3. Propose revises/creates artifacts **at the native CLI-returned paths**.
@@ -45,7 +47,9 @@ The strict/passthrough/merge choice applies only to the ODK projection.
    Native completion alone does not mean ODK validation passed.
 
 OpenSpec archive and main-spec merge remain native operations and require their
-own user authorization. Before archiving a native change, capture its final
+own user authorization. Native status/apply completion tracks artifacts and
+tasks; validate the actual delta specs with the native CLI before archiving.
+Before archiving a native change, capture its final
 state, reconcile ODK and retain the immutable snapshot. Do not delete native
 delta specs merely because an ODK spec.md was produced. ODK design-docs
 publication remains separate and does not publish the native workspace.

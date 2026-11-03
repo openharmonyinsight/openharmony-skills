@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.14.3] - 2026-10-31
 
-Source: `main@c0d4959a79f4ab224c1124ca4308b220e0ac664b`.
+Source: `main@35443f539cf5d1fb66bce75c3caae34ed32aec2a`.
 
 ### Added
 
@@ -73,6 +73,14 @@ Source: `main@c0d4959a79f4ab224c1124ca4308b220e0ac664b`.
   (source PR !198).
 - Treat the legacy `国际化/无障碍` involvement label as `国际化` when reading
   existing artifacts, so previously written tables stay valid (source PR !198).
+- Keep OpenSpec's native `ADDED` / `MODIFIED` / `REMOVED Requirements` delta
+  sections, with US IDs in `### Requirement:` titles and AC IDs in
+  `#### Scenario:` titles carrying WHEN/THEN behavior, in the shipped schema,
+  the spec template and the bridge guide; the previous template emitted an AC
+  list that native validation rejects (source PR !199).
+- Require native delta validation before an authorized archive or main-spec
+  merge, since status/apply completion only tracks artifacts and tasks
+  (source PR !199).
 
 ## [0.14.2] - 2026-10-30
 
