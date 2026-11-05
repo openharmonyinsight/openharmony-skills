@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.14.3] - 2026-10-31
 
-Source: `main@79bb6b0569a85bfa531368fa3303f33eb87aa95c`.
+Source: `main@67f904394df4743913a42f56dae7f6b89732eb08`.
 
 ### Added
 
@@ -103,6 +103,11 @@ Source: `main@79bb6b0569a85bfa531368fa3303f33eb87aa95c`.
 - Require lite execution plans to declare `验证范围 = host-only` and reject
   target build or device commands in the plan and its task verification
   (source PR !202).
+- Detect target tools executed inside quoted command substitutions, so a
+  host-only plan such as `test "$(hdc shell uname)" = OpenHarmony` again needs a
+  target product and device; single quotes, escaped literals, tool lookups and
+  `noexec` arguments keep their host-only meaning, and only an enclosing
+  Markdown code span is stripped (source PR !203).
 - Accept quoted session IDs in YAML block and flow sequences, and keep partial
   writes from corrupting the sidecar (source PR !181).
 - Run the Node.js session-start hooks directly on Windows, replace real session

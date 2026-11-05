@@ -111,11 +111,88 @@ def command_parts(command: str) -> list[str]:
     return parts
 
 
+def _executed_substitutions(command: str) -> list[str]:
+    """Read command substitutions, preserving single quotes and escaped literals."""
+    substitutions: list[str] = []
+
+    def scan(start: int, closing: str = "") -> int:
+        index, parentheses = start, 0
+        quote = ""
+        comment = word_started = False
+        while index < len(command):
+            char = command[index]
+            if comment:
+                if char == "\n":
+                    comment = word_started = False
+                index += 1
+                continue
+            if quote == "'":
+                if char == quote:
+                    quote = ""
+                index += 1
+                continue
+            if char == "\\":
+                index += 2
+                word_started = True
+                continue
+            if not quote and not parentheses and closing and command.startswith(closing, index):
+                return index
+            if command.startswith("$(", index):
+                arithmetic = command.startswith("$((", index)
+                begin = index + (3 if arithmetic else 2)
+                delimiter = "))" if arithmetic else ")"
+                end = scan(begin, delimiter)
+                if not arithmetic:
+                    substitutions.append(command[begin:end])
+                index = end + len(delimiter)
+                word_started = True
+                continue
+            if char == "`":
+                end = index + 1
+                while end < len(command) and command[end] != "`":
+                    end += 2 if command[end] == "\\" else 1
+                # Backquote syntax removes one escape layer before its body
+                # is parsed (including escaped nested backquotes and dollars).
+                body = re.sub(r"\\([$`\\])", r"\1", command[index + 1:end])
+                substitutions.append(body)
+                substitutions.extend(_executed_substitutions(body))
+                index = end + 1
+                word_started = True
+                continue
+            if quote:
+                if char == quote:
+                    quote = ""
+            elif char in "\"'":
+                quote = char
+                word_started = True
+            elif char == "#" and not word_started:
+                comment = True
+            elif char == "(":
+                parentheses += 1
+                word_started = False
+            elif char == ")" and parentheses:
+                parentheses -= 1
+                word_started = False
+            else:
+                word_started = char not in " \t\r\n;&|"
+            index += 1
+        return len(command)
+
+    scan(0)
+    return substitutions
+
+
 def command_uses_target(command: str) -> bool:
-    """Recognize direct tools and shell wrappers, rather than file arguments."""
-    command = command.replace("`", "")  # Markdown inline-code delimiters.
+    """Recognize executable tools, wrappers and substitutions, not file arguments."""
+    command = command.strip()
+    # Remove an enclosing Markdown code span, retaining shell backticks inside it.
+    span = re.match(r"^`+", command)
+    if span and command.endswith(span[0]) and len(command) > 2 * len(span[0]):
+        command = command[len(span[0]):-len(span[0])].strip()
     try:
-        return any(_target_invocation(shlex.split(part)) for part in command_parts(command))
+        return any(_target_invocation(shlex.split(part))
+                   for executable in [command, *_executed_substitutions(command)]
+                   for part in command_parts(executable))
     except ValueError:
         # Ambiguous quoting cannot hide an otherwise explicit target command.
         return bool(TARGET_COMMAND_RE.search(command))
