@@ -217,6 +217,14 @@ PROPOSAL_ID_RE = re.compile(r"^[0-9]+$")
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 DRAFT_RE = re.compile(r"^draft-\d{8}-(.+)$")
 REPOSITORY_NAME_RE = re.compile(r"^[A-Za-z0-9._-]+$")
+# Session ID formats accepted across host platforms:
+#   opencode: ses_<alphanumeric>            e.g. ses_abc123
+#   codex:    <uuid>                        e.g. 11111111-2222-3333-4444-555555555555
+#   claude:   <uuid>                        e.g. aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+_SESSION_UUID = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+SESSION_ID_RE = re.compile(
+    r"^(?:ses_[a-zA-Z0-9_-]+|" + _SESSION_UUID + r")$"
+)
 MAX_SLUG_LENGTH = 40
 INVALID_PROPOSAL_ID_SCALAR = "__invalid_proposal_id_scalar__"
 ASCII_YAML_WHITESPACE = " \t\r\n"
@@ -1499,6 +1507,121 @@ def validate_target_release(change_dir: Path, reporter: Reporter) -> None:
         f"proposal.md: target_release '{value}' does not match R-OH-003 (<major>.<minor>, "
         f"e.g. 7.1; or 7.1-Beta). Branch names (master/dev) are not release versions."
     )
+
+
+def validate_sessions_sidecar(change_dir: Path, reporter: Reporter) -> None:
+    """Validate the ``.sessions.json`` sidecar (authoritative session tracking source).
+
+    Checks:
+    - Valid JSON with expected structure (dict of deliverable → {sessions, log})
+    - All session IDs match a multi-platform format:
+      opencode ``ses_*``, codex/claude ``<uuid>``
+    - Warn on duplicate IDs in ``sessions`` arrays
+    - Cross-check frontmatter ``sessions`` field matches sidecar (warn on mismatch)
+    """
+    print("\nLevel A3b: Session ID Sidecar (.sessions.json)")
+    sidecar_path = change_dir / ".sessions.json"
+    if not sidecar_path.is_file():
+        print("  (.sessions.json not found — skipped; sidecar is optional but recommended)")
+        return
+
+    try:
+        raw = sidecar_path.read_text(encoding="utf-8-sig")
+    except OSError as error:
+        reporter.fail(f".sessions.json: cannot read file: {error}")
+        return
+
+    try:
+        data = json.loads(raw)
+    except (json.JSONDecodeError, ValueError) as error:
+        reporter.fail(f".sessions.json: invalid JSON: {error}")
+        return
+
+    if not isinstance(data, dict):
+        reporter.fail(".sessions.json: top-level value must be a JSON object (dict)")
+        return
+
+    any_checked = False
+    for deliverable_name, entry in data.items():
+        if not isinstance(deliverable_name, str) or not deliverable_name.strip():
+            reporter.fail(f".sessions.json: empty or non-string deliverable key")
+            continue
+        if not isinstance(entry, dict):
+            reporter.fail(f".sessions.json: '{deliverable_name}' entry must be an object")
+            continue
+
+        any_checked = True
+
+        # sessions array validation
+        sessions = entry.get("sessions")
+        if sessions is None:
+            reporter.warn(f".sessions.json: '{deliverable_name}' has no 'sessions' array")
+        elif not isinstance(sessions, list):
+            reporter.fail(f".sessions.json: '{deliverable_name}' sessions must be a list (array)")
+        else:
+            invalid = [s for s in sessions if not SESSION_ID_RE.match(str(s).strip())]
+            if invalid:
+                reporter.fail(
+                    f".sessions.json: '{deliverable_name}' sessions contains invalid ID(s): "
+                    f"{', '.join(str(s) for s in invalid)}"
+                )
+            else:
+                # Duplicate check
+                seen = set()
+                duplicates = []
+                for sid in sessions:
+                    sid_str = str(sid).strip()
+                    if sid_str in seen:
+                        duplicates.append(sid_str)
+                    seen.add(sid_str)
+                if duplicates:
+                    reporter.warn(
+                        f".sessions.json: '{deliverable_name}' sessions has duplicate ID(s): "
+                        f"{', '.join(sorted(set(duplicates)))}"
+                    )
+                else:
+                    reporter.pass_(
+                        f".sessions.json: '{deliverable_name}' sessions has "
+                        f"{len(sessions)} valid session ID(s)"
+                    )
+
+                # Cross-check with frontmatter (deliverable .md files only)
+                deliverable_path = change_dir / deliverable_name
+                if deliverable_name.endswith(".md") and deliverable_path.is_file():
+                    frontmatter = read_frontmatter(deliverable_path)
+                    if not frontmatter.invalid_reason:
+                        fm_sessions_str = frontmatter.get("sessions", "").strip()
+                        fm_ids = set(s.strip() for s in fm_sessions_str.split(",") if s.strip())
+                        sidecar_ids = set(str(s).strip() for s in sessions)
+                        if fm_ids != sidecar_ids:
+                            reporter.warn(
+                                f".sessions.json: '{deliverable_name}' frontmatter sessions "
+                                f"({','.join(sorted(fm_ids)) if fm_ids else 'empty'}) "
+                                f"!= sidecar sessions "
+                                f"({','.join(sorted(sidecar_ids))})"
+                            )
+
+        # log array validation
+        log = entry.get("log")
+        if log is not None:
+            if not isinstance(log, list):
+                reporter.fail(f".sessions.json: '{deliverable_name}' log must be a list (array)")
+            else:
+                for i, record in enumerate(log):
+                    if not isinstance(record, dict):
+                        reporter.fail(
+                            f".sessions.json: '{deliverable_name}' log[{i}] must be an object"
+                        )
+                        continue
+                    rec_session = str(record.get("session", "")).strip()
+                    if not SESSION_ID_RE.match(rec_session):
+                        reporter.fail(
+                            f".sessions.json: '{deliverable_name}' log[{i}] "
+                            f"session '{rec_session}' is invalid"
+                        )
+
+    if not any_checked:
+        print("  (.sessions.json is empty — no deliverable entries found)")
 
 
 def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: bool = False) -> None:
@@ -3056,35 +3179,69 @@ def validate_archive_actual_results(change_dir: Path, reporter: Reporter) -> Non
         return
 
     plan = read_text(plan_path)
-    task_details = section_text(plan, "Task 详情")
-    detail_tasks = set(re.findall(r"^###\s+(TASK-\d+)\b", task_details, flags=re.MULTILINE))
+    try:
+        task_list = require_unique_section(plan, "Task 列表")
+        tasks = delivery_table(task_list or "", ["TASK ID"])
+    except ValueError as error:
+        reporter.fail(f"execution-plan.md Task list for Verification: {error}")
+        tasks = []
+    try:
+        task_details = require_unique_section(plan, "Task 详情") or ""
+    except ValueError as error:
+        reporter.fail(f"execution-plan.md Verification: {error}")
+        return
+    listed_tasks = {row["TASK ID"].strip() for row in tasks}
+    # Keep every occurrence: set-based extraction and search() could hide a
+    # second, failing detail block behind a first passing block.
+    details: dict[str, list[str]] = {}
+    unassigned: list[str] = []
+    current_task = None
+    for line in task_details.splitlines():
+        heading = atx_heading(line)
+        match = TASK_RE.match(heading[1]) if heading and heading[0] == 3 else None
+        if match:
+            current_task = match[0]
+            details.setdefault(current_task, []).append("")
+        elif current_task is not None:
+            # Custom headings stay in this Task until the next TASK heading;
+            # otherwise a later failing Verification table could disappear.
+            details[current_task][-1] += line + "\n"
+        else:
+            unassigned.append(line)
+    missing_details = listed_tasks - details.keys()
+    unknown_details = details.keys() - listed_tasks
+    duplicate_details = {task for task, blocks in details.items() if len(blocks) != 1}
+    if missing_details:
+        reporter.fail("execution-plan.md missing Task detail sections: " + ", ".join(sorted_ids(missing_details)))
+    if unknown_details:
+        reporter.fail("execution-plan.md Task details not in Task 列表: " + ", ".join(sorted_ids(unknown_details)))
+    for task in sorted_ids(duplicate_details):
+        reporter.fail("execution-plan.md duplicate Task detail: " + task)
     missing_actual: list[str] = []
     not_pass: list[str] = []
-    invalid_tables = False
+    invalid_tables = table_has_columns("\n".join(unassigned), ["Command / Evidence", "Expected Result"])
+    if invalid_tables:
+        reporter.fail("execution-plan.md unassigned Verification table before first Task detail")
 
-    for task_id in sorted_ids(detail_tasks):
-        pattern = re.compile(
-            rf"^###\s+{re.escape(task_id)}\b.*?$([\s\S]*?)(?=^###\s+TASK-\d+\b|\Z)",
-            flags=re.MULTILINE,
-        )
-        match = pattern.search(task_details)
-        detail = match.group(1) if match else ""
-        try:
-            rows = delivery_table(detail, ["Command / Evidence", "Expected Result", "Actual Result", "Final Status"])
-        except ValueError as error:
-            reporter.fail(f"execution-plan.md {task_id} Verification Final Status: {error}")
-            invalid_tables = True
-            continue
-        if not rows or any(not meaningful(row.get("Actual Result", "")) for row in rows):
-            missing_actual.append(task_id)
-        if any(row["Final Status"].strip().lower() != "pass" for row in rows):
-            not_pass.append(task_id)
+    for task_id, blocks in details.items():
+        for detail in blocks:
+            try:
+                rows = delivery_table(detail, ["Command / Evidence", "Expected Result", "Actual Result", "Final Status"])
+            except ValueError as error:
+                reporter.fail(f"execution-plan.md {task_id} Verification Final Status: {error}")
+                invalid_tables = True
+                continue
+            if not rows or any(not meaningful(row.get("Actual Result", "")) for row in rows):
+                missing_actual.append(task_id)
+            if any(row["Final Status"].strip().lower() != "pass" for row in rows):
+                not_pass.append(task_id)
 
     if missing_actual:
         reporter.fail("execution-plan.md Verification tables have empty Actual Result: " + ", ".join(missing_actual))
     if not_pass:
         reporter.fail("execution-plan.md Verification Final Status not Pass: " + ", ".join(not_pass))
-    if detail_tasks and not missing_actual and not not_pass and not invalid_tables:
+    if (listed_tasks and not missing_details and not unknown_details and not duplicate_details
+            and not missing_actual and not not_pass and not invalid_tables):
         reporter.pass_("execution-plan.md Verification tables have Actual Result filled")
 
 
@@ -3300,6 +3457,7 @@ def main(argv: list[str]) -> int:
     print("\nLevel A: Change Directory")
     validate_dir_name(change_dir, reporter)
     validate_target_release(change_dir, reporter)
+    validate_sessions_sidecar(change_dir, reporter)
     files = validate_required_artifacts(change_dir, artifacts, reporter)
     validate_metadata_tracking(change_dir, reporter, required=args.design_docs_submit)
     validate_sections(change_dir, artifacts, files, reporter)
@@ -3323,9 +3481,10 @@ def main(argv: list[str]) -> int:
         plan_path = change_dir / "execution-plan.md"
         if plan_path.is_file():
             plan = read_text(plan_path)
-            if section_texts(plan, ENVIRONMENT_SECTION):
+            if effective["delivery_level"] == "lite" or section_texts(plan, ENVIRONMENT_SECTION):
                 template = CONTRACT_PATH.parent.parent / "templates/ai/execution-plan.md"
-                for issue in environment_errors(plan, read_text(template)):
+                for issue in environment_errors(plan, read_text(template),
+                                                host_only_required=effective["delivery_level"] == "lite"):
                     reporter.fail(f"execution-plan.md: {issue}")
         validate_plan_traceability(change_dir, reporter)
     if "design" in artifacts:

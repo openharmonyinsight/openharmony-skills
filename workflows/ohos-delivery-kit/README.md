@@ -176,10 +176,10 @@ repository-scoped layout.
 
 Synced from `oshunter/ohos-delivery-kit` branch `main` via
 `ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills --plugin ohos-delivery-kit`.
-Current source: `main@35443f539cf5d1fb66bce75c3caae34ed32aec2a`.
-The current publisher needs the default config, archive-migration entrypoint and
-all Python runtime libraries supplemented; the source release gate verifies the
-final package against this pinned revision.
+Current source: `main@79bb6b0569a85bfa531368fa3303f33eb87aa95c`.
+The current publisher needs the default config, archive-migration and
+session-sidecar entrypoints and all Python runtime libraries supplemented; the
+source release gate verifies the final package against this pinned revision.
 
 ## Structure
 

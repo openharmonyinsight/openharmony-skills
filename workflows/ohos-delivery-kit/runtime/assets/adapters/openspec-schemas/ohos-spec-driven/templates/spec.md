@@ -30,7 +30,10 @@ The system SHALL [可观测的规范行为].
 
 ## MODIFIED Requirements
 
-<!-- 修改现有需求时保留其 Requirement 标题，填写完整规范行为和全部 Scenario。 -->
+<!-- 修改现有需求时逐字保留主规格的 Requirement 标题及已有 Scenario 标题，
+     不要为其添加 US/AC ID；填写完整规范行为和全部保留的 Scenario。
+     原生标题与 ODK US/AC 的对应关系记录到交付投影和 openspec-binding.json
+     的 requirement_map/scenario_map，不通过改名建立追溯。 -->
 
 ## REMOVED Requirements
 

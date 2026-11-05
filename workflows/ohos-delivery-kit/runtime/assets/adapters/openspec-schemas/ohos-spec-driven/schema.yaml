@@ -21,8 +21,11 @@ artifacts:
       Generate delta specs (ADDED/MODIFIED/REMOVED requirements) following ODK template structure.
       Must include: numbered ACs (AC-1.1 format), compatibility declaration, verification mapping table.
       Preserve native ## ADDED Requirements, ## MODIFIED Requirements and ## REMOVED Requirements sections.
-      Use ### Requirement: titles containing US IDs and normative SHALL or MUST text.
-      Put AC IDs in #### Scenario: titles with WHEN/THEN bullets; an AC list alone is not a native scenario.
+      For ADDED requirements, put US IDs in ### Requirement: titles and AC IDs in new #### Scenario: titles.
+      For MODIFIED/REMOVED requirements, copy the exact existing main-spec Requirement title.
+      Preserve existing Scenario titles verbatim when modifying a requirement; do not add IDs to native matching keys.
+      Keep ODK US/AC associations for existing entries in the delivery projection and openspec-binding.json requirement_map/scenario_map.
+      Use normative SHALL or MUST text and native Scenario blocks with WHEN/THEN bullets; an AC list alone is not a native scenario.
     requires: [proposal]
 
   - id: design

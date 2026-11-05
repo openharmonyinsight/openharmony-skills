@@ -120,6 +120,7 @@ def parse_metadata_tracking(path: str) -> dict[str, object]:
     seen_top: set[str] = set()
     seen_repos_marker = False
     seen_sections: set[str] = set()
+    collecting_sessions = False
     last_line_number = 0
 
     def require_nonempty_block(line_number: int) -> None:
@@ -147,6 +148,7 @@ def parse_metadata_tracking(path: str) -> dict[str, object]:
             result[key] = _metadata_scalar(value)
             current_section = None
             current_item = None
+            collecting_sessions = False
             continue
         if line == "repos:":
             require_nonempty_block(line_number)
@@ -155,7 +157,71 @@ def parse_metadata_tracking(path: str) -> dict[str, object]:
             seen_repos_marker = True
             current_section = None
             current_item = None
+            collecting_sessions = False
             continue
+
+        # Top-level sessions field (session ID tracking)
+        sessions_top = re.fullmatch(r"sessions:(?:\s*(\[\]))?", line)
+        if sessions_top:
+            require_nonempty_block(line_number)
+            if "sessions" in seen_top:
+                raise ValueError(f"{path}:{line_number}: duplicate sessions")
+            seen_top.add("sessions")
+            if sessions_top.group(1):  # sessions: []
+                result["sessions"] = []
+                collecting_sessions = False
+            else:
+                collecting_sessions = True
+            current_section = None
+            current_item = None
+            continue
+
+        # Flow sequence: sessions: ["uuid1", "uuid2"]
+        sessions_flow = re.fullmatch(r'sessions:\s*\[([^\]]*)\]', line)
+        if sessions_flow:
+            require_nonempty_block(line_number)
+            if "sessions" in seen_top:
+                raise ValueError(f"{path}:{line_number}: duplicate sessions")
+            seen_top.add("sessions")
+            items_str = sessions_flow.group(1).strip()
+            sessions_list = []
+            if items_str:
+                for raw_item in items_str.split(","):
+                    item = raw_item.strip().strip('"').strip("'")
+                    if not item:
+                        continue
+                    if re.fullmatch(
+                        r"ses_[A-Za-z0-9_-]+"
+                        r"|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+                        item,
+                    ):
+                        sessions_list.append(item)
+                    else:
+                        raise ValueError(
+                            f"{path}:{line_number}: invalid session ID in flow sequence: {item}"
+                        )
+            result["sessions"] = sessions_list
+            collecting_sessions = False
+            current_section = None
+            current_item = None
+            continue
+
+        # Session ID list items under top-level sessions:
+        # Use _metadata_scalar() to strip YAML quotes (single/double) so that
+        #   - "ses_abc"   and   - '11111111-...-555555555555'
+        # are accepted alongside the unquoted form.
+        session_item = re.fullmatch(r"  - (.+)", line)
+        if session_item and collecting_sessions:
+            sid = _metadata_scalar(session_item.group(1))
+            if re.fullmatch(
+                r"ses_[A-Za-z0-9_-]+"
+                r"|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+                sid,
+            ):
+                sessions_list = result.setdefault("sessions", [])
+                assert isinstance(sessions_list, list)
+                sessions_list.append(sid)
+                continue
 
         repo = re.fullmatch(r"  - repo:\s*(.+)", line)
         if repo and seen_repos_marker:
@@ -165,6 +231,7 @@ def parse_metadata_tracking(path: str) -> dict[str, object]:
             current_section = None
             current_item = None
             seen_sections = set()
+            collecting_sessions = False
             continue
 
         repository_url = re.fullmatch(r"    repository_url:\s*(.+)", line)

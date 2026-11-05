@@ -97,6 +97,80 @@ Read `contracts/skill-guides/router/configuration.md` for same-directory user ov
 - **Post-implementation**: completed Tasks automatically enter review and validation through the implementation skill's shared handoff. Source PR submission waits for an explicit user trigger after a reminder; confirmed PR results drive local metadata, followed by separate design-docs confirmation. Do not auto-merge or recursively restart the handoff from review/validate.
 - **GitCode submission reminder**: when implementation is complete and the user is about to commit, push, or open a GitCode PR, remind them that documents under `codespec/` must be submitted to the separate design-docs repository. Resolve its address using priority order: `codespec/profile.yaml` if present → `odk_config_ext.yaml` → `odk_config.yaml`. Do not warn if `codespec/profile.yaml` is absent. If no address can be resolved, show “待开发者填写” and ask the developer to provide it; never guess a repository or automatically push across repositories. This reminder does not by itself block the business-code submission. When the user explicitly requests design-document submission, invoke `odk-submit-design-docs`: generate `metadata_tracking.yaml`, validate the five-base-file bundle plus required conditional evidence, and submit `proposal.md`, `spec.md`, `design.md`, `execution-plan.md`, and `metadata_tracking.yaml` together.
 - **Phase Gate**: Use the interaction mode below. In interactive mode, artifact approval approves only that document: suggest the next command and wait. Implementation requires an approved execution plan and a user request to implement (natural language or an implement command). In autonomous mode, an explicit end-to-end request authorizes sequential phases within its stated scope: generate and self-check each artifact, summarize decisions, then continue to the authorized next phase. Never infer implementation authorization solely from document approval. TDD remains the default for implementation; untestable Tasks must declare degradation.
+- **Session ID 追踪**: 每个生成交付件的 skill（odk-init / odk-propose / odk-spec / odk-design / odk-plan / odk-security-threat-model / odk-spec-for-validation / odk-submit-design-docs）在写入交付件时，必须通过调用 `update-sessions-sidecar.py` 脚本将当前会话 session ID 增量追加到变更目录下的 `.sessions.json` sidecar 文件（权威源），并镜像到交付件的 frontmatter `sessions` 字段和 body `## 会话记录` 表格。判定基准为 session ID 本身：不同 session 调用同一 skill 也必须追加。详见各 skill 的 `## Session ID 追踪` 小节。
+
+## Session ID 追踪契约
+
+### 存储模型
+
+sidecar `.sessions.json` 是权威源；frontmatter 和 body 表格是镜像（可选但推荐）。
+
+| 层 | 位置 | 格式 | 用途 |
+|----|------|------|------|
+| sidecar（权威源） | 变更目录下 `.sessions.json` | JSON | 原子 read-append-write，不丢数据 |
+| frontmatter（镜像） | 交付件 YAML `sessions` 字段 | 逗号分隔标量 `sessions: "ses_aaa,ses_bbb"` | 从 sidecar 镜像，人可读 |
+| body 表格（镜像） | 交付件 body 开头 `## 会话记录` | Markdown 表格 | 从 sidecar log 生成，人可读 |
+
+sidecar 格式（session ID 跨平台格式见下文「Session ID 获取」）：
+
+```json
+{
+  "proposal.md": {
+    "sessions": ["ses_aaa", "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"],
+    "log": [
+      {"session": "ses_aaa", "skill": "odk-init", "time": "2026-10-16T10:00:00Z", "action": "生成"},
+      {"session": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "skill": "odk-propose", "time": "2026-10-16T11:00:00Z", "action": "更新"}
+    ]
+  }
+}
+```
+
+- `sessions` 数组：去重（按 session ID），追加顺序保留。
+- `log` 数组：不去重，每次调用追加一条。
+
+### Session ID 获取（多平台）
+
+各宿主平台的会话标识格式不同，由平台适配层注入系统提示。脚本接受以下格式：
+
+| 平台 | 格式 | 示例 | 获取来源 |
+|------|------|------|----------|
+| opencode | `ses_<字母数字>` | `ses_abc123` | OpenCode 插件注入的系统提示 |
+| codex | `<uuid>` | `11111111-2222-3333-4444-555555555555` | Codex hook 注入的系统提示 |
+| claude | `<uuid>` | `aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee` | Claude hook 注入的系统提示 |
+
+**规则**：
+1. 优先从当前对话的系统提示中提取会话标识（形如 "Current conversation session ID: xxx"）。
+2. **必须用当前对话自己的 ID**，不得复用历史会话或编造 ID。
+3. **宿主未暴露会话标识时**：传入字面量 `unavailable` 调用脚本（脚本会跳过 sidecar 更新并提示用户），**禁止编造或留空**。明确告知用户本次交付件未记录会话追踪。
+
+### 增量追加规则（使用脚本，禁止手动操作 JSON）
+
+**所有 skill 必须通过调用 `update-sessions-sidecar.py` 脚本来更新 sidecar，禁止手动读/写 JSON。** 脚本对整个 read-modify-write 加排他锁并通过临时文件 + `os.replace()` 原子发布，不会丢失已有 log 条目，不会因并发覆写丢数据，不会复制错误的 session ID。
+
+1. **获取当前 session ID**：按上文「Session ID 获取」从当前对话提取；获取不到则用 `unavailable`。⚠️ 必须用当前对话自己的 ID。
+2. **调用脚本**：
+
+   ```sh
+   python3 "runtime/executables/update-sessions-sidecar.py" \
+     "<变更目录绝对路径>" "<交付件文件名>" "<当前session ID>" "<skill名>" "<action>"
+   ```
+
+   - `<action>`：**由脚本自动判定，传入任意值都会被覆盖**。log 为空（首次）→ `"生成"`，log 非空（后续）→ `"更新"`。
+   - 脚本会原子性地：加锁 → 读取已有 sidecar → 追加 session（`sessions` 去重，`log` 不去重）→ 临时文件写入 → `os.replace()` 原子发布 → 解锁。
+   - 脚本是 fail-open 的，出错时 exit(0) 不阻塞。
+3. **从脚本输出提取镜像数据**：脚本输出中的 `---MIRROR---` 段包含：
+   - `sessions: "ses_aaa,aaaaaaaa-..."` → 写入交付件 frontmatter `sessions` 字段。
+   - `## 会话记录` 表格（所有行） → 写入交付件 **body 开头**（frontmatter 之后、正文 `#` 标题之前）。
+4. **写入交付件**：将 frontmatter `sessions` 字段和 body `## 会话记录` 表格写入交付件。镜像丢失不影响数据完整性——**sidecar 是权威源**。
+
+### 追加时序
+
+skill 从模板重新生成 body **之后**、写入交付件**之前**执行：
+- 调用 `update-sessions-sidecar.py` 脚本更新 sidecar（脚本内部完成 read-append-write）
+- 从脚本输出提取 `---MIRROR---` 段，将 `sessions` 字段和 `## 会话记录` 表格写入交付件
+- 写入交付件
+
+**关键**：即使交付件的 frontmatter 或表格在 body 重生成时丢失，下一个 skill 从 sidecar 读取，数据不会丢失。这正是 sidecar 方案解决的核心问题。**脚本对 read-modify-write 加排他锁并原子发布，不会丢失已有 log 条目，不会因并发覆写丢数据。**
 
 ## Effective contract and delivery level
 

@@ -6,10 +6,20 @@ this file. Source artifacts are synchronized from
 
 ## [0.14.3] - 2026-10-31
 
-Source: `main@35443f539cf5d1fb66bce75c3caae34ed32aec2a`.
+Source: `main@79bb6b0569a85bfa531368fa3303f33eb87aa95c`.
 
 ### Added
 
+- Track the Session ID of every deliverable update in a `.sessions.json` sidecar
+  and mirror it into frontmatter plus a `## 会话记录` table. The new
+  `update-sessions-sidecar.py` takes a cross-platform lock, deduplicates sessions
+  without dropping log entries, accepts OpenCode `ses_*` and Codex/Claude UUIDs,
+  and fails open when the host exposes no ID. Templates, contracts, validation,
+  the Claude/Codex/OpenCode/OpenClaw hooks and nine skills carry the same
+  contract (source PR !181).
+- Load the OpenCode plugin under OpenCode 2.x through a V2 default export with
+  `{id, setup}` while keeping the V1 named export, so the bootstrap and
+  session-ID context hook run on both versions (source PR !181).
 - Query one effective delivery contract and validate by phase: base rules,
   recorded profiles, artifact dependencies and conditional triggers merge into a
   single result shared by generation and validation (source PR !193).
@@ -81,6 +91,23 @@ Source: `main@35443f539cf5d1fb66bce75c3caae34ed32aec2a`.
 - Require native delta validation before an authorized archive or main-spec
   merge, since status/apply completion only tracks artifacts and tasks
   (source PR !199).
+- Require complete archive evidence: every listed task needs exactly one detail
+  block, all verification rows need Actual Result and Pass status, and unassigned
+  tables or duplicate details fail; custom headings inside Task details no
+  longer hide a failing verification table (source PR !202).
+- Keep native OpenSpec Requirement and Scenario titles verbatim for
+  MODIFIED/REMOVED requirements, since those titles are archive matching keys;
+  record ODK US/AC associations in the delivery projection and
+  `requirement_map` / `scenario_map` instead of renaming the native titles
+  (source PR !202).
+- Require lite execution plans to declare `验证范围 = host-only` and reject
+  target build or device commands in the plan and its task verification
+  (source PR !202).
+- Accept quoted session IDs in YAML block and flow sequences, and keep partial
+  writes from corrupting the sidecar (source PR !181).
+- Run the Node.js session-start hooks directly on Windows, replace real session
+  IDs in examples with fake data, and remove the unused dsh adapter
+  (source PR !181).
 
 ## [0.14.2] - 2026-10-30
 

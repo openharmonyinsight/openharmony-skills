@@ -82,6 +82,22 @@ Inputs are `proposal.md` and `spec.md` (no code dependency).
 - Concept definitions: after extracting reusable Given/When/Then step combinations into concept definitions, reference the concept name in scenarios instead of repeating the steps
 - Optional artifact: does not block the main delivery flow; generation failure is a warning, not an error
 
+## Session ID 追踪
+
+生成 `spec-for-validation.md` 后，调用脚本更新 sidecar（详见 `using-odk` 的 `## Session ID 追踪契约`）。**禁止手动操作 JSON**：
+
+1. 获取当前 session ID（**当前对话**的系统提示 "Current conversation session ID: ses_xxx"）。
+2. 调用脚本（原子性 read-append-write，不丢已有 log 条目）：
+
+   ```sh
+   python3 "runtime/executables/update-sessions-sidecar.py" \
+     "<变更目录绝对路径>" "spec-for-validation.md" "<当前session ID>" "odk-spec-for-validation" "<action>"
+   ```
+
+3. 从脚本输出的 `---MIRROR---` 段提取 `sessions` 字段和 `## 会话记录` 表格，写入交付件 frontmatter + body 开头（frontmatter 之后、正文 `#` 标题之前）。
+
+**关键**：sidecar `.sessions.json` 是权威源。即使 `spec-for-validation.md` 的 frontmatter 或表格在 body 重生成时丢失，下一个 skill 从 sidecar 读取，数据不丢。脚本保证 sidecar 的原子追加。
+
 ## Output
 
 Write to `codespec/changes/<repo-name>/<proposal-id>/spec-for-validation.md`

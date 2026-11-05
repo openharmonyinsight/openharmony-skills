@@ -135,28 +135,43 @@ def task_verification_commands(plan: str) -> list[tuple[str, str]]:
     return commands
 
 
-def environment_errors(plan: str, template: str) -> list[str]:
+def _host_only_task_errors(plan: str) -> list[str]:
+    errors = []
+    try:
+        for context, command in task_verification_commands(plan):
+            if command_uses_target(command):
+                errors.append(f"host-only {context} 包含目标编译或设备依赖；必须恢复产品确认和目标环境")
+    except ValueError as error:
+        errors.append(f"host-only Task 命令无法明确解析：{error}")
+    return errors
+
+
+def environment_errors(plan: str, template: str, *, host_only_required: bool = False) -> list[str]:
+    # Lite is host-only even when a plan omits or obscures its environment.
+    errors = _host_only_task_errors(plan) if host_only_required else []
     try:
         schema_body = require_unique_section(template, SECTION)
         schema = require_unique_table_with_columns(schema_body or "", ["配置项", "值"])
         if not schema:
-            return [f"模板 {SECTION} 缺少配置表"]
+            return errors + [f"模板 {SECTION} 缺少配置表"]
         body = require_unique_section(plan, SECTION)
         table = require_unique_table_with_columns(body or "", ["配置项", "值"])
     except ValueError as error:
-        return [f"{SECTION}: {error}"]
+        return errors + [f"{SECTION}: {error}"]
     if not table:
-        return [f"{SECTION} 缺少非空的「配置项 / 值」表"]
+        return errors + [f"{SECTION} 缺少非空的「配置项 / 值」表"]
 
     values: dict[str, str] = {}
-    errors: list[str] = []
     for row in table:
         key = row["配置项"].strip().strip("`").strip()
         if key in values:
             errors.append(f"{SECTION} 配置项重复：{key}")
         values[key] = row["值"].strip().strip("`").strip()
 
-    if values.get("验证范围", "").strip().casefold() == "host-only":
+    host_only = values.get("验证范围", "").strip().casefold() == "host-only"
+    if host_only_required and not host_only:
+        errors.append(f"{SECTION} lite 必须声明「验证范围 = host-only」")
+    if host_only:
         command = values.get("测试命令", "")
         if (not meaningful(command) or BRACKET_PLACEHOLDER_RE.search(command)
                 or re.search(r"\b(?:TBD|TODO)\b|待填写|\{product\}", command, re.I)):
@@ -167,12 +182,8 @@ def environment_errors(plan: str, template: str) -> list[str]:
                 errors.append(f"{SECTION} host-only 不得携带目标产品/设备配置：{key}")
         if command_uses_target(command):
             errors.append(f"{SECTION} host-only 命令包含目标编译或设备依赖")
-        try:
-            for context, task_command in task_verification_commands(plan):
-                if command_uses_target(task_command):
-                    errors.append(f"host-only {context} 包含目标编译或设备依赖；必须恢复产品确认和目标环境")
-        except ValueError as error:
-            errors.append(f"host-only Task 命令无法明确解析：{error}")
+        if not host_only_required:
+            errors.extend(_host_only_task_errors(plan))
         return errors
 
     product = values.get("编译产品", "")

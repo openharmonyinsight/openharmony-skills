@@ -17,8 +17,15 @@ The strict/passthrough/merge choice applies only to the ODK projection.
    existing schema/config and edit only the requested setting. Verify the
    selected `schemaName` with `openspec status --change NAME --json`. The schema
    preserves native proposal.md, specs/**/*.md, design.md and tasks.md paths.
-   Preserve native Requirements delta sections, Requirement titles and Scenario
-   blocks; carry US IDs in Requirement titles and AC IDs in Scenario titles.
+   Preserve native Requirements delta sections and Scenario blocks. For ADDED
+   requirements, carry US IDs in new Requirement titles and AC IDs in new Scenario
+   titles. For MODIFIED/REMOVED, copy the exact existing main-spec Requirement title
+   and preserve every retained Scenario title verbatim, including titles without
+   ODK IDs: OpenSpec uses these titles as matching keys, so adding IDs renames them.
+   Record their ODK associations in the delivery projection and in the binding's
+   requirement_map/scenario_map instead; key each by native spec path and exact
+   Requirement title (plus Scenario title for scenario_map), and map to stable
+   ODK US/AC IDs. Do not change native matching keys to create ODK traceability.
    It requires standard/critical delivery; lite uses the ODK base flow to avoid
    inventing a native schema that can omit the design artifact.
 3. Propose revises/creates artifacts **at the native CLI-returned paths**.
@@ -32,7 +39,7 @@ The strict/passthrough/merge choice applies only to the ODK projection.
    native status/apply instructions, captures the CLI-returned source files as
    immutable evidence, and updates openspec-binding.json without replacing ODK
    documents. CLI failure is not a successful synchronization. Preserve binding
-   task_map and unknown fields; a different change/store requires resolving the
+   task_map, requirement_map, scenario_map and unknown fields; a different change/store requires resolving the
    existing binding explicitly.
 5. Read the captured source and **reconcile** existing ODK documents against it.
    For strict mode use the effective ODK contract; retain ODK-only decisions and

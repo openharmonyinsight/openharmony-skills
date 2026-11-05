@@ -41,8 +41,12 @@ OpenSpec root: do not redirect `openspec/changes/`, rename tasks.md, or flatten
 native delta specs. OpenSpec owns task progress and main-spec merging.
 
 Native delta sections use `ADDED Requirements`, `MODIFIED Requirements` and
-`REMOVED Requirements`. Keep US IDs in `### Requirement:` titles and AC IDs in
-`#### Scenario:` titles, with normative SHALL/MUST text and WHEN/THEN behavior.
+`REMOVED Requirements`. New requirements may carry US IDs in `### Requirement:`
+titles and AC IDs in new `#### Scenario:` titles. For MODIFIED/REMOVED, preserve
+existing Requirement titles and all retained Scenario titles exactly, even when
+they have no ODK IDs. Record those US/AC associations in the ODK projection and
+binding maps; changing a native title changes its archive matching key. Keep
+normative SHALL/MUST text and WHEN/THEN behavior.
 Status/apply completion does not validate these deltas; run native validation
 before an explicitly authorized archive or main-spec merge.
 

@@ -131,6 +131,22 @@ OpenSpec schemas remain standard/critical and lite uses the base flow.
    - 按照模板生成完整的威胁模型文档
    - 包含 Mermaid 标准化 DFD 图（按「绘制标准化数据流图」规范）、STRIDE × DFD 威胁矩阵、高优先级威胁汇总表与逐条详细说明、OH 威胁模式交叉检查矩阵、合规矩阵
 
+## Session ID 追踪
+
+生成 `threat-model.md` 后，调用脚本更新 sidecar（详见 `using-odk` 的 `## Session ID 追踪契约`）。**禁止手动操作 JSON**：
+
+1. 获取当前 session ID（**当前对话**的系统提示 "Current conversation session ID: ses_xxx"）。
+2. 调用脚本（原子性 read-append-write，不丢已有 log 条目）：
+
+   ```sh
+   python3 "runtime/executables/update-sessions-sidecar.py" \
+     "<变更目录绝对路径>" "threat-model.md" "<当前session ID>" "odk-security-threat-model" "<action>"
+   ```
+
+3. 从脚本输出的 `---MIRROR---` 段提取 `sessions` 字段和 `## 会话记录` 表格，写入交付件 frontmatter + body 开头（frontmatter 之后、正文 `#` 标题之前）。
+
+**关键**：sidecar `.sessions.json` 是权威源。即使 `threat-model.md` 的 frontmatter 或表格在 body 重生成时丢失，下一个 skill 从 sidecar 读取，数据不丢。脚本保证 sidecar 的原子追加。
+
 ## Output
 
 写入 `codespec/changes/<repo-name>/<proposal-id>/threat-model.md`

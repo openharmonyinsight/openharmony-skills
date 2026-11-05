@@ -128,6 +128,29 @@ The owner and lifecycle rules in `design.md` must match the state ownership fiel
 Project-specific concepts such as lazy allocation should come from a profile or project instructions, not from the
 base bridge rule.
 
+## Session ID 追踪（桥接规则）
+
+桥接命令（如 `odk-sp-propose` / `odk-ops-apply` / `odk-ms-proposal` 等）在交付件落盘时**必须**执行会话追踪，覆盖 strict、passthrough、merge 三种输出模式。**不能假设基础 skill 内部已完成追踪**——桥接正常路径常调用外部插件再转换写入交付件，并不完整执行对应基础 skill 的全部步骤，存在漏记风险。
+
+### 桥接追踪为交付件落盘的公共步骤
+
+无论桥接以何种模式（strict / passthrough / merge）输出交付件，落盘后**必须**追加执行：
+
+1. **获取当前 session ID**：按 `using-odk` 的「Session ID 获取（多平台）」从当前对话提取；获取不到则用 `unavailable`。
+2. **调用脚本更新 sidecar**：
+
+   ```sh
+   python3 "runtime/executables/update-sessions-sidecar.py" \
+     "<变更目录绝对路径>" "<交付件文件名>" "<当前session ID>" "<桥接skill名>" "<action>"
+   ```
+
+3. **从脚本 `---MIRROR---` 段提取镜像**，写入交付件 frontmatter `sessions` 字段和 body `## 会话记录` 表格。
+
+**与基础 skill 追踪的关系**：
+- 若桥接完整执行了基础 skill（strict 模式且基础 skill 已调用脚本），基础 skill 的追踪已生效，桥接的追加调用会被脚本去重（同一 session ID 不重复进 `sessions`，但 `log` 会追加一条桥接记录），不会产生冲突。
+- 若桥接通过外部插件生成再转换写入（passthrough / merge 模式），基础 skill 的追踪步骤被跳过，**必须由桥接命令补做**。
+- 桥接命令不手动操作 JSON，一律通过脚本完成。
+
 ## Template Reference
 
 - AI artifact templates: `templates/ai/` (proposal, spec, design, execution-plan, spec-for-validation)
