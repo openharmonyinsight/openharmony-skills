@@ -6,6 +6,20 @@ license: MIT
 
 # ODK Spec
 
+## Existing artifacts first
+
+<!-- ODK:reference contracts/skill-guides/router/document-updates.md -->
+Before this skill's interview, template loading, delegation or writes, read
+`contracts/skill-guides/router/document-updates.md`. Read every existing target's
+full frontmatter and body first; revise it in place and preserve confirmed
+content, stable IDs and evidence. Create a target only when it does not exist.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
+Read `contracts/skill-guides/router/delivery-levels.md` and obtain the effective
+contract before choosing artifacts, sections or phase prerequisites.
+<!-- /ODK:reference -->
+
 ## Prerequisites
 
 - `proposal.md` with finalized success criteria
@@ -16,25 +30,13 @@ license: MIT
 
 ## Steps
 
--1. **Code-grounded brainstorm (run before writing ACs):** Two sub-steps — read code first, then interview based on what you find.
+-1. **Shared brainstorm gate:** Run the same interview as standalone `odk-brainstorm` inline before writing ACs. Inspect API signatures, parameter checks/defaults, return/error paths, state ownership and device variants. Focus decisions on observable outcomes: caller-visible failures, boundary inputs, timing/resource bounds and what each AC must prove. Preserve confirmed proposal decisions, but distinguish existing behavior from an agreed target.
 
-   **Sub-step A — Read the code:** Before asking anything, explore the codebase for the modules, APIs, data structures, error codes, and call chains the change touches. Specifically:
-   - Find existing API signatures, parameter types, return values, and error code definitions for every interface the change modifies or calls
-   - Find existing state holders: who owns the relevant data, where it is mutated, where it is freed
-   - Find existing error paths: how errors propagate from the change site to callers
-   - Find any existing device-variant paths (e.g. `#ifdef`, capability guards, platform-specific branches) near the change
-   - Note any contradictions between `proposal.md` and what the code actually shows — surface these before asking the user anything
+<!-- ODK:reference contracts/skill-guides/brainstorm/interview.md -->
+Read `contracts/skill-guides/brainstorm/interview.md` in full and apply its decision state, questioning, ODK coverage and completion gate before generating the specification.
+<!-- /ODK:reference -->
 
-   State what you found (brief, with file:line references). Skip this sub-step only for pure new modules with no existing code to reference.
-
-   **Sub-step B — Interview based on code findings:** For each of the following gaps that your code reading could not close, ask one focused question at a time — ground every question in a specific code location or finding, not a generic template:
-   - A success criterion in `proposal.md` that is vague (「优化响应速度」) and where the code does not reveal a measurable baseline or target
-   - An error case the proposal mentions but whose expected behavior at the caller boundary is unspecified, and you cannot determine it from existing error-handling patterns
-   - A device-variation row marked 「是」 in proposal where the code has no existing variant path — what is the concrete behavioral difference?
-   - An API parameter range or default that proposal does not state and that no assertion/check in the code confirms
-   - A resource-constraint decision (性能/RAM/ROM triage) that cannot be determined from the call frequency, allocation size, or hot-path evidence in the code
-
-   Ground each question in what you found: e.g. "I see `AudioSessionManager::CreateSession()` returns `ERR_NO_MEMORY` but proposal doesn't describe what the caller should do when that happens — retry, propagate, or degrade?" Do not ask about things the code already answers. If `proposal.md` and code together answer every gap, briefly state the self-resolved decisions in one sentence and proceed to Step 0 immediately — do not skip silently without any output.
+   Pass the checked code baseline and confirmed decisions into the specification. Proceed to Step 0 only after completion or an explicit bypass, carrying unresolved items into the draft rather than inventing AC behavior.
 
 0. Check for subsystem profile: read and follow `contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.spec` (additional AC categories, fragments) and `agent_instructions.specify` before generating content
 <!-- ODK:reference contracts/skill-guides/spec/api-specification.md -->
@@ -88,6 +90,22 @@ license: MIT
 - Internal implementation (data structures/state machines/flows/algorithms) owned by `design.md`; code mapping (AC→implementation files + verification status) owned by `execution-plan.md`.
 - `runtime/executables/validate-artifacts-contract.py` owns machine-checkable AC coverage, verification mapping, and traceability checks.
 
+## Session ID 追踪
+
+生成 `spec.md` 后，调用脚本更新 sidecar（详见 `using-odk` 的 `## Session ID 追踪契约`）。**禁止手动操作 JSON**：
+
+1. 获取当前 session ID（**当前对话**的系统提示 "Current conversation session ID: ses_xxx"）。
+2. 调用脚本（原子性 read-append-write，不丢已有 log 条目）：
+
+   ```sh
+   python3 "runtime/executables/update-sessions-sidecar.py" \
+     "<变更目录绝对路径>" "spec.md" "<当前session ID>" "odk-spec" "<action>"
+   ```
+
+3. 从脚本输出的 `---MIRROR---` 段提取 `sessions` 字段和 `## 会话记录` 表格，写入交付件 frontmatter + body 开头（frontmatter 之后、正文 `#` 标题之前）。
+
+**关键**：sidecar `.sessions.json` 是权威源。即使 `spec.md` 的 frontmatter 或表格在 body 重生成时丢失，下一个 skill 从 sidecar 读取，数据不丢。脚本保证 sidecar 的原子追加。
+
 ## Output
 
 Write to `codespec/changes/<repo-name>/<proposal-id>/spec.md`.
@@ -96,4 +114,4 @@ spec.md 固定包含 `## API 规格定义` 章节；若 `API/SDK` = 否，按 `�
 
 Do not generate `gates/` by default. If the user explicitly wants process evidence, record approval notes under an optional evidence directory such as `evidence/gates/`.
 
-Suggest next step: run `{{CMD_PREFIX}}design` to generate the architecture design, which will reference spec AC numbers and resolve any TBD error codes or interface signatures.
+For lite with no design need, proceed to `{{CMD_PREFIX}}plan`; preserve any existing design. Otherwise suggest next step: run `{{CMD_PREFIX}}design` to generate the architecture design, which will reference spec AC numbers and resolve any TBD error codes or interface signatures.

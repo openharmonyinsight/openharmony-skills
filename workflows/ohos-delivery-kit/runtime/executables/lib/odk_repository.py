@@ -82,15 +82,129 @@ def load_odk_config() -> tuple[dict[str, str], dict[str, str]]:
 
     Missing override keys inherit defaults; explicit empty strings override them.
     Never search another installation or the business working directory for ext.
+    Normalize legacy names within each layer before merging user overrides.
     """
     default = _default_config_path()
     override = default.with_name(_CONFIG_EXT_FILENAME)
-    return _read_config(default), _read_config(override) if override.exists() else {}
+    base = _read_config(default)
+    ext = _read_config(override) if override.exists() else {}
+    for values in (base, ext):
+        legacy_hooks = values.pop("post_pr_hooks", None)
+        if legacy_hooks is not None:
+            values.setdefault("post_cr_mr_pr_hooks", legacy_hooks)
+    return base, ext
 
 
 def effective_odk_config() -> dict[str, str]:
     base, ext = load_odk_config()
     return {**base, **ext}
+
+
+_SKILL_CONFIG_KEYS = {
+    "pre_commit_reviews", "post_commit_reviews", "post_cr_mr_pr_hooks",
+    "device_flash_skill", "ci_trigger", "online_test_trigger",
+}
+
+
+def _config_comment_blocks(path: Path) -> dict[str, list[tuple[int, str]]]:
+    """Associate preceding section comments with its consecutive scalar keys."""
+    if not path.exists():
+        return {}
+    blocks: dict[str, list[tuple[int, str]]] = {}
+    pending: list[tuple[int, str]] = []
+    active: list[tuple[int, str]] = []
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if line.lstrip().startswith("#"):
+            pending.append((number, line.lstrip()[1:].strip()))
+        elif line.strip():
+            match = re.match(r"([A-Za-z_][A-Za-z0-9_]*):", line)
+            if match:
+                if pending:
+                    active, pending = pending, []
+                blocks[match[1]] = active
+    # Match the same within-file canonical-key precedence as load_odk_config.
+    if "post_cr_mr_pr_hooks" not in blocks and "post_pr_hooks" in blocks:
+        blocks["post_cr_mr_pr_hooks"] = blocks["post_pr_hooks"]
+    return blocks
+
+
+def _comment_skill_urls(path: Path, key: str, skill: str, source: str) -> list[dict[str, object]]:
+    candidates = []
+    short_name = re.split(r"[:/]", skill)[-1]
+    for line, comment in _config_comment_blocks(path).get(key, []):
+        explicit = re.match(r"skill-install:\s+(\S+)\s+(https?://\S+)", comment)
+        if explicit and explicit[1] != skill:
+            continue
+        for raw in re.findall(r"https?://[^\s<>\"']+", comment):
+            url = raw.rstrip(".,;)]}`")
+            try:
+                parsed = urlsplit(url)
+                # Installation hints are source URLs, never embedded credentials.
+                if not parsed.hostname or parsed.username is not None or parsed.password is not None:
+                    continue
+                _ = parsed.port
+            except ValueError:
+                continue
+            components = [unquote(part).removesuffix(".git") for part in parsed.path.split("/")]
+            match = "explicit" if explicit else "path" if short_name in components else "reference"
+            candidates.append({"url": url, "config_path": str(path), "line": line,
+                               "source": source, "match": match})
+    return sorted(candidates, key=lambda item: ({"explicit": 0, "path": 1, "reference": 2}[item["match"]], item["line"]))
+
+
+def skill_install_hints(key: str, skill: str | None = None) -> dict[str, object]:
+    """Read comment links for configured skills; never detect, install or execute.
+
+    Links are candidates for the agent to inspect, not proof of a skill's identity.
+    Restrict discovery to the same parameter's section in this installation.
+    """
+    key = "post_cr_mr_pr_hooks" if key == "post_pr_hooks" else key
+    if key not in _SKILL_CONFIG_KEYS:
+        raise ValueError(f"{key} is not a skill configuration field")
+    value = effective_odk_config().get(key, "").strip()
+    if key in {"ci_trigger", "online_test_trigger"}:
+        skills = [value[len("skill:"):].strip()] if value.startswith("skill:") else []
+    elif key == "device_flash_skill":
+        skills = [value] if value else []
+    else:
+        skills = value.split()
+    if any(not name or len(name.split()) != 1 for name in skills):
+        raise ValueError(f"{key} requires a single skill name for this mode")
+    if skill is not None and skill not in skills:
+        raise ValueError(f"{skill} is not configured in {key}")
+    default = _default_config_path()
+    override = default.with_name(_CONFIG_EXT_FILENAME)
+    hints = []
+    for name in ([skill] if skill is not None else skills):
+        candidates = []
+        seen = set()
+        for path, source in ((override, "override"), (default, "default")):
+            for candidate in _comment_skill_urls(path, key, name, source):
+                if candidate["url"] not in seen:
+                    seen.add(candidate["url"])
+                    candidates.append(candidate)
+        hints.append({"skill": name, "candidates": candidates})
+    return {"config_key": key, "configured_skills": skills, "hints": hints,
+            "searched_paths": [str(override), str(default)]}
+
+
+def build_product_options() -> dict[str, object]:
+    """Prepare a menu from effective config; a configured default grants no choice."""
+    config = effective_odk_config()
+    preferred = config.get("build_product", "").strip()
+    raw = config["build_products"] if "build_products" in config else preferred
+    products = list(dict.fromkeys(raw.split()))
+    if not products:
+        raise ValueError("Configure a non-empty build_products list before selecting a build product")
+    default = preferred if preferred in products else None
+    return {
+        "products": products,
+        "default_product": default,
+        "selected_product": None,
+        "confirmation_required": True,
+        "menu": [{"number": number, "product": product, "is_default": product == default}
+                 for number, product in enumerate(products, 1)],
+    }
 
 
 class GitRemote(NamedTuple):
@@ -233,11 +347,22 @@ if __name__ == "__main__":
     parser.add_argument("--configured", default="", help="Developer-provided design_docs_repository, if any")
     parser.add_argument("--checkout-remote", help="Compare an existing checkout against the suggested/confirmed target")
     parser.add_argument("--push-url", action="append", help="Each effective push URL from git remote get-url --push --all; repeat for all URLs")
-    parser.add_argument("--effective-config", action="store_true", help="Print merged ODK configuration as JSON")
+    config_action = parser.add_mutually_exclusive_group()
+    config_action.add_argument("--effective-config", action="store_true", help="Print merged ODK configuration as JSON")
+    config_action.add_argument("--build-product-options", action="store_true", help="Print build-product menu as JSON; no product is selected")
+    config_action.add_argument("--skill-install-hints", metavar="CONFIG_KEY", help="Read installation links from a configured skill field's preceding comments")
+    parser.add_argument("--skill", help="Limit installation hints to this configured skill; requires --skill-install-hints")
     args = parser.parse_args()
-    if args.effective_config:
+    if args.skill is not None and args.skill_install_hints is None:
+        parser.error("--skill requires --skill-install-hints")
+    if args.effective_config or args.build_product_options or args.skill_install_hints is not None:
         try:
-            print(json.dumps({"config": effective_odk_config(), "user_config_path": str(user_config_path())}, ensure_ascii=False))
+            if args.skill_install_hints is not None:
+                payload = skill_install_hints(args.skill_install_hints, args.skill)
+            else:
+                payload = build_product_options() if args.build_product_options else {"config": effective_odk_config()}
+            payload["user_config_path"] = str(user_config_path())
+            print(json.dumps(payload, ensure_ascii=False))
         except (OSError, ValueError) as error:
             parser.exit(1, f"{error}\n")
         raise SystemExit(0)

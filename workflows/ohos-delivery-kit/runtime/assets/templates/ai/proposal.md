@@ -3,11 +3,21 @@
 target_release: ""
 # change_type: 变更类型（new-feature/enhancement/optimization/bugfix/refactor/deprecation）
 change_type: ""
+# lite/standard/critical；旧提案缺省 standard。见有效契约，不以降级规避门禁。
+delivery_level: "standard"
 proposal_id: ""
 author: ""
 date: ""
 status: Draft
+# sessions: 从 .sessions.json sidecar 镜像（逗号分隔），由各 skill 调用时自动增量追加（去重）；勿手动编辑
+sessions: ""
 ---
+
+## 会话记录
+
+<!-- 从 .sessions.json sidecar 镜像（由 skill 自动填充，勿手动编辑） -->
+| Session ID | Skill | 时间(UTC) | 操作 |
+|------------|-------|----------|------|
 
 # Proposal
 

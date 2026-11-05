@@ -120,6 +120,7 @@ def parse_metadata_tracking(path: str) -> dict[str, object]:
     seen_top: set[str] = set()
     seen_repos_marker = False
     seen_sections: set[str] = set()
+    collecting_sessions = False
     last_line_number = 0
 
     def require_nonempty_block(line_number: int) -> None:
@@ -147,6 +148,7 @@ def parse_metadata_tracking(path: str) -> dict[str, object]:
             result[key] = _metadata_scalar(value)
             current_section = None
             current_item = None
+            collecting_sessions = False
             continue
         if line == "repos:":
             require_nonempty_block(line_number)
@@ -155,7 +157,71 @@ def parse_metadata_tracking(path: str) -> dict[str, object]:
             seen_repos_marker = True
             current_section = None
             current_item = None
+            collecting_sessions = False
             continue
+
+        # Top-level sessions field (session ID tracking)
+        sessions_top = re.fullmatch(r"sessions:(?:\s*(\[\]))?", line)
+        if sessions_top:
+            require_nonempty_block(line_number)
+            if "sessions" in seen_top:
+                raise ValueError(f"{path}:{line_number}: duplicate sessions")
+            seen_top.add("sessions")
+            if sessions_top.group(1):  # sessions: []
+                result["sessions"] = []
+                collecting_sessions = False
+            else:
+                collecting_sessions = True
+            current_section = None
+            current_item = None
+            continue
+
+        # Flow sequence: sessions: ["uuid1", "uuid2"]
+        sessions_flow = re.fullmatch(r'sessions:\s*\[([^\]]*)\]', line)
+        if sessions_flow:
+            require_nonempty_block(line_number)
+            if "sessions" in seen_top:
+                raise ValueError(f"{path}:{line_number}: duplicate sessions")
+            seen_top.add("sessions")
+            items_str = sessions_flow.group(1).strip()
+            sessions_list = []
+            if items_str:
+                for raw_item in items_str.split(","):
+                    item = raw_item.strip().strip('"').strip("'")
+                    if not item:
+                        continue
+                    if re.fullmatch(
+                        r"ses_[A-Za-z0-9_-]+"
+                        r"|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+                        item,
+                    ):
+                        sessions_list.append(item)
+                    else:
+                        raise ValueError(
+                            f"{path}:{line_number}: invalid session ID in flow sequence: {item}"
+                        )
+            result["sessions"] = sessions_list
+            collecting_sessions = False
+            current_section = None
+            current_item = None
+            continue
+
+        # Session ID list items under top-level sessions:
+        # Use _metadata_scalar() to strip YAML quotes (single/double) so that
+        #   - "ses_abc"   and   - '11111111-...-555555555555'
+        # are accepted alongside the unquoted form.
+        session_item = re.fullmatch(r"  - (.+)", line)
+        if session_item and collecting_sessions:
+            sid = _metadata_scalar(session_item.group(1))
+            if re.fullmatch(
+                r"ses_[A-Za-z0-9_-]+"
+                r"|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+                sid,
+            ):
+                sessions_list = result.setdefault("sessions", [])
+                assert isinstance(sessions_list, list)
+                sessions_list.append(sid)
+                continue
 
         repo = re.fullmatch(r"  - repo:\s*(.+)", line)
         if repo and seen_repos_marker:
@@ -165,6 +231,7 @@ def parse_metadata_tracking(path: str) -> dict[str, object]:
             current_section = None
             current_item = None
             seen_sections = set()
+            collecting_sessions = False
             continue
 
         repository_url = re.fullmatch(r"    repository_url:\s*(.+)", line)
@@ -211,7 +278,19 @@ def parse_metadata_tracking(path: str) -> dict[str, object]:
     return result
 
 
+def contract_version(path: str) -> int:
+    versions = [line.split(":", 1)[1].split("#", 1)[0].strip() for line in _lines(path)
+                if re.match(r"^version:", line)]
+    # Older embedded contracts omitted their version; keep that legacy format.
+    if not versions:
+        return 2
+    if len(versions) != 1 or versions[0] not in {"1", "2", "3"}:
+        raise ValueError(f"{path}: unsupported artifacts contract version (supported: 1, 2, 3)")
+    return int(versions[0])
+
+
 def parse_contract_artifacts(path: str) -> dict[str, dict[str, object]]:
+    contract_version(path)
     artifacts: dict[str, dict[str, object]] = {}
     current: str | None = None
     mode: str | None = None
@@ -238,13 +317,16 @@ def parse_contract_artifacts(path: str) -> dict[str, dict[str, object]]:
                 "required": "true",
                 "required_sections": [],
                 "conditional_sections": [],
+                "conditions": {},
+                "owns": [],
+                "requires": [],
             }
             mode = None
             continue
         if current is None:
             continue
 
-        key_value = re.match(r"^    (file|template):\s*(.+)$", line)
+        key_value = re.match(r"^    (file|template|phase):\s*(.+)$", line)
         if key_value:
             artifacts[current][key_value.group(1)] = _unquote(key_value.group(2))
             continue
@@ -252,19 +334,25 @@ def parse_contract_artifacts(path: str) -> dict[str, dict[str, object]]:
         if required:
             artifacts[current]["required"] = required.group(1)
             continue
-        if line == "    required_sections:":
-            mode = "required_sections"
+        list_key = re.match(r"^    (required_sections|owns|requires):(?:\s*\[\])?$", line)
+        if list_key:
+            mode = list_key[1]
             continue
         if line == "    conditional_sections:":
             mode = "conditional_sections"
             continue
         section = re.match(r"^      - (.+)$", line)
-        if section and mode == "required_sections":
+        if section and mode in {"required_sections", "owns", "requires"}:
             artifacts[current][mode].append(_unquote(section.group(1)))  # type: ignore[index]
             continue
         conditional = re.match(r"^      - section:\s*(.+)$", line)
         if conditional and mode == "conditional_sections":
             artifacts[current][mode].append(_unquote(conditional.group(1)))  # type: ignore[index]
+            continue
+        condition = re.match(r"^        (required_when|trigger):\s*(.+)$", line)
+        if condition and mode == "conditional_sections" and artifacts[current][mode]:
+            title = artifacts[current][mode][-1]
+            artifacts[current]["conditions"].setdefault(title, {})[condition[1]] = _unquote(condition[2])
 
     if not artifacts:
         raise ValueError(

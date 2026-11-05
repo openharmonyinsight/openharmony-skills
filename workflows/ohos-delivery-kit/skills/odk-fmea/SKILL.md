@@ -10,6 +10,21 @@ license: MIT
 >
 > 七步法方法论见 [references/methodology.md](references/methodology.md)；故障模式库 18 类采用「触发索引 → 按需详情」两级加载（`references/triggers/`），仅按路由场景加载。本文只保留输入识别、流程骨架、故障模式库路由与对外落盘契约（渐进披露：本文件调用即全量载入）。
 
+## Existing artifacts first
+
+<!-- ODK:reference contracts/skill-guides/router/document-updates.md -->
+Before this skill's interview, template loading, delegation or writes, read
+`contracts/skill-guides/router/document-updates.md`. Read every existing target's
+full frontmatter and body first; revise it in place and preserve confirmed
+content, stable IDs and evidence. Create a target only when it does not exist.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
+Read `contracts/skill-guides/router/delivery-levels.md` and use the effective
+contract. It takes precedence over standard-only artifact lists below; native
+OpenSpec schemas remain standard/critical and lite uses the base flow.
+<!-- /ODK:reference -->
+
 ## 执行模式（subagent 隔离）
 
 本 skill 的分析过程（结构分析、库扫描、推演、输出内容生成）**默认在 subagent（隔离上下文）中执行**——故障模式库与推演产物体量大，进入主会话会挤占交付流程上下文：

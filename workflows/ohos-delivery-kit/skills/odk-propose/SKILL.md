@@ -6,6 +6,27 @@ license: MIT
 
 # ODK Propose
 
+## Existing artifacts first
+
+<!-- ODK:reference contracts/skill-guides/router/document-updates.md -->
+Before this skill's interview, template loading, delegation or writes, read
+`contracts/skill-guides/router/document-updates.md`. Read every existing target's
+full frontmatter and body first; revise it in place and preserve confirmed
+content, stable IDs and evidence. Create a target only when it does not exist.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
+Read `contracts/skill-guides/router/delivery-levels.md` and obtain the effective
+contract before choosing artifacts, sections or phase prerequisites.
+<!-- /ODK:reference -->
+
+## Check for updates first
+
+Before checking prerequisites, loading templates or writing the proposal, follow
+[the shared update check](../using-odk/references/update-check.md). Reuse a check
+and user choice already made by `using-odk` in this request; direct invocation
+must run the check itself. Continue only when the shared procedure says to.
+
 ## Prerequisites
 
 - `codespec/changes/<repo-name>/<proposal-id>/` directory exists (run `odk-init` first if not)
@@ -27,7 +48,13 @@ Read the change context from the user's request. If the user describes a require
 
 ## Steps
 
--1. **Brainstorm interview (run odk-brainstorm inline before generating):** **Explicit escapes — check these first:** skip the interview entirely and proceed to Step 0 if: (a) the user explicitly says "跳过访谈" / "skip the interview" / "直接写 proposal" / provides a complete requirements document, or (b) all decisions in the brainstorm decision tree can be derived from existing context without guessing. Otherwise run `odk-brainstorm` inline in this session using the decision-tree exploration protocol — do not require the user to invoke it separately. Walk the decision tree (structural decisions: module boundary, state ownership, interface contract, lifecycle; flow decisions: happy/failure path, concurrency, ordering; boundary decisions: API/SDK, security, 1+8 device variation, 资源开销审视, 外部依赖, success criteria), skipping any branch already answered from the user's input or codebase exploration. When the tree is fully resolved and the decision summary is confirmed, proceed to Step 0 immediately.
+-1. **Shared brainstorm gate:** Run the same interview as standalone `odk-brainstorm` inline; the user need not invoke it separately. Focus on the problem, goals, scope, credible alternatives, observable success and the decisions needed to choose a direction. Investigate implementation constraints that affect those choices without prematurely specifying the whole architecture.
+
+<!-- ODK:reference contracts/skill-guides/brainstorm/interview.md -->
+Read `contracts/skill-guides/brainstorm/interview.md` in full and apply its decision state, questioning, ODK coverage and completion gate before generating the proposal.
+<!-- /ODK:reference -->
+
+   Reuse explicit decisions from a complete requirements document; its existence alone does not close missing branches. Respect explicit interview skips using the protocol's bypass rule. Proceed to Step 0 only after completion or that explicit bypass, carrying any unresolved items into the draft.
 
 0. Check for subsystem profile: read and follow `contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.proposal` (required/optional dimensions, fragments) and `agent_instructions.define` before generating content
 1. Read template from `templates/ai/proposal.md`
@@ -67,7 +94,23 @@ Read the change context from the user's request. If the user describes a require
      - 根据需要可选填写 `## API 使用场景探索`（开发者场景和用户画像）
      - **注**：跨平台支持、元服务支持、卡片支持等多设备属性在 spec.md `## API 规格定义` 中填写
    - **Success criteria**: 成功标准写**系统级能力达成**（可观察、可量化），禁内部实现 + 禁接口细节（属 spec AC）。
-3. Preserve all YAML frontmatter fields (target_release, change_type, proposal_id, author, date, status). When reading the existing `proposal.md` for these fields, read **only its YAML frontmatter** — do not load the body into context: you regenerate the body fresh from the template + requirement, and a stale body would only bias the output and waste context.
+3. Preserve all YAML frontmatter fields and existing body content. Read the full existing proposal before editing; amend only changed requirements and missing contract sections. Retain confirmed decisions, custom sections and stable goal IDs. Use the template as a structural reference, never as a replacement for an existing proposal.
+
+## Session ID 追踪
+
+生成 `proposal.md` 后，调用脚本更新 sidecar（详见 `using-odk` 的 `## Session ID 追踪契约`）。**禁止手动操作 JSON**：
+
+1. 获取当前 session ID（**当前对话**的系统提示 "Current conversation session ID: ses_xxx"）。
+2. 调用脚本（原子性 read-append-write，不丢已有 log 条目）：
+
+   ```sh
+   python3 "runtime/executables/update-sessions-sidecar.py" \
+     "<变更目录绝对路径>" "proposal.md" "<当前session ID>" "odk-propose" "<action>"
+   ```
+
+3. 从脚本输出的 `---MIRROR---` 段提取 `sessions` 字段和 `## 会话记录` 表格，写入交付件 frontmatter + body 开头（frontmatter 之后、正文 `#` 标题之前）。
+
+**关键**：sidecar `.sessions.json` 是权威源。即使 `proposal.md` 的 frontmatter 或表格在 body 重生成时丢失，下一个 skill 从 sidecar 读取，数据不丢。脚本保证 sidecar 的原子追加。
 
 ## Output
 

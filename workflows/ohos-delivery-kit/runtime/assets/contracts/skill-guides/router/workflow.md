@@ -9,7 +9,7 @@ codespec/changes/<repo-name>/draft-<yyyymmdd>-<english-slug>/
 
 Resolve `<repo-name>` from the Git `origin` URL basename without `.git`; if `origin` is unavailable, use the Git worktree root directory name. A formal directory leaf is exactly `proposal-id`; the English slug exists only while the change is a draft.
 
-Each change directory is **populated by phase** — `odk-init` only seeds `proposal.md` as a frontmatter stub; the other main docs appear when their phase first runs (a missing main doc before its phase is expected, not an error):
+Each change directory is **populated or revised by phase** — `odk-init` reads and reuses an existing proposal, or seeds a missing `proposal.md` as a frontmatter stub; the other main docs appear when their phase first runs (a missing main doc before its phase is expected, not an error):
 - `proposal.md` — (`odk-init` stub → `odk-propose` fills) requirements proposal with triage, 1+8 device variation, external dependencies, success criteria, and impact scope (YAML frontmatter with `target_release`)
 - `spec.md` — (`odk-spec`) functional specification with WHEN/THEN AC, error codes, and verification mapping
 - `design.md` — (`odk-design`) architecture design with Mermaid diagrams and decision comparison (references spec ACs)
@@ -18,13 +18,16 @@ Each change directory is **populated by phase** — `odk-init` only seeds `propo
 - `threat-model.md` — optional deep threat analysis (bypass; high-risk security/privacy/compliance changes; produced by `odk-security-threat-model`)
 - `metadata_tracking.yaml` — prepared locally from the confirmed source PR, then refreshed by `odk-submit-design-docs` before the five-base-file bundle plus required evidence is submitted; explicit standalone no-PR document submission may use `pull_requests: []`
 
-The recommended phase order is **Propose → Specify → Design → Plan → Implement**. Spec defines WHAT (behavior, ACs, business rules); Design defines HOW (architecture, error code values, interface signatures). Design references specific AC numbers from Spec, strengthening the traceability chain. After design, review and update spec's error codes and interfaces if design decisions changed them.
+The effective delivery contract determines the required phases. Standard/critical use **Propose → Specify → Design → Plan → Implement**; lite may skip the separate design artifact and proceed from Specify to Plan. See [delivery levels](delivery-levels.md). Spec defines WHAT (behavior, ACs, business rules); Design defines HOW (architecture, error code values, interface signatures). Design references specific AC numbers from Spec, strengthening the traceability chain. After design, review and update spec's error codes and interfaces if design decisions changed them.
 
 After all implementation Tasks are complete, review and archive-readiness validation
 run automatically. After they pass the agent reminds the user of source PR submission
 and waits for the user to trigger it. After an actual PR succeeds it prepares local
 metadata and separately asks about the design-docs PR; confirmation triggers submission.
 See [the handoff policy](../delivery/handoff.md) when implementation completes.
+Findings from review, tests and validation follow [the feedback procedure](../delivery/feedback.md):
+backfill affected original artifacts, retain dispositions in the existing plan,
+and reverify before restoring readiness.
 Review/validate remain individually callable. Neither PR submission implies merging.
 
 `reviews/` and `gates/` are optional process evidence, not part of the minimal archive contract. If needed, store them under an optional evidence directory such as `evidence/reviews/` and `evidence/gates/`.

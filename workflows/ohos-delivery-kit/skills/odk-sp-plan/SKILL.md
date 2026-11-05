@@ -6,6 +6,21 @@ license: MIT
 
 # ODK SP Plan
 
+## Existing artifacts first
+
+<!-- ODK:reference contracts/skill-guides/router/document-updates.md -->
+Before this skill's interview, template loading, delegation or writes, read
+`contracts/skill-guides/router/document-updates.md`. Read every existing target's
+full frontmatter and body first; revise it in place and preserve confirmed
+content, stable IDs and evidence. Create a target only when it does not exist.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
+Read `contracts/skill-guides/router/delivery-levels.md` and use the effective
+contract. It takes precedence over standard-only artifact lists below; native
+OpenSpec schemas remain standard/critical and lite uses the base flow.
+<!-- /ODK:reference -->
+
 ## Purpose
 
 Invoke Superpowers `writing-plans` for task decomposition and file-level boundaries. Transform output into ODK `execution-plan.md` format with AC-Task traceability.
@@ -16,6 +31,20 @@ Invoke Superpowers `writing-plans` for task decomposition and file-level boundar
 - Load `using-odk-bridge` for output redirection and mode selection.
 - `spec.md` must exist with numbered ACs.
 - If Superpowers skills are unavailable, use the fallback chain declared in `adapters/superpowers.yaml` and clearly report the degradation.
+
+## Confirm the build product before invoking the bridge
+
+First apply the host-only exception in the delivery-level and product guides.
+Only target-build/device plans require the menu and firmware selection below.
+
+Run `python3 runtime/executables/lib/odk_repository.py --build-product-options`
+(source checkout: `python3 scripts/lib/odk_repository.py --build-product-options`).
+<!-- ODK:reference contracts/skill-guides/delivery/build-products.md -->
+Read `contracts/skill-guides/delivery/build-products.md`, show the configured
+menu and wait for an explicit product choice before invoking writing-plans.
+Reuse a real choice already made for this plan; a configured default or general
+autonomous/recommended-options authorization does not confirm a product.
+<!-- /ODK:reference -->
 
 ## Steps
 

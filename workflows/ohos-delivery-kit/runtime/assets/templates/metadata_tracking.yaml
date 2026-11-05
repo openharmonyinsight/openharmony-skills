@@ -22,3 +22,5 @@ repos:
     #     type: "requirement" # requirement | bug | task | epic
     #     state: "open" # open | closed
     #     closed_at: "2026-09-04" # omit while open or when unknown
+# sessions: mirrored from .sessions.json sidecar (auto-populated by skills, do not edit manually)
+sessions: []

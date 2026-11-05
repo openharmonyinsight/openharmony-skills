@@ -10,6 +10,12 @@
 - **AI 驱动** — 通过模块关键词自动检测，无需 CLI；`codespec/profile.yaml` 可显式声明
 - **按需加载** — 非 ODK 会话不加载任何 profile；匹配时才读取对应 YAML
 
+`required_dimensions` 表示必须逐项评估并写明依据，不表示自动判定为“是”。
+实际不涉及的维度可填写有具体理由的“否”；完整的 8 维表仍须无缺行、无重复行。
+`--effective-contract` 的 `dimension_policy` 明示这一语义。追加章节、AC 类别和禁止项
+仍是硬约束，其中 AC 类别必须落在真正的 AC 条目标题或描述中。
+带 `arkui` Profile 的可校验示例见 `examples/12345-arkui-focus/`。
+
 ## 可用 Profile
 
 | Profile ID | 适用模块 | Priority | 核心关注 |
@@ -39,7 +45,7 @@ GitCode 时，询问是否使用 `https://gitcode.com/OpenHarmonyAI/design-docs`
 要求用户提供地址后确认。`profile.yaml` 可不存在，本次确认不自动写入配置；只有用户
 要求保存时才更新 `design_docs_repository`。未确认不得跨仓复制或推送。
 
-**自动检测**（AI 根据关键词匹配）：
+**候选建议**（AI 根据关键词匹配；选定后记录到 `codespec/profile.yaml`，生成和校验均读取有效契约）：
 
 - `arkui`、`component`、`layout` → `arkui`
 - `graphic`、`render`、`gpu` → `arkgraphic`

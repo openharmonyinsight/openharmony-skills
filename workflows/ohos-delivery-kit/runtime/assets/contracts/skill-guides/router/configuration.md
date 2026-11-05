@@ -25,11 +25,33 @@ use `scripts/lib/odk_repository.py`. This read-only command prints JSON containi
 `config` and `user_config_path`. It performs no writes and executes no commands.
 
 Use the merged `config` for build products/commands, device preparation, reviews,
-PR tools, CI/online-test triggers, and design-docs defaults. Do not independently
+CR/MR/PR tools, CI/online-test triggers, and design-docs defaults. Do not independently
 merge files in individual phases. Missing user keys inherit shipped defaults;
 user keys override same-named defaults. An explicit empty string remains empty.
 Space-separated list settings replace the whole default list. New default keys
 are available after upgrades without copying them into the extension file.
+
+Post-submission hooks use `post_cr_mr_pr_hooks` for CR, MR and PR workflows.
+The loader accepts the legacy `post_pr_hooks` alias and emits only the new key.
+Names are normalized separately in defaults and overrides so a legacy user key
+still overrides a new shipped default. Within one file, the new key wins when
+both names are present, including an explicit empty string. Loading never rewrites
+either file; use the new key for new configuration.
+
+Before invoking a skill named by a configured review/hook, `device_flash_skill`
+or a `skill:` trigger, follow [configured-skills.md](configured-skills.md).
+Check availability in the current agent; if missing, inspect installation URLs
+in that parameter's preceding comments (user override first, then defaults),
+install the matching skill, verify discovery, and resume the pending step.
+The shared loader's `--skill-install-hints <config-key> --skill <name>` returns
+read-only candidates with file/line provenance; installation is agent-owned.
+Only check an applicable step, after any required CI/test/flash consent.
+
+At the start of planning, use the same loader with `--build-product-options`
+to get the effective product list and menu default. Its JSON leaves
+`selected_product` null and `confirmation_required` true: loading a configured
+default does not authorize selecting it. Apply the delivery build-product guide
+and wait for the user's choice before resolving commands.
 
 The supported YAML subset is a flat string mapping with comments and quoted
 scalars. Use `""` for empty values. Malformed quotes, duplicate keys, nulls,
@@ -42,6 +64,7 @@ build_product: rk3568
 emulator_command: ""
 source_cli: gh
 ci_trigger: none
+post_cr_mr_pr_hooks: my-compliance-check
 ```
 
 ## Ownership and upgrades

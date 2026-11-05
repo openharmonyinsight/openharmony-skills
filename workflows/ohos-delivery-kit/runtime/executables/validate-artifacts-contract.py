@@ -17,6 +17,7 @@ import os
 import re
 import subprocess
 import sys
+import json
 from argparse import ArgumentParser
 from datetime import date
 from pathlib import Path
@@ -41,13 +42,17 @@ from odk_yaml import (  # noqa: E402
 )
 from odk_document import (  # noqa: E402
     PLACEHOLDER_RE, BRACKET_PLACEHOLDER_RE, _visible_markdown, atx_heading, headings,
-    section_texts, section_text, require_unique_section, normalize_cell, split_table_row,
+    section_texts, section_texts_with_lines, section_text, require_unique_section,
+    normalize_cell, split_table_row,
     is_separator_row, parsed_markdown_tables, markdown_tables, table_has_columns,
     tables_with_columns, table_with_columns, unique_table_with_columns,
     require_unique_table_with_columns, meaningful,
 )
 from odk_repository import parse_git_remote, metadata_repository_url, metadata_pr_url_matches  # noqa: E402
 from odk_diff import valid_unified_diff  # noqa: E402
+from odk_contract import compile_contract, DIMENSIONS  # noqa: E402
+from odk_involvement import parse_eight_dim_involvement, involvement_errors, involvement_value  # noqa: E402
+from odk_plan_environment import environment_errors, SECTION as ENVIRONMENT_SECTION  # noqa: E402
 # Re-export legacy entry points for callers that load this script as a module.
 from odk_api_signature import (  # noqa: E402
     api_signature_complete, canonical_api_signature,
@@ -62,7 +67,19 @@ AC_RE = re.compile(r"\bAC-(?:DFX\.[0-9]+|\d+(?:\.\d+)?)\b")
 AC_DEF_RE = re.compile(r"^\s*[-*]\s+\*\*AC-(?:DFX\.[0-9]+|\d+(?:\.\d+)?):\*\*", re.MULTILINE)
 TASK_RE = re.compile(r"\bTASK-\d+\b")
 ARCHIVE_MARKER_RE = re.compile(
-    r"\b(?:TBD|TODO)\b|(?<![\u4e00-\u9fff])(?:待定|待补充|待实现|待验证)(?![\u4e00-\u9fff])",
+    # Python's Unicode word boundary joins CJK prose to ASCII markers. Protect
+    # identifier substrings explicitly while still recognizing 状态TODO.
+    r"(?<![A-Za-z0-9_])(?:TBD|TODO)(?![A-Za-z0-9_])"
+    r"|(?<![\u4e00-\u9fff])(?:待定|待补充|待实现|待验证)(?![\u4e00-\u9fff])",
+    re.IGNORECASE,
+)
+# Exempt examples immediately following an explicit prohibition. Unquoted
+# examples are limited to known archive markers, not arbitrary field values.
+# Never skip the whole line/section, which may contain real unfinished work.
+PROHIBITED_LITERAL_PATTERN = rf"(?:`[^`\r\n]+`|{ARCHIVE_MARKER_RE.pattern})"
+PROHIBITED_LITERAL_LIST_RE = re.compile(
+    rf"(?:不得|禁止|请勿)[ \t]*(?:使用|出现)[ \t]*{PROHIBITED_LITERAL_PATTERN}"
+    rf"(?:[ \t]*(?:、|，|,|/|或|和|及)[ \t]*{PROHIBITED_LITERAL_PATTERN})*",
     re.IGNORECASE,
 )
 ANGLE_PLACEHOLDER_RE = re.compile(r"<[^>\n]+>")
@@ -200,6 +217,14 @@ PROPOSAL_ID_RE = re.compile(r"^[0-9]+$")
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 DRAFT_RE = re.compile(r"^draft-\d{8}-(.+)$")
 REPOSITORY_NAME_RE = re.compile(r"^[A-Za-z0-9._-]+$")
+# Session ID formats accepted across host platforms:
+#   opencode: ses_<alphanumeric>            e.g. ses_abc123
+#   codex:    <uuid>                        e.g. 11111111-2222-3333-4444-555555555555
+#   claude:   <uuid>                        e.g. aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+_SESSION_UUID = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+SESSION_ID_RE = re.compile(
+    r"^(?:ses_[a-zA-Z0-9_-]+|" + _SESSION_UUID + r")$"
+)
 MAX_SLUG_LENGTH = 40
 INVALID_PROPOSAL_ID_SCALAR = "__invalid_proposal_id_scalar__"
 ASCII_YAML_WHITESPACE = " \t\r\n"
@@ -319,7 +344,7 @@ def api_sdk_involvement(proposal: str) -> str | None:
     if len(matches) != 1:
         return None
     value = normalized_table_key(matches[0].get("是否涉及", ""))
-    return value if value in {"是", "否"} else value or None
+    return involvement_value(value) or value or None
 
 
 def api_common_value_complete(item: str, value: str) -> bool:
@@ -629,15 +654,17 @@ def validate_api_declaration_diffs(change_dir: Path, reporter: Reporter, *, arch
         reporter.pass_("API declaration diff evidence (en/zh) is archived")
 
 
-def validate_proposal_tables(proposal: str, reporter: Reporter, *, archive: bool) -> None:
+def validate_proposal_tables(proposal: str, reporter: Reporter, *, archive: bool, lite: bool = False) -> None:
     """Validate required device-variation and external-dependency proposal tables."""
 
     issues: list[str] = []
     device_section = section_text(proposal, DEVICE_VARIATION_SECTION)
     device_tables = tables_with_columns(device_section, DEVICE_VARIATION_COLUMNS)
-    if not device_tables:
+    # Lite explicitly rules out device-dependent scope in compile_contract;
+    # it omits only the device matrix, never the dependency declaration below.
+    if not lite and not device_tables:
         issues.append(f"{DEVICE_VARIATION_SECTION} table missing required columns")
-    else:
+    elif not lite:
         rows = device_tables[0]
         by_label: dict[str, list[dict[str, str]]] = {}
         for row in rows:
@@ -987,49 +1014,7 @@ def parse_resource_impact_states(proposal: str) -> tuple[dict[str, str], list[st
 def parse_eight_dim_performance_involvement(proposal: str) -> str | None:
     """Return 是/否 from 不涉及项确认「性能」row, or None if the row is absent."""
 
-    section = section_text(proposal, "不涉及项确认")
-    if not section:
-        return None
-    rows = table_with_columns(section, ["维度", "是否涉及"])
-    for row in rows:
-        if row.get("维度", "").strip() != "性能":
-            continue
-        cell = row.get("是否涉及", "").strip()
-        if not cell:
-            return None
-        first = cell.split()[0] if cell.split() else cell
-        if first.startswith("是"):
-            return "是"
-        if first.startswith("否"):
-            return "否"
-        return first
-    return None
-
-
-def parse_eight_dim_involvement(proposal: str, dimension: str) -> str | None:
-    """Return 是/否 from one 不涉及项确认 dimension row, or None if the row is absent."""
-
-    section = section_text(proposal, "不涉及项确认")
-    if not section:
-        return None
-    rows = table_with_columns(section, ["维度", "是否涉及"])
-    # New artifacts use 国际化. Read the previous label only when the canonical
-    # row is absent, so upgrading the validator cannot silently disable old gates.
-    labels = (dimension, "国际化/无障碍") if dimension == I18N_TRIGGER_DIMENSION else (dimension,)
-    for label in labels:
-        for row in rows:
-            if row.get("维度", "").strip() != label:
-                continue
-            cell = row.get("是否涉及", "").strip()
-            if not cell:
-                return None
-            first = cell.split()[0]
-            if first.startswith("是"):
-                return "是"
-            if first.startswith("否"):
-                return "否"
-            return first
-    return None
+    return parse_eight_dim_involvement(proposal, "性能")
 
 
 def check_performance_summary_vs_impact(
@@ -1276,11 +1261,11 @@ def validate_resource_constraints(
         reporter.pass_(f"resource gate passed: {gate.relative_to(repository)}")
 
 
-def unresolved_markers(text: str) -> list[str]:
+def unresolved_markers(text: str, *, start_line: int = 1) -> list[str]:
     markers: list[str] = []
     in_fence = False
 
-    for line_no, line in enumerate(text.splitlines(), start=1):
+    for line_no, line in enumerate(text.splitlines(), start=start_line):
         stripped = line.strip()
         if stripped.startswith("```"):
             in_fence = not in_fence
@@ -1296,6 +1281,7 @@ def unresolved_markers(text: str) -> list[str]:
                 markers.append(f"L{line_no}: unresolved API signature placeholder")
             continue
 
+        line = PROHIBITED_LITERAL_LIST_RE.sub(lambda match: " " * len(match[0]), line)
         line_markers: list[str] = []
         line_markers.extend(match.group(0) for match in ARCHIVE_MARKER_RE.finditer(line))
         for match in BRACKET_PLACEHOLDER_RE.finditer(line):
@@ -1307,6 +1293,16 @@ def unresolved_markers(text: str) -> list[str]:
         if line_markers:
             markers.append(f"L{line_no}: {', '.join(line_markers)}")
 
+    return markers
+
+
+def unresolved_section_markers(text: str, sections: list[str]) -> list[str]:
+    markers: list[str] = []
+    for section in sections:
+        title = str(section)
+        for body, start_line in section_texts_with_lines(text, title):
+            markers.extend(f"{title} {marker}"
+                           for marker in unresolved_markers(body, start_line=start_line))
     return markers
 
 
@@ -1511,6 +1507,121 @@ def validate_target_release(change_dir: Path, reporter: Reporter) -> None:
         f"proposal.md: target_release '{value}' does not match R-OH-003 (<major>.<minor>, "
         f"e.g. 7.1; or 7.1-Beta). Branch names (master/dev) are not release versions."
     )
+
+
+def validate_sessions_sidecar(change_dir: Path, reporter: Reporter) -> None:
+    """Validate the ``.sessions.json`` sidecar (authoritative session tracking source).
+
+    Checks:
+    - Valid JSON with expected structure (dict of deliverable → {sessions, log})
+    - All session IDs match a multi-platform format:
+      opencode ``ses_*``, codex/claude ``<uuid>``
+    - Warn on duplicate IDs in ``sessions`` arrays
+    - Cross-check frontmatter ``sessions`` field matches sidecar (warn on mismatch)
+    """
+    print("\nLevel A3b: Session ID Sidecar (.sessions.json)")
+    sidecar_path = change_dir / ".sessions.json"
+    if not sidecar_path.is_file():
+        print("  (.sessions.json not found — skipped; sidecar is optional but recommended)")
+        return
+
+    try:
+        raw = sidecar_path.read_text(encoding="utf-8-sig")
+    except OSError as error:
+        reporter.fail(f".sessions.json: cannot read file: {error}")
+        return
+
+    try:
+        data = json.loads(raw)
+    except (json.JSONDecodeError, ValueError) as error:
+        reporter.fail(f".sessions.json: invalid JSON: {error}")
+        return
+
+    if not isinstance(data, dict):
+        reporter.fail(".sessions.json: top-level value must be a JSON object (dict)")
+        return
+
+    any_checked = False
+    for deliverable_name, entry in data.items():
+        if not isinstance(deliverable_name, str) or not deliverable_name.strip():
+            reporter.fail(f".sessions.json: empty or non-string deliverable key")
+            continue
+        if not isinstance(entry, dict):
+            reporter.fail(f".sessions.json: '{deliverable_name}' entry must be an object")
+            continue
+
+        any_checked = True
+
+        # sessions array validation
+        sessions = entry.get("sessions")
+        if sessions is None:
+            reporter.warn(f".sessions.json: '{deliverable_name}' has no 'sessions' array")
+        elif not isinstance(sessions, list):
+            reporter.fail(f".sessions.json: '{deliverable_name}' sessions must be a list (array)")
+        else:
+            invalid = [s for s in sessions if not SESSION_ID_RE.match(str(s).strip())]
+            if invalid:
+                reporter.fail(
+                    f".sessions.json: '{deliverable_name}' sessions contains invalid ID(s): "
+                    f"{', '.join(str(s) for s in invalid)}"
+                )
+            else:
+                # Duplicate check
+                seen = set()
+                duplicates = []
+                for sid in sessions:
+                    sid_str = str(sid).strip()
+                    if sid_str in seen:
+                        duplicates.append(sid_str)
+                    seen.add(sid_str)
+                if duplicates:
+                    reporter.warn(
+                        f".sessions.json: '{deliverable_name}' sessions has duplicate ID(s): "
+                        f"{', '.join(sorted(set(duplicates)))}"
+                    )
+                else:
+                    reporter.pass_(
+                        f".sessions.json: '{deliverable_name}' sessions has "
+                        f"{len(sessions)} valid session ID(s)"
+                    )
+
+                # Cross-check with frontmatter (deliverable .md files only)
+                deliverable_path = change_dir / deliverable_name
+                if deliverable_name.endswith(".md") and deliverable_path.is_file():
+                    frontmatter = read_frontmatter(deliverable_path)
+                    if not frontmatter.invalid_reason:
+                        fm_sessions_str = frontmatter.get("sessions", "").strip()
+                        fm_ids = set(s.strip() for s in fm_sessions_str.split(",") if s.strip())
+                        sidecar_ids = set(str(s).strip() for s in sessions)
+                        if fm_ids != sidecar_ids:
+                            reporter.warn(
+                                f".sessions.json: '{deliverable_name}' frontmatter sessions "
+                                f"({','.join(sorted(fm_ids)) if fm_ids else 'empty'}) "
+                                f"!= sidecar sessions "
+                                f"({','.join(sorted(sidecar_ids))})"
+                            )
+
+        # log array validation
+        log = entry.get("log")
+        if log is not None:
+            if not isinstance(log, list):
+                reporter.fail(f".sessions.json: '{deliverable_name}' log must be a list (array)")
+            else:
+                for i, record in enumerate(log):
+                    if not isinstance(record, dict):
+                        reporter.fail(
+                            f".sessions.json: '{deliverable_name}' log[{i}] must be an object"
+                        )
+                        continue
+                    rec_session = str(record.get("session", "")).strip()
+                    if not SESSION_ID_RE.match(rec_session):
+                        reporter.fail(
+                            f".sessions.json: '{deliverable_name}' log[{i}] "
+                            f"session '{rec_session}' is invalid"
+                        )
+
+    if not any_checked:
+        print("  (.sessions.json is empty — no deliverable entries found)")
 
 
 def validate_metadata_tracking(change_dir: Path, reporter: Reporter, required: bool = False) -> None:
@@ -1786,6 +1897,35 @@ def validate_required_artifacts(
     return files
 
 
+def validate_effective_rules(change_dir: Path, artifacts: dict, reporter: Reporter) -> None:
+    """Enforce profile additions and explicitly machine-readable conditions."""
+    for name, artifact in artifacts.items():
+        path = change_dir / str(artifact["file"])
+        if not path.is_file():
+            continue
+        text = read_text(path)
+        stories = section_text(text, "用户故事或场景")
+        entries = re.findall(
+            r"^[ \t]*[-*][ \t]+\*\*AC-(?:DFX\.[0-9]+|[0-9]+(?:\.[0-9]+)?):\*\*"
+            r"[^\n]*(?:\n[ \t]{2,}\S[^\n]*)*", _visible_markdown(stories), re.M)
+        for dependency in artifact.get("requires", []):
+            if dependency in artifacts and not (change_dir / str(artifacts[dependency]["file"])).is_file():
+                reporter.fail(f"{path.name}: missing dependency {dependency}")
+        for dimension in artifact.get("dimensions", []):
+            label = DIMENSIONS.get(dimension)
+            if not label:
+                reporter.fail(f"unknown profile dimension: {dimension}")
+            # required_dimensions selects dimensions for explicit assessment;
+            # it cannot assert that every change in a subsystem involves them.
+            # The complete eight-dimension table is validated once in main.
+        for category in artifact.get("ac_categories", []):
+            if not any(category in entry for entry in entries):
+                reporter.fail(f"profile AC category missing from user stories: {category}")
+        for prohibition in artifact.get("prohibitions", []):
+            if prohibition not in section_text(text, "禁止项"):
+                reporter.fail(f"profile prohibition missing: {prohibition}")
+
+
 def conditional_section_exemptions(text: str) -> dict[str, str]:
     """Accept standalone, named declarations outside examples/template comments."""
     reasons: dict[str, tuple[str, str]] = {}
@@ -1828,6 +1968,10 @@ def validate_sections(
         exemptions = conditional_section_exemptions(text)
 
         required = artifacts[name].get("required_sections", [])
+        conditions = artifacts[name].get("conditions", {})
+        substantive = set(artifacts[name].get("profile_sections", [])) | {
+            title for title, rule in conditions.items() if rule.get("active")
+        }
         for section in required:  # type: ignore[assignment]
             try:
                 body = require_unique_section(text, str(section))
@@ -1835,12 +1979,17 @@ def validate_sections(
                 reporter.fail_once(f"{file_name}: {error}")
                 continue
             if body is not None:
-                reporter.pass_(f"{file_name}: required section present: {section}")
+                if section in substantive and not meaningful(body):
+                    reporter.fail(f"{file_name}: required section empty: {section}")
+                else:
+                    reporter.pass_(f"{file_name}: required section present: {section}")
             else:
                 reporter.fail(f"{file_name}: required section missing: {section}")
 
         conditional = artifacts[name].get("conditional_sections", [])
         for section in conditional:  # type: ignore[assignment]
+            if section in required:
+                continue  # One authoritative diagnostic for active/profile sections.
             try:
                 body = require_unique_section(text, str(section))
             except ValueError as error:
@@ -1848,6 +1997,8 @@ def validate_sections(
                 continue
             if section in RESOURCE_SECTIONS.values():
                 continue  # trigger-aware checks live in validate_resource_constraints
+            if name == "execution-plan" and section == "问题闭环" and body is None:
+                continue  # Absence is the supported no-finding state; not an unresolved condition.
             if body is not None:
                 reporter.pass_(f"{file_name}: conditional section present: {section}")
             else:
@@ -1890,6 +2041,10 @@ def validate_present_optional_sections(
                 reporter.fail_once(f"{file_name}: {error}")
                 continue
             if body is not None:
+                substantive = section in data.get("profile_sections", []) or data.get("conditions", {}).get(section, {}).get("active")
+                if substantive and not meaningful(body):
+                    reporter.fail(f"{file_name} (present optional): required section empty: {section}")
+                    continue
                 reporter.pass_(f"{file_name} (present optional): section present: {section}")
                 # Also check that section's tables have non-placeholder data rows
                 all_tables = markdown_tables(body)
@@ -1910,17 +2065,14 @@ def validate_ac_ids(change_dir: Path, reporter: Reporter, archive_mode: bool) ->
     validate_ac_id_format(change_dir, reporter, archive=archive_mode)
 
 
-def validate_traceability(change_dir: Path, reporter: Reporter) -> None:
+def validate_spec_verification(change_dir: Path, reporter: Reporter) -> None:
+    """Validate the spec's own AC contract without requiring a future plan."""
     spec_path = change_dir / "spec.md"
-    plan_path = change_dir / "execution-plan.md"
-    if not spec_path.is_file() or not plan_path.is_file():
+    if not spec_path.is_file():
         return
 
-    print("\nLevel C: Traceability")
-
+    print("\nLevel C: Spec Verification")
     spec = read_text(spec_path)
-    plan = read_text(plan_path)
-
     spec_acs = defined_ac_ids(spec)
     if spec_acs:
         reporter.pass_(f"spec.md defines {len(spec_acs)} AC ids")
@@ -1948,6 +2100,18 @@ def validate_traceability(change_dir: Path, reporter: Reporter) -> None:
         else:
             reporter.pass_("spec.md verification mapping covers all AC ids with methods")
 
+
+def validate_plan_traceability(change_dir: Path, reporter: Reporter) -> None:
+    """Validate mappings from an existing plan to the spec's defined ACs."""
+    spec_path = change_dir / "spec.md"
+    plan_path = change_dir / "execution-plan.md"
+    if not spec_path.is_file() or not plan_path.is_file():
+        return
+    spec_acs = defined_ac_ids(read_text(spec_path))
+    if not spec_acs:
+        return  # The spec gate already reports the missing definitions.
+    print("\nLevel C: Traceability")
+    plan = read_text(plan_path)
     plan_trace = section_text(plan, "AC 到 Task 追溯")
     if not plan_trace:
         reporter.fail("execution-plan.md missing AC 到 Task 追溯 section body")
@@ -2039,6 +2203,12 @@ def validate_traceability(change_dir: Path, reporter: Reporter) -> None:
         reporter.fail("execution-plan.md Task details missing Files/Verification evidence: " + ", ".join(incomplete_detail_sections))
     elif trace_tasks:
         reporter.pass_("execution-plan.md Task details include file scopes and expected verification")
+
+
+def validate_traceability(change_dir: Path, reporter: Reporter) -> None:
+    """Compatibility entry point for callers requesting both traceability gates."""
+    validate_spec_verification(change_dir, reporter)
+    validate_plan_traceability(change_dir, reporter)
 
 
 def _dfx_main_table_pairs(design: str) -> list[tuple[str, str]]:
@@ -2861,10 +3031,7 @@ def validate_archive_placeholders(
 
         text = read_text(path)
         sections = list(artifacts[name].get("required_sections", []))  # type: ignore[arg-type]
-        file_markers: list[str] = []
-        for section in sections:
-            body = section_text(text, str(section))
-            file_markers.extend(unresolved_markers(body))
+        file_markers = unresolved_section_markers(text, sections)
 
         if file_markers:
             unresolved = True
@@ -2885,10 +3052,7 @@ def validate_archive_placeholders(
 
         text = read_text(path)
         sections = list(data.get("required_sections", []))  # type: ignore[arg-type]
-        file_markers: list[str] = []
-        for section in sections:
-            body = section_text(text, str(section))
-            file_markers.extend(unresolved_markers(body))
+        file_markers = unresolved_section_markers(text, sections)
 
         if file_markers:
             unresolved = True
@@ -2906,14 +3070,19 @@ def validate_archive_spec_mapping(change_dir: Path, reporter: Reporter) -> None:
         return
 
     plan = read_text(plan_path)
-    ac_task = section_text(plan, "AC 到 Task 追溯")
-    rows = table_with_columns(ac_task, ["AC", "Task", "验证状态（Pass/Fail/Blocked）"])
+    try:
+        ac_task = require_unique_section(plan, "AC 到 Task 追溯")
+        rows = delivery_table(ac_task or "", ["AC", "Task", "验证状态（Pass/Fail/Blocked）"])
+    except ValueError as error:
+        reporter.fail(f"execution-plan.md AC-to-Task traceability archive table: {error}")
+        return
     if not rows:
         reporter.fail("execution-plan.md AC-to-Task traceability table missing required archive columns")
         return
 
     incomplete: list[str] = []
     invalid_status: list[str] = []
+    not_pass: list[str] = []
     for row in rows:
         acs = sorted_ids(set(AC_RE.findall(row.get("AC", "")))) or ["<unknown AC>"]
         if (
@@ -2925,11 +3094,15 @@ def validate_archive_spec_mapping(change_dir: Path, reporter: Reporter) -> None:
         status = row.get("验证状态（Pass/Fail/Blocked）", "").strip().lower()
         if status not in {"pass", "fail", "blocked"}:
             invalid_status.extend(acs)
+        elif status != "pass":
+            not_pass.extend(acs)
 
     if incomplete:
         reporter.fail("execution-plan.md AC-to-Task traceability has archive-empty rows: " + ", ".join(sorted_ids(set(incomplete))))
     elif invalid_status:
         reporter.fail("execution-plan.md AC-to-Task traceability has invalid verification status: " + ", ".join(sorted_ids(set(invalid_status))))
+    elif not_pass:
+        reporter.fail("execution-plan.md AC verification not Pass: " + ", ".join(sorted_ids(set(not_pass))))
     else:
         reporter.pass_("execution-plan.md AC-to-Task traceability archive fields are complete")
 
@@ -2950,31 +3123,184 @@ def validate_archive_spec_mapping(change_dir: Path, reporter: Reporter) -> None:
         reporter.pass_("execution-plan.md 代码范围映射 covers all traced Tasks with files")
 
 
+def delivery_table(text: str, columns: list[str]) -> list[dict[str, str]]:
+    """Read one unambiguous delivery table without silently dropping bad rows."""
+    rows = require_unique_table_with_columns(text, columns)
+    if rows is None:
+        raise ValueError("missing table columns: " + ", ".join(columns))
+    lines = _visible_markdown(text).splitlines()
+    for index, line in enumerate(lines[:-1]):
+        header = split_table_row(line)
+        if not all(column in header for column in columns):
+            continue
+        if not is_separator_row(split_table_row(lines[index + 1])):
+            continue
+        if len(set(header)) != len(header):
+            raise ValueError("duplicate table columns")
+        for candidate in lines[index + 2:]:
+            if "|" not in candidate:
+                break
+            if len(split_table_row(candidate)) != len(header):
+                raise ValueError("malformed table row: " + candidate.strip())
+    return rows
+
+
+def validate_archive_task_completion(change_dir: Path, reporter: Reporter) -> None:
+    plan_path = change_dir / "execution-plan.md"
+    if not plan_path.is_file():
+        return
+    plan = read_text(plan_path)
+    try:
+        body = require_unique_section(plan, "Task 列表")
+        rows = delivery_table(body or "", ["TASK ID", "状态"])
+    except ValueError as error:
+        reporter.fail(f"execution-plan.md Task completion: {error}")
+        return
+    seen: set[str] = set()
+    if not rows:
+        reporter.fail("execution-plan.md Task completion: empty Task list")
+    for row in rows:
+        task = row["TASK ID"].strip()
+        if not TASK_RE.fullmatch(task):
+            reporter.fail("execution-plan.md Task completion: invalid TASK ID: " + task)
+        if task in seen:
+            reporter.fail("execution-plan.md duplicate Task in Task 列表: " + task)
+        seen.add(task)
+        if row["状态"].strip().lower() not in {"done", "complete", "completed", "已完成"}:
+            reporter.fail(f"execution-plan.md Task not complete: {task} ({row['状态']})")
+    details = section_text(plan, "Task 详情")
+    if re.search(r"^[ \t]*(?:[-*+]|[0-9]{1,9}[.)])[ \t]+\[ \](?=[ \t]|$)", details, re.MULTILINE):
+        reporter.fail("execution-plan.md unchecked Steps remain in Task 详情")
+
+
 def validate_archive_actual_results(change_dir: Path, reporter: Reporter) -> None:
     plan_path = change_dir / "execution-plan.md"
     if not plan_path.is_file():
         return
 
     plan = read_text(plan_path)
-    task_details = section_text(plan, "Task 详情")
-    detail_tasks = set(re.findall(r"^###\s+(TASK-\d+)\b", task_details, flags=re.MULTILINE))
+    try:
+        task_list = require_unique_section(plan, "Task 列表")
+        tasks = delivery_table(task_list or "", ["TASK ID"])
+    except ValueError as error:
+        reporter.fail(f"execution-plan.md Task list for Verification: {error}")
+        tasks = []
+    try:
+        task_details = require_unique_section(plan, "Task 详情") or ""
+    except ValueError as error:
+        reporter.fail(f"execution-plan.md Verification: {error}")
+        return
+    listed_tasks = {row["TASK ID"].strip() for row in tasks}
+    # Keep every occurrence: set-based extraction and search() could hide a
+    # second, failing detail block behind a first passing block.
+    details: dict[str, list[str]] = {}
+    unassigned: list[str] = []
+    current_task = None
+    for line in task_details.splitlines():
+        heading = atx_heading(line)
+        match = TASK_RE.match(heading[1]) if heading and heading[0] == 3 else None
+        if match:
+            current_task = match[0]
+            details.setdefault(current_task, []).append("")
+        elif current_task is not None:
+            # Custom headings stay in this Task until the next TASK heading;
+            # otherwise a later failing Verification table could disappear.
+            details[current_task][-1] += line + "\n"
+        else:
+            unassigned.append(line)
+    missing_details = listed_tasks - details.keys()
+    unknown_details = details.keys() - listed_tasks
+    duplicate_details = {task for task, blocks in details.items() if len(blocks) != 1}
+    if missing_details:
+        reporter.fail("execution-plan.md missing Task detail sections: " + ", ".join(sorted_ids(missing_details)))
+    if unknown_details:
+        reporter.fail("execution-plan.md Task details not in Task 列表: " + ", ".join(sorted_ids(unknown_details)))
+    for task in sorted_ids(duplicate_details):
+        reporter.fail("execution-plan.md duplicate Task detail: " + task)
     missing_actual: list[str] = []
+    not_pass: list[str] = []
+    invalid_tables = table_has_columns("\n".join(unassigned), ["Command / Evidence", "Expected Result"])
+    if invalid_tables:
+        reporter.fail("execution-plan.md unassigned Verification table before first Task detail")
 
-    for task_id in sorted_ids(detail_tasks):
-        pattern = re.compile(
-            rf"^###\s+{re.escape(task_id)}\b.*?$([\s\S]*?)(?=^###\s+TASK-\d+\b|\Z)",
-            flags=re.MULTILINE,
-        )
-        match = pattern.search(task_details)
-        detail = match.group(1) if match else ""
-        rows = table_with_columns(detail, ["Command / Evidence", "Expected Result", "Actual Result"])
-        if not rows or any(not meaningful(row.get("Actual Result", "")) for row in rows):
-            missing_actual.append(task_id)
+    for task_id, blocks in details.items():
+        for detail in blocks:
+            try:
+                rows = delivery_table(detail, ["Command / Evidence", "Expected Result", "Actual Result", "Final Status"])
+            except ValueError as error:
+                reporter.fail(f"execution-plan.md {task_id} Verification Final Status: {error}")
+                invalid_tables = True
+                continue
+            if not rows or any(not meaningful(row.get("Actual Result", "")) for row in rows):
+                missing_actual.append(task_id)
+            if any(row["Final Status"].strip().lower() != "pass" for row in rows):
+                not_pass.append(task_id)
 
     if missing_actual:
         reporter.fail("execution-plan.md Verification tables have empty Actual Result: " + ", ".join(missing_actual))
-    elif detail_tasks:
+    if not_pass:
+        reporter.fail("execution-plan.md Verification Final Status not Pass: " + ", ".join(not_pass))
+    if (listed_tasks and not missing_details and not unknown_details and not duplicate_details
+            and not missing_actual and not not_pass and not invalid_tables):
         reporter.pass_("execution-plan.md Verification tables have Actual Result filled")
+
+
+def validate_delivery_feedback(change_dir: Path, reporter: Reporter, *, archive: bool) -> None:
+    """Check declared dispositions, not the semantic truth of a repair claim."""
+    plan_path = change_dir / "execution-plan.md"
+    if not plan_path.is_file():
+        return
+    plan = read_text(plan_path)
+    try:
+        body = require_unique_section(plan, "问题闭环")
+        if body is None:
+            return  # Legacy/no-finding plans need no additional artifact.
+        columns = ["问题 ID", "来源", "问题与根因", "关联 AC/Task", "阻塞", "受影响交付件", "处理与回填", "复验依据", "状态"]
+        rows = delivery_table(body, columns)
+    except ValueError as error:
+        draft_warn_archive_fail(reporter, archive, f"execution-plan.md feedback: {error}")
+        return
+    known_acs = defined_ac_ids(read_text(change_dir / "spec.md")) if (change_dir / "spec.md").is_file() else set()
+    known_tasks = {row["TASK ID"].strip() for row in table_with_columns(section_text(plan, "Task 列表"), ["TASK ID"])}
+    seen: set[str] = set()
+    issues: list[str] = []
+    for row in rows:
+        finding = row["问题 ID"].strip()
+        if finding in seen:
+            issues.append("duplicate feedback ID " + finding)
+        seen.add(finding)
+        if not re.fullmatch(r"F-[0-9]+", finding):
+            issues.append("invalid feedback ID " + finding)
+        empty = [column for column in columns if not meaningful(row[column])]
+        if empty:
+            issues.append(f"{finding}: empty feedback fields: {', '.join(empty)}")
+        for column in ("处理与回填", "复验依据"):
+            if row[column].strip().lower() in {"pass", "通过", "resolved", "已修复"}:
+                issues.append(f"{finding}: feedback {column} needs concrete evidence")
+        state = row["状态"].strip().lower()
+        blocking = row["阻塞"].strip()
+        if blocking not in {"是", "否"}:
+            issues.append(f"{finding}: feedback 阻塞 must be 是/否")
+        if state not in {"resolved", "accepted"}:
+            issues.append(f"{finding}: feedback not closed ({row['状态']})")
+        if blocking == "是" and state == "accepted":
+            issues.append(f"{finding}: blocking feedback cannot be Accepted")
+        links = row["关联 AC/Task"]
+        acs, tasks = set(AC_RE.findall(links)), set(TASK_RE.findall(links))
+        if not acs and not tasks and not re.fullmatch(r"N/A[（(][^）)]+[）)]", links.strip()):
+            issues.append(f"{finding}: feedback needs AC/Task references or N/A(reason)")
+        if acs - known_acs or tasks - known_tasks:
+            issues.append(f"{finding}: feedback has unknown AC/Task references")
+        # Cell contains change-relative Markdown paths, separated by 、 or commas.
+        paths = [value.strip().strip('`') for value in re.split(r"[、,，]", row["受影响交付件"])]
+        for value in paths:
+            target = change_dir / value
+            if not value or Path(value).is_absolute() or not target.resolve().is_relative_to(change_dir.resolve()) or not target.is_file():
+                issues.append(f"{finding}: feedback artifact missing or outside change: {value}")
+    if issues:
+        draft_warn_archive_fail(reporter, archive, "execution-plan.md feedback: " + "; ".join(issues))
+    else:
+        reporter.pass_(f"execution-plan.md feedback dispositions complete ({len(rows)} findings)")
 
 
 def validate_archive_evidence_claims(change_dir: Path, unresolved_required: bool, reporter: Reporter) -> None:
@@ -2999,7 +3325,7 @@ def validate_archive_evidence_claims(change_dir: Path, unresolved_required: bool
         reporter.pass_("evidence does not claim readiness while required artifacts have unresolved markers")
 
 
-def validate_i18n_constraints(change_dir: Path, reporter: Reporter, archive_mode: bool) -> None:
+def validate_i18n_constraints(change_dir: Path, reporter: Reporter, archive_mode: bool, *, section_checked: bool = False) -> None:
     proposal_path = change_dir / "proposal.md"
     design_path = change_dir / "design.md"
     if not proposal_path.is_file() or not design_path.is_file():
@@ -3014,6 +3340,8 @@ def validate_i18n_constraints(change_dir: Path, reporter: Reporter, archive_mode
     design = _visible_markdown(read_text(design_path))
     body = section_text(design, I18N_SECTION)
     if not body:
+        if section_checked:
+            return  # validate_sections already emitted the single required-section failure.
         draft_warn_archive_fail(
             reporter,
             archive_mode,
@@ -3076,6 +3404,7 @@ def validate_archive_readiness(
 ) -> None:
     unresolved_required = validate_archive_placeholders(change_dir, artifacts, files, reporter)
     validate_archive_spec_mapping(change_dir, reporter)
+    validate_archive_task_completion(change_dir, reporter)
     validate_archive_actual_results(change_dir, reporter)
     validate_archive_evidence_claims(change_dir, unresolved_required, reporter)
 
@@ -3088,10 +3417,12 @@ def main(argv: list[str]) -> int:
                 "run the target repository's SDK/build checks separately. Exit codes remain 0/1."),
     )
     parser.add_argument("change_dir", help="ODK change directory, for example codespec/changes/arkui/12345")
+    parser.add_argument("--effective-contract", action="store_true", help="Print the merged level/profile contract as JSON without validating artifacts.")
+    parser.add_argument("--phase", choices=["define", "specify", "design", "plan"], help="Check the selected artifact and its dependencies; exclude future phases.")
     parser.add_argument(
         "--archive",
         action="store_true",
-        help="Enable strict final-readiness checks: unresolved placeholders, filled code mapping, and Actual Result evidence.",
+        help="Require final readiness: no placeholders, all ACs/Verification Pass, Tasks complete, code/evidence backfilled and findings closed.",
     )
     parser.add_argument(
         "--design-docs-submit",
@@ -3099,6 +3430,8 @@ def main(argv: list[str]) -> int:
         help="Require the five base design-docs files plus conditional evidence and enforce archive-equivalent final-readiness checks.",
     )
     args = parser.parse_args(argv[1:])
+    if args.phase and (args.archive or args.design_docs_submit):
+        parser.error("--phase cannot weaken archive or design-docs submission validation")
 
     change_dir = Path(args.change_dir).resolve()
     reporter = Reporter()
@@ -3107,35 +3440,65 @@ def main(argv: list[str]) -> int:
         print(f"Change directory does not exist: {change_dir}", file=sys.stderr)
         return 1
 
-    artifacts = parse_contract_artifacts(str(CONTRACT_PATH))
+    try:
+        effective = compile_contract(change_dir, CONTRACT_PATH, phase=args.phase, submission=args.design_docs_submit)
+    except (ValueError, OSError) as error:
+        print(f"Effective contract error: {error}", file=sys.stderr if args.effective_contract else sys.stdout)
+        return 1
+    if args.effective_contract:
+        print(json.dumps(effective, ensure_ascii=False, indent=2))
+        return 0
+    artifacts = effective["artifacts"]
     strict_delivery = args.archive or args.design_docs_submit
 
     mode = "archive" if args.archive else ("design-docs-submit" if args.design_docs_submit else "draft")
     print(f"Validating ODK artifact contract ({mode} mode): {change_dir}")
+    print(f"Delivery level: {effective['delivery_level']}; profiles: {', '.join(effective['profiles']) or 'none'}")
     print("\nLevel A: Change Directory")
     validate_dir_name(change_dir, reporter)
     validate_target_release(change_dir, reporter)
+    validate_sessions_sidecar(change_dir, reporter)
     files = validate_required_artifacts(change_dir, artifacts, reporter)
     validate_metadata_tracking(change_dir, reporter, required=args.design_docs_submit)
     validate_sections(change_dir, artifacts, files, reporter)
-    validate_api_spec_contract(change_dir, reporter)
-    validate_api_declaration_diffs(change_dir, reporter, archive=strict_delivery)
+    validate_effective_rules(change_dir, artifacts, reporter)
+    if "spec" in artifacts:
+        validate_api_spec_contract(change_dir, reporter)
+        validate_api_declaration_diffs(change_dir, reporter, archive=strict_delivery)
     proposal_path = change_dir / "proposal.md"
     if proposal_path.is_file():
-        validate_proposal_tables(read_text(proposal_path), reporter, archive=strict_delivery)
+        for issue in involvement_errors(read_text(proposal_path)):
+            reporter.fail(f"proposal.md: 不涉及项确认: {issue}")
+        validate_proposal_tables(read_text(proposal_path), reporter, archive=strict_delivery,
+                                 lite=effective["delivery_level"] == "lite")
     validate_present_optional_sections(change_dir, artifacts, reporter)
-    validate_ac_ids(change_dir, reporter, strict_delivery)
-    validate_traceability(change_dir, reporter)
-    validate_goal_us_coverage(change_dir, reporter)
-    validate_dfx_constraints(change_dir, reporter, strict_delivery)
-    validate_dfx_ac_gate(change_dir, reporter, strict_delivery)
-    validate_dfx_export_table(change_dir, reporter)
-    validate_dfx_ad_library_basis(change_dir, reporter)
+    if "spec" in artifacts:
+        validate_ac_ids(change_dir, reporter, strict_delivery)
+        validate_goal_us_coverage(change_dir, reporter)
+        validate_spec_verification(change_dir, reporter)
+    if "execution-plan" in artifacts:
+        validate_delivery_feedback(change_dir, reporter, archive=strict_delivery)
+        plan_path = change_dir / "execution-plan.md"
+        if plan_path.is_file():
+            plan = read_text(plan_path)
+            if effective["delivery_level"] == "lite" or section_texts(plan, ENVIRONMENT_SECTION):
+                template = CONTRACT_PATH.parent.parent / "templates/ai/execution-plan.md"
+                for issue in environment_errors(plan, read_text(template),
+                                                host_only_required=effective["delivery_level"] == "lite"):
+                    reporter.fail(f"execution-plan.md: {issue}")
+        validate_plan_traceability(change_dir, reporter)
+    if "design" in artifacts:
+        validate_dfx_constraints(change_dir, reporter, strict_delivery)
+        validate_dfx_ac_gate(change_dir, reporter, strict_delivery)
+        validate_dfx_export_table(change_dir, reporter)
+        validate_dfx_ad_library_basis(change_dir, reporter)
     validate_optional_evidence(change_dir, reporter)
     print("\nResource Constraints")
-    validate_resource_constraints(change_dir, reporter, archive=strict_delivery)
+    if not args.phase or args.phase == "plan":
+        validate_resource_constraints(change_dir, reporter, archive=strict_delivery)
     print("\ni18n Constraints")
-    validate_i18n_constraints(change_dir, reporter, strict_delivery)
+    if "design" in artifacts:
+        validate_i18n_constraints(change_dir, reporter, strict_delivery, section_checked=True)
     if strict_delivery:
         validate_archive_readiness(change_dir, artifacts, files, reporter)
 

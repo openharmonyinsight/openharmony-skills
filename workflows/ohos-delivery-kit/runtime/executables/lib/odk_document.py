@@ -29,9 +29,13 @@ BRACKET_PLACEHOLDER_RE = re.compile(
 )
 
 
-def _visible_markdown(text: str) -> str:
+def _visible_markdown(text: str, *, preserve_lines: bool = False) -> str:
     """Remove template guidance and fenced examples from user evidence."""
-    text = re.sub(r"<!--[\s\S]*?(?:-->|\Z)", "", text)
+    text = re.sub(
+        r"<!--[\s\S]*?(?:-->|\Z)",
+        lambda match: re.sub(r"[^\r\n]", "", match[0]) if preserve_lines else "",
+        text,
+    )
     lines = text.splitlines()
     visible: list[str] = []
     fence_character: str | None = None
@@ -86,15 +90,17 @@ def headings(text: str) -> set[str]:
     return result
 
 
-def section_texts(text: str, title: str) -> list[str]:
-    lines = _visible_markdown(text).splitlines()
+def _section_bodies(
+    text: str, title: str, *, preserve_lines: bool = False,
+) -> list[tuple[str, int]]:
+    lines = _visible_markdown(text, preserve_lines=preserve_lines).splitlines()
     matches: list[tuple[int, int]] = []
     for idx, line in enumerate(lines):
         match = atx_heading(line)
         if match and match[1] == title:
             matches.append((idx + 1, match[0]))
 
-    sections: list[str] = []
+    sections: list[tuple[str, int]] = []
     for start, start_level in matches:
         end = len(lines)
         for idx in range(start, len(lines)):
@@ -102,8 +108,17 @@ def section_texts(text: str, title: str) -> list[str]:
             if match and match[0] <= start_level:
                 end = idx
                 break
-        sections.append("\n".join(lines[start:end]))
+        sections.append(("\n".join(lines[start:end]), start + 1))
     return sections
+
+
+def section_texts(text: str, title: str) -> list[str]:
+    return [body for body, _ in _section_bodies(text, title)]
+
+
+def section_texts_with_lines(text: str, title: str) -> list[tuple[str, int]]:
+    """Return visible bodies and their first 1-based source-file line numbers."""
+    return _section_bodies(text, title, preserve_lines=True)
 
 
 def section_text(text: str, title: str) -> str:

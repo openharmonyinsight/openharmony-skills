@@ -6,6 +6,20 @@ license: MIT
 
 # ODK Validate
 
+## Existing artifacts first
+
+<!-- ODK:reference contracts/skill-guides/router/document-updates.md -->
+Before this skill's interview, template loading, delegation or writes, read
+`contracts/skill-guides/router/document-updates.md`. Read every existing target's
+full frontmatter and body first; revise it in place and preserve confirmed
+content, stable IDs and evidence. Create a target only when it does not exist.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
+Read `contracts/skill-guides/router/delivery-levels.md` and obtain the effective
+contract before choosing artifacts, sections or phase prerequisites.
+<!-- /ODK:reference -->
+
 ## Input
 
 - Change directory path (e.g. `codespec/changes/arkui/12345/`)
@@ -19,6 +33,13 @@ license: MIT
 - Archive migration validator: `runtime/executables/validate-archive-migration.py`. Use `plan --map <map.tsv>` before moving legacy archives and `check-staged --map <the-same-map.tsv>` before committing so old-source deletion and planned-target conservation are verified.
 
 ## Steps
+
+<!-- ODK:reference contracts/skill-guides/delivery/feedback.md -->
+Read `contracts/skill-guides/delivery/feedback.md`. Record validation findings in
+the existing plan, identify affected owning artifacts and return corrections to
+the coordinator. Re-run on the final backfilled documents; document validation
+does not prove semantic consistency or successful target tests.
+<!-- /ODK:reference -->
 
 For configuration-dependent steps, use the effective-configuration command defined in `using-odk`; do not merge installation files independently. Stop on config errors. Existing execution-plan commands remain authoritative until explicitly changed.
 
@@ -35,7 +56,10 @@ For configuration-dependent steps, use the effective-configuration command defin
    - **DFX 故障模式处置（Level C3，故障模式拦截项）**：主表有命中行或存在 AD 推导条目时，`### DFX 故障模式处置` 必须存在且逐条覆盖（漏处置行、悬空 AC 引用、非法处置值、空证据列、AD 处置行对象/故障模式与原条目不符 → FAIL；整表缺失 → Draft WARN / Archive FAIL）。处置为「新增 AC/复用 AC」的关联 AC 必须存在于 spec.md；处置为「纳入设计约束」的证据列须含设计决策/约束引用与关联 TASK 编号；Archive 时关联 AC 与设计约束 Task 在「AC 到 Task 追溯」的全部行验证状态必须为 Pass（同一 AC/Task 多行时后续 Pass 不得掩盖 Fail/Blocked）。
 4. Check Level D archive readiness:
    - no critical placeholders remain in required archive content
-   - implementation files, Task links, verification status, and Actual Result are backfilled where implementation has happened
+   - every AC traceability row is Pass; a later Pass cannot mask Fail/Blocked
+   - every Task has status Done/Complete/Completed/已完成, with no unchecked Task Steps
+   - implementation files and Task links are backfilled; each Verification row has meaningful Actual Result and explicit Final Status=Pass (retain historical Red failures)
+   - the existing plan's 问题闭环 table, when present, has complete, unique finding IDs and valid AC/Task/artifact references; blocking items must be Resolved, nonblocking accepted risks must be Accepted with disposition and recheck evidence
    - optional evidence under `evidence/reviews/` and `evidence/gates/` is non-empty and supports any passing conclusion
    - `API/SDK=是` changes must archive `evidence/task1-api-declaration-en.diff` and `evidence/task1-api-declaration-zh.diff` (validator enforcement: Draft missing → WARN, Archive missing → FAIL)
 5. Report PASS（通过）/WARN（警告）/FAIL（失败）by level. Warnings do not block draft review, but archive readiness requires explicit resolution or accepted risk. API signatures are opaque document text: check presence, placeholders and duplicates only, not C/ArkTS syntax, types or array bounds. Document PASS is not compilation success. Source review and target toolchain/CI own language correctness; report unrun checks as NOT VERIFIED. Do not require GCC for document validation.

@@ -1,3 +1,13 @@
+---
+sessions: ""
+---
+
+## 会话记录
+
+<!-- 从 .sessions.json sidecar 镜像（由 skill 自动填充，勿手动编辑） -->
+| Session ID | Skill | 时间(UTC) | 操作 |
+|------------|-------|----------|------|
+
 # [特性名称] 验证规格
 
 > 基于 spec.md 和 design.md 派生。spec.md 已描述的正常流程、异常规则、

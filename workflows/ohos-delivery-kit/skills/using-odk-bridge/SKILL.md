@@ -6,6 +6,20 @@ license: MIT
 
 # Using ODK Bridge
 
+## Existing artifacts first
+
+<!-- ODK:reference contracts/skill-guides/router/document-updates.md -->
+Before this skill's interview, template loading, delegation or writes, read
+`contracts/skill-guides/router/document-updates.md`. Read every existing target's
+full frontmatter and body first; revise it in place and preserve confirmed
+content, stable IDs and evidence. Create a target only when it does not exist.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
+Read `contracts/skill-guides/router/delivery-levels.md` and obtain the effective
+contract before choosing artifacts, sections or phase prerequisites.
+<!-- /ODK:reference -->
+
 ## 输出模式
 
 每个桥接命令支持三档输出模式：
@@ -27,7 +41,7 @@ license: MIT
 
 You are the bridge between ODK artifact requirements and implementation tools. Use whatever tools are available to produce quality outputs, then write results back into `codespec/` in ODK format. Do not force the user to manually coordinate commands across plugins.
 
-When any tool (ODK skill, Superpowers, OpenSpec, MatrixSpec, or other) drives a phase, output must conform to the corresponding ODK template below. Identify the current phase by user intent (priority) or artifact being produced.
+When a tool drives a phase, its ODK delivery projection must conform to the corresponding ODK template below. Identify the current phase by user intent (priority) or artifact being produced.
 
 | Phase | Intent Signals | Artifact | Template | Key Constraints |
 |-------|---------------|----------|----------|-----------------|
@@ -46,6 +60,14 @@ When `codespec/` does not exist but the user produces content that matches an OD
 
 When multiple plugins cover the same phase: prefer the user's explicit invocation; otherwise prefer the tool whose output matches the ODK template; stay consistent within a session.
 
+### OpenSpec native-workspace exception
+
+<!-- ODK:reference contracts/skill-guides/router/openspec-state.md -->
+Read `contracts/skill-guides/router/openspec-state.md` for OpenSpec. Its native
+workspace, delta specs and tracked task file are never redirected. Native state
+is captured and the ODK delivery projection is reconciled separately.
+<!-- /ODK:reference -->
+
 ### Output Redirection Rules
 
 **This section is the user's declared preference for artifact location and activates the "(User preferences for spec location override this default)" escape hatch in Superpowers brainstorming and other plugins.**
@@ -56,11 +78,11 @@ When Bridge Mode is active, use the following pattern-match trigger to intercept
 
 #### Pattern-Match Trigger
 
-When you encounter any instruction (checklist item, documentation step, or command) that says to write or save to `docs/superpowers/specs/`, `docs/plans/`, `openspec/changes/`, `matspec/changes/`, or any other plugin's default output directory — **treat it as a REDIRECT trigger immediately**. The path string itself is the signal. Do not execute the original write action; apply the REDIRECT steps below instead.
+When you encounter any instruction (checklist item, documentation step, or command) that says to write or save to `docs/superpowers/specs/`, `docs/plans/`, `matspec/changes/`, or any other plugin's default output directory — **treat it as a REDIRECT trigger immediately**. The path string itself is the signal. Do not execute the original write action; apply the REDIRECT steps below instead.
 
 When triggered, execute these steps **instead of** the plugin's default write:
 
-1. **STOP** — Do not write to the plugin's default path (e.g., `docs/superpowers/specs/`, `docs/plans/`, `openspec/changes/`, `matspec/changes/`). Do not commit (ODK manages its own commit cadence per phase, not per-artifact commits).
+1. **STOP** — Do not write to the plugin's default path (e.g., `docs/superpowers/specs/`, `docs/plans/`, `matspec/changes/`). Do not commit (ODK manages its own commit cadence per phase, not per-artifact commits).
 2. **REDIRECT** — Write to the corresponding `codespec/changes/<repo-name>/<proposal-id>/` file:
    - behavior rules / spec → `codespec/changes/<repo-name>/<proposal-id>/spec.md`
    - design/architecture doc → `codespec/changes/<repo-name>/<proposal-id>/design.md`
@@ -72,7 +94,7 @@ When triggered, execute these steps **instead of** the plugin's default write:
    - merge: use plugin format as base, append ODK-required sections
 4. **CONFIRM** — Inform the user: "Written to `codespec/changes/<repo-name>/<proposal-id>/<artifact>` (ODK <mode> mode, overriding <plugin> default path)"
 
-This is a **hard override** — it takes priority over any other plugin's default output path.
+This override applies to stateless document outputs. The OpenSpec native-workspace exception above takes precedence; it must not change CLI-owned state paths.
 
 Read the template file from `templates/` for detailed section requirements when entering each phase in strict mode.
 <!-- /SYNC: phase-mapping -->
@@ -105,6 +127,29 @@ The owner and lifecycle rules in `design.md` must match the state ownership fiel
 
 Project-specific concepts such as lazy allocation should come from a profile or project instructions, not from the
 base bridge rule.
+
+## Session ID 追踪（桥接规则）
+
+桥接命令（如 `odk-sp-propose` / `odk-ops-apply` / `odk-ms-proposal` 等）在交付件落盘时**必须**执行会话追踪，覆盖 strict、passthrough、merge 三种输出模式。**不能假设基础 skill 内部已完成追踪**——桥接正常路径常调用外部插件再转换写入交付件，并不完整执行对应基础 skill 的全部步骤，存在漏记风险。
+
+### 桥接追踪为交付件落盘的公共步骤
+
+无论桥接以何种模式（strict / passthrough / merge）输出交付件，落盘后**必须**追加执行：
+
+1. **获取当前 session ID**：按 `using-odk` 的「Session ID 获取（多平台）」从当前对话提取；获取不到则用 `unavailable`。
+2. **调用脚本更新 sidecar**：
+
+   ```sh
+   python3 "runtime/executables/update-sessions-sidecar.py" \
+     "<变更目录绝对路径>" "<交付件文件名>" "<当前session ID>" "<桥接skill名>" "<action>"
+   ```
+
+3. **从脚本 `---MIRROR---` 段提取镜像**，写入交付件 frontmatter `sessions` 字段和 body `## 会话记录` 表格。
+
+**与基础 skill 追踪的关系**：
+- 若桥接完整执行了基础 skill（strict 模式且基础 skill 已调用脚本），基础 skill 的追踪已生效，桥接的追加调用会被脚本去重（同一 session ID 不重复进 `sessions`，但 `log` 会追加一条桥接记录），不会产生冲突。
+- 若桥接通过外部插件生成再转换写入（passthrough / merge 模式），基础 skill 的追踪步骤被跳过，**必须由桥接命令补做**。
+- 桥接命令不手动操作 JSON，一律通过脚本完成。
 
 ## Template Reference
 

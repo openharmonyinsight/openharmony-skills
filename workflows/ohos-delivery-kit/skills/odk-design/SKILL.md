@@ -6,6 +6,20 @@ license: MIT
 
 # ODK Design
 
+## Existing artifacts first
+
+<!-- ODK:reference contracts/skill-guides/router/document-updates.md -->
+Before this skill's interview, template loading, delegation or writes, read
+`contracts/skill-guides/router/document-updates.md`. Read every existing target's
+full frontmatter and body first; revise it in place and preserve confirmed
+content, stable IDs and evidence. Create a target only when it does not exist.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
+Read `contracts/skill-guides/router/delivery-levels.md` and obtain the effective
+contract before choosing artifacts, sections or phase prerequisites.
+<!-- /ODK:reference -->
+
 ## Key Rules
 
 - Keep the base `design.md` template minimal for simple changes.
@@ -25,29 +39,16 @@ license: MIT
 
 ## Steps
 
--1. **Code-grounded brainstorm (run before generating design):** Two sub-steps — read code first, then interview based on what you find.
+-1. **Shared brainstorm gate:** Run the same interview as standalone `odk-brainstorm` inline before generating design. Trace affected callers/callees, state holders, lifecycle, thread/queue/lock boundaries, failure propagation and compatibility assumptions with file:line evidence. Focus decisions on ownership, invariants, ordering, recovery, migration and DFX consequences. Existing code constrains the options; it does not select the user's desired failure policy.
 
-   **Sub-step A — Read the code:** Before asking anything, explore the codebase deeply for the modules the change touches. This is not a conditional step — do it for every change that touches existing code:
-   - Trace the call chain from the entry point of the change to its callers and callees; record file:line for each hop
-   - Find existing state holders: who owns each relevant data structure, which methods mutate it, what the invariants are
-   - Find existing concurrency contracts: which thread/queue executes each path, which locks protect shared state, where callbacks fire
-   - Find existing failure handling: how each error propagates, what callers do on failure, whether rollback or cleanup is performed
-   - Find existing lifecycle management: who allocates, who frees, what happens on early exit or exception
-   - Note any contradiction between `spec.md`/`proposal.md` assumptions and what the code actually shows
+<!-- ODK:reference contracts/skill-guides/brainstorm/interview.md -->
+Read `contracts/skill-guides/brainstorm/interview.md` in full and apply its decision state, questioning, ODK coverage and completion gate before generating the design.
+<!-- /ODK:reference -->
 
-   State what you found (file:line references for each key finding). Only skip for pure new modules with no existing code.
-
-   **Sub-step B — Interview based on code findings:** For each architecture decision you cannot derive from code + spec, ask one focused question at a time — grounded in a specific code location, not a generic template:
-   - State ownership that is ambiguous: "I see `FooManager` holds `bar_map_` but your change creates `Bar` objects in a callback on thread X — who inserts them into `bar_map_`, and is `bar_map_` protected by the existing mutex on line Y?"
-   - Concurrency boundary that is unresolved: "The existing path runs on the IPC thread (file:line), but your change adds a heavy computation — should it stay on the IPC thread or dispatch to a worker queue?"
-   - Failure recovery that code does not define: "When `CreateSession()` returns `ERR_NO_MEMORY` (file:line), the existing caller ignores it — should your change introduce a recovery path, or keep the same behaviour?"
-   - Migration or compatibility gap: "The existing wire format has no version field (file:line) — how should old clients behave when they receive a message with the new field?"
-   - DFX fault mode without a recovery strategy: "The proposal lists network timeout as a fault mode but doesn't specify whether to retry, surface to caller, or degrade silently"
-
-   If `spec.md` and code together answer every decision, briefly state the self-resolved decisions in one sentence and proceed to Step 0 immediately — do not skip silently without any output.
+   Carry the checked code baseline and confirmed decisions into design. Proceed to Step 0 only after completion or an explicit bypass; retain unresolved items as such in the draft.
 
 0. Check for subsystem profile: read and follow `contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.design` (additional sections, fragments) and `agent_instructions.design`
-1. **Code fact baseline:** Consolidate the findings from Step -1 Sub-step A into a structured baseline: file:line references for key data structures, entry-point signatures, call chain hops, concurrency boundaries, and failure paths. Use this baseline to populate `代码事实基线` in `design.md`. Skip only for pure greenfield modules, pure documentation changes, or config-only changes.
+1. **Code fact baseline:** Consolidate the shared brainstorm's code findings into a structured baseline: file:line references for key data structures, entry-point signatures, call chain hops, concurrency boundaries, and failure paths. Use this baseline to populate `代码事实基线` in `design.md`. Skip only for pure greenfield modules, pure documentation changes, or config-only changes.
 2. Read template from `templates/ai/design.md`
 3. Generate `design.md` per the template. Conditionally include `代码事实基线`, `类图`, and `状态归属与不变量` when applicable — add `类图` (Mermaid `classDiagram`) when the change involves class/interface inheritance or implementation hierarchies (e.g. IPC interface→proxy→stub→impl) or cross-module composition. Reference specific `spec.md` AC numbers in design decisions.
    If any proposal `资源开销审视` dimension is `required`, expand `资源设计` (`contracts/artifacts.yaml#resource_contract`). Content detail is subsystem-owned; ODK requires the section and meaningful, non-placeholder content without imposing a subsystem design schema.
@@ -118,6 +119,22 @@ license: MIT
       - 依赖类型：仓内封装（当前仓模块路径）或外部依赖（用户确认的仓路径）
       - 接口查询：确认仓路径后，扫描文件查询目标API，将签名填入 「接口/方法」 列
       - 汇总行：`| 合计 | N 个调用点 | 仓内: X / 外部: Y | - | - | - |`
+
+## Session ID 追踪
+
+生成 `design.md` 后，调用脚本更新 sidecar（详见 `using-odk` 的 `## Session ID 追踪契约`）。**禁止手动操作 JSON**：
+
+1. 获取当前 session ID（**当前对话**的系统提示 "Current conversation session ID: ses_xxx"）。
+2. 调用脚本（原子性 read-append-write，不丢已有 log 条目）：
+
+   ```sh
+   python3 "runtime/executables/update-sessions-sidecar.py" \
+     "<变更目录绝对路径>" "design.md" "<当前session ID>" "odk-design" "<action>"
+   ```
+
+3. 从脚本输出的 `---MIRROR---` 段提取 `sessions` 字段和 `## 会话记录` 表格，写入交付件 frontmatter + body 开头（frontmatter 之后、正文 `#` 标题之前）。
+
+**关键**：sidecar `.sessions.json` 是权威源。即使 `design.md` 的 frontmatter 或表格在 body 重生成时丢失，下一个 skill 从 sidecar 读取，数据不丢。脚本保证 sidecar 的原子追加。
 
 ## Output
 

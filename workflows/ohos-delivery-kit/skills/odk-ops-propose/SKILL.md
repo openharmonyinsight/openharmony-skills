@@ -6,9 +6,32 @@ license: MIT
 
 # ODK OPS Propose
 
+## Existing artifacts first
+
+<!-- ODK:reference contracts/skill-guides/router/document-updates.md -->
+Before this skill's interview, template loading, delegation or writes, read
+`contracts/skill-guides/router/document-updates.md`. Read every existing target's
+full frontmatter and body first; revise it in place and preserve confirmed
+content, stable IDs and evidence. Create a target only when it does not exist.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
+Read `contracts/skill-guides/router/delivery-levels.md` and use the effective
+contract. It takes precedence over standard-only artifact lists below; native
+OpenSpec schemas remain standard/critical and lite uses the base flow.
+<!-- /ODK:reference -->
+
+## Native OpenSpec state
+
+<!-- ODK:reference contracts/skill-guides/router/openspec-state.md -->
+Read `contracts/skill-guides/router/openspec-state.md` before invoking OpenSpec.
+Keep the native workspace and task file authoritative; capture native CLI state
+and reconcile existing ODK artifacts without replacing either side.
+<!-- /ODK:reference -->
+
 ## Purpose
 
-One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta specs + design + tasks, then redirect output to `codespec/changes/<repo-name>/<proposal-id>/`.
+One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta specs + design + tasks, then reconcile the delivery projection under `codespec/changes/<repo-name>/<proposal-id>/`.
 
 ## Preconditions
 
@@ -17,13 +40,28 @@ One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta s
 - `codespec/changes/<repo-name>/<proposal-id>/` skeleton must exist (run `{{CMD_PREFIX}}init` first).
 - If OpenSpec is unavailable, use the fallback chain declared in `adapters/openspec.yaml` and clearly report the degradation.
 
+## Confirm the build product before invoking the bridge
+
+First apply the host-only exception in the delivery-level and product guides.
+Only target-build/device plans require the menu and firmware selection below.
+
+Run `python3 runtime/executables/lib/odk_repository.py --build-product-options`
+(source checkout: `python3 scripts/lib/odk_repository.py --build-product-options`).
+<!-- ODK:reference contracts/skill-guides/delivery/build-products.md -->
+Read `contracts/skill-guides/delivery/build-products.md`, show the configured
+menu and wait for an explicit product choice before invoking opsx:propose,
+because it also generates the execution plan. Reuse a real choice already made
+for this plan; a configured default or general autonomous/recommended-options
+authorization does not confirm a product.
+<!-- /ODK:reference -->
+
 ## Steps
 
 1. Invoke OpenSpec `/opsx:propose` which produces proposal + delta specs + design + tasks in one call.
-2. When OpenSpec tries to write to `openspec/changes/`, apply `using-odk-bridge` Output Redirection Rules instead.
+2. Preserve OpenSpec’s native CLI-returned output paths. Capture native status and source artifacts using `runtime/executables/lib/odk_openspec.py`, then read and revise existing ODK targets per the native-state guide. Never redirect `openspec/changes/`.
 3. Process output per the active output mode (strict/passthrough/merge, default strict):
    - **strict**: Transform each artifact to conform to ODK templates at `templates/ai/`.
-   - **passthrough**: Copy original format to `codespec/changes/<repo-name>/<proposal-id>/` unchanged.
+   - **passthrough**: Reconcile source content in original format within `codespec/changes/<repo-name>/<proposal-id>/` unchanged.
    - **merge**: Use OpenSpec format as base, append ODK-required sections.
 4. In strict mode, ensure ODK-required fields are present:
    - proposal: target_release, non-goals, `1+8 设备差异规格`, `外部依赖`, 8-dimension N/A table, success criteria.

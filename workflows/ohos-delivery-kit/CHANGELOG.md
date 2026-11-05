@@ -4,6 +4,167 @@ All notable changes to the published `ohos-delivery-kit` workflow are documented
 this file. Source artifacts are synchronized from
 `oshunter/ohos-delivery-kit` `main` through the marketplace publisher.
 
+## [0.14.3] - 2026-10-31
+
+Source: `main@67f904394df4743913a42f56dae7f6b89732eb08`.
+
+### Added
+
+- Track the Session ID of every deliverable update in a `.sessions.json` sidecar
+  and mirror it into frontmatter plus a `## 会话记录` table. The new
+  `update-sessions-sidecar.py` takes a cross-platform lock, deduplicates sessions
+  without dropping log entries, accepts OpenCode `ses_*` and Codex/Claude UUIDs,
+  and fails open when the host exposes no ID. Templates, contracts, validation,
+  the Claude/Codex/OpenCode/OpenClaw hooks and nine skills carry the same
+  contract (source PR !181).
+- Load the OpenCode plugin under OpenCode 2.x through a V2 default export with
+  `{id, setup}` while keeping the V1 named export, so the bootstrap and
+  session-ID context hook run on both versions (source PR !181).
+- Query one effective delivery contract and validate by phase: base rules,
+  recorded profiles, artifact dependencies and conditional triggers merge into a
+  single result shared by generation and validation (source PR !193).
+- Add `lite` / `standard` / `critical` delivery levels. Lite changes need fewer
+  sections and may omit a standalone design; critical changes add a validation
+  spec and the applicable threat analysis. A host-only verification plan may
+  declare `host-only` without choosing a target product or device (source
+  PR !193).
+- The OpenSpec bridge collects native CLI state, immutable source snapshots and
+  task mapping, keeps its native directory, delta and task progress, then syncs
+  the ODK delivery artifacts separately (source PR !193).
+
+### Changed
+
+- Clarify the boundaries of Chinese placeholder markers and how to fill status
+  values, with regressions for ordinary Chinese prose and explicit status values
+  (source PR !193).
+- Refresh quick-start, user guide and handoff docs for version checks,
+  configured-skill installation and initialization, and state that the source
+  version is not the published version (source PR !193).
+
+### Fixed
+
+- Every skill reads the complete existing target document before revising it in
+  place, preserving confirmed decisions, stable IDs, progress and evidence, and
+  creates a file only when it is missing; init also reuses an existing proposal
+  (source PR !193).
+- Profile-added sections, AC categories, prohibitions and required dimensions
+  participate in programmatic validation; resource, security and i18n trigger
+  results enter the effective contract; OpenSpec native writes are no longer
+  redirected into ODK directories (source PR !193).
+- Review, test, validate and bridge findings are written back to the affected
+  artifacts and recorded with re-verification in the existing execution plan;
+  changing an input invalidates affected earlier conclusions. Archive requires
+  all ACs and verifications to pass, tasks complete and blocking issues closed,
+  keeps historical Red evidence and adds a Verification Final Status (source
+  PR !194).
+- Post-PR repairs must be synced to the original source PR and re-verified
+  against its actual head; a new read-only source-publication check blocks
+  uncommitted or unpushed repairs. Incomplete Steps recognize ordered and
+  unordered lists, and a clean result omits the closure section without a
+  warning (source PR !194).
+- The Codex uninstaller includes `.codex/runtime/` in the manifest path scope,
+  cleans runtime files still recorded in the manifest on upgrade, and removes
+  runtime libraries and assets on uninstall while preserving unlisted user
+  tools, skills and configuration; adds install/upgrade/uninstall regressions
+  (source PR !195, issue #151).
+- Codex deletes manifest-owned files after a preflight and never follows
+  directory links; unsafe paths keep the manifest and stop the upgrade. User
+  extension configuration is never deleted even if it appears in the manifest,
+  and missing-manifest guidance plus Codex install docs are added (source
+  PR !195).
+- Codex first install, upgrade and uninstall share resource and path rules;
+  installation rejects directory links before writing and before backing up
+  configuration; unknown or illegal manifest entries fail and keep the
+  manifest. Errors report the concrete path and errno, and whole-package
+  manifest coverage is checked (source PR !195).
+- Ship the OpenSpec `ohos-spec-driven` schema and its templates under
+  `runtime/assets/adapters/openspec-schemas/`, so bridge skills can install the
+  complete schema from the published package instead of a source-only path
+  (source PR !198).
+- Treat the legacy `国际化/无障碍` involvement label as `国际化` when reading
+  existing artifacts, so previously written tables stay valid (source PR !198).
+- Keep OpenSpec's native `ADDED` / `MODIFIED` / `REMOVED Requirements` delta
+  sections, with US IDs in `### Requirement:` titles and AC IDs in
+  `#### Scenario:` titles carrying WHEN/THEN behavior, in the shipped schema,
+  the spec template and the bridge guide; the previous template emitted an AC
+  list that native validation rejects (source PR !199).
+- Require native delta validation before an authorized archive or main-spec
+  merge, since status/apply completion only tracks artifacts and tasks
+  (source PR !199).
+- Require complete archive evidence: every listed task needs exactly one detail
+  block, all verification rows need Actual Result and Pass status, and unassigned
+  tables or duplicate details fail; custom headings inside Task details no
+  longer hide a failing verification table (source PR !202).
+- Keep native OpenSpec Requirement and Scenario titles verbatim for
+  MODIFIED/REMOVED requirements, since those titles are archive matching keys;
+  record ODK US/AC associations in the delivery projection and
+  `requirement_map` / `scenario_map` instead of renaming the native titles
+  (source PR !202).
+- Require lite execution plans to declare `验证范围 = host-only` and reject
+  target build or device commands in the plan and its task verification
+  (source PR !202).
+- Detect target tools executed inside quoted command substitutions, so a
+  host-only plan such as `test "$(hdc shell uname)" = OpenHarmony` again needs a
+  target product and device; single quotes, escaped literals, tool lookups and
+  `noexec` arguments keep their host-only meaning, and only an enclosing
+  Markdown code span is stripped (source PR !203).
+- Accept quoted session IDs in YAML block and flow sequences, and keep partial
+  writes from corrupting the sidecar (source PR !181).
+- Run the Node.js session-start hooks directly on Windows, replace real session
+  IDs in examples with fake data, and remove the unused dsh adapter
+  (source PR !181).
+
+## [0.14.2] - 2026-10-30
+
+Source: `main@b7b728353dad9a546ba74049155f365493e08159`.
+
+### Added
+
+- Entry commands check for ODK updates before running and compare the session
+  snapshot instead of on-disk versions, so an update already seen in this session
+  is not reported again (source PR !182).
+- Configured skills are installed on demand: when a configured skill is missing
+  for the current agent, ODK reads the install link from the comment above the
+  parameter (user override first, then the default config), verifies it, installs
+  it and continues. Covers review hooks, post-CR/MR/PR hooks, device flashing and
+  CI/online-test triggers; a step that needs a restart stays pending (source
+  PR !186).
+- brainstorm, propose, spec and design share one decision-interview protocol that
+  separates code facts, confirmed goals and assumptions, tracks open questions,
+  decisions, contradictions and their dependencies between rounds, and reopens
+  the affected decisions when a premise changes (source PR !179).
+
+### Changed
+
+- `post_pr_hooks` is renamed to `post_cr_mr_pr_hooks`. The legacy name stays
+  readable in user overrides, and the new key wins when both appear in the same
+  file, including an explicit empty value (source PR !185).
+- `构建与验证环境` is no longer a globally required `execution-plan.md` section.
+  Current plans still fill it through the plan template and the example check,
+  while legacy plans keep the implement-time backfill (source PR !148).
+
+### Fixed
+
+- Archive validation distinguishes real unfinished values from prohibition
+  examples: `TBD` / `TODO` quoted after 不得/禁止/请勿 + 使用/出现 no longer blocks
+  archiving, and markers written next to Chinese text are detected too (source
+  PR !191, issues #149/#150).
+- Archive placeholder diagnostics report the section name and the file line
+  (from 1) instead of a section-relative offset, for required and optional
+  documents alike (source PR !191, issue #150).
+- Entry commands continue the original request when a legacy installer never
+  injects a session version snapshot, rather than asking for a restart that
+  cannot help. A genuine pending restart or incomplete upgrade still stops the
+  step (source PR !188).
+- Distribution works with macOS system tools: no GNU sed, BSD `find` and Bash 3.2
+  are supported, and shared resource replacement uses a Python POSIX file lock
+  (source PR !189).
+- plan requires explicit confirmation of the build product before writing the
+  execution plan instead of silently adopting the configured default, and records
+  the candidate list with the confirmed product (source PR !183).
+- The update flow verifies each agent's installation after updating and keeps the
+  pending step when a restart or a later round is required (source PR !184).
+
 ## [0.14.0] - 2026-10-28
 
 Source: `main@bfcaabbbea79835569dbf93d61925083a001d570`.

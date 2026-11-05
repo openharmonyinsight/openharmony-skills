@@ -1,7 +1,10 @@
-version: 1
+version: 2
 adapter: openspec
 status: supported
-purpose: "Use OpenSpec for structured change artifacts and delta specs while ODK keeps the final archive contract."
+purpose: "OpenSpec owns native workflow state; ODK reconciles a delivery projection and validates its archive."
+state_owner: openspec
+workspace_policy: native-with-odk-projection
+capture_executable: lib/odk_openspec.py
 commands:
   - name: odk-ops-propose
     source_capability: "/opsx:propose"

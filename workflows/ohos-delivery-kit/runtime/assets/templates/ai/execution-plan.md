@@ -1,3 +1,13 @@
+---
+sessions: ""
+---
+
+## 会话记录
+
+<!-- 从 .sessions.json sidecar 镜像（由 skill 自动填充，勿手动编辑） -->
+| Session ID | Skill | 时间(UTC) | 操作 |
+|------------|-------|----------|------|
+
 # Execution Plan
 
 ## 输入状态
@@ -7,21 +17,24 @@
 | Proposal | proposal.md | Approved |
 | Spec | spec.md | Approved |
 | Design | design.md | Approved |
+<!-- lite 未生成独立设计时删除 Design 行；保留既有设计的决策。 -->
 
 ## 执行原则
 
 <!-- SYNC: execution-principles -->
-- **Spec 权威：** 若实现细节与 `spec.md` 的 AC（验收标准）、错误码或兼容性声明冲突，先更新 spec/design，再继续实现。
+- **Spec 权威：** 实现违反已确认 AC 时修代码，不得降低 AC；发现规格缺失或设计变更时，先按根因回填受影响交付件，再继续实现。
 - **测试/证据先行：** 每个 Task 先写失败测试；无法单测的集成行为必须先写明可复现证据缺口。
 - **任务小型化：** 一个 Task 只覆盖一个独立闭环。跨 API、事件链、状态缓存、渲染链、生命周期的需求必须拆成多个 Task。
 - **文件边界：** Task 只能修改 `Files` 表列出的文件；若构建暴露额外声明或 fixture 需求，先更新本计划。
 - **状态所有权唯一：** 新增状态必须明确 owner、key/index、创建时机、清理触发和只读消费者。
-- **证据回填：** Task 完成后必须回填本计划「AC 到 Task 追溯」验证状态、「代码范围映射」实际文件、per-task `Actual Result`。
+- **证据回填：** Task 完成后回填 AC 验证状态、代码范围映射、per-task Actual Result 与 Final Status；review/测试/validate 问题回写原交付件并在「问题闭环」记录复验，输入改变即作废受影响旧结论。
 - **反伪完成：** 只补声明、只写存储结构、只覆盖 happy path、只跑非相关测试，都不能替代 AC 闭环。
 - **可交接执行（Agent 执行契约）：** 本计划须能被新 Agent 在无历史对话上下文下逐 Task 执行；执行契约由各 Task 结构承载——`只读上下文`/`Files`/`禁止修改文件`（上下文打包）、`Steps` 的 RED→GREEN（测试优先）、`Verification` 的 Expected/Actual（期望输出）、`Review Handoff`（评审交接）；每 Step 为含命令或代码方向的 2–5 分钟动作。
 <!-- /SYNC: execution-principles -->
 
 ## 构建与验证环境
+
+> 所有 Task 仅使用仓库内主机测试且不依赖目标编译/设备时，用「验证范围 = host-only」和实际「测试命令」替代下方产品表；不要保留旧产品、模拟器或固件配置。涉及目标编译/设备时仍完整填写下表。
 
 <!-- 由 odk-plan 在生成计划时从 config 读取并解析，写入具体命令。实现阶段直接读本节，不再查 config。 -->
 
@@ -29,6 +42,7 @@
 |--------|----|
 | 可选编译产品 | [build_products 去重后的完整列表，空格分隔] |
 | 编译产品 | [用户从列表中确认的单个产品] |
+| 产品选择确认 | [用户针对本次产品选择的实际答复摘要；配置默认值不算确认] |
 | 设备版本策略 | [arm64_virt 填「不适用（QEMU）」；其他产品经用户确认填 daily 或 existing] |
 | 设备版本准备方式 | [QEMU 填「不适用（QEMU）」；daily 填支持当前产品的具体 skill 或经确认的手动准备步骤；existing 填「使用设备现有版本，不获取 daily、不刷机」] |
 | 编译命令（全量） | [build_command with {product} resolved] |
@@ -175,8 +189,10 @@ Expected: [说明通过条件]
 
 **Verification**
 
-| Command / Evidence | Expected Result | Actual Result |
-|--------------------|-----------------|---------------|
+| Command / Evidence | Expected Result | Actual Result | Final Status |
+|--------------------|-----------------|---------------|--------------|
+<!-- Final Status=Pass/Fail/Blocked，表示当前输入下期望结果是否得到验证；归档须全部 Pass。
+保留 Actual Result 中 Red/Verify 历史；旧计划须依据有效证据补列或重跑，不得直接批填 Pass。 -->
 
 **Review Handoff**
 
@@ -197,3 +213,15 @@ Expected: [说明通过条件]
 
 | TASK ID | 文件 | 操作 |
 |--------|------|------|
+
+## 问题闭环
+
+<!-- 仅有 review/测试/validate/CI 发现时填写，无发现可省略本节或保留空表。
+F-数字为稳定问题 ID；阻塞=是/否；状态=Open/Resolved/Accepted。
+阻塞项必须 Resolved；Accepted 仅用于已有用户确认的非阻塞项，并记录理由/范围。
+受影响交付件填写 change 相对文件路径，以顿号或逗号分隔；章节/AC 和实际修订写入处理与回填。
+复验依据写当前输入/环境下的命令、结果和证据位置；只写 Pass 不足以闭环。
+遵循 contracts/skill-guides/delivery/feedback.md，保留原文档与历史证据。 -->
+
+| 问题 ID | 来源 | 问题与根因 | 关联 AC/Task | 阻塞 | 受影响交付件 | 处理与回填 | 复验依据 | 状态 |
+|---------|------|------------|--------------|------|----------------|------------|----------|------|

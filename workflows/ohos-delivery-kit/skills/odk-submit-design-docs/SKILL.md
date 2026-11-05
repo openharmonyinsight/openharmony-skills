@@ -6,6 +6,21 @@ license: MIT
 
 # ODK Submit Design Documents
 
+## Existing artifacts first
+
+<!-- ODK:reference contracts/skill-guides/router/document-updates.md -->
+Before this skill's interview, template loading, delegation or writes, read
+`contracts/skill-guides/router/document-updates.md`. Read every existing target's
+full frontmatter and body first; revise it in place and preserve confirmed
+content, stable IDs and evidence. Create a target only when it does not exist.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
+Read `contracts/skill-guides/router/delivery-levels.md` and use the effective
+contract. It takes precedence over standard-only artifact lists below; native
+OpenSpec schemas remain standard/critical and lite uses the base flow.
+<!-- /ODK:reference -->
+
 ## Preconditions
 
 - Resolve the active directory as `codespec/changes/<repo-name>/<proposal-id>/`.
@@ -66,6 +81,14 @@ python3 "runtime/executables/validate-artifacts-contract.py" \
 
 `--design-docs-submit` automatically enables the same final-readiness checks as `--archive`, including unresolved placeholders, code mapping, per-task `Actual Result`, DFX closure, and resource constraints.
 
+For a current source PR, re-query its actual source head and execute
+`runtime/executables/lib/odk_source_state.py` as specified by the metadata/feedback
+guides immediately before copying the bundle. Require exit 0 and ready=true for
+every reviewed business source/test/fixture file. Unpublished local repairs block
+submission even when metadata SHA equals HEAD and document validation passes.
+Return the repair to the authorized source coordinator; updating documents alone
+does not authorize a source push. The genuine standalone no-PR mode is unchanged.
+
 Do not submit if validation fails. Copy the five base files and required conditional
 evidence to the same relative path under the confirmed design-docs checkout:
 `codespec/changes/<repo-name>/<proposal-id>/`. Preserve evidence referenced by the documents;
@@ -85,6 +108,22 @@ partial completion and stop; never report that a local copy is a submitted PR.
 This confirmation is sufficient for those actions; do not ask again unless the scope
 changes or required information is missing. Never auto-merge. Explicit copy-only
 requests retain their narrower scope.
+
+## Session ID 追踪
+
+生成或刷新 `metadata_tracking.yaml` 时，调用脚本更新 sidecar（详见 `using-odk` 的 `## Session ID 追踪契约`）。**禁止手动操作 JSON**：
+
+1. 获取当前 session ID（**当前对话**的系统提示 "Current conversation session ID: ses_xxx"）。
+2. 调用脚本（原子性 read-append-write，不丢已有 log 条目）：
+
+   ```sh
+   python3 "runtime/executables/update-sessions-sidecar.py" \
+     "<变更目录绝对路径>" "metadata_tracking.yaml" "<当前session ID>" "odk-submit-design-docs" "<action>"
+   ```
+
+3. 从脚本输出的 `---MIRROR---` 段提取 `sessions` 列表，写入 `metadata_tracking.yaml` 的 `sessions` 字段（YAML 数组）。`metadata_tracking.yaml` 为纯 YAML 文件（无 body 表格），不追加 `## 会话记录` 表格。
+
+**关键**：sidecar `.sessions.json` 是权威源。即使 `metadata_tracking.yaml` 的 `sessions` 字段在重生成时丢失，下一个 skill 从 sidecar 读取，数据不丢。脚本保证 sidecar 的原子追加。
 
 ## Output
 

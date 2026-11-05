@@ -6,6 +6,21 @@ license: MIT
 
 # ODK SP Review
 
+## Existing artifacts first
+
+<!-- ODK:reference contracts/skill-guides/router/document-updates.md -->
+Before this skill's interview, template loading, delegation or writes, read
+`contracts/skill-guides/router/document-updates.md`. Read every existing target's
+full frontmatter and body first; revise it in place and preserve confirmed
+content, stable IDs and evidence. Create a target only when it does not exist.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
+Read `contracts/skill-guides/router/delivery-levels.md` and use the effective
+contract. It takes precedence over standard-only artifact lists below; native
+OpenSpec schemas remain standard/critical and lite uses the base flow.
+<!-- /ODK:reference -->
+
 ## Purpose
 
 Invoke Superpowers `requesting-code-review` and `verification-before-completion`. Persist results as ODK evidence to `evidence/reviews/`.
@@ -14,16 +29,23 @@ Invoke Superpowers `requesting-code-review` and `verification-before-completion`
 
 - Load `using-odk` first.
 - Load `using-odk-bridge` for output redirection and mode selection.
-- Implementation code exists (committed).
+- Implementation code exists; include uncommitted and untracked relevant files in the review.
 - `spec.md` with AC list.
 - `execution-plan.md` with Task list and code scope.
 - If Superpowers skills are unavailable, use the fallback chain declared in `adapters/superpowers.yaml` and clearly report the degradation.
 
 ## Steps
 
+<!-- ODK:reference contracts/skill-guides/delivery/feedback.md -->
+Read `contracts/skill-guides/delivery/feedback.md`. Review proposal/spec/design/plan
+and actual code/evidence together; record findings in the existing plan, backfill
+affected artifacts and reverify before returning PASS. Reports alone do not close
+baseline deviations. Apply this in every bridge output mode.
+<!-- /ODK:reference -->
+
 For configuration-dependent steps, use the effective-configuration command defined in `using-odk`; do not merge installation files independently. Stop on config errors. Existing execution-plan commands remain authoritative until explicitly changed.
 
-1. Invoke Superpowers `requesting-code-review` to review the implementation against `spec.md` and `execution-plan.md`.
+1. Invoke Superpowers `requesting-code-review` with the actual diff and applicable delivery baseline; check missing ACs/design deviations as well as code correctness, tests and error paths.
 2. Invoke Superpowers `verification-before-completion` before making any readiness claim.
 3. Generate 3 review documents from templates in `templates/review/`, using the Superpowers review and verification results as the primary evidence:
    - **spec-compliance-YYYYMMDD.md** — Check every AC against implementation

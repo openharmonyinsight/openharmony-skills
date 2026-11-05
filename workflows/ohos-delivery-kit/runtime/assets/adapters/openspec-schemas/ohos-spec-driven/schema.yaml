@@ -1,0 +1,57 @@
+name: ohos-spec-driven
+version: 1
+description: OpenSpec schema aligned with ODK (ohos-delivery-kit) delivery artifact requirements
+
+artifacts:
+  - id: proposal
+    generates: proposal.md
+    description: Requirements proposal with ODK-aligned structure
+    template: proposal.md
+    instruction: |
+      Generate a requirements proposal following the ODK template structure.
+      Must include: background, goals, non-goals, success criteria, impact scope, 8-dimension N/A confirmation.
+      Preserve OpenSpec's Why/What Changes/Capabilities/Impact sections and add ODK-required fields.
+    requires: []
+
+  - id: specs
+    generates: specs/**/*.md
+    description: Delta specification with ODK-aligned AC numbering and verification mapping
+    template: spec.md
+    instruction: |
+      Generate delta specs (ADDED/MODIFIED/REMOVED requirements) following ODK template structure.
+      Must include: numbered ACs (AC-1.1 format), compatibility declaration, verification mapping table.
+      Preserve native ## ADDED Requirements, ## MODIFIED Requirements and ## REMOVED Requirements sections.
+      For ADDED requirements, put US IDs in ### Requirement: titles and AC IDs in new #### Scenario: titles.
+      For MODIFIED/REMOVED requirements, copy the exact existing main-spec Requirement title.
+      Preserve existing Scenario titles verbatim when modifying a requirement; do not add IDs to native matching keys.
+      Keep ODK US/AC associations for existing entries in the delivery projection and openspec-binding.json requirement_map/scenario_map.
+      Use normative SHALL or MUST text and native Scenario blocks with WHEN/THEN bullets; an AC list alone is not a native scenario.
+    requires: [proposal]
+
+  - id: design
+    generates: design.md
+    description: Architecture design with ODK-aligned module impact and decisions
+    template: design.md
+    instruction: |
+      Generate architecture design following ODK template structure.
+      Must include: module impact table, decision comparison, risk mitigation, verification approach.
+    requires: [proposal, specs]
+
+  - id: tasks
+    generates: tasks.md
+    description: Task breakdown with ODK-aligned AC-Task traceability
+    template: tasks.md
+    instruction: |
+      Generate task breakdown following ODK template structure.
+      Must include: AC-Task traceability table, file-level code scope per task, completion criteria.
+      Preserve OpenSpec's checkbox format (X.Y) for /opsx:apply compatibility.
+    requires: [specs, design]
+
+apply:
+  requires: [tasks]
+  tracks: tasks.md
+  instruction: |
+    Read existing native artifacts before editing. Implement tasks from tasks.md.
+    OpenSpec owns the native task state: update its tracked checkboxes in place.
+    ODK subsequently reconciles a separate execution-plan.md delivery projection;
+    never redirect or rename this native task file.
