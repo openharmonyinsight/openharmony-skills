@@ -43,7 +43,9 @@ quickStart:
   - 使用该技能检视，并核对问题证据和未验证项。
   examplePrompt: 请使用 ohos-dev-docs-code-correctness-review 核对文档中的代码与配置示例，SDK 不可用的项目标记未验证。
 related:
-  skills: []
+  skills:
+  - ohos-dev-chinese-docs-review
+  - ohos-design-api-doc-checking
   docs:
   - title: 维护者说明
     path: README.md

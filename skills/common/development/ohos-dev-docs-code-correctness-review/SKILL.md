@@ -12,6 +12,9 @@ metadata:
   version: 0.1.0
   status: draft
   original-author: kingqaquu
+  related-skills:
+  - ohos-dev-chinese-docs-review
+  - ohos-design-api-doc-checking
   tags:
   - docs
   - quality-review
@@ -20,6 +23,20 @@ metadata:
 # 文档示例与版本正确性检视
 
 区别“SDK声明合法”“匹配实现行为”“真实环境可复现”三层证据，避免用IDE补全或不同版SDK代替验证。规则路径采用“维度/语言/条目”消除原编号重复，例如 编码正确性/C API/参数顺序。
+
+## 共有检查复用
+
+本技能不维护下列共有规则的副本。请求涉及这些范围时，从当前环境技能列表或仓库解析对应 skill，先读其 SKILL.md，再按其加载规则读取必要资源：
+
+| 共有范围 | 规则来源与入口 |
+| --- | --- |
+| API 模板、公开/系统 API、错误码文档、声明标签与版本标记一致性 | `ohos-dev-chinese-docs-review`：`scripts/check_api_doc_consistency.py`；模板选择和使用参数以该技能入口为准 |
+| 拼写/术语、清晰度、常规完整性、默认值/约束说明、示例基础语法、路径/工程结构、Sample 对照、已知问题与调试指导 | `ohos-design-api-doc-checking`：对应 `references/*-rules.json`、`project-structure.json` 及 `references/workflow-details.md`；由其规则执行机制消费，不另写一套检查器 |
+
+只委派本次请求涉及的共有范围，遵循来源技能的执行与台账要求；若来源工作流只能整体运行，须披露额外覆盖，不擅自声称部分规则独立执行。已有主入口结果可复用，需核对文档/SDK版本、范围和证据。引用技能的导出文件、设备操作或远端写操作仍须符合本次用户授权，不能因加载规则自动扩大任务。
+
+来源技能不可用、脚本不能运行或必要资源缺失时，继续本技能独有专项，将对应共有范围明确标为未覆盖及缺失原因；不复制简化规则冒充已完成。规则依据保留来源 skill 与规则 ID，本地专项保留自己的依据。同一位置、根因的缺陷合并为一项；不同规则体系分别汇总覆盖，未运行项不计通过。
+
 
 ## 按内容加载
 
