@@ -12,4 +12,4 @@
 
 ## 评估
 
-见 [评估步骤](evals/README.md)、[最终报告](evals/report.md) 和 [release 适配记录](evals/release-packaging.json)。原始模型会话、匿名判分、首轮问题和后续修订证据保留在 evals/results/。部分技能的本组核心通过数与基线持平，具体结论以报告为准，尚待维护者审核。
+可复用用例与执行方法见 [evals/README.md](evals/README.md)。评分、对比结果及运行限制见 [PR !373 评论区](https://gitcode.com/openharmonyinsight/openharmony-skills/merge_requests/373)，报告和原始会话不随技能包发布。
