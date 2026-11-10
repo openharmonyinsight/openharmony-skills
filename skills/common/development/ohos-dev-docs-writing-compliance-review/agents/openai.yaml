@@ -1,4 +1,4 @@
 interface:
-  display_name: "文档写作合规检视"
-  short_description: "面向 OpenHarmony 的文档写作合规检视，提供适用规则、证据定位与验证边界。"
-  default_prompt: "使用 $ohos-dev-docs-writing-compliance-review 处理当前任务，给出实际证据和未验证项。"
+  display_name: 文档写作合规检视
+  short_description: 文档叙述、术语和展示风格专项，不代替 API 模板或声明审计。
+  default_prompt: 使用 $ohos-dev-docs-writing-compliance-review 处理当前任务，给出实际证据和未验证项。

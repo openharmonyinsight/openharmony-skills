@@ -22,7 +22,8 @@ useCases:
 - title: 开发指南检视
   description: 沿 OpenHarmony 开发任务链检查指南的工程依赖、权限、调用前提与结果验证，识别会阻断用户操作的内容缺口。
 whenToUse:
-- 在用户要求检查 OpenHarmony/HarmonyOS 开发指南、教程或最佳实践的场景完整性、操作断点、前置条件、约束及调测指导时使用。
+- 在用户要求专项追踪 OpenHarmony/HarmonyOS 指南或教程中从前置条件、输入来源、配置权限到可观察结果的操作断点时使用。整篇七维资料质量或通用完整性评估优先
+  ohos-design-api-doc-checking；API 模板与声明一致性优先 ohos-dev-chinese-docs-review。
 whenNotToUse:
 - 需要实际编译部署或设备运行，而非文档检视
 - 与文档质量无关的完整业务代码审查
@@ -43,7 +44,9 @@ quickStart:
   - 使用该技能检视，并核对问题证据和未验证项。
   examplePrompt: 请使用 ohos-dev-docs-dev-guide-review 检查开发指南中的前置条件和操作断点，只检查必选项。
 related:
-  skills: []
+  skills:
+  - ohos-dev-chinese-docs-review
+  - ohos-design-api-doc-checking
   docs:
   - title: 维护者说明
     path: README.md

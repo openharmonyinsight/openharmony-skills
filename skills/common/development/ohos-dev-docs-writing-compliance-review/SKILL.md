@@ -1,6 +1,6 @@
 ---
 name: ohos-dev-docs-writing-compliance-review
-description: 在用户要求检查 OpenHarmony/HarmonyOS 文档的写作合规、结构、语言、排版、术语或示例代码风格时使用。支持整篇及已提供改动范围的检视。
+description: 在用户要求专项检查 OpenHarmony/HarmonyOS 文档的叙述语言、术语、排版、图表展示或示例风格时使用。API 模板、公开/系统 API 及声明一致性优先 ohos-dev-chinese-docs-review；整篇七维资料质量检查优先 ohos-design-api-doc-checking。本技能不承担 API 使用契约或任务链正确性的全量审计。
 metadata:
   author: openharmony
   source: SkillCreateBykingqaquuu/skills/hdq-writing-compliance
@@ -12,6 +12,9 @@ metadata:
   version: 0.1.0
   status: draft
   original-author: kingqaquu
+  related-skills:
+  - ohos-dev-chinese-docs-review
+  - ohos-design-api-doc-checking
   tags:
   - docs
   - quality-review
@@ -19,7 +22,18 @@ metadata:
 
 # 文档写作合规检视
 
-保留原 1.x–10.x 检视体系，聚焦 OpenHarmony 文档约定与容易误报的边界，不重复讲解一般语法或 Markdown 教程。
+保留源体系中的 1.x–5.x、8.x–10.x 规则，聚焦 OpenHarmony 文档约定与容易误报的边界，不重复讲解一般语法或 Markdown 教程。
+
+## 与既有技能的边界
+
+本技能只负责叙述与展示层的写作专项；模板检查仅用于判断当前写作项的适用条件，不重复运行全量 API 模板或声明一致性审计。中文 API 模板、公开/系统 API、错误码文档与声明检查优先 `ohos-dev-chinese-docs-review`；整篇七维质量和执行台账优先 `ohos-design-api-doc-checking`。只有用户指定写作专项或主入口需要补充尚未覆盖的展示规则时才加载本技能。
+
+上述既有技能为可选协作，单独写作检视无需安装。SDK 语义和操作链问题分别交给 API/指南专项，不把代码风格当成接口或运行正确性结论。
+
+组合检视时保留主入口已检查条目及证据台账，专项只补未覆盖范围。问题按文件、侧别/位置与根因合并，一项缺陷只计一次；规则覆盖分别按各自规则集汇总，不把不同体系的分母直接相加，也不将未运行项算通过。
+
+
+本技能未迁入 6.x/7.x，亦未声明由其它技能完整承接；二者不属于本技能规则集合，不生成对应通过/未验证计数。覆盖统计仅针对三份参考中实际定义的 1.x–5.x、8.x–10.x 适用条目，不能据此声称原 1.x–10.x 全量检查完成。
 
 ## 按任务加载
 

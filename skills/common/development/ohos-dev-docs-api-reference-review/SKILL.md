@@ -1,6 +1,6 @@
 ---
 name: ohos-dev-docs-api-reference-review
-description: 在用户要求评审 OpenHarmony/HarmonyOS 的 ArkTS、JS、C 或 REST API 参考文档，检查签名一致性、参数约束、返回值、错误码和易用性时使用。
+description: 在用户明确要求按目标 SDK/API 版本专项核验 API 参考文档的参数语义、默认值、返回/错误条件、线程或生命周期契约时使用。仅检查中文 API 模板、公开/系统 API 或错误码文档与声明一致性时优先 ohos-dev-chinese-docs-review；整篇七维资料质量检查优先 ohos-design-api-doc-checking。
 metadata:
   author: openharmony
   source: SkillCreateBykingqaquuu/skills/hdq-api-reference
@@ -12,6 +12,9 @@ metadata:
   version: 0.1.0
   status: draft
   original-author: kingqaquu
+  related-skills:
+  - ohos-dev-chinese-docs-review
+  - ohos-design-api-doc-checking
   tags:
   - docs
   - quality-review
@@ -20,6 +23,16 @@ metadata:
 # API 参考文档检视
 
 保留原 40 个维度与 RULE-04 编号，但一次缺陷只产生一个问题，不把同一缺省值遗漏在多套框架重复计数。
+
+## 与既有技能的边界
+
+- “检查中文 API 是否符合模板，并与 d.ts 一致”优先 `ohos-dev-chinese-docs-review`，由其完成模板、公开/系统 API、错误码与声明的机械检查；本技能不作为该请求的重复入口。
+- 用户要求整篇 API/指南的七维质量检查、声明式规则执行台账或 Excel 报告时，优先 `ohos-design-api-doc-checking`。
+- 用户明确要求版本绑定的参数语义、默认值、错误条件、线程/生命周期等使用契约专项时，使用本技能；签名对照只作为语义判断所需证据，不另开一套全量模板/声明审计。
+- 同时要求上述范围时，先按任务选主入口，仅将未覆盖的语义专项交给本技能。既有技能为可选协作项，不因单项语义检视强制安装；不可用时明确其模板/台账范围未覆盖，不声称替代完成。
+
+组合检视时保留主入口已检查条目及证据台账，专项只补未覆盖范围。问题按文件、侧别/位置与根因合并，一项缺陷只计一次；规则覆盖分别按各自规则集汇总，不把不同体系的分母直接相加，也不将未运行项算通过。
+
 
 ## 条件加载与核对顺序
 

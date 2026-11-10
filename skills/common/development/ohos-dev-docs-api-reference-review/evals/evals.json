@@ -47,6 +47,17 @@
         "不虚构版本、权限或参数问题。",
         "说明仅验证了已给声明和文档的一致性。"
       ]
+    },
+    {
+      "id": 4,
+      "name": "existing-template-entrypoint",
+      "prompt": "检查这份中文 API 文档是否符合模板，并与 d.ts 一致；没有要求额外的版本语义或使用契约专项。当前环境可用 ohos-dev-chinese-docs-review 和 ohos-design-api-doc-checking。请先说明检视入口与范围。",
+      "files": [],
+      "expected_output": "优先 chinese-docs-review，不同时启动三套全量检查；未请求的语义专项不强制加载。",
+      "expectations": [
+        "选择 ohos-dev-chinese-docs-review 为主入口。",
+        "不把三套规则覆盖分母相加或重复计缺陷。"
+      ]
     }
   ]
 }

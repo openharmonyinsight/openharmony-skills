@@ -1,6 +1,6 @@
 ---
 name: ohos-dev-docs-dev-guide-review
-description: 在用户要求检查 OpenHarmony/HarmonyOS 开发指南、教程或最佳实践的场景完整性、操作断点、前置条件、约束及调测指导时使用。
+description: 在用户要求专项追踪 OpenHarmony/HarmonyOS 指南或教程中从前置条件、输入来源、配置权限到可观察结果的操作断点时使用。整篇七维资料质量或通用完整性评估优先 ohos-design-api-doc-checking；API 模板与声明一致性优先 ohos-dev-chinese-docs-review。
 metadata:
   author: openharmony
   source: SkillCreateBykingqaquuu/skills/hdq-dev-guide
@@ -12,6 +12,9 @@ metadata:
   version: 0.1.0
   status: draft
   original-author: kingqaquu
+  related-skills:
+  - ohos-dev-chinese-docs-review
+  - ohos-design-api-doc-checking
   tags:
   - docs
   - quality-review
@@ -20,6 +23,15 @@ metadata:
 # 开发指南检视
 
 从用户能否完成目标任务出发，不把模板是否漂亮当作可用性结论。保留 G-01–G-22 编号，重点识别 OpenHarmony 工程、配置、权限和调用上下文之间的断点。
+
+## 与既有技能的边界
+
+本技能负责具体任务链能否走通：输入从哪里取得、工程/权限如何准备、步骤依赖是否闭合、结果如何验证。整篇指南七维资料质量、通用完整性评估和执行台账优先 `ohos-design-api-doc-checking`；公开/系统 API 模板及声明一致性优先 `ohos-dev-chinese-docs-review`。不以“指南检视”泛称重复启动全量规则。
+
+若主入口已发现前置条件缺失，本技能只补充尚未覆盖的任务链证据，不重复计问题。上述技能为可选协作，单独检查操作断点不要求加载；未运行的其它范围明确列出。
+
+组合检视时保留主入口已检查条目及证据台账，专项只补未覆盖范围。问题按文件、侧别/位置与根因合并，一项缺陷只计一次；规则覆盖分别按各自规则集汇总，不把不同体系的分母直接相加，也不将未运行项算通过。
+
 
 ## 选择检查路径
 

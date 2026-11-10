@@ -48,6 +48,29 @@
         "相关 JSON5 未被文档过滤遗漏，指出 new:1 的 name 类型错误。",
         "单引号与尾随逗号不作为 JSON5 语法错误。"
       ]
+    },
+    {
+      "id": 4,
+      "name": "image-only-change",
+      "prompt": "仅检视本次变更：docs/figures/guide-result.png 被修改，Markdown 无变化。关联文档 guide.md 与给出的代码均说明按钮文字为“保存”，可读旧图显示“保存”，可读新图显示“删除”。没有文本 hunk。",
+      "files": [],
+      "expected_output": "图片仍进入检视；文件级定位新图按钮文字与代码/文档矛盾，不编造行号。",
+      "expectations": [
+        "图片独立变更不被扩展名筛选丢弃。",
+        "结合可读旧新图及关联文档，只报告本次引入的问题。",
+        "按文件级区域定位，不编造文本行号。"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "unreadable-image",
+      "prompt": "文档 PR 仅修改 docs/figures/result.png，Markdown 引用未变化。已提供完整文件状态，但 old/new 二进制均无法读取，也无替代图像。",
+      "files": [],
+      "expected_output": "列出图片为未覆盖，不把空 Markdown 集合当无文档变更或检查通过。",
+      "expectations": [
+        "保留该图片文件及变更状态。",
+        "明确图像内容未覆盖且不输出无条件通过。"
+      ]
     }
   ]
 }
