@@ -58,6 +58,28 @@
         "明确6.x/7.x不在本技能规则集合。",
         "不声称完整原体系已检查或捏造迁移去向。"
       ]
+    },
+    {
+      "id": 5,
+      "name": "guide-inbound-navigation",
+      "prompt": "普通指南仓明确要求每篇指南在上级README人工清单登记。此次新增 docs/guides/save.md，正文和全部出站链接正确，但给出的完整 docs/README.md 没有该指南入口。仅检视新增导航同步问题。",
+      "files": [],
+      "expected_output": "按本地2.5指出入站导航遗漏，不因出站链接正确而通过，也不声称来源应用工程规则已覆盖。",
+      "expectations": [
+        "指出上级README遗漏新增指南入口，并引用本地2.5。",
+        "不把出站链接检查或应用工程结构当成入站导航验证。"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "project-doc-layout",
+      "prompt": "文档仓规范明确：指南在 docs/guides/，图片在 docs/media/。本次把一个指南新增到 docs/entry/ets/new-guide.md，其链接都有效。请核对布局；不要套用应用工程目录约定。",
+      "files": [],
+      "expected_output": "按本地10.x指出指南位置违反给定文档仓规范，不以entry/ets合法应用工程路径判通过。",
+      "expectations": [
+        "依据给定文档仓布局指出错误并引用10.x。",
+        "不凭空强制reference/apis目录或用应用工程结构替代依据。"
+      ]
     }
   ]
 }

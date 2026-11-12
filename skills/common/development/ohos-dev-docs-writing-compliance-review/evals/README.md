@@ -1,6 +1,6 @@
 # ohos-dev-docs-writing-compliance-review 行为评估用例
 
-[evals.json](evals.json) 保留5个可复用用例，包含 prompt、expected_output 和逐项 expectations。输入中的 API、SDK 声明及 schema 是合成夹具，不代表官方 SDK。
+[evals.json](evals.json) 保留7个可复用用例，包含 prompt、expected_output 和逐项 expectations。输入中的 API、SDK 声明及 schema 是合成夹具，不代表官方 SDK。
 
 ## 执行方法
 
@@ -14,3 +14,5 @@
 新增 review 回归用例仅作为待执行输入，不计入历史评估的通过数；尚未重新运行独立模型评估。
 
 共有规则已改为引用既有技能；复评时需记录实际加载的来源技能与版本。缺失来源时测试其未覆盖披露，不把历史结果作为此次委派流程的通过证明。
+
+R2新增普通指南入站导航和文档仓布局用例，尚未运行模型回归；b363fb5报告不覆盖此次修订。

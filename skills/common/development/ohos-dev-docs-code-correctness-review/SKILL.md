@@ -31,7 +31,7 @@ metadata:
 | 共有范围 | 规则来源与入口 |
 | --- | --- |
 | API 模板、公开/系统 API、错误码文档、声明标签与版本标记一致性 | `ohos-dev-chinese-docs-review`：`scripts/check_api_doc_consistency.py`；模板选择和使用参数以该技能入口为准 |
-| 拼写/术语、清晰度、常规完整性、默认值/约束说明、示例基础语法、路径/工程结构、Sample 对照、已知问题与调试指导 | `ohos-design-api-doc-checking`：对应 `references/*-rules.json`、`project-structure.json` 及 `references/workflow-details.md`；由其规则执行机制消费，不另写一套检查器 |
+| 拼写/术语、清晰度、常规完整性、默认值/约束说明、示例基础语法、应用工程路径/结构、Sample 对照、已知问题与调试指导 | `ohos-design-api-doc-checking`：对应 `references/*-rules.json`、`project-structure.json` 及 `references/workflow-details.md`；由其规则执行机制消费，不另写一套检查器 |
 
 只委派本次请求涉及的共有范围，遵循来源技能的执行与台账要求；若来源工作流只能整体运行，须披露额外覆盖，不擅自声称部分规则独立执行。已有主入口结果可复用，需核对文档/SDK版本、范围和证据。引用技能的导出文件、设备操作或远端写操作仍须符合本次用户授权，不能因加载规则自动扩大任务。
 
