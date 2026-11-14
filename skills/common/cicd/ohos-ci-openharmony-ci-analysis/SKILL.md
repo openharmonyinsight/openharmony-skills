@@ -65,6 +65,7 @@ Useful flags:
   Save downloaded log archives/files locally with unique filenames to avoid overwriting logs from different jobs or runs.
 
 ## Expectations
+- Each `builds[]` entry has a `debug` (compile) stage and an optional `test` stage. A job fails if **either** stage fails — e.g. `test.result=failed` with a `buildFailType` like `E06` (smoke-test) is a failure even when `debug.result=success`. The top-level `buildFailReson`/`buildFailType` fields are the job-level failure summary and are honored even if both stages report success.
 - `skip`, `skipped`, and `ignore` are not failed jobs and do not trigger automatic log downloads. Without a DCP overall result, success plus skipped jobs yields success; only skipped jobs yields skipped. An explicit DCP overall result remains authoritative.
 - Log or static-check task retrieval failures preserve the remaining results. Report `complete=false` and the entries in `errors`; missing details are not evidence of zero defects. Partial static-check counts include only retrieved defect groups. Tasks expose `expected_count`, `retrieved_count` (groups), and `retrieved_detail_count`; an incomplete task has `defect_count=null` and retains details from earlier valid pages.
 - Logs are excerpts (the last 80 lines by default, configurable with `--log-lines`), with one selected log per job and one member per archive. Inspect additional logs when these excerpts do not establish the cause.
