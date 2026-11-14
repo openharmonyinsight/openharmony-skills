@@ -171,40 +171,6 @@ class ReportTests(TestCase):
             self.assertEqual(openharmony_ci.infer_overall_result("", [job, {"result": "success"}]), "success")
         self.assertEqual(openharmony_ci.infer_overall_result("success", [{"result": "failed"}]), "success")
 
-    def test_test_stage_failure_is_not_masked_by_successful_build(self):
-        build = {
-            "buildTarget": "dayu200",
-            "buildFailReson": "[05209] upgrade success, but the smoke testing has a fatal problem",
-            "buildFailType": "E06",
-            "debug": {"result": "success", "buildFailReason": None, "buildFailType": None,
-                      "Artifacts": "Artifacts/dayu200/20261114-1-00151"},
-            "test": {"result": "failed",
-                     "buildFailReason": "[05209] upgrade success, but the smoke testing has a fatal problem",
-                     "buildFailType": "E06",
-                     "Artifacts": "log/ecoTest/task_2356717/block_xxx"},
-        }
-        job = openharmony_ci.normalize_job(build)
-        self.assertEqual(job["result"], "failed")
-        self.assertEqual(job["build_result"], "success")
-        self.assertEqual(job["test_result"], "failed")
-        self.assertEqual(job["fail_stage"], "test")
-        self.assertEqual(job["fail_type"], "E06")
-        self.assertEqual(job["artifacts"], "log/ecoTest/task_2356717/block_xxx")
-        self.assertEqual(openharmony_ci.infer_overall_result("", [job]), "failed")
-
-    def test_top_level_build_fail_reason_marks_job_failed(self):
-        build = {
-            "buildTarget": "x86_64_virt_tdd",
-            "buildFailReson": "codearts build exception",
-            "buildFailType": "E01",
-            "debug": {"result": "success", "startTime": "20261114121200", "endTime": "20261114124610"},
-        }
-        job = openharmony_ci.normalize_job(build)
-        self.assertEqual(job["result"], "failed")
-        self.assertEqual(job["fail_stage"], "build")
-        self.assertEqual(job["fail_reason"], "codearts build exception")
-        self.assertEqual(job["fail_type"], "E01")
-
     def test_null_event_is_user_facing_error(self):
         for payload in ({"data": None}, {}, {"data": []}):
             with patch.object(openharmony_ci, "http_get_json", return_value=payload):

@@ -332,39 +332,8 @@ def flatten_files_tree(node: Any, prefix: str = "", errors: Optional[List[str]] 
     return results
 
 
-def stage_has_data(stage: Dict[str, Any]) -> bool:
-    if not isinstance(stage, dict):
-        return False
-    for field in ("result", "startTime", "endTime", "buildFailReason", "buildFailType", "Artifacts", "pipelineUrl"):
-        value = stage.get(field)
-        if value is not None and str(value).strip():
-            return True
-    return False
-
-
-def combine_results(results: Sequence[str]) -> str:
-    results = [str(result or "").strip().lower() for result in results]
-    results = [result for result in results if result]
-    if not results:
-        return "pending"
-    if len(results) == 1:
-        return results[0]
-    if any(is_failure_result(result) for result in results):
-        return "failed"
-    if any(result == "running" for result in results):
-        return "running"
-    if any(result == "pending" for result in results):
-        return "pending"
-    if any(result == "unknown" for result in results):
-        return "unknown"
-    if any(result in SUCCESS_RESULTS for result in results):
-        return "success"
-    return "skipped"
-
-
 def normalize_job(build: Dict[str, Any]) -> Dict[str, Any]:
     debug = build.get("debug", {}) if isinstance(build.get("debug"), dict) else {}
-    test = build.get("test", {}) if isinstance(build.get("test"), dict) else {}
     validation_errors = []
     for field, value in (("buildTarget", build.get("buildTarget")), ("component", debug.get("component"))):
         if value is not None and not isinstance(value, str):
@@ -373,84 +342,28 @@ def normalize_job(build: Dict[str, Any]) -> Dict[str, Any]:
                      if isinstance(value, str) and value.strip()), "unknown")
     if "debug" in build and not isinstance(build["debug"], dict):
         validation_errors.append("debug must be an object")
-    if "test" in build and build["test"] is not None and not isinstance(build["test"], dict):
-        validation_errors.append("test must be an object")
-    for stage_name, stage in (("debug", debug), ("test", test)):
-        for field in ("result", "startTime", "endTime", "buildFailReason", "buildFailType"):
-            if field in stage and stage[field] is not None and not isinstance(stage[field], str):
-                validation_errors.append(f"{stage_name}.{field} must be a string")
+    for field in ("result", "startTime", "endTime", "buildFailReason", "buildFailType"):
+        if field in debug and debug[field] is not None and not isinstance(debug[field], str):
+            validation_errors.append(f"debug.{field} must be a string")
     if build.get("result") is not None and not isinstance(build["result"], str):
         validation_errors.append("result must be a string")
-    for field in ("buildFailReson", "buildFailReason", "buildFailType"):
-        if field in build and build[field] is not None and not isinstance(build[field], str):
-            validation_errors.append(f"{field} must be a string")
-
-    build_result = classify_result(
+    result = classify_result(
         debug.get("result") or build.get("result") or "",
         debug.get("startTime", ""),
         debug.get("endTime", ""),
         debug.get("buildFailReason", ""),
         debug.get("buildFailType", ""),
     )
-    test_present = stage_has_data(test)
-    test_result = classify_result(
-        test.get("result", ""),
-        test.get("startTime", ""),
-        test.get("endTime", ""),
-        test.get("buildFailReason", ""),
-        test.get("buildFailType", ""),
-    ) if test_present else ""
-
-    top_fail_reason = str(build.get("buildFailReson") or build.get("buildFailReason") or "")
-    top_fail_type = str(build.get("buildFailType") or "")
-
-    stage_results = [result for result in (build_result, test_result) if result]
-    if (top_fail_reason or top_fail_type) and not any(is_failure_result(result) for result in stage_results):
-        result = "failed"
-    else:
-        result = combine_results(stage_results)
-
-    test_failed = is_failure_result(test_result)
-    build_failed = is_failure_result(build_result)
-    fail_reason = ""
-    fail_type = ""
-    fail_stage = ""
-    if is_failure_result(result):
-        if test_failed:
-            fail_stage = "test"
-            fail_reason = test.get("buildFailReason", "") or top_fail_reason
-            fail_type = test.get("buildFailType", "") or top_fail_type
-        elif build_failed:
-            fail_stage = "build"
-            fail_reason = debug.get("buildFailReason", "") or top_fail_reason
-            fail_type = debug.get("buildFailType", "") or top_fail_type
-        else:
-            fail_stage = "build"
-            fail_reason = top_fail_reason
-            fail_type = top_fail_type
-
-    artifacts = (test.get("Artifacts", "") or "") if test_failed and test.get("Artifacts") else (debug.get("Artifacts", "") or "")
-    build_log = (test.get("buildLog", "") or "") if test_failed and test.get("buildLog") else (debug.get("buildLog", "") or "")
-
     normalized = {
         "job_name": job_name,
         "result": result,
-        "build_result": build_result,
-        "test_result": test_result or None,
-        "fail_stage": fail_stage,
-        "fail_reason": fail_reason,
-        "fail_type": fail_type,
+        "fail_reason": debug.get("buildFailReason", ""),
+        "fail_type": debug.get("buildFailType", ""),
         "start_time": debug.get("startTime", ""),
         "end_time": debug.get("endTime", ""),
         "pipeline_url": debug.get("pipelineUrl", ""),
-        "artifacts": artifacts,
-        "build_log": build_log,
-        "test_start_time": test.get("startTime", ""),
-        "test_end_time": test.get("endTime", ""),
-        "test_fail_reason": test.get("buildFailReason", ""),
-        "test_fail_type": test.get("buildFailType", ""),
-        "test_pipeline_url": test.get("pipelineUrl", ""),
-        "test_artifacts": test.get("Artifacts", ""),
+        "artifacts": debug.get("Artifacts", ""),
+        "build_log": debug.get("buildLog", ""),
         "raw": build,
         "validation_errors": validation_errors,
     }
@@ -938,14 +851,6 @@ def print_text_report(report: Dict[str, Any]) -> None:
             print(f"fail_reason={job['fail_reason']}")
         if job.get("fail_type"):
             print(f"fail_type={job['fail_type']}")
-        if job.get("fail_stage"):
-            print(f"fail_stage={job['fail_stage']}")
-        if job.get("test_result"):
-            print(f"test_result={job['test_result']}")
-        if job.get("test_fail_reason"):
-            print(f"test_fail_reason={job['test_fail_reason']}")
-        if job.get("test_fail_type"):
-            print(f"test_fail_type={job['test_fail_type']}")
         if job.get("start_time"):
             print(f"start_time={job['start_time']}")
         if job.get("end_time"):
