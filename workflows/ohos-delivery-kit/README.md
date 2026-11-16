@@ -17,6 +17,12 @@ prerequisites, and the proposal coverage matrix in `spec.md`. This is a breaking
 contract migration: legacy `api-spec.yaml`, mixed-language declaration diffs and
 per-API Markdown specifications are no longer accepted directly.
 
+This republish includes the merged API review fixes: upgrades preserve pointer
+return types and confirmed modes, reject invalid or conflicting modes before
+writing, and accept inline-formatted error codes. Documentation checks accept
+numeric range endpoints and Chinese-adjacent values while retaining Unicode
+unit boundaries.
+
 ## 0.14.7 build products and Task review gate
 
 Aligns build commands and `out/` artifact directories on one product name and
@@ -201,7 +207,7 @@ repository-scoped layout.
 
 Synced from `oshunter/ohos-delivery-kit` branch `main` via
 `ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills --plugin ohos-delivery-kit`.
-Current source: `main@4ff47290c4902c8aa7d489ae79ce6c676703e239`.
+Current source: `main@a11624f7c42d91fec553909c3aab4e621d60d9f9`.
 The current publisher needs the default config, archive-migration,
 session-sidecar, API documentation check and API chain upgrade entrypoints plus
 all Python runtime libraries supplemented; the source release gate verifies the
@@ -237,7 +243,7 @@ must be installed alongside the rendered `SKILL.md`, preserving relative links.
 
 To check real V1 and V2 installation artifacts without registering plugins in
 your agents, provide a local installer source or unpacked npm package.
-Installation was verified with the official npm package oh-skillhub 0.1.43:
+Installation was verified with the official npm package oh-skillhub 0.1.44:
 the workflow regression suite passes, including V1 and V2 installation for
 Claude Code, Codex and OpenCode. Skill-local auxiliary files, including all 44
 FMEA reference files, are copied alongside SKILL.md; the default configuration

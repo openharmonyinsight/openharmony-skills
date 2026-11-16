@@ -357,9 +357,9 @@ def _contains_normalized_value(text: str, value: str) -> bool:
     """Match a scalar with language-aware boundaries.
 
     Python `\w` includes CJK characters, so the generic negative lookarounds
-    reject natural Chinese prose. ASCII-like values use word boundaries; values
-    containing CJK characters are matched as exact substrings in normalized
-    text, where punctuation and whitespace already delimit the phrase.
+    reject natural Chinese prose. Non-CJK values retain Unicode word boundaries
+    except for adjacent CJK prose; values containing CJK characters are matched
+    as exact substrings in normalized text.
     """
 
     if not value:
@@ -370,13 +370,26 @@ def _contains_normalized_value(text: str, value: str) -> bool:
         # literal containment check even when the documentation is correct.
         return value in text
     escaped = re.escape(value)
-    if re.fullmatch(r"[A-Za-z0-9_]+", value):
-        # CJK characters are not identifier word-characters for this boundary.
-        # This accepts “限额为100。” while still rejects 100 inside 1000.
+    # Preserve Unicode letters/digits (including unit superscripts) as token
+    # characters; only adjacent CJK prose is exempt from word boundaries.
+    word_character = r"[^\W\u3400-\u9fff\uf900-\ufaff]"
+    if re.match(r"[+-]?(?:[0-9]|\.[0-9])", value):
+        # Match the complete numeric token, allowing a sentence-ending period
+        # but rejecting a different sign, decimal continuation or exponent.
+        # A hyphen after a complete lower bound is a range separator, not the
+        # upper bound's sign. The exponent sign in 1e-3 is not a range separator.
+        number = r"[+-]?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?"
+        range_prefix = (
+            rf"(?<!{word_character})(?<![.+-]){number}"
+            rf"(?:[ \t]*(?![eE][ \t]*-){word_character}+)?[ \t]*-[ \t]*"
+        )
         return re.search(
-            rf"(?<![A-Za-z0-9_]){escaped}(?![A-Za-z0-9_])", text
+            rf"(?:(?<!{word_character})(?<![.+-])|{range_prefix})"
+            rf"{escaped}(?!{word_character}|\.[0-9])", text
         ) is not None
-    return re.search(rf"(?<!\w){escaped}(?!\w)", text, flags=re.UNICODE) is not None
+    return re.search(
+        rf"(?<!{word_character}){escaped}(?!{word_character})", text
+    ) is not None
 
 
 def _duplicated_documentation_issues(api: dict[str, Any], label: str) -> list[str]:

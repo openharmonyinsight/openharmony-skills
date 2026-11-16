@@ -27,6 +27,7 @@ try:
         api_description_issues,
         api_documentation_duplication_issues,
         api_spec_structural_issues,
+        arkts_static_metadata_issues,
         parse_api_spec,
     )
 except ImportError:  # Package import from repository root.
@@ -41,6 +42,7 @@ except ImportError:  # Package import from repository root.
         api_description_issues,
         api_documentation_duplication_issues,
         api_spec_structural_issues,
+        arkts_static_metadata_issues,
         parse_api_spec,
     )
 
@@ -94,7 +96,19 @@ class UpgradeResult:
 
 
 def _clean(value: Any) -> str:
-    return normalize_cell(value).replace("*", "").replace("`", "").strip()
+    """Remove enclosing Markdown formatting without changing type operators."""
+    text = normalize_cell(value)
+    while text:
+        if text.startswith("`") and text.endswith("`"):
+            return text.strip("`").strip()
+        for marker in ("**", "*"):
+            if (text.startswith(marker) and text.endswith(marker)
+                    and len(text) > 2 * len(marker)):
+                text = text[len(marker):-len(marker)].strip()
+                break
+        else:
+            return text
+    return text
 
 
 def _table_by_columns(text: str, columns: list[str]) -> list[dict[str, str]]:
@@ -152,7 +166,36 @@ def _api_chunks(spec: str) -> list[tuple[str, str]]:
 
 def _spec_table(chunk: str) -> dict[str, str]:
     table = _table_by_columns(chunk, ["规格项", "值"])
-    return {_clean(row.get("规格项")): _clean(row.get("值")) for row in table}
+    result: dict[str, str] = {}
+    for row in table:
+        key = _clean(row.get("规格项"))
+        value = row.get("值")
+        result[key] = _error_code_text(value) if key == "错误码" else _clean(value)
+    return result
+
+
+def _error_code_text(value: str) -> str:
+    """Remove inline emphasis while preserving operators inside code spans."""
+    text = normalize_cell(value)
+    prefix = "\x00odk-code-"
+    while prefix in text:
+        prefix += "x"
+    code_spans: dict[str, str] = {}
+
+    def protect_code(match: re.Match[str]) -> str:
+        token = f"{prefix}{len(code_spans)}\x00"
+        code_spans[token] = match.group(1)
+        return token
+
+    text = re.sub(r"`([^`\n]+)`", protect_code, text)
+    while True:
+        cleaned = re.sub(r"(\*{1,3})(?=\S)(.+?)(?<!\s)\1", r"\2", text)
+        if cleaned == text:
+            break
+        text = cleaned
+    for token, code in code_spans.items():
+        text = text.replace(token, code)
+    return text.strip()
 
 
 def _description_tables(chunk: str) -> dict[str, str]:
@@ -414,6 +457,8 @@ def _return_type(
     if language == "c":
         if text == "void":
             result["semantic"] = "void"
+        elif "*" in text:
+            result["semantic"] = "pointer"
         elif text == "int32_t" and spec.get("错误码", "").strip() not in {"", "无", "不涉及", "—", "-"}:
             result["semantic"] = "error-code"
         else:
@@ -634,10 +679,13 @@ def _metadata_api(
     access_level = _legacy_access_level(
         proposal_attrs, effective_common, language, api_id, missing
     )
-    api_mode = str(api_facts.get("apiMode") or "").strip()
+    # Preserve explicit values so the shared schema check can reject them.
+    # Only an absent key permits defaulting or inference from the file path.
+    has_api_mode = "apiMode" in api_facts
+    api_mode = api_facts.get("apiMode")
     static_api = (
-        api_mode in {"static", "dynamic&static"}
-        or (language == "arkts" and file_path.endswith(".static.d.ets"))
+        (isinstance(api_mode, str) and api_mode in {"static", "dynamic&static"})
+        or (not has_api_mode and language == "arkts" and file_path.endswith(".static.d.ets"))
     )
     since = str(
         api_facts.get("since") or effective_common.get("@since") or ""
@@ -701,7 +749,9 @@ def _metadata_api(
         api["applicationModel"] = _application_model(
             effective_common, api_facts, missing
         )
-        if static_api:
+        if has_api_mode and api_mode != "dynamic":
+            api["apiMode"] = api_mode
+        elif not has_api_mode and static_api:
             api["apiMode"] = "static"
     else:
         api["isVariadic"] = "..." in declaration
@@ -883,6 +933,8 @@ def validate_rendered_metadata(rendered: str) -> list[str]:
         path.write_text(rendered, encoding="utf-8")
         parsed = parse_api_spec(path)
     issues = api_spec_structural_issues(parsed)
+    if parsed.get("language") == "arkts":
+        issues.extend(arkts_static_metadata_issues(parsed))
     if parsed.get("apiContractVersion") != API_CONTRACT_VERSION:
         issues.append(
             "API metadata: apiContractVersion must be "
@@ -1485,6 +1537,8 @@ def _build_ohos_sdd_v1(
                     )
                 else:
                     api["applicationModel"] = application_model
+                if "apiMode" in api_language_facts:
+                    api["apiMode"] = api_language_facts["apiMode"]
             apis.append(api)
 
         metadata: dict[str, Any] = {

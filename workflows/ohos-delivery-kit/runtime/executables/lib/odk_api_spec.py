@@ -933,6 +933,120 @@ def _nested_description_issues(
     return issues
 
 
+_API_ANGLE_PLACEHOLDER_RE = re.compile(r"<[^>\n]+>")
+
+
+def arkts_api_mode(api: dict) -> str:
+    """Return the effective ArkTS API mode; omission means dynamic-only."""
+
+    mode = api.get("apiMode")
+    if isinstance(mode, str) and mode in {"static", "dynamic", "dynamic&static"}:
+        return str(mode)
+    if api.get("_has_apiMode") is True:
+        return "invalid"
+    return "dynamic"
+
+
+def arkts_static_metadata_issues(metadata: dict) -> list[str]:
+    """Require each ArkTS API mode to match its declaration evidence."""
+
+    issues: list[str] = []
+    apis = metadata.get("apis")
+    if not isinstance(apis, list):
+        return issues
+
+    for index, api in enumerate(apis, start=1):
+        if not isinstance(api, dict):
+            continue
+        label = api.get("id") or api.get("name") or f"API[{index}]"
+        mode = arkts_api_mode(api)
+        if mode not in {"static", "dynamic", "dynamic&static"}:
+            continue
+
+        file_path = str(api.get("filePath") or "").replace("\\", "/")
+        declaration = str(api.get("declaration") or "")
+        since = str(api.get("since") or "")
+        if (
+            _API_ANGLE_PLACEHOLDER_RE.search(file_path)
+            # Generic types are declaration syntax, not unresolved fields.
+            or _API_ANGLE_PLACEHOLDER_RE.fullmatch(declaration)
+            or _API_ANGLE_PLACEHOLDER_RE.search(since)
+        ):
+            continue
+
+        static_file = file_path.endswith(".static.d.ets")
+        arkts_file = file_path.endswith(".d.ets")
+        use_static = "'use static'" in declaration
+        staticonly_marker = bool(
+            re.search(r"\bstaticonly\b", since, flags=re.IGNORECASE)
+        )
+        static_marker = bool(re.search(r"\bstatic\b", since, flags=re.IGNORECASE))
+        dynamic_static_marker = bool(
+            re.search(r"\bdynamic\s*&\s*static\b", since, flags=re.IGNORECASE)
+        )
+
+        if mode == "static":
+            if static_file:
+                if not staticonly_marker:
+                    issues.append(
+                        f"API metadata API '{label}': static apiMode in a "
+                        ".static.d.ets file requires a since value containing "
+                        "staticonly"
+                    )
+            elif arkts_file:
+                if not static_marker:
+                    issues.append(
+                        f"API metadata API '{label}': static apiMode in a .d.ets "
+                        "file requires a since value containing static"
+                    )
+            else:
+                issues.append(
+                    f"API metadata API '{label}': static apiMode requires a "
+                    ".d.ets or .static.d.ets filePath"
+                )
+            if use_static:
+                issues.append(
+                    f"API metadata API '{label}': static apiMode declaration "
+                    "must not contain the file-level 'use static' directive"
+                )
+        else:
+            if static_file:
+                issues.append(
+                    f"API metadata API '{label}': {mode} apiMode must not use a "
+                    ".static.d.ets filePath"
+                )
+            if use_static:
+                issues.append(
+                    f"API metadata API '{label}': {mode} apiMode declaration "
+                    "must not contain 'use static'"
+                )
+            if mode == "dynamic" and (
+                static_marker or staticonly_marker or dynamic_static_marker
+            ):
+                issues.append(
+                    f"API metadata API '{label}': dynamic apiMode since must not "
+                    "contain a static or dynamic&static marker"
+                )
+            if mode == "dynamic&static" and not dynamic_static_marker:
+                issues.append(
+                    f"API metadata API '{label}': dynamic&static apiMode since "
+                    "must contain dynamic&static"
+                )
+
+        if mode in {"static", "dynamic&static"}:
+            if re.search(r"\b(?:any|Any)\b", declaration):
+                issues.append(
+                    f"API metadata API '{label}': {mode} apiMode declaration must "
+                    "not use any"
+                )
+            if "|" in declaration:
+                issues.append(
+                    f"API metadata API '{label}': {mode} apiMode declaration must "
+                    "not use union types"
+                )
+    return issues
+
+
 def api_spec_structural_issues(data: dict[str, Any]) -> list[str]:
     """Check metadata structure shared by ArkTS and C contracts."""
 

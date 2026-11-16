@@ -6,7 +6,7 @@ this file. Source artifacts are synchronized from
 
 ## [0.15.0] - 2026-11-03
 
-Source: `main@4ff47290c4902c8aa7d489ae79ce6c676703e239`.
+Source: `main@a11624f7c42d91fec553909c3aab4e621d60d9f9`.
 
 This import publishes the language-specific API metadata contract and its
 breaking migration. Existing 0.14 API changes must be moved with
@@ -60,6 +60,19 @@ accepted as a compatibility layer.
   proposal, file path and `since` marker; static APIs accept `.d.ets` + `static`
   or `.static.d.ets` + `staticonly`, and static declarations reject `any` and
   union types.
+
+### Fixed
+
+- Preserve C pointer return types and qualifiers; parse inline-formatted legacy
+  error codes without removing pointer operators inside code spans.
+- Preserve confirmed ArkTS API modes in both legacy formats. Reject explicit
+  null, false, empty or otherwise invalid modes before writing; only a missing
+  mode field permits 0.14 defaults or inference from the file path.
+- Reuse the final validator's mode/path/since/declaration checks before migration
+  writes, including generic declarations. Conflicts keep all original files.
+- Accept confirmed numeric range endpoints and Chinese-adjacent decimal,
+  negative and unit values, while rejecting different signs, precision,
+  exponent fragments and Unicode unit continuations.
 
 ## [0.14.7] - 2026-11-13
 

@@ -14,6 +14,14 @@ from unittest import mock
 
 
 WORKFLOW_ROOT = Path(__file__).resolve().parents[1]
+API_FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures/api-0.15"
+
+
+def write_api_fixture(change: Path) -> None:
+    for path in API_FIXTURE_ROOT.iterdir():
+        destination = change / ("evidence" if path.suffix == ".diff" else "") / path.name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(path, destination)
 
 
 def load_module(name: str, path: Path):
@@ -83,17 +91,20 @@ class RuntimeContractRegressionTest(unittest.TestCase):
                          validator.api_heading_signature('#### API: kit.call(): Type#'))
 
     def test_api_diff_evidence_requires_nonempty_complete_hunks(self) -> None:
-        valid = "--- a/api.h\n+++ b/api.h\n@@ -1 +1 @@\n-void old(void);\n+void updated(void);\n"
-        for content in ("", "\n", "en\n", valid.replace("@@ -1 +1 @@", "@@ -1,4 +1,4 @@"), valid):
+        valid = (API_FIXTURE_ROOT / "task1-arkts-api-declaration-en.diff").read_text(encoding="utf-8")
+        for content in ("", "\n", "en\n", valid.replace("@@ -0,0 +1,9 @@", "@@ -0,0 +1,20 @@"), valid):
             with tempfile.TemporaryDirectory() as temporary:
                 change = Path(temporary)
-                (change / "proposal.md").write_text(
-                    "## 不涉及项确认\n\n| 维度 | 是否涉及 |\n| --- | --- |\n| API/SDK | 是 |\n",
-                    encoding="utf-8")
-                evidence = change / "evidence"
-                evidence.mkdir()
+                write_api_fixture(change)
                 for language in ("en", "zh"):
-                    (evidence / f"task1-api-declaration-{language}.diff").write_text(content, encoding="utf-8")
+                    localized = (API_FIXTURE_ROOT / f"task1-arkts-api-declaration-{language}.diff").read_text(encoding="utf-8")
+                    if content == valid:
+                        actual = localized
+                    elif content.startswith("diff --git"):
+                        actual = localized.replace("@@ -0,0 +1,9 @@", "@@ -0,0 +1,20 @@")
+                    else:
+                        actual = content
+                    (change / "evidence" / f"task1-arkts-api-declaration-{language}.diff").write_text(actual, encoding="utf-8")
                 reporter = validator.Reporter()
                 with contextlib.redirect_stdout(io.StringIO()):
                     validator.validate_api_declaration_diffs(change, reporter, archive=True)
@@ -113,12 +124,13 @@ class RuntimeContractRegressionTest(unittest.TestCase):
     def validate_api_documents(self, proposal: str, spec: str) -> str:
         with tempfile.TemporaryDirectory() as temporary:
             change_dir = Path(temporary)
+            write_api_fixture(change_dir)
             (change_dir / "proposal.md").write_text(proposal, encoding="utf-8")
             (change_dir / "spec.md").write_text(spec, encoding="utf-8")
             reporter = validator.Reporter()
             output = io.StringIO()
             with contextlib.redirect_stdout(output):
-                validator.validate_api_spec_contract(change_dir, reporter)
+                validator.validate_api_spec_contract(change_dir, reporter, archive=True)
         self.assertGreater(reporter.failed, 0)
         return output.getvalue()
 
@@ -153,39 +165,32 @@ class RuntimeContractRegressionTest(unittest.TestCase):
         output = self.validate_api_documents(proposal, spec)
         self.assertIn("API 规格定义 section must appear exactly once", output)
 
-    def test_duplicate_common_subsection_and_table_are_rejected(self) -> None:
-        proposal = """\
-## 不涉及项确认
+    def test_current_api_metadata_and_overview_are_accepted(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            change = Path(temporary)
+            write_api_fixture(change)
+            reporter = validator.Reporter()
+            with contextlib.redirect_stdout(io.StringIO()):
+                validator.validate_api_spec_contract(change, reporter, archive=True)
+            self.assertEqual(0, reporter.failed, reporter.messages)
 
-| 维度 | 是否涉及 |
-| --- | --- |
-| API/SDK | 是 |
-"""
-        duplicate_subsection = """\
-## API 规格定义
-### 公共规格属性
-first
-### 公共规格属性
-second
-### 逐 API 规格
-"""
+    def test_duplicate_overview_subsection_and_table_are_rejected(self) -> None:
+        proposal = (API_FIXTURE_ROOT / "proposal.md").read_text(encoding="utf-8")
+        spec = (API_FIXTURE_ROOT / "spec.md").read_text(encoding="utf-8")
+        overview = validator.section_text(spec, "API 概览")
+        heading = "### API 事实溯源与待确认项"
+        duplicate_subsection = spec.replace(heading, "### API 概览\n" + overview + "\n\n" + heading, 1)
         output = self.validate_api_documents(proposal, duplicate_subsection)
-        self.assertIn("公共规格属性 subsection must appear exactly once", output)
-
-        duplicate_table = """\
-## API 规格定义
-### 公共规格属性
-| 规格项 | 值 |
-| --- | --- |
-| API 类型 | Public |
-
-| 规格项 | 值 |
-| --- | --- |
-| API 类型 | System |
-### 逐 API 规格
-"""
+        self.assertIn("API 概览 subsection must appear exactly once", output)
+        duplicate_table = spec.replace(heading, "\n" + overview + "\n\n" + heading, 1)
         output = self.validate_api_documents(proposal, duplicate_table)
-        self.assertIn("must contain exactly one specification table", output)
+        self.assertIn("must contain exactly one overview table", output)
+
+    def test_legacy_per_api_sections_are_rejected(self) -> None:
+        proposal = (API_FIXTURE_ROOT / "proposal.md").read_text(encoding="utf-8")
+        spec = (API_FIXTURE_ROOT / "spec.md").read_text(encoding="utf-8")
+        output = self.validate_api_documents(proposal, spec + "\n#### API: run(): void\n")
+        self.assertIn("must not contain legacy per-API #### API subsections", output)
 
     def test_arkts_expression_validity_is_toolchain_owned(self) -> None:
         for value in (
@@ -309,17 +314,18 @@ second
                 self.assertTrue(validator.api_signature_complete(
                     f"Example.on(cb: {type_name}): void", language="ArkTS"))
 
-    def test_supported_device_decisions_are_validated(self) -> None:
-        valid = [{"设备类型": "手机", "起始版本": "6.0", "是否支持": "是"}]
-        self.assertEqual([], validator.supported_device_table_issues(valid))
-        invalid = [
-            {"设备类型": "手机", "起始版本": "banana", "是否支持": "maybe"},
-            {"设备类型": "手机", "起始版本": "6.0", "是否支持": "是"},
-        ]
-        issues = validator.supported_device_table_issues(invalid)
-        self.assertTrue(any("must state 是 or 否" in issue for issue in issues))
-        self.assertTrue(any("invalid starting version" in issue for issue in issues))
-        self.assertTrue(any("duplicate supported device" in issue for issue in issues))
+    def test_device_difference_metadata_is_validated(self) -> None:
+        metadata = validator.parse_api_spec(API_FIXTURE_ROOT / "arkts-api-spec.yaml")
+        api = metadata["apis"][0]
+        api["deviceDifferences"] = {"enabled": False, "items": []}
+        self.assertEqual([], validator.api_spec_structural_issues(metadata))
+        api["deviceDifferences"] = {"enabled": True, "items": [None, {}]}
+        issues = validator.api_spec_structural_issues(metadata)
+        self.assertTrue(any("deviceDifferences.items[1] must be a non-empty mapping" in issue for issue in issues))
+        self.assertTrue(any("deviceDifferences.items[2] must be a non-empty mapping" in issue for issue in issues))
+        api["deviceDifferences"] = {"enabled": True, "items": "phone"}
+        self.assertTrue(any("deviceDifferences.items must be a list" in issue
+                            for issue in validator.api_spec_structural_issues(metadata)))
 
     def test_design_docs_commit_is_full_sha_and_matches_current_head(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
