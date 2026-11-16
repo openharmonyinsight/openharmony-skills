@@ -6,7 +6,11 @@ this file. Source artifacts are synchronized from
 
 ## [0.15.0] - 2026-11-03
 
-Source: `main@a11624f7c42d91fec553909c3aab4e621d60d9f9`.
+Source: `main@0122bc6cc0ac5a828a1d39eae1c9644a269e853e`.
+
+This republish imports the review fixes merged into the source `main` after the
+first 0.15.0 import (`4ff4729`); the version stays 0.15.0 because that release PR
+has not been merged yet.
 
 This import publishes the language-specific API metadata contract and its
 breaking migration. Existing 0.14 API changes must be moved with
@@ -73,6 +77,15 @@ accepted as a compatibility layer.
 - Accept confirmed numeric range endpoints and Chinese-adjacent decimal,
   negative and unit values, while rejecting different signs, precision,
   exponent fragments and Unicode unit continuations.
+- Use installer-relocatable runtime paths in API skill commands, and make the
+  release gate reject legacy runtime paths wrapped in variables; shared guides
+  reuse the path exposed by the loaded skill. The gate also verifies that quoted
+  executable paths exist and were relocated, with and without braces.
+- Check the full number, sign and precision boundary for Chinese unit and range
+  confirmed values, so `10.5ms` or `-0.5ms` is not accepted as `0.5ms`.
+- Apply the hardened NAPI/ArkTS and RAII/symbol-export guidance from the
+  AI-draft versus release diff to `odk-fmea` and the implementation-quality
+  guide.
 
 ## [0.14.7] - 2026-11-13
 

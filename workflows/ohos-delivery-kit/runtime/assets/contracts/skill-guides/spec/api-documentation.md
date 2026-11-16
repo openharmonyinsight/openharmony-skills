@@ -119,11 +119,13 @@ apis:
 
 ## Merge rules
 
-After the subagent returns, the main session first runs:
+After the subagent returns, the main session first runs
+`check-api-documentation-context.py` using the relocated command in the loaded
+`odk-spec` skill. Use that command's installed executable path, with these arguments;
+do not reconstruct it from the business directory or a plugin-root variable:
 
-```sh
-python3 "${OHOS_PLUGIN_ROOT}/runtime/executables/check-api-documentation-context.py" \
-  --context <temporary-workspace>/documentation-context.yaml \
+```text
+--context <temporary-workspace>/documentation-context.yaml \
   --output <temporary-workspace>/api-doc-output.yaml \
   --skeleton <temporary-workspace>/api-spec-skeleton.yaml
 ```

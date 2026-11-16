@@ -21,7 +21,10 @@ This republish includes the merged API review fixes: upgrades preserve pointer
 return types and confirmed modes, reject invalid or conflicting modes before
 writing, and accept inline-formatted error codes. Documentation checks accept
 numeric range endpoints and Chinese-adjacent values while retaining Unicode
-unit boundaries.
+unit boundaries and full number, sign and precision boundaries. API skill
+commands use installer-relocatable runtime paths, and the NAPI/ArkTS and
+RAII/symbol-export guidance is hardened for `odk-fmea` and implementation
+quality.
 
 ## 0.14.7 build products and Task review gate
 
@@ -207,7 +210,7 @@ repository-scoped layout.
 
 Synced from `oshunter/ohos-delivery-kit` branch `main` via
 `ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills --plugin ohos-delivery-kit`.
-Current source: `main@a11624f7c42d91fec553909c3aab4e621d60d9f9`.
+Current source: `main@0122bc6cc0ac5a828a1d39eae1c9644a269e853e`.
 The current publisher needs the default config, archive-migration,
 session-sidecar, API documentation check and API chain upgrade entrypoints plus
 all Python runtime libraries supplemented; the source release gate verifies the

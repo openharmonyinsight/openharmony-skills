@@ -17,6 +17,13 @@ Carry the affected paths, evidence and unresolved checks in Task/review handoffs
 - Establish the language/runtime version, applicable repository conventions and
   nearby patterns from the Task's declared context. Prefer an existing suitable
   helper or idiom; do not copy an inefficient pattern merely because it exists.
+- For a new or changed public symbol (installed header or exported API), confirm
+  the symbol is exported through the repository's visibility/version files
+  (`.map`/`.symdef`/`__attribute__((visibility("default")))`) and that error
+  handling follows the neighbors' convention (e.g. `CHECK_ENV`/`CHECK_ARG` +
+  `napi_set_last_error` + `HILOG_*`, rather than a bare `RETURN_STATUS_IF_FALSE`),
+  and that a new scope/handle reuses the repository's ownership idiom (RAII guard
+  vs manual open/close).
 - Look for hard-to-follow expressions, avoidable duplication, repeated work,
   growing-data copies, allocations in loops, and error/ownership paths made
   harder by the chosen representation. Focus on risks present in this change.

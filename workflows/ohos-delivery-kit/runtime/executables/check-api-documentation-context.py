@@ -358,13 +358,14 @@ def _contains_normalized_value(text: str, value: str) -> bool:
 
     Python `\w` includes CJK characters, so the generic negative lookarounds
     reject natural Chinese prose. Non-CJK values retain Unicode word boundaries
-    except for adjacent CJK prose; values containing CJK characters are matched
-    as exact substrings in normalized text.
+    except for adjacent CJK prose. Numeric values keep these boundaries even
+    when their units contain CJK; nonnumeric CJK phrases use literal matching.
     """
 
     if not value:
         return True
-    if re.search(r"[\u3400-\u9fff\uf900-\ufaff]", value):
+    numeric_value = re.match(r"[+−-]?(?:\d|\.\d)", value)
+    if not numeric_value and re.search(r"[\u3400-\u9fff\uf900-\ufaff]", value):
         # CJK values are checked as normalized literals. re.escape() would turn
         # spaces and ASCII punctuation into backslash sequences and break a
         # literal containment check even when the documentation is correct.
@@ -373,19 +374,19 @@ def _contains_normalized_value(text: str, value: str) -> bool:
     # Preserve Unicode letters/digits (including unit superscripts) as token
     # characters; only adjacent CJK prose is exempt from word boundaries.
     word_character = r"[^\W\u3400-\u9fff\uf900-\ufaff]"
-    if re.match(r"[+-]?(?:[0-9]|\.[0-9])", value):
+    if numeric_value:
         # Match the complete numeric token, allowing a sentence-ending period
         # but rejecting a different sign, decimal continuation or exponent.
         # A hyphen after a complete lower bound is a range separator, not the
         # upper bound's sign. The exponent sign in 1e-3 is not a range separator.
-        number = r"[+-]?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?"
+        number = r"[+−-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+−-]?\d+)?"
         range_prefix = (
-            rf"(?<!{word_character})(?<![.+-]){number}"
-            rf"(?:[ \t]*(?![eE][ \t]*-){word_character}+)?[ \t]*-[ \t]*"
+            rf"(?<!{word_character})(?<![.+−-]){number}"
+            rf"(?:[ \t]*(?![eE][ \t]*[−-]){word_character}+)?[ \t]*-[ \t]*"
         )
         return re.search(
-            rf"(?:(?<!{word_character})(?<![.+-])|{range_prefix})"
-            rf"{escaped}(?!{word_character}|\.[0-9])", text
+            rf"(?:(?<!{word_character})(?<![.+−-])|{range_prefix})"
+            rf"{escaped}(?!{word_character}|\.\d)", text
         ) is not None
     return re.search(
         rf"(?<!{word_character}){escaped}(?!{word_character})", text

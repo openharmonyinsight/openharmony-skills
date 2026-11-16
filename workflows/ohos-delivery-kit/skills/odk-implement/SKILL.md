@@ -74,8 +74,11 @@ For configuration-dependent steps, use the effective-configuration command defin
      - Search for similar existing functions — prefer files within the Task's declared file scope first, then widen to the same subsystem/layer
      - Study the conventions those functions follow: call chain layering, naming patterns, error handling, state management, logging/DFX, and interface contracts
      - Record the reference pattern, e.g.: "Call chain: `native_api → NativeEngine → ArkNativeEngine → DFXJSNApi → EcmaVM`" or "Naming: query APIs use `GetXxx()` returning `int32_t` with `napi_status` error code"
-     - Follow the same conventions unless the user explicitly approves a deviation
-     - If no similar function exists, note "no prior art found" and proceed without a pattern reference
+      - Follow the same conventions unless the user explicitly approves a deviation
+      - **公开符号导出（条件触发：`API/SDK` = 是，或改动安装态公开头如 `jsnapi_expo.h`/`native_api.h`）**：新增/变更暴露到公开头的符号时，检查仓的符号导出/可见性文件（`.map` 如 `libark_jsruntime.map`、`.symdef`、`__attribute__((visibility))`），为新符号补齐导出条目；否则下游 `.so` 会因缺符号链接失败。
+      - **测试落位与 fixture 复用**：优先在既有测试文件（`*_tests.cpp` / `*_test.cpp`）追加用例并复用既有 fixture（如 `TestHelper::CreateEcmaVMWithScope`、`HWTEST_F_L0`），而非为小变更新建独立大文件；新建前确认无既有测试入口可挂靠。
+      - **版权年同步**：修改既有源文件时，将版权头年份更新为当前年（如 `2021-2024` → `2021-2026`）；新增文件直接写当前年。
+      - If no similar function exists, note "no prior art found" and proceed without a pattern reference
    <!-- ODK:reference contracts/skill-guides/delivery/implementation-quality.md -->
    For code Tasks, read `contracts/skill-guides/delivery/implementation-quality.md`
    before choosing an implementation. Use it again for the completion check;

@@ -51,7 +51,7 @@ dispositions in the existing plan and invalidate/reverify affected results.
 
 ## Steps
 
-1. Review actual implementation files and the full relevant diff (including untracked files) against each AC. Inspect correctness, failure paths, tests and regressions. Use templates as checklists, not as a substitute for examining code. Do not commit merely to start review.
+1. Review actual implementation files and the full relevant diff (including untracked files) against each AC. Inspect correctness, failure paths, tests and regressions. For public-API/ABI changes, additionally confirm symbol export/visibility files are updated (`.map`/`.symdef`), error-code/return conventions match the neighbors, new scopes/handles reuse the repository's ownership idiom, and the single choke point for cross-cutting side effects is not bypassed by scattered gating. Use templates as checklists, not as a substitute for examining code. Do not commit merely to start review.
 
    Before forming any whole-change conclusion, read every R1/R2 Task's
    `evidence/reviews/task-<n>/verdict.md`. A missing verdict, a non-`PASS` verdict

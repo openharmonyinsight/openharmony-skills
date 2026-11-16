@@ -58,7 +58,7 @@ the entire applicable workflow is complete. The coordinator owns this flow.
 3. Run the deterministic assistant in dry-run mode:
 
    ```sh
-   python3 "${OHOS_PLUGIN_ROOT}/runtime/executables/upgrade-api-chain.py" \
+   python3 "runtime/executables/upgrade-api-chain.py" \
      <change-dir> --dry-run
    ```
 
@@ -174,7 +174,7 @@ run preserves the first language and updates the overview to cover both. Omit un
 7. Write the current contract only after dry-run is clean:
 
    ```sh
-   python3 "${OHOS_PLUGIN_ROOT}/runtime/executables/upgrade-api-chain.py" \
+   python3 "runtime/executables/upgrade-api-chain.py" \
      <change-dir> --write --facts <facts.json>
    ```
 

@@ -90,6 +90,7 @@ classDiagram
 <!--
 条件章节：当变更需复用项目内既有模式（命名、调用链、错误处理、测试风格等）时，在此处插入 `## 既有模式复用`。
 纯新模块无既有模式可复用时不展开。列出必须复用的模式，避免 Agent 发明不一致的抽象或测试风格。
+引入新作用域/句柄时必须指明**所有权惯用法**：沿用同层既有的 RAII scope guard（如 `JsiNativeScope`/`JsiFastNativeScope`，ctor 打开、dtor 关闭+drain），而非手动 open/close；同时注明错误码/日志返回约定（`CHECK_ENV`/`CHECK_ARG` + `napi_set_last_error` + `HILOG_*`）。
 
 | Pattern | 参考代码（文件:行） | 复用方式 | 适用 Task |
 |---------|-------------------|----------|-----------|
@@ -115,6 +116,8 @@ classDiagram
 <!--
 条件章节：当变更涉及 runtime state、缓存、生命周期清理、热路径、兼容性行为或跨模块 ownership 时，
 在此处插入 `## 状态归属与不变量`。只填写适用维度；无关维度不要展开。
+跨切面副作用（队列 drain、flush、提交）若有单一权威触发点（choke point，如 `MicroJobQueue::ExecutePendingJob`），
+在 Ownership/Concurrency 维度写明应将抑制/gate 收敛到该点，禁止在多个调用点散布抑制逻辑。
 
 建议结构使用普通段落或列表，避免影响基础表格：
 - Ownership: owner、key/index、创建时机、清理触发、只读消费者、不变量、验证方法、关联 AC/Task

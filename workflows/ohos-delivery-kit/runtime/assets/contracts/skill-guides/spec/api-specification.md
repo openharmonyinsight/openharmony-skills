@@ -254,13 +254,15 @@ reverse conversion.
 
 After the subagent returns:
 
-1. Run the installed checker before reading or merging the output:
+1. Run `check-api-documentation-context.py` before reading or merging the output.
+   Use the relocated executable command from the loaded `odk-spec` skill with
+   these arguments; do not reconstruct its path from the business directory or
+   a plugin-root variable:
 
-   ```sh
-   python3 "${OHOS_PLUGIN_ROOT}/runtime/executables/check-api-documentation-context.py" \
-     --context <temporary-workspace>/documentation-context.yaml \
+   ```text
+   --context <temporary-workspace>/documentation-context.yaml \
      --output <temporary-workspace>/api-doc-output.yaml \
-   --skeleton <temporary-workspace>/api-spec-skeleton.yaml
+     --skeleton <temporary-workspace>/api-spec-skeleton.yaml
    ```
 
 2. Verify the API ID set, parameter names, and errorCodes identity exactly
