@@ -6,7 +6,11 @@ this file. Source artifacts are synchronized from
 
 ## [0.14.7] - 2026-11-13
 
-Source: `main@0989ab3b4fd81fb7a728a1a8106a1ff7368d642e`.
+Source: `main@85673017d17fcd84aad724d37b60603d04558f66`.
+
+This republish imports the review and release-gate fixes merged into the source
+`main` after the first 0.14.7 import (`0989ab3`); the version stays 0.14.7 because
+that release PR has not been merged yet.
 
 This import also publishes changes that the source still listed as Unreleased at
 this commit: the `odk-task-review` five-dimension Task review guide wired into the
@@ -15,6 +19,14 @@ its prompt-residue checker (source issue #157).
 
 ### Fixed
 
+- Reject corrupt Task review verdicts instead of silently degrading them: top-level
+  non-mapping syntax, duplicate fields, and indented content before the first field
+  are invalid. Draft warns and archive fails, while comments, blank lines and nested
+  metadata under a top-level field stay supported.
+- Check the raw command projection list before the installer de-duplicates it, then
+  verify the effective command set and the generated OpenCode command wrappers, so
+  duplicate declarations or registering only `components.skills` while omitting
+  `commandProjection.commands` fail the neutral release gate.
 - Use the same concrete or abstract product name for build commands and `out/`
   artifacts, and confirm the device validation target separately through an
   explicit `{validation_product}`. Plans record the validation scope and target,

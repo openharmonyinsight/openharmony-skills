@@ -152,6 +152,7 @@ commandProjection:
     - skill: odk-fmea
     - skill: odk-plan
     - skill: odk-implement
+    - skill: odk-task-review
     - skill: odk-review
     - skill: odk-validate
     - skill: odk-spec-for-validation

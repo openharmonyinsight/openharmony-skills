@@ -101,6 +101,8 @@ frontmatter：`task_id`、`risk`、`independent`、`verdict`、`blocking_finding
 `verdict` 取值 `PASS` / `FAIL` / `BLOCKED`；`blocking_findings` 为未闭环 Critical/High 数量。
 frontmatter 缺失、无法解析或缺少闭合 `---` 时按评审结论无效处理：Draft 告警、归档失败。
 五个必填字段只接受单行标量；非注释的缩进续行同样按无效 frontmatter 处理，不得截取首行放行。
+顶层必须使用受支持的 `key: value` 映射语法；重复字段、顶层列表项或其他无法识别的顶层非注释行同样无效，不得忽略后继续判为 PASS。
+首个顶层字段之前的非注释缩进内容同样无效；额外元数据的嵌套内容必须位于其顶层字段之后，注释和空行不建立父字段。
 
 风险列只从唯一的 `## Task 列表` 章节读取。该章节重复，或章节内出现多张含 `TASK ID` 与
 `风险等级` 的表格时，Draft 与归档阶段都失败；风险列存在但单元格为空、无法解析为

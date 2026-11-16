@@ -296,7 +296,7 @@ def parse_simple_yaml_scalar(raw: str) -> str | None:
 def read_frontmatter(
     path: Path, *, single_line_keys: tuple[str, ...] = ()
 ) -> Frontmatter:
-    """Read simple YAML pairs, optionally rejecting selected scalar continuations."""
+    """Read simple YAML pairs; verdicts also reject ambiguous top-level fields."""
     if not path.is_file():
         return Frontmatter()
     # Split only on LF. str.splitlines() also treats VT, FF, NEL and Unicode
@@ -326,6 +326,8 @@ def read_frontmatter(
         if match:
             key = match.group(1)
             current_key = key
+            if single_line_keys and key in result:
+                return Frontmatter(f"duplicate frontmatter field: {key}")
             if key == "proposal_id" and key in result:
                 result[key] = INVALID_PROPOSAL_ID_SCALAR
                 continue
@@ -333,7 +335,13 @@ def read_frontmatter(
             value = parse_simple_yaml_scalar(raw)
             result[key] = value if value is not None else trim_yaml_whitespace(raw)
         elif stripped and not stripped.startswith("#"):
-            current_key = ""
+            if single_line_keys:
+                if not line.startswith((" ", "\t")) or not current_key:
+                    return Frontmatter("unsupported top-level frontmatter syntax")
+                # Only an existing extra metadata field can own nested content.
+                # Keep its context across all children, comments and blank lines.
+            else:
+                current_key = ""
     return result if closed else Frontmatter("missing closing delimiter")
 
 
