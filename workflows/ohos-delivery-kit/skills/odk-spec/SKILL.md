@@ -15,6 +15,15 @@ full frontmatter and body first; revise it in place and preserve confirmed
 content, stable IDs and evidence. Create a target only when it does not exist.
 <!-- /ODK:reference -->
 
+## Phase flow and next step
+
+<!-- ODK:reference contracts/skill-guides/router/phase-flow.md -->
+Before phase work, read `contracts/skill-guides/router/phase-flow.md` and apply
+its configured pre_hook/post_hook order. At every completion or pause, show
+the next pending action and configured hooks; omit the reminder only when
+the entire applicable workflow is complete. The coordinator owns this flow.
+<!-- /ODK:reference -->
+
 <!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
 Read `contracts/skill-guides/router/delivery-levels.md` and obtain the effective
 contract before choosing artifacts, sections or phase prerequisites.
@@ -30,7 +39,32 @@ contract before choosing artifacts, sections or phase prerequisites.
 
 ## Steps
 
--1. **Shared brainstorm gate:** Run the same interview as standalone `odk-brainstorm` inline before writing ACs. Inspect API signatures, parameter checks/defaults, return/error paths, state ownership and device variants. Focus decisions on observable outcomes: caller-visible failures, boundary inputs, timing/resource bounds and what each AC must prove. Preserve confirmed proposal decisions, but distinguish existing behavior from an agreed target.
+<!-- ODK:reference contracts/skill-guides/spec/contract-boundary.md -->
+Read `contracts/skill-guides/spec/contract-boundary.md` before writing or revising
+spec. Apply it to all sections, including business rules and test hints. Read
+code for facts and compatibility; keep its internal mechanisms in design and
+test implementation/results in the plan. Preserve an unchanged contract spec.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/writing/chinese.md -->
+生成或修订中文 spec 前，阅读并执行 `contracts/skill-guides/writing/chinese.md`。
+用中文写清适用条件、操作和结果，参照正反例检查措辞；保留固定格式、编号和技术含义。
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/writing/chinese-examples.md -->
+首次撰写或修订中文 spec 时，一并阅读 `contracts/skill-guides/writing/chinese-examples.md`。
+按语境学习改写方法，保留准确术语与原有约束，不套用示例的业务行为或验证结论。
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/research/codebase-understanding.md -->
+Before the interview or AC generation, read
+`contracts/skill-guides/research/codebase-understanding.md`. Build or refresh the
+relevant implementation baseline, including integration points for new features
+and consumers of executable configuration. Reuse its evidence across spec and
+design; an interview summary alone does not establish code facts.
+<!-- /ODK:reference -->
+
+-1. **Shared brainstorm gate:** Run the same interview as standalone `odk-brainstorm` inline before writing ACs. Use the researched baseline for API signatures, parameter checks/defaults, return/error paths, state ownership and device variants. Focus decisions on observable outcomes: caller-visible failures, boundary inputs, timing/resource bounds and what each AC must prove. Preserve confirmed proposal decisions, but distinguish existing behavior from an agreed target.
 
 <!-- ODK:reference contracts/skill-guides/brainstorm/interview.md -->
 Read `contracts/skill-guides/brainstorm/interview.md` in full and apply its decision state, questioning, ODK coverage and completion gate before generating the specification.
@@ -42,13 +76,14 @@ Read `contracts/skill-guides/brainstorm/interview.md` in full and apply its deci
 <!-- ODK:reference contracts/skill-guides/spec/api-specification.md -->
 **Steps 1–2.5 — API workflow (conditional):** If proposal.md `API/SDK` = 「是」, read and follow `contracts/skill-guides/spec/api-specification.md` in full before Steps 3–6. Steps 1, 2 and 2.5 and their cross-references are local to that guide: repository readiness, declaration guidance/fallbacks, developer-confirmed @since and API descriptions, and device scope/difference confirmation. If `API/SDK` = 「否」, skip these steps; keep the fixed API section and its non-involvement reason as required below.
 <!-- /ODK:reference -->
-3. **Code fact check (conditional):** If the change involves existing APIs, error codes, or data structures, search the codebase before generating spec:
-   - Search for existing API signatures, error code definitions, and data structures referenced in the AC scope
-   - Confirm interface details are accurate before writing ACs
+3. **Contract fact check:** Before generating spec, check its consequential behavior claims against the researched implementation, callers and test assertions. Cover relevant entry points, validation/defaults, observable errors and side effects, compatibility and configuration variants; new integrations and executable configuration changes also need this check.
+   - Use source references for current facts and distinguish them from the confirmed target and unresolved assumptions. Search hits or declarations alone do not establish behavior.
+   - Preserve stable consumer contracts in ACs; keep implementation paths and internal mechanisms in design or supporting evidence.
+   - **Cross-repo interface confirmation**: If the change calls interfaces from another OpenHarmony repo, locate the upstream repo (from design.md module impact table or by asking the developer for the local path) and read the interface's actual implementation to confirm return value semantics, error conditions, threading constraints, and side effects. Do not assume interface behavior from header declarations alone. Record confirmed facts in the spec's verification mapping or code fact notes.
    - If code facts contradict assumptions from `proposal.md`, surface and resolve before writing ACs
-   - Skip this step for pure new features with no existing code dependencies, pure documentation changes, or config-only changes
+   - For a genuinely greenfield module, state the missing baseline and inspect any available integration contract. Wording-only documentation changes need only the affected references checked.
 4. Read template from `templates/ai/spec.md`
-5. Generate `spec.md` per the template. Fill in error code values and interface signatures with concrete values where discoverable from the code fact check (Step 3); mark genuinely unknown values as `TBD` with a reason. For each `### US-N` section, fill the `**来源目标：**` field with the corresponding `G-N` goal IDs from `proposal.md ## 目标` (comma-separated if multiple, e.g. `G-1, G-2`). If `proposal.md` has no `G-N` numbered goals, write `G-?` as a placeholder and remind the user to add goal IDs to proposal.md.
+5. Generate or revise `spec.md` per the template for new/changed contract facts. Fill in consumer-boundary error code values and interface signatures where discoverable from the code fact check (Step 3); private helpers and internal errors belong in design. Mark genuinely unknown contract values as `TBD` with a reason. Verification mapping and test hints describe stable acceptance scenarios, not test files, functions, commands, Red/Green or run evidence. For each `### US-N` section, fill the `**来源目标：**` field with the corresponding `G-N` goal IDs from `proposal.md ## 目标` (comma-separated if multiple, e.g. `G-1, G-2`). If `proposal.md` has no `G-N` numbered goals, write `G-?` as a placeholder and remind the user to add goal IDs to proposal.md.
 6. If any proposal `资源开销审视` dimension is `required`, expand `资源验收契约` (`contracts/artifacts.yaml#resource_contract`). Table detail is subsystem-owned; ODK requires meaningful, non-placeholder content without imposing a measurement schema. Each 验收口径 must be an observable target (latency / fps / throughput / startup time / peak RAM / image delta) — never vague goals like「优化性能」.
 
 ## Key Rules

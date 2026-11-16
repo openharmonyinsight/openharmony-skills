@@ -17,10 +17,15 @@ Required templates:
 - `../../../templates/ai/execution-plan.md`
 - `../../../templates/ai/spec-for-validation.md`
 - `../../../templates/ai/threat-model.md`
+- `../../../templates/review/task-arch.md`
+- `../../../templates/review/task-scope.md`
+- `../../../templates/review/task-security.md`
+- `../../../templates/review/task-verdict.md`
 
 Required contracts:
 
 - `workflow.md`
+- `phase-flow.md`
 - `profiles.md`
 - `../delivery/handoff.md`
 - `../delivery/metadata.md`

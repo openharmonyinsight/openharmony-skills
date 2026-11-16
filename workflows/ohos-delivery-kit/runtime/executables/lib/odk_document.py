@@ -4,6 +4,7 @@ Pure helpers: no contract loading, filesystem access, or language validation.
 """
 from __future__ import annotations
 
+from functools import lru_cache
 import re
 
 
@@ -29,6 +30,10 @@ BRACKET_PLACEHOLDER_RE = re.compile(
 )
 
 
+# P1: every section lookup re-scans the full proposal through this pass.
+# compile_contract performs 2-3 independent section lookups per call, so
+# memoise the expensive per-line scan on its (hashable) inputs.
+@lru_cache(maxsize=16)
 def _visible_markdown(text: str, *, preserve_lines: bool = False) -> str:
     """Remove template guidance and fenced examples from user evidence."""
     text = re.sub(

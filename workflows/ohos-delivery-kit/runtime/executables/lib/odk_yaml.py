@@ -637,6 +637,39 @@ def resource_template_check(path: str, templates_root: str) -> int:
     return 1 if issues else 0
 
 
+def adapter_mapping_backfill(path: str, artifact: str) -> list[str]:
+    """Return mapping.<artifact>.required_backfill from a bridge adapter file."""
+
+    result: list[str] = []
+    in_mapping = False
+    current: str | None = None
+    in_backfill = False
+    for raw in _lines(path):
+        line = raw.rstrip()
+        if not line or line.lstrip().startswith("#"):
+            continue
+        indent = len(line) - len(line.lstrip())
+        if indent == 0:
+            in_mapping = line == "mapping:"
+            current = None
+            in_backfill = False
+            continue
+        if not in_mapping:
+            continue
+        if indent == 2:
+            current = line.strip()
+            in_backfill = False
+            continue
+        if indent == 4:
+            in_backfill = line.strip() == "required_backfill:"
+            continue
+        if indent == 6 and current == f"{artifact}:" and in_backfill:
+            item = line.strip()
+            if item.startswith("- "):
+                result.append(_unquote(item[2:]))
+    return result
+
+
 def adapter_commands(path: str) -> None:
     current: dict[str, object] | None = None
     mode: str | None = None

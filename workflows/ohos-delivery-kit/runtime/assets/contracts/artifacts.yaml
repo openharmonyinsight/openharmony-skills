@@ -13,10 +13,15 @@ minimum_contract:
     - evidence/reviews
     - evidence/gates
   traceability_chain:
+    # Declarative contract only: the validator does not auto-generate checks
+    # from this list. The actual commit-to-PR association is validated by
+    # metadata_tracking.yaml's pull_requests.commit field; see Level D in
+    # core/rules/delivery/validation-checklist.md for the ownership split.
     - proposal
     - spec.ac
     - execution-plan.task
     - code
+    - commit
     - review
 
 # Thin resource trigger contract (security-like). Measurement/rules/evidence schemas
@@ -102,6 +107,36 @@ api_spec_contract:
     - "差异原因"
     - "差异描述"
 
+# Task-level review contract. Risk is assigned while planning and may only be
+# escalated at execution time; unresolved Critical/High blocks Task completion.
+task_review_contract:
+  guide: "contracts/skill-guides/delivery/task-review.md"
+  risk_levels:
+    - "R0"   # docs or non-executable configuration: no review
+    - "R1"   # single-module code: one reviewer, five lenses
+    - "R2"   # interface/security/cross-cutting: fixed three reviewers
+  escalate_only_at_execution: true
+  evidence_root: "evidence/reviews/task-<n>"
+  role_reports:
+    - "arch.md"
+    - "scope.md"
+    - "security.md"
+  verdict: "verdict.md"
+  verdict_frontmatter:
+    - task_id
+    - risk
+    - independent
+    - verdict
+    - blocking_findings
+  passing_verdict: "PASS"
+  blocking_severities:
+    - "Critical"
+    - "High"
+  advisory_severities:
+    - "Medium"
+    - "Low"
+  serial_fallback_requires_independent_false: true
+
 # Named conditional-section exclusions may use a standalone HTML comment:
 # <!-- 不涉及：章节名；理由：具体原因 -->
 # This does not waive required sections or trigger-specific validation.
@@ -111,7 +146,10 @@ artifacts:
     template: "templates/ai/proposal.md"
     phase: "define"
     required: true
+    # owns lists declared provenance/ownership, not exclusive authority:
+    # fields like target_release may legitimately appear in multiple artifacts.
     owns:
+      - proposal_id
       - target_release
       - change_type
       - triage
@@ -237,6 +275,8 @@ artifacts:
       - finding_dispositions
       - code_mapping
       - session_tracking
+      - task_risk_levels
+      - task_review_verdicts
     requires:
       - proposal
       - spec
@@ -348,3 +388,7 @@ evidence_policy:
     - "templates/review/review-spec-compliance.md"
     - "templates/review/review-code-quality.md"
     - "templates/review/review-verification.md"
+    - "templates/review/task-arch.md"
+    - "templates/review/task-scope.md"
+    - "templates/review/task-security.md"
+    - "templates/review/task-verdict.md"

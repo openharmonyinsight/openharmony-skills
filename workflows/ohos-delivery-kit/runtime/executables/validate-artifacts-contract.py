@@ -293,8 +293,10 @@ def parse_simple_yaml_scalar(raw: str) -> str | None:
     return trim_yaml_whitespace(value[1:closing])
 
 
-def read_frontmatter(path: Path) -> Frontmatter:
-    """Read simple YAML frontmatter key:value pairs (no external deps)."""
+def read_frontmatter(
+    path: Path, *, single_line_keys: tuple[str, ...] = ()
+) -> Frontmatter:
+    """Read simple YAML pairs, optionally rejecting selected scalar continuations."""
     if not path.is_file():
         return Frontmatter()
     # Split only on LF. str.splitlines() also treats VT, FF, NEL and Unicode
@@ -305,8 +307,15 @@ def read_frontmatter(path: Path) -> Frontmatter:
         return Frontmatter("invalid opening delimiter")
     result = Frontmatter()
     closed = False
+    current_key = ""
     for line in lines[1:]:
-        if trim_yaml_whitespace(line) == "---":
+        stripped = trim_yaml_whitespace(line)
+        if (current_key in single_line_keys and line.startswith((" ", "\t"))
+                and stripped and not stripped.startswith("#")):
+            # Plain YAML scalars fold indented continuation lines into their
+            # value. Taking only the first line could turn PASS FAIL into PASS.
+            return Frontmatter(f"{current_key} must be a single-line scalar")
+        if stripped == "---":
             closed = True
             break
         if "\x00" in line:
@@ -316,12 +325,15 @@ def read_frontmatter(path: Path) -> Frontmatter:
         match = re.match(r"^([A-Za-z_][A-Za-z0-9_]*)[ \t\r]*:[ \t\r]*(.*)$", line)
         if match:
             key = match.group(1)
+            current_key = key
             if key == "proposal_id" and key in result:
                 result[key] = INVALID_PROPOSAL_ID_SCALAR
                 continue
             raw = match.group(2)
             value = parse_simple_yaml_scalar(raw)
             result[key] = value if value is not None else trim_yaml_whitespace(raw)
+        elif stripped and not stripped.startswith("#"):
+            current_key = ""
     return result if closed else Frontmatter("missing closing delimiter")
 
 
@@ -1459,9 +1471,6 @@ def validate_dir_name(change_dir: Path, reporter: Reporter) -> None:
     name = change_dir.name
     proposal = change_dir / "proposal.md"
     frontmatter = read_frontmatter(proposal)
-    if "req" in frontmatter or "req_id" in frontmatter:
-        reporter.fail("proposal.md: legacy identity field; migrate to proposal_id")
-        return
     if frontmatter.invalid_reason is not None:
         reporter.fail(f"proposal.md: invalid frontmatter ({frontmatter.invalid_reason})")
         return
@@ -2542,7 +2551,7 @@ def validate_goal_us_coverage(change_dir: Path, reporter: Reporter) -> None:
         elif current_us is not None:
             current_us.append(line)
     if current_us is not None:
-        _extract_goal_refs("\n".join(current_us), defined_goals, covered_goal_refs, invalid_refs) if False else _extract_goal_refs("\n".join(current_us), defined_goals, covered_goals, invalid_refs)
+        _extract_goal_refs("\n".join(current_us), defined_goals, covered_goals, invalid_refs)
 
     # P2-3 fix: reject references to undefined goals
     if invalid_refs:
@@ -2997,6 +3006,131 @@ def validate_dfx_ad_library_basis(change_dir: Path, reporter: Reporter) -> None:
         reporter.pass_("AD rows all carry library-basis annotations")
 
 
+def _plan_risk_rows(plan: str) -> list[dict[str, str]] | None:
+    """Return Task-list rows when the plan declares a 风险等级 column.
+
+    Only the unique ``## Task 列表`` section is inspected: scanning the whole
+    document would let an earlier summary table (e.g. a 风险摘要 overview with
+    every Task marked R0) shadow the authoritative task rows. Duplicate
+    sections and multiple matching tables inside the section raise so the
+    caller can fail closed.
+    """
+    body = require_unique_section(plan, "Task 列表")
+    if body is None:
+        return None
+    return require_unique_table_with_columns(
+        _visible_markdown(body), ["TASK ID", "风险等级"]
+    )
+
+
+def validate_task_review_gate(
+    change_dir: Path, reporter: Reporter, *, archive: bool
+) -> None:
+    """Each R1/R2 Task needs a passing, blocking-free verdict before archive."""
+    plan_path = change_dir / "execution-plan.md"
+    if not plan_path.is_file():
+        return
+    print("\nLevel B: Task Review Gate")
+    try:
+        rows = _plan_risk_rows(read_text(plan_path))
+    except ValueError as error:
+        reporter.fail(f"execution-plan.md task review gate: {error}")
+        return
+    if rows is None:
+        reporter.warn(
+            "execution-plan.md: Task 列表 has no 风险等级 column; "
+            "task review gate not enforced"
+        )
+        return
+
+    checked = 0
+    problems = 0
+    for row in rows:
+        task = (row.get("TASK ID") or "").strip()
+        task_match = re.fullmatch(r"TASK-(\d+)", task)
+        if not task_match:
+            # Traceability extracts TASK-n from surrounding text, so a cell
+            # like ``TASK-1（回调）`` is still treated as a valid Task there.
+            # Never skip it here; otherwise its review evidence is unchecked.
+            problems += 1
+            message = (
+                "execution-plan.md: TASK ID must be exactly TASK-<n>, "
+                f"found {task or 'missing'}"
+            )
+            if archive:
+                reporter.fail(message)
+            else:
+                reporter.warn(message)
+            continue
+        rel = f"evidence/reviews/task-{task_match.group(1)}"
+        verdict_path = change_dir / rel / "verdict.md"
+        label = f"{rel}/verdict.md"
+
+        def issue(message: str) -> None:
+            nonlocal problems
+            problems += 1
+            if archive:
+                reporter.fail(f"{label}: {message} ({task})")
+            else:
+                reporter.warn(f"{label}: {message} ({task})")
+
+        risk_cell = (row.get("风险等级") or "").strip()
+        # Accept exactly one level plus an optional parenthesized annotation
+        # (``R2（公共接口）``). Escalation notes or alternatives such as
+        # ``R1→R2``, ``R0/R2`` and ``R0.5`` stay ambiguous: taking the first
+        # prefix would downgrade or even skip the review, so reject them.
+        risk_match = re.fullmatch(
+            r"R([0-2])(?:\s*[（(][^()（）]*[）)])?\s*", risk_cell, re.IGNORECASE
+        )
+        if not risk_match:
+            # An empty, ambiguous or typo'd risk value must not exempt a Task
+            # from review.
+            problems += 1
+            message = (
+                f"execution-plan.md: {task} 风险等级 must be R0/R1/R2, "
+                f"found {risk_cell or 'missing'}"
+            )
+            if archive:
+                reporter.fail(message)
+            else:
+                reporter.warn(message)
+            continue
+        risk = f"R{risk_match.group(1)}"
+        if risk == "R0":
+            continue
+        checked += 1
+
+        if not verdict_path.is_file():
+            issue("missing task review verdict")
+            continue
+        frontmatter = read_frontmatter(
+            verdict_path,
+            single_line_keys=("task_id", "risk", "independent", "verdict", "blocking_findings"),
+        )
+        if frontmatter.invalid_reason is not None:
+            issue(f"invalid frontmatter ({frontmatter.invalid_reason})")
+            continue
+        if (frontmatter.get("task_id") or "").strip() != task:
+            issue(f"task_id must be {task}")
+        if (frontmatter.get("risk") or "").strip().upper() != risk:
+            issue(f"risk must match plan value {risk}")
+        if (frontmatter.get("independent") or "").strip().lower() not in {"true", "false"}:
+            issue("independent must be true or false")
+        verdict = (frontmatter.get("verdict") or "").strip().upper()
+        if verdict != "PASS":
+            issue(f"verdict must be PASS, found {verdict or 'missing'}")
+        blocking = (frontmatter.get("blocking_findings") or "").strip()
+        if not re.fullmatch(r"\d+", blocking) or int(blocking) != 0:
+            issue(f"blocking_findings must be 0, found {blocking or 'missing'}")
+        if risk == "R2":
+            for role in ("arch", "scope", "security"):
+                if not (change_dir / rel / f"{role}.md").is_file():
+                    issue(f"R2 requires {rel}/{role}.md")
+
+    if checked and problems == 0:
+        reporter.pass_(f"{checked} R1/R2 task verdict(s) passed")
+
+
 def validate_optional_evidence(change_dir: Path, reporter: Reporter) -> None:
     print("\nOptional Evidence")
     for rel in ("evidence/reviews", "evidence/gates"):
@@ -3007,7 +3141,8 @@ def validate_optional_evidence(change_dir: Path, reporter: Reporter) -> None:
         if not path.is_dir():
             reporter.fail(f"{rel} exists but is not a directory")
             continue
-        files = [child for child in path.iterdir() if child.is_file()]
+        # Nested task review evidence (evidence/reviews/task-<n>/) counts too.
+        files = [child for child in path.rglob("*") if child.is_file()]
         if files:
             reporter.pass_(f"{rel} contains {len(files)} evidence file(s)")
         else:
@@ -3487,6 +3622,7 @@ def main(argv: list[str]) -> int:
                                                 host_only_required=effective["delivery_level"] == "lite"):
                     reporter.fail(f"execution-plan.md: {issue}")
         validate_plan_traceability(change_dir, reporter)
+        validate_task_review_gate(change_dir, reporter, archive=strict_delivery)
     if "design" in artifacts:
         validate_dfx_constraints(change_dir, reporter, strict_delivery)
         validate_dfx_ac_gate(change_dir, reporter, strict_delivery)

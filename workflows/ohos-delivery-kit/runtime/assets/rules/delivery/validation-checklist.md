@@ -32,7 +32,7 @@
 - [ ] `execution-plan.md` 每个 Task 有完成判据和代码范围
 - [ ] 如存在可选 review/verification 证据，应包含 spec-compliance + code-quality + verification
 - [ ] 如存在可选 verification 证据，应有明确的「代码与规格一致性结论」
-- [ ] 追溯链完整 (AC → Task → code → commit → review)
+- [ ] 追溯链完整 (proposal → spec AC → execution-plan Task → code → commit → review)；commit 与 PR 的实际关联由 `metadata_tracking.yaml` 的 `pull_requests.commit` 校验负责，Python 校验器不按本行自动生成检查
 - [ ] 实现的 commit message 包含关联的 `proposal-id`
 - [ ] 准备向 GitCode 提交代码时，已提醒用户将 `codespec/` 文档单独提交到 `codespec/profile.yaml` 的 `design_docs_repository`；地址缺失时明确标记“待开发者填写”，不得猜测或自动跨仓推送
 - [ ] 实际提交 design-docs 前已生成或刷新 `metadata_tracking.yaml`，并用 `--design-docs-submit` 验证 `proposal.md`、`spec.md`、`design.md`、`execution-plan.md` 与该文件组成的五件套；业务代码 PR 未创建时 `pull_requests: []` 合法

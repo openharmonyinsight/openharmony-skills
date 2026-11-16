@@ -15,6 +15,15 @@ full frontmatter and body first; revise it in place and preserve confirmed
 content, stable IDs and evidence. Create a target only when it does not exist.
 <!-- /ODK:reference -->
 
+## Phase flow and next step
+
+<!-- ODK:reference contracts/skill-guides/router/phase-flow.md -->
+Before phase work, read `contracts/skill-guides/router/phase-flow.md` and apply
+its configured pre_hook/post_hook order. At every completion or pause, show
+the next pending action and configured hooks; omit the reminder only when
+the entire applicable workflow is complete. The coordinator owns this flow.
+<!-- /ODK:reference -->
+
 <!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
 Read `contracts/skill-guides/router/delivery-levels.md` and obtain the effective
 contract before choosing artifacts, sections or phase prerequisites.
@@ -58,6 +67,20 @@ product, stop before generating the build environment or any build command.
 
 ## Steps
 
+<!-- ODK:reference contracts/skill-guides/spec/contract-boundary.md -->
+Read `contracts/skill-guides/spec/contract-boundary.md`. Turn spec acceptance
+scenarios into concrete test files/functions, commands and Red/Green verification
+here. Update affected Tasks/results for an implementation change without writing
+test implementation or run evidence back into an unchanged spec.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/delivery/change-impact.md -->
+For code Tasks, read `contracts/skill-guides/delivery/change-impact.md` before
+fixing the file scope and verification steps. Check usable project LSP/AST
+capabilities, identify affected paths and assign their changes/tests to Tasks;
+use the documented fallback when tools are unavailable. Keep evidence in the plan.
+<!-- /ODK:reference -->
+
 Task 列表的「AC 映射」必须填写 AC 编号；不直接关闭 AC 的文档/基础设施 Task 填 `N/A（简短理由）`，不可留空、只写 `N/A` 或用 `—`。每条 AC 仍须在追溯表中关联 Task 和验证方式。
 
 For configuration-dependent steps, use the effective-configuration command defined in `using-odk`; do not merge installation files independently. Stop on config errors. Existing execution-plan commands remain authoritative until explicitly changed.
@@ -66,15 +89,19 @@ For configuration-dependent steps, use the effective-configuration command defin
 1. Read template from `templates/ai/execution-plan.md`
 2. **API 声明文件任务（条件触发）**：若 proposal.md `API/SDK` = 「是」，必须在所有任务的最前面插入一个 API 声明文件修改任务（排在 Task-1），任务内容为"根据 spec.md `## API 规格定义` 修改声明文件"。该任务排在第一位的原因是：后续功能实现任务依赖声明文件的修改结果，声明文件未完成时其他任务无法开展。
 3. Generate `execution-plan.md` per the template. Fill the required traceability, task detail, verification, and code-scope fields enough to pass artifact contract validation. For each Task, fill「任务间接口」（Produces=供后续 Task 依赖的接口签名/错误码/innerAPI/数据结构，Consumes=来自前置 Task 的契约；无跨 Task 契约写「无」），让只读单 Task 的执行者也能对齐跨 Task 命名与签名。
+   **风险分级**：按 `contracts/skill-guides/delivery/task-review.md` 为每个 Task 写初始 `风险等级`
+   与判断依据。命中任一 R2 触发项（公共声明/接口、跨仓调用、IPC、权限/认证、并发/异步/回调、
+   构建清单、资源/国际化、native↔ArkTS 边界、公共常量/错误码）写 `R2`；单模块代码或测试写 `R1`；
+   仅文档/注释或不可执行配置写 `R0` 并给理由。代码变更不得写 `R0`。
    **构建与验证环境（必填；host-only 按上述例外记录实际主机验证）**：在生成 `execution-plan.md` 前读取 `build_products`、`build_product`、`build_command`、`emulator_command`、`test_command`（`odk_config_ext.yaml` 覆盖默认配置），先确认本次产品，再生成具体命令。
    Reuse the product confirmed in the pre-planning step; do not substitute `build_product` directly. Record the actual user response in `产品选择确认`.
    确认产品后、写计划前，执行设备版本选择：
    <!-- ODK:reference contracts/skill-guides/delivery/device-version.md -->
-   Read `contracts/skill-guides/delivery/device-version.md`: QEMU (`arm64_virt`) skips the daily question; every other product asks daily versus existing firmware. Record the user's choice and preparation method in the plan, even when no automatic flashing skill is available.
+   Read `contracts/skill-guides/delivery/device-version.md`. Record `验证范围`: `build-only` needs no runtime target; `emulator`/`device` require a separately confirmed `验证产品` and `验证目标确认`. Only `device` asks daily versus existing. Never derive these choices from the concrete or abstract build name.
    <!-- /ODK:reference -->
-   用确认后的产品名替换 `{product}` 占位符，然后：
+   按 build-products 指南运行 `--resolve-product-commands`：所有命令中的 `{product}`/`{build_product}` 共用编译与 out/ 目录名；`{validation_product}` 仅显式指定验证目标，然后：
    - 将完整候选列表写入 `可选编译产品`，将用户确认的单个产品写入 `编译产品`
-   - 将解析后的具体命令写入 `## 构建与验证环境` 表；`emulator_command` 仅当编译产品为 `arm64_virt` 时填入，其他产品（rk3568 等物理板）该行留空或省略；`test_command` 若为空则根据 Task 的文件范围、测试框架约定推断并填入，推断结果需标注「推断：<理由>」
+   - 将验证范围、验证产品、实际目标确认及解析命令写入环境表；仅 `emulator` 填模拟器命令，其他范围省略或填 `N/A`。`test_command` 为空时按 Task 范围推断并标注依据；build-only 无测试时填 `N/A`，不因此要求设备。
    - 实现阶段直接读本表，不再查 config
    For each Task's `验证命令` field: write the full concrete build + test command for that Task specifically:
    - **编译 target 推断**：根据 Task 的文件范围（`Files` 表）推断最窄的编译 target：
@@ -90,7 +117,8 @@ For configuration-dependent steps, use the effective-configuration command defin
    - **占位符扫描**：确认无 `TBD`/`TODO`/`适当处理`/`补充测试`/`参考上文` 等不可执行占位（见「禁止项」）。
    - **Spec 覆盖**：确认「AC 到 Task 追溯」每个 AC 都有 Task 承接；发现未覆盖的 spec 要求就补 Task。
    - **FM 覆盖（故障模式拦截项）**：`design.md` `### DFX 故障模式处置` 关联的每个 AC 都必须有 Task 承接，且该 Task 的验证命令走故障注入或异常路径（引用处置表"验证方式/证据"列的手段，如 `手段｜注入点｜注入内容`），不得只跑正常路径回归；这些 AC 不得列入「实现边界 → 可后置」。
-   四项都干净则进入下一步（写出 `execution-plan.md`），等待人工审批。
+   - **影响路径核对**：按共享指南核对入口/实现/配置路径的处置及测试，并记录共享文件或接口的 Task 之间的对应关系和检查结果；未查清范围如实保留，不能以 AC 追溯齐全代替影响范围检查。
+   完成上述检查后写出 `execution-plan.md`，等待人工审批。
 
 ## Quality Boundary
 

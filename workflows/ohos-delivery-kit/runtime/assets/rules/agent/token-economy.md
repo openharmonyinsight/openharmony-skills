@@ -12,6 +12,9 @@ R-TE-001: 隔离上下文 spawn —— 子 Agent 在独立上下文运行，不 
 R-TE-002: 证据传路径不传内容 —— 证据落盘一次（`evidence/`、`pr-diff.txt`、`findings.json` 等），后续只传文件路径，不把全文塞回上下文。
 R-TE-003: 摘要回传 ≤15 行 —— 跨阶段/子 Agent 回传主会话只给路径 + 关键发现 + 必改项计数，不超过 15 行（沿用 `using-odk` Context Loading 既有"summaries ≤15 lines"约束，此处明确覆盖子 Agent 回传场景）。
 R-TE-004: 扇出上限 ≤4 —— 同一层级并行子 Agent 不超过 4 个；超出则分批或收敛任务粒度。
+R-TE-005: 固定三席例外 —— Task 级评审按 `contracts/skill-guides/delivery/task-review.md`
+使用固定 arch/scope/security 三席（R2）或单席五维（R1）时，视为 R-TE-004 的受控例外；
+不得据此扩大其他场景的扇出；无委派能力时按串行三次只读检查执行。
 
 ## 通过条件
 

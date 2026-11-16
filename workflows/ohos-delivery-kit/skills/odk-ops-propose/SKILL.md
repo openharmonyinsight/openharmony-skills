@@ -15,6 +15,15 @@ full frontmatter and body first; revise it in place and preserve confirmed
 content, stable IDs and evidence. Create a target only when it does not exist.
 <!-- /ODK:reference -->
 
+## Phase flow and next step
+
+<!-- ODK:reference contracts/skill-guides/router/phase-flow.md -->
+Before phase work, read `contracts/skill-guides/router/phase-flow.md` and apply
+its configured pre_hook/post_hook order. At every completion or pause, show
+the next pending action and configured hooks; omit the reminder only when
+the entire applicable workflow is complete. The coordinator owns this flow.
+<!-- /ODK:reference -->
+
 <!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
 Read `contracts/skill-guides/router/delivery-levels.md` and use the effective
 contract. It takes precedence over standard-only artifact lists below; native
@@ -43,7 +52,7 @@ One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta s
 ## Confirm the build product before invoking the bridge
 
 First apply the host-only exception in the delivery-level and product guides.
-Only target-build/device plans require the menu and firmware selection below.
+Target builds require the build-name menu. Runtime target confirmation and firmware preparation are conditional on the explicit validation scope; build-only requires neither.
 
 Run `python3 runtime/executables/lib/odk_repository.py --build-product-options`
 (source checkout: `python3 scripts/lib/odk_repository.py --build-product-options`).
@@ -56,6 +65,13 @@ authorization does not confirm a product.
 <!-- /ODK:reference -->
 
 ## Steps
+
+<!-- ODK:reference contracts/skill-guides/delivery/change-impact.md -->
+Before generating native code tasks, read `contracts/skill-guides/delivery/change-impact.md`
+and include its usable-capability, affected-path and cross-Task checks. Preserve
+evidence through the native task/ODK plan or existing evidence route in every mode;
+unavailable LSP/AST uses the documented fallback without changing native ownership.
+<!-- /ODK:reference -->
 
 1. Invoke OpenSpec `/opsx:propose` which produces proposal + delta specs + design + tasks in one call.
 2. Preserve OpenSpec’s native CLI-returned output paths. Capture native status and source artifacts using `runtime/executables/lib/odk_openspec.py`, then read and revise existing ODK targets per the native-state guide. Never redirect `openspec/changes/`.
@@ -73,7 +89,7 @@ authorization does not confirm a product.
 
 Before writing `execution-plan.md`, apply `odk-plan`'s build-product and command resolution step (without replacing the active bridge's task decomposition).
 <!-- ODK:reference contracts/skill-guides/delivery/device-version.md -->
-Read `contracts/skill-guides/delivery/device-version.md` to skip daily selection for QEMU, ask daily versus existing for every other product, and persist the choice and preparation method in `## 构建与验证环境`. Preserve this environment section in every output mode.
+Read `contracts/skill-guides/delivery/device-version.md` after following build-products: preserve the concrete or abstract build name; record `验证范围` (build-only/emulator/device), separately confirmed `验证产品` and `验证目标确认`. Only device validation asks daily/existing. Resolve commands with `--resolve-product-commands` using the separate name contexts. Preserve these fields and confirmations in every output mode; do not infer runtime targets from build names.
 <!-- /ODK:reference -->
 
 ## Output

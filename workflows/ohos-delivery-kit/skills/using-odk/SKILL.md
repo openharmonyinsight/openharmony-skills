@@ -17,6 +17,15 @@ full frontmatter and body first; revise it in place and preserve confirmed
 content, stable IDs and evidence. Create a target only when it does not exist.
 <!-- /ODK:reference -->
 
+## Phase flow and next step
+
+<!-- ODK:reference contracts/skill-guides/router/phase-flow.md -->
+Before phase work, read `contracts/skill-guides/router/phase-flow.md` and apply
+its configured pre_hook/post_hook order. At every completion or pause, show
+the next pending action and configured hooks; omit the reminder only when
+the entire applicable workflow is complete. The coordinator owns this flow.
+<!-- /ODK:reference -->
+
 ## Activation
 
 ### Bridge Mode (session-scoped)
@@ -25,7 +34,7 @@ Once the user invokes any `{{CMD_PREFIX}}*` command in the current session, ODK 
 
 ODK also activates when the user explicitly mentions ODK, ohos-delivery-kit, `codespec`, or ODK artifact names/actions (proposal, spec, design, execution-plan, spec-for-validation, threat-model, metadata_tracking, review, validate, submit design docs).
 
-When the user is describing or discussing a requirement, feature idea, or non-trivial change, load `odk-brainstorm` before drafting new artifact decisions; no special trigger phrase is required. Standalone brainstorm and the propose/spec/design inline gates share one interview protocol. An existing `proposal.md`, an initialization stub, or a later phase is not proof that its decisions were explored: reuse confirmed decisions and investigate only new or unresolved branches. **Check escapes first:** ordinary coding, debugging, refactoring or reverts without new feature scope, and self-contained bug fixes with a clear root cause, do not start an artifact interview. Honor explicit requests to skip the interview or go directly to a draft by carrying unresolved choices as assumptions/open questions; do not fabricate confirmations. A fully specified request can close the shared gate from explicit evidence without redundant questions.
+When the user is describing or discussing a requirement, feature idea, or non-trivial change, load `odk-brainstorm` before drafting new artifact decisions; no special trigger phrase is required. Standalone brainstorm and the propose/spec/design inline gates share one interview protocol. An existing `proposal.md`, an initialization stub, or a later phase is not proof that its decisions were explored: reuse confirmed decisions and investigate only new or unresolved branches. **Check escapes first:** ordinary coding, debugging, refactoring or reverts without new feature scope, and self-contained bug fixes with a clear root cause, do not start an artifact interview. Honor explicit requests to skip the interview or go directly to a draft by carrying unresolved choices as assumptions/open questions; do not fabricate confirmations. A fully specified request can close the shared gate from explicit evidence without redundant questions. **Avoid circular loading:** if `odk-brainstorm` is already loaded in this session, reuse it; when brainstorm loads `using-odk`, it only supplements shared context (interaction mode, authorized endpoint, delivery-level contract) and does not re-enter brainstorm. The shared protocol runs once, then returns to the original calling phase.
 
 ### Deactivation
 
@@ -201,6 +210,7 @@ For actual design-document submission, `odk-submit-design-docs` resolves and con
 - When spawning subagents (e.g. via bridge commands), run them in isolated contexts — never fork the main session history; the main session only dispatches tasks and receives summaries
 - Pass evidence by file path, not by content — artifacts land on disk once (`evidence/`, `pr-diff.txt`, `findings.json`); later references pass the path, not the full text
 - Cap parallel fan-out at ≤4 subagents per layer; batch or narrow task scope if more are needed
+- The fixed three-seat Task review in `contracts/skill-guides/delivery/task-review.md`, executed by `odk-task-review` (arch/scope/security), is the only sanctioned exception; do not treat it as permission to widen fan-out elsewhere, and reviewers never dispatch further reviewers
 - Template files are located at `templates/` (installed with the plugin)
 
 <!-- ODK:reference contracts/skill-guides/router/profiles.md -->

@@ -4,6 +4,147 @@ All notable changes to the published `ohos-delivery-kit` workflow are documented
 this file. Source artifacts are synchronized from
 `oshunter/ohos-delivery-kit` `main` through the marketplace publisher.
 
+## [0.14.7] - 2026-11-13
+
+Source: `main@0989ab3b4fd81fb7a728a1a8106a1ff7368d642e`.
+
+This import also publishes changes that the source still listed as Unreleased at
+this commit: the `odk-task-review` five-dimension Task review guide wired into the
+base, Superpowers and OpenSpec entries, and the delivery-body boundary rule with
+its prompt-residue checker (source issue #157).
+
+### Fixed
+
+- Use the same concrete or abstract product name for build commands and `out/`
+  artifacts, and confirm the device validation target separately through an
+  explicit `{validation_product}`. Plans record the validation scope and target,
+  and artifacts are located from the recorded directory or the build manifest
+  under `out/<build product>`; the old product list and configuration templates
+  stay readable, and older plans proceed after adding the target (source PR #158).
+- Stop treating "not applicable (emulator/QEMU)" as a launcher or validation
+  target, and detect product placeholders in mixed-case variants; the parser and
+  plan validator reject unexpanded placeholders.
+
+## [0.14.6] - 2026-11-12
+
+### Added
+
+- Add a Task-level review gate: after each Task's verification and before marking
+  it Done, run a five-dimension review (duplicate work, performance, missed
+  changes, external interface impact, security and attack surface) according to
+  its `R0` / `R1` / `R2` risk level. `R2` uses the fixed arch/scope/security
+  seats and writes evidence to `evidence/reviews/task-<n>/`.
+- Add the host delegation capability probe `scripts/lib/odk_host_capabilities.py`:
+  without delegation support or when the probe fails, run three read-only checks
+  serially and write `independent: false` in the verdict instead of passing by
+  default.
+
+### Changed
+
+- `execution-plan.md` gains a risk-level column, a Task-detail risk field and the
+  mandatory `Gate-Task` gate; `odk-plan` records the initial level and rationale
+  during planning.
+- `odk-implement` and the `odk-sp-implement` bridge run the same gate before
+  Done; an open `Critical` / `High` finding marks the Task `❌ Blocked` and blocks
+  later Tasks, and risk escalation updates the plan's risk cell.
+- `odk-review` checks every R1/R2 Task verdict before an overall PASS, and
+  `odk-validate --archive` fails on missing, non-PASS or still-blocking verdicts
+  and fixes nested evidence-directory counting.
+
+### Fixed
+
+- Read risk levels only from the single Task-list section, so earlier risk-summary
+  tables cannot shadow the real task table; duplicate sections or duplicate risk
+  tables inside a section fail validation.
+- Treat an empty or non-`R0`/`R1`/`R2` risk level as a Draft warning and an
+  Archive failure instead of silently skipping the review check.
+- Treat broken `verdict.md` frontmatter (for example an unclosed `---`) as a Draft
+  warning and an Archive failure instead of ignoring the parse error.
+- Reject uncommented YAML continuation lines in the five required verdict fields,
+  so a real `PASS FAIL` or `0 2` is not truncated to `PASS` or `0` and wrongly
+  accepted; comments, blank lines and extra metadata stay supported.
+- Accept only one unambiguous `R0` / `R1` / `R2` risk cell (an annotation such as
+  `R2（公共接口）` is allowed); ambiguous values such as `R1→R2`, `R0/R2` or `R0.5`
+  no longer degrade by prefix or skip review as R0, becoming a Draft warning and
+  an Archive failure.
+- Treat non-exact Task IDs such as `TASK-1（回调）`, `TASK-1, TASK-2` or an empty
+  value as a Draft warning and an Archive failure instead of silently skipping
+  the review check.
+- Run the Task review gate only when the effective contract includes
+  `execution-plan`, so `--phase define/specify/design` no longer fails on future
+  plan errors.
+- Distinguish the OpenCode 2.x `subagent` dispatch protocol from 1.x `task`
+  (required `subagent_type`, background tasks need
+  `OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS=true`); the capability probe does
+  not claim background support when the version is unknown and degrades serially
+  when tools or parameters are unavailable.
+- Move teaching-example Tasks that hit callback, lifecycle and public `.d.ts`
+  triggers to `R2`, add the arch/scope/security reports and verdicts, and fix the
+  construct rows displaced by the new risk column.
+
+## [0.14.5] - 2026-11-06
+
+### Added
+
+- Add a change-impact scope check: probe the LSP, semantic index or AST available
+  to the current agent and project, and query references, call relations and other
+  implementations according to tool capability; when unavailable, use entry and
+  file lists, call-site search, TDD and full diff review to check for missed
+  changes.
+
+### Changed
+
+- Wire impact paths, handling and verification limits into planning,
+  implementation and review in the base and bridge flows; read-only discovery in
+  authorized repositories must update Task context and file scope before it is
+  used as a basis for changes.
+
+## [0.14.4] - 2026-11-06
+
+### Added
+
+- Add a shared Chinese writing guide, 19 positive and negative example pairs and a
+  pre-output self-check that require applicable conditions, actions and results,
+  while preserving technical identifiers, values, exceptions and pending states.
+
+### Changed
+
+- Define content boundaries for spec, design and plan: keep the spec when external
+  requirements do not change, and update only the affected design and plan with
+  re-verification when the internal approach changes. Templates and examples keep
+  stable acceptance scenarios, while concrete test implementation and execution
+  records live in the plan and evidence.
+- Adjust colloquial and mixed-English wording in the design and execution-plan
+  templates; remove personal repository links, source commit IDs and
+  business-specific evidence paths from writing examples, and replace personal
+  absolute paths in the demonstration plan with relative paths.
+
+### Fixed
+
+- Extend the Codex uninstaller's manifest path scope to `.codex/runtime/`, clean
+  old runtime files still recorded in the manifest on upgrade, and remove runtime
+  libraries and assets on uninstall; unlisted user tools, skills and configuration
+  are preserved, with install/upgrade/uninstall regressions (source issue #151).
+- Preflight the Codex manifest and delete owned files without following directory
+  links; keep the manifest and stop the upgrade on unsafe paths. User extension
+  configuration is not deleted even if it was wrongly listed, and the missing
+  manifest hint plus Codex installation notes are completed.
+- Share resource and path rules across Codex first install, upgrade and uninstall,
+  reject directory links before writing and backing up configuration, and make
+  unknown or illegal manifest entries fail while keeping the manifest. Errors
+  report the concrete path and errno, and the whole installation package is
+  checked against the manifest.
+- Unify review, test, validate and bridge findings back into the affected
+  artifacts and record handling and re-verification in the existing execution
+  plan; invalidate affected old conclusions after input changes. Archiving
+  requires all AC and verification results to pass, all Tasks to be Done, blocking
+  issues to be closed, historical Red evidence to be retained and a Verification
+  Final Status.
+- Sync post-PR repairs to the original source PR and re-verify its actual head;
+  add a read-only source publication check that blocks uncommitted or unpushed
+  repairs. Unfinished Steps now recognise ordered and unordered lists, and a clean
+  closure section is no longer warned about when omitted.
+
 ## [0.14.3] - 2026-10-31
 
 Source: `main@67f904394df4743913a42f56dae7f6b89732eb08`.

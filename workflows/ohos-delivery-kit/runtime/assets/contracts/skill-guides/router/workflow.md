@@ -1,5 +1,11 @@
 ## Archive Structure
 
+Every phase and handoff follows [phase-flow.md](phase-flow.md): run configured
+pre_hook/post_hook skills at the applicable boundaries and show the next
+unfinished action whenever completing or pausing. Include actual configured
+hook names in the reminder; missing/empty hooks insert no step. Only a fully
+completed applicable workflow may omit the reminder.
+
 All delivery artifacts are archived under:
 
 ```
@@ -18,7 +24,7 @@ Each change directory is **populated or revised by phase** — `odk-init` reads 
 - `threat-model.md` — optional deep threat analysis (bypass; high-risk security/privacy/compliance changes; produced by `odk-security-threat-model`)
 - `metadata_tracking.yaml` — prepared locally from the confirmed source PR, then refreshed by `odk-submit-design-docs` before the five-base-file bundle plus required evidence is submitted; explicit standalone no-PR document submission may use `pull_requests: []`
 
-The effective delivery contract determines the required phases. Standard/critical use **Propose → Specify → Design → Plan → Implement**; lite may skip the separate design artifact and proceed from Specify to Plan. See [delivery levels](delivery-levels.md). Spec defines WHAT (behavior, ACs, business rules); Design defines HOW (architecture, error code values, interface signatures). Design references specific AC numbers from Spec, strengthening the traceability chain. After design, review and update spec's error codes and interfaces if design decisions changed them.
+The effective delivery contract determines the required phases. Standard/critical use **Propose → Specify → Design → Plan → Implement**; lite may skip the separate design artifact and proceed from Specify to Plan. See [delivery levels](delivery-levels.md). Spec owns the agreed consumer contract, including boundary interfaces/errors, behavior, ACs and business rules; Design owns internal architecture, interfaces and mechanisms; Plan owns execution and verification evidence. Follow [the specification boundary](../spec/contract-boundary.md): internal improvements with the same contract do not refresh spec. Design references stable spec AC IDs; only a real contract change or gap requires a spec revision and affected downstream updates.
 
 After all implementation Tasks are complete, review and archive-readiness validation
 run automatically. After they pass the agent reminds the user of source PR submission
@@ -55,8 +61,12 @@ Honour an explicitly user-named command over this default. Stay consistent withi
 
 ### Base Commands (standalone, no plugin required)
 
-Invoke via Skill tool: `odk-init` / `odk-propose` / `odk-spec` / `odk-design` / `odk-plan` / `odk-implement` / `odk-review` / `odk-validate` / `odk-submit-design-docs` / `odk-spec-for-validation` / `odk-security-threat-model` / `odk-link-proposal`.
+Invoke via Skill tool: `odk-init` / `odk-propose` / `odk-spec` / `odk-design` / `odk-plan` / `odk-implement` / `odk-task-review` / `odk-review` / `odk-validate` / `odk-submit-design-docs` / `odk-spec-for-validation` / `odk-security-threat-model` / `odk-link-proposal`.
 Each skill loads its own full context. Base commands are template-driven with zero plugin dependencies.
+
+`odk-task-review` runs the risk-tiered gate for one implemented Task before Done,
+using fixed arch/scope/security seats for R2. It also handles scoped fix re-review;
+`odk-review` still owns the whole change and cross-Task integration.
 
 ### Bridge Commands (plugin-specific)
 

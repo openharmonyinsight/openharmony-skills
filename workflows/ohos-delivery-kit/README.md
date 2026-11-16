@@ -3,7 +3,18 @@
 Neutral-source plugin providing OpenHarmony delivery artifact specification skills,
 session routing, validator executables, and runtime assets.
 
-## 0.14.3 current release
+## 0.14.7 current release
+
+Aligns build commands and `out/` artifact directories on one product name and
+confirms the device validation target explicitly, so emulator plans no longer
+treat "not applicable" as a launcher or validation command. Adds the Task-level
+five-dimension review gate across the base, Superpowers and OpenSpec flows, a
+change-impact scope check, the Codex installer/uninstaller resource and path
+rules, and the shared Chinese writing guide. This import also publishes the
+source's Unreleased `odk-task-review` guide and delivery-body boundary rule at
+the imported commit.
+
+## 0.14.3 effective delivery contract and delivery levels
 
 Adds one effective delivery contract shared by generation and validation,
 `lite` / `standard` / `critical` delivery levels, and a native-first OpenSpec
@@ -176,7 +187,7 @@ repository-scoped layout.
 
 Synced from `oshunter/ohos-delivery-kit` branch `main` via
 `ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills --plugin ohos-delivery-kit`.
-Current source: `main@67f904394df4743913a42f56dae7f6b89732eb08`.
+Current source: `main@0989ab3b4fd81fb7a728a1a8106a1ff7368d642e`.
 The current publisher needs the default config, archive-migration and
 session-sidecar entrypoints and all Python runtime libraries supplemented; the
 source release gate verifies the final package against this pinned revision.
@@ -187,7 +198,7 @@ source release gate verifies the final package against this pinned revision.
 - `provenance.yaml` — source tracking (auto-updated by publish script)
 - `hooks/session-router.yaml` — declarative session-start hook
 - `prompts/session-router.md` — router prompt
-- `skills/` — 27 ODK skills (synced from `core/skills/`)
+- `skills/` — 28 ODK skills (synced from `core/skills/`)
 - `runtime/assets/` — templates, profiles, contracts (including skill-guides), rules, adapters
 - `runtime/executables/` — artifact and archive-migration validators
 

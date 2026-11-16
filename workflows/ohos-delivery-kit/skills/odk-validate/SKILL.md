@@ -15,6 +15,15 @@ full frontmatter and body first; revise it in place and preserve confirmed
 content, stable IDs and evidence. Create a target only when it does not exist.
 <!-- /ODK:reference -->
 
+## Phase flow and next step
+
+<!-- ODK:reference contracts/skill-guides/router/phase-flow.md -->
+Before phase work, read `contracts/skill-guides/router/phase-flow.md` and apply
+its configured pre_hook/post_hook order. At every completion or pause, show
+the next pending action and configured hooks; omit the reminder only when
+the entire applicable workflow is complete. The coordinator owns this flow.
+<!-- /ODK:reference -->
+
 <!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
 Read `contracts/skill-guides/router/delivery-levels.md` and obtain the effective
 contract before choosing artifacts, sections or phase prerequisites.
@@ -61,6 +70,7 @@ For configuration-dependent steps, use the effective-configuration command defin
    - implementation files and Task links are backfilled; each Verification row has meaningful Actual Result and explicit Final Status=Pass (retain historical Red failures)
    - the existing plan's 问题闭环 table, when present, has complete, unique finding IDs and valid AC/Task/artifact references; blocking items must be Resolved, nonblocking accepted risks must be Accepted with disposition and recheck evidence
    - optional evidence under `evidence/reviews/` and `evidence/gates/` is non-empty and supports any passing conclusion
+   - every R1/R2 Task has `evidence/reviews/task-<n>/verdict.md` with `verdict: PASS` and `blocking_findings: 0`; R2 also has the arch/scope/security reports (validator enforcement: Draft missing/non-PASS → WARN, Archive → FAIL)
    - `API/SDK=是` changes must archive `evidence/task1-api-declaration-en.diff` and `evidence/task1-api-declaration-zh.diff` (validator enforcement: Draft missing → WARN, Archive missing → FAIL)
 5. Report PASS（通过）/WARN（警告）/FAIL（失败）by level. Warnings do not block draft review, but archive readiness requires explicit resolution or accepted risk. API signatures are opaque document text: check presence, placeholders and duplicates only, not C/ArkTS syntax, types or array bounds. Document PASS is not compilation success. Source review and target toolchain/CI own language correctness; report unrun checks as NOT VERIFIED. Do not require GCC for document validation.
 6. Resource constraints (`contracts/artifacts.yaml#resource_contract`): parse `资源开销审视`; `review-required` blocks archive; `required` needs meaningful, non-placeholder Spec/Design/Plan resource sections. Archive runs root `AGENTS.md` `odk_resource_gate` (missing/non-zero/timeout fails). ODK orchestrates the subsystem gate but does not recompute its measurements.

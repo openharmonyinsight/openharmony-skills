@@ -15,6 +15,15 @@ full frontmatter and body first; revise it in place and preserve confirmed
 content, stable IDs and evidence. Create a target only when it does not exist.
 <!-- /ODK:reference -->
 
+## Phase flow and next step
+
+<!-- ODK:reference contracts/skill-guides/router/phase-flow.md -->
+Before phase work, read `contracts/skill-guides/router/phase-flow.md` and apply
+its configured pre_hook/post_hook order. At every completion or pause, show
+the next pending action and configured hooks; omit the reminder only when
+the entire applicable workflow is complete. The coordinator owns this flow.
+<!-- /ODK:reference -->
+
 <!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
 Read `contracts/skill-guides/router/delivery-levels.md` and use the effective
 contract. It takes precedence over standard-only artifact lists below; native
@@ -37,7 +46,7 @@ Use after `execution-plan.md` has been approved and the user wants implementatio
 ## Confirm the build product before execution
 
 First apply the host-only exception in the delivery-level and product guides.
-Only target-build/device plans require the menu and firmware selection below.
+Target builds require the build-name menu. Runtime target confirmation and firmware preparation are conditional on the explicit validation scope; build-only requires neither.
 
 <!-- ODK:reference contracts/skill-guides/delivery/build-products.md -->
 Read `contracts/skill-guides/delivery/build-products.md` before delegating any
@@ -54,21 +63,36 @@ disposition, owning-artifact backfill and invalidation/reverification contract
 to delegated Tasks. Record current Verification Final Status with Actual Result.
 <!-- /ODK:reference -->
 
-Before an applicable, explicitly confirmed device flash invokes `device_flash_skill`, read `contracts/skill-guides/router/configured-skills.md`; install it from matching config comment links if missing in the current agent, verify availability, then resume. Apply the same product, daily-strategy, selected-device and overwrite-confirmation conditions as `odk-implement`; pending installation blocks device preparation.
+<!-- ODK:reference contracts/skill-guides/delivery/implementation-quality.md -->
+Before delegating code Tasks, read `contracts/skill-guides/delivery/implementation-quality.md`
+and include its quality check and role boundaries in the Task brief. Require
+implementer self-review, then reuse the native task reviewer for separate
+spec-compliance and code-quality conclusions before accepting completion. The
+implementer does not dispatch its own reviewer; the coordinator owns assignment,
+repairs and re-review. Refactor for a concrete reason, rerun affected tests and
+backfill the existing Actual Result. Native deferred findings cannot waive ODK
+blocking requirements. Leave whole-change review to the configured handoff;
+do not add duplicate review seats. Without task delegation, use the guide's
+inline self-review and final-review route and disclose the actual review mode.
+<!-- /ODK:reference -->
+
+Before an applicable, explicitly confirmed device flash invokes `device_flash_skill`, read `contracts/skill-guides/router/configured-skills.md`; install it from matching config comment links if missing in the current agent, verify availability, then resume. Apply `odk-implement`'s `验证范围=device`, `验证产品=rk3568`, configured-skill, daily-strategy, actual selected-device and overwrite-confirmation conditions; the build name is not a device identity. Pending installation blocks preparation.
 
 0. Read `codespec/changes/<repo-name>/<proposal-id>/execution-plan.md` Task list and list all Tasks as an explicit inventory before starting implementation. All task types — code modification, test writing, configuration update, and verification — are equally mandatory. No task type may be skipped without explicit user consent.
 1. Read the active `codespec/changes/<repo-name>/<proposal-id>/spec.md` AC list and `execution-plan.md` 代码范围映射.
 2. Read `codespec/changes/<repo-name>/<proposal-id>/execution-plan.md` Task list, file scope, and each Task's「任务间接口」（Produces/Consumes）—align cross-task naming and signatures to it.
 3. Invoke Superpowers `test-driven-development` before editing implementation code.
-4. Execute the approved Task list using Superpowers `subagent-driven-development` when available; otherwise use `executing-plans`.
+4. Execute the approved Task list using Superpowers `subagent-driven-development` when available; otherwise use `executing-plans`. Adapt native task review to `odk-task-review` before any reviewer dispatch: R1 uses the single `all` role; R2 uses scope for spec compliance and arch/security for code quality, with exactly the fixed three seats. Project the native spec/quality conclusions from those verified reports instead of dispatching another native reviewer. R0 follows the ODK exemption. Scope native execution to implementation and its applicable task reviews; return control to ODK before native whole-branch review or branch finishing. The configured ODK handoff owns final whole-change review, validation and the separately authorized publishing flow.
 5. For each Task:
    - Write or update failing tests first.
    - Run the targeted verification command and confirm the expected failure.
    - Implement the minimal code required for the Task.
-   - Run the targeted verification command and confirm it passes. For the build and test steps, read the `## 构建与验证环境` table from `execution-plan.md` — use the Task's `验证命令` field to determine whether to build, start the emulator (arm64_virt only), and run tests, exactly as `odk-implement` does. Reuse the product explicitly confirmed during planning; missing confirmation must be resolved before the first build. Reuse that choice for subsequent Tasks unless the user requests a switch; if it changes, re-resolve it in the table and remaining Task commands and clear the emulator command when switching away from arm64_virt. Daily flash via `device_flash_skill` only applies when the confirmed product is `rk3568` — skip for all other products including arm64_virt.
+   - Run targeted verification using the plan's separate `编译产品`, `验证范围`, `验证产品` and `验证目标确认`, following `odk-implement`'s a–d. Build names may be concrete or abstract and are also the directory name under out/. `build-only` never prepares a runtime; `emulator`/`device` use the separately confirmed validation target. Fill missing confirmations first. Re-resolve commands and invalidate affected evidence after switches. Locate artifacts from explicit directories or actual outputs under out/<编译产品>, verify target compatibility, and never substitute the validation product in output paths. Daily auto-flash requires validation product rk3568, a configured skill, selected-device and overwrite confirmation.
    - Keep changes within the Task file scope unless the user approves an execution-plan update.
    - Backfill the Task's `Actual Result` and anti-fake completion evidence in `execution-plan.md`.
-   - Mark the Task as completed in `execution-plan.md`: change all `- [ ]` checkboxes to `- [x]` in the Task's Steps section. If the Task list table has a `状态` column, update it to `Done`; otherwise add the column first.
+   - Accept delegated code-Task completion only after the mapped task-review reports supply both required native conclusions and blocking findings are resolved. Self-review or an implementer's Done report alone is insufficient. After a fix, collect affected verification evidence and re-review the fix plus affected artifact diffs under the feedback procedure.
+   - Before accepting the Task, invoke `odk-task-review` for the gate in `contracts/skill-guides/delivery/task-review.md`. Pass the Task's `风险等级`, full Task baseline/current diff including untracked files, related ACs/decisions and verification paths. The skill probes `python3 <executables>/lib/odk_host_capabilities.py --host <host>`, uses fixed arch/scope/security seats for R2 or one five-dimension seat for R1, and records the R0 reason without dispatch. Serial fallback writes `independent: false` in `evidence/reviews/task-<n>/verdict.md`. Update the Task-list risk cell and Actual Result on escalation; unresolved Critical/High marks the Task `❌ Blocked` and blocks the next Task. Use the skill's finding validation and bounded fix re-review. Native review conclusions remain input claims; do not dispatch duplicate seats if an existing reviewer can run the required ODK role on the same snapshot and return all required evidence.
+   - Only after the applicable checks and review above pass, mark the Task as completed in `execution-plan.md`: change all `- [ ]` checkboxes to `- [x]` in the Task's Steps section. If the Task list table has a `状态` column, update it to `Done`; otherwise add the column first.
 6. After all Tasks are attempted, produce an **Execution Summary**:
    - List every Task with status: ✅ 已完成（Done） / ❌ 阻塞（Blocked） / ⚠️ 跳过（Skipped，附原因）
    - If any Task is incomplete, inform the user and do NOT suggest moving to review — wait for user direction

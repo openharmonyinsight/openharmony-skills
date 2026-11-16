@@ -21,6 +21,9 @@ template load, external workflow invocation or document write.
    to replace it. Missing target: create it from the effective contract only when
    its phase/level requires it. Init reuses an existing proposal instead of
    replacing it with a stub. A template migration is a separate, explicit change.
+   Apply [the specification boundary](../spec/contract-boundary.md): leave an
+   unaffected spec unwritten during implementation/design/test-only updates,
+   including its session mirror. Record fresh execution evidence in the plan.
 4. Before writing, recheck that the baseline has not changed since it was read.
    If it changed, reread and reconcile; do not overwrite another writer. Inspect
    the resulting diff for lost decisions, custom content, IDs and evidence.
@@ -28,6 +31,21 @@ template load, external workflow invocation or document write.
    results pending and revalidate rather than retaining a stale passing claim.
 5. Report the files updated, decisions amended and remaining gaps. Repeated
    invocation with no changed inputs should leave the artifacts unchanged.
+
+## 交付正文边界
+
+生成或修改任何 ODK 交付件正文前，阅读并执行[交付正文边界](../writing/delivery-boundary.md)。
+正文只记录已确认需求、契约、设计结论、必要的理由和证据；模型自述、逐步思考记录、
+中间草稿、生成过程叙述和模板填写提示不写入交付正文。该边界同时约束基础技能和桥接投影；
+模板中的作者提示保留在 HTML 注释或写作指南中，不复制到可见正文。
+
+## 中文交付文档
+
+本次需要生成或修改中文内容时，先阅读并执行[中文写作规则](../writing/chinese.md)，
+首次写作时同时阅读[交付文档正反例](../writing/chinese-examples.md)。
+正文用常用中文写清适用条件、操作和结果，避免临时创造简称或堆叠抽象名词；
+保留固定格式、技术标识、数值、例外与待确认状态。输出前按该规则逐项检查。
+这不要求改写未受本次任务影响的历史文档；文风调整也不得改变已经确认的需求。
 
 When implementation, review, tests or validation reveal a deviation, follow
 [the feedback procedure](../delivery/feedback.md) to route the correction to its

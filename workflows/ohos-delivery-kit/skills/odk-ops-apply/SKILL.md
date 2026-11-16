@@ -15,6 +15,15 @@ full frontmatter and body first; revise it in place and preserve confirmed
 content, stable IDs and evidence. Create a target only when it does not exist.
 <!-- /ODK:reference -->
 
+## Phase flow and next step
+
+<!-- ODK:reference contracts/skill-guides/router/phase-flow.md -->
+Before phase work, read `contracts/skill-guides/router/phase-flow.md` and apply
+its configured pre_hook/post_hook order. At every completion or pause, show
+the next pending action and configured hooks; omit the reminder only when
+the entire applicable workflow is complete. The coordinator owns this flow.
+<!-- /ODK:reference -->
+
 <!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
 Read `contracts/skill-guides/router/delivery-levels.md` and use the effective
 contract. It takes precedence over standard-only artifact lists below; native
@@ -44,7 +53,7 @@ Invoke OpenSpec `/opsx:apply` to implement tasks from the execution plan, apply 
 ## Confirm the build product before invoking the bridge
 
 First apply the host-only exception in the delivery-level and product guides.
-Only target-build/device plans require the menu and firmware selection below.
+Target builds require the build-name menu. Runtime target confirmation and firmware preparation are conditional on the explicit validation scope; build-only requires neither.
 
 <!-- ODK:reference contracts/skill-guides/delivery/build-products.md -->
 Read `contracts/skill-guides/delivery/build-products.md`. Before invoking
@@ -53,9 +62,26 @@ a real prior user answer or ask once when confirmation is missing, including
 old plans. A configured default or a generated command does not confirm it.
 <!-- /ODK:reference -->
 
+Also reconcile `验证范围`, `验证产品` and `验证目标确认` before native runtime steps.
+Do not infer device identity from a concrete or abstract build name. Apply
+`odk-implement`'s scope-specific emulator/device preparation, artifact provenance,
+target compatibility and selected-device/overwrite confirmation rules to native
+Task completion criteria. Build-only runs no runtime preparation. Re-resolve
+commands and invalidate affected evidence on build/target/device changes.
+
 ## Steps
 
-1. Invoke OpenSpec `/opsx:apply` to implement its native tracked tasks. Read/revise native targets in place and refresh native instructions after task completion. Capture the native state again before reconciling ODK.
+<!-- ODK:reference contracts/skill-guides/delivery/implementation-quality.md -->
+Read `contracts/skill-guides/delivery/implementation-quality.md` before invoking
+apply and include its quality check in native code-Task completion criteria.
+Self-review the actual diff before accepting completion, and follow the guide's
+role boundaries for delegated work and configured final review. If a finding
+requires a repair, reopen/correct the native task through the feedback procedure,
+rerun affected checks and review the fix, recapture native state and then
+reconcile ODK; do not invent an independent Done state.
+<!-- /ODK:reference -->
+
+1. Invoke OpenSpec `/opsx:apply` to implement its native tracked tasks. Include `odk-task-review` in completion criteria for each mapped ODK Task: run it after that Task's verification and before accepting completion or advancing to the next ODK Task. Supply the Task baseline/current diff, AC/decision locations and verification paths. Apply `contracts/skill-guides/delivery/task-review.md`, including actual risk escalation and the existing evidence layout. On a blocking verdict, keep/reopen the mapped native tasks as pending through the feedback procedure; do not keep an independent ODK Done state. Read/revise native targets in place and refresh native instructions after task completion. Capture the native state again before reconciling ODK.
 2. Read the existing ODK plan, reconcile task_map against native tasks, and backfill `execution-plan.md` 代码范围映射 with actual files modified or created.
 3. Synchronize `execution-plan.md` progress from the native tasks and actual verification evidence, including per-row Final Status. Follow `contracts/skill-guides/delivery/feedback.md` for findings: correct/reopen native tasks or delta artifacts first, then reconcile ODK backfill and dispositions. Keep blocked tasks pending; do not maintain an independent completion state.
 4. Verify AC-Task traceability: every AC's required tasks are complete and verification passes. Tasks link to ACs, or use a justified N/A for document/infrastructure work that does not close an AC.

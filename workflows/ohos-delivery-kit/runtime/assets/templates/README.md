@@ -27,6 +27,10 @@
 | `review-spec-compliance.md` | 规格符合性审查 | AC 覆盖 + 额外实现 + 偏差 + 结论 |
 | `review-code-quality.md` | 代码质量审查 | Strengths + Issues + Recommendations + Assessment |
 | `review-verification.md` | 最终验证 | 验证记录 + 一致性结论 |
+| `task-arch.md` | Task 评审：重复造轮子 + 性能 | 对象 + 两维检查 + 发现 + 结论 |
+| `task-scope.md` | Task 评审：漏改 + 外部接口影响 | 对象 + 两维检查 + 发现 + 结论 |
+| `task-security.md` | Task 评审：安全与攻击面 | 攻击面 + 检查清单 + 发现 + 结论 |
+| `task-verdict.md` | Task 评审汇总 | frontmatter + 五维结论 + 门禁结论 |
 
 ## 定制方式
 

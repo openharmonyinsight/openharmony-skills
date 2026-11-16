@@ -63,6 +63,11 @@ source CR/MR/PR already exists; an install failure does not roll it back.
 
 ## Applicability comes first
 
+- Phase pre_hook/post_hook skills: use the exact `<phase>_pre_hook` or
+  `<phase>_post_hook` key and the ordered steps from `--phase-hooks`. Follow
+  [phase-flow.md](phase-flow.md); install only when the applicable, authorized
+  phase reaches that hook. Pending installation stays in the next-step reminder.
+
 - Reviews and post-submission hooks: ensure each skill just before its turn in
   the configured ordered list; do not preinstall the entire configuration.
 - CI and online tests: resolve `none`/skip and the user's trigger choice first.

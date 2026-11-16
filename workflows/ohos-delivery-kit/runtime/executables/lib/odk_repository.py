@@ -100,10 +100,52 @@ def effective_odk_config() -> dict[str, str]:
     return {**base, **ext}
 
 
+ODK_PHASES = (
+    "init", "brainstorm", "link_proposal", "propose", "spec",
+    "spec_for_validation", "design", "fmea", "security_threat_model", "plan",
+    "implement", "device_prepare", "build", "test", "task_review", "review",
+    "validate", "source_cr_mr_pr", "ci", "online_test", "metadata", "submit_design_docs",
+)
+_BRIDGE_PHASES = {
+    "sp-brainstorm": ("brainstorm", "propose", "spec", "design"),
+    "sp-plan": ("plan",), "sp-implement": ("implement",), "sp-review": ("review",),
+    "ops-propose": ("propose", "spec", "design", "plan"), "ops-apply": ("implement",),
+    "ms-proposal": ("propose",), "ms-delta-spec": ("spec",),
+    "ms-delta-design": ("design",), "ms-tasks": ("plan",), "ms-validation": ("review",),
+}
+
+
+def phase_hooks(phase: str) -> dict[str, object]:
+    """Describe applicable hooks in order; never run a skill or approve a phase.
+
+    Composite bridges describe each constituent phase. The coordinator still
+    applies delivery-level skips, approval gates and its authorized endpoint.
+    Missing/empty hook fields produce no steps, including on old installations.
+    """
+    name = phase.removeprefix("odk-")
+    phases = _BRIDGE_PHASES.get(name)
+    if phases is None:
+        name = name.replace("-", "_")
+        if name not in ODK_PHASES:
+            raise ValueError(f"Unknown ODK phase: {phase}")
+        phases = (name,)
+    values = effective_odk_config()
+    steps = []
+    for name in phases:
+        for kind in ("pre_hook", "phase", "post_hook"):
+            if kind == "phase":
+                steps.append({"phase": name, "kind": kind})
+                continue
+            key = f"{name}_{kind}"
+            for skill in values.get(key, "").split():
+                steps.append({"phase": name, "kind": kind, "config_key": key, "skill": skill})
+    return {"phases": list(phases), "steps": steps}
+
+
 _SKILL_CONFIG_KEYS = {
     "pre_commit_reviews", "post_commit_reviews", "post_cr_mr_pr_hooks",
     "device_flash_skill", "ci_trigger", "online_test_trigger",
-}
+} | {f"{phase}_{kind}" for phase in ODK_PHASES for kind in ("pre_hook", "post_hook")}
 
 
 def _config_comment_blocks(path: Path) -> dict[str, list[tuple[int, str]]]:
@@ -189,7 +231,7 @@ def skill_install_hints(key: str, skill: str | None = None) -> dict[str, object]
 
 
 def build_product_options() -> dict[str, object]:
-    """Prepare a menu from effective config; a configured default grants no choice."""
+    """Offer opaque concrete/abstract build names; never infer a runtime target."""
     config = effective_odk_config()
     preferred = config.get("build_product", "").strip()
     raw = config["build_products"] if "build_products" in config else preferred
@@ -204,6 +246,56 @@ def build_product_options() -> dict[str, object]:
         "confirmation_required": True,
         "menu": [{"number": number, "product": product, "is_default": product == default}
                  for number, product in enumerate(products, 1)],
+    }
+
+
+def resolve_product_commands(
+    build_product: str, validation_scope: str, validation_product: str = ""
+) -> dict[str, object]:
+    """Resolve confirmed name contexts without executing or confirming anything."""
+    def name(value: str, label: str) -> str:
+        if not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.+/@:%-]*", value):
+            raise ValueError(f"{label} requires one product name without shell control characters")
+        return value
+
+    build_product = name(build_product, "build_product")
+    if validation_scope not in {"build-only", "emulator", "device"}:
+        raise ValueError("validation_scope must be build-only, emulator or device")
+    if validation_scope == "build-only":
+        if validation_product.casefold() not in {"", "n/a"}:
+            raise ValueError("build-only must not carry a validation_product")
+        validation_product = ""
+    else:
+        validation_product = name(validation_product, "validation_product")
+        if validation_product.casefold() == "n/a":
+            raise ValueError("runtime validation requires a concrete validation_product")
+    config = effective_odk_config()
+
+    def resolve(key: str) -> str:
+        command = config.get(key, "")
+        if "{validation_product}" in command and not validation_product:
+            raise ValueError(f"{key} requires a validation_product")
+        command = (command.replace("{build_product}", build_product)
+                   .replace("{validation_product}", validation_product)
+                   .replace("{product}", build_product))
+        if re.search(r"\{(?:product|build_product|validation_product)\}", command, re.IGNORECASE):
+            raise ValueError(f"{key} contains an unresolved product placeholder")
+        return command
+
+    return {
+        "build_product": build_product,
+        "validation_scope": validation_scope,
+        "validation_product": validation_product or None,
+        "confirmation_required": True,
+        "commands": {
+            "build_command": resolve("build_command"),
+            "emulator_command": resolve("emulator_command")
+                if validation_scope == "emulator" else "",
+            # A configured runtime runner must not force a device choice for
+            # compile-only work. Optional host checks are recorded separately.
+            "test_command": resolve("test_command")
+                if validation_scope != "build-only" else "",
+        },
     }
 
 
@@ -342,7 +434,7 @@ def design_docs_target(remote: str, configured: str = "") -> dict[str, str]:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Suggest a design-docs target; confirmation is always required. No writes or network access.")
+    parser = argparse.ArgumentParser(description="Inspect ODK configuration, phase hooks or design-docs destinations. No writes or network access.")
     parser.add_argument("--remote", default="", help="Business repository origin URL; empty if unavailable")
     parser.add_argument("--configured", default="", help="Developer-provided design_docs_repository, if any")
     parser.add_argument("--checkout-remote", help="Compare an existing checkout against the suggested/confirmed target")
@@ -350,15 +442,25 @@ if __name__ == "__main__":
     config_action = parser.add_mutually_exclusive_group()
     config_action.add_argument("--effective-config", action="store_true", help="Print merged ODK configuration as JSON")
     config_action.add_argument("--build-product-options", action="store_true", help="Print build-product menu as JSON; no product is selected")
+    config_action.add_argument("--resolve-product-commands", action="store_true", help="Resolve build/runtime product placeholders without execution")
+    parser.add_argument("--build-product", default="", help="Confirmed concrete or abstract build name")
+    parser.add_argument("--validation-scope", default="", help="build-only, emulator or device")
+    parser.add_argument("--validation-product", default="", help="Confirmed concrete runtime product, when needed")
     config_action.add_argument("--skill-install-hints", metavar="CONFIG_KEY", help="Read installation links from a configured skill field's preceding comments")
+    config_action.add_argument("--phase-hooks", metavar="PHASE", help="Describe configured pre_hook/phase/post_hook steps, including bridge aliases; no execution")
     parser.add_argument("--skill", help="Limit installation hints to this configured skill; requires --skill-install-hints")
     args = parser.parse_args()
     if args.skill is not None and args.skill_install_hints is None:
         parser.error("--skill requires --skill-install-hints")
-    if args.effective_config or args.build_product_options or args.skill_install_hints is not None:
+    if (args.effective_config or args.build_product_options or args.resolve_product_commands
+            or args.skill_install_hints is not None or args.phase_hooks is not None):
         try:
-            if args.skill_install_hints is not None:
+            if args.resolve_product_commands:
+                payload = resolve_product_commands(args.build_product, args.validation_scope, args.validation_product)
+            elif args.skill_install_hints is not None:
                 payload = skill_install_hints(args.skill_install_hints, args.skill)
+            elif args.phase_hooks is not None:
+                payload = phase_hooks(args.phase_hooks)
             else:
                 payload = build_product_options() if args.build_product_options else {"config": effective_odk_config()}
             payload["user_config_path"] = str(user_config_path())

@@ -4,9 +4,9 @@ from __future__ import annotations
 import re
 
 if __package__:
-    from .odk_document import require_unique_section, require_unique_table_with_columns, meaningful, table_with_columns, section_text
+    from .odk_document import require_unique_section, require_unique_table_with_columns, meaningful
 else:
-    from odk_document import require_unique_section, require_unique_table_with_columns, meaningful, table_with_columns, section_text
+    from odk_document import require_unique_section, require_unique_table_with_columns, meaningful
 
 DIMENSIONS = dict(perf="性能", security="安全/权限", compatibility="兼容性",
                   **{"api-sdk": "API/SDK", "ipc": "IPC/跨进程", "build": "构建/组件",
@@ -24,7 +24,9 @@ def involvement_value(cell: str) -> str | None:
 
 
 def involvement_rows(proposal: str) -> list[dict[str, str]]:
-    return table_with_columns(section_text(proposal, "不涉及项确认"), ["维度", "是否涉及"])
+    section = require_unique_section(proposal, "不涉及项确认")
+    rows = require_unique_table_with_columns(section or "", ["维度", "是否涉及"])
+    return rows or []
 
 
 def parse_eight_dim_involvement(proposal: str, dimension: str) -> str | None:
