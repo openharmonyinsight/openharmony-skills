@@ -251,7 +251,10 @@ def _signature_parts(declaration: str, language: str) -> tuple[str, str, str]:
     if match:
         owner_name = match.group(1).strip()
         if language == "c":
-            owner_name = owner_name.split()[-1]
+            # A C pointer star belongs to the return declarator, even when it
+            # touches the function identifier (char *get / void **get).
+            identifier = re.search(r"[A-Za-z_]\w*$", owner_name)
+            owner_name = identifier.group(0) if identifier else owner_name
         name = owner_name.split(".")[-1].split("::")[-1]
         qualified_name = owner_name
     else:
@@ -403,11 +406,14 @@ def _permissions(
     language: str,
     missing: list[str],
 ) -> list[str]:
-    fact = language_facts.get("permissions")
-    if isinstance(fact, list) and all(isinstance(item, str) for item in fact):
-        return [item for item in fact if item.strip()]
+    if "permissions" in language_facts:
+        fact = language_facts["permissions"]
+        if isinstance(fact, list) and all(isinstance(item, str) and item.strip() for item in fact):
+            return [item.strip() for item in fact]
+        missing.append(f"{language}.permissions")
+        return []
     value = common.get("权限", "").strip()
-    if not value or value in {"无", "不涉及", "—", "-"}:
+    if value in {"无", "不涉及", "—", "-"}:
         return []
     if "ohos.permission." in value:
         return [
@@ -636,9 +642,9 @@ def _effective_common_attributes(
     """Apply per-API legacy overrides to the common specification attributes."""
 
     effective = dict(common)
-    for key, common_value in common.items():
-        override = spec.get(key, "").strip()
-        if override and override != common_value:
+    for key, value in spec.items():
+        override = value.strip()
+        if override:
             effective[key] = override
     return effective
 

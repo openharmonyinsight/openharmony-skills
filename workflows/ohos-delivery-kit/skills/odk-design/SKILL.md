@@ -64,7 +64,7 @@ If `proposal.md` marks `API/SDK` as `是`:
    proposal -> spec -> design
 
    Migration guide:
-   docs/migrations/0.15.0-api-metadata-hard-migration.md
+   contracts/skill-guides/spec/api-metadata-migration.md
    ```
 
 ## Steps

@@ -3097,7 +3097,7 @@ def _api_contract_version_finding(
             "  proposal -> spec -> design -> plan -> implement -> validate",
             "",
             "Migration guide:",
-            "docs/migrations/0.15.0-api-metadata-hard-migration.md",
+            str(CONTRACT_PATH.parent / "skill-guides/spec/api-metadata-migration.md"),
         ]
     )
     return "\n".join(lines)

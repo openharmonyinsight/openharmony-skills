@@ -101,7 +101,7 @@ def effective_odk_config() -> dict[str, str]:
 
 
 ODK_PHASES = (
-    "init", "brainstorm", "link_proposal", "propose", "spec",
+    "init", "brainstorm", "link_proposal", "propose", "spec", "upgrade_api_chain",
     "spec_for_validation", "design", "fmea", "security_threat_model", "plan",
     "implement", "device_prepare", "build", "test", "task_review", "review",
     "validate", "source_cr_mr_pr", "ci", "online_test", "metadata", "submit_design_docs",

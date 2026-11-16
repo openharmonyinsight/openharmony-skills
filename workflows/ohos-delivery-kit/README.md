@@ -19,12 +19,14 @@ per-API Markdown specifications are no longer accepted directly.
 
 This republish includes the merged API review fixes: upgrades preserve pointer
 return types and confirmed modes, reject invalid or conflicting modes before
-writing, and accept inline-formatted error codes. Documentation checks accept
-numeric range endpoints and Chinese-adjacent values while retaining Unicode
-unit boundaries and full number, sign and precision boundaries. API skill
-commands use installer-relocatable runtime paths, and the NAPI/ArkTS and
-RAII/symbol-export guidance is hardened for `odk-fmea` and implementation
-quality.
+writing, accept inline-formatted error codes, run in a standalone
+`upgrade_api_chain` phase with configurable hooks, and block on missing or
+invalid permission facts. The hard-migration guide ships as a shared resource
+referenced through relocatable paths. Documentation checks accept numeric range
+endpoints and Chinese-adjacent values while retaining Unicode unit boundaries
+and full number, sign and precision boundaries. API skill commands use
+installer-relocatable runtime paths, and the NAPI/ArkTS and RAII/symbol-export
+guidance is hardened for `odk-fmea` and implementation quality.
 
 ## 0.14.7 build products and Task review gate
 
@@ -210,7 +212,7 @@ repository-scoped layout.
 
 Synced from `oshunter/ohos-delivery-kit` branch `main` via
 `ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills --plugin ohos-delivery-kit`.
-Current source: `main@0122bc6cc0ac5a828a1d39eae1c9644a269e853e`.
+Current source: `main@886ce2a07863f389b34d91535e7864d32a4f1e4c`.
 The current publisher needs the default config, archive-migration,
 session-sidecar, API documentation check and API chain upgrade entrypoints plus
 all Python runtime libraries supplemented; the source release gate verifies the

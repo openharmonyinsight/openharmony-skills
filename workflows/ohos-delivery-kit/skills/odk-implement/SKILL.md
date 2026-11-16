@@ -178,7 +178,7 @@ For configuration-dependent steps, use the effective-configuration command defin
    proposal -> spec -> design -> plan -> implement
 
    Migration guide:
-   docs/migrations/0.15.0-api-metadata-hard-migration.md
+   contracts/skill-guides/spec/api-metadata-migration.md
    ```
      - 获取 API 声明仓库路径（spec 阶段过程信息不落盘）：若本会话已有 spec 阶段确认的 `interface_sdk-js` / `interface_sdk_c` 本地路径，直接使用；否则询问开发者提供（不一定是绝对路径，只要能定位到即可）
      - **切分支（必须）**：API 声明仓库通常被多个需求共享，必须在修改声明文件前切出专用分支，避免多个需求的改动互相覆盖、diff 混淆。分支名建议关联 proposal ID，如 `feature/proposal-12345-arkui-focus`；询问开发者确认分支名或由开发者手动切好后告知分支名

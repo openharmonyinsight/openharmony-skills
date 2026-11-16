@@ -35,6 +35,7 @@ Canonical phases and their normal continuation:
 | `link_proposal` | Bind draft → resume the earliest unfinished phase |
 | `propose` | Proposal → spec |
 | `spec` | Specification → design, or plan for lite when design is unnecessary |
+| `upgrade_api_chain` | Upgrade an explicitly selected legacy API chain → resume the earliest unfinished or invalidated phase |
 | `spec_for_validation` | Bypass scenarios → return to caller or earliest unfinished main phase |
 | `design` | Architecture → plan |
 | `fmea` | Fault analysis → return to design caller, or resume main flow when standalone |
@@ -121,6 +122,13 @@ metadata creation/verification, including standalone document submission;
 Wrap each actual device/build/test action in implementation, including bridge
 implementation, at its recorded plan position. Existing review/submission hooks
 remain distinct ordered actions; include any pending ones in next-step reminders.
+
+`odk-upgrade-api-chain` resolves to the standalone `upgrade_api_chain` phase.
+Run it only when the upgrade command is invoked; do not insert migration into a
+normal new-change flow. Its hooks use `upgrade_api_chain_pre_hook` and
+`upgrade_api_chain_post_hook`, independently of spec hooks. Missing facts keep
+the upgrade body pending; after successful migration, resume the first phase
+that the report identifies as unfinished or invalidated.
 
 ## Always show the next step
 

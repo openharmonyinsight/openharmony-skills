@@ -6,11 +6,11 @@ this file. Source artifacts are synchronized from
 
 ## [0.15.0] - 2026-11-03
 
-Source: `main@0122bc6cc0ac5a828a1d39eae1c9644a269e853e`.
+Source: `main@886ce2a07863f389b34d91535e7864d32a4f1e4c`.
 
 This republish imports the review fixes merged into the source `main` after the
-first 0.15.0 import (`4ff4729`); the version stays 0.15.0 because that release PR
-has not been merged yet.
+first 0.15.0 import (`4ff4729`), including the migration follow-ups; the version
+stays 0.15.0 because that release PR has not been merged yet.
 
 This import publishes the language-specific API metadata contract and its
 breaking migration. Existing 0.14 API changes must be moved with
@@ -83,6 +83,19 @@ accepted as a compatibility layer.
   executable paths exist and were relocated, with and without braces.
 - Check the full number, sign and precision boundary for Chinese unit and range
   confirmed values, so `10.5ms` or `-0.5ms` is not accepted as `0.5ms`.
+- Extract the real function name from a C pointer-return declaration in API chain
+  upgrades, keeping the return-type asterisk; a missing or invalid permission
+  fact blocks the write, while an explicit no-permission fact and per-API
+  confirmation still migrate.
+- Run `odk-upgrade-api-chain` in a standalone `upgrade_api_chain` phase with
+  configurable before/after hooks, so a phase parsing failure no longer blocks
+  the entry and spec hooks are not mixed in.
+- Ship the API hard-migration guide as a shared resource in both the native and
+  the neutral package; skills reference it through relocatable paths and
+  validator errors point at the file that is actually installed.
+- Keep an explicit file scope for the supported legacy-chain import in the
+  external workflow boundary check while still rejecting ordinary phases and
+  other workflow coupling, and sync the extracted content snapshot.
 - Apply the hardened NAPI/ArkTS and RAII/symbol-export guidance from the
   AI-draft versus release diff to `odk-fmea` and the implementation-quality
   guide.
