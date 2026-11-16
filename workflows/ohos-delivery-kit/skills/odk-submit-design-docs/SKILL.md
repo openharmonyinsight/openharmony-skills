@@ -73,8 +73,11 @@ The design-docs submission bundle always includes these five base files:
 - `execution-plan.md`
 - `metadata_tracking.yaml`
 
-For `API/SDK=是`, also include `evidence/task1-api-declaration-en.diff` and
-`evidence/task1-api-declaration-zh.diff`. Both must contain nonempty text unified
+For `API/SDK=是`, additionally include the applicable `arkts-api-spec.yaml` and/or `c-api-spec.yaml`,
+`evidence/task1-arkts-api-declaration-en.diff` and
+`evidence/task1-arkts-api-declaration-zh.diff` when ArkTS is involved, plus
+`evidence/task1-c-api-declaration-en.diff` and
+`evidence/task1-c-api-declaration-zh.diff` when C is involved. Each diff file must contain nonempty text unified
 diffs with complete hunks and actual added/deleted lines, not blank files or labels.
 Preserve their relative paths. No implicit no-change exemption exists: if genuine
 evidence is unavailable, stop and report the missing evidence rather than fabricate it.

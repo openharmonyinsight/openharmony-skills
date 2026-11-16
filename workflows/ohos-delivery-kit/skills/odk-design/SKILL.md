@@ -46,6 +46,27 @@ contract before choosing artifacts, sections or phase prerequisites.
 1. Read `proposal.md` summary (first 15 lines or user-provided summary)
 2. Read `spec.md` AC list and business rules (for architecture decisions to reference)
 
+## API hard-migration gate
+
+If `proposal.md` marks `API/SDK` as `是`:
+
+1. Before writing or revising `design.md`, read `spec.md` `## API 规格定义`.
+2. The section must reference the applicable `arkts-api-spec.yaml` and/or `c-api-spec.yaml` and state `API 契约版本 | 1.0.0`.
+3. Write `**API 契约版本：** 1.0.0` into `design.md` `## 需求基线摘要`; this is a read-only chain marker and must not be changed during design.
+4. The referenced language-specific metadata files must exist, parse, and satisfy the API metadata contract.
+5. If these conditions fail, stop before generating design. A recognizable 0.14 legacy API Markdown chain without current metadata may be routed to `{{CMD_PREFIX}}upgrade-api-chain`; if the assistant cannot resolve every fact, restart from `proposal`/`odk-spec`. Never use an old spec directly to generate a new design.
+6. For a blocking mismatch, report every affected artifact with its declared version, required version `1.0.0`, this reason, and the migration guide. Use this action text verbatim and do not suggest manually editing the version field:
+   ```text
+   Action:
+   Rerun from proposal, then rerun odk-spec before creating design.
+
+   Required flow:
+   proposal -> spec -> design
+
+   Migration guide:
+   docs/migrations/0.15.0-api-metadata-hard-migration.md
+   ```
+
 ## Steps
 
 <!-- ODK:reference contracts/skill-guides/spec/contract-boundary.md -->

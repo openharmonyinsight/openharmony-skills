@@ -17,7 +17,8 @@ sessions: ""
 | Proposal | proposal.md | Approved |
 | Spec | spec.md | Approved |
 | Design | design.md | Approved |
-<!-- lite 未生成独立设计时删除 Design 行；保留既有设计的决策。 -->
+| API Contract Version | 1.0.0 | Must match spec.md and applicable API metadata |
+<!-- lite 未生成独立设计时删除 Design 行；API/SDK=否时删除 API Contract Version 行。保留既有设计的决策。 -->
 
 ## 执行原则
 
@@ -99,7 +100,7 @@ graph TD
 <!-- 填写提示（不写入交付正文）：AC 映射填写 `AC-1.1` 等编号。纯文档/基础设施 Task 不直接关闭 AC 时，填写 `N/A（仅更新使用说明，不直接关闭 AC）` 这类带简短理由的值；不得留空、只填 `N/A` 或使用 `—`。每条 AC 仍必须在「AC 到 Task 追溯」中映射到有验证方式的 Task。 -->
 
 <!--
-条件约束：若 proposal.md 标记 API/SDK = 是，必须将所有 API 声明文件修改任务排在 Task-1。
+条件约束：若 proposal.md 标记 API/SDK = 是，必须先确认适用 metadata 文件存在且有效，再将所有 API 声明文件生成任务排在 Task-1。
 后续功能实现任务以 Task-2 开始。
 -->
 
@@ -111,8 +112,8 @@ graph TD
 ## Task 详情
 
 <!--
-若 API/SDK = 是，TASK-1 固定为：根据 spec.md API 规格定义修改声明文件。
-包含：修改/新增声明文件 → 如环境可用则运行 oh-api-definition（可选、不阻塞）→ 生成英文/中文声明注释双份 diff（evidence/task1-api-declaration-en.diff 与 -zh.diff）。
+若 API/SDK = 是，TASK-1 固定为：根据适用 metadata 文件生成 API 声明文件。
+包含：修改/新增声明文件 → 如环境可用则运行 oh-api-definition（可选、不阻塞）→ 按 API 声明仓库生成英文/中文声明注释 diff：ArkTS 使用 evidence/task1-arkts-api-declaration-en.diff 与 -zh.diff；C 使用 evidence/task1-c-api-declaration-en.diff 与 -zh.diff；仅生成适用语言对应文件，且不同 API 声明仓库不得混入同一份 diff。每个 API 的完整声明注释块与声明必须位于同一个连续 hunk；同签名 API 必须提供 API ID / qualifiedName 或唯一源位置。
 -->
 
 ### TASK-1: [名称]
@@ -141,8 +142,8 @@ graph TD
 | 操作 | 文件 | 说明 |
 |------|------|------|
 <!--
-注：如果本变更涉及 API/SDK（proposal.md 标记 API/SDK = 是），任务列表的第一条必须包含 API 声明文件修改任务。
-声明文件修改依据 spec.md `## API 规格定义`，签名须与规格表中的定义完全一致。
+注：如果本变更涉及 API/SDK（proposal.md 标记 API/SDK = 是），任务列表的第一条必须包含 API 声明文件生成任务。
+声明文件生成唯一依据适用 metadata 文件；不得从 `spec.md` 概览或既有声明文件反推契约。签名、参数、返回值、错误码和标记须与元数据完全一致。
 -->
 
 **禁止修改文件**

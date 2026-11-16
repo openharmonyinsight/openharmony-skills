@@ -1,60 +1,390 @@
-1. **API 仓库准备（条件触发）**：若 proposal.md `API/SDK` 维度 = 「是」，必须先确认 API 声明仓库在本地可用：
-   - **询问开发者提供本地仓库路径**：
-     - 涉及 ArkTS API → 需要 `interface_sdk-js` 仓库
-     - 涉及 C API → 需要 `interface_sdk_c` 仓库
-     - 两者都涉及 → 两个仓库都需要
-     - 询问模板：
-       ```
-       本次变更涉及 API 设计，需要确认本地 API 声明仓库路径：
-       1. interface_sdk-js 仓库本地路径（ArkTS API）：
-       2. interface_sdk_c 仓库本地路径（C API）：
-       请提供上述仓库的本地路径（不一定是绝对路径，只要能定位到即可）。
-       ```
-   - 验证仓库存在且可读（检查目录存在性、关键目录结构如 `api/`）
-   - 开发者未提供路径或路径无效时，**spec 阶段不得继续**，必须等待开发者准备好仓库
-   - **阅读仓库根目录的 `AGENTS.md`**，学习 API 设计规范、命名约定、目录结构约定、声明文件格式要求等知识，以及其中引用的 声明注释规范（ArkTS 为 JSDoc，C 为 Doxygen 或仓库既有注释规范）和设备知识文档。AGENTS.md 中的内容与既有声明文件的实际格式共同构成格式参考，二者冲突时以 AGENTS.md 为准。读取结果仅用于本阶段撰写规格（过程信息，不写入 spec.md）。
-   - **AGENTS.md 降级规则**：
-     - **AGENTS.md 不存在**：不阻塞，退回仅参照既有声明文件格式（降级模式）。在 spec.md 中不记录降级状态，但需在交互中告知开发者"未找到 AGENTS.md，将仅参照既有声明文件格式"
-     - **AGENTS.md 存在但未引用 声明注释规范（ArkTS 为 JSDoc，C 为 Doxygen 或仓库既有注释规范）**：不阻塞，API 描述定义退回参照既有声明文件的 注释风格
-     - **AGENTS.md 存在但未引用设备知识文档**：不阻塞，设备行为差异步骤改为直接询问开发者全部设备支持范围（无法由 @syscap 自动确定时），开发者手动提供设备列表和差异
-     - **无法由 @syscap 确定设备范围**：不阻塞，改为询问开发者手动提供支持设备列表
-   - 阅读仓库中与本次变更 Kit 相关的既有声明文件（≤10 个），提取格式规范：
-     - 版权声明头格式
-     - 注释结构（`@file`、`@kit`、`@syscap`、`@since` 等标记格式）
-     - 既有 API 的命名风格、参数模式、返回值模式
-     - 提取结果仅用于本阶段撰写规格（过程信息，不写入 spec.md）
-2. **API 全面规格定义（条件触发）**：若 proposal.md `API/SDK` 维度 = 「是」，在阅读既有声明文件后，参照既有格式为本次需求的新增/修改 API 进行完整的规格定义：
-   - **公共规格属性**：多个 API 共享的属性（是否新增声明文件、API 类型、编程语言、@syscap、@since、权限、跨平台/元服务/卡片、FA/Stage 模型）统一定义在 `### 公共规格属性` 表中
-   - **@since 版本号确认（阻塞）**：API 版本号近期有调整，不得从既有声明文件或代码中自行推断版本号后直接填写。必须先与开发者确认本次 API 的目标版本号，确认后才可写入 spec.md
-   - **校验边界**：仍需根据声明文件填写完整、正确的签名；文档 validator 只检查非空、占位内容及重复，不解析 C/ArkTS 类型、参数、泛型或数组表达式。语法与类型正确性由源码 review 和目标仓库工具链/CI 验证，未运行时明确记录“未验证”，不得用文档 PASS 替代编译结果，也不要求为文档校验安装 GCC。
-   - **逐 API 规格**：每个 API 以 `#### API: <完整签名>` 子节展开，包含：
-     - 规格表：入参、返回值、错误码等，以及与公共属性不一致的差异项
-     - API 描述（接口定义三要素 + 接口使用五要素）
-     - 设备行为差异（支持设备表（始终必填）+ 差异明细表（无差异时填"所有支持设备行为一致"））
-   - **API 描述定义**：参照 API 声明仓库（Step 1 中开发者提供的 `interface_sdk-js` / `interface_sdk_c`）根目录 `AGENTS.md` 中引用的 声明注释规范（ArkTS 为 JSDoc，C 为 Doxygen 或仓库既有注释规范）（若 AGENTS.md 存在且引用了该规范），为每个 API 定义以下内容，作为 implement 阶段编写声明文件注释 的精确蓝图。这些内容是事实性信息，必须与开发者确认，不得臆造：
-     - **接口定义三要素**：含义/功能、使用场景、使用后效果
-     - **接口使用五要素**：相似接口差异、缺省配置、规格限制、生效机制、注意事项
-   - 规格定义写入 spec.md 的 `## API 规格定义` 章节（公共规格属性 + 逐 API 规格）
-2.5 **设备行为差异定义（条件触发）**：若 proposal.md `API/SDK` 维度 = 「是」：
-   - **继承 proposal 设备结论**：先读取 proposal.md 的 `## 1+8 设备差异规格`（若存在），作为需求级设备范围参考。proposal 负责需求级设备范围，spec 负责逐 API 细化。若 spec 的逐 API 细化结论与 proposal 的需求级结论存在冲突，**暂停并向开发者确认**，不得自行覆盖 proposal 结论
-   - 通过 Step 1 读取的仓库 `AGENTS.md` → 若 AGENTS.md 存在且引用了设备知识文档，加载并学习设备类型枚举、差异行为类型、差异原因、设备移除规则、自然语言解析规则等知识（过程信息，不写入 spec.md）。若 AGENTS.md 不存在或未引用设备知识文档，参见 Step 1 降级规则
-   - 根据 API 的 `@syscap` 确定该 API 支持的设备类型列表及各设备起始版本
-   - 询问开发者是否存在设备行为差异：
-     ```
-     本次变更涉及的 API，需要确认多设备行为差异：
+# API metadata specification workflow
 
-     已根据 @syscap 确定支持设备范围：<列出设备类型及起始版本>
+This guide runs in `odk-spec` when `proposal.md` marks `API/SDK` as `是`.
+The product of this guide is one or two machine-readable API contracts:
+`arkts-api-spec.yaml` for ArkTS and `c-api-spec.yaml` for C. `spec.md` keeps
+only an API overview and confirmation pointers; it is not the per-API
+specification source.
 
-     1. 以上设备在功能行为上是否存在差异？（如某些设备不支持、返回不同错误码、行为不同等）
-        - 无差异 → 所有支持设备行为一致
-        - 有差异 → 请用自然语言描述每个有差异的设备的行为差异
-     ```
-   - **无差异**：支持设备表仍必填，差异明细表填写"所有支持设备行为一致"
-   - **有差异**：
-     1. 收集开发者的自然语言描述
-     2. 按设备知识文档中的自然语言解析规则解析为结构化数据
-     3. 以**中文列名**和**中文选项值**展示表格供开发者确认（禁止展示 JSON 字段名/英文 value）
-     4. 开发者确认后才可落盘
-   - 根据差异行为判定设备是否从支持列表移除（按设备知识文档中的设备移除规则）
-   - 输出写入该 API 的 `#### API: <完整签名>` 子节下的设备行为差异部分（支持设备表始终必填；无差异时差异明细表填写"所有支持设备行为一致"）
-   - **禁止事项**：不得臆造设备差异；不得未确认即落盘；行为一致的 API 批量处理时使用相同结果
+## 0. Legacy 0.14 chain boundary
+
+A legacy 0.14 Markdown API chain must not be consumed directly by design, plan,
+implementation, or validation. Route a recognizable chain to
+`odk-upgrade-api-chain`. The assistant first dry-runs deterministic
+extraction from proposal, repository knowledge, and legacy spec facts; missing
+or conflicting facts require developer confirmation. After it writes the current
+language-specific metadata, later phases consume only that metadata. If the
+assistant cannot close every fact, restart from proposal/spec.
+
+## 1. API repository preparation
+
+Before generating API metadata, confirm that the applicable API declaration
+repository is available locally:
+
+- ArkTS: `interface_sdk-js`
+- C: `interface_sdk_c`
+- If both languages are involved, both repositories are required.
+- Each metadata file models exactly one language. A change that involves both
+  ArkTS and C archives both `arkts-api-spec.yaml` and `c-api-spec.yaml`; the
+  two language shapes must not be merged.
+
+Ask for local paths when they are not already known. Paths need only be
+resolvable; they do not have to be absolute.
+
+If a repository is missing or unreadable, `odk-spec` must stop. Do not infer
+declaration formats from remote content or unrelated repositories.
+
+### Repository-declared prerequisites
+
+Read the API repository root `AGENTS.md` first. It is the stable knowledge entry
+for that repository, owns the applicable knowledge areas and prerequisites, and
+may reference knowledge entries inside the repository. ODK and other consuming
+agents must resolve those references dynamically and must not assume the
+repository-internal directory layout or hardcode paths below the repository root.
+
+When a knowledge entry declares a prerequisite, load that prerequisite exactly
+in the declared order before reading the entry itself. Do not skip, replace, or
+reorder repository-declared prerequisites. If a prerequisite is unavailable,
+stop and follow the guidance supplied by the API repository. ODK does not own
+repository prerequisites and must not hardcode them.
+
+From the root `AGENTS.md`, dynamically resolve and read the knowledge entries
+needed by this API change, including:
+
+- API version rules and system/API version mapping
+- declaration-comment rules (ArkTS JSDoc or C Doxygen/established style)
+- API metadata format and schema
+- device support and behavior-difference rules
+- language-specific rules when applicable, such as ArkTS static-type rules
+
+Also resolve the applicable metadata schema from the root `AGENTS.md` or the
+knowledge index it references. Do not hardcode a schema location such as a
+`docs/` path. If a required knowledge area or schema cannot be resolved, stop
+and report the missing knowledge area; do not guess a repository-internal path.
+
+Read at most ten relevant existing declaration files to learn:
+
+- copyright header format
+- declaration layout
+- naming conventions
+- parameter and return-value patterns
+- JSDoc or Doxygen style
+
+The repository guide and existing declarations together form the style
+reference. If they conflict, the repository `AGENTS.md` wins.
+
+### Repository-guide degradation
+
+- Missing root `AGENTS.md`: stop and report that the stable API knowledge entry
+  is unavailable; do not silently fall back to declaration style only.
+- Missing declaration-comment rules: continue with existing declaration style.
+- Missing version rules: do not derive `@since`; ask the developer for the API
+  version and record that the version rule was unavailable.
+- Missing metadata-schema entry: stop; the language-specific contract shape
+  cannot be validated safely.
+- Missing device-knowledge rules: ask the developer for device support and
+  differences instead of guessing.
+
+These degradations affect the available evidence only. They never permit
+metadata or documentation fields to be guessed from unrelated context.
+
+Ignoring an existing declaration as a contract source does not waive repository
+knowledge. The root `AGENTS.md` and the knowledge entries it references must
+still be loaded.
+
+## 2. API contract skeleton and documentation context
+
+Before creating the skeleton, extract confirmed behavioral facts from the
+proposal and conversation into a documentation context file. This file is the
+bounded interface to the documentation subagent; do not pass the full proposal
+or unrelated design/plan context.
+
+Select the language-specific template before generating the skeleton:
+
+- ArkTS: `templates/api/arkts-api-spec.yaml`
+- C: `templates/api/c-api-spec.yaml`
+
+Do not use a generic API template or copy the other language's shape.
+
+Generate a skeleton containing contract facts only:
+
+- schema version: `1.0.0`
+- language: `arkts` or `c`
+- source repository, branch, commit, and path
+- file-level metadata
+- every API object with its applicable `kind`
+- API identity and parent relationships
+- ArkTS `apiMode` for static-only and dynamic&static APIs; dynamic-only is the default and may omit it
+- declaration text
+- source ranges
+- parameters
+- return types
+- error codes
+- permissions
+- `@since`
+- `@syscap`
+- platform support with `enabled`, `since`, and optional `until`
+- application model
+- device support and differences
+- confirmed behavioral facts that affect declaration documentation, such as:
+  - units
+  - value ranges
+  - invalid-input behavior
+  - default values
+  - precedence
+  - affected and unaffected paths
+  - activation timing and lifecycle boundaries
+  - per-device differences
+
+Write these facts to:
+
+```text
+<temporary-workspace>/documentation-context.yaml
+```
+
+The file must contain:
+
+```yaml
+schemaVersion: "1.0.0"
+apiIds:
+  - "<stable-api-id>"
+confirmedFacts:
+  - apiId: "<stable-api-id>"
+    fact: unit
+    values:
+      en: "<English localized confirmed value>"
+      zh: "<Chinese localized confirmed value>"
+    source: "<proposal goal / developer confirmation / repository rule>"
+  - apiId: "<stable-api-id>"
+    fact: device-difference
+    ownerField: deviceDifferences
+    values:
+      en: "<English localized device-difference fact>"
+      zh: "<Chinese localized device-difference fact>"
+    source: "<developer confirmation / repository device rule>"
+documentationRequirements:
+  - apiId: "<stable-api-id>"
+    fact: unit
+    requirement: "include the confirmed unit"
+  - apiId: "<stable-api-id>"
+    fact: value-range
+    requirement: "include the confirmed value range"
+  - apiId: "<stable-api-id>"
+    fact: device-difference
+    ownerField: deviceDifferences
+    requirement: "record the confirmed difference in deviceDifferences only"
+```
+
+Every `confirmedFacts` entry must already be confirmed, must declare its API ID,
+and must have at least one matching `documentationRequirements` entry. Do not put open
+questions in this file. If a fact is unresolved, resolve it first or keep it
+as an explicit open question.
+
+`documentation-context.yaml` is for behavioral facts that need human-facing
+prose. Do not create documentation requirements for structured contract facts
+such as `since`, `syscap`, permissions, platform support, application model,
+kit/library, declaration shape, parameter types, return type, or numeric error
+codes. Those facts stay in the metadata skeleton and declaration markers; the
+subagent must not copy them into description fields.
+
+Each behavioral fact must also have exactly one authoritative owner. Do not
+create two documentation requirements for the same parameter default, type
+restriction, or return semantics. The subagent must deduplicate prose across
+API-level description, parameters, and return value before the checker runs.
+
+Device-specific behavior ownership:
+
+- Behavior that varies by device category belongs once in the structured
+  `deviceDifferences` fields. Mark the corresponding documentation-context
+  fact with `ownerField: deviceDifferences`.
+- Do not create a prose requirement that requires per-device values to appear
+  in `description.defaultBehavior`, `notes`, or another description field.
+- `description.defaultBehavior` may describe only a uniform default behavior
+  that is independent of device category.
+- If the only default behavior is device-specific, set
+  `description.defaultBehavior` to `N/A` / `不适用`.
+- A summary such as "the system uses the device-category default" is allowed
+  only when it does not repeat the specific per-device values or device
+  categories from `deviceDifferences`.
+
+Resolve every contract fact before asking the developer, using this order:
+
+1. developer's explicit confirmation already recorded in proposal or conversation
+2. deterministic rules in the API repository root `AGENTS.md` and the knowledge
+   entries it references
+3. confirmed existing declarations and code facts
+4. proposal facts such as `target_release`
+
+Do not guess API facts from unrelated context or defaults. Deterministic
+repository rules are not guesses: if, for example, the repository version rule
+maps proposal `target_release: 7.1` to API `26.1.0`, write `since: "26.1.0"`
+and record the actual knowledge-entry path as evidence. Only ask the developer
+when authoritative sources are exhausted, conflict, or explicitly require human
+confirmation.
+
+ArkTS metadata uses the discriminated-union types defined by the ArkTS schema,
+including `annotation` and `decorator`. C metadata uses the C schema,
+including `union`. C++ `class` and `namespace` are not C API metadata.
+
+## 3. API documentation subagent
+
+API descriptions must be generated by an isolated subagent. Read and follow
+[api-documentation.md](./api-documentation.md).
+
+Pass only:
+
+- the API skeleton file
+- `documentation-context.yaml`
+- a knowledge pack containing the API repository root `AGENTS.md` and the
+  knowledge entries dynamically resolved from it for this API change
+- at most ten relevant existing declarations
+- the applicable metadata schema, resolved through the root `AGENTS.md`
+- the plugin's `contracts/api/forbidden-terms.yaml` file
+- the plugin's `contracts/api/document-style.yaml` file
+
+The documentation context is mandatory. The subagent must consume it and must
+not invent facts absent from it.
+
+The subagent returns documentation-only output. It must not modify contract
+fields.
+
+If an isolated subagent is unavailable, `odk-spec` fails. There is no
+main-session fallback, no old-description reuse, and no declaration-comment
+reverse conversion.
+
+After the subagent returns:
+
+1. Run the installed checker before reading or merging the output:
+
+   ```sh
+   python3 "${OHOS_PLUGIN_ROOT}/runtime/executables/check-api-documentation-context.py" \
+     --context <temporary-workspace>/documentation-context.yaml \
+     --output <temporary-workspace>/api-doc-output.yaml \
+   --skeleton <temporary-workspace>/api-spec-skeleton.yaml
+   ```
+
+2. Verify the API ID set, parameter names, and errorCodes identity exactly
+   match the skeleton. A skeleton return type requires complete bilingual
+   `returnType.description`; `returnType.text` remains owned by metadata and
+   is not part of documentation-only output.
+3. Ignore any contract field in the subagent output.
+4. Extract only documentation fields.
+5. If the checker reports a missing API, a missing documentation field, a
+   confirmed fact that is absent from English or Chinese output, or a forbidden
+   documentation term, request one subagent correction or regenerate the
+   documentation; do not silently merge incomplete or noncompliant output.
+6. Merge the documentation-only output into the applicable language-specific
+   metadata file.
+7. Validate the merged result before writing the final file.
+
+### ArkTS API mode
+
+ArkTS metadata may record `apiMode` for each API:
+
+- omitted: dynamic-only
+- `dynamic`: dynamic-only; this explicit form is allowed but not required
+- `static`: static-only and must be explicit
+- `dynamic&static`: one declaration serves both dynamic and static SDKs
+
+The proposal's `ArkTS 静态类型 API` declaration must agree with metadata. When it
+is `是`, at least one ArkTS API must be static or dynamic&static. When it is
+`否`, all ArkTS APIs must be dynamic.
+
+Machine closure:
+
+- explicit static-only uses either a `.d.ets` path with a `since` value containing
+  `static`, or a `.static.d.ets` path with a `since` value containing
+  `staticonly`
+- `'use static'` is a file-level directive; do not put it in an API declaration
+- dynamic and dynamic&static APIs must not use a static-only file or declaration
+- dynamic APIs must not carry a static or dynamic&static `since` marker
+- dynamic&static requires `dynamic&static` in `since`
+- static and dynamic&static declarations must not use `any` or union types
+
+### Supported YAML subset
+
+API metadata intentionally uses a small YAML subset:
+
+- top-level mappings and nested mappings with space indentation
+- the `apis` list and its constrained nested fields
+- quoted single-line scalars and simple inline lists such as `[]`
+- comments beginning with `#`
+
+Unsupported YAML includes block scalars (`|` and `>`), anchors and aliases,
+tags, multi-document files, flow mappings, tabs in any position, and other
+generic YAML syntax. The parser reports unsupported block scalars and any tab
+as structured errors.
+
+The checker enforces identity closure, complete bilingual documentation fields,
+exact confirmed-value presence, forbidden documentation terms, and the
+document-style Chinese/ASCII spacing switch. It intentionally does not claim to
+prove natural-language semantic equivalence; `odk-spec` and review still own
+that judgement.
+
+## 4. Device behavior differences
+
+Start from proposal-level device conclusions. If API-level conclusions
+conflict with proposal conclusions, stop and ask the developer.
+
+When repository device knowledge exists, use it to derive supported devices
+from `@syscap` and to parse developer-provided differences. When it does not
+exist, ask the developer for the complete support list and differences.
+
+The developer must confirm differences before they are written to the
+applicable language-specific metadata file. Do not invent or silently normalize
+device behavior.
+
+## 5. `spec.md` API overview
+
+`spec.md` must keep `## API 规格定义`, but it is a summary only. It must not
+contain per-API specification tables or `#### API:` subsections.
+
+Required content:
+
+- pointers to `arkts-api-spec.yaml` and/or `c-api-spec.yaml` as the API contract sources
+- an API overview table with API ID, kind, complete signature, `@since`, and
+  confirmation status
+- an API fact-provenance table that records each resolved fact, its evidence
+  source, and whether it is still pending confirmation
+- a list containing only API facts that remain unresolved after repository
+  knowledge, proposal facts, code facts, and prior developer confirmation have
+  been exhausted
+
+When `API/SDK=否`, `spec.md` still contains:
+
+```text
+不涉及：<具体理由>
+```
+
+and neither `arkts-api-spec.yaml` nor `c-api-spec.yaml` is generated.
+
+## 6. Output and gate
+
+Write:
+
+```text
+codespec/changes/<repo-name>/<proposal-id>/arkts-api-spec.yaml   # when ArkTS is involved
+codespec/changes/<repo-name>/<proposal-id>/c-api-spec.yaml       # when C is involved
+codespec/changes/<repo-name>/<proposal-id>/spec.md
+```
+
+The filename selects the contract shape, and its `language` field must match:
+`arkts-api-spec.yaml` uses `language: arkts`; `c-api-spec.yaml` uses
+`language: c`.
+
+Before handing off:
+
+- Every archived metadata file must parse and satisfy its applicable schema.
+- API IDs must be unique.
+- Parent references must resolve.
+- Enum/member relationships must close.
+- Required kind-specific fields must be present.
+- Every API must have bilingual three-element and five-element descriptions.
+- Non-applicable documentation elements must explicitly use `N/A` / `不适用`.
+- Every resolved API fact must carry its evidence source in the metadata
+  `confirmation` entries or in the `spec.md` fact-provenance table.
+- ODK must not contain hardcoded paths inside `interface_sdk-js` or
+  `interface_sdk_c`; only their root `AGENTS.md` entries are stable.
+
+If validation fails, fix the applicable metadata file and regenerate the
+`spec.md` API overview. Do not proceed to design with an invalid API contract.

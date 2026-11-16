@@ -40,6 +40,7 @@ Invoke Superpowers `writing-plans` for task decomposition and file-level boundar
 - Load `using-odk-bridge` for output redirection and mode selection.
 - `spec.md` must exist with numbered ACs.
 - If Superpowers skills are unavailable, use the fallback chain declared in `adapters/superpowers.yaml` and clearly report the degradation.
+- If proposal.md `API/SDK` = 「是」, a structurally valid the applicable API metadata files must exist. Missing or invalid metadata is a spec-phase failure; stop and require `{{CMD_PREFIX}}spec` rather than allowing implementation planning.
 
 ## Confirm the build product before invoking the bridge
 
@@ -68,6 +69,7 @@ the documented fallback without requiring another plugin.
 2. Apply `using-odk-bridge` Output Redirection Rules when plan tries to write to `docs/plans/`.
 3. Process output per active mode: transform into ODK `execution-plan.md` format with AC-Task traceability, read-only context, file-level scope, state ownership fields when declared in design, anti-fake completion checks, expected/actual verification, review gates, and dependency graph in strict mode.
 4. Populate `execution-plan.md` AC-Task 追溯 with Task assignments.
+5. If proposal.md `API/SDK` = 「是」, apply `odk-plan`'s API rule: Task-1 is API declaration generation from the applicable API metadata files and precedes every implementation task.
 
 Before writing `execution-plan.md`, apply `odk-plan`'s build-product and command resolution step (without replacing the active bridge's task decomposition).
 <!-- ODK:reference contracts/skill-guides/delivery/device-version.md -->

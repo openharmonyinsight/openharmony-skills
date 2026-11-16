@@ -5,9 +5,9 @@ id: ohos-delivery-kit
 source:
   repository: https://gitcode.com/oshunter/ohos-delivery-kit.git
   branch: main
-  commit: 85673017d17fcd84aad724d37b60603d04558f66
-  sourceVersion: 0.14.7
-  commitDate: 2026-11-16T11:41:25+08:00
+  commit: 4ff47290c4902c8aa7d489ae79ce6c676703e239
+  sourceVersion: 0.15.0
+  commitDate: 2026-11-16T11:59:44+08:00
   importedAt: 2026-11-16
 
 license:

@@ -314,6 +314,7 @@ def parse_contract_artifacts(path: str) -> dict[str, dict[str, object]]:
             artifacts[current] = {
                 "file": "",
                 "template": "",
+                "templates": [],
                 "required": "true",
                 "required_sections": [],
                 "conditional_sections": [],
@@ -325,6 +326,13 @@ def parse_contract_artifacts(path: str) -> dict[str, dict[str, object]]:
             continue
         if current is None:
             continue
+
+        # A non-list artifact field terminates the previous list mode. Without
+        # this, entries such as `owns:` would be absorbed into `templates:`.
+        if line.startswith("    ") and not line.startswith("      "):
+            key = line.split(":", 1)[0].strip()
+            if key not in {"required_sections", "templates", "conditional_sections"}:
+                mode = None
 
         key_value = re.match(r"^    (file|template|phase):\s*(.+)$", line)
         if key_value:
@@ -338,12 +346,15 @@ def parse_contract_artifacts(path: str) -> dict[str, dict[str, object]]:
         if list_key:
             mode = list_key[1]
             continue
+        if line == "    templates:":
+            mode = "templates"
+            continue
         if line == "    conditional_sections:":
             mode = "conditional_sections"
             continue
-        section = re.match(r"^      - (.+)$", line)
-        if section and mode in {"required_sections", "owns", "requires"}:
-            artifacts[current][mode].append(_unquote(section.group(1)))  # type: ignore[index]
+        item = re.match(r"^      - (.+)$", line)
+        if item and mode in {"required_sections", "owns", "requires", "templates"}:
+            artifacts[current][mode].append(_unquote(item.group(1)))  # type: ignore[index]
             continue
         conditional = re.match(r"^      - section:\s*(.+)$", line)
         if conditional and mode == "conditional_sections":

@@ -101,7 +101,7 @@ Read `contracts/skill-guides/brainstorm/interview.md` in full and apply its deci
        5. 如果是 ArkTS API，是否需要支持 ArkTS 静态类型？
        ```
      - 根据需要可选填写 `## API 使用场景探索`（开发者场景和用户画像）
-     - **注**：跨平台支持、元服务支持、卡片支持等多设备属性在 spec.md `## API 规格定义` 中填写
+     - **注**：跨平台支持、元服务支持、卡片支持等多设备属性在适用语言 metadata 文件的逐 API 元数据中填写
    - **Success criteria**: 成功标准写**系统级能力达成**（可观察、可量化），禁内部实现 + 禁接口细节（属 spec AC）。
 3. Preserve all YAML frontmatter fields and existing body content. Read the full existing proposal before editing; amend only changed requirements and missing contract sections. Retain confirmed decisions, custom sections and stable goal IDs. Use the template as a structural reference, never as a replacement for an existing proposal.
 

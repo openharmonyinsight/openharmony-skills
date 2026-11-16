@@ -3,7 +3,21 @@
 Neutral-source plugin providing OpenHarmony delivery artifact specification skills,
 session routing, validator executables, and runtime assets.
 
-## 0.14.7 current release
+## 0.15.0 language-specific API metadata contract
+
+Replaces the mixed-language API Markdown chain with `arkts-api-spec.yaml` and
+`c-api-spec.yaml` metadata plus an API overview in `spec.md`, and validates the
+metadata structure, overview closure, declaration diffs, documentation closure
+and exact paths. Adds the `odk-upgrade-api-chain` assistant for upgrading a
+fact-complete 0.14 / `ohos-sdd/v1` chain, per-language declaration diff
+evidence, the `check-api-documentation-context.py` process gate, OpenHarmony
+Chinese documentation rules (forbidden terms and Chinese/English spacing), the
+optional ArkTS `apiMode` closure, an API repository knowledge index with
+prerequisites, and the proposal coverage matrix in `spec.md`. This is a breaking
+contract migration: legacy `api-spec.yaml`, mixed-language declaration diffs and
+per-API Markdown specifications are no longer accepted directly.
+
+## 0.14.7 build products and Task review gate
 
 Aligns build commands and `out/` artifact directories on one product name and
 confirms the device validation target explicitly, so emulator plans no longer
@@ -187,10 +201,11 @@ repository-scoped layout.
 
 Synced from `oshunter/ohos-delivery-kit` branch `main` via
 `ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills --plugin ohos-delivery-kit`.
-Current source: `main@85673017d17fcd84aad724d37b60603d04558f66`.
-The current publisher needs the default config, archive-migration and
-session-sidecar entrypoints and all Python runtime libraries supplemented; the
-source release gate verifies the final package against this pinned revision.
+Current source: `main@4ff47290c4902c8aa7d489ae79ce6c676703e239`.
+The current publisher needs the default config, archive-migration,
+session-sidecar, API documentation check and API chain upgrade entrypoints plus
+all Python runtime libraries supplemented; the source release gate verifies the
+final package against this pinned revision.
 
 ## Structure
 
@@ -198,9 +213,9 @@ source release gate verifies the final package against this pinned revision.
 - `provenance.yaml` — source tracking (auto-updated by publish script)
 - `hooks/session-router.yaml` — declarative session-start hook
 - `prompts/session-router.md` — router prompt
-- `skills/` — 28 ODK skills (synced from `core/skills/`)
+- `skills/` — 29 ODK skills (synced from `core/skills/`)
 - `runtime/assets/` — templates, profiles, contracts (including skill-guides), rules, adapters
-- `runtime/executables/` — artifact and archive-migration validators
+- `runtime/executables/` — artifact and archive-migration validators, API documentation check and API chain upgrade assistant
 
 ## Shared runtime assets
 

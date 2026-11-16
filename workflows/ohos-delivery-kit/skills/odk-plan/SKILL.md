@@ -57,6 +57,28 @@ autonomous mode or a general request to use recommendations does not confirm it.
 Planning records commands; it does not execute compilation. Without a confirmed
 product, stop before generating the build environment or any build command.
 
+## API hard-migration gate
+
+If `proposal.md` marks `API/SDK` as `是`, run the design gate before planning:
+
+1. `spec.md` must reference applicable `arkts-api-spec.yaml` and/or `c-api-spec.yaml`.
+2. `spec.md` must state `API 契约版本 | 1.0.0`, and `design.md` must state `**API 契约版本：** 1.0.0`.
+3. The generated `execution-plan.md` input table must contain `| API Contract Version | 1.0.0 | ... |`; this is a read-only chain marker.
+4. `design.md` must exist when required by the effective contract and must not predate the language-specific API metadata chain. When design contains an API baseline/summary, it must not reference legacy `api-spec.yaml` or Markdown per-API specifications as its contract source.
+4. All applicable metadata files must exist, parse, and pass the API metadata contract.
+5. Any legacy or inconsistent chain is a spec/design input failure. Stop and route a recognizable 0.14 legacy API Markdown chain to `{{CMD_PREFIX}}upgrade-api-chain`; if the assistant cannot resolve every fact, require restart from `proposal`/`odk-spec`. Do not repair the contract in plan.
+6. For a blocking mismatch, report every affected artifact with its declared version, required version `1.0.0`, the reason, and this action text verbatim; never suggest manually editing version fields:
+   ```text
+   Action:
+   Restart from proposal, rerun spec and design, then generate the plan.
+
+   Required flow:
+   proposal -> spec -> design -> plan
+
+   Migration guide:
+   docs/migrations/0.15.0-api-metadata-hard-migration.md
+   ```
+
 ## Input
 
 1. Read `proposal.md` to check `API/SDK` dimension
@@ -87,7 +109,7 @@ For configuration-dependent steps, use the effective-configuration command defin
 
 0. Check for subsystem profile: read and follow `contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.execution-plan` (additional prohibitions) and `agent_instructions.plan` before generating content
 1. Read template from `templates/ai/execution-plan.md`
-2. **API 声明文件任务（条件触发）**：若 proposal.md `API/SDK` = 「是」，必须在所有任务的最前面插入一个 API 声明文件修改任务（排在 Task-1），任务内容为"根据 spec.md `## API 规格定义` 修改声明文件"。该任务排在第一位的原因是：后续功能实现任务依赖声明文件的修改结果，声明文件未完成时其他任务无法开展。
+2. **API 声明文件任务（条件触发）**：若 proposal.md `API/SDK` = 「是」，必须先确认适用的 `arkts-api-spec.yaml` 和/或 `c-api-spec.yaml` 存在且通过结构校验，然后在所有任务的最前面插入一个 API 声明文件生成任务（排在 Task-1），任务内容为"根据适用 metadata 文件生成 `.d.ts` / `.d.ets` / `.h` 声明文件"。该任务排在第一位的原因是：后续功能实现任务依赖声明契约，声明文件未完成时其他任务无法开展。缺失或非法的 metadata 文件 是 spec 阶段问题，不得在 plan 阶段补写。
 3. Generate `execution-plan.md` per the template. Fill the required traceability, task detail, verification, and code-scope fields enough to pass artifact contract validation. For each Task, fill「任务间接口」（Produces=供后续 Task 依赖的接口签名/错误码/innerAPI/数据结构，Consumes=来自前置 Task 的契约；无跨 Task 契约写「无」），让只读单 Task 的执行者也能对齐跨 Task 命名与签名。
    **风险分级**：按 `contracts/skill-guides/delivery/task-review.md` 为每个 Task 写初始 `风险等级`
    与判断依据。命中任一 R2 触发项（公共声明/接口、跨仓调用、IPC、权限/认证、并发/异步/回调、

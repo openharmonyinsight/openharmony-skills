@@ -1,0 +1,72 @@
+schemaVersion: "1.0.0"
+apiContractVersion: "1.0.0"
+language: arkts
+source:
+  repository: interface_sdk-js
+  branch: "<API declaration repository branch>"
+  commit: "<API declaration repository commit>"
+  path: "<API declaration repository-relative path>"
+file:
+  path: "interface_sdk-js/<declaration file path>"
+  kit: "<Kit>"
+  packageName: "<package name>"
+  license: "Apache-2.0"
+apis:
+  - kind: method
+    id: "<stable-api-id>"
+    parentId: null
+    name: "<api-name>"
+    qualifiedName: "<qualified-api-name>"
+    declaration: "<complete declaration>"
+    filePath: "<declaration file path>"
+    startLine: 1
+    endLine: 1
+    language: arkts
+    changeKind: added
+    isExported: true
+    accessLevel: public
+    kit: "<Kit>"
+    since: "<confirmed API version>"
+    syscap: "SystemCapability.<Domain>.<Subdomain>"
+    permissions: []
+    platform:
+      crossplatform:
+        enabled: false
+      atomicservice:
+        enabled: false
+      form:
+        enabled: false
+    applicationModel: stage-only
+    description:
+      en:
+        function: "<meaning/function>"
+        scenario: "<usage scenario>"
+        effect: "<effect after call>"
+        similarAPIs: "N/A"
+        defaultBehavior: "N/A"
+        constraints: "N/A"
+        activation: "N/A"
+        notes: "N/A"
+      zh:
+        function: "<含义/功能>"
+        scenario: "<使用场景>"
+        effect: "<使用后效果>"
+        similarAPIs: "不适用"
+        defaultBehavior: "不适用"
+        constraints: "不适用"
+        activation: "不适用"
+        notes: "不适用"
+    parameters:
+      - name: "<parameter-name>"
+        type:
+          text: "<parameter type>"
+        required: true
+        description:
+          en: "Describes how this value affects the operation."
+          zh: "描述该取值对操作的影响。"
+    returnType:
+      text: "<return type>"
+      description:
+        en: "Describes the value returned by the operation."
+        zh: "描述操作返回的值。"
+    errorCodes: []

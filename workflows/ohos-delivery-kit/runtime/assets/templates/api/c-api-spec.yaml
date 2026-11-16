@@ -1,0 +1,77 @@
+schemaVersion: "1.0.0"
+apiContractVersion: "1.0.0"
+language: c
+source:
+  repository: "interface_sdk_c"
+  branch: "<API declaration repository branch>"
+  commit: "<API declaration repository commit>"
+  path: "<API declaration repository-relative path>"
+header:
+  path: "interface_sdk_c/<declaration header path>"
+  kit: "<Kit>"
+  library: "<library>.so"
+  syscap: "SystemCapability.<Domain>.<Subdomain>"
+  license: "Apache-2.0"
+apis:
+  - kind: function
+    id: "<stable-api-id>"
+    parentId: null
+    name: OH_<Module>_<Method>
+    qualifiedName: OH_<Module>_<Method>
+    declaration: "<complete declaration>"
+    filePath: "<declaration header path>"
+    startLine: 1
+    endLine: 1
+    language: c
+    changeKind: added
+    isExported: true
+    accessLevel: public
+    kit: "<Kit>"
+    library: "<library>.so"
+    since: "<confirmed API version>"
+    syscap: "SystemCapability.<Domain>.<Subdomain>"
+    permissions: []
+    description:
+      en:
+        function: "<meaning/function>"
+        scenario: "<usage scenario>"
+        effect: "<effect after call>"
+        similarAPIs: "N/A"
+        defaultBehavior: "N/A"
+        constraints: "N/A"
+        activation: "N/A"
+        notes: "N/A"
+      zh:
+        function: "<含义/功能>"
+        scenario: "<使用场景>"
+        effect: "<使用后效果>"
+        similarAPIs: "不适用"
+        defaultBehavior: "不适用"
+        constraints: "不适用"
+        activation: "不适用"
+        notes: "不适用"
+    parameters:
+      - name: "<parameter-name>"
+        cType:
+          text: "<C type>"
+          kind: "pointer"
+          isConst: false
+          isPointer: false
+          pointerDepth: 0
+        direction: "input"
+        isPointer: false
+        isConst: false
+        description:
+          en: "Describes how this value affects the operation."
+          zh: "描述该取值对操作的影响。"
+    returnType:
+      text: "int32_t"
+      semantic: "error-code"
+      isConst: false
+      isPointer: false
+      description:
+        en: "Describes the value returned by the operation."
+        zh: "描述操作返回的值。"
+    errorCodes: []
+    isVariadic: false
+    callingConvention: "cdecl"

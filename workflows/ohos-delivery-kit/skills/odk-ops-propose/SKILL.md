@@ -48,6 +48,7 @@ One-stop command: invoke OpenSpec `/opsx:propose` to generate proposal + delta s
 - Load `using-odk-bridge` for output redirection and mode selection.
 - `codespec/changes/<repo-name>/<proposal-id>/` skeleton must exist (run `{{CMD_PREFIX}}init` first).
 - If OpenSpec is unavailable, use the fallback chain declared in `adapters/openspec.yaml` and clearly report the degradation.
+- If proposal output marks `API/SDK` = 「是」, OpenSpec's Markdown/delta spec cannot replace the applicable API metadata files. The one-stop command must stop or use the declared `odk-spec` fallback when it cannot produce valid API metadata.
 
 ## Confirm the build product before invoking the bridge
 
@@ -85,7 +86,8 @@ unavailable LSP/AST uses the documented fallback without changing native ownersh
      - DFX 设计（必填，Step 6）：执行 4 步故障模式分析流程（识别涉及仓库 → 委托内置 `odk-fmea` skill 执行故障模式分析 → 按落盘契约回填故障模式分析表 → 处置决策与 AC 回填），详见 `odk-design/SKILL.md` Step 6；降级路径契约见 `contracts/dfx-fmea-matcher.yaml`。
      - Security baseline check (conditional, Step 7): when `proposal.md`「安全/权限」=「是」, expand `design.md`「安全基础检查」; if high-risk criteria are hit, produce `threat-model.md` (see `odk-security-threat-model`).
    - spec: AC numbering (AC-X.Y format), compatibility declaration, verification mapping.
-   - execution-plan: AC-Task traceability table, code scope per task.
+   - api metadata: when `API/SDK=是`, run the `odk-spec` API workflow — language-specific template, isolated documentation subagent, validated the applicable API metadata files, and summary-only `spec.md` API overview.
+   - execution-plan: AC-Task traceability table, code scope per task; when `API/SDK=是`, Task-1 generates declarations from the applicable API metadata files.
 
 Before writing `execution-plan.md`, apply `odk-plan`'s build-product and command resolution step (without replacing the active bridge's task decomposition).
 <!-- ODK:reference contracts/skill-guides/delivery/device-version.md -->
@@ -95,4 +97,5 @@ Read `contracts/skill-guides/delivery/device-version.md` after following build-p
 ## Output
 
 - Written to `codespec/changes/<repo-name>/<proposal-id>/proposal.md`, `spec.md`, `design.md`, `execution-plan.md`.
+- When `API/SDK=是`, also written to `codespec/changes/<repo-name>/<proposal-id>/arkts-api-spec.yaml and/or c-api-spec.yaml`.
 - Report any fields needing human approval.

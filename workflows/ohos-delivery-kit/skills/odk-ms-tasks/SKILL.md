@@ -40,6 +40,7 @@ Invoke MatrixSpec `/matspec.tasks` for task breakdown generation. Redirect outpu
 - Load `using-odk-bridge` for output redirection and mode selection.
 - Read `design.md` if present; it is required only when the effective contract requires design (standard/critical).
 - If MatrixSpec is unavailable, use the fallback chain declared in `adapters/matrixspec.yaml` and clearly report the degradation.
+- If proposal.md `API/SDK` = 「是」, a structurally valid the applicable API metadata files must exist before task generation. If it is missing, stop and require `{{CMD_PREFIX}}spec` (or the declared fallback); do not generate a plan that starts from implementation.
 
 ## Confirm the build product before invoking the bridge
 
@@ -70,7 +71,8 @@ the documented fallback without requiring another plugin.
    - strict: Transform to ODK execution-plan format at `templates/ai/execution-plan.md`. Add AC-Task traceability table, code scope per task (file-level paths), completion criteria.
    - passthrough: Copy to `codespec/changes/<repo-name>/<proposal-id>/execution-plan.md` unchanged.
    - merge: Use MatrixSpec layered format, append AC-Task traceability table and code scope column.
-4. Confirm with user.
+4. If proposal.md `API/SDK` = 「是」, apply `odk-plan`'s API rule: insert Task-1 as API declaration generation from the applicable API metadata files, before all implementation tasks. Passthrough output that omits this task is invalid.
+5. Confirm with user.
 
 Before writing `execution-plan.md`, apply `odk-plan`'s build-product and command resolution step (without replacing the active bridge's task decomposition).
 <!-- ODK:reference contracts/skill-guides/delivery/device-version.md -->

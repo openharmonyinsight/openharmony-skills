@@ -15,12 +15,16 @@ from __future__ import annotations
 
 import os
 import re
+import bisect
+from collections import Counter
 import subprocess
 import sys
+import unicodedata
 import json
 from argparse import ArgumentParser
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 # Source layout: scripts/validate-artifacts-contract.py → ROOT = repo root, contracts at core/contracts/
@@ -49,10 +53,23 @@ from odk_document import (  # noqa: E402
     require_unique_table_with_columns, meaningful,
 )
 from odk_repository import parse_git_remote, metadata_repository_url, metadata_pr_url_matches  # noqa: E402
-from odk_diff import valid_unified_diff  # noqa: E402
+from odk_diff import unified_diff_sides, valid_unified_diff  # noqa: E402
 from odk_contract import compile_contract, DIMENSIONS  # noqa: E402
 from odk_involvement import parse_eight_dim_involvement, involvement_errors, involvement_value  # noqa: E402
 from odk_plan_environment import environment_errors, SECTION as ENVIRONMENT_SECTION  # noqa: E402
+from odk_api_spec import (  # noqa: E402
+    api_description_issues,
+    api_documentation_duplication_issues,
+    api_metadata_schema_version_issue,
+    api_spec_structural_issues,
+    parse_api_spec,
+)
+from api_document_style import (  # noqa: E402
+    DOCUMENT_STYLE_RULESET_VERSION,
+    FORBIDDEN_TERMS_RULESET_VERSION,
+    api_documentation_style_issues,
+    text_style_issues,
+)
 # Re-export legacy entry points for callers that load this script as a module.
 from odk_api_signature import (  # noqa: E402
     api_signature_complete, canonical_api_signature,
@@ -110,6 +127,17 @@ _DFX_DESIGN_CONSTRAINT_DISPOSITION = "纳入设计约束"
 _DFX_CONSTRAINT_REF_RE = re.compile(r"D-\d+|约束|决策|不变量")
 _DFX_FM_ID_RE = re.compile(r"^FM-\d+$")
 _DFX_AD_ID_RE = re.compile(r"^AD-\d+$")
+_PROPOSAL_COVERAGE_SECTION = "Proposal 覆盖矩阵"
+_PROPOSAL_COVERAGE_COLUMNS = [
+    "Proposal 条目", "类型", "spec 承接位置", "状态",
+]
+_PROPOSAL_COVERAGE_STATUSES = {"Covered", "N/A", "Open"}
+_PROPOSAL_COVERED_REF_RE = re.compile(
+    r"\b(?:AC-[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)*|BR-\d+|EB-\d+(?:\.\d+)?|"
+    r"arkts-api-spec\.yaml|c-api-spec\.yaml)\b"
+)
+_PROPOSAL_OPEN_REF_RE = re.compile(r"\bOpen-\d+\b")
+_PROPOSAL_N_A_REASON_RE = re.compile(r"N/A\s*[:：]\s*(.+)", re.IGNORECASE)
 
 # 66-column library export table header (mirrors the template row in
 # core/skills/odk-fmea/references/output-format.md "故障模式库导出表格";
@@ -176,19 +204,26 @@ EVIDENCE_ROOT = contract_scalar("evidence_root")
 API_PROPOSAL_SECTION = api_contract_scalar("proposal_section")
 API_TRIGGER_DIMENSION = api_contract_scalar("trigger_dimension")
 API_SPEC_SECTION = api_contract_scalar("spec_section")
-API_COMMON_SECTION = api_contract_scalar("common_section")
-API_PER_API_SECTION = api_contract_scalar("per_api_section")
-API_COMMON_VALUE_RULES = dict(
-    item.split("=", 1) for item in api_contract_list("common_value_rules")
-)
-API_COMMON_REQUIRED_ITEMS = api_contract_list("common_required_items")
-API_REQUIRED_SPEC_ITEMS = api_contract_list("per_api_required_spec_items")
-API_DESCRIPTION_ELEMENTS = [
-    tuple(item.split("=", 1)) for item in api_contract_list("api_description_elements")
-]
-API_SUPPORTED_DEVICE_COLUMNS = api_contract_list("supported_device_columns")
-API_DEVICE_DIFFERENCE_COLUMNS = api_contract_list("device_difference_columns")
-
+API_OVERVIEW_SECTION = api_contract_scalar("overview_section")
+API_METADATA_SCHEMA_VERSION = api_contract_scalar("metadata_schema_version")
+API_CONTRACT_VERSION = api_contract_scalar("api_contract_version")
+API_METADATA_LANGUAGES = set(api_contract_list("metadata_languages"))
+API_METADATA_BY_LANGUAGE = {
+    "arkts": "arkts-api-spec.yaml",
+    "c": "c-api-spec.yaml",
+}
+API_METADATA_FILES = set(api_contract_list("metadata_files"))
+if set(API_METADATA_BY_LANGUAGE.values()) != API_METADATA_FILES:
+    raise ValueError(
+        f"{CONTRACT_PATH}: api_spec_contract.metadata_files must be "
+        + ", ".join(sorted(API_METADATA_BY_LANGUAGE.values()))
+    )
+if set(API_METADATA_BY_LANGUAGE) != API_METADATA_LANGUAGES:
+    raise ValueError(
+        f"{CONTRACT_PATH}: api_spec_contract metadata files and languages must match"
+    )
+API_LEGACY_METADATA_FILE = "api-spec.yaml"
+API_SPEC_SUMMARY_ONLY = api_contract_scalar("spec_summary_only") == "true"
 DEVICE_VARIATION_SECTION = "1+8 设备差异规格"
 DEVICE_VARIATION_COLUMNS = ["设备/差异项", "是否存在差异", "差异说明"]
 DEVICE_VARIATION_ROWS = (
@@ -367,64 +402,21 @@ def api_sdk_involvement(proposal: str) -> str | None:
     return involvement_value(value) or value or None
 
 
-def api_common_value_complete(item: str, value: str) -> bool:
-    if not meaningful(value) or ANGLE_PLACEHOLDER_RE.search(value) or re.search(
-        r"\b(?:TBD|TODO)\b|待确认|待定|待补充|待实现|待验证",
-        value,
-        flags=re.IGNORECASE,
-    ):
-        return False
-
-    normalized = " ".join(normalized_table_key(value).split())
-    rule = API_COMMON_VALUE_RULES.get(item)
-    annotation = r"(?:\s*[（(].+[）)])?"
-    if rule and re.search(r"或|任选|二选一|未确定|未决", normalized):
-        return False
-    if rule == "boolean-decision":
-        return bool(
-            re.fullmatch(
-                r"(?:是|否)(?:(?:\s*[：:].+)|(?:\s*[（(].+[）)]))?",
-                normalized,
-            )
-        )
-    if rule == "api-visibility":
-        return normalized in {"Public", "System"}
-    if rule == "language":
-        return normalized in {"ArkTS", "C", "两者"}
-    if rule == "system-capability":
-        return bool(
-            re.fullmatch(r"SystemCapability(?:\.[A-Za-z][A-Za-z0-9_]*)+", normalized)
-            or re.fullmatch(r"不适用\s*[（(].+[）)]", normalized)
-        )
-    if rule == "api-version":
-        return bool(
-            re.fullmatch(r"\d+(?:\.\d+){0,2}" + annotation, normalized)
-            or re.fullmatch(r"不适用\s*[（(].+[）)]", normalized)
-        )
-    if rule == "permission":
-        return bool(
-            re.fullmatch(r"无" + annotation, normalized)
-            or re.fullmatch(
-                r"ohos\.permission\.[A-Z][A-Z0-9_.]*(?:\s*[,，、;；+]\s*"
-                r"ohos\.permission\.[A-Z][A-Z0-9_.]*)*" + annotation,
-                normalized,
-            )
-            or re.fullmatch(r"服务侧校验\s*[：:]\s*\S.{2,}", normalized)
-        )
-    if rule == "device-support":
-        parts = re.split(r"[（(]", normalized, maxsplit=1)
-        status_text = parts[0].strip()
-        if len(parts) > 1 and re.search(r"[是否]", parts[1].replace("是否", "")):
-            return False
-        statuses = [part.strip() for part in re.split(r"[/／]", status_text)]
-        return len(statuses) in {1, 3} and all(status in {"是", "否"} for status in statuses)
-    if rule == "application-model":
-        marker = r"@(?:famodelonly|stagemodelonly|FaAndStageModel)"
-        markers = re.findall(marker, normalized)
-        if normalized.startswith("不适用"):
-            return not markers and bool(re.fullmatch(r"不适用\s*[（(].+[）)]", normalized))
-        return len(markers) == 1 and bool(re.fullmatch(rf"{marker}{annotation}", normalized))
-    return True
+def arkts_static_api_involvement(proposal: str) -> str | None:
+    sections = section_texts(proposal, "API 设计属性")
+    if len(sections) != 1:
+        return None
+    tables = tables_with_columns(sections[0], ["属性", "值", "说明"])
+    if len(tables) != 1:
+        return None
+    matches = [
+        row
+        for row in tables[0]
+        if normalized_table_key(row.get("属性", "")) == "ArkTS 静态类型 API"
+    ]
+    if len(matches) != 1:
+        return None
+    return normalized_table_key(matches[0].get("值", "")) or None
 
 
 def api_heading_signature(line: str) -> str | None:
@@ -436,9 +428,13 @@ def api_heading_signature(line: str) -> str | None:
 
 
 def api_entry_blocks(per_api_text: str) -> list[tuple[str, str]]:
+    """Compatibility helper for historical Markdown API heading regressions."""
     lines = per_api_text.splitlines()
-    matches = [(index, signature) for index, line in enumerate(lines)
-               if (signature := api_heading_signature(line)) is not None]
+    matches = [
+        (index, signature)
+        for index, line in enumerate(lines)
+        if (signature := api_heading_signature(line)) is not None
+    ]
     entries: list[tuple[str, str]] = []
     for index, (start, signature) in enumerate(matches):
         end = matches[index + 1][0] if index + 1 < len(matches) else len(lines)
@@ -446,64 +442,276 @@ def api_entry_blocks(per_api_text: str) -> list[tuple[str, str]]:
     return entries
 
 
-def table_rows_by_key(
-    text: str,
-    columns: list[str],
-    key_column: str,
-) -> dict[str, list[dict[str, str]]]:
-    rows = unique_table_with_columns(text, columns) or []
-    result: dict[str, list[dict[str, str]]] = {}
-    for row in rows:
-        result.setdefault(normalized_table_key(row.get(key_column, "")), []).append(row)
-    return result
+def validate_proposal_coverage_matrix(change_dir: Path, reporter: Reporter) -> None:
+    """Validate the structural closure contract for proposal-to-spec coverage.
 
+    This gate intentionally does not claim to understand proposal semantics. It
+    only verifies that every matrix row uses a concrete status and that Covered
+    rows point at a machine-checkable artifact/trace target. Semantic review is
+    owned by odk-spec and the reviewer.
+    """
 
-def supported_device_table_issues(rows: list[dict[str, str]]) -> list[str]:
-    """Return decision errors for one per-API supported-device table."""
+    proposal_path = change_dir / "proposal.md"
+    spec_path = change_dir / "spec.md"
+    if not proposal_path.is_file() or not spec_path.is_file():
+        return
+
+    spec = _visible_markdown(read_text(spec_path))
+    sections = section_texts(spec, _PROPOSAL_COVERAGE_SECTION)
+    if len(sections) != 1:
+        reporter.fail(
+            f"spec.md: {_PROPOSAL_COVERAGE_SECTION} section must appear exactly once"
+        )
+        return
+
+    tables = tables_with_columns(sections[0], _PROPOSAL_COVERAGE_COLUMNS)
+    if len(tables) != 1:
+        reporter.fail(
+            f"spec.md: {_PROPOSAL_COVERAGE_SECTION} must contain exactly one table"
+        )
+        return
+
+    rows = tables[0]
+    if not rows:
+        reporter.fail(
+            f"spec.md: {_PROPOSAL_COVERAGE_SECTION} must contain at least one row"
+        )
+        return
+
     issues: list[str] = []
-    device_names: set[str] = set()
-    for row in rows:
-        device_name = normalized_table_key(row.get("设备类型", ""))
-        version = normalized_table_key(row.get("起始版本", ""))
-        support = normalized_table_key(row.get("是否支持", ""))
-        if device_name in device_names:
-            issues.append(f"duplicate supported device: {device_name}")
-        device_names.add(device_name)
-        if support not in {"是", "否"}:
-            issues.append(f"supported device '{device_name}' must state 是 or 否")
-        if not (
-            re.fullmatch(r"\d+(?:\.\d+){0,2}", version)
-            or re.fullmatch(r"不适用\s*[（(].+[）)]", version)
+    for index, row in enumerate(rows, start=1):
+        item = row.get("Proposal 条目", "")
+        item_type = row.get("类型", "")
+        mapping = row.get("spec 承接位置", "")
+        status = row.get("状态", "").strip()
+        label = item.strip() or f"row {index}"
+
+        for field, value in (
+            ("Proposal 条目", item),
+            ("类型", item_type),
+            ("spec 承接位置", mapping),
         ):
-            issues.append(f"supported device '{device_name}' has invalid starting version")
+            if not meaningful(value):
+                issues.append(f"matrix row {index} ({label}) requires {field}")
+            elif ANGLE_PLACEHOLDER_RE.search(value) or BRACKET_PLACEHOLDER_RE.search(value):
+                issues.append(
+                    f"matrix row {index} ({label}) has unresolved placeholder in {field}"
+                )
+
+        if status not in _PROPOSAL_COVERAGE_STATUSES:
+            issues.append(
+                f"matrix row {index} ({label}) status must be one of: "
+                + ", ".join(sorted(_PROPOSAL_COVERAGE_STATUSES))
+            )
+            continue
+
+        if status == "Covered" and not _PROPOSAL_COVERED_REF_RE.search(mapping):
+            issues.append(
+                f"matrix row {index} ({label}) Covered mapping must reference "
+                "AC/BR/EB or a language-specific API metadata file"
+            )
+        elif status == "N/A":
+            reason = _PROPOSAL_N_A_REASON_RE.search(mapping)
+            if reason is None or not meaningful(reason.group(1)):
+                issues.append(
+                    f"matrix row {index} ({label}) N/A mapping must be "
+                    "'N/A: <concrete reason>'"
+                )
+        elif status == "Open" and not _PROPOSAL_OPEN_REF_RE.search(mapping):
+            issues.append(
+                f"matrix row {index} ({label}) Open mapping must reference Open-N"
+            )
+
+    if issues:
+        reporter.fail("spec.md Proposal coverage matrix invalid: " + "; ".join(issues))
+    else:
+        reporter.pass_("spec.md Proposal coverage matrix has complete structural closure")
+
+
+def _arkts_api_mode(api: dict) -> str:
+    """Return the effective ArkTS API mode; omission means dynamic-only."""
+
+    mode = api.get("apiMode")
+    if mode in {"static", "dynamic", "dynamic&static"}:
+        return str(mode)
+    if api.get("_has_apiMode") is True:
+        return "invalid"
+    return "dynamic"
+
+
+def arkts_static_proposal_issues(proposal: str, metadata: dict) -> list[str]:
+    """Close the proposal static declaration into language-specific metadata."""
+
+    declared = arkts_static_api_involvement(proposal)
+    if declared not in {"是", "否"}:
+        return [
+            "proposal.md API 设计属性: ArkTS 静态类型 API must state 是 or 否 "
+            "when arkts-api-spec.yaml exists"
+        ]
+
+    apis = metadata.get("apis")
+    if not isinstance(apis, list):
+        return []
+    modes = [
+        _arkts_api_mode(api)
+        for api in apis
+        if isinstance(api, dict)
+    ]
+    if declared == "是" and not any(mode in {"static", "dynamic&static"} for mode in modes):
+        return [
+            "proposal.md ArkTS 静态类型 API=是 but arkts-api-spec.yaml contains "
+            "no static or dynamic&static API"
+        ]
+    if declared == "否" and any(mode in {"static", "dynamic&static"} for mode in modes):
+        return [
+            "proposal.md ArkTS 静态类型 API=否 but arkts-api-spec.yaml contains "
+            "static or dynamic&static API"
+        ]
+    return []
+
+
+def arkts_static_metadata_issues(metadata: dict) -> list[str]:
+    """Require each ArkTS API mode to match its declaration evidence."""
+
+    issues: list[str] = []
+    apis = metadata.get("apis")
+    if not isinstance(apis, list):
+        return issues
+
+    for index, api in enumerate(apis, start=1):
+        if not isinstance(api, dict):
+            continue
+        label = api.get("id") or api.get("name") or f"API[{index}]"
+        mode = _arkts_api_mode(api)
+        if mode not in {"static", "dynamic", "dynamic&static"}:
+            continue
+
+        file_path = str(api.get("filePath") or "").replace("\\", "/")
+        declaration = str(api.get("declaration") or "")
+        since = str(api.get("since") or "")
+        if (
+            ANGLE_PLACEHOLDER_RE.search(file_path)
+            or ANGLE_PLACEHOLDER_RE.search(declaration)
+            or ANGLE_PLACEHOLDER_RE.search(since)
+        ):
+            continue
+
+        static_file = file_path.endswith(".static.d.ets")
+        arkts_file = file_path.endswith(".d.ets")
+        use_static = "'use static'" in declaration
+        staticonly_marker = bool(
+            re.search(r"\bstaticonly\b", since, flags=re.IGNORECASE)
+        )
+        static_marker = bool(re.search(r"\bstatic\b", since, flags=re.IGNORECASE))
+        dynamic_static_marker = bool(
+            re.search(r"\bdynamic\s*&\s*static\b", since, flags=re.IGNORECASE)
+        )
+
+        if mode == "static":
+            if static_file:
+                if not staticonly_marker:
+                    issues.append(
+                        f"API metadata API '{label}': static apiMode in a "
+                        ".static.d.ets file requires a since value containing "
+                        "staticonly"
+                    )
+            elif arkts_file:
+                if not static_marker:
+                    issues.append(
+                        f"API metadata API '{label}': static apiMode in a .d.ets "
+                        "file requires a since value containing static"
+                    )
+            else:
+                issues.append(
+                    f"API metadata API '{label}': static apiMode requires a "
+                    ".d.ets or .static.d.ets filePath"
+                )
+            if use_static:
+                issues.append(
+                    f"API metadata API '{label}': static apiMode declaration "
+                    "must not contain the file-level 'use static' directive"
+                )
+        else:
+            if static_file:
+                issues.append(
+                    f"API metadata API '{label}': {mode} apiMode must not use a "
+                    ".static.d.ets filePath"
+                )
+            if use_static:
+                issues.append(
+                    f"API metadata API '{label}': {mode} apiMode declaration "
+                    "must not contain 'use static'"
+                )
+            if mode == "dynamic" and (
+                static_marker or staticonly_marker or dynamic_static_marker
+            ):
+                issues.append(
+                    f"API metadata API '{label}': dynamic apiMode since must not "
+                    "contain a static or dynamic&static marker"
+                )
+            if mode == "dynamic&static" and not dynamic_static_marker:
+                issues.append(
+                    f"API metadata API '{label}': dynamic&static apiMode since "
+                    "must contain dynamic&static"
+                )
+
+        if mode in {"static", "dynamic&static"}:
+            if re.search(r"\b(?:any|Any)\b", declaration):
+                issues.append(
+                    f"API metadata API '{label}': {mode} apiMode declaration must "
+                    "not use any"
+                )
+            if "|" in declaration:
+                issues.append(
+                    f"API metadata API '{label}': {mode} apiMode declaration must "
+                    "not use union types"
+                )
     return issues
 
 
-def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
+def validate_api_spec_contract(
+    change_dir: Path, reporter: Reporter, *, archive: bool
+) -> None:
     proposal_path = change_dir / "proposal.md"
     spec_path = change_dir / "spec.md"
     if not proposal_path.is_file() or not spec_path.is_file():
         return
 
     involvement = api_sdk_involvement(_visible_markdown(read_text(proposal_path)))
-    spec_sections = section_texts(_visible_markdown(read_text(spec_path)), API_SPEC_SECTION)
-    issues: list[str] = []
-
     if involvement not in {"是", "否"}:
         reporter.fail(
             f"proposal.md: {API_TRIGGER_DIMENSION} must state 是 or 否 in {API_PROPOSAL_SECTION}"
         )
         return
 
+    spec_sections = section_texts(_visible_markdown(read_text(spec_path)), API_SPEC_SECTION)
     if len(spec_sections) != 1:
         reporter.fail(f"spec.md: {API_SPEC_SECTION} section must appear exactly once")
         return
     spec_section = spec_sections[0]
+    visible_spec_section = _visible_markdown(spec_section)
+    reporter.pass_(
+        "API documentation ruleset: document-style@"
+        + DOCUMENT_STYLE_RULESET_VERSION
+        + " forbidden-terms@"
+        + FORBIDDEN_TERMS_RULESET_VERSION
+    )
+
+    existing_metadata_files = sorted(
+        name
+        for name in [*API_METADATA_FILES, API_LEGACY_METADATA_FILE]
+        if (change_dir / name).exists()
+    )
 
     if involvement == "否":
+        if existing_metadata_files:
+            reporter.fail(
+                "API metadata files must not exist when proposal.md API/SDK=否: "
+                + ", ".join(existing_metadata_files)
+            )
         visible = "\n".join(
             line
-            for line in _visible_markdown(spec_section).splitlines()
+            for line in visible_spec_section.splitlines()
             if not line.lstrip().startswith(">")
         )
         reason = re.search(r"不涉及(?:\s*[：:]\s*|\s+)(\S[^\n]*)", visible)
@@ -524,131 +732,1010 @@ def validate_api_spec_contract(change_dir: Path, reporter: Reporter) -> None:
             reporter.fail("spec.md API/SDK=否 requires an explicit not-applicable reason")
         return
 
-    common_sections = section_texts(spec_section, API_COMMON_SECTION)
-    if not common_sections:
-        issues.append(f"spec.md: {API_COMMON_SECTION} subsection missing")
-    elif len(common_sections) != 1:
-        issues.append(f"spec.md: {API_COMMON_SECTION} subsection must appear exactly once")
-    else:
-        common_tables = tables_with_columns(common_sections[0], ["规格项", "值"])
-        if len(common_tables) != 1:
-            issues.append(f"spec.md: {API_COMMON_SECTION} must contain exactly one specification table")
-        else:
-            common_rows = table_rows_by_key(common_sections[0], ["规格项", "值"], "规格项")
-            for item in API_COMMON_REQUIRED_ITEMS:
-                matches = common_rows.get(item, [])
-                if not matches:
-                    issues.append(f"spec.md: {API_COMMON_SECTION} missing item: {item}")
-                elif len(matches) > 1:
-                    issues.append(f"spec.md: {API_COMMON_SECTION} duplicate item: {item}")
-                elif not meaningful(matches[0].get("值", "")):
-                    issues.append(f"spec.md: {API_COMMON_SECTION} item has empty value: {item}")
-                elif not api_common_value_complete(item, matches[0].get("值", "")):
-                    issues.append(f"spec.md: {API_COMMON_SECTION} unresolved template choice: {item}")
+    if API_LEGACY_METADATA_FILE in existing_metadata_files:
+        reporter.fail(
+            f"{API_LEGACY_METADATA_FILE} is no longer accepted; split it into "
+            "arkts-api-spec.yaml and/or c-api-spec.yaml"
+        )
+        existing_metadata_files.remove(API_LEGACY_METADATA_FILE)
+    contract_version_pattern = re.compile(
+        r"\|\s*API 契约版本\s*\|\s*"
+        + re.escape(API_CONTRACT_VERSION)
+        + r"\s*\|"
+    )
+    if not contract_version_pattern.search(visible_spec_section):
+        reporter.fail(
+            f"spec.md API 契约版本 must be {API_CONTRACT_VERSION}"
+        )
 
-    per_api_sections = section_texts(spec_section, API_PER_API_SECTION)
-    if not per_api_sections:
-        issues.append(f"spec.md: {API_PER_API_SECTION} subsection has no API entries")
-    elif len(per_api_sections) != 1:
-        issues.append(f"spec.md: {API_PER_API_SECTION} subsection must appear exactly once")
-    per_api_text = per_api_sections[0] if len(per_api_sections) == 1 else ""
-    entries = api_entry_blocks(per_api_text)
-    if not entries and per_api_sections:
-        issues.append(f"spec.md: {API_PER_API_SECTION} subsection has no API entries")
+    if not existing_metadata_files:
+        draft_warn_archive_fail(
+            reporter,
+            archive,
+            "At least one language-specific API metadata file is required when "
+            "proposal.md API/SDK=是: arkts-api-spec.yaml or c-api-spec.yaml",
+        )
+        return
 
-    signatures: set[str] = set()
-    for raw_signature, block in entries:
-        signature = canonical_api_signature(raw_signature)
-        if not api_signature_complete(raw_signature):
-            issues.append(f"spec.md: incomplete API signature: {raw_signature}")
-        if signature in signatures:
-            issues.append(f"spec.md: duplicate API signature: {raw_signature}")
-        signatures.add(signature)
+    metadata_by_file: dict[str, dict] = {}
+    issues: list[str] = []
+    for file_name in existing_metadata_files:
+        path = change_dir / file_name
+        try:
+            metadata = parse_api_spec(path)
+        except (OSError, UnicodeError, ValueError) as error:
+            issues.append(f"{file_name}: cannot parse API metadata: {error}")
+            continue
+        metadata_by_file[file_name] = metadata
 
-        spec_tables = tables_with_columns(block, ["规格项", "值"])
-        if len(spec_tables) != 1:
-            issues.append(f"spec.md API '{raw_signature}': must contain exactly one specification table")
-        else:
-            spec_rows = table_rows_by_key(block, ["规格项", "值"], "规格项")
-            for item in API_REQUIRED_SPEC_ITEMS:
-                matches = spec_rows.get(item, [])
-                if not matches:
-                    issues.append(f"spec.md API '{raw_signature}': missing specification item: {item}")
-                elif len(matches) > 1:
-                    issues.append(f"spec.md API '{raw_signature}': duplicate specification item: {item}")
-                elif not meaningful(matches[0].get("值", "")):
-                    issues.append(f"spec.md API '{raw_signature}': empty specification item: {item}")
-
-        description_tables = tables_with_columns(block, ["要素类别", "要素", "内容"])
-        if len(description_tables) != 1:
-            issues.append(f"spec.md API '{raw_signature}': must contain exactly one API description table")
-        description_rows = description_tables[0] if len(description_tables) == 1 else []
-        descriptions: dict[tuple[str, str], list[dict[str, str]]] = {}
-        for row in description_rows:
-            key = (
-                normalized_table_key(row.get("要素类别", "")),
-                normalized_table_key(row.get("要素", "")),
+        expected_language = next(
+            language
+            for language, name in API_METADATA_BY_LANGUAGE.items()
+            if name == file_name
+        )
+        if metadata.get("language") != expected_language:
+            issues.append(
+                f"{file_name}: language must be {expected_language}"
             )
-            descriptions.setdefault(key, []).append(row)
-        for category, element in API_DESCRIPTION_ELEMENTS:
-            matches = descriptions.get((category, element), [])
-            label = f"{category}/{element}"
-            if not matches:
-                issues.append(
-                    f"spec.md API '{raw_signature}': missing API description element: {label}"
-                )
-            elif len(matches) > 1:
-                issues.append(
-                    f"spec.md API '{raw_signature}': duplicate API description element: {label}"
-                )
-            elif not meaningful(matches[0].get("内容", "")):
-                issues.append(f"spec.md API '{raw_signature}': empty API description element: {label}")
-
-        supported_tables = tables_with_columns(block, API_SUPPORTED_DEVICE_COLUMNS)
-        if len(supported_tables) != 1:
-            issues.append(f"spec.md API '{raw_signature}': must contain exactly one supported-device table")
-        supported = supported_tables[0] if len(supported_tables) == 1 else []
-        if not supported or any(
-            not meaningful(row.get(column, ""))
-            for row in supported
-            for column in API_SUPPORTED_DEVICE_COLUMNS
-        ):
-            issues.append(f"spec.md API '{raw_signature}': supported-device table missing or empty")
-        else:
+        schema_issue = api_metadata_schema_version_issue(
+            metadata.get("schemaVersion")
+        )
+        if schema_issue:
+            issues.append(f"{file_name}: {schema_issue.removeprefix('API metadata: ')}")
+        if metadata.get("apiContractVersion") != API_CONTRACT_VERSION:
+            issues.append(
+                f"{file_name}: apiContractVersion must be {API_CONTRACT_VERSION}"
+            )
+        if expected_language == "arkts" and not isinstance(metadata.get("file"), dict):
+            issues.append(f"{file_name}: ArkTS metadata must use the file block")
+        if expected_language == "c" and not isinstance(metadata.get("header"), dict):
+            issues.append(f"{file_name}: C metadata must use the header block")
+        issues.extend(api_spec_structural_issues(metadata))
+        issues.extend(api_description_issues(metadata))
+        apis = metadata.get("apis")
+        if not isinstance(apis, list):
+            apis = []
+        if expected_language == "arkts":
+            issues.extend(arkts_static_proposal_issues(read_text(proposal_path), metadata))
+            issues.extend(arkts_static_metadata_issues(metadata))
+        for api_index, api in enumerate(apis, start=1):
+            if not isinstance(api, dict):
+                continue
+            label = api.get("id") or api.get("name") or f"API[{api_index}]"
             issues.extend(
-                f"spec.md API '{raw_signature}': {issue}"
-                for issue in supported_device_table_issues(supported)
+                api_documentation_style_issues(api, f"{file_name}: API '{label}'")
             )
+        if file_name not in visible_spec_section:
+            issues.append(f"spec.md API overview must reference {file_name}")
 
-        difference_tables = tables_with_columns(block, API_DEVICE_DIFFERENCE_COLUMNS)
-        if len(difference_tables) != 1:
-            issues.append(f"spec.md API '{raw_signature}': must contain exactly one device-difference table")
-        differences = difference_tables[0] if len(difference_tables) == 1 else []
-        if not differences or any(
-            not meaningful(row.get(column, ""))
-            for row in differences
-            for column in API_DEVICE_DIFFERENCE_COLUMNS
-        ):
-            issues.append(f"spec.md API '{raw_signature}': device-difference table missing or empty")
+    all_api_ids: list[str] = []
+    for file_name, metadata in metadata_by_file.items():
+        apis = metadata.get("apis")
+        if not isinstance(apis, list):
+            continue
+        all_api_ids.extend(
+            str(api.get("id", ""))
+            for api in apis
+            if isinstance(api, dict) and meaningful(str(api.get("id", "")))
+        )
+    duplicate_ids = sorted(
+        value for value, count in Counter(all_api_ids).items() if count > 1
+    )
+    if duplicate_ids:
+        issues.append(
+            "API metadata files contain duplicate API IDs: " + ", ".join(duplicate_ids)
+        )
+
+    overview_sections = section_texts(visible_spec_section, API_OVERVIEW_SECTION)
+    if len(overview_sections) != 1:
+        issues.append(
+            f"spec.md: {API_OVERVIEW_SECTION} subsection must appear exactly once"
+        )
+        overview_ids: set[str] = set()
+    else:
+        overview_tables = tables_with_columns(
+            overview_sections[0], ["API ID", "类型", "完整签名", "@since", "确认状态"]
+        )
+        if len(overview_tables) != 1:
+            issues.append(
+                f"spec.md: {API_OVERVIEW_SECTION} must contain exactly one overview table"
+            )
+            overview_ids = set()
+        else:
+            overview_ids = {
+                normalized_table_key(row.get("API ID", ""))
+                for row in overview_tables[0]
+                if meaningful(row.get("API ID", ""))
+            }
+            metadata_ids = {
+                normalized_table_key(value) for value in all_api_ids
+            }
+            missing = sorted(metadata_ids - overview_ids)
+            extra = sorted(overview_ids - metadata_ids)
+            if missing:
+                issues.append(
+                    "spec.md API overview missing API IDs from API metadata files: "
+                    + ", ".join(missing)
+                )
+            if extra:
+                issues.append(
+                    "spec.md API overview contains API IDs absent from API metadata files: "
+                    + ", ".join(extra)
+                )
+
+    fact_sections = section_texts(
+        visible_spec_section, "API 事实溯源与待确认项"
+    )
+    if len(fact_sections) != 1:
+        issues.append(
+            "spec.md: API 事实溯源与待确认项 subsection must appear exactly once"
+        )
+    else:
+        fact_tables = tables_with_columns(
+            fact_sections[0], ["API 事实", "结果", "来源", "状态"]
+        )
+        if len(fact_tables) != 1:
+            issues.append(
+                "spec.md: API 事实溯源与待确认项 must contain exactly one table"
+            )
+        else:
+            required_facts = {
+                "@since", "@syscap", "权限", "跨平台 / 元服务 / 卡片支持",
+                "FA / Stage 模型", "设备支持与行为差异",
+            }
+            fact_rows = {
+                normalized_table_key(row.get("API 事实", ""))
+                for row in fact_tables[0]
+                if meaningful(row.get("API 事实", ""))
+            }
+            missing_facts = sorted(required_facts - fact_rows)
+            if missing_facts:
+                issues.append(
+                    "spec.md API fact provenance missing facts: "
+                    + ", ".join(missing_facts)
+                )
+            for row in fact_tables[0]:
+                fact = row.get("API 事实", "")
+                result = row.get("结果", "")
+                source = row.get("来源", "")
+                status = row.get("状态", "")
+                if not meaningful(fact):
+                    continue
+                if status not in {"已确认", "待确认"}:
+                    issues.append(
+                        f"spec.md API fact '{fact}' status must be 已确认 or 待确认"
+                    )
+                if not meaningful(source) or ANGLE_PLACEHOLDER_RE.search(source) or BRACKET_PLACEHOLDER_RE.search(source):
+                    issues.append(
+                        f"spec.md API fact '{fact}' requires a meaningful evidence source"
+                    )
+                if status == "已确认" and (
+                    not meaningful(result)
+                    or ANGLE_PLACEHOLDER_RE.search(result)
+                    or BRACKET_PLACEHOLDER_RE.search(result)
+                    or re.search(r"\b(?:TBD|TODO)\b|待确认|待定|待补充", result, flags=re.IGNORECASE)
+                ):
+                    issues.append(
+                        f"spec.md API fact '{fact}' is marked confirmed but has no resolved result"
+                    )
+
+    if API_SPEC_SUMMARY_ONLY:
+        if re.search(r"^####\s+API:", visible_spec_section, flags=re.MULTILINE):
+            issues.append(
+                "spec.md API overview must not contain legacy per-API #### API subsections"
+            )
+        for legacy in ("公共规格属性", "逐 API 规格"):
+            if section_texts(visible_spec_section, legacy):
+                issues.append(
+                    f"spec.md API overview must not contain legacy subsection: {legacy}"
+                )
+
+    duplication_issues: list[str] = []
+    for file_name, metadata in metadata_by_file.items():
+        duplication_issues.extend(
+            f"{file_name}: {issue}"
+            for issue in api_documentation_duplication_issues(metadata)
+        )
+    for issue in duplication_issues:
+        draft_warn_archive_fail(
+            reporter,
+            archive,
+            "API documentation duplication heuristic: " + issue,
+        )
 
     if issues:
         for issue in issues:
             reporter.fail(issue)
-    else:
-        reporter.pass_("spec.md per-API specification contract is complete")
+    elif not duplication_issues:
+        reporter.pass_(
+            "language-specific API metadata files and spec.md overview are consistent"
+        )
 
 
-def validate_api_declaration_diffs(change_dir: Path, reporter: Reporter, *, archive: bool) -> None:
-    """Require archived en/zh API declaration diffs when API/SDK is involved."""
+def _normalized_path(value: str) -> str:
+    return value.replace("\\", "/").strip().strip("/")
+
+
+def _diff_path_matches(diff_path: str, metadata_path: str) -> bool:
+    """Require exact normalized path equivalence, not arbitrary suffix overlap."""
+
+    return _normalized_path(diff_path) == _normalized_path(metadata_path)
+
+
+def _compact_text(value: str) -> str:
+    return re.sub(r"\s+", "", value)
+
+
+def _declaration_windows(lines: list[str], declaration: str) -> list[tuple[int, int]]:
+    """Find every smallest contiguous line window containing the declaration."""
+
+    compact_declaration = _compact_text(declaration).strip(";")
+    if not compact_declaration:
+        return []
+    compact_lines = [_compact_text(line).strip(";") for line in lines]
+    # Length-directed matching avoids the historical width/start/join triple
+    # loop. A candidate end is possible only when the compact lengths add up to
+    # the declaration length; blank lines can create several such ends, so all
+    # equal-length candidates are checked and the smallest line width wins.
+    prefix_lengths = [0]
+    for compact_line in compact_lines:
+        prefix_lengths.append(prefix_lengths[-1] + len(compact_line))
+    target_length = len(compact_declaration)
+    windows: list[tuple[int, int]] = []
+    for start in range(len(lines)):
+        end = bisect.bisect_left(
+            prefix_lengths, prefix_lengths[start] + target_length, lo=start + 1
+        )
+        while end <= len(lines) and prefix_lengths[end] == prefix_lengths[start] + target_length:
+            if "".join(compact_lines[start:end]) == compact_declaration:
+                windows.append((start, end - 1))
+            end += 1
+    if not windows:
+        return []
+    minimum_width = min(end - start + 1 for start, end in windows)
+    return [
+        window for window in windows
+        if window[1] - window[0] + 1 == minimum_width
+    ]
+
+
+def _declaration_window(lines: list[str], declaration: str) -> tuple[int, int] | None:
+    """Compatibility helper for callers that only need the first candidate."""
+
+    windows = _declaration_windows(lines, declaration)
+    return windows[0] if windows else None
+
+
+def _is_single_line_doc_comment(line: str) -> bool:
+    text = line.strip()
+    return (
+        len(text) > 4
+        and (text.startswith("/**") or text.startswith("/*!"))
+        and text.endswith("*/")
+    )
+
+
+def _declaration_comment_bounds(
+    lines: list[str], declaration_start: int, declaration_end: int
+) -> tuple[int, int] | None:
+    """Return the doc-comment block immediately preceding a declaration."""
+
+    if declaration_start <= 0:
+        return None
+    close = None
+    for index in range(declaration_start - 1, max(0, declaration_start - 40) - 1, -1):
+        if lines[index].strip():
+            if _is_single_line_doc_comment(lines[index]):
+                return index, declaration_end
+            close = index if lines[index].strip() == "*/" else None
+            break
+    if close is None:
+        return None
+
+    # Stay inside the comment that ends at `close`. A plain comment, code, or
+    # another comment terminator proves that the preceding block is not the
+    # declaration's documentation context.
+    for index in range(close, max(0, close - 200) - 1, -1):
+        line = lines[index].strip()
+        if index == close:
+            if (line.startswith("/**") or line.startswith("/*!")) and line.endswith("*/"):
+                return index, declaration_end
+            continue
+        if line.startswith("/**") or line.startswith("/*!"):
+            return index, declaration_end
+        if "*/" in line or not line.startswith("*"):
+            return None
+    return None
+
+
+def _declaration_comment_context(lines: list[str], declaration_index: int) -> str | None:
+    """Return the doc block immediately preceding a declaration."""
+
+    bounds = _declaration_comment_bounds(lines, declaration_index, declaration_index)
+    if bounds is None:
+        return None
+    # The context is the documentation comment itself; declarations are
+    # validated separately and must not become tag continuation prose.
+    return "\n".join(
+        _clean_comment_line(line) for line in lines[bounds[0]:declaration_index]
+    )
+
+
+def _diff_segment_windows(
+    segments: object, declaration: str
+) -> list[tuple[dict[str, object], int, int]]:
+    """Find declaration windows only within continuous diff segments."""
+
+    if segments is None:
+        return []
+    candidates: list[tuple[dict[str, object], int, int]] = []
+    for segment in segments:  # type: ignore[union-attr]
+        lines = segment["lines"]  # type: ignore[index]
+        for start, end in _declaration_windows(lines, declaration):  # type: ignore[arg-type]
+            candidates.append((segment, start, end))
+    return candidates
+
+
+def _segment_window_changed(
+    segment: dict[str, object], window: tuple[int, int]
+) -> bool:
+    """Return whether a declaration or its immediate doc block changed."""
+
+    lines = segment["lines"]  # type: ignore[index]
+    changed: set[int] = segment["changed"]  # type: ignore[index]
+    start, end = window
+    if any(position in range(start, end + 1) for position in changed):
+        return True
+    bounds = _declaration_comment_bounds(lines, start, end)  # type: ignore[arg-type]
+    if bounds is None:
+        return False
+    return any(
+        position in range(bounds[0], bounds[1] + 1) for position in changed
+    )
+
+
+def _context_owns_identity(context: str | None, value: object) -> bool:
+    """Require an explicit owner marker rather than any identity substring."""
+
+    if context is None or value is None:
+        return False
+    identity = str(value)
+    if not identity.strip():
+        return False
+    pattern = (
+        r"(?:API\s*ID|qualifiedName)\s*[:：]\s*"
+        + re.escape(identity.strip())
+        + r"\s*[.。;；]?\s*"
+    )
+    for line in context.splitlines():
+        if re.fullmatch(pattern, line.strip(), flags=re.IGNORECASE):
+            return True
+    return False
+
+
+def _candidate_identity_matches(api: dict, candidate: tuple[object, ...]) -> bool:
+    """Bind one declaration window to an explicit API identity or source line."""
+
+    segment = candidate[0]
+    start = int(candidate[1])
+    context = candidate[3] if len(candidate) > 3 else None
+    if any(_context_owns_identity(context, value) for value in (api.get("id"), api.get("qualifiedName"))):
+        return True
+    try:
+        source_line = int(segment.get("start", 0)) + start  # type: ignore[union-attr]
+        start_line = int(api.get("startLine"))
+        end_line = int(api.get("endLine"))
+        return start_line <= source_line <= end_line
+    except (TypeError, ValueError):
+        return False
+
+
+def _target_api_changed(api: dict, sides: dict[str, object]) -> bool:
+    """Prove the target declaration or its associated doc comment changed."""
+
+    candidates = _target_api_candidates(api, sides)
+    for segment, start, end, _context in candidates:
+        if _segment_window_changed(segment, (start, end)):  # type: ignore[arg-type]
+            return True
+    declaration = str(api.get("declaration") or "")
+    for segment, start, end, _context in _diff_segment_windows(
+        sides.get("oldSegments"), declaration  # type: ignore[arg-type]
+    ):
+        if _segment_window_changed(segment, (start, end)):  # type: ignore[arg-type]
+            return True
+    return False
+
+
+def _selected_target_candidate_changed(
+    api: dict,
+    sides: dict[str, object],
+    selected: tuple[dict[str, object], int, int, str | None],
+    *,
+    duplicate_signature: bool,
+) -> bool:
+    """Check only the selected new-side window and its bound old-side evidence."""
+
+    segment, start, end, _context = selected
+    if _segment_window_changed(segment, (start, end)):  # type: ignore[arg-type]
+        return True
+
+    declaration = str(api.get("declaration") or "")
+    old_candidates = _diff_segment_windows(
+        sides.get("oldSegments"), declaration  # type: ignore[arg-type]
+    )
+    if not duplicate_signature:
+        return any(
+            _segment_window_changed(old_segment, (old_start, old_end))
+            for old_segment, old_start, old_end in old_candidates
+        )
+
+    for old_segment, old_start, old_end, old_context in [
+        (
+            old_segment,
+            old_start,
+            old_end,
+            _declaration_comment_context(
+                old_segment["lines"], old_start  # type: ignore[index, arg-type]
+            ),
+        )
+        for old_segment, old_start, old_end in old_candidates
+    ]:
+        if any(
+            _context_owns_identity(old_context, value)
+            for value in (api.get("id"), api.get("qualifiedName"))
+        ) and _segment_window_changed(
+            old_segment, (old_start, old_end)  # type: ignore[arg-type]
+        ):
+            return True
+    return False
+
+
+def _target_api_candidates(
+    api: dict, sides: dict[str, object]
+) -> list[tuple[dict[str, object], int, int, str | None]]:
+    """Return new-side declaration candidates with their doc context."""
+
+    declaration = str(api.get("declaration") or "")
+    candidates: list[tuple[dict[str, object], int, int, str | None]] = []
+    for segment, start, end in _diff_segment_windows(
+        sides.get("newSegments"), declaration
+    ):
+        lines = segment["lines"]  # type: ignore[index]
+        context = _declaration_comment_context(lines, start)  # type: ignore[arg-type]
+        candidates.append((segment, start, end, context))
+    return candidates
+
+
+def _selected_target_candidates(
+    api: dict, candidates: list[tuple[dict[str, object], int, int, str | None]]
+) -> list[tuple[dict[str, object], int, int, str | None]]:
+    """Select candidates explicitly owned by the target API."""
+
+    return [
+        candidate for candidate in candidates
+        if _candidate_identity_matches(api, candidate)
+    ]
+
+
+def _api_permission_values(api: dict) -> list[str]:
+    permissions = api.get("permissions")
+    if not isinstance(permissions, list):
+        return []
+    values: list[str] = []
+    for permission in permissions:
+        if isinstance(permission, str):
+            values.append(permission)
+        elif isinstance(permission, dict):
+            value = permission.get("name") or permission.get("permission") or permission.get("value")
+            if value is not None:
+                values.append(str(value))
+    return [value for value in values if value.strip()]
+
+
+def _marker_values(context: str, marker: str) -> list[str]:
+    """Extract every scalar following the named marker."""
+
+    return [
+        match.group(1).strip()
+        for match in re.finditer(
+            rf"@{re.escape(marker)}\s+([^\n@]+)",
+            context,
+            flags=re.IGNORECASE,
+        )
+        if match.group(1).strip()
+    ]
+
+
+def _marker_present(context: str, marker: str, value: str | None = None) -> bool:
+    if value is None:
+        return re.search(
+            rf"@{re.escape(marker)}\b", context, flags=re.IGNORECASE
+        ) is not None
+    return str(value).strip() in _marker_values(context, marker)
+
+
+def _since_marker_present(context: str, since: object) -> bool:
+    value = str(since or "").strip()
+    if not value:
+        return False
+    if value in _marker_values(context, "since"):
+        return True
+    escaped = re.escape(value)
+    return re.search(
+        rf"\[since\s+{escaped}\]", context, flags=re.IGNORECASE
+    ) is not None
+
+
+def _semantic_compact_text(value: Any) -> str:
+    """Normalize documentation text for punctuation-agnostic exact coverage.
+
+    Word order and inserted/missing words still matter. Markdown emphasis,
+    whitespace, and punctuation differences do not. This is a loss gate, not a
+    claim of full natural-language semantic understanding.
+    """
+
+    text = unicodedata.normalize("NFKC", str(value or "")).casefold()
+    return " ".join(re.findall(r"\w+", text, flags=re.UNICODE))
+
+
+_DECLARATION_DESCRIPTION_LABEL_RE = re.compile(
+    r"^(function|scenario|effect|similar\s*APIs|default\s*behavior|"
+    r"constraints|activation|notes|功能|含义|使用场景|使用效果|相似\s*API|"
+    r"默认行为|约束|生效条件|注意事项)\s*[:：]",
+    re.IGNORECASE,
+)
+
+
+def _description_is_not_applicable(value: Any) -> bool:
+    text = str(value or "").strip().casefold().rstrip(".。")
+    return text in {"n/a", "不适用"}
+
+
+def _description_covers(context: str, value: Any) -> bool:
+    expected = _semantic_compact_text(value)
+    if not expected:
+        return True
+    actual = _semantic_compact_text(context)
+    if re.search(r"[\u3400-\u9fff\uf900-\ufaff]", expected):
+        # CJK prose has no whitespace word boundaries. A normalized substring
+        # check preserves word order while allowing natural Chinese sentences
+        # to embed the confirmed metadata phrase.
+        return expected in actual
+    return re.search(
+        rf"(?<!\S){re.escape(expected)}(?!\S)", actual
+    ) is not None
+
+
+def _clean_comment_line(line: str) -> str:
+    text = line.strip()
+    if _is_single_line_doc_comment(text):
+        return text[3:-2].strip()
+    if text in {"/**", "/*!", "*/"}:
+        return ""
+    if text.startswith("*"):
+        text = text[1:].strip()
+    return text
+
+
+def _tag_block(
+    context: str, tag_name: str, parameter_name: str | None = None
+) -> str | None:
+    """Return one doc tag and its continuation lines, without other tags."""
+
+    tag_re = re.compile(
+        rf"@{re.escape(tag_name)}(?:\[[^\]]*\])?(?:\s|$)", re.IGNORECASE
+    )
+    param_re = re.compile(
+        r"@param(?:\[[^\]]*\])?\s+"
+        r"(?:\{[^}]*\}\s*)?(?:\[([^\]]+)\]|([A-Za-z_$][\w$]*))(?=\s|$|[^\w$\]])",
+        re.IGNORECASE,
+    )
+    lines = [_clean_comment_line(line) for line in context.splitlines()]
+    for index, line in enumerate(lines):
+        tag_match = tag_re.search(line)
+        if tag_match is None:
+            continue
+        tag_line = line[tag_match.start():]
+        if parameter_name is not None:
+            match = param_re.match(tag_line)
+            actual_name = None
+            if match:
+                actual_name = match.group(1) or match.group(2)
+            if actual_name != parameter_name:
+                continue
+        next_tag = re.search(r"\s+(?=@[A-Za-z])", tag_line)
+        tag_text = tag_line[: next_tag.start()] if next_tag else tag_line
+        block = [tag_text]
+        for continuation in lines[index + 1 :]:
+            if not continuation or continuation == "*/":
+                break
+            if continuation.startswith("@"):
+                break
+            block.append(continuation)
+        return "\n".join(block)
+    return None
+
+
+def _localized_description(value: Any, language: str) -> Any:
+    if not isinstance(value, dict):
+        return None
+    return value.get(language)
+
+
+def _api_description_closure_issues(
+    api: dict, context: str, language: str
+) -> list[str]:
+    """Require every meaningful metadata description to survive into the doc block."""
+
+    label = api.get("id") or api.get("name") or "unnamed"
+    issues: list[str] = []
+
+    labels: set[str] = set()
+    for raw_line in context.splitlines():
+        line = _clean_comment_line(raw_line)
+        match = _DECLARATION_DESCRIPTION_LABEL_RE.match(line)
+        if match:
+            labels.add(match.group(1))
+    for element_label in sorted(labels):
+        issues.append(
+            f"API declaration description label '{element_label}' is not allowed: {label}"
+        )
+
+    description = api.get("description")
+    values = description.get(language) if isinstance(description, dict) else None
+    if isinstance(values, dict):
+        for element in (
+            "function", "scenario", "effect", "similarAPIs",
+            "defaultBehavior", "constraints", "activation", "notes",
+        ):
+            expected = values.get(element)
+            if expected is None or _description_is_not_applicable(expected):
+                continue
+            if not _description_covers(context, expected):
+                issues.append(
+                    f"API declaration description.{language}.{element} "
+                    f"missing or mismatched: {label}"
+                )
+
+    parameters = api.get("parameters")
+    if isinstance(parameters, list):
+        for index, parameter in enumerate(parameters, start=1):
+            if not isinstance(parameter, dict):
+                continue
+            name = str(parameter.get("name") or "").strip() or f"parameter[{index}]"
+            expected = _localized_description(parameter.get("description"), language)
+            if expected is None or _description_is_not_applicable(expected):
+                continue
+            block = _tag_block(context, "param", name)
+            if block is None:
+                issues.append(
+                    f"API declaration @param missing for parameter {name}: {label}"
+                )
+            elif not _description_covers(block, expected):
+                issues.append(
+                    f"API declaration parameter description for {name} "
+                    f"missing or mismatched: {label}"
+                )
+
+    return_type = api.get("returnType")
+    if isinstance(return_type, dict):
+        expected = _localized_description(return_type.get("description"), language)
+        if expected is not None and not _description_is_not_applicable(expected):
+            block = None
+            for tag in ("returns", "return", "retval", "result"):
+                block = _tag_block(context, tag)
+                if block is not None:
+                    break
+            if block is None:
+                issues.append(
+                    f"API declaration @returns missing or mismatched: {label}"
+                )
+            elif not _description_covers(block, expected):
+                issues.append(
+                    f"API declaration return description missing or mismatched: {label}"
+                )
+
+    error_codes = api.get("errorCodes")
+    if isinstance(error_codes, list):
+        for index, error_code in enumerate(error_codes, start=1):
+            if not isinstance(error_code, dict):
+                continue
+            expected = _localized_description(error_code.get("description"), language)
+            if expected is None or _description_is_not_applicable(expected):
+                continue
+            if not _description_covers(context, expected):
+                issues.append(
+                    f"API declaration errorCodes[{index}] description "
+                    f"missing or mismatched: {label}"
+                )
+
+    return issues
+
+
+def _declaration_comment_format_issues(
+    added_lines: list[str], declaration_index: int, label: str
+) -> list[str]:
+    """Require a doc comment to hug and align with its added declaration."""
+
+    declaration = added_lines[declaration_index]
+    declaration_indent = declaration[: len(declaration) - len(declaration.lstrip())]
+    close: int | None = None
+    single_line_comment = False
+    for index in range(declaration_index - 1, -1, -1):
+        if added_lines[index].strip():
+            if _is_single_line_doc_comment(added_lines[index]):
+                close = index
+                single_line_comment = True
+            elif added_lines[index].strip() == "*/":
+                close = index
+            break
+    if close is None:
+        return []
+    start: int | None = close if single_line_comment else None
+    for index in range(close, -1, -1):
+        if "/**" in added_lines[index] or "/*!" in added_lines[index]:
+            start = index
+            break
+    if start is None:
+        return []
+
+    issues: list[str] = []
+    if any(not line.strip() for line in added_lines[close + 1 : declaration_index]):
+        issues.append(
+            f"blank line between declaration comment and declaration: {label}"
+        )
+    if any(not line.strip() for line in added_lines[start + 1 : close]):
+        issues.append(f"blank line inside declaration comment: {label}")
+
+    start_line = added_lines[start]
+    start_indent = start_line[: len(start_line) - len(start_line.lstrip())]
+    if start_indent != declaration_indent:
+        issues.append(
+            f"API declaration comment opener indent does not match declaration indent: {label}"
+        )
+    return issues
+
+
+def _api_diff_marker_issues(
+    api: dict,
+    diff_sides: dict[str, object],
+    language: str,
+    diff_language: str,
+    *,
+    same_signature_count: int = 1,
+    claimed_candidate_keys: set[tuple[int, int, int]] | None = None,
+) -> list[str]:
+    declaration = str(api.get("declaration") or "")
+    label = api.get("id") or api.get("name") or "unnamed"
+    candidates = _target_api_candidates(api, diff_sides)
+    if not candidates:
+        return [f"API declaration missing from new-side diff lines: {label}"]
+
+    identity_candidates = _selected_target_candidates(api, candidates)
+    if same_signature_count > 1 or len(candidates) > 1:
+        if len(identity_candidates) != 1:
+            return [
+                "API declaration evidence is ambiguous for a duplicate "
+                f"signature; include the API id or qualifiedName in its doc comment, or provide a unique source position: {label}"
+            ]
+        candidates = identity_candidates
+
+    if len(candidates) != 1:
+        return [
+            "API declaration evidence is ambiguous; include the API id or "
+            f"qualifiedName in its doc comment, or provide one changed declaration: {label}"
+        ]
+
+    segment, declaration_index, declaration_end, context = candidates[0]
+    candidate_key = (id(segment), declaration_index, declaration_end)
+    if claimed_candidate_keys is not None and candidate_key in claimed_candidate_keys:
+        return [
+            "API declaration evidence is already bound to another API; provide "
+            f"a separate declaration window: {label}"
+        ]
+    if not _selected_target_candidate_changed(
+        api,
+        diff_sides,
+        candidates[0],
+        duplicate_signature=same_signature_count > 1,
+    ):
+        return [
+            "API declaration evidence does not modify the target API "
+            f"declaration or comment: {label}"
+        ]
+    if context is None:
+        return [
+            "API declaration marker comment missing or was removed; include "
+            f"the complete doc comment and declaration in one continuous hunk: {label}"
+        ]
+
+    new_lines: list[str] = segment["lines"]  # type: ignore[index]
+    issues = (
+        _declaration_comment_format_issues(new_lines, declaration_index, str(label))
+        + _declaration_comment_style_issues(context, str(label))
+        + _api_description_closure_issues(api, context, diff_language)
+        + _api_marker_issues(api, context, language, diff_language, label)
+    )
+    if not issues and claimed_candidate_keys is not None:
+        claimed_candidate_keys.add(candidate_key)
+    return issues
+
+
+def _api_marker_issues(
+    api: dict,
+    context: str,
+    language: str,
+    diff_language: str,
+    label: object,
+) -> list[str]:
+    """Check declaration markers for one API-specific comment context."""
+
+    issues: list[str] = []
+    if not _since_marker_present(context, api.get("since")):
+        issues.append(f"API declaration marker @since missing or mismatched: {label}")
+    if not _marker_present(context, "syscap", api.get("syscap")):
+        issues.append(f"API declaration marker @syscap missing or mismatched: {label}")
+
+    permissions = _api_permission_values(api)
+    if permissions:
+        for permission in permissions:
+            if not _marker_present(context, "permission", permission):
+                issues.append(
+                    f"API declaration marker @permission missing value {permission}: {label}"
+                )
+    elif "@permission" in context.lower():
+        issues.append(f"API declaration has unexpected @permission marker: {label}")
+
+    if language == "arkts":
+        platform = api.get("platform")
+        if isinstance(platform, dict):
+            markers = {
+                "crossplatform": "@crossplatform",
+                "atomicservice": "@atomicservice",
+                "form": "@form",
+            }
+            for field, marker in markers.items():
+                enabled = platform.get(field)
+                if isinstance(enabled, dict):
+                    enabled = enabled.get("enabled")
+                marker_name = marker[1:]
+                if enabled is True and not _marker_present(context, marker_name):
+                    issues.append(f"API declaration marker {marker} missing: {label}")
+                if enabled is False and _marker_present(context, marker_name):
+                    issues.append(f"API declaration has unexpected {marker} marker: {label}")
+
+        model = str(api.get("applicationModel") or "")
+        stage_marker = _marker_present(context, "stagemodelonly")
+        fa_marker = _marker_present(context, "famodelonly")
+        if model == "stage-only" and not stage_marker:
+            issues.append(f"API declaration marker @stagemodelonly missing: {label}")
+        if model == "stage-only" and fa_marker:
+            issues.append(f"API declaration has unexpected @famodelonly marker: {label}")
+        if model == "fa-only" and not fa_marker:
+            issues.append(f"API declaration marker @famodelonly missing: {label}")
+        if model == "fa-only" and stage_marker:
+            issues.append(f"API declaration has unexpected @stagemodelonly marker: {label}")
+        if model in {"fa-and-stage", "both"} and (stage_marker or fa_marker):
+            issues.append(
+                f"API declaration has unexpected model-only marker for {model}: {label}"
+            )
+    return issues
+
+
+_STRUCTURAL_DOC_TAG_NAMES = {
+    "since", "syscap", "permission", "crossplatform", "atomicservice", "form",
+    "stagemodelonly", "famodelonly",
+}
+
+
+def _tag_style_prose(prose: str) -> str:
+    """Extract natural language from a documentation tag.
+
+    Parameter names, type expressions, error-code constants, and other contract
+    identifiers are not prose. Style rules must apply only to the description
+    after the tag payload.
+    """
+
+    match = re.match(r"@([A-Za-z]+)(.*)", prose, flags=re.IGNORECASE)
+    if match is None:
+        return prose
+    tag = match.group(1).lower()
+    payload = match.group(2).strip()
+    if tag in _STRUCTURAL_DOC_TAG_NAMES:
+        return ""
+    if tag == "param":
+        parameter = re.fullmatch(
+            r"(?:\[(?:in|out|inout|in-out|input|output)\])?"
+            r"(?:(?:\s*\{[^}]*\})?\s*)"
+            r"(?:\[?([A-Za-z_$][\w$]*)\]?)\s*(.*)",
+            payload,
+            flags=re.IGNORECASE,
+        )
+        if parameter is not None:
+            description = parameter.group(2).strip()
+            return re.sub(r"^[-—–:]\s*", "", description)
+    if tag in {"returns", "return", "retval", "result", "throws", "exception"}:
+        description = re.sub(r"^\{[^}]*\}\s*", "", payload)
+        return re.sub(r"^[-—–:]\s*", "", description)
+    if tag in {"brief", "details", "description", "note", "notes", "remarks"}:
+        return re.sub(r"^[-—–:]\s*", "", payload)
+    return ""
+
+
+def _declaration_comment_style_issues(context: str, label: str) -> list[str]:
+    """Check prose in the doc block associated with one API declaration.
+
+    The context is already cleaned of JSDoc/Doxygen line decorations. The
+    shared style rules apply only to natural-language prose, not to contract
+    identifiers carried by documentation tags.
+    """
+
+    issues: list[str] = []
+    for line_number, line in enumerate(context.splitlines(), start=1):
+        if not line or line in {"/**", "/*!", "/"}:
+            continue
+        prose = _tag_style_prose(line)
+        if not prose:
+            continue
+        if _description_is_not_applicable(prose):
+            issues.append(
+                f"API declaration comment for {label}: line {line_number} "
+                "must omit N/A / 不适用 placeholder prose"
+            )
+            continue
+        issues.extend(
+            text_style_issues(
+                prose,
+                f"API declaration comment for {label}",
+                f"line {line_number}",
+            )
+        )
+    return issues
+
+
+def validate_api_declaration_diffs(
+    change_dir: Path, reporter: Reporter, *, archive: bool
+) -> None:
+    """Require language/repository-specific en/zh declaration diffs.
+
+    ArkTS and C metadata are separate contracts and are delivered in separate API
+    declaration repositories, so their diff evidence must not be mixed.
+    """
+
     proposal_path = change_dir / "proposal.md"
     if not proposal_path.is_file():
         return
     involvement = api_sdk_involvement(_visible_markdown(read_text(proposal_path)))
     if involvement != "是":
         return
-    missing = [
+
+    metadata_files = sorted(
+        name for name in API_METADATA_FILES if (change_dir / name).is_file()
+    )
+    diff_prefixes = {
+        "arkts-api-spec.yaml": "task1-arkts-api-declaration",
+        "c-api-spec.yaml": "task1-c-api-declaration",
+    }
+    required_diffs = [
+        f"{diff_prefixes[name]}-{language}.diff"
+        for name in metadata_files
+        for language in ("en", "zh")
+    ]
+    legacy_missing = [
         name
         for name in ("task1-api-declaration-en.diff", "task1-api-declaration-zh.diff")
+        if (change_dir / "evidence" / name).is_file()
+    ]
+    if legacy_missing:
+        reporter.fail(
+            "Mixed-repository API declaration diffs are no longer accepted; split by "
+            "language into task1-arkts-api-declaration-en/zh.diff and/or "
+            "task1-c-api-declaration-en/zh.diff: " + ", ".join(legacy_missing)
+        )
+
+    missing = [
+        name
+        for name in required_diffs
         if not (change_dir / "evidence" / name).is_file()
     ]
     if missing:
@@ -658,20 +1745,143 @@ def validate_api_declaration_diffs(change_dir: Path, reporter: Reporter, *, arch
             "API declaration diff evidence missing under evidence/: " + ", ".join(missing),
         )
         return
-    invalid = []
-    for language in ("en", "zh"):
-        path = change_dir / "evidence" / f"task1-api-declaration-{language}.diff"
+
+    invalid: list[str] = []
+    diff_sides_by_diff: dict[str, dict[str, dict[str, object]]] = {}
+    for name in required_diffs:
+        path = change_dir / "evidence" / name
         try:
-            valid = valid_unified_diff(path.read_text(encoding="utf-8"))
+            diff_text = path.read_text(encoding="utf-8")
+            valid = valid_unified_diff(diff_text)
+            if valid:
+                diff_sides_by_diff[name] = unified_diff_sides(diff_text)
         except (OSError, UnicodeError):
             valid = False
         if not valid:
-            invalid.append(path.name)
+            invalid.append(name)
     if invalid:
-        draft_warn_archive_fail(reporter, archive,
-            "API declaration diff evidence must contain nonempty valid unified diffs: " + ", ".join(invalid))
+        draft_warn_archive_fail(
+            reporter,
+            archive,
+            "API declaration diff evidence must contain nonempty valid unified diffs: "
+            + ", ".join(invalid),
+        )
+        return
+
+    metadata_issues: list[str] = []
+    if (change_dir / API_LEGACY_METADATA_FILE).exists():
+        metadata_issues.append(
+            f"{API_LEGACY_METADATA_FILE} is no longer accepted; split it into "
+            "arkts-api-spec.yaml and/or c-api-spec.yaml"
+        )
+    if not metadata_files:
+        metadata_issues.append(
+            "At least one language-specific API metadata file is required: "
+            "arkts-api-spec.yaml or c-api-spec.yaml"
+        )
+
+    for metadata_file in metadata_files:
+        try:
+            metadata = parse_api_spec(change_dir / metadata_file)
+        except (OSError, UnicodeError, ValueError) as error:
+            metadata_issues.append(f"{metadata_file}: cannot parse API metadata: {error}")
+            continue
+        expected_language = next(
+            language
+            for language, name in API_METADATA_BY_LANGUAGE.items()
+            if name == metadata_file
+        )
+        language = metadata.get("language")
+        if language != expected_language:
+            metadata_issues.append(f"{metadata_file}: language must be {expected_language}")
+            continue
+
+        prefix = diff_prefixes[metadata_file]
+        metadata_apis = metadata.get("apis")
+        if not isinstance(metadata_apis, list):
+            metadata_issues.append(
+                f"{metadata_file}: API metadata: apis must be a non-empty list"
+            )
+            continue
+        api_entries = [
+            api
+            for api in metadata_apis
+            if isinstance(api, dict)
+        ]
+        allowed_paths = {
+            str(api.get("filePath") or "").strip()
+            for api in api_entries
+            if str(api.get("filePath") or "").strip()
+        }
+        signature_counts = Counter(
+            (
+                str(api.get("filePath") or "").strip(),
+                str(api.get("declaration") or ""),
+            )
+            for api in api_entries
+        )
+        for diff_language in ("en", "zh"):
+            diff_name = f"{prefix}-{diff_language}.diff"
+            diff_sides_by_file = diff_sides_by_diff[diff_name]
+            claimed_candidate_keys: set[tuple[int, int, int]] = set()
+            allowed_diff_paths = {
+                diff_path
+                for diff_path in diff_sides_by_file
+                if any(
+                    _diff_path_matches(diff_path, allowed_path)
+                    for allowed_path in allowed_paths
+                )
+            }
+            extra_targets = sorted(set(diff_sides_by_file) - allowed_diff_paths)
+            if extra_targets:
+                metadata_issues.append(
+                    f"{diff_language} declaration diff {diff_name} contains unrelated target file(s): "
+                    + ", ".join(extra_targets)
+                )
+            for api in api_entries:
+                if not isinstance(api, dict):
+                    continue
+                label = api.get("id") or api.get("name") or "unnamed"
+                file_path = str(api.get("filePath") or "").strip()
+                if not file_path:
+                    continue
+                matching_files = [
+                    diff_path
+                    for diff_path in diff_sides_by_file
+                    if _diff_path_matches(diff_path, file_path)
+                ]
+                if not matching_files:
+                    metadata_issues.append(
+                        f"{diff_language} declaration diff {diff_name} missing target file for API {label}: {file_path}"
+                    )
+                    continue
+                issues: list[str] = []
+                for diff_path in matching_files:
+                    current_issues = _api_diff_marker_issues(
+                        api,
+                        diff_sides_by_file[diff_path],
+                        str(language),
+                        diff_language,
+                        same_signature_count=signature_counts[
+                            (file_path, str(api.get("declaration") or ""))
+                        ],
+                        claimed_candidate_keys=claimed_candidate_keys,
+                    )
+                    if not current_issues:
+                        issues = []
+                        break
+                    issues.extend(current_issues)
+                for issue in issues:
+                    metadata_issues.append(f"{diff_language} {issue}")
+
+    if metadata_issues:
+        for issue in metadata_issues:
+            draft_warn_archive_fail(reporter, archive, issue)
     else:
-        reporter.pass_("API declaration diff evidence (en/zh) is archived")
+        reporter.pass_(
+            "language-specific API declaration diff evidence is archived and covers "
+            "added declarations, markers, and documentation closure"
+        )
 
 
 def validate_proposal_tables(proposal: str, reporter: Reporter, *, archive: bool, lite: bool = False) -> None:
@@ -1968,6 +3178,117 @@ def conditional_section_exemptions(text: str) -> dict[str, str]:
         if marker in visible:
             declarations.setdefault(section, []).append(reason)
     return {section: values[0] for section, values in declarations.items() if len(values) == 1}
+
+
+def _api_contract_version_finding(
+    declared: dict[str, str | None], required: str
+) -> str:
+    lines = [
+        "API contract version chain is inconsistent",
+        "",
+        "| Artifact | Declared | Required |",
+        "|---|---:|---:|",
+    ]
+    for artifact, value in declared.items():
+        lines.append(f"| {artifact} | {value or 'missing'} | {required} |")
+    lines.extend(
+        [
+            "",
+            "Reason:",
+            f"This change contains a mixed API contract chain. ODK 0.15.0 only "
+            f"accepts API changes generated with API contract version {required}.",
+            "",
+            "Action:",
+            "Do not manually change the version number.",
+            "Restart the full flow from proposal:",
+            "",
+            "  proposal -> spec -> design -> plan -> implement -> validate",
+            "",
+            "Migration guide:",
+            "docs/migrations/0.15.0-api-metadata-hard-migration.md",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def validate_api_contract_version_chain(
+    change_dir: Path,
+    reporter: Reporter,
+    phase: str | None,
+) -> None:
+    """Require spec/metadata/design/plan API contract versions to agree."""
+
+    proposal_path = change_dir / "proposal.md"
+    if not proposal_path.is_file():
+        return
+    if api_sdk_involvement(_visible_markdown(read_text(proposal_path))) != "是":
+        return
+
+    metadata_files = [
+        name for name in API_METADATA_FILES if (change_dir / name).is_file()
+    ]
+    declared: dict[str, str | None] = {}
+    metadata_versions: set[str] = set()
+    for name in metadata_files:
+        try:
+            metadata = parse_api_spec(change_dir / name)
+        except (OSError, UnicodeError, ValueError) as error:
+            declared[name] = f"parse error: {error}"
+            continue
+        value = str(metadata.get("apiContractVersion") or "").strip()
+        declared[name] = value or None
+        if value:
+            metadata_versions.add(value)
+
+    patterns = {
+        "spec.md": re.compile(r"\|\s*API 契约版本\s*\|\s*([^|]+?)\s*\|"),
+        # Match the version token only. The design template keeps an inline
+        # HTML instruction after this value; that guidance is not part of the
+        # contract version and must not enter the version-chain comparison.
+        "design.md": re.compile(
+            r"\*\*API 契约版本：\*\*\s*([0-9][A-Za-z0-9._+-]*)"
+        ),
+        "execution-plan.md": re.compile(
+            r"\|\s*API Contract Version\s*\|\s*([^|]+?)\s*\|"
+        ),
+    }
+
+    # Default validate, archive, and design-docs submission are the final gate:
+    # every available API-contract artifact must be checked. Earlier phase runs
+    # only require artifacts already present in the effective contract.
+    if phase == "design":
+        required_files = ["spec.md", "design.md"]
+    elif phase == "plan":
+        required_files = ["spec.md", "design.md", "execution-plan.md"]
+    else:
+        required_files = [
+            name
+            for name in ("spec.md", "design.md", "execution-plan.md")
+            if (change_dir / name).is_file()
+        ]
+        if not required_files:
+            required_files = ["spec.md"]
+
+    for file_name in required_files:
+        path = change_dir / file_name
+        if not path.is_file():
+            declared[file_name] = None
+            continue
+        match = patterns[file_name].search(_visible_markdown(read_text(path)))
+        value = match.group(1).strip() if match else ""
+        declared[file_name] = value or None
+        if value:
+            metadata_versions.add(value)
+
+    valid = all(
+        value == API_CONTRACT_VERSION for value in declared.values()
+    )
+    if not valid:
+        reporter.fail(_api_contract_version_finding(declared, API_CONTRACT_VERSION))
+    else:
+        reporter.pass_(
+            "API contract version chain is consistent across available phase artifacts"
+        )
 
 
 def validate_sections(
@@ -3555,8 +4876,10 @@ def validate_archive_readiness(
 def main(argv: list[str]) -> int:
     parser = ArgumentParser(
         description="Validate one ODK change directory against the active artifacts contract.",
-        epilog=("PASS means document-contract completeness only. API signatures are opaque "
-                "documentation, not checked by a C/ArkTS compiler. Language/toolchain validation is NOT VERIFIED; "
+        epilog=("PASS means document-contract completeness only. language-specific API metadata files are structurally "
+                "checked, declaration-diff added lines/markers are checked, and non-N/A documentation fields are "
+                "checked for normalized coverage in the matching declaration comments; API syntax is not compiled "
+                "or semantically type-checked. Language/toolchain validation is NOT VERIFIED; "
                 "run the target repository's SDK/build checks separately. Exit codes remain 0/1."),
     )
     parser.add_argument("change_dir", help="ODK change directory, for example codespec/changes/arkui/12345")
@@ -3606,7 +4929,12 @@ def main(argv: list[str]) -> int:
     validate_sections(change_dir, artifacts, files, reporter)
     validate_effective_rules(change_dir, artifacts, reporter)
     if "spec" in artifacts:
-        validate_api_spec_contract(change_dir, reporter)
+        if effective["delivery_level"] != "lite":
+            validate_proposal_coverage_matrix(change_dir, reporter)
+        validate_api_spec_contract(change_dir, reporter, archive=strict_delivery)
+        validate_api_contract_version_chain(
+            change_dir, reporter, args.phase
+        )
         validate_api_declaration_diffs(change_dir, reporter, archive=strict_delivery)
     proposal_path = change_dir / "proposal.md"
     if proposal_path.is_file():

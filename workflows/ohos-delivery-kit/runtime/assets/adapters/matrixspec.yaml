@@ -13,6 +13,7 @@ commands:
     source_capability: "/matspec.delta-spec"
     produces:
       - spec
+      - api-spec
     fallback:
       - odk-spec
   - name: odk-ms-delta-design
@@ -47,6 +48,7 @@ mapping:
       - numbered_ac
       - compatibility_statement
       - verification_mapping
+      - api_spec_metadata
   design:
     source: "MatrixSpec delta design or recovered DESIGN.md"
     required_backfill:
@@ -59,6 +61,7 @@ mapping:
       - ac_task_traceability
       - file_scope
       - expected_actual_verification
+      - api_declaration_task
 quality_boundary:
   adapter_may_generate: true
   adapter_may_validate_archive: false

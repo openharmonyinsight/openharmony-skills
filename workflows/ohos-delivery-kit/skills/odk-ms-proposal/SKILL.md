@@ -49,9 +49,11 @@ Invoke MatrixSpec `/matspec.proposal` for requirement clarification. Redirect ou
    - strict: Transform to ODK proposal template at `templates/ai/proposal.md` format. Ensure ODK-required fields: target_release frontmatter, non-goals, `1+8 设备差异规格`, `外部依赖`, 8-dimension N/A table, success criteria.
    - passthrough: Copy to `codespec/changes/<repo-name>/<proposal-id>/proposal.md` unchanged.
    - merge: Use MatrixSpec format, append ODK `1+8 设备差异规格`, `外部依赖`, 8-dimension N/A table, and target_release.
-4. Confirm with user.
+4. Preserve the `API/SDK` row in the ODK 8-dimension table. If MatrixSpec output cannot determine whether APIs/SDKs are involved, stop and ask the developer; do not default to `否`.
+5. Confirm with user.
 
 ## Output
 
 - Written to `codespec/changes/<repo-name>/<proposal-id>/proposal.md`
 - Report any fields needing human approval
+- Report the confirmed `API/SDK` trigger so the next phase knows which language-specific API metadata files are required

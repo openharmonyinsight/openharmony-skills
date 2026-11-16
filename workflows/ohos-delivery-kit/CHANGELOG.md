@@ -4,6 +4,63 @@ All notable changes to the published `ohos-delivery-kit` workflow are documented
 this file. Source artifacts are synchronized from
 `oshunter/ohos-delivery-kit` `main` through the marketplace publisher.
 
+## [0.15.0] - 2026-11-03
+
+Source: `main@4ff47290c4902c8aa7d489ae79ce6c676703e239`.
+
+This import publishes the language-specific API metadata contract and its
+breaking migration. Existing 0.14 API changes must be moved with
+`odk-upgrade-api-chain` or restarted from proposal; the legacy chain is not
+accepted as a compatibility layer.
+
+### Added
+
+- Make `arkts-api-spec.yaml` / `c-api-spec.yaml` the API SDD contract source:
+  `odk-spec` generates machine-readable API metadata and delegates the
+  human-facing three/five elements to an isolated subagent; `spec.md` keeps only
+  the API overview; plan and implement consume only the applicable metadata;
+  validate checks metadata structure, overview union consistency, declaration
+  diffs, documentation closure and exact paths. Legacy `api-spec.yaml`,
+  mixed-language declaration diffs and per-API Markdown specifications are no
+  longer accepted directly.
+- Add `odk-upgrade-api-chain` for 0.14 / `ohos-sdd/v1` chains: dry-run extracts
+  facts from the proposal, API repository knowledge and legacy spec, missing or
+  conflicting facts require developer confirmation, then the assistant writes
+  language metadata atomically and saves a migration report. Mixed-language
+  chains run once per language and accumulate the overview.
+- Add the proposal coverage matrix to `spec.md`: goals, non-goals, assumptions
+  and open questions must map to AC, BR, EB, language-specific API metadata, a
+  justified `N/A` or `Open-N`; the `lite` delivery level keeps its lean sections.
+- Split API declaration diff evidence by declaration repository and language
+  (`task1-arkts-api-declaration-<lang>.diff` and
+  `task1-c-api-declaration-<lang>.diff`); only applicable language files are
+  generated and the mixed-repository `task1-api-declaration-<lang>.diff` is no
+  longer compatible.
+- Add declaration-comment description closure: the eight API-level fields that
+  are not `N/A`, plus parameter, return and error-code descriptions, must appear
+  in the language diff; descriptions are plain text without element labels and
+  do not restate `since`, `syscap` or error-code attributes. Comment layout must
+  align with the declaration and leave no blank line after `*/`, and API-level
+  descriptions must not repeat the same behavior clause as parameter or return
+  descriptions.
+- Add the `check-api-documentation-context.py` process gate: before merging
+  documentation subagent output it verifies API ID closure, bilingual field
+  completeness and confirmed-value coverage, so units, ranges and defaults from
+  the bounded context are not lost.
+- Apply the OpenHarmony Chinese documentation rules to the API documentation
+  contract: a single `forbidden-terms.yaml` source and the
+  `chineseEnglishSpacing` switch (off by default) are shared by the process gate,
+  the example check and the final archive validation; the duplicate
+  documentation threshold is configurable with Draft WARN and Archive FAIL, and
+  both rule files carry `rulesetVersion` and `sourceOfTruth`.
+- Let API repository knowledge indexes declare prerequisites; `odk-spec` loads
+  them in declared order and stops when a prerequisite is unavailable.
+- Support the optional ArkTS `apiMode`: omitting it means dynamic only, static
+  and dynamic-plus-static modes must be declared and cross-checked with the
+  proposal, file path and `since` marker; static APIs accept `.d.ets` + `static`
+  or `.static.d.ets` + `staticonly`, and static declarations reject `any` and
+  union types.
+
 ## [0.14.7] - 2026-11-13
 
 Source: `main@85673017d17fcd84aad724d37b60603d04558f66`.

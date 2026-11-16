@@ -40,6 +40,7 @@ Use after `execution-plan.md` has been approved and the user wants implementatio
 - Load `using-odk-bridge` for output redirection and mode selection.
 - `spec.md` exists with numbered ACs.
 - `execution-plan.md` exists with Task IDs, AC-Task traceability, file-level scope, and verification commands.
+- If proposal.md `API/SDK` = 「是」, the applicable API metadata files exists and is valid, and the approved plan's Task-1 generates API declarations.
 - The user has approved implementation.
 - If Superpowers skills are unavailable, use the fallback chain declared in `adapters/superpowers.yaml` and clearly report the degradation.
 
@@ -81,9 +82,10 @@ Before an applicable, explicitly confirmed device flash invokes `device_flash_sk
 0. Read `codespec/changes/<repo-name>/<proposal-id>/execution-plan.md` Task list and list all Tasks as an explicit inventory before starting implementation. All task types — code modification, test writing, configuration update, and verification — are equally mandatory. No task type may be skipped without explicit user consent.
 1. Read the active `codespec/changes/<repo-name>/<proposal-id>/spec.md` AC list and `execution-plan.md` 代码范围映射.
 2. Read `codespec/changes/<repo-name>/<proposal-id>/execution-plan.md` Task list, file scope, and each Task's「任务间接口」（Produces/Consumes）—align cross-task naming and signatures to it.
-3. Invoke Superpowers `test-driven-development` before editing implementation code.
-4. Execute the approved Task list using Superpowers `subagent-driven-development` when available; otherwise use `executing-plans`. Adapt native task review to `odk-task-review` before any reviewer dispatch: R1 uses the single `all` role; R2 uses scope for spec compliance and arch/security for code quality, with exactly the fixed three seats. Project the native spec/quality conclusions from those verified reports instead of dispatching another native reviewer. R0 follows the ODK exemption. Scope native execution to implementation and its applicable task reviews; return control to ODK before native whole-branch review or branch finishing. The configured ODK handoff owns final whole-change review, validation and the separately authorized publishing flow.
-5. For each Task:
+3. If `API/SDK=是`, execute Task-1 before implementation tasks: generate `.d.ts` / `.d.ets` / `.h` from the applicable API metadata files and archive the en/zh declaration diffs, exactly as `odk-implement` does.
+4. Invoke Superpowers `test-driven-development` before editing implementation code.
+5. Execute the approved Task list using Superpowers `subagent-driven-development` when available; otherwise use `executing-plans`. Adapt native task review to `odk-task-review` before any reviewer dispatch: R1 uses the single `all` role; R2 uses scope for spec compliance and arch/security for code quality, with exactly the fixed three seats. Project the native spec/quality conclusions from those verified reports instead of dispatching another native reviewer. R0 follows the ODK exemption. Scope native execution to implementation and its applicable task reviews; return control to ODK before native whole-branch review or branch finishing. The configured ODK handoff owns final whole-change review, validation and the separately authorized publishing flow.
+6. For each Task:
    - Write or update failing tests first.
    - Run the targeted verification command and confirm the expected failure.
    - Implement the minimal code required for the Task.
@@ -93,12 +95,12 @@ Before an applicable, explicitly confirmed device flash invokes `device_flash_sk
    - Accept delegated code-Task completion only after the mapped task-review reports supply both required native conclusions and blocking findings are resolved. Self-review or an implementer's Done report alone is insufficient. After a fix, collect affected verification evidence and re-review the fix plus affected artifact diffs under the feedback procedure.
    - Before accepting the Task, invoke `odk-task-review` for the gate in `contracts/skill-guides/delivery/task-review.md`. Pass the Task's `风险等级`, full Task baseline/current diff including untracked files, related ACs/decisions and verification paths. The skill probes `python3 <executables>/lib/odk_host_capabilities.py --host <host>`, uses fixed arch/scope/security seats for R2 or one five-dimension seat for R1, and records the R0 reason without dispatch. Serial fallback writes `independent: false` in `evidence/reviews/task-<n>/verdict.md`. Update the Task-list risk cell and Actual Result on escalation; unresolved Critical/High marks the Task `❌ Blocked` and blocks the next Task. Use the skill's finding validation and bounded fix re-review. Native review conclusions remain input claims; do not dispatch duplicate seats if an existing reviewer can run the required ODK role on the same snapshot and return all required evidence.
    - Only after the applicable checks and review above pass, mark the Task as completed in `execution-plan.md`: change all `- [ ]` checkboxes to `- [x]` in the Task's Steps section. If the Task list table has a `状态` column, update it to `Done`; otherwise add the column first.
-6. After all Tasks are attempted, produce an **Execution Summary**:
+7. After all Tasks are attempted, produce an **Execution Summary**:
    - List every Task with status: ✅ 已完成（Done） / ❌ 阻塞（Blocked） / ⚠️ 跳过（Skipped，附原因）
    - If any Task is incomplete, inform the user and do NOT suggest moving to review — wait for user direction
-7. After implementation, update `execution-plan.md` 代码范围映射 and AC-Task 验证状态 with actual files, tests, and commit references.
-8. Route missing ACs, design deviations and changed verification assumptions through the feedback procedure; update affected original artifacts before claiming closure. Resolve only new scope/design decisions not already authorized with the user.
-9. After all Tasks are Done, automatically follow the handoff below; do not require separate review/validate commands from the user.
+8. After implementation, update `execution-plan.md` 代码范围映射 and AC-Task 验证状态 with actual files, tests, and commit references.
+9. Route missing ACs, design deviations, changed scope, and changed verification assumptions through the feedback procedure; update affected original artifacts before claiming closure. Resolve only new scope/design decisions not already authorized with the user.
+10. After all Tasks are Done, automatically follow the handoff below; do not require separate review/validate commands from the user.
 
 ## Output
 

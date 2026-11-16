@@ -49,6 +49,7 @@ Invoke OpenSpec `/opsx:apply` to implement tasks from the execution plan, apply 
 - `spec.md` and `execution-plan.md` must exist in `codespec/changes/<repo-name>/<proposal-id>/`.
 - `execution-plan.md` must be approved by the user — do NOT implement before plan approval. If the plan is not yet approved, stop and ask the user to review and approve it first.
 - If OpenSpec is unavailable, use the fallback chain declared in `adapters/openspec.yaml` and clearly report the degradation.
+- If proposal.md `API/SDK` = 「是」, a valid the applicable API metadata files and Task-1 declaration-generation task must exist. Do not implement API changes from `spec.md` Markdown or OpenSpec delta text.
 
 ## Confirm the build product before invoking the bridge
 
@@ -82,10 +83,11 @@ reconcile ODK; do not invent an independent Done state.
 <!-- /ODK:reference -->
 
 1. Invoke OpenSpec `/opsx:apply` to implement its native tracked tasks. Include `odk-task-review` in completion criteria for each mapped ODK Task: run it after that Task's verification and before accepting completion or advancing to the next ODK Task. Supply the Task baseline/current diff, AC/decision locations and verification paths. Apply `contracts/skill-guides/delivery/task-review.md`, including actual risk escalation and the existing evidence layout. On a blocking verdict, keep/reopen the mapped native tasks as pending through the feedback procedure; do not keep an independent ODK Done state. Read/revise native targets in place and refresh native instructions after task completion. Capture the native state again before reconciling ODK.
-2. Read the existing ODK plan, reconcile task_map against native tasks, and backfill `execution-plan.md` 代码范围映射 with actual files modified or created.
-3. Synchronize `execution-plan.md` progress from the native tasks and actual verification evidence, including per-row Final Status. Follow `contracts/skill-guides/delivery/feedback.md` for findings: correct/reopen native tasks or delta artifacts first, then reconcile ODK backfill and dispositions. Keep blocked tasks pending; do not maintain an independent completion state.
-4. Verify AC-Task traceability: every AC's required tasks are complete and verification passes. Tasks link to ACs, or use a justified N/A for document/infrastructure work that does not close an AC.
-5. Only after native state is `all_done` and the ODK projection is reconciled, automatically follow the handoff below; do not require separate review/validate commands from the user.
+2. If `API/SDK=是`, ensure Task-1 is the declaration-generation task and execute it first exactly as `odk-implement`: read the applicable API metadata files, generate `.d.ts` / `.d.ets` / `.h`, and archive the en/zh declaration diffs. Do not infer API facts from Markdown or OpenSpec delta text.
+3. Read the existing ODK plan, reconcile task_map against native tasks, and backfill `execution-plan.md` 代码范围映射 with actual files modified or created.
+4. Synchronize `execution-plan.md` progress from the native tasks and actual verification evidence, including per-row Final Status. Follow `contracts/skill-guides/delivery/feedback.md` for findings: correct/reopen native tasks or delta artifacts first, then reconcile ODK backfill and dispositions. Keep blocked tasks pending; do not maintain an independent completion state.
+5. Verify AC-Task traceability: every AC's required tasks are complete and verification passes. Tasks link to ACs, or use a justified N/A for document/infrastructure work that does not close an AC.
+6. Only after native state is `all_done` and the ODK projection is reconciled, automatically follow the handoff below; do not require separate review/validate commands from the user.
 
 ## Output
 

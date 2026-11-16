@@ -18,6 +18,7 @@ Resolve `<repo-name>` from the Git `origin` URL basename without `.git`; if `ori
 Each change directory is **populated or revised by phase** — `odk-init` reads and reuses an existing proposal, or seeds a missing `proposal.md` as a frontmatter stub; the other main docs appear when their phase first runs (a missing main doc before its phase is expected, not an error):
 - `proposal.md` — (`odk-init` stub → `odk-propose` fills) requirements proposal with triage, 1+8 device variation, external dependencies, success criteria, and impact scope (YAML frontmatter with `target_release`)
 - `spec.md` — (`odk-spec`) functional specification with WHEN/THEN AC, error codes, and verification mapping
+- `arkts-api-spec.yaml` / `c-api-spec.yaml` — (`odk-spec`, conditional `API/SDK=是`) machine-readable API contract and bilingual API documentation; `spec.md` keeps only an API overview
 - `design.md` — (`odk-design`) architecture design with Mermaid diagrams and decision comparison (references spec ACs)
 - `execution-plan.md` — (`odk-plan`) implementation plan with AC-Task traceability and task details
 - `spec-for-validation.md` — optional validation specification with integration/system scenarios derived from spec.md (parallel bypass, does not block main flow)
@@ -77,3 +78,5 @@ using fixed arch/scope/security seats for R2. It also handles scoped fix re-revi
 | MatrixSpec (`ms`) | `odk-ms-proposal` / `odk-ms-delta-spec` / `odk-ms-delta-design` / `odk-ms-tasks` / `odk-ms-validation` |
 
 Bridge commands load `using-odk-bridge` automatically for output redirection and mode selection. They fall back to base commands when the plugin is unavailable.
+
+Bridge mode does not weaken the conditional API contract. When `API/SDK=是`, any spec-producing bridge command must also produce the applicable valid metadata file(s); plan bridges must put declaration generation in Task-1; implementation bridges must consume the applicable metadata file(s) rather than Markdown API specifications.

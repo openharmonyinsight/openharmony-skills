@@ -164,23 +164,58 @@ For configuration-dependent steps, use the effective-configuration command defin
         - After fixes, use the skill's bounded re-review against stable finding IDs and affected verification evidence; old verdicts never cover changed inputs. Only `verdict: PASS` with `blocking_findings: 0` allows Done.
         - Summarize back to the main context in ≤15 lines: verdict path, per-dimension pass/fail, blocking count.
    - **TDD degradation rule:** If a Task genuinely cannot have an automated test — pure documentation, a configuration file that cannot be exercised by any test runner in this repository (document why), or a build system change with no runnable gate — state the reason explicitly before proceeding, record it in `Actual Result` as "TDD degraded: <reason>", and substitute a reproducible manual verification step. Do not degrade silently or skip verification entirely. A code change that touches business logic is never eligible for degradation even if it is delivered via a config or data file.
-   - **API 声明文件修改（条件触发 — Task-1）**：如果当前是 plan 中的第一个 Task（API 声明文件 Task-1）且 `API/SDK` = 是：
-     - 读取 `spec.md` 的 `## API 规格定义`（`### 公共规格属性` + 逐 API 的 `#### API: <完整签名>` 子节，含各 API 的规格表、API 描述三要素+五要素、设备行为差异），作为修改声明文件的精确蓝图
+   - **API 声明文件生成（条件触发 — Task-1）**：如果当前是 plan 中的第一个 Task（API 声明文件 Task-1）且 `API/SDK` = 是：
+     - 读取并校验所有适用的 `arkts-api-spec.yaml`、`c-api-spec.yaml`。它们是唯一 API 契约源；`spec.md` 必须声明 `API 契约版本 | 1.0.0`。不得从 `spec.md` 概览、既有声明文件或历史会话反推契约。若元数据缺失、非法、未确认，或存在旧 `api-spec.yaml`、旧混合语言声明 diff、旧逐 API Markdown 契约链路，停止 Task-1；可识别的 0.14 旧 Markdown 链路先路由到 `{{CMD_PREFIX}}upgrade-api-chain`，若升级助手无法闭环全部事实，再要求从 `proposal` 重新运行完整流程。Blocking mismatch 必须列出全部受影响产物、声明版本、要求版本 `1.0.0` 和迁移文档，并使用以下 action，不得建议手改版本字段：
+   ```text
+   Action:
+   Do not implement Task-1.
+   Restart the full API SDD flow from proposal.
+
+   Required flow:
+   proposal -> spec -> design -> plan -> implement
+
+   Migration guide:
+   docs/migrations/0.15.0-api-metadata-hard-migration.md
+   ```
      - 获取 API 声明仓库路径（spec 阶段过程信息不落盘）：若本会话已有 spec 阶段确认的 `interface_sdk-js` / `interface_sdk_c` 本地路径，直接使用；否则询问开发者提供（不一定是绝对路径，只要能定位到即可）
-     - **切分支（必须）**：API 声明仓库通常被多个需求共享，必须在修改声明文件前切出专用分支，避免多个需求的改动互相覆盖、diff 混淆。分支名建议关联proposal ID，如 `feature/proposal-12345-arkui-focus`；询问开发者确认分支名或由开发者手动切好后告知分支名
-     - **阅读仓库根目录的 `AGENTS.md`**：学习该仓库的 API 设计规范、命名约定、目录结构约定、声明文件格式要求等知识，作为修改声明文件的参照。AGENTS.md 中的内容与既有声明文件的实际格式共同构成格式参考，二者冲突时以 AGENTS.md 为准。若 AGENTS.md 不存在，退回仅参照既有声明文件格式（降级模式）；若未引用声明注释规范，参照既有声明文件的 注释风格
-     - 阅读仓库中与变更最相关的既有声明文件（≤10 个），提取格式规范（版权头、注释结构、命名风格），作为修改声明文件的参照
-     - 参照既有声明文件的格式规范，根据规格表在 API 仓库中修改或新增声明文件：
-       - ArkTS 声明写入 API 声明仓库中对应的声明文件目录（参照仓库既有目录结构和命名约定）
-       - C 声明写入 API 声明仓库中对应的声明文件目录（参照仓库既有目录结构和命名约定）
+     - **切分支（必须）**：API 声明仓库通常被多个需求共享，必须在修改声明文件前切出专用分支，避免多个需求的改动互相覆盖、diff 混淆。分支名建议关联 proposal ID，如 `feature/proposal-12345-arkui-focus`；询问开发者确认分支名或由开发者手动切好后告知分支名
+     - **阅读仓库根目录的 `AGENTS.md`**：学习该仓库的 API 设计规范、命名约定、目录结构约定、声明文件格式要求等知识，作为生成声明文件的参照。AGENTS.md 中的内容与既有声明文件的实际格式共同构成格式参考，二者冲突时以 AGENTS.md 为准
+     - 阅读仓库中与变更最相关的既有声明文件（≤10 个），仅提取格式规范（版权头、注释结构、命名风格），不得用其内容填补 metadata 文件缺口
+     - 根据适用 metadata 文件逐 API、逐字段生成或修改声明文件：
+       - ArkTS 声明写入 API 声明仓库中对应的 `.d.ts` / `.d.ets` 目录（参照仓库既有目录结构和命名约定）
+       - C 声明写入 API 声明仓库中对应的 `.h` 目录（参照仓库既有目录结构和命名约定）
+       - 每个元数据 API 必须生成对应声明；签名、参数、返回值、错误码、权限、`@syscap`、`@since`、平台、模型和设备差异必须逐字段消费
+       - 声明注释直接使用 metadata 文件中的 description、参数描述、返回值描述和错误码描述；不得改写契约语义或遗漏要素
+       - **描述正文闭包（必须）**：API 级 `description.en` / `description.zh` 的 8 个字段必须全部进入对应语言声明注释正文，顺序固定：
+         1. `function`
+         2. `scenario`
+         3. `effect`
+         4. `similarAPIs`
+         5. `defaultBehavior`
+         6. `constraints`
+         7. `activation`
+         8. `notes`
+         - 字段值为 `N/A` / `不适用` 时必须完全省略该字段；不得在 JSDoc / Doxygen 中输出 `N/A`、`不适用` 或仅由该占位值组成的空段落；非 `N/A` 字段不得合并成一句、不得截断、不得只写 `function`
+         - 每个字段的值直接作为独立一行或独立段落写入 JSDoc/Doxygen 正文，语义和措辞必须与 YAML 保持一致；不得输出字段名或要素类型前缀（如 `Scenario:`、`Effect:`、`Notes:`、`使用场景：`）
+         - `parameters[].description` 必须逐参数进入 `@param` / `@param[in/out]` 描述；`returnType.description` 必须进入 `@returns` / `@return`；`errorCodes[].description` 必须进入错误码说明或仓库规范要求的错误码注释结构
+         - 参数、返回值、错误码注释不得复用既有声明文案；必须以当前 metadata 文本为唯一来源
        - 声明文件须包含 Apache 2.0 版权声明头和完整声明注释（ArkTS 为 JSDoc，C 为 Doxygen 或仓库既有注释规范）
+       - **注释排版（必须）**：`/**` 必须与声明保持同缩进；注释正文和 `*/` 按仓库既有风格对齐；`*/` 与声明之间不得插入空行，注释内部不得插入空行。不得输出 `/**` 缩进漂移或 `*/` 后连续空行
+       - **描述去重（必须）**：若 metadata 中 API 级描述与参数/返回值描述重复表达同一事实，停止 Task-1 并要求回到 `odk-spec` 修正 metadata；不得在声明文件中自行删改契约，也不得把重复文案写入声明注释
      - **按需调用 oh-api-definition 质量检查（可选，不阻塞）**：
        - 若开发环境已提供 oh-api-definition，则对新修改的声明文件执行其格式、命名、注释和语法检查；发现问题时修复后重跑
        - 若工具不可用时在 Task `Actual Result` 记录未执行并继续，不要求安装，也不得因此阻塞 Task-1
-    - **生成声明注释双语 diff（英文 + 中文）**：完成适用的质量检查后，基于同一修改前基线生成两份 diff，归档到 `codespec/changes/<repo-name>/<proposal-id>/evidence/` 目录下，作为变更证据：
-      - **英文声明注释 diff**（文件名固定为 `task1-api-declaration-en.diff`）：声明文件的实际修改内容，声明注释（ArkTS 为 JSDoc，C 为 Doxygen 或仓库既有注释规范）使用英文——这是提交到 API 声明仓库的版本
-      - **中文声明注释 diff**（文件名固定为 `task1-api-declaration-zh.diff`）：签名、代码、版权头与标记（`@syscap`/`@since`/`@kit`/`@permission` 等）与英文版完全一致，仅将声明注释的描述正文改为中文；中文内容以 `spec.md` 逐 API 子节的 `**API 描述**`（三要素+五要素）为源头，与英文注释保持语义一致
-      - **约束**：中文版仅作为归档证据，不写回 API 声明仓库、不替代英文声明文件。两份 diff 均不得改变任何签名、入参、返回值、错误码或标记
+    - **按语言生成声明注释双语 diff（英文 + 中文）**：完成适用的质量检查后，基于同一修改前基线生成 diff，并按 API 声明仓库/语言拆分归档到 `codespec/changes/<repo-name>/<proposal-id>/evidence/` 目录下，作为变更证据：
+      - ArkTS 仓库（存在 `arkts-api-spec.yaml` 时必选）：
+        - **英文声明注释 diff**（文件名固定为 `task1-arkts-api-declaration-en.diff`）：`interface_sdk-js` 声明文件的实际修改内容，声明注释使用英文 JSDoc——这是提交到 ArkTS API 声明仓库的版本
+        - **中文声明注释 diff**（文件名固定为 `task1-arkts-api-declaration-zh.diff`）：签名、代码、版权头与标记（`@syscap`/`@since`/`@kit`/`@permission` 等）与英文版完全一致，仅将声明注释的描述正文改为中文；中文内容以 `arkts-api-spec.yaml` 的 `description.zh`、参数描述、返回值描述和错误码描述为源头
+      - C 仓库（存在 `c-api-spec.yaml` 时必选）：
+        - **英文声明注释 diff**（文件名固定为 `task1-c-api-declaration-en.diff`）：`interface_sdk_c` 声明文件的实际修改内容，声明注释使用英文 Doxygen 或仓库既有注释规范——这是提交到 C API 声明仓库的版本
+        - **中文声明注释 diff**（文件名固定为 `task1-c-api-declaration-zh.diff`）：签名、代码、版权头与标记与英文版完全一致，仅将声明注释的描述正文改为中文；中文内容以 `c-api-spec.yaml` 的 `description.zh`、参数描述、返回值描述和错误码描述为源头
+      - **约束**：每个 diff 文件只允许包含其对应 API 声明仓库的路径；不得把 `interface_sdk-js` 与 `interface_sdk_c` 的变更混入同一份 evidence。中文版仅作为归档证据，不写回 API 声明仓库、不替代英文声明文件。所有 diff 均不得改变任何签名、入参、返回值、错误码或标记
+      - **完整连续证据（必须）**：每个目标 API 的完整声明注释块（从 `/**` / `/*!` 到 `*/`）和对应声明必须出现在同一个连续 hunk 中；生成 diff 时使用足够上下文或按 API 裁剪 hunk，不得依赖默认 3 行上下文导致只提交签名变更。若同一文件中存在多个同签名声明，声明注释必须包含 API ID / qualifiedName，或提供可唯一关联的源位置，避免多复用同一证据
+      - **生成后闭包校验（必须）**：Task-1 生成 diff 后立即运行 `python3 <executables>/validate-artifacts-contract.py <change-dir> --phase plan`；`<executables>` 使用 resource-check 已解析的目录（源码布局为 `scripts`，安装布局为 `runtime/executables`）。若出现 `API declaration description.* missing or mismatched`、参数/返回值/错误码描述缺失或不一致，必须回到声明注释与 diff 修复并重跑；不得修改 YAML 契约来迎合已生成文案，也不得用人工声明替代该校验
+      - Task-1 之后若声明文件被任何后续任务或人工修改，必须重新生成对应语言 diff 并重跑上述校验；不得出现“声明文件已更新、diff 仍是旧内容”的证据漂移
    - After each Task, update `execution-plan.md` 代码范围映射 with actual files, tests, and commit references.
    - Backfill the Task's `Actual Result` with final completion evidence, appending after any `[失败 Red]` and `[验证 Verify]` entries already recorded — do not overwrite them.
    - Mark the Task as completed in `execution-plan.md`: change all `- [ ]` checkboxes to `- [x]` in the Task's Steps section. If the Task list table has a `状态` column, update it to `Done`; otherwise add the column first.
