@@ -135,7 +135,7 @@ requests retain their narrower scope.
 
 3. 从脚本输出的 `---MIRROR---` 段提取 `sessions` 列表，写入 `metadata_tracking.yaml` 的 `sessions` 字段（YAML 数组）。`metadata_tracking.yaml` 为纯 YAML 文件（无 body 表格），不追加 `## 会话记录` 表格。
 
-**关键**：sidecar `.sessions.json` 是权威源。即使 `metadata_tracking.yaml` 的 `sessions` 字段在重生成时丢失，下一个 skill 从 sidecar 读取，数据不丢。脚本保证 sidecar 的原子追加。
+**关键**：sidecar `.sessions.json` 是会话追踪的权威源，只保存调用历史；它不备份交付件正文，也不证明阶段完成。增量修订 metadata 并用 `.workflow.json` 记录执行结果，遵循 `contracts/skill-guides/router/workflow-state.md`。
 
 ## Output
 

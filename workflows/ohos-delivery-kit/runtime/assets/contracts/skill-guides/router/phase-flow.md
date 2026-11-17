@@ -8,6 +8,15 @@ return results to it without starting another phase flow.
 This protocol refines phase-local fixed next-command suggestions: insert the
 actual pending hooks and gates rather than copying a bare command verbatim.
 
+## Persist and restore execution state
+
+Read [workflow-state.md](workflow-state.md) before phase work. Use its packaged
+`lib/odk_workflow.py` commands to inspect/prepare the invocation, checkpoint every
+pre-hook/body/post-hook boundary, restore the first unfinished step after a new
+session, and invalidate changed inputs. The coordinator must persist this state;
+conversation context and `.sessions.json` are not execution checkpoints.
+Use its guarded patch/create commands for ODK document writes.
+
 ## Resolve the actual flow
 
 Use the same installation and executable root as the resource check. After the
@@ -16,8 +25,9 @@ entry's update check and resource/config loading, run the installed
 `python3 scripts/lib/odk_repository.py --phase-hooks spec`). This read-only JSON
 describes `steps` in execution order and reports `user_config_path`. It never
 executes hooks or grants approval. Reload configuration at each new phase;
-keep the selected hook list while that invocation is paused so completed hooks
-are not repeated. A requested config change invalidates affected pending work.
+keep the selected hook list in its durable checkpoint while that invocation is
+paused so completed hooks are not repeated. A requested config change invalidates
+affected work; reconcile it through the checkpoint protocol before continuing.
 
 The flat string keys are `<phase>_pre_hook` and `<phase>_post_hook`. Each value
 is an ordered, space-separated list of skill names, using the same semantics as
@@ -103,8 +113,9 @@ dependent work. Name the exact hook and key, its reason, and how to resolve and
 resume it. Do not skip it, mark the parent complete, run later hooks, or advance
 to the next phase. Use the normal feedback procedure for hook findings.
 
-Keep the phase/action identity, selected hooks, completed hook indices, evidence
-and current pending step in the coordinator's resumable context. Resume at the
+Persist the phase/action identity, selected hooks, completed hook indices, evidence
+and current pending step in `.workflow.json` using the workflow-state protocol.
+Keep conversation summaries as a convenience, never the authority. Resume at the
 first unfinished step; do not rerun successful hooks merely because the user
 answered an approval question or a bridge returned. Changed code/artifacts or
 hook inputs invalidate affected results and require rechecking those hooks.

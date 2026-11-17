@@ -6,11 +6,12 @@ this file. Source artifacts are synchronized from
 
 ## [0.15.0] - 2026-11-03
 
-Source: `main@886ce2a07863f389b34d91535e7864d32a4f1e4c`.
+Source: `main@68cae2a9860dc83fa986c203aa4c6d276720e5cd`.
 
-This republish imports the review fixes merged into the source `main` after the
-first 0.15.0 import (`4ff4729`), including the migration follow-ups; the version
-stays 0.15.0 because that release PR has not been merged yet.
+This republish imports the durable workflow checkpoint and guarded document
+update series merged into the source `main` as `!224`, superseding the `886ce2a`
+snapshot; the version stays 0.15.0 because that release PR has not been merged
+yet.
 
 This import publishes the language-specific API metadata contract and its
 breaking migration. Existing 0.14 API changes must be moved with
@@ -19,6 +20,37 @@ accepted as a compatibility layer.
 
 ### Added
 
+- Add a durable `.workflow.json` checkpoint per ODK change: phases, tasks,
+  pre/post hooks, attempts, verification evidence and approvals are recorded
+  step by step, so an interrupted session resumes from the last unfinished
+  step; changed inputs, evidence, configuration or upstream results invalidate
+  stale results, and an interrupted operation re-verifies the actual outcome
+  before retrying.
+- Hand off shared artifacts explicitly with evidence: a partial body write, a
+  failed post-check or a later review repair can keep the original planning
+  approval while entering a local re-verification generation; consecutive
+  recoveries always inherit the original upstream baseline of unaccepted work,
+  and new artifacts are only accepted for other consumers after verification
+  succeeds.
+- Track native Markdown tasks through explicit `--native-task` declarations,
+  including task files outside the change directory; only checklist state
+  changes are hand-off-able, while task names, content, order and other bytes
+  still participate in the definition check, and plain source files cannot use
+  that exception.
+- Reconcile a completed OpenSpec archive with `finalize-native-archive`: the
+  final `all_done` capture, archive result, archived files and snapshot summary
+  are verified, then native task reads are bound to the immutable snapshot so
+  delivery continues with the original invocation definitions, generations,
+  dependencies and planning approval; external selected stores are supported,
+  while unaccepted task content, tampered evidence or a reappearing original
+  workspace still block.
+- Require a successful `finish` to carry a pre-verification snapshot bound to
+  the actual files, generation and attempt; content changes during or after
+  verification are rejected, and invalid planning evidence, backfill evidence
+  or recovery evidence blocks the affected work.
+- Cache per-query dependency results in the status path: a 20-task graph drops
+  from 17,710 configuration reads to 20 (about 0.017s locally); the cache never
+  crosses queries.
 - Make `arkts-api-spec.yaml` / `c-api-spec.yaml` the API SDD contract source:
   `odk-spec` generates machine-readable API metadata and delegates the
   human-facing three/five elements to an isolated subagent; `spec.md` keeps only
@@ -67,6 +99,19 @@ accepted as a compatibility layer.
 
 ### Fixed
 
+- Read checkpoint state, incremental patches, verification snapshots and native
+  archive evidence as UTF-8, and emit CLI JSON results and diagnostics through
+  UTF-8 reconfigured standard streams; a host whose default encoding is ASCII
+  can read, verify and restore Chinese records, and a command can no longer
+  report failure after its state was already persisted.
+- Reject native archive finalization when a declared native task inside the
+  archived change was not captured by the final snapshot (partial or unmatched
+  declarations, including late declarations on the idempotent path); such
+  checkpoints previously stayed silently unbound and could never recover.
+- Preserve manual document content through SHA-256 checks and localized
+  replacement: stale writes, whole-file replacement, symlink targets and
+  overwriting existing files are refused, shared by base and bridge commands,
+  and `.sessions.json` stays a call log only.
 - Preserve C pointer return types and qualifiers; parse inline-formatted legacy
   error codes without removing pointer operators inside code spans.
 - Preserve confirmed ArkTS API modes in both legacy formats. Reject explicit

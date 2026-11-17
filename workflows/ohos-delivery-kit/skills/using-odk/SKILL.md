@@ -174,12 +174,12 @@ sidecar 格式（session ID 跨平台格式见下文「Session ID 获取」）�
 
 ### 追加时序
 
-skill 从模板重新生成 body **之后**、写入交付件**之前**执行：
+skill 准备好新增内容或增量补丁**之后**、通过受保护命令写入交付件**之前**执行：
 - 调用 `update-sessions-sidecar.py` 脚本更新 sidecar（脚本内部完成 read-append-write）
 - 从脚本输出提取 `---MIRROR---` 段，将 `sessions` 字段和 `## 会话记录` 表格写入交付件
 - 写入交付件
 
-**关键**：即使交付件的 frontmatter 或表格在 body 重生成时丢失，下一个 skill 从 sidecar 读取，数据不会丢失。这正是 sidecar 方案解决的核心问题。**脚本对 read-modify-write 加排他锁并原子发布，不会丢失已有 log 条目，不会因并发覆写丢数据。**
+**关键**：sidecar `.sessions.json` 只保存会话调用历史；镜像缺失时可据此恢复会话记录，但它不备份交付件正文，也不证明阶段完成。阶段与 hook 的成功结果、证据和恢复位置必须按 `contracts/skill-guides/router/workflow-state.md` 写入 `.workflow.json`。
 
 ## Effective contract and delivery level
 

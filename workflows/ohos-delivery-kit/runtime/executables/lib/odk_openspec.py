@@ -151,6 +151,7 @@ def _capture(project: Path, change: str, target: Path, *, cli: str, store: str |
         else:
             atomic_write(destination, content, replace=False)
     updated = {**previous, **identity, "state_owner": "openspec", "state": state,
+               "native_root": os.path.relpath(native_root, target),
                "snapshot": str(snapshot.relative_to(target)), "snapshot_sha256": digest}
     after = binding.read_bytes() if binding.exists() else None
     if after != before:

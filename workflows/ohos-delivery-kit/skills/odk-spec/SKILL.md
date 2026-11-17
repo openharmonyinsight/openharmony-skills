@@ -104,7 +104,7 @@ Read `contracts/skill-guides/brainstorm/interview.md` in full and apply its deci
 - **Subagent 只写文案，不改契约**：subagent 输出仅允许提供 description、参数描述、返回值描述和错误码描述；合并时必须校验 API ID 集合一致，并忽略其输出中的所有契约字段。
 - Do not invent API signatures, error code values, or data structures. Resolve contradictions from code facts before writing ACs.
 - Keep ACs concrete enough for the template's verification mapping; code mapping (AC→implementation files) lives in `execution-plan.md`.
-- **保留 US-DFX 回填内容**：`spec.md` 可能在 design 阶段被 `odk-design` 第 6.4 步回填 `### US-DFX: 故障模式响应` 子节（故障模式 AC）及 `异常与边界规则`/`验证映射`/`测试设计提示` 的关联行。重新生成 `spec.md` 时必须保留该子节与关联行，不得因重建而丢失（design.md `### DFX 故障模式处置` 的关联 AC 悬空会使校验 FAIL）。
+- **保留 US-DFX 回填内容**：`spec.md` 可能在 design 阶段被 `odk-design` 第 6.4 步回填 `### US-DFX: 故障模式响应` 子节（故障模式 AC）及 `异常与边界规则`/`验证映射`/`测试设计提示` 的关联行。增量修订 `spec.md` 时必须保留该子节与关联行，不得丢失（design.md `### DFX 故障模式处置` 的关联 AC 悬空会使校验 FAIL）。
 - AC 使用 Given/When/Then 格式：Given 前置条件；When 用户/业务可操作动作；Then 通过三层接口边界（public/system/inner API + 终端用户可感知）可观测的结果。
 - AC 的 Then 禁止部件内部实现（数据结构/状态机/内部流程/算法）——移 `design.md`「状态归属与不变量」。判定：Then 能否仅凭公开接口判定？需查内部状态则移 design。
 - **API 支持属性确认（条件触发）**：若 proposal.md `API/SDK` 维度 = 「是」，需在适用 metadata 文件的每个 API 上显式填写跨平台/元服务/卡片/FA-Stage 模型支持属性。
@@ -150,7 +150,7 @@ Read `contracts/skill-guides/brainstorm/interview.md` in full and apply its deci
 
 3. 从脚本输出的 `---MIRROR---` 段提取 `sessions` 字段和 `## 会话记录` 表格，写入交付件 frontmatter + body 开头（frontmatter 之后、正文 `#` 标题之前）。
 
-**关键**：sidecar `.sessions.json` 是权威源。即使 `spec.md` 的 frontmatter 或表格在 body 重生成时丢失，下一个 skill 从 sidecar 读取，数据不丢。脚本保证 sidecar 的原子追加。
+**关键**：sidecar `.sessions.json` 只保存会话调用历史；镜像缺失时可据此恢复会话记录，但它不备份交付件正文，也不证明阶段完成。阶段与 hook 的成功结果、证据和恢复位置必须按 `contracts/skill-guides/router/workflow-state.md` 写入 `.workflow.json`。
 
 ## Output
 

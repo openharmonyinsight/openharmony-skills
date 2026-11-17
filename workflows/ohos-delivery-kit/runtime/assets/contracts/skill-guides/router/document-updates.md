@@ -27,6 +27,9 @@ template load, external workflow invocation or document write.
 4. Before writing, recheck that the baseline has not changed since it was read.
    If it changed, reread and reconcile; do not overwrite another writer. Inspect
    the resulting diff for lost decisions, custom content, IDs and evidence.
+   Use the fingerprint/patch/create commands in [workflow-state.md](workflow-state.md)
+   for ODK artifact writes, including session mirrors. A stale-hash rejection
+   requires rereading and merging, never a direct full-file replacement.
    Changed behavior/code invalidates affected approval/test results; mark those
    results pending and revalidate rather than retaining a stale passing claim.
 5. Report the files updated, decisions amended and remaining gaps. Repeated
