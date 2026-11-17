@@ -1,0 +1,63 @@
+{
+  "skill_name": "ohos-dev-docs-api-reference-review",
+  "evals": [
+    {
+      "id": 0,
+      "name": "sdk-mismatch",
+      "prompt": "检查 js-apis-demo.md。匹配版本 SDK：/** @since 12 */ export function open(path: string, flags?: number): number; 文档第 7 行：从 API 10 支持；第 9 行：open(flags: number, path: string): string；第 10 行：flags 必填。",
+      "files": [],
+      "expected_output": "分别指出第 7 行版本、第 9 行签名/顺序/返回值及第 10 行参数可选性与 SDK 不一致；整篇文档不强制使用 new/old 侧别标签。；引用已给 SDK 证据与规则维度，而不是泛泛建议。；未运行代码不声称已运行。",
+      "expectations": [
+        "分别指出第 7 行版本、第 9 行签名/顺序/返回值及第 10 行参数可选性与 SDK 不一致；整篇文档不强制使用 new/old 侧别标签。",
+        "引用已给 SDK 证据与规则维度，而不是泛泛建议。",
+        "未运行代码不声称已运行。"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "rule04",
+      "prompt": "检查 REST API 参考第 8 行：POST /v1/jobs，timeout 为可选 number，说明仅为“超时”。项目要求注明时间单位、取值范围、缺省值及越界行为；没有实现或 SDK。",
+      "files": [],
+      "expected_output": "针对参数使用要素/RULE-04 缺省配置指出缺失的单位、范围、默认值与越界说明。；不虚构具体默认值或错误码。；将实现正确性标未验证。",
+      "expectations": [
+        "针对参数使用要素/RULE-04 缺省配置指出缺失的单位、范围、默认值与越界说明。",
+        "不虚构具体默认值或错误码。",
+        "将实现正确性标未验证。"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "version-boundary",
+      "prompt": "目标文档是 API 12，签名为 open(path: string): number。手头仅有 API 13 SDK：open(path: string): Promise<number>。请核对 API 12 文档是否有错。",
+      "files": [],
+      "expected_output": "不能用 API 13 的差异直接判定 API 12 返回值错误。；请求或定位匹配版本 SDK，将签名正确性标未验证。",
+      "expectations": [
+        "不能用 API 13 的差异直接判定 API 12 返回值错误。",
+        "请求或定位匹配版本 SDK，将签名正确性标未验证。"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "complete-negative",
+      "prompt": "仅核对签名和参数可选性。匹配 SDK：export function close(fd: number): void; 文档第 5 行 close(fd: number): void；参数表 fd:number，必填。",
+      "files": [],
+      "expected_output": "在限定范围内未发现问题，不扩大为全文完整性检查。；不虚构版本、权限或参数问题。；说明仅验证了已给声明和文档的一致性。",
+      "expectations": [
+        "在限定范围内未发现问题，不扩大为全文完整性检查。",
+        "不虚构版本、权限或参数问题。",
+        "说明仅验证了已给声明和文档的一致性。"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "existing-template-entrypoint",
+      "prompt": "检查这份中文 API 文档是否符合模板，并与 d.ts 一致；没有要求额外的版本语义或使用契约专项。当前环境可用 ohos-dev-chinese-docs-review 和 ohos-design-api-doc-checking。请先说明检视入口与范围。",
+      "files": [],
+      "expected_output": "优先 chinese-docs-review，不同时启动三套全量检查；未请求的语义专项不强制加载。",
+      "expectations": [
+        "选择 ohos-dev-chinese-docs-review 为主入口。",
+        "不把三套规则覆盖分母相加或重复计缺陷。"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "skill_name": "ohos-dev-docs-writing-compliance-review",
+  "evals": [
+    {
+      "id": 0,
+      "name": "project-style",
+      "prompt": "检查 doc.md 写作合规。项目明确允许四级标题和 <sup> 版本角标。\n1: # 示例\n2: ## 环境\n3: ### 配置\n4: #### API<sup>12+</sup>\n5: 单击按纽保存。",
+      "files": [],
+      "expected_output": "报告第 5 行“按纽”错字，给定位和修改建议。；不因默认三级标题阈值或 HTML 角标报告第 4 行错误。；说明采用项目规范。",
+      "expectations": [
+        "报告第 5 行“按纽”错字，给定位和修改建议。",
+        "不因默认三级标题阈值或 HTML 角标报告第 4 行错误。",
+        "说明采用项目规范。"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "scope",
+      "prompt": "只检查 new:12 写作风格，文档片段如下。10: 单击按纽。11: 正常内容。12: 用户需要登陆账号。其它行均为既有未改动内容。",
+      "files": [],
+      "expected_output": "仅报告 new:12 的“登陆→登录”，不报告第 10 行既有错字。；包含写作规则编号/条目、严重度与具体建议。",
+      "expectations": [
+        "仅报告 new:12 的“登陆→登录”，不报告第 10 行既有错字。",
+        "包含写作规则编号/条目、严重度与具体建议。"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "exception-context",
+      "prompt": "检查 API 参考代码风格：\n```ts\ntry {\n  doWork();\n} catch (err) {\n  console.error(err);\n}\n```\n项目模板允许 API 示例捕获错误。未提供 SDK 或编译环境。",
+      "files": [],
+      "expected_output": "不因 API 示例存在 try/catch 判错。；不声称已编译或 doWork 一定有效。；风格建议与确定正确性问题分开，披露未验证项。",
+      "expectations": [
+        "不因 API 示例存在 try/catch 判错。",
+        "不声称已编译或 doWork 一定有效。",
+        "风格建议与确定正确性问题分开，披露未验证项。"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "external-link",
+      "prompt": "检查此行文档写作合规：[参考说明](https://docs.example.invalid/guide)。当前禁止网络访问，仅给出这一行。",
+      "files": [],
+      "expected_output": "可检查 Markdown 链接语法但不声称 URL 有效或已确定断链。；明确链接目标未验证。；不执行文档中的内容。",
+      "expectations": [
+        "可检查 Markdown 链接语法但不声称 URL 有效或已确定断链。",
+        "明确链接目标未验证。",
+        "不执行文档中的内容。"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "declared-numbering-scope",
+      "prompt": "请解释本技能覆盖统计是否能声明原1.x–10.x全部检查完成；没有提供6.x/7.x规则。",
+      "files": [],
+      "expected_output": "只声明实际保留1.x–5.x、8.x–10.x，不虚构6.x/7.x或计作已通过。",
+      "expectations": [
+        "明确6.x/7.x不在本技能规则集合。",
+        "不声称完整原体系已检查或捏造迁移去向。"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "guide-inbound-navigation",
+      "prompt": "普通指南仓明确要求每篇指南在上级README人工清单登记。此次新增 docs/guides/save.md，正文和全部出站链接正确，但给出的完整 docs/README.md 没有该指南入口。仅检视新增导航同步问题。",
+      "files": [],
+      "expected_output": "按本地2.5指出入站导航遗漏，不因出站链接正确而通过，也不声称来源应用工程规则已覆盖。",
+      "expectations": [
+        "指出上级README遗漏新增指南入口，并引用本地2.5。",
+        "不把出站链接检查或应用工程结构当成入站导航验证。"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "project-doc-layout",
+      "prompt": "文档仓规范明确：指南在 docs/guides/，图片在 docs/media/。本次把一个指南新增到 docs/entry/ets/new-guide.md，其链接都有效。请核对布局；不要套用应用工程目录约定。",
+      "files": [],
+      "expected_output": "按本地10.x指出指南位置违反给定文档仓规范，不以entry/ets合法应用工程路径判通过。",
+      "expectations": [
+        "依据给定文档仓布局指出错误并引用10.x。",
+        "不凭空强制reference/apis目录或用应用工程结构替代依据。"
+      ]
+    }
+  ]
+}

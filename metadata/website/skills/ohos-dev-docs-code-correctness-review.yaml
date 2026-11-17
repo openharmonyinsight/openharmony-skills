@@ -1,0 +1,53 @@
+schemaVersion: 1
+id: ohos-dev-docs-code-correctness-review
+title: 文档代码正确性检视
+summary: 对照匹配版本声明和配置规范检视 OpenHarmony 文档示例，区分代码、版本和图文一致性的已验证结果与条件缺口。
+category:
+  scope: common
+  namespace: development
+  stage: development
+  domain: docs
+  capability: code-correctness-review
+status:
+  maturity: draft
+  version: 0.1.0
+  owner: openharmony
+tags:
+- docs
+- quality-review
+audience:
+- OpenHarmony 文档作者
+- 文档评审人员
+useCases:
+- title: 文档代码正确性检视
+  description: 对照匹配版本声明和配置规范检视 OpenHarmony 文档示例，区分代码、版本和图文一致性的已验证结果与条件缺口。
+whenToUse:
+- 在用户要求核对 OpenHarmony/HarmonyOS 文档示例中的 ArkTS、C API、JSON5、Bash 代码正确性、版本信息或图文一致性时使用。适用于文档示例，不替代完整业务代码审查。
+whenNotToUse:
+- 需要实际编译部署或设备运行，而非文档检视
+- 与文档质量无关的完整业务代码审查
+inputs:
+  required:
+  - 待检视文档或补丁
+  optional:
+  - 项目规范
+  - API/SDK版本及匹配声明
+  - 目标分支、Issue 或PR信息
+outputs:
+- 问题清单、精确定位与修改建议
+- 检查覆盖情况和验证限制
+quickStart:
+  steps:
+  - 准备待检视文档或补丁。
+  - 说明检视范围、项目规范及可用的 SDK 信息。
+  - 使用该技能检视，并核对问题证据和未验证项。
+  examplePrompt: 请使用 ohos-dev-docs-code-correctness-review 核对文档中的代码与配置示例，SDK 不可用的项目标记未验证。
+related:
+  skills:
+  - ohos-dev-chinese-docs-review
+  - ohos-design-api-doc-checking
+  docs:
+  - title: 维护者说明
+    path: README.md
+  - title: 评估用例与方法
+    path: evals/README.md

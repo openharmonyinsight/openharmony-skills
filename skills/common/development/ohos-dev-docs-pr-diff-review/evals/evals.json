@@ -1,0 +1,76 @@
+{
+  "skill_name": "ohos-dev-docs-pr-diff-review",
+  "evals": [
+    {
+      "id": 0,
+      "name": "multi-hunk",
+      "prompt": "仅评审以下 guide.md 补丁中的写作错误，无 SDK。\n```diff\n--- a/guide.md\n+++ b/guide.md\n@@ -10,3 +10,3 @@\n 已有错误：按纽\n-正常内容\n+新增错误：组价\n 正常内容\n@@ -30 +30 @@\n-正常内容\n+新增错误：按纽\n```",
+      "files": [],
+      "expected_output": "只报告 new:11 的“组价”和 new:30 的“按纽”。；不报告 context 的 old/new:10 既有错误。；每个 hunk 重置行号，不声称执行过 SDK 验证；仅检查写作错误时不强制重复 SDK 缺失说明。",
+      "expectations": [
+        "只报告 new:11 的“组价”和 new:30 的“按纽”。",
+        "不报告 context 的 old/new:10 既有错误。",
+        "每个 hunk 重置行号，不声称执行过 SDK 验证；仅检查写作错误时不强制重复 SDK 缺失说明。"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "deletion",
+      "prompt": "仅评审此 js-apis-demo.md 补丁。接口仍保留，版本声明未移动或替换。\n```diff\n--- a/js-apis-demo.md\n+++ b/js-apis-demo.md\n@@ -20 +19,0 @@\n-从 API 12 开始支持。\n```",
+      "files": [],
+      "expected_output": "报告删除起始版本的缺陷，定位 old:20 并标明删除。；不编造 new:20，不因为没有新增行而声称无问题。；不为本次评审自动生成 Excel 或发布评论。",
+      "expectations": [
+        "报告删除起始版本的缺陷，定位 old:20 并标明删除。",
+        "不编造 new:20，不因为没有新增行而声称无问题。",
+        "不为本次评审自动生成 Excel 或发布评论。"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "missing-patch",
+      "prompt": "检视 GitCode 文档 PR。已提供元信息：base=aaa、head=bbb；文件 guide.md 的 patch=null，但 additions=20。没有网络、MCP、CLI 或本地提交。",
+      "files": [],
+      "expected_output": "标明 guide.md 变更未覆盖，不能将 null patch 当无改动。；请求缺失补丁或本地可用范围，不声称通过。；不使用 gh 假装能获取 GitCode 内容。",
+      "expectations": [
+        "标明 guide.md 变更未覆盖，不能将 null patch 当无改动。",
+        "请求缺失补丁或本地可用范围，不声称通过。",
+        "不使用 gh 假装能获取 GitCode 内容。"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "rename-json5",
+      "prompt": "仅评审此补丁，JSON5 是唯一内容变更。\n```diff\ndiff --git a/old-guide.md b/new-guide.md\nsimilarity index 100%\nrename from old-guide.md\nrename to new-guide.md\ndiff --git a/module.json5 b/module.json5\n--- a/module.json5\n+++ b/module.json5\n@@ -1 +1 @@\n-{ module: { name: 'entry' } }\n+{ module: { name: 123, }, }\n```\n提供匹配版本 schema：module.name 必须为 string。",
+      "files": [],
+      "expected_output": "纯重命名不触发全文既有问题检视。；相关 JSON5 未被文档过滤遗漏，指出 new:1 的 name 类型错误。；单引号与尾随逗号不作为 JSON5 语法错误。",
+      "expectations": [
+        "纯重命名不触发全文既有问题检视。",
+        "相关 JSON5 未被文档过滤遗漏，指出 new:1 的 name 类型错误。",
+        "单引号与尾随逗号不作为 JSON5 语法错误。"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "image-only-change",
+      "prompt": "仅检视本次变更：docs/figures/guide-result.png 被修改，Markdown 无变化。关联文档 guide.md 与给出的代码均说明按钮文字为“保存”，可读旧图显示“保存”，可读新图显示“删除”。没有文本 hunk。",
+      "files": [],
+      "expected_output": "图片仍进入检视；文件级定位新图按钮文字与代码/文档矛盾，不编造行号。",
+      "expectations": [
+        "图片独立变更不被扩展名筛选丢弃。",
+        "结合可读旧新图及关联文档，只报告本次引入的问题。",
+        "按文件级区域定位，不编造文本行号。"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "unreadable-image",
+      "prompt": "文档 PR 仅修改 docs/figures/result.png，Markdown 引用未变化。已提供完整文件状态，但 old/new 二进制均无法读取，也无替代图像。",
+      "files": [],
+      "expected_output": "列出图片为未覆盖，不把空 Markdown 集合当无文档变更或检查通过。",
+      "expectations": [
+        "保留该图片文件及变更状态。",
+        "明确图像内容未覆盖且不输出无条件通过。"
+      ]
+    }
+  ]
+}

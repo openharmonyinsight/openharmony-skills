@@ -1,0 +1,4 @@
+interface:
+  display_name: API 参考文档检视
+  short_description: 版本绑定的 API 参数语义、默认值与使用契约专项检视。
+  default_prompt: 使用 $ohos-dev-docs-api-reference-review 处理当前任务，给出实际证据和未验证项。
