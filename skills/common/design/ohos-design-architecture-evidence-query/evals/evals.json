@@ -1,0 +1,196 @@
+{
+  "skill_name": "ohos-design-architecture-evidence-query",
+  "runner": {
+    "script": "run_evals.py",
+    "arms": [
+      "scripted",
+      "with-skill",
+      "without-skill"
+    ],
+    "transcripts": "runs/<arm>/NN-<name>.md",
+    "summary": "runs/<arm>/summary.json",
+    "notes": "scripted 臂按 SKILL.md 规定的命令逐条真跑；两个 agent 臂各起一个隔离的 codex exec 进程，with-skill 臂在临时 CODEX_HOME 里装好本 skill（不含 evals/），without-skill 臂只给 bootstrap.py 与 oskm_runtime/ 代码。夹具是本地 HTTP 端点 + 合成 knowledge.db + 真构建的 oskm-cli.pyz，全程不访问真实网络、不读写 ~/.oskm。"
+  },
+  "evals": [
+    {
+      "id": 1,
+      "name": "first-install-complete-archive",
+      "prompt": "运行根目录为空，测试夹具已提供一个本地 knowledge.tar.gz，内含 knowledge.db、oskm-cli.pyz、interface/sdk-js 和 interface/sdk_c。请从任意 Agent 启动目录安装该 skill 的托管运行时，并报告安装后的布局、状态与当前工作目录。",
+      "expected_output": "使用绝对路径调用 bootstrap.py install，把 knowledge.db、oskm-cli.pyz、interface/sdk-js 和 interface/sdk_c 一次装到同一个 runtime root；状态文件包含 db、sdk、cli 三段，不需要单独的 CLI 下载端点；安装完成后回到 Agent 启动目录。",
+      "assertions": [
+        {
+          "text": "knowledge.db",
+          "type": "contains"
+        },
+        {
+          "text": "oskm-cli.pyz",
+          "type": "contains"
+        },
+        {
+          "text": "interface/sdk-js",
+          "type": "contains"
+        },
+        {
+          "text": "interface/sdk_c",
+          "type": "contains"
+        },
+        {
+          "text": "四个产物位于同一 runtime root，未使用单独的 CLI 下载端点，且安装后当前目录等于 Agent 启动目录",
+          "type": "llm_judge"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "openharmony-exact-date",
+      "prompt": "使用 OPENHARMONY_CI 安装 date=20261102，OSKM_DOWNLOAD_ENDPOINT 已配置为测试服务。请执行安装并说明实际请求语义。",
+      "expected_output": "向端点 POST，component 固定为 dayu600_7885_ai，开始和结束时间都来自同一个显式日期；下载物是 knowledge.tar.gz，不要求用户传 --component，也不使用 latest。",
+      "assertions": [
+        {
+          "text": "OPENHARMONY_CI",
+          "type": "contains"
+        },
+        {
+          "text": "component: dayu600_7885_ai",
+          "type": "contains"
+        },
+        {
+          "text": "knowledge.tar.gz",
+          "type": "contains"
+        },
+        {
+          "text": "一次请求同时表示开始和结束日期，不要求用户单独传两个日期",
+          "type": "llm_judge"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "internal-exact-date",
+      "prompt": "使用 INTERNAL_CI 下载 date=20261102 的运行时，OSKM_DOWNLOAD_ENDPOINT 已配置为测试服务。请执行并说明 URL。",
+      "expected_output": "请求 $OSKM_DOWNLOAD_ENDPOINT/20261102，响应文件为 knowledge.tar.gz；指定日期不会退化成 latest 或系统当天。",
+      "assertions": [
+        {
+          "text": "$OSKM_DOWNLOAD_ENDPOINT/$date",
+          "type": "contains"
+        },
+        {
+          "text": "knowledge.tar.gz",
+          "type": "contains"
+        },
+        {
+          "text": "指定日期不会退化成 latest 或系统当天",
+          "type": "llm_judge"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "invalid-archive-preserves-runtime",
+      "prompt": "已有可用运行时。现在使用一个 SQLite 损坏的 knowledge.tar.gz 执行 refresh，测试服务会正常返回该归档。请执行并报告结果。",
+      "expected_output": "refresh 以非零状态失败并报告归档校验错误；已有 knowledge.db、oskm-cli.pyz、两套 SDK 和状态文件保持不变，不得留下半装运行时。",
+      "assertions": [
+        {
+          "text": "失败",
+          "type": "contains"
+        },
+        {
+          "text": "已有运行时保持不变",
+          "type": "contains"
+        },
+        {
+          "text": "失败后不得替换任何旧产物或留下半装运行时",
+          "type": "llm_judge"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "local-source-runtime-preferred",
+      "prompt": "当前目录是完整 OpenHarmony 源码根，包含 .gn、非空的 interface/sdk-js 和 interface/sdk_c、out/sample-product/oskm/knowledge.db 或 artifacts/sample-product/knowledge.db，以及本地 cli/dist/oskm-cli.pyz。请安装运行时，并避免不必要的网络请求。",
+      "expected_output": "install 优先使用源码树中的 DB、CLI 和两套 SDK，记录 source: local 和源码根路径；cli-path 也应优先源码树 CLI；本地候选完整时不得调用下载端点。",
+      "assertions": [
+        {
+          "text": "source: local",
+          "type": "contains"
+        },
+        {
+          "text": "不使用下载",
+          "type": "contains"
+        },
+        {
+          "text": "本地 DB、CLI、sdk-js 和 sdk_c 完整时优先本地且不访问网络",
+          "type": "llm_judge"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "cli-resolution-chain",
+      "prompt": "运行时目录中存在已安装的 oskm-cli.pyz，同时设置了 OSKM_CLI，源码树也可用。请说明 bootstrap.py cli-path 应选择哪个候选；随后假设三个候选都不存在，再说明错误应如何提示。",
+      "expected_output": "解析顺序为 $OSKM_CLI → 源码树 CLI → <runtime-root>/oskm-cli.pyz。全部候选不存在时退出失败并提示运行 bootstrap.py install；CLI 不从网络自动下载。",
+      "assertions": [
+        {
+          "text": "$OSKM_CLI",
+          "type": "contains"
+        },
+        {
+          "text": "<runtime-root>/oskm-cli.pyz",
+          "type": "contains"
+        },
+        {
+          "text": "bootstrap.py install",
+          "type": "contains"
+        },
+        {
+          "text": "源码树 CLI 优先于已安装产物，失败提示可操作，且不会联网下载 CLI",
+          "type": "llm_judge"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "refresh-is-explicit",
+      "prompt": "一个托管运行时已经过期，但用户只是直接执行 oskm-cli 查询，没有运行 refresh。请说明是否会下载，以及用户应如何更新运行时；再说明没有 .oskm-runtime.json 的自管库会怎样。",
+      "expected_output": "直接查询不会触发下载，应显式执行 bootstrap.py refresh 或 install；没有 .oskm-runtime.json 的自管库不会被刷新或覆盖。",
+      "assertions": [
+        {
+          "text": "查询不会自动下载",
+          "type": "contains"
+        },
+        {
+          "text": "bootstrap.py refresh",
+          "type": "contains"
+        },
+        {
+          "text": "自管库不会被刷新或覆盖",
+          "type": "contains"
+        },
+        {
+          "text": "刷新必须是显式动作，查询没有下载副作用",
+          "type": "llm_judge"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "synthetic-database-smoke",
+      "prompt": "已解压 skill 并单独构建 oskm-cli.pyz，测试夹具已生成 product=synthetic 的合成 knowledge.db。请用 bootstrap.py cli-path 定位 CLI，再直接调用 CLI 查询 scan 信息。",
+      "expected_output": "cli-path 找到测试提供的 pyz；直接调用 oskm-cli.pyz --db < synthetic db > ask get_scan_info 返回 product=synthetic。该步骤只验证两个产物能组合运行，不校验真实产品业务数据。",
+      "assertions": [
+        {
+          "text": "get_scan_info",
+          "type": "contains"
+        },
+        {
+          "text": "synthetic",
+          "type": "contains"
+        },
+        {
+          "text": "只验证 skill 与 CLI 的组合链路，不依赖真实数据库业务统计",
+          "type": "llm_judge"
+        }
+      ]
+    }
+  ]
+}

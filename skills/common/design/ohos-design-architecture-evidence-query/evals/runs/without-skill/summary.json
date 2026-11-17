@@ -1,0 +1,280 @@
+{
+  "arm": "without-skill",
+  "skill": "ohos-design-architecture-evidence-query",
+  "version": "3.1.0",
+  "generated_at": "2026-11-17T15:51:55+08:00",
+  "python": "/opt/homebrew/opt/python@3.12/bin/python3.12",
+  "codex": "/usr/local/bin/codex",
+  "source_root": "/private/tmp/oskm-release-3.1.0/packages/oskm",
+  "workdir": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p",
+  "fixtures": {
+    "source_root": "/private/tmp/oskm-release-3.1.0/packages/oskm",
+    "cli_sha256": "ad760c16b3a56a994f23f42530e47ea5e63568ab0f1469afc1efead5cd5eb49e",
+    "cli_bytes": 83741,
+    "db_sha256": "f561e39f648cfd6b391d6b2b0e1a5ec32e9ab5c8990dc9cbedf2f1685fcd1b44",
+    "good_archive_sha256": "2096733584cef7070b893bad376a6d39a118c63c9ea8c0cbd6d27574e223659d",
+    "corrupt_archive_sha256": "7185592f0c45605d72ceb07f1939dd3cd7c4593544b962a3fd53b441be22a2b7"
+  },
+  "scenarios": [
+    {
+      "id": 1,
+      "name": "first-install-complete-archive",
+      "arm": "without-skill",
+      "started": "2026-11-17T15:33:43+08:00",
+      "finished": "2026-11-17T15:37:14+08:00",
+      "auto_passed": 9,
+      "auto_total": 9,
+      "manual_total": 0,
+      "verdict": "PASS",
+      "failed_checks": [],
+      "requests": 1,
+      "tool_requests": 1,
+      "probe_requests": 0,
+      "steps": 1,
+      "agent": {
+        "rc": 0,
+        "seconds": 210.6,
+        "commands": 20,
+        "tokens": 319624,
+        "usage": {
+          "input_tokens": 312790,
+          "cached_input_tokens": 282240,
+          "output_tokens": 6834,
+          "reasoning_output_tokens": 1456
+        },
+        "skill_docs_read": false,
+        "outside_hits": 0
+      },
+      "transcript": "runs/without-skill/01-first-install-complete-archive.md",
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e01-first-install-complete-archive"
+    },
+    {
+      "id": 2,
+      "name": "openharmony-exact-date",
+      "arm": "without-skill",
+      "started": "2026-11-17T15:33:43+08:00",
+      "finished": "2026-11-17T15:41:25+08:00",
+      "auto_passed": 8,
+      "auto_total": 9,
+      "manual_total": 0,
+      "verdict": "FAIL",
+      "failed_checks": [
+        "工具的请求只落在\"构建列表 POST + obs 归档 GET\"两条路径上"
+      ],
+      "requests": 13,
+      "tool_requests": 13,
+      "probe_requests": 0,
+      "steps": 1,
+      "agent": {
+        "rc": 0,
+        "seconds": 462.1,
+        "commands": 27,
+        "tokens": 701248,
+        "usage": {
+          "input_tokens": 685835,
+          "cached_input_tokens": 633344,
+          "output_tokens": 15413,
+          "reasoning_output_tokens": 6896
+        },
+        "skill_docs_read": false,
+        "outside_hits": 0
+      },
+      "transcript": "runs/without-skill/02-openharmony-exact-date.md",
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e02-openharmony-exact-date"
+    },
+    {
+      "id": 3,
+      "name": "internal-exact-date",
+      "arm": "without-skill",
+      "started": "2026-11-17T15:33:43+08:00",
+      "finished": "2026-11-17T15:37:03+08:00",
+      "auto_passed": 6,
+      "auto_total": 6,
+      "manual_total": 0,
+      "verdict": "PASS",
+      "failed_checks": [],
+      "requests": 2,
+      "tool_requests": 1,
+      "probe_requests": 1,
+      "steps": 1,
+      "agent": {
+        "rc": 0,
+        "seconds": 200.2,
+        "commands": 21,
+        "tokens": 325817,
+        "usage": {
+          "input_tokens": 320495,
+          "cached_input_tokens": 287872,
+          "output_tokens": 5322,
+          "reasoning_output_tokens": 1584
+        },
+        "skill_docs_read": false,
+        "outside_hits": 0
+      },
+      "transcript": "runs/without-skill/03-internal-exact-date.md",
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e03-internal-exact-date"
+    },
+    {
+      "id": 4,
+      "name": "invalid-archive-preserves-runtime",
+      "arm": "without-skill",
+      "started": "2026-11-17T15:37:03+08:00",
+      "finished": "2026-11-17T15:43:01+08:00",
+      "auto_passed": 5,
+      "auto_total": 5,
+      "manual_total": 1,
+      "verdict": "PASS",
+      "failed_checks": [],
+      "requests": 4,
+      "tool_requests": 3,
+      "probe_requests": 1,
+      "steps": 2,
+      "agent": {
+        "rc": 0,
+        "seconds": 357.0,
+        "commands": 22,
+        "tokens": 678176,
+        "usage": {
+          "input_tokens": 667090,
+          "cached_input_tokens": 622464,
+          "output_tokens": 11086,
+          "reasoning_output_tokens": 3979
+        },
+        "skill_docs_read": false,
+        "outside_hits": 0
+      },
+      "transcript": "runs/without-skill/04-invalid-archive-preserves-runtime.md",
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e04-invalid-archive-preserves-runtime"
+    },
+    {
+      "id": 5,
+      "name": "local-source-runtime-preferred",
+      "arm": "without-skill",
+      "started": "2026-11-17T15:37:14+08:00",
+      "finished": "2026-11-17T15:42:34+08:00",
+      "auto_passed": 8,
+      "auto_total": 8,
+      "manual_total": 0,
+      "verdict": "PASS",
+      "failed_checks": [],
+      "requests": 0,
+      "tool_requests": 0,
+      "probe_requests": 0,
+      "steps": 1,
+      "agent": {
+        "rc": 0,
+        "seconds": 320.2,
+        "commands": 24,
+        "tokens": 520135,
+        "usage": {
+          "input_tokens": 509670,
+          "cached_input_tokens": 465152,
+          "output_tokens": 10465,
+          "reasoning_output_tokens": 3927
+        },
+        "skill_docs_read": false,
+        "outside_hits": 0
+      },
+      "transcript": "runs/without-skill/05-local-source-runtime-preferred.md",
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e05-local-source-runtime-preferred"
+    },
+    {
+      "id": 6,
+      "name": "cli-resolution-chain",
+      "arm": "without-skill",
+      "started": "2026-11-17T15:41:25+08:00",
+      "finished": "2026-11-17T15:48:12+08:00",
+      "auto_passed": 4,
+      "auto_total": 4,
+      "manual_total": 1,
+      "verdict": "PASS",
+      "failed_checks": [],
+      "requests": 0,
+      "tool_requests": 0,
+      "probe_requests": 0,
+      "steps": 1,
+      "agent": {
+        "rc": 0,
+        "seconds": 407.3,
+        "commands": 27,
+        "tokens": 617638,
+        "usage": {
+          "input_tokens": 603351,
+          "cached_input_tokens": 557568,
+          "output_tokens": 14287,
+          "reasoning_output_tokens": 5670
+        },
+        "skill_docs_read": true,
+        "outside_hits": 0
+      },
+      "transcript": "runs/without-skill/06-cli-resolution-chain.md",
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e06-cli-resolution-chain"
+    },
+    {
+      "id": 7,
+      "name": "refresh-is-explicit",
+      "arm": "without-skill",
+      "started": "2026-11-17T15:42:34+08:00",
+      "finished": "2026-11-17T15:51:55+08:00",
+      "auto_passed": 6,
+      "auto_total": 6,
+      "manual_total": 1,
+      "verdict": "PASS",
+      "failed_checks": [],
+      "requests": 2,
+      "tool_requests": 2,
+      "probe_requests": 0,
+      "steps": 2,
+      "agent": {
+        "rc": 0,
+        "seconds": 560.1,
+        "commands": 39,
+        "tokens": 978278,
+        "usage": {
+          "input_tokens": 959187,
+          "cached_input_tokens": 897280,
+          "output_tokens": 19091,
+          "reasoning_output_tokens": 7578
+        },
+        "skill_docs_read": false,
+        "outside_hits": 0
+      },
+      "transcript": "runs/without-skill/07-refresh-is-explicit.md",
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit"
+    },
+    {
+      "id": 8,
+      "name": "synthetic-database-smoke",
+      "arm": "without-skill",
+      "started": "2026-11-17T15:43:01+08:00",
+      "finished": "2026-11-17T15:50:07+08:00",
+      "auto_passed": 5,
+      "auto_total": 5,
+      "manual_total": 1,
+      "verdict": "PASS",
+      "failed_checks": [],
+      "requests": 0,
+      "tool_requests": 0,
+      "probe_requests": 0,
+      "steps": 1,
+      "agent": {
+        "rc": 0,
+        "seconds": 426.0,
+        "commands": 29,
+        "tokens": 745649,
+        "usage": {
+          "input_tokens": 731213,
+          "cached_input_tokens": 683904,
+          "output_tokens": 14436,
+          "reasoning_output_tokens": 4745
+        },
+        "skill_docs_read": false,
+        "outside_hits": 0
+      },
+      "transcript": "runs/without-skill/08-synthetic-database-smoke.md",
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e08-synthetic-database-smoke"
+    }
+  ],
+  "passed": 7,
+  "total": 8
+}

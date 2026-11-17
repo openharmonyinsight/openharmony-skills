@@ -1,0 +1,278 @@
+{
+  "arm": "with-skill",
+  "skill": "ohos-design-architecture-evidence-query",
+  "version": "3.1.0",
+  "generated_at": "2026-11-17T15:50:59+08:00",
+  "python": "/opt/homebrew/opt/python@3.12/bin/python3.12",
+  "codex": "/usr/local/bin/codex",
+  "source_root": "/private/tmp/oskm-release-3.1.0/packages/oskm",
+  "workdir": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-with-skill-0cuwbrkg",
+  "fixtures": {
+    "source_root": "/private/tmp/oskm-release-3.1.0/packages/oskm",
+    "cli_sha256": "ad760c16b3a56a994f23f42530e47ea5e63568ab0f1469afc1efead5cd5eb49e",
+    "cli_bytes": 83741,
+    "db_sha256": "f561e39f648cfd6b391d6b2b0e1a5ec32e9ab5c8990dc9cbedf2f1685fcd1b44",
+    "good_archive_sha256": "4f04421c2cb76993dd01787c35ab9229bc3a0dc7bf9991604d2afc0a4ae6fd27",
+    "corrupt_archive_sha256": "ef03e49287fe0aaa305a78fa7f184468867c7f5b8869fd7254c6f4daaec9ae7e"
+  },
+  "scenarios": [
+    {
+      "id": 1,
+      "name": "first-install-complete-archive",
+      "arm": "with-skill",
+      "started": "2026-11-17T15:33:43+08:00",
+      "finished": "2026-11-17T15:37:03+08:00",
+      "auto_passed": 9,
+      "auto_total": 9,
+      "manual_total": 0,
+      "verdict": "PASS",
+      "failed_checks": [],
+      "requests": 1,
+      "tool_requests": 1,
+      "probe_requests": 0,
+      "steps": 1,
+      "agent": {
+        "rc": 0,
+        "seconds": 200.2,
+        "commands": 16,
+        "tokens": 221095,
+        "usage": {
+          "input_tokens": 214710,
+          "cached_input_tokens": 191104,
+          "output_tokens": 6385,
+          "reasoning_output_tokens": 1557
+        },
+        "skill_docs_read": true,
+        "outside_hits": 0
+      },
+      "transcript": "runs/with-skill/01-first-install-complete-archive.md",
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-with-skill-0cuwbrkg/with-skill/e01-first-install-complete-archive"
+    },
+    {
+      "id": 2,
+      "name": "openharmony-exact-date",
+      "arm": "with-skill",
+      "started": "2026-11-17T15:33:43+08:00",
+      "finished": "2026-11-17T15:42:10+08:00",
+      "auto_passed": 9,
+      "auto_total": 9,
+      "manual_total": 0,
+      "verdict": "PASS",
+      "failed_checks": [],
+      "requests": 6,
+      "tool_requests": 4,
+      "probe_requests": 2,
+      "steps": 1,
+      "agent": {
+        "rc": 0,
+        "seconds": 507.6,
+        "commands": 26,
+        "tokens": 654936,
+        "usage": {
+          "input_tokens": 638180,
+          "cached_input_tokens": 590464,
+          "output_tokens": 16756,
+          "reasoning_output_tokens": 7588
+        },
+        "skill_docs_read": true,
+        "outside_hits": 0
+      },
+      "transcript": "runs/with-skill/02-openharmony-exact-date.md",
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-with-skill-0cuwbrkg/with-skill/e02-openharmony-exact-date"
+    },
+    {
+      "id": 3,
+      "name": "internal-exact-date",
+      "arm": "with-skill",
+      "started": "2026-11-17T15:33:43+08:00",
+      "finished": "2026-11-17T15:37:41+08:00",
+      "auto_passed": 6,
+      "auto_total": 6,
+      "manual_total": 0,
+      "verdict": "PASS",
+      "failed_checks": [],
+      "requests": 1,
+      "tool_requests": 1,
+      "probe_requests": 0,
+      "steps": 1,
+      "agent": {
+        "rc": 0,
+        "seconds": 237.7,
+        "commands": 23,
+        "tokens": 436800,
+        "usage": {
+          "input_tokens": 429806,
+          "cached_input_tokens": 392832,
+          "output_tokens": 6994,
+          "reasoning_output_tokens": 2021
+        },
+        "skill_docs_read": true,
+        "outside_hits": 0
+      },
+      "transcript": "runs/with-skill/03-internal-exact-date.md",
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-with-skill-0cuwbrkg/with-skill/e03-internal-exact-date"
+    },
+    {
+      "id": 4,
+      "name": "invalid-archive-preserves-runtime",
+      "arm": "with-skill",
+      "started": "2026-11-17T15:37:03+08:00",
+      "finished": "2026-11-17T15:41:25+08:00",
+      "auto_passed": 5,
+      "auto_total": 5,
+      "manual_total": 1,
+      "verdict": "PASS",
+      "failed_checks": [],
+      "requests": 3,
+      "tool_requests": 2,
+      "probe_requests": 1,
+      "steps": 2,
+      "agent": {
+        "rc": 0,
+        "seconds": 261.1,
+        "commands": 22,
+        "tokens": 352811,
+        "usage": {
+          "input_tokens": 343979,
+          "cached_input_tokens": 313088,
+          "output_tokens": 8832,
+          "reasoning_output_tokens": 2310
+        },
+        "skill_docs_read": true,
+        "outside_hits": 0
+      },
+      "transcript": "runs/with-skill/04-invalid-archive-preserves-runtime.md",
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-with-skill-0cuwbrkg/with-skill/e04-invalid-archive-preserves-runtime"
+    },
+    {
+      "id": 5,
+      "name": "local-source-runtime-preferred",
+      "arm": "with-skill",
+      "started": "2026-11-17T15:37:41+08:00",
+      "finished": "2026-11-17T15:41:28+08:00",
+      "auto_passed": 8,
+      "auto_total": 8,
+      "manual_total": 0,
+      "verdict": "PASS",
+      "failed_checks": [],
+      "requests": 0,
+      "tool_requests": 0,
+      "probe_requests": 0,
+      "steps": 1,
+      "agent": {
+        "rc": 0,
+        "seconds": 226.5,
+        "commands": 19,
+        "tokens": 290851,
+        "usage": {
+          "input_tokens": 283132,
+          "cached_input_tokens": 255232,
+          "output_tokens": 7719,
+          "reasoning_output_tokens": 1678
+        },
+        "skill_docs_read": true,
+        "outside_hits": 0
+      },
+      "transcript": "runs/with-skill/05-local-source-runtime-preferred.md",
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-with-skill-0cuwbrkg/with-skill/e05-local-source-runtime-preferred"
+    },
+    {
+      "id": 6,
+      "name": "cli-resolution-chain",
+      "arm": "with-skill",
+      "started": "2026-11-17T15:41:25+08:00",
+      "finished": "2026-11-17T15:48:25+08:00",
+      "auto_passed": 4,
+      "auto_total": 4,
+      "manual_total": 1,
+      "verdict": "PASS",
+      "failed_checks": [],
+      "requests": 0,
+      "tool_requests": 0,
+      "probe_requests": 0,
+      "steps": 1,
+      "agent": {
+        "rc": 0,
+        "seconds": 419.9,
+        "commands": 23,
+        "tokens": 519957,
+        "usage": {
+          "input_tokens": 505355,
+          "cached_input_tokens": 463872,
+          "output_tokens": 14602,
+          "reasoning_output_tokens": 5651
+        },
+        "skill_docs_read": true,
+        "outside_hits": 0
+      },
+      "transcript": "runs/with-skill/06-cli-resolution-chain.md",
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-with-skill-0cuwbrkg/with-skill/e06-cli-resolution-chain"
+    },
+    {
+      "id": 7,
+      "name": "refresh-is-explicit",
+      "arm": "with-skill",
+      "started": "2026-11-17T15:41:28+08:00",
+      "finished": "2026-11-17T15:50:59+08:00",
+      "auto_passed": 6,
+      "auto_total": 6,
+      "manual_total": 1,
+      "verdict": "PASS",
+      "failed_checks": [],
+      "requests": 2,
+      "tool_requests": 2,
+      "probe_requests": 0,
+      "steps": 2,
+      "agent": {
+        "rc": 0,
+        "seconds": 571.3,
+        "commands": 33,
+        "tokens": 748267,
+        "usage": {
+          "input_tokens": 727754,
+          "cached_input_tokens": 674688,
+          "output_tokens": 20513,
+          "reasoning_output_tokens": 6738
+        },
+        "skill_docs_read": true,
+        "outside_hits": 0
+      },
+      "transcript": "runs/with-skill/07-refresh-is-explicit.md",
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-with-skill-0cuwbrkg/with-skill/e07-refresh-is-explicit"
+    },
+    {
+      "id": 8,
+      "name": "synthetic-database-smoke",
+      "arm": "with-skill",
+      "started": "2026-11-17T15:42:10+08:00",
+      "finished": "2026-11-17T15:45:31+08:00",
+      "auto_passed": 5,
+      "auto_total": 5,
+      "manual_total": 1,
+      "verdict": "PASS",
+      "failed_checks": [],
+      "requests": 0,
+      "tool_requests": 0,
+      "probe_requests": 0,
+      "steps": 1,
+      "agent": {
+        "rc": 0,
+        "seconds": 200.1,
+        "commands": 17,
+        "tokens": 185767,
+        "usage": {
+          "input_tokens": 178931,
+          "cached_input_tokens": 157440,
+          "output_tokens": 6836,
+          "reasoning_output_tokens": 1574
+        },
+        "skill_docs_read": true,
+        "outside_hits": 0
+      },
+      "transcript": "runs/with-skill/08-synthetic-database-smoke.md",
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-with-skill-0cuwbrkg/with-skill/e08-synthetic-database-smoke"
+    }
+  ],
+  "passed": 8,
+  "total": 8
+}
