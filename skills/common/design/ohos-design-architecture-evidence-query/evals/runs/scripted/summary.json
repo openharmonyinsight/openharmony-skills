@@ -2,26 +2,26 @@
   "arm": "scripted",
   "skill": "ohos-design-architecture-evidence-query",
   "version": "3.1.0",
-  "generated_at": "2026-11-17T15:32:32+08:00",
+  "generated_at": "2026-11-17T16:18:08+08:00",
   "python": "/opt/homebrew/opt/python@3.12/bin/python3.12",
   "codex": null,
-  "source_root": "/private/tmp/oskm-release-3.1.0/packages/oskm",
-  "workdir": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup",
+  "source_root": "/private/tmp/oskm-release-3.1.0-full/packages/oskm",
+  "workdir": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af",
   "fixtures": {
-    "source_root": "/private/tmp/oskm-release-3.1.0/packages/oskm",
-    "cli_sha256": "ad760c16b3a56a994f23f42530e47ea5e63568ab0f1469afc1efead5cd5eb49e",
-    "cli_bytes": 83741,
+    "source_root": "/private/tmp/oskm-release-3.1.0-full/packages/oskm",
+    "cli_sha256": "3e78cf73a94bcf9df24409db686092d7acb74b35ad3e891c6493b9b57cd171f5",
+    "cli_bytes": 84742,
     "db_sha256": "f561e39f648cfd6b391d6b2b0e1a5ec32e9ab5c8990dc9cbedf2f1685fcd1b44",
-    "good_archive_sha256": "a0a5f50688a7f91bfa964ac905f40bd814979648cebb0af635b714d6b4baa0a8",
-    "corrupt_archive_sha256": "9129653ac0479c2b9726f44910c33e85107f12aadb9baba0962b7979ffc3d448"
+    "good_archive_sha256": "52e5de21f0074479aa7c8347b28d981e3e7ce01571df226c391962e6f6429013",
+    "corrupt_archive_sha256": "2a9cf58809b74dcd46e81461a8a31ef61a8ecf296f0887c1a495b3d04a1470a9"
   },
   "scenarios": [
     {
       "id": 1,
       "name": "first-install-complete-archive",
       "arm": "scripted",
-      "started": "2026-11-17T15:32:27+08:00",
-      "finished": "2026-11-17T15:32:28+08:00",
+      "started": "2026-11-17T16:18:03+08:00",
+      "finished": "2026-11-17T16:18:03+08:00",
       "auto_passed": 9,
       "auto_total": 9,
       "manual_total": 0,
@@ -33,14 +33,14 @@
       "steps": 5,
       "agent": null,
       "transcript": "runs/scripted/01-first-install-complete-archive.md",
-      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive"
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive"
     },
     {
       "id": 2,
       "name": "openharmony-exact-date",
       "arm": "scripted",
-      "started": "2026-11-17T15:32:28+08:00",
-      "finished": "2026-11-17T15:32:29+08:00",
+      "started": "2026-11-17T16:18:03+08:00",
+      "finished": "2026-11-17T16:18:04+08:00",
       "auto_passed": 9,
       "auto_total": 9,
       "manual_total": 0,
@@ -52,14 +52,14 @@
       "steps": 3,
       "agent": null,
       "transcript": "runs/scripted/02-openharmony-exact-date.md",
-      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e02-openharmony-exact-date"
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e02-openharmony-exact-date"
     },
     {
       "id": 3,
       "name": "internal-exact-date",
       "arm": "scripted",
-      "started": "2026-11-17T15:32:29+08:00",
-      "finished": "2026-11-17T15:32:29+08:00",
+      "started": "2026-11-17T16:18:04+08:00",
+      "finished": "2026-11-17T16:18:05+08:00",
       "auto_passed": 5,
       "auto_total": 5,
       "manual_total": 0,
@@ -71,14 +71,14 @@
       "steps": 2,
       "agent": null,
       "transcript": "runs/scripted/03-internal-exact-date.md",
-      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e03-internal-exact-date"
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e03-internal-exact-date"
     },
     {
       "id": 4,
       "name": "invalid-archive-preserves-runtime",
       "arm": "scripted",
-      "started": "2026-11-17T15:32:29+08:00",
-      "finished": "2026-11-17T15:32:30+08:00",
+      "started": "2026-11-17T16:18:05+08:00",
+      "finished": "2026-11-17T16:18:05+08:00",
       "auto_passed": 6,
       "auto_total": 6,
       "manual_total": 0,
@@ -90,14 +90,14 @@
       "steps": 2,
       "agent": null,
       "transcript": "runs/scripted/04-invalid-archive-preserves-runtime.md",
-      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e04-invalid-archive-preserves-runtime"
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e04-invalid-archive-preserves-runtime"
     },
     {
       "id": 5,
       "name": "local-source-runtime-preferred",
       "arm": "scripted",
-      "started": "2026-11-17T15:32:30+08:00",
-      "finished": "2026-11-17T15:32:30+08:00",
+      "started": "2026-11-17T16:18:05+08:00",
+      "finished": "2026-11-17T16:18:06+08:00",
       "auto_passed": 8,
       "auto_total": 8,
       "manual_total": 0,
@@ -109,14 +109,14 @@
       "steps": 3,
       "agent": null,
       "transcript": "runs/scripted/05-local-source-runtime-preferred.md",
-      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e05-local-source-runtime-preferred"
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e05-local-source-runtime-preferred"
     },
     {
       "id": 6,
       "name": "cli-resolution-chain",
       "arm": "scripted",
-      "started": "2026-11-17T15:32:30+08:00",
-      "finished": "2026-11-17T15:32:31+08:00",
+      "started": "2026-11-17T16:18:06+08:00",
+      "finished": "2026-11-17T16:18:06+08:00",
       "auto_passed": 6,
       "auto_total": 6,
       "manual_total": 0,
@@ -128,14 +128,14 @@
       "steps": 4,
       "agent": null,
       "transcript": "runs/scripted/06-cli-resolution-chain.md",
-      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e06-cli-resolution-chain"
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e06-cli-resolution-chain"
     },
     {
       "id": 7,
       "name": "refresh-is-explicit",
       "arm": "scripted",
-      "started": "2026-11-17T15:32:31+08:00",
-      "finished": "2026-11-17T15:32:32+08:00",
+      "started": "2026-11-17T16:18:06+08:00",
+      "finished": "2026-11-17T16:18:07+08:00",
       "auto_passed": 4,
       "auto_total": 4,
       "manual_total": 0,
@@ -147,14 +147,14 @@
       "steps": 5,
       "agent": null,
       "transcript": "runs/scripted/07-refresh-is-explicit.md",
-      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e07-refresh-is-explicit"
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e07-refresh-is-explicit"
     },
     {
       "id": 8,
       "name": "synthetic-database-smoke",
       "arm": "scripted",
-      "started": "2026-11-17T15:32:32+08:00",
-      "finished": "2026-11-17T15:32:32+08:00",
+      "started": "2026-11-17T16:18:07+08:00",
+      "finished": "2026-11-17T16:18:08+08:00",
       "auto_passed": 4,
       "auto_total": 4,
       "manual_total": 0,
@@ -166,7 +166,7 @@
       "steps": 2,
       "agent": null,
       "transcript": "runs/scripted/08-synthetic-database-smoke.md",
-      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e08-synthetic-database-smoke"
+      "workspace": "/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e08-synthetic-database-smoke"
     }
   ],
   "passed": 8,

@@ -97,6 +97,9 @@
 }
 ```
 
+`search_components` 的 `total` 是当前 `limit` 页内返回的条数，不是全量匹配数，也没有
+`truncated` 字段。需要全量统计时用 `sql` 或 `list_entities`。
+
 ---
 
 ## component_attached
@@ -115,18 +118,44 @@
 ```json
 {
   "services": [
-    {"id": 45, "cfg": "system/etc/init/foundation.cfg", "name": "foundation", "type": "default"}
+    {
+      "id": 45,
+      "scan_id": 1,
+      "cfg": "system/etc/init/foundation.cfg",
+      "name": "foundation",
+      "type": "sa",
+      "record": "{...}"
+    }
   ],
   "sas": [
-    {"id": 120, "sa_id": 1401, "libpath": "system/lib/libdemo.z.so"}
+    {
+      "id": 120,
+      "scan_id": 1,
+      "sa_id": 1401,
+      "libpath": "libdemo.z.so",
+      "service_id": 45,
+      "install_module_id": 230,
+      "record": "{...}"
+    }
   ],
   "install_modules": [
-    {"id": 230, "label": "//foundation/ability/ability_runtime:ability_runtime", "type": "lib"}
+    {
+      "id": 230,
+      "scan_id": 1,
+      "label": "//foundation/ability/ability_runtime/services/demo:demo",
+      "type": "lib64",
+      "component_id": 5,
+      "record": "{...}"
+    }
   ]
 }
 ```
 
-每个域返回的是该域发布记录的摘要（关键字段，非全集）。`collector` 省略时返回所有有 `COMPONENT_COLUMN` 的域。无关联记录的域的键不出现。
+每个域返回的是对应表的**原始行**（当前实现是 `SELECT *`），不是字段摘要。大部件一次
+返回所有域时可能达到数百 KB，Agent 上下文里应优先加 `collector`，或改用 SQL 只取
+必要列。`collector` 省略时返回所有有 `COMPONENT_COLUMN` 的域；无关联记录的域键不出现。
+
+`sas.libpath` 同样是 profile 声明值，可能是裸库名或绝对路径，不是可靠镜像 `dest`。
 
 **错误码**
 

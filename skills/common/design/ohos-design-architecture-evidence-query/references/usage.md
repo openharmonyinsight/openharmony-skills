@@ -430,6 +430,10 @@ DB="$RUNTIME_ROOT/knowledge.db"
 python3 bootstrap.py cli-path         # 不确定 CLI 在哪时问它
 ```
 
+下文的 `python3` 代表 Python 3.10+。如果系统默认 `python3` 仍是 3.9（macOS 常见），
+请显式替换为 `python3.12`；`oskm-cli.pyz` 的 shebang 也使用 `python3`，直接执行时
+同样受默认解释器版本影响。
+
 | 命令 | 干什么 |
 |---|---|
 | `oskm-cli arch <问题> [目标]` | 六类顶层架构问题，一条命令串完多步 |
@@ -457,6 +461,10 @@ python3 "$CLI" --db "$DB" arch provides image_framework
 python3 "$CLI" --db "$DB" arch switch ace_engine_feature_asbng_path
 python3 "$CLI" --db "$DB" arch runtime foundation
 ```
+
+`arch runtime <target>` 是模糊服务搜索（底层 `search_services(query=target, limit=5)`），
+可能一次返回多个服务；`foundation` 会同时命中 `foundation` 和 `subfoundation`。
+要精确查一个服务，用 `ask get_service --cfg ... --name ...` + `ask service_hosted --service_id ...`。
 
 `arch trace` 一条命令走完五跳——镜像文件 → 安装模块 → 部件 → 子系统 → 代码仓，
 外带它实现的 SDK 接口与直接依赖数：
@@ -504,6 +512,19 @@ error: argument --implementation_kind: invalid choice: 'bogus'
 python3 "$CLI" --db "$DB" ask aggregate --table components --group_by subsystem
 ```
 
+工具参数的规范名来自 schema，是下划线形式；CLI 同时接受等价连字符 alias：
+
+```bash
+python3 "$CLI" --db "$DB" ask get_sa --sa_id 1401
+python3 "$CLI" --db "$DB" ask get_sa --sa-id 1401
+python3 "$CLI" --db "$DB" ask component_attached --component_id 3
+python3 "$CLI" --db "$DB" ask component_attached --component-id 3
+```
+
+`search_elf_modules` 与 `search_native_headers` 会返回全量 `total` 和 `truncated`；
+多数其它 `search_*` 的 `total` 只是当前页 `len(results)`，不能当全量匹配数。
+需要覆盖率或总量时用 `sql` / `list_entities`。
+
 对象参数收 JSON：
 
 ```bash
@@ -514,9 +535,9 @@ python3 "$CLI" --db "$DB" ask list_entities --table components --page '{"limit":
 
 | 问题 | 命令 |
 |---|---|
-| 某文件属于哪个部件 | `ask owner_of --dest system/lib/libcamera.z.so` |
+| 某文件属于哪个部件 | `ask owner_of --dest system/lib/libcamera.z.so`；若返回 `AMBIGUOUS`，用 `ask installed_at --dest ...` 看全部候选 |
 | 某部件有哪些 feature | `ask get_component --name X` 取 id，再按工具 `--help` 查询对应 component 的 features |
-| foundation 跑哪些 SA | `arch runtime foundation` |
+| foundation 跑哪些 SA | `arch runtime foundation`（模糊搜索，可能同时返回 `subfoundation`） |
 | SA 1401 是什么 | `ask get_sa --sa_id 1401` |
 | libfoo 依赖哪些库 | `ask search_elf_modules --query libfoo` → `ask elf_dependencies --dest <路径> --max_distance 1` |
 | 某编译参数当前值 | `ask get_gn_arg --name ace_engine_feature_enable_web` |
@@ -571,7 +592,9 @@ SELECT c.subsystem, COUNT(*) AS parts
 ```
 
 只读校验照常生效：第一个关键字必须是 SELECT/WITH（**跳过开头注释后再判**），
-表名走白名单，自动注入 `scan_id` 与 `LIMIT`。
+表名走白名单。实际执行时，CLI 会先把当前 `scan_id` 下的白名单表复制到私有内存
+快照，再执行用户 SQL；它不是把 `scan_id` / `LIMIT` 文本注入原始 SQL。默认最多取
+1000 行，用第 1001 行判断 `truncated`，执行预算 5 秒。
 `-- SELECT\nDROP TABLE x` 这种伪装会被拒。
 
 ## 6.5 查询故障与回退

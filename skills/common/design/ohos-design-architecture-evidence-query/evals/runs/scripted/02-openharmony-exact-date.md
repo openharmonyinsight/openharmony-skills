@@ -1,13 +1,13 @@
 # E2 openharmony-exact-date（scripted 臂）
 
-- 开始时间：2026-11-17T15:32:28+08:00
-- 结束时间：2026-11-17T15:32:29+08:00
+- 开始时间：2026-11-17T16:18:03+08:00
+- 结束时间：2026-11-17T16:18:04+08:00
 - 执行臂：`scripted`
-- skill：`/private/tmp/oskm-release-3.1.0/packages/oskm/skills/ohos-design-architecture-evidence-query`（name=ohos-design-architecture-evidence-query, version=3.1.0）
+- skill：`/private/tmp/oskm-release-3.1.0-full/packages/oskm/skills/ohos-design-architecture-evidence-query`（name=ohos-design-architecture-evidence-query, version=3.1.0）
 - Python：`/opt/homebrew/opt/python@3.12/bin/python3.12`
-- 工作区：`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e02-openharmony-exact-date`
-- 夹具服务端：http://127.0.0.1:61122
-- oskm 源码树（夹具来源）：`/private/tmp/oskm-release-3.1.0/packages/oskm`
+- 工作区：`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e02-openharmony-exact-date`
+- 夹具服务端：http://127.0.0.1:61791
+- oskm 源码树（夹具来源）：`/private/tmp/oskm-release-3.1.0-full/packages/oskm`
 
 ## 用户请求（来自 evals.json）
 
@@ -31,18 +31,18 @@
 ### 1. 按显式日期安装
 
 ```console
-$ /opt/homebrew/opt/python@3.12/bin/python3.12 /private/tmp/oskm-release-3.1.0/packages/oskm/skills/ohos-design-architecture-evidence-query/bootstrap.py --runtime-root /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e02-openharmony-exact-date/runtime install --source OPENHARMONY_CI --date 20261102
+$ /opt/homebrew/opt/python@3.12/bin/python3.12 /private/tmp/oskm-release-3.1.0-full/packages/oskm/skills/ohos-design-architecture-evidence-query/bootstrap.py --runtime-root /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e02-openharmony-exact-date/runtime install --source OPENHARMONY_CI --date 20261102
 stderr:
 ==> 下载 OPENHARMONY_CI 运行时: 20261102
-==> 运行时安装完成: /private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e02-openharmony-exact-date/runtime
+==> 运行时安装完成: /private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e02-openharmony-exact-date/runtime
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e02-openharmony-exact-date` · exit=0 · 0.14s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e02-openharmony-exact-date` · exit=0 · 0.13s
 
 ### 2. install 的参数面（确认没有 --component）
 
 ```console
-$ /opt/homebrew/opt/python@3.12/bin/python3.12 /private/tmp/oskm-release-3.1.0/packages/oskm/skills/ohos-design-architecture-evidence-query/bootstrap.py install --help
+$ /opt/homebrew/opt/python@3.12/bin/python3.12 /private/tmp/oskm-release-3.1.0-full/packages/oskm/skills/ohos-design-architecture-evidence-query/bootstrap.py install --help
 usage: bootstrap.py install [-h] [--source {OPENHARMONY_CI,INTERNAL_CI}]
                             [--date DATE] [--source-root SOURCE_ROOT]
                             [--skip-db | --skip-sdk]
@@ -60,17 +60,17 @@ options:
   --skip-sdk
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e02-openharmony-exact-date` · exit=0 · 0.06s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e02-openharmony-exact-date` · exit=0 · 0.06s
 
 ### 3. 状态文件
 
 ```console
-$ cat /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e02-openharmony-exact-date/runtime/.oskm-runtime.json
+$ cat /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e02-openharmony-exact-date/runtime/.oskm-runtime.json
 {
   "version": 3,
   "source": "OPENHARMONY_CI",
   "date": "20261102",
-  "updated_at": "2026-11-17T15:32:28+08:00",
+  "updated_at": "2026-11-17T16:18:04+08:00",
   "db": {
     "date": "20261102",
     "path": "knowledge.db",
@@ -87,12 +87,12 @@ $ cat /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bx
   },
   "cli": {
     "path": "oskm-cli.pyz",
-    "sha256": "ad760c16b3a56a994f23f42530e47ea5e63568ab0f1469afc1efead5cd5eb49e"
+    "sha256": "3e78cf73a94bcf9df24409db686092d7acb74b35ad3e891c6493b9b57cd171f5"
   }
 }
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e02-openharmony-exact-date` · exit=0 · 0.01s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e02-openharmony-exact-date` · exit=0 · 0.01s
 
 ## 夹具服务端请求（被测阶段）
 
@@ -104,7 +104,7 @@ cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxu
 [
   {
     "seq": 1,
-    "ts": "2026-11-17T15:32:28.500+08:00",
+    "ts": "2026-11-17T16:18:04.023+08:00",
     "method": "POST",
     "path": "/openharmony/api/daily_build/build/list/component",
     "user_agent": "Python-urllib/3.12",
@@ -129,7 +129,7 @@ cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxu
   },
   {
     "seq": 2,
-    "ts": "2026-11-17T15:32:28.501+08:00",
+    "ts": "2026-11-17T16:18:04.024+08:00",
     "method": "GET",
     "path": "/openharmony/obs/20261102/knowledge.tar.gz",
     "user_agent": "Python-urllib/3.12",

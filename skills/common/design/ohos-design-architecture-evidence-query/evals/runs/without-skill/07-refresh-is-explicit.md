@@ -1,13 +1,13 @@
 # E7 refresh-is-explicit（without-skill 臂）
 
-- 开始时间：2026-11-17T15:42:34+08:00
-- 结束时间：2026-11-17T15:51:55+08:00
+- 开始时间：2026-11-17T16:28:17+08:00
+- 结束时间：2026-11-17T16:37:29+08:00
 - 执行臂：`without-skill`
-- skill：`/private/tmp/oskm-release-3.1.0/packages/oskm/skills/ohos-design-architecture-evidence-query`（name=ohos-design-architecture-evidence-query, version=3.1.0）
+- skill：`/private/tmp/oskm-release-3.1.0-full/packages/oskm/skills/ohos-design-architecture-evidence-query`（name=ohos-design-architecture-evidence-query, version=3.1.0）
 - Python：`/opt/homebrew/opt/python@3.12/bin/python3.12`
-- 工作区：`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit`
-- 夹具服务端：http://127.0.0.1:61481
-- oskm 源码树（夹具来源）：`/private/tmp/oskm-release-3.1.0/packages/oskm`
+- 工作区：`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit`
+- 夹具服务端：http://127.0.0.1:62160
+- oskm 源码树（夹具来源）：`/private/tmp/oskm-release-3.1.0-full/packages/oskm`
 
 ## 用户请求（来自 evals.json）
 
@@ -28,490 +28,518 @@
 
 ## Agent 执行审计
 
-- 命令：`codex exec --skip-git-repo-check --sandbox danger-full-access -C /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit --json -o agent-last-message.md -`（prompt 走 stdin，全文见 `PROMPT.md`）
-- 退出码：0；耗时：560.1 s
-- 事件计数：`{"thread.started": 1, "item.completed": 78, "item:error": 1, "turn.started": 1, "item:reasoning": 27, "item:agent_message": 11, "item.started": 39, "item:command_execution": 78, "turn.completed": 1}`
+- 命令：`codex exec --skip-git-repo-check --sandbox danger-full-access -C /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit --json -o agent-last-message.md -`（prompt 走 stdin，全文见 `PROMPT.md`）
+- 退出码：0；耗时：523.7 s
+- 事件计数：`{"thread.started": 1, "item.completed": 74, "item:error": 1, "turn.started": 1, "item:reasoning": 21, "item:agent_message": 20, "item.started": 32, "item:command_execution": 64, "turn.completed": 1}`
 - 读到 skill 文档：否
-- 执行的命令数：39
-- token 用量：`{"input_tokens": 959187, "cached_input_tokens": 897280, "output_tokens": 19091, "reasoning_output_tokens": 7578}`
+- 执行的命令数：32
+- token 用量：`{"input_tokens": 787287, "cached_input_tokens": 728448, "output_tokens": 18744, "reasoning_output_tokens": 7275}`
 - 越界命令（工作区外找文档/实现/宿主进程）：0 条
 
 ### Agent 执行过的命令
 
 ```console
-$ /bin/zsh -lc "pwd; ls -la; echo '--- runtime ---'; ls -la runtime 2>/dev/null; echo '--- unmanaged ---'; ls -la unmanaged 2>/dev/null; echo '--- tool ---'; ls -la tool 2>/dev/null"
-$ /bin/zsh -lc "find . -maxdepth 3 -name '*.json' -o -maxdepth 3 -name 'AGENTS.md' | head -50"
-$ /bin/zsh -lc "cat PROMPT.md; echo '=== state ==='; cat runtime/.oskm-runtime.json; echo; echo '=== bootstrap ==='; cat tool/bootstrap.py; echo '=== tool tree ==='; find tool -type f | sort"
-$ /bin/zsh -lc 'ls -la runtime/interface; find runtime/interface -type f | head -30'
-$ /bin/zsh -lc "cd tool/oskm_runtime && wc -l *.py .env.example && echo '=== bootstrap.py ===' && cat bootstrap.py && echo '=== __main__.py ===' && cat __main__.py && echo '=== .env.example ===' && cat .env.example"
-$ /bin/zsh -lc "cd tool/oskm_runtime && echo '=== state.py ===' && cat state.py && echo '=== environment.py ===' && cat environment.py"
-$ /bin/zsh -lc "cd tool/oskm_runtime && sed -n '120,177p' state.py"
-$ /bin/zsh -lc "cd tool/oskm_runtime && sed -n '1,120p' cli_install.py"
-$ /bin/zsh -lc "cd tool/oskm_runtime && grep -n \"unmanaged\\|load_state\\|needs_refresh\\|def \" install.py | head -60"
-$ /bin/zsh -lc "cd tool/oskm_runtime && sed -n '150,303p' bootstrap.py"
-$ /bin/zsh -lc "cd tool/oskm_runtime && grep -n \"default_runtime_root\" -A 12 cli_install.py | head -40; echo '=== doctor ==='; cat doctor.py"
-$ /bin/zsh -lc "cd tool/oskm_runtime && sed -n '400,451p' install.py; echo '=== build_state/_install_artifacts ==='; sed -n '245,360p' install.py"
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && PY=/opt/homebrew/opt/python@3.12/bin/python3.12 && $PY -V && shasum -a 256 runtime/knowledge.db runtime/oskm-cli.pyz runtime/.oskm-runtime.json unmanaged/knowledge.db && stat -f '"'%Sm %N' -t '%F %T' runtime/knowledge.db runtime/.oskm-runtime.json unmanaged/knowledge.db"
-$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && mkdir -p work/pyz1 && cd work/pyz1 && unzip -q ../../runtime/oskm-cli.pyz && ls && echo '=== files ===' && find . -name '*.py' | sort"
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && PY=/opt/homebrew/opt/python@3.12/bin/python3.12 && $PY - <<'"'EOF'
+$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && ls -la && echo \"--- tree ---\" && find . -maxdepth 3 -not -path '*/.git/*' | head -100"
+$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && cat runtime/.oskm-runtime.json 2>/dev/null; echo "--- runtime dir ---"; ls -la runtime unmanaged tool 2>/dev/null'
+$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit/tool && cat bootstrap.py && echo "=== __main__.py ===" && cat oskm_runtime/__main__.py && echo "=== __init__.py ===" && cat oskm_runtime/__init__.py && echo "=== .env.example ===" && cat oskm_runtime/.env.example'
+$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit/tool/oskm_runtime && wc -l *.py && echo "=== state.py ===" && cat state.py'
+$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit/tool/oskm_runtime && cat bootstrap.py'
+$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit/tool/oskm_runtime && cat environment.py'
+$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit/tool/oskm_runtime && sed -n '125,200p' bootstrap.py"
+$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit/tool/oskm_runtime && cat install.py'
+$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit/tool/oskm_runtime && cat doctor.py && echo \"=== db_download.py (head) ===\" && sed -n '1,120p' db_download.py"
+$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && cat PROMPT.md && echo "=== events ===" && cat codex-events.jsonl'
+$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && /opt/homebrew/opt/python@3.12/bin/python3.12 -c \"
 import zipfile
-z = zipfile.ZipFile('runtime/oskm-cli.pyz')
-names = z.namelist()
-print(len(names), 'entries')
-for n in sorted(names):
-    print(' ', n)
-EOF"
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && PY=/opt/homebrew/opt/python@3.12/bin/python3.12 && $PY - <<'"'EOF'
-import re, zipfile
-z = zipfile.ZipFile('runtime/oskm-cli.pyz')
-pat = re.compile(r'urllib|requests|http://|https://|socket|needs_refresh|oskm_runtime|bootstrap|download|refresh|\\.oskm-runtime', re.I)
-hits = {}
-for n in z.namelist():
-    if not n.endswith('.py'):
-        continue
-    text = z.read(n).decode('utf-8', 'replace')
-    found = [f'{i+1}: {line.strip()[:120]}' for i, line in enumerate(text.splitlines()) if pat.search(line)]
-    if found:
-        hits[n] = found
-for n, found in sorted(hits.items()):
-    print(f'--- {n} ({len(found)})')
-    for line in found[:12]:
-        print('   ', line)
-print('total files with hits:', len(hits))
-EOF"
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && PY=/opt/homebrew/opt/python@3.12/bin/python3.12 && $PY - <<'"'EOF'
-import re, zipfile
-z = zipfile.ZipFile('runtime/oskm-cli.pyz')
-pat = re.compile(r'urlopen|urlretrieve|http\\.client|socket\\.|subprocess|os\\.system')
-for n in z.namelist():
-    if not n.endswith('.py'):
-        continue
-    text = z.read(n).decode('utf-8','replace')
-    for i, line in enumerate(text.splitlines(), 1):
+z=zipfile.ZipFile('runtime/oskm-cli.pyz')
+names=z.namelist()
+print('members:',len(names))
+for n in names[:40]: print(' ',n)
+import re
+pat=re.compile(rb'urllib|http|socket|urlretrieve|urlopen|requests\\.|download|oskm_runtime|oskm-runtime\\.json|OSKM_DOWNLOAD|needs_refresh|refresh')
+print('--- hits ---')
+for n in names:
+    if not n.endswith('.py'): continue
+    data=z.read(n)
+    for i,line in enumerate(data.splitlines(),1):
         if pat.search(line):
-            print(f'{n}:{i}: {line.strip()[:140]}')
-print('--- cli.py head 130 ---')
-print('\\n'.join(z.read('oskm_cli/cli.py').decode().splitlines()[:130]))
-EOF"
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && export PY=/opt/homebrew/opt/python@3.12/bin/python3.12 OSKM_DOWNLOAD_SOURCE=INTERNAL_CI OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:61481/internal OSKM_RUNTIME_ROOT=$PWD/runtime && $PY tool/bootstrap.py doctor; echo "exit=$?"'
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && export PY=/opt/homebrew/opt/python@3.12/bin/python3.12 OSKM_RUNTIME_ROOT=$PWD/runtime && $PY runtime/oskm-cli.pyz --version; $PY runtime/oskm-cli.pyz --help 2>&1 | head -40'
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && export PY=/opt/homebrew/opt/python@3.12/bin/python3.12 OSKM_RUNTIME_ROOT=$PWD/runtime && $PY - <<'"'EOF'
-import sys
-sys.path.insert(0, 'tool')
+            print(f'{n}:{i}: {line.decode(errors=\\\"replace\\\")[:160]}')
+\""
+$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit/tool/oskm_runtime && sed -n '120,300p' db_download.py"
+$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && /opt/homebrew/opt/python@3.12/bin/python3.12 -c \"
+import zipfile
+z=zipfile.ZipFile('runtime/oskm-cli.pyz')
+src=z.read('oskm_cli/cli.py').decode()
+lines=src.splitlines()
+for i in range(70,120):
+    print(i+1, lines[i])
+\" "
+$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && cat > /tmp/snap.sh <<'EOF'
+#"'!/bin/zsh
+cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit
+echo "### snapshot $1"
+find runtime unmanaged -type f | sort | while read -r f; do
+  printf '"'%s  %s  %s\\n' \""'$(shasum -a 256 "$f" | cut -c1-16)" "$(stat -f '"'%Sm' -t '%H:%M:%S' \""'$f")" "$f"
+done
+echo "--- journal_mode ---"
+/opt/homebrew/opt/python@3.12/bin/python3.12 - <<'"'PY'
+import sqlite3
+for p in ('runtime/knowledge.db','unmanaged/knowledge.db'):
+    c=sqlite3.connect(f'file:{p}?mode=ro',uri=True)
+    print(p, c.execute('PRAGMA journal_mode').fetchone()[0], c.execute(\"select count(*) from scans\").fetchone()[0])
+    c.close()
+PY
+EOF
+chmod +x /tmp/snap.sh && /tmp/snap.sh BEFORE"
+$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && export OSKM_DOWNLOAD_SOURCE=INTERNAL_CI OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:62160/internal && PY=/opt/homebrew/opt/python@3.12/bin/python3.12 && echo "== --version ==" && $PY runtime/oskm-cli.pyz --version; echo "== --help ==" && $PY runtime/oskm-cli.pyz --help 2>&1 | head -40'
+$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit/tool/oskm_runtime && grep -n \"def resolve_cli\\|def ensure_cli\\|allow_download\\|ARTIFACT_NAME =\\|def default_runtime_root\\|def installed_path\" cli_install.py | head -30"
+$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && export OSKM_DOWNLOAD_SOURCE=INTERNAL_CI OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:62160/internal && PY=/opt/homebrew/opt/python@3.12/bin/python3.12 && echo "== arch overview on STALE managed runtime ==" && $PY runtime/oskm-cli.pyz --db runtime/knowledge.db arch overview; echo "exit=$?"; echo; echo "== ask --list ==" && $PY runtime/oskm-cli.pyz --db runtime/knowledge.db ask --list 2>&1 | head -12; echo; echo "== same query on UNMANAGED db ==" && $PY runtime/oskm-cli.pyz --db unmanaged/knowledge.db arch overview; echo "exit=$?"'
+$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit/tool/oskm_runtime && sed -n '185,275p' cli_install.py"
+$ /bin/zsh -lc '/tmp/snap.sh AFTER-QUERIES'
+$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && /opt/homebrew/opt/python@3.12/bin/python3.12 -c \"
+import zipfile,re
+z=zipfile.ZipFile('runtime/oskm-cli.pyz')
+pat=re.compile(r'\\b(urllib\\.request|urlopen|urlretrieve|http\\.client|socket|subprocess|os\\.system|ftplib|smtplib)\\b')
+hits=0
+for n in z.namelist():
+    if not n.endswith('.py'): continue
+    for i,l in enumerate(z.read(n).decode(errors='replace').splitlines(),1):
+        if pat.search(l):
+            hits+=1; print(f'{n}:{i}: {l.strip()[:140]}')
+print('total network/exec hits in oskm-cli.pyz:', hits)
+print('imports of urllib.request:', any('urllib.request' in z.read(n).decode(errors='replace') for n in z.namelist() if n.endswith('.py')))
+\""
+$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && export OSKM_DOWNLOAD_SOURCE=INTERNAL_CI OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:62160/internal && W=$PWD && PY=/opt/homebrew/opt/python@3.12/bin/python3.12 && export OSKM_RUNTIME_ROOT=$W/runtime && echo "########## doctor: managed (stale) ##########" && $PY tool/bootstrap.py --runtime-root "$W/runtime" doctor; echo "exit=$?"; echo; echo "########## doctor: unmanaged ##########" && OSKM_RUNTIME_ROOT=$W/unmanaged $PY tool/bootstrap.py --runtime-root "$W/unmanaged" doctor; echo "exit=$?"'
+$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit/tool && /opt/homebrew/opt/python@3.12/bin/python3.12 -c \"
+import sys; sys.path.insert(0,'.')
 from oskm_runtime import state
-from pathlib import Path
+W='/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit'
 print('today() =', state.today())
-for label, db in (('managed runtime', 'runtime/knowledge.db'), ('unmanaged', 'unmanaged/knowledge.db')):
-    p = Path(db).resolve()
-    print(f'{label}: needs_refresh={state.needs_refresh(p)}  state_file={state.state_path(p).is_file()}  db_usable={state.database_is_usable(p)}')
-EOF"
-$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && export PY=/opt/homebrew/opt/python@3.12/bin/python3.12 OSKM_DOWNLOAD_SOURCE=INTERNAL_CI OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:61481/internal && echo '### query 1: arch overview (real endpoint configured)' && "'$PY runtime/oskm-cli.pyz --db runtime/knowledge.db arch overview 2>&1 | head -25; echo "exit=${PIPESTATUS[0]:-$?}"'
-$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && export PY=/opt/homebrew/opt/python@3.12/bin/python3.12 && echo '### before' && shasum -a 256 runtime/knowledge.db runtime/.oskm-runtime.json && echo '### queries with a DEAD endpoint (closed port 9) to prove the query path never dials out' && export OSKM_DOWNLOAD_SOURCE=INTERNAL_CI OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:9/dead && "'$PY runtime/oskm-cli.pyz --db runtime/knowledge.db ask --list 2>&1 | head -8; echo "ask_exit=$?"; $PY runtime/oskm-cli.pyz --db runtime/knowledge.db --format table arch overview 2>&1 | tail -6; echo "arch_exit=$?"; $PY runtime/oskm-cli.pyz --db runtime/knowledge.db sql --query '"'select count(*) from components' 2>&1 | head -8; echo \"sql_exit="'$?"; echo '"'### after' && shasum -a 256 runtime/knowledge.db runtime/.oskm-runtime.json && cat runtime/.oskm-runtime.json | head -6"
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && export PY=/opt/homebrew/opt/python@3.12/bin/python3.12 OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:9/dead && $PY runtime/oskm-cli.pyz sql --help 2>&1 | head -20; echo '"'### real sql query against stale managed db'; "'$PY runtime/oskm-cli.pyz --db runtime/knowledge.db --format table sql '"'select name from components order by name limit 5' 2>&1 | head -12; echo \"exit="'$?"'
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && export PY=/opt/homebrew/opt/python@3.12/bin/python3.12 OSKM_RUNTIME_ROOT=$PWD/runtime && echo '"'### bootstrap.py refuses query subcommands' && "'$PY tool/bootstrap.py arch overview; echo "exit=$?"; echo '"'### unknown/ask also refused'; "'$PY tool/bootstrap.py ask --list; echo "exit=$?"'
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && export PY=/opt/homebrew/opt/python@3.12/bin/python3.12 OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:9/dead && $PY runtime/oskm-cli.pyz --db runtime/knowledge.db --format table sql --sql '"'select name from components order by name limit 5'; echo \"exit="'$?"; echo '"'### same query against the UNMANAGED db'; "'$PY runtime/oskm-cli.pyz --db unmanaged/knowledge.db --format table sql --sql '"'select name from components order by name limit 5'; echo \"exit="'$?"'
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && cp -a runtime work/runtime-copy && cp -a unmanaged work/unmanaged-copy && ls -la work/runtime-copy work/unmanaged-copy && shasum -a 256 work/runtime-copy/knowledge.db work/unmanaged-copy/knowledge.db'
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && export PY=/opt/homebrew/opt/python@3.12/bin/python3.12 OSKM_DOWNLOAD_SOURCE=INTERNAL_CI OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:61481/internal OSKM_RUNTIME_ROOT=$PWD/work/runtime-copy && time $PY tool/bootstrap.py --runtime-root work/runtime-copy refresh; echo "exit=$?"'
-$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && echo '### refreshed copy state' && cat work/runtime-copy/.oskm-runtime.json && echo '### hashes' && shasum -a 256 work/runtime-copy/knowledge.db work/runtime-copy/oskm-cli.pyz && echo '### fixture runtime UNCHANGED?' && shasum -a 256 runtime/knowledge.db runtime/.oskm-runtime.json && grep '\"date\"' runtime/.oskm-runtime.json | head -2 && ls -a work/runtime-copy"
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && export PY=/opt/homebrew/opt/python@3.12/bin/python3.12 OSKM_DOWNLOAD_SOURCE=INTERNAL_CI OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:61481/internal OSKM_RUNTIME_ROOT=$PWD/work/runtime-copy && echo '"'### refresh again (already fresh) — should be a no-op, no download' && "'$PY tool/bootstrap.py --runtime-root work/runtime-copy refresh; echo "exit=$?"; echo '"'### refresh with a DEAD endpoint on the fresh copy — still no-op (no download attempted)'; OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:9/dead "'$PY tool/bootstrap.py --runtime-root work/runtime-copy refresh; echo "exit=$?"'
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && export PY=/opt/homebrew/opt/python@3.12/bin/python3.12 OSKM_DOWNLOAD_SOURCE=INTERNAL_CI OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:61481/internal OSKM_RUNTIME_ROOT=$PWD/unmanaged && echo '"'### doctor on the unmanaged dir' && "'$PY tool/bootstrap.py --runtime-root unmanaged doctor; echo "exit=$?"; echo; echo '"'### refresh on the unmanaged dir (real endpoint configured)' && "'$PY tool/bootstrap.py --runtime-root unmanaged refresh; echo "exit=$?"; echo; echo '"'### unmanaged dir after refresh' && ls -a unmanaged && shasum -a 256 unmanaged/knowledge.db"
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && export PY=/opt/homebrew/opt/python@3.12/bin/python3.12 OSKM_DOWNLOAD_SOURCE=INTERNAL_CI OSKM_RUNTIME_ROOT=$PWD/work/runtime-copy && $PY - <<'"'EOF'
-import json, pathlib
-p = pathlib.Path('work/runtime-copy/.oskm-runtime.json')
-s = json.loads(p.read_text())
-s['date'] = '20261115'; s['db']['date'] = '20261115'; s['sdk']['date'] = '20261115'
-p.write_text(json.dumps(s, ensure_ascii=False, indent=2) + '\\n')
-print('simulated stale state date ->', s['date'])
-EOF
-echo '### stale + DEAD endpoint: refresh must fail loudly and leave the old runtime usable' && OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:9/dead "'$PY tool/bootstrap.py --runtime-root work/runtime-copy refresh; echo "exit=$?"; echo '"'### old db still there and queryable' && shasum -a 256 work/runtime-copy/knowledge.db && "'$PY work/runtime-copy/oskm-cli.pyz --db work/runtime-copy/knowledge.db --format table arch overview 2>&1 | head -8; ls -a work/runtime-copy'
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && export PY=/opt/homebrew/opt/python@3.12/bin/python3.12 OSKM_DOWNLOAD_SOURCE=INTERNAL_CI OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:61481/internal OSKM_RUNTIME_ROOT=$PWD/work/unmanaged-copy && echo '"'### before' && ls -a work/unmanaged-copy && echo '### explicit install (takeover) on the unmanaged copy' && "'$PY tool/bootstrap.py --runtime-root work/unmanaged-copy install; echo "exit=$?"; echo '"'### after' && ls -a work/unmanaged-copy && cat work/unmanaged-copy/.oskm-runtime.json | head -12 && echo '### now refresh sees it as managed' && "'$PY tool/bootstrap.py --runtime-root work/unmanaged-copy refresh; echo "exit=$?"; echo '"'### real unmanaged fixture untouched?' && ls -a unmanaged && shasum -a 256 unmanaged/knowledge.db"
-$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && sed -n '110,152p' tool/oskm_runtime/bootstrap.py"
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && PY=/opt/homebrew/opt/python@3.12/bin/python3.12 && $PY - <<'"'EOF'
-import re, zipfile
-z = zipfile.ZipFile('runtime/oskm-cli.pyz')
-t = z.read('oskm_cli/cli.py').decode()
-pat = re.compile(r'stale|过期|date|今天|today', re.I)
-for i, line in enumerate(t.splitlines(), 1):
-    if pat.search(line):
-        print(f'{i}: {line.rstrip()[:150]}')
-EOF"
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && export PY=/opt/homebrew/opt/python@3.12/bin/python3.12 OSKM_RUNTIME_ROOT=$PWD/runtime && $PY - <<'"'EOF'
-import sys
-from pathlib import Path
-sys.path.insert(0, 'tool')
-from oskm_runtime import state
-managed = Path('runtime/knowledge.db').resolve()
-unmanaged = Path('unmanaged/knowledge.db').resolve()
-print('today:', state.today())
-print('managed needs_refresh (default today) :', state.needs_refresh(managed))
-print('managed needs_refresh (--date 20261116):', state.needs_refresh(managed, current_date='20261116'))
-print('managed needs_refresh (--date 20261117):', state.needs_refresh(managed, current_date='20261117'))
-print('unmanaged needs_refresh (any date)    :', state.needs_refresh(unmanaged), state.needs_refresh(unmanaged, current_date='20261117'))
-print('unmanaged state file exists           :', state.state_path(unmanaged).is_file())
-EOF
-echo '### final fixture integrity' && shasum -a 256 runtime/knowledge.db runtime/oskm-cli.pyz runtime/.oskm-runtime.json unmanaged/knowledge.db && ls -a runtime unmanaged && grep -n '\"date\"' runtime/.oskm-runtime.json"
-$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && cat > answer.md <<'ANSWER_EOF'
-# 过期托管运行时 + 直接查询：会不会下载？怎么更新？自管库怎么办？
+for label,db in (('managed  ',W+'/runtime/knowledge.db'),('unmanaged',W+'/unmanaged/knowledge.db')):
+    st=state.load_state(db)
+    print(f'{label} state_path={state.state_path(db).name} load_state={\\\"None (无状态文件)\\\" if st is None else \\\"date=\\\"+str(st.get(\\\"date\\\"))} needs_refresh={state.needs_refresh(db)}')
+\""
+$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && export OSKM_DOWNLOAD_SOURCE=INTERNAL_CI OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:62160/internal OSKM_RUNTIME_ROOT=$PWD/unmanaged && PY=/opt/homebrew/opt/python@3.12/bin/python3.12 && echo "== refresh on UNMANAGED root ==" && $PY tool/bootstrap.py --runtime-root "$PWD/unmanaged" refresh; echo "exit=$?"; echo; echo "== files in unmanaged/ afterwards ==" && ls -la unmanaged && shasum -a 256 unmanaged/knowledge.db'
+$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && mkdir -p scratch && cp -R runtime scratch/managed-copy && cp -R unmanaged scratch/unmanaged-copy && find scratch -type f | sort && echo \"--- copy state date ---\" && grep -m2 '\"date\"' scratch/managed-copy/.oskm-runtime.json"
+$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && export OSKM_DOWNLOAD_SOURCE=INTERNAL_CI OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:62160/internal OSKM_RUNTIME_ROOT=$PWD/scratch/managed-copy && PY=/opt/homebrew/opt/python@3.12/bin/python3.12 && echo "== refresh #1 on stale copy ==" && $PY tool/bootstrap.py --runtime-root "$PWD/scratch/managed-copy" refresh; echo "exit=$?"; echo; echo "== state after refresh ==" && cat scratch/managed-copy/.oskm-runtime.json'
+$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && export OSKM_DOWNLOAD_SOURCE=INTERNAL_CI OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:62160/internal && PY=/opt/homebrew/opt/python@3.12/bin/python3.12 && echo "== refresh #2 (already fresh copy) ==" && OSKM_RUNTIME_ROOT=$PWD/scratch/managed-copy $PY tool/bootstrap.py --runtime-root "$PWD/scratch/managed-copy" refresh; echo "exit=$?"; echo; echo "== refresh on UNMANAGED copy ==" && shasum -a 256 scratch/unmanaged-copy/knowledge.db && OSKM_RUNTIME_ROOT=$PWD/scratch/unmanaged-copy $PY tool/bootstrap.py --runtime-root "$PWD/scratch/unmanaged-copy" refresh; echo "exit=$?"; echo "-- files after --"; ls -a scratch/unmanaged-copy; shasum -a 256 scratch/unmanaged-copy/knowledge.db'
+$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && export OSKM_DOWNLOAD_SOURCE=INTERNAL_CI OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:62160/internal && PY=/opt/homebrew/opt/python@3.12/bin/python3.12 && echo "== explicit install --runtime-root scratch/unmanaged-copy ==" && OSKM_RUNTIME_ROOT=$PWD/scratch/unmanaged-copy $PY tool/bootstrap.py --runtime-root "$PWD/scratch/unmanaged-copy" install; echo "exit=$?"; echo; echo "-- files after --"; find scratch/unmanaged-copy -type f | sort; echo "-- state --"; cat scratch/unmanaged-copy/.oskm-runtime.json 2>/dev/null | head -12'
+$ /bin/zsh -lc "/tmp/snap.sh FINAL && cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && echo \"== query on REFRESHED copy ==\" && /opt/homebrew/opt/python@3.12/bin/python3.12 scratch/managed-copy/oskm-cli.pyz --db scratch/managed-copy/knowledge.db arch overview | head -8; echo \"== fixture runtime state date (must still be 20261116) ==\"; grep -m1 '\"date\"' runtime/.oskm-runtime.json"
+$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit/tool/oskm_runtime && grep -n \"def needs_refresh\\|if state is None:\\|return False\\|db.get('date') "'!= current" state.py | head && echo "--- bootstrap ---" && grep -n "def cmd_refresh'"\\|needs_refresh\\|MANAGED = \\|未知命令\\|def cmd_install\\|def _do_install\\|install_runtime(\" bootstrap.py && echo \"--- doctor ---\" && grep -n \"非托管\\|Runtime state\" doctor.py && echo \"--- install.py ---\" && grep -n \"def install_runtime\\|def build_state\\|_install_artifacts(\" install.py | head"
+$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && export OSKM_DOWNLOAD_SOURCE=INTERNAL_CI OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:62160/internal OSKM_RUNTIME_ROOT=$PWD/runtime && echo "== try a QUERY through bootstrap.py (stale runtime) ==" && /opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py --runtime-root "$PWD/runtime" arch overview; echo "exit=$?"; echo; echo "== fixture state date still =="; grep -m1 '"'\"date\"' runtime/.oskm-runtime.json"
+$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && cat > answer.md <<'ANSWER_EOF'
+# oskm 运行时：过期数据、显式 refresh 与自管库
 
-实测日期 2026-11-17（"'`state.today()` 返回 `20261117`），夹具托管运行时状态文件里 `date=20261116`，即已过期一天。
+结论先行（全部由实跑验证，见下方命令与输出）。
 
-## 结论速览
+## 直接回答
 
-1. **直接跑 oskm-cli 查询不会触发任何下载。** CLI 是只读独立产物，`open_session()` 明确"不刷新、不联网、不跑 integrity_check"；`needs_refresh()` 的唯一调用方是 `bootstrap.py refresh`。过期数据只会被**原样查询**，不报警、不自动更新。
-2. **正确的更新动作是显式跑 `bootstrap.py refresh`**（幂等，过期才下载），需要强制/指定日期时用 `install`。查询前不会有人替你做这件事。
-3. **没有 `.oskm-runtime.json` 的自管库永远不会被 `refresh` 碰**：`load_state()` 返回 `None` → `needs_refresh()` 直接返回 `False` → 打印"已是最新"并退出 0，不下载、不覆盖、不创建状态文件。只有显式 `install --runtime-root <该目录>` 才会接管并覆盖它。
+**1. 用户只跑 "'`oskm-cli` 查询，会不会触发下载？——不会，一次都不会。**
+`oskm-cli.pyz` 是纯只读查询产物，自身不带任何联网能力：对 pyz 内全部 `.py` 成员做
+`urllib.request|urlopen|urlretrieve|http.client|socket|subprocess|os.system` 扫描，命中 **0** 处
+（只有 `urllib.parse.quote` 和把远端 URL 拼成**字符串**用于展示）。它的 `--help` 第一行就写着
+"OpenHarmony 产品事实库的只读查询（独立产物，不下载数据）"，`open_session()` 的注释也明确
+"**不刷新、不联网、不跑 integrity_check**"。
 
-## 环境
+实测：在已配置 `OSKM_DOWNLOAD_SOURCE=INTERNAL_CI` + `OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:62160/internal`
+的前提下，对**已过期**（`date=20261116`，今天 `20261117`）的托管运行时连跑 `arch overview` 与 `ask --list`，
+查询正常返回（exit 0），而 `runtime/` 与 `unmanaged/` 下**每个文件的 sha256 与 mtime 前后完全一致**，
+状态文件里 `date` 仍是 `20261116`。也就是说：**过期数据会被照常查询，静默返回旧结果，不会自动更新。**
 
-```sh
-cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit
-export PY=/opt/homebrew/opt/python@3.12/bin/python3.12
+`bootstrap.py` 也不存在"查询顺带刷新"的旁路：它只认
+`doctor / install / refresh / update-cli / download-db / validate-db / cli-path` 七条命令，
+把 `arch overview` 传给它直接报"未知命令"并 exit 2。`state.needs_refresh()` 在整个工具里
+**只有一个调用方**——`cmd_refresh`（`tool/oskm_runtime/bootstrap.py:193`）。刷新因此是**用户显式要求**的动作。
+
+**2. 数据过期时正确的更新动作是什么？——显式跑 `refresh`。**
+
+```bash
 export OSKM_DOWNLOAD_SOURCE=INTERNAL_CI
-export OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:61481/internal
-# 让 .env 查找落在工作区内，避免碰 ~/.oskm
-export OSKM_RUNTIME_ROOT=$PWD/runtime
+export OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:62160/internal
+python3 tool/bootstrap.py --runtime-root <runtime-root> refresh
 ```
 
-## A. 工具自己怎么判定"过期"
+它跑廉价检查（状态结构、日期、文件存在、SDK 目录非空、SQLite 可开且 `scans` 可读；**不跑**
+`PRAGMA integrity_check`），**只有过期/不完整才下载**：拉当天日期的 `knowledge.tar.gz`，
+用归档自带的 CLI 做 schema 校验，然后**原子替换** DB + 两套 SDK + `oskm-cli.pyz` 并写回状态文件；
+失败则回滚，旧库原样保留可继续查询。相关命令选择：
 
-```sh
-$PY - <<'"'EOF'
-import sys; from pathlib import Path; sys.path.insert(0, 'tool')
-from oskm_runtime import state
-managed, unmanaged = Path('runtime/knowledge.db').resolve(), Path('unmanaged/knowledge.db').resolve()
-print('today:', state.today())
-print('managed needs_refresh (default today)  :', state.needs_refresh(managed))
-print('managed needs_refresh (--date 20261116):', state.needs_refresh(managed, current_date='20261116'))
-print('unmanaged needs_refresh (any date)     :', state.needs_refresh(unmanaged), state.needs_refresh(unmanaged, current_date='20261117'))
-print('unmanaged state file exists            :', state.state_path(unmanaged).is_file())
-EOF
+- `refresh` —— 幂等，过期才下载（日常推荐）
+- `install` —— 无条件重装同一天产物
+- `refresh --date YYYYMMDD` / `install --date YYYYMMDD` —— 钉到指定日期
+- `update-cli [--force]` —— 只补齐/更换 CLI 产物，不重下 DB/SDK
+- `download-db --date D --output PATH` —— 只取某天 `knowledge.db` 到指定路径，不装 SDK、不碰运行时
+- `doctor` —— 看当前装的是哪天、来源、db/sdk/cli 三段是否齐
+
+刷新完成后照常直接调 CLI 查询：
+`python3 <runtime-root>/oskm-cli.pyz --db <runtime-root>/knowledge.db arch overview`
+
+**3. 没有 `.oskm-runtime.json` 的自管库会怎样？——不会被刷新，也不会被覆盖。**
+`needs_refresh()` 在读不到状态文件时**立即返回 `False`**（`tool/oskm_runtime/state.py:151`），
+把它当作"用户自己管的输入"原样放过。实测 `refresh --runtime-root unmanaged`：
+打印"运行时已是最新，无需刷新"、exit 0、**不联网、不创建 `.oskm-runtime.json`、`knowledge.db` 的
+sha256 与 mtime 一字未动**。`doctor` 对这种目录也直说："非托管（没有 `.oskm-runtime.json`），
+`bootstrap.py refresh` 不会碰它"。
+
+注意两点：
+- 这条 no-op 的文案是"已是最新"，但真实原因是"非托管、根本不参与刷新判定"，不是"检查过且新鲜"。
+- **唯一**会改动自管库的是用户显式执行 `install --runtime-root <该目录>`：实测它会把该目录**转成托管运行时**
+  （下载当天归档、写入 `.oskm-runtime.json`、覆盖 `knowledge.db`、装上 `oskm-cli.pyz` 与两套 SDK）。
+  所以别把 `--runtime-root` 指向想保留的自管库目录；查自管库只需 `--db` 指向它，CLI 用别处装好的那个即可。
+
+---
+
+## 执行过的关键命令与输出
+
+解释器 `/opt/homebrew/opt/python@3.12/bin/python3.12`（3.12.16），cwd 为任务给定的工作区。
+**夹具目录未被修改**：涉及"会写盘"的 `refresh` / `install` 都在 `scratch/` 下的副本上做，
+`runtime/` 与 `unmanaged/` 的前后快照逐字节相同（见最后一节）。
+
+### 0) 基线快照（跑查询之前）
+
+```
+$ /tmp/snap.sh BEFORE        # find runtime unmanaged -type f | shasum -a 256 | stat mtime
+c472e9d0852578fa  16:28:17  runtime/.oskm-runtime.json
+8c8c597c1d563cfb  16:28:17  runtime/interface/sdk-js/api/@internal/ohos.evalmarker.d.ts
+49673a32794f18d5  16:28:17  runtime/interface/sdk_c/evalmarker.h
+f561e39f648cfd6b  16:28:17  runtime/knowledge.db
+3e78cf73a94bcf9d  16:28:17  runtime/oskm-cli.pyz
+f561e39f648cfd6b  16:18:33  unmanaged/knowledge.db
+--- journal_mode ---
+runtime/knowledge.db delete 1
+unmanaged/knowledge.db delete 1
+```
+
+（`journal_mode=delete`，说明只读 SELECT 不会在库旁边留下 `-wal` / `-shm`，快照对比才干净。）
+
+### 1) CLI 自身无联网能力
+
+```
+$ python3.12 -c "...zipfile 扫描 runtime/oskm-cli.pyz 全部 .py 成员..."
+total network/exec hits in oskm-cli.pyz: 0
+imports of urllib.request: False
+```
+
+`--help` 摘要：
+
+```
+$ python3.12 runtime/oskm-cli.pyz --help
+usage: oskm-cli [-h] [--version] [--db DB] [--product PRODUCT]
+                [--scan-id SCAN_ID] [--format {json,table}]
+                {ask,arch,diff,sql,validate-db} ...
+
+OpenHarmony 产品事实库的只读查询（独立产物，不下载数据）。
+```
+
+### 2) 直接查询过期运行时（下载端点已配置且可用）
+
+```
+$ export OSKM_DOWNLOAD_SOURCE=INTERNAL_CI OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:62160/internal
+$ python3.12 runtime/oskm-cli.pyz --db runtime/knowledge.db arch overview
+{
+  "product": "synthetic",
+  "scan_id": 1,
+  "subsystems": 2,
+  "counts": { "repos": 1, "components": 2, "install_modules": 3, "install_targets": 3, ... },
+  "top_subsystems": [ { "key": "graphics", "count": 1 }, { "key": "startup", "count": 1 } ]
+}
+exit=0
+
+$ python3.12 runtime/oskm-cli.pyz --db runtime/knowledge.db ask --list | head -12
+arkts
+    arkts_kit_modules          Kit 的去重成员模块，或未解析的引用。...
+    ...
+component
+    component_attached         部件关联的各域记录
+```
+
+查询之后立刻复查快照 —— **与 BEFORE 完全一致**：
+
+```
+$ /tmp/snap.sh AFTER-QUERIES
+c472e9d0852578fa  16:28:17  runtime/.oskm-runtime.json
+f561e39f648cfd6b  16:28:17  runtime/knowledge.db
+3e78cf73a94bcf9d  16:28:17  runtime/oskm-cli.pyz
+f561e39f648cfd6b  16:18:33  unmanaged/knowledge.db
+...（六个文件 sha256 + mtime 全部未变）
+```
+
+同一个 CLI 也能直接查自管库（同样不下载、不写盘）：
+
+```
+$ python3.12 runtime/oskm-cli.pyz --db unmanaged/knowledge.db arch overview
+{ "product": "synthetic", "scan_id": 1, "subsystems": 2, ... }
+exit=0
+```
+
+### 3) bootstrap 不接受查询命令（没有隐式刷新旁路）
+
+```
+$ python3.12 tool/bootstrap.py --runtime-root "$PWD/runtime" arch overview
+错误: 未知命令 arch。bootstrap.py 只负责安装，查询请直接调 CLI：
+  python3 <runtime-root>/oskm-cli.pyz --db <runtime-root>/knowledge.db <ask|arch|diff|sql> …
+可用命令: doctor, install, refresh, update-cli, download-db, validate-db, cli-path
+exit=2
+
+$ grep -m1 '"'\"date\"' runtime/.oskm-runtime.json
+  \"date\": \"20261116\"
 "'```
 
-```
-today: 20261117
-managed needs_refresh (default today)  : True
-managed needs_refresh (--date 20261116): False
-unmanaged needs_refresh (any date)     : False False
-unmanaged state file exists            : False
-```
-
-判定是**廉价检查**：状态结构 + `db.date`/`sdk.date` 是否等于当天 + 文件在不在 + SDK 目录非空 + SQLite 能只读打开且 `scans` 可读；不跑 `PRAGMA integrity_check`。`source == "local"` 的托管运行时跳过日期比较。
-
-`doctor` 也照实报过期日期，但退出码仍是 0（过期不等于坏）：
-
-```sh
-$PY tool/bootstrap.py doctor
-```
+### 4) doctor：过期状态与非托管状态各自怎么说
 
 ```
+$ python3.12 tool/bootstrap.py --runtime-root "$PWD/runtime" doctor
 Python: 3.12.16 (OK, requires Python 3.10+)
 Source / Endpoint: OSKM_DOWNLOAD_SOURCE=INTERNAL_CI, OSKM_DOWNLOAD_ENDPOINT=已配置
 CLI: .../runtime/oskm-cli.pyz (installed, oskm-cli 1.0.0)
+Modules: oskm_runtime (OK), oskm_cli (OK), oskm_schema (OK)
+Runtime root: .../runtime
 Runtime state: version 3, date 20261116, source INTERNAL_CI, db=✓, sdk=✓, cli=✓
 Runtime database: 可打开（廉价检查；完整 schema 契约用 bootstrap.py validate-db）
 exit=0
 ```
 
-## B. 直接查询（真端点已配置）：正常出结果，无下载
-
-```sh
-$PY runtime/oskm-cli.pyz --db runtime/knowledge.db arch overview
-```
+（doctor 只**报告** `date 20261116`，自己不判定过期、也不下载；`resolve_cli(..., allow_download=False)`。）
 
 ```
-{ "product": "synthetic", "scan_id": 1, "subsystems": 2,
-  "counts": { "repos": 1, "components": 2, "install_modules": 3, ... } }
-exit=0
-```
-
-查询前后 `runtime/knowledge.db` 与 `runtime/.oskm-runtime.json` 的 sha256 完全一致，状态文件里仍是 `"date": "20261116"`：
-
-```
-f561e39f648cfd6b391d6b2b0e1a5ec32e9ab5c8990dc9cbedf2f1685fcd1b44  runtime/knowledge.db
-81e96054030951e863cf6777d1662d31208de3140b076b715451795f582aa432  runtime/.oskm-runtime.json
-```
-
-## C. 反证：把端点换成死端口，查询照样成功
-
-```sh
-export OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:9/dead   # 端口 9，无人监听
-$PY runtime/oskm-cli.pyz --db runtime/knowledge.db ask --list          # exit=0
-$PY runtime/oskm-cli.pyz --db runtime/knowledge.db --format table arch overview
-$PY runtime/oskm-cli.pyz --db runtime/knowledge.db --format table sql --sql '"'select name from components order by name limit 5'
-"'```
-
-```
-key       count
---------  -----
-graphics  1
-startup   1
-name
-----------
-ace_engine
-init
-```
-
-三类查询（`ask` / `arch` / `sql`）在端点不可达时全部 exit=0，输出无差异 → 查询路径根本没有网络代码。对 `oskm-cli.pyz` 45 个 `.py` 成员做全量 grep，也没有 `urlopen` / `urlretrieve` / `http.client` / `socket.` / `subprocess`；`oskm_cli/query/arkts/query.py` 里的 `urllib.parse.quote` 只用于拼展示用的远端链接，不发请求。
-
-CLI 自己的 docstring 与错误文案也这么说：
-
-- `oskm_cli/cli.py:9` —— "这是**独立产物**：不下载、不写盘、不认识 `~/.oskm`、不读 `.env`。"
-- `oskm_cli/cli.py:87` —— "CLI **自己不下载数据**，所以文案一律指向 skill 的 `bootstrap.py`。"
-- `oskm_cli/cli.py:113-116` —— `open_session()`："打开库。**不刷新、不联网、不跑 integrity_check。** … 自动刷新移到了 skill 的 bootstrap"
-- 库缺失时报 `database not found: …。CLI 不会为任意缺失路径自动下载。`（退出码 3）
-
-另外 `bootstrap.py` 不再透传查询命令：
-
-```sh
-$PY tool/bootstrap.py arch overview
-```
-
-```
-错误: 未知命令 arch。bootstrap.py 只负责安装，查询请直接调 CLI：
-  python3 <runtime-root>/oskm-cli.pyz --db <runtime-root>/knowledge.db <ask|arch|diff|sql> …
-可用命令: doctor, install, refresh, update-cli, download-db, validate-db, cli-path
-exit=2
-```
-
-## D. 正确的更新动作：显式 `refresh`（会下载）
-
-为不动夹具，在**逐字节相同的副本**上演示（`cp -a runtime work/runtime-copy`）：
-
-```sh
-export OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:61481/internal
-$PY tool/bootstrap.py --runtime-root work/runtime-copy refresh
-```
-
-```
-==> 下载 INTERNAL_CI 运行时: 20261117
-==> 运行时安装完成: .../work/runtime-copy
-exit=0        # 耗时 0.107s
-```
-
-刷新后状态文件 `date` / `db.date` / `sdk.date` 全部变成 `20261117`：
-
-```
-{ "version": 3, "source": "INTERNAL_CI", "date": "20261117",
-  "updated_at": "2026-11-17T15:47:12+08:00",
-  "db": { "date": "20261117", "path": "knowledge.db", "sha256": "f561e39f…" },
-  "sdk": { "date": "20261117", "sdk-js": {...}, "sdk_c": {...} },
-  "cli": { "path": "oskm-cli.pyz", "sha256": "ad760c16…" } }
-```
-
-紧接着再跑一次就是 no-op（幂等，不再产生请求）：
-
-```sh
-$PY tool/bootstrap.py --runtime-root work/runtime-copy refresh
-```
-
-```
-==> 运行时已是最新，无需刷新: .../work/runtime-copy
-exit=0
-```
-
-刷新失败时的行为也验证了（把副本状态改回 `20261115` 再用死端点）：
-
-```
-==> 下载 INTERNAL_CI 运行时: 20261117
-错误: 下载失败（网络或代理不可用）: http://127.0.0.1:9/dead/20261117: <urlopen error [Errno 61] Connection refused>. …
+$ python3.12 tool/bootstrap.py --runtime-root "$PWD/unmanaged" doctor
+CLI: FAIL: 找不到可用的 oskm-cli 产物。...
+  3. .../unmanaged/oskm-cli.pyz —— 不存在
+Runtime state: 非托管（没有 .oskm-runtime.json），`bootstrap.py refresh` 不会碰它
+错误: 运行时依赖检查未通过。
 exit=1
 ```
 
-旧库原封不动且仍可查询（`knowledge.db` sha 不变，`arch overview` 正常返回）——安装是"临时目录里下好 + 校验 + 原子替换，失败逆序回滚"，所以过期数据在刷新失败时依然可用。
+（这里的 FAIL 只是"该目录没有 CLI 产物"，不是库坏了：自管库本来就用别处的 CLI 加 `--db` 查。）
 
-### 用户该敲的命令（把 `<root>` 换成实际运行时根目录）
-
-```sh
-# 1) 先看清楚状态与日期
-python3 <skill>/bootstrap.py --runtime-root <root> doctor
-
-# 2) 过期才更新（推荐，幂等）
-python3 <skill>/bootstrap.py --runtime-root <root> refresh
-
-# 变体：
-#   refresh --date 20261117        按指定日期判定/安装
-#   install                        无条件重装（DB + 两套 SDK + CLI）
-#   install --skip-db / --skip-sdk 只补其中一部分
-#   download-db --date D --output PATH   只取某一天的 knowledge.db
-#   update-cli [--force]           只补齐/更换 CLI 产物（不下载 DB）
-#   validate-db <root>/knowledge.db      完整 schema 契约校验
-
-# 3) 更新完照常查询
-python3 <root>/oskm-cli.pyz --db <root>/knowledge.db arch overview
-```
-
-下载配置从环境变量或 `.env` 读（顺序：真实环境变量 > `<runtime-root>/.env` > skill 的 `oskm_runtime/.env`），本次为 `OSKM_DOWNLOAD_SOURCE=INTERNAL_CI` + `OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:61481/internal`；`INTERNAL_CI` 的取法是 `GET <endpoint>/<YYYYMMDD>`。端点没配时 `doctor` 会区分：运行时已完整 → `WARN`（查询可用，只是按日期刷新会失败）；什么都没装 → `FAIL`。
-
-## E. 自管库（无 `.oskm-runtime.json`）：不会被刷新，也不会被覆盖
-
-```sh
-$PY tool/bootstrap.py --runtime-root unmanaged doctor      # 关注 Runtime state 那行
-$PY tool/bootstrap.py --runtime-root unmanaged refresh
-ls -a unmanaged && shasum -a 256 unmanaged/knowledge.db
-```
+### 5) 刷新判定本身
 
 ```
-Runtime state: 非托管（没有 .oskm-runtime.json），`bootstrap.py refresh` 不会碰它
+$ python3.12 -c "from oskm_runtime import state; ..."
+today() = 20261117
+managed   state_path=.oskm-runtime.json load_state=date=20261116 needs_refresh=True
+unmanaged state_path=.oskm-runtime.json load_state=None (无状态文件) needs_refresh=False
+```
+
+### 6) 显式 refresh = 真正的下载 + 原子更新（在副本上跑）
+
+```
+$ mkdir -p scratch && cp -R runtime scratch/managed-copy && cp -R unmanaged scratch/unmanaged-copy
+$ python3.12 tool/bootstrap.py --runtime-root "$PWD/scratch/managed-copy" refresh
+==> 下载 INTERNAL_CI 运行时: 20261117
+==> 运行时安装完成: .../scratch/managed-copy
+exit=0
+
+$ cat scratch/managed-copy/.oskm-runtime.json
+{
+  "version": 3,
+  "source": "INTERNAL_CI",
+  "date": "20261117",
+  "updated_at": "2026-11-17T16:34:06+08:00",
+  "db":  { "date": "20261117", "path": "knowledge.db", "sha256": "f561e39f..." },
+  "sdk": { "date": "20261117", "sdk-js": {...}, "sdk_c": {...} },
+  "cli": { "path": "oskm-cli.pyz", "sha256": "3e78cf73..." }
+}
+```
+
+紧接着第二次 refresh —— **幂等，不再下载**：
+
+```
+$ python3.12 tool/bootstrap.py --runtime-root "$PWD/scratch/managed-copy" refresh
+==> 运行时已是最新，无需刷新: .../scratch/managed-copy
+exit=0
+```
+
+刷新后的副本查询正常：
+
+```
+$ python3.12 scratch/managed-copy/oskm-cli.pyz --db scratch/managed-copy/knowledge.db arch overview | head -8
+{
+  "product": "synthetic",
+  "scan_id": 1,
+  "subsystems": 2,
+  ...
+```
+
+### 7) 自管库：refresh 是 no-op，只有显式 install 才会改它
+
+```
+$ python3.12 tool/bootstrap.py --runtime-root "$PWD/unmanaged" refresh
 ==> 运行时已是最新，无需刷新: .../unmanaged
 exit=0
-.  ..  knowledge.db                                    # 没有多出 .oskm-runtime.json / oskm-cli.pyz / interface
+
+$ ls -la unmanaged && shasum -a 256 unmanaged/knowledge.db
+-rw-r--r--  1 song  staff  434176 Nov 17 16:18 knowledge.db        # 没有 .oskm-runtime.json
 f561e39f648cfd6b391d6b2b0e1a5ec32e9ab5c8990dc9cbedf2f1685fcd1b44  unmanaged/knowledge.db
 ```
 
-- `refresh` 对它是 **no-op**：`needs_refresh()` 见到 `load_state() is None` 立刻 `return False`（`state.py` 注释："A database without a state file is an unmanaged input and is left alone for backwards compatibility with hand-made `artifacts/*/knowledge.db` files."）。不下载、不覆盖、不写状态文件，退出码 0（提示文案是"已是最新"，实际含义是"非托管，不管"）。
-- 自管库**照常可查**，只是没有任何日期新鲜度概念：
+副本上同样验证（refresh 前后 sha 一致、目录里仍只有 `knowledge.db`）：
 
-```sh
-$PY runtime/oskm-cli.pyz --db unmanaged/knowledge.db --format table sql --sql '"'select name from components order by name limit 5'
-# name / ace_engine / init      exit=0
+```
+$ shasum -a 256 scratch/unmanaged-copy/knowledge.db
+f561e39f648cfd6b...   # before
+$ python3.12 tool/bootstrap.py --runtime-root "$PWD/scratch/unmanaged-copy" refresh
+==> 运行时已是最新，无需刷新: .../scratch/unmanaged-copy
+exit=0
+$ ls -a scratch/unmanaged-copy ; shasum -a 256 scratch/unmanaged-copy/knowledge.db
+.  ..  knowledge.db
+f561e39f648cfd6b...   # after —— 未变，且没有生成状态文件
+```
+
+对照：**显式** `install` 指向同一目录就会把它变成托管运行时（这就是唯一会覆盖自管库的路径）：
+
+```
+$ python3.12 tool/bootstrap.py --runtime-root "$PWD/scratch/unmanaged-copy" install
+==> 下载 INTERNAL_CI 运行时: 20261117
+==> 运行时安装完成: .../scratch/unmanaged-copy
+exit=0
+
+$ find scratch/unmanaged-copy -type f | sort
+scratch/unmanaged-copy/.oskm-runtime.json          <- 新建，自管变托管
+scratch/unmanaged-copy/interface/sdk-js/api/@internal/ohos.evalmarker.d.ts
+scratch/unmanaged-copy/interface/sdk_c/evalmarker.h
+scratch/unmanaged-copy/knowledge.db                <- 被归档里的库覆盖
+scratch/unmanaged-copy/oskm-cli.pyz
+
+$ head -12 scratch/unmanaged-copy/.oskm-runtime.json
+{
+  "version": 3,
+  "source": "INTERNAL_CI",
+  "date": "20261117",
+  ...
+```
+
+### 8) 收尾快照：夹具一字未动
+
+```
+$ /tmp/snap.sh FINAL
+c472e9d0852578fa  16:28:17  runtime/.oskm-runtime.json
+8c8c597c1d563cfb  16:28:17  runtime/interface/sdk-js/api/@internal/ohos.evalmarker.d.ts
+49673a32794f18d5  16:28:17  runtime/interface/sdk_c/evalmarker.h
+f561e39f648cfd6b  16:28:17  runtime/knowledge.db
+3e78cf73a94bcf9d  16:28:17  runtime/oskm-cli.pyz
+f561e39f648cfd6b  16:18:33  unmanaged/knowledge.db
+
+$ grep -m1 '"'\"date\"' runtime/.oskm-runtime.json
+  \"date\": \"20261116\"          # 仍是夹具原始的过期日期
 "'```
 
-- 想更新自管库只能自己动手：要么用 `download-db --date D --output <path>` 另存再替换，要么显式把它交给托管——`install` **会**接管并覆盖（在 `work/unmanaged-copy` 上验证）：
+全程未读写 `~/.oskm`：每次调 `bootstrap.py` 都把 `OSKM_RUNTIME_ROOT` 指向工作区内的路径，
+并用 `--runtime-root` 显式覆盖，`.env` 查找因此不会落到 `~/.oskm/.env`。
 
-```sh
-$PY tool/bootstrap.py --runtime-root work/unmanaged-copy install
-```
+---
 
-```
-==> 下载 INTERNAL_CI 运行时: 20261117
-==> 运行时安装完成: .../work/unmanaged-copy
-exit=0
-# 目录里出现 .oskm-runtime.json / oskm-cli.pyz / interface/，此后 refresh 就认它是托管的了
-```
+## 代码依据（与实跑一致）
 
-顺带：对只放了 `knowledge.db` 的目录跑 `doctor`，会因为该目录旁边没有 `oskm-cli.pyz` 而报 `CLI: FAIL`（退出码 1）——这是"CLI 没装在这个根目录"，不是库坏了；查询时用别处的 CLI 加 `--db` 指过去即可（如上）。
-
-## 本次对下载端点产生的请求
-
-| 动作 | 端点 | 请求 |
-| --- | --- | --- |
-| `arch overview` / `ask --list` / `sql`（真端点） | `…:61481/internal` | 0 |
-| 同样查询（死端点反证） | `…:9/dead` | 0（查询路径不联网） |
-| `refresh`（副本，过期） | `…:61481/internal` | 1 × `GET /internal/20261117` |
-| `refresh`（副本，已最新） | `…:61481/internal` | 0 |
-| `refresh`（自管库） | `…:61481/internal` | 0 |
-| `install`（自管库副本） | `…:61481/internal` | 1 × `GET /internal/20261117` |
-
-即：**只有显式 `refresh`/`install` 会打到端点，查询一次都不会。**
-
-## 夹具完整性（全程未修改 fixtures）
-
-`runtime/` 与 `unmanaged/` 保持原状，所有会写盘的动作都在 `work/` 下的副本上做：
-
-```
-f561e39f648cfd6b391d6b2b0e1a5ec32e9ab5c8990dc9cbedf2f1685fcd1b44  runtime/knowledge.db
-ad760c16b3a56a994f23f42530e47ea5e63568ab0f1469afc1efead5cd5eb49e  runtime/oskm-cli.pyz
-81e96054030951e863cf6777d1662d31208de3140b076b715451795f582aa432  runtime/.oskm-runtime.json   # date 仍为 20261116
-f561e39f648cfd6b391d6b2b0e1a5ec32e9ab5c8990dc9cbedf2f1685fcd1b44  unmanaged/knowledge.db      # 目录内仍只有 knowledge.db
-```
-
-未访问、未修改 `~/.oskm`（所有 bootstrap 调用都通过 `--runtime-root` / `OSKM_RUNTIME_ROOT` 指向工作区，`.env` 查找因此不会落到 `~/.oskm/.env`）。
-
-## 一句话总结
-
-过期只影响 `refresh` 的判定，不影响查询：**直接跑 oskm-cli 一定会用旧数据出结果且绝不下载**；要新数据就显式 `bootstrap.py --runtime-root <root> refresh`（或 `install`）；没有 `.oskm-runtime.json` 的自管库对 `refresh` 完全透明，永远不会被刷新或覆盖，除非你显式对它跑 `install`。
+- `tool/oskm_runtime/state.py:137` `needs_refresh()` —— 刷新判定的唯一实现，**只做廉价检查**；
+  `tool/oskm_runtime/state.py:151` 状态文件不存在时 `return False`（自管库放过）；
+  `tool/oskm_runtime/state.py:160` `db.date`/`sdk.date` 与今天不同即判过期；
+  `source == '"'local'"'` 的运行时跳过日期比较（源码树本地构建不按天过期）。
+- `tool/oskm_runtime/bootstrap.py:181` `cmd_refresh()` —— `needs_refresh()` 为假就打印
+  "运行时已是最新，无需刷新"并 exit 0；为真才走 `_do_install()` → `install.install_runtime()`。
+- `tool/oskm_runtime/bootstrap.py:50` `MANAGED` 七条命令 + `tool/oskm_runtime/bootstrap.py:290`
+  "未知命令"分支 —— 查询不在 bootstrap 里，所以没有"查询前顺手刷新"的触发点。
+- `tool/oskm_runtime/install.py:406` `install_runtime()` —— 临时目录里下载/校验，再
+  `_install_artifacts()`（`tool/oskm_runtime/install.py:252`）原子替换 + 失败逆序回滚，
+  最后由 `build_state()`（`tool/oskm_runtime/install.py:312`）写 `.oskm-runtime.json`。
+- `tool/oskm_runtime/db_download.py` —— `INTERNAL_CI` 取 `<endpoint>/<YYYYMMDD>` 的
+  `knowledge.tar.gz`，解包 `knowledge.db` + `oskm-cli.pyz` + `interface/sdk-js` + `interface/sdk_c`，
+  防御式解压（越界路径/软链直接中止）。CLI 随归档一起发布，**没有单独的 CLI 下载端点**。
+- `tool/oskm_runtime/doctor.py:104` —— 非托管目录的原文提示
+  "非托管（没有 .oskm-runtime.json），`bootstrap.py refresh` 不会碰它"。
+- `runtime/oskm-cli.pyz` 内 `oskm_cli/cli.py:110` `open_session()` ——
+  "打开库。**不刷新、不联网、不跑 integrity_check。**"；`oskm_cli/cli.py:84`
+  `_database_not_found_message()` —— 库缺失时也只提示去跑 skill 的 `bootstrap.py install`，
+  明写"CLI 本身不下载数据 / CLI 不会为任意缺失路径自动下载"。
 ANSWER_EOF
-wc -l answer.md && head -12 answer.md'
-$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && ls -a . work && echo '--- no leftover install temp dirs in fixtures ---' && find runtime unmanaged -maxdepth 1 -name '.oskm-runtime-*' -print | wc -l"
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && rmdir work/pyz1 && ls work'
-$ /bin/zsh -lc 'cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && find work/pyz1 | head'
+wc -l answer.md && head -20 answer.md'
+$ /bin/zsh -lc "cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && ls -la && echo \"--- fixture integrity (must match BEFORE) ---\" && shasum -a 256 runtime/.oskm-runtime.json runtime/knowledge.db runtime/oskm-cli.pyz unmanaged/knowledge.db && grep -m1 '\"date\"' runtime/.oskm-runtime.json"
 ```
 
 ### Agent 最终回答
 
 ```markdown
-全部实测完成，结论已写入 `answer.md`。
+**结论**
+- 直接跑 `oskm-cli` 查询**不会下载**。`runtime/oskm-cli.pyz` 内 45 个模块对 `urllib.request|urlopen|socket|subprocess` 的扫描命中 0 处；实跑 `arch overview` / `ask --list` 后 `runtime/` 与 `unmanaged/` 全部文件的 sha256 与 mtime 一字未变，状态文件仍是 `date=20261116`——过期数据被照常查询、静默返回旧结果。
+- `bootstrap.py` 也没有隐式刷新旁路：查询命令被拒（`arch` → “未知命令”，exit 2），`needs_refresh()` 的唯一调用方是 `tool/oskm_runtime/bootstrap.py:193`。
+- 正确更新动作是**显式** `python3 tool/bootstrap.py --runtime-root <root> refresh`（需 `OSKM_DOWNLOAD_SOURCE`/`OSKM_DOWNLOAD_ENDPOINT` 或 `.env`）。实测输出 `==> 下载 INTERNAL_CI 运行时: 20261117`，原子替换 DB+SDK+CLI 并写回状态；再跑一次即 `==> 运行时已是最新，无需刷新`，不再下载。要钉日期用 `--date`，只补 CLI 用 `update-cli`，只取某天库用 `download-db`。
+- 自管库（无 `.oskm-runtime.json`）**不会被刷新也不会被覆盖**：`tool/oskm_runtime/state.py:151` 在无状态文件时直接 `return False`，`refresh --runtime-root unmanaged` 是 no-op（不联网、不建状态文件、`knowledge.db` sha 与 mtime 不变），`doctor` 也明说“非托管…`bootstrap.py refresh` 不会碰它”。唯一会改它的是用户显式 `install --runtime-root <该目录>`——实测会下载并把它转成托管运行时、覆盖原库，所以别把 `--runtime-root` 指向想保留的自管目录；查自管库只需 `--db` 指向它。
 
-**会不会下载**
-- 直接跑查询**不会**下载。`python3 runtime/oskm-cli.pyz --db runtime/knowledge.db arch overview` 正常返回，`runtime/knowledge.db` 与 `runtime/.oskm-runtime.json` 的 sha256 前后一致，状态文件里仍是 `date=20261116`。
-- 反证：把端点换成死端口 `http://127.0.0.1:9/dead` 后，`ask --list` / `arch overview` / `sql --sql …` 全部 exit=0、输出无差异；对 `oskm-cli.pyz` 内 45 个 `.py` 全量 grep 也没有 `urlopen`/`http.client`/`socket.`/`subprocess`。
-- 工具同时确认库已过期：`needs_refresh(runtime/knowledge.db)` → `True`（今天 `20261117` vs 状态 `20261116`），但过期只影响 `refresh` 的判定，查询路径不看它。`bootstrap.py arch overview` 直接 exit=2 —— 它只装不查。
+**产物**
+- 完整命令、关键输出片段与代码依据已写入 `answer.md`。
+- 会写盘的 `refresh`/`install` 演示都在 `scratch/` 的副本上做，夹具 `runtime/`、`unmanaged/`、`tool/` 保持原始状态（收尾快照逐字节一致），全程未触碰 `~/.oskm`。
+- 一个小提醒：非托管目录上 `refresh` 打印的是“运行时已是最新”，真实原因其实是“不参与刷新判定”，文案容易让人误以为检查过日期。
 
-**正确的更新动作**
-- `python3 tool/bootstrap.py --runtime-root <root> refresh`：在逐字节相同的副本上实测，输出 `==> 下载 INTERNAL_CI 运行时: 20261117` → `运行时安装完成`，状态文件三段日期全部变 `20261117`；再跑一次即 `运行时已是最新，无需刷新`（幂等，0 请求）。
-- 变体：`install`（无条件重装）、`--date YYYYMMDD`、`--skip-db/--skip-sdk`、`download-db`、`update-cli`、`validate-db`。刷新失败时（死端点）报 `下载失败…Connection refused` exit=1，旧库原封不动仍可查询。
-
-**自管库（无 `.oskm-runtime.json`）**
-- `refresh --runtime-root unmanaged` 是 no-op：打印“已是最新”、exit=0，目录里仍只有 `knowledge.db`，sha 不变，不写状态文件；`doctor` 明确报 `非托管（没有 .oskm-runtime.json），bootstrap.py refresh 不会碰它`。它照常可查（`--db unmanaged/knowledge.db sql --sql …` 正常）。
-- 只有显式 `install --runtime-root <该目录>` 才会接管覆盖 —— 在 `work/unmanaged-copy` 上验证：装出 `.oskm-runtime.json` / `oskm-cli.pyz` / `interface/`，此后 `refresh` 就认它是托管的。
-
-**边界与产物**
-- 夹具未被修改（`runtime/`、`unmanaged/` 哈希与文件清单原样，无残留 `.oskm-runtime-*` 临时目录），所有写盘动作都在 `work/` 副本上；未访问 `~/.oskm`（靠 `--runtime-root` / `OSKM_RUNTIME_ROOT` 让 `.env` 查找落在工作区）。
-- 端点总共只被显式 `refresh`/`install` 打到 2 次，查询 0 次。
-- 详见 `answer.md`（命令、输出片段、代码依据、请求计数表都在里面）。
+需要我把 `scratch/` 清掉，只留 `answer.md` 吗？
 ```
 
 ### Agent 写入的 answer.md
 
 ```markdown
-# 过期托管运行时 + 直接查询：会不会下载？怎么更新？自管库怎么办？
+# oskm 运行时：过期数据、显式 refresh 与自管库
 
-实测日期 2026-11-17（`state.today()` 返回 `20261117`），夹具托管运行时状态文件里 `date=20261116`，即已过期一天。
+结论先行（全部由实跑验证，见下方命令与输出）。
 
-## 结论速览
+## 直接回答
 
-1. **直接跑 oskm-cli 查询不会触发任何下载。** CLI 是只读独立产物，`open_session()` 明确"不刷新、不联网、不跑 integrity_check"；`needs_refresh()` 的唯一调用方是 `bootstrap.py refresh`。过期数据只会被**原样查询**，不报警、不自动更新。
-2. **正确的更新动作是显式跑 `bootstrap.py refresh`**（幂等，过期才下载），需要强制/指定日期时用 `install`。查询前不会有人替你做这件事。
-3. **没有 `.oskm-runtime.json` 的自管库永远不会被 `refresh` 碰**：`load_state()` 返回 `None` → `needs_refresh()` 直接返回 `False` → 打印"已是最新"并退出 0，不下载、不覆盖、不创建状态文件。只有显式 `install --runtime-root <该目录>` 才会接管并覆盖它。
+**1. 用户只跑 `oskm-cli` 查询，会不会触发下载？——不会，一次都不会。**
+`oskm-cli.pyz` 是纯只读查询产物，自身不带任何联网能力：对 pyz 内全部 `.py` 成员做
+`urllib.request|urlopen|urlretrieve|http.client|socket|subprocess|os.system` 扫描，命中 **0** 处
+（只有 `urllib.parse.quote` 和把远端 URL 拼成**字符串**用于展示）。它的 `--help` 第一行就写着
+"OpenHarmony 产品事实库的只读查询（独立产物，不下载数据）"，`open_session()` 的注释也明确
+"**不刷新、不联网、不跑 integrity_check**"。
 
-## 环境
+实测：在已配置 `OSKM_DOWNLOAD_SOURCE=INTERNAL_CI` + `OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:62160/internal`
+的前提下，对**已过期**（`date=20261116`，今天 `20261117`）的托管运行时连跑 `arch overview` 与 `ask --list`，
+查询正常返回（exit 0），而 `runtime/` 与 `unmanaged/` 下**每个文件的 sha256 与 mtime 前后完全一致**，
+状态文件里 `date` 仍是 `20261116`。也就是说：**过期数据会被照常查询，静默返回旧结果，不会自动更新。**
 
-```sh
-cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit
-export PY=/opt/homebrew/opt/python@3.12/bin/python3.12
+`bootstrap.py` 也不存在"查询顺带刷新"的旁路：它只认
+`doctor / install / refresh / update-cli / download-db / validate-db / cli-path` 七条命令，
+把 `arch overview` 传给它直接报"未知命令"并 exit 2。`state.needs_refresh()` 在整个工具里
+**只有一个调用方**——`cmd_refresh`（`tool/oskm_runtime/bootstrap.py:193`）。刷新因此是**用户显式要求**的动作。
+
+**2. 数据过期时正确的更新动作是什么？——显式跑 `refresh`。**
+
+```bash
 export OSKM_DOWNLOAD_SOURCE=INTERNAL_CI
-export OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:61481/internal
-# 让 .env 查找落在工作区内，避免碰 ~/.oskm
-export OSKM_RUNTIME_ROOT=$PWD/runtime
+export OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:62160/internal
+python3 tool/bootstrap.py --runtime-root <runtime-root> refresh
 ```
 
-## A. 工具自己怎么判定"过期"
+它跑廉价检查（状态结构、日期、文件存在、SDK 目录非空、SQLite 可开且 `scans` 可读；**不跑**
+`PRAGMA integrity_check`），**只有过期/不完整才下载**：拉当天日期的 `knowledge.tar.gz`，
+用归档自带的 CLI 做 schema 校验，然后**原子替换** DB + 两套 SDK + `oskm-cli.pyz` 并写回状态文件；
+失败则回滚，旧库原样保留可继续查询。相关命令选择：
 
-```sh
-$PY - <<'EOF'
-import sys; from pathlib import Path; sys.path.insert(0, 'tool')
-from oskm_runtime import state
-managed, unmanaged = Path('runtime/knowledge.db').resolve(), Path('unmanaged/knowledge.db').resolve()
-print('today:', state.today())
-print('managed needs_refresh (default today)  :', state.needs_refresh(managed))
-print('managed needs_refresh (--date 20261116):', state.needs_refresh(managed, current_date='20261116'))
-print('unmanaged needs_refresh (any date)     :', state.needs_refresh(unmanaged), state.needs_refresh(unmanaged, current_date='20261117'))
-print('unmanaged state file exists            :', state.state_path(unmanaged).is_file())
-EOF
-```
+- `refresh` —— 幂等，过期才下载（日常推荐）
+- `install` —— 无条件重装同一天产物
+- `refresh --date YYYYMMDD` / `install --date YYYYMMDD` —— 钉到指定日期
+- `update-cli [--force]` —— 只补齐/更换 CLI 产物，不重下 DB/SDK
+- `download-db --date D --output PATH` —— 只取某天 `knowledge.db` 到指定路径，不装 SDK、不碰运行时
+- `doctor` —— 看当前装的是哪天、来源、db/sdk/cli 三段是否齐
 
-```
-today: 20261117
-managed needs_refresh (default today)  : True
-managed needs_refresh (--date 20261116): False
-unmanaged needs_refresh (any date)     : False False
-unmanaged state file exists            : False
-```
+刷新完成后照常直接调 CLI 查询：
+`python3 <runtime-root>/oskm-cli.pyz --db <runtime-root>/knowledge.db arch overview`
 
-判定是**廉价检查**：状态结构 + `db.date`/`sdk.date` 是否等于当天 + 文件在不在 + SDK 目录非空 + SQLite 能只读打开且 `scans` 可读；不跑 `PRAGMA integrity_check`。`source == "local"` 的托管运行时
+**3. 没有 `.oskm-runtime.json` 的自管库会怎样？——不会被刷新，也不会被覆盖。**
+`needs_refresh()` 在读不到状态文件时**立即返回 `False`**（`tool/oskm_runtime/st
 … [输出截断，完整内容见工作区] …
-al` | 0 |
-| `refresh`（自管库） | `…:61481/internal` | 0 |
-| `install`（自管库副本） | `…:61481/internal` | 1 × `GET /internal/20261117` |
-
-即：**只有显式 `refresh`/`install` 会打到端点，查询一次都不会。**
-
-## 夹具完整性（全程未修改 fixtures）
-
-`runtime/` 与 `unmanaged/` 保持原状，所有会写盘的动作都在 `work/` 下的副本上做：
-
-```
-f561e39f648cfd6b391d6b2b0e1a5ec32e9ab5c8990dc9cbedf2f1685fcd1b44  runtime/knowledge.db
-ad760c16b3a56a994f23f42530e47ea5e63568ab0f1469afc1efead5cd5eb49e  runtime/oskm-cli.pyz
-81e96054030951e863cf6777d1662d31208de3140b076b715451795f582aa432  runtime/.oskm-runtime.json   # date 仍为 20261116
-f561e39f648cfd6b391d6b2b0e1a5ec32e9ab5c8990dc9cbedf2f1685fcd1b44  unmanaged/knowledge.db      # 目录内仍只有 knowledge.db
-```
-
-未访问、未修改 `~/.oskm`（所有 bootstrap 调用都通过 `--runtime-root` / `OSKM_RUNTIME_ROOT` 指向工作区，`.env` 查找因此不会落到 `~/.oskm/.env`）。
-
-## 一句话总结
-
-过期只影响 `refresh` 的判定，不影响查询：**直接跑 oskm-cli 一定会用旧数据出结果且绝不下载**；要新数据就显式 `bootstrap.py --runtime-root <root> refresh`（或 `install`）；没有 `.oskm-runtime.json` 的自管库对 `refresh` 完全透明，永远不会被刷新或覆盖，除非你显式对它跑 `install`。
+ll()` → `install.install_runtime()`。
+- `tool/oskm_runtime/bootstrap.py:50` `MANAGED` 七条命令 + `tool/oskm_runtime/bootstrap.py:290`
+  "未知命令"分支 —— 查询不在 bootstrap 里，所以没有"查询前顺手刷新"的触发点。
+- `tool/oskm_runtime/install.py:406` `install_runtime()` —— 临时目录里下载/校验，再
+  `_install_artifacts()`（`tool/oskm_runtime/install.py:252`）原子替换 + 失败逆序回滚，
+  最后由 `build_state()`（`tool/oskm_runtime/install.py:312`）写 `.oskm-runtime.json`。
+- `tool/oskm_runtime/db_download.py` —— `INTERNAL_CI` 取 `<endpoint>/<YYYYMMDD>` 的
+  `knowledge.tar.gz`，解包 `knowledge.db` + `oskm-cli.pyz` + `interface/sdk-js` + `interface/sdk_c`，
+  防御式解压（越界路径/软链直接中止）。CLI 随归档一起发布，**没有单独的 CLI 下载端点**。
+- `tool/oskm_runtime/doctor.py:104` —— 非托管目录的原文提示
+  "非托管（没有 .oskm-runtime.json），`bootstrap.py refresh` 不会碰它"。
+- `runtime/oskm-cli.pyz` 内 `oskm_cli/cli.py:110` `open_session()` ——
+  "打开库。**不刷新、不联网、不跑 integrity_check。**"；`oskm_cli/cli.py:84`
+  `_database_not_found_message()` —— 库缺失时也只提示去跑 skill 的 `bootstrap.py install`，
+  明写"CLI 本身不下载数据 / CLI 不会为任意缺失路径自动下载"。
 ```
 
 ## 执行记录
@@ -519,41 +547,34 @@ f561e39f648cfd6b391d6b2b0e1a5ec32e9ab5c8990dc9cbedf2f1685fcd1b44  unmanaged/know
 ### 1. [夹具准备] 装一个 date=20261116 的托管运行时（已过期）
 
 ```console
-$ /opt/homebrew/opt/python@3.12/bin/python3.12 /private/tmp/oskm-release-3.1.0/packages/oskm/skills/ohos-design-architecture-evidence-query/bootstrap.py --runtime-root /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit/runtime install --source INTERNAL_CI --date 20261116
+$ /opt/homebrew/opt/python@3.12/bin/python3.12 /private/tmp/oskm-release-3.1.0-full/packages/oskm/skills/ohos-design-architecture-evidence-query/bootstrap.py --runtime-root /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit/runtime install --source INTERNAL_CI --date 20261116
 stderr:
 ==> 下载 INTERNAL_CI 运行时: 20261116
-==> 运行时安装完成: /private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit/runtime
+==> 运行时安装完成: /private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit/runtime
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit` · exit=0 · 0.1s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit` · exit=0 · 0.13s
 
 ### 2. codex exec（agent 臂）
 
 ```console
 $ /usr/local/bin/codex exec --skip-git-repo-check --sandbox danger-full-access -C … < PROMPT.md
-全部实测完成，结论已写入 `answer.md`。
+**结论**
+- 直接跑 `oskm-cli` 查询**不会下载**。`runtime/oskm-cli.pyz` 内 45 个模块对 `urllib.request|urlopen|socket|subprocess` 的扫描命中 0 处；实跑 `arch overview` / `ask --list` 后 `runtime/` 与 `unmanaged/` 全部文件的 sha256 与 mtime 一字未变，状态文件仍是 `date=20261116`——过期数据被照常查询、静默返回旧结果。
+- `bootstrap.py` 也没有隐式刷新旁路：查询命令被拒（`arch` → “未知命令”，exit 2），`needs_refresh()` 的唯一调用方是 `tool/oskm_runtime/bootstrap.py:193`。
+- 正确更新动作是**显式** `python3 tool/bootstrap.py --runtime-root <root> refresh`（需 `OSKM_DOWNLOAD_SOURCE`/`OSKM_DOWNLOAD_ENDPOINT` 或 `.env`）。实测输出 `==> 下载 INTERNAL_CI 运行时: 20261117`，原子替换 DB+SDK+CLI 并写回状态；再跑一次即 `==> 运行时已是最新，无需刷新`，不再下载。要钉日期用 `--date`，只补 CLI 用 `update-cli`，只取某天库用 `download-db`。
+- 自管库（无 `.oskm-runtime.json`）**不会被刷新也不会被覆盖**：`tool/oskm_runtime/state.py:151` 在无状态文件时直接 `return False`，`refresh --runtime-root unmanaged` 是 no-op（不联网、不建状态文件、`knowledge.db` sha 与 mtime 不变），`doctor` 也明说“非托管…`bootstrap.py refresh` 不会碰它”。唯一会改它的是用户显式 `install --runtime-root <该目录>`——实测会下载并把它转成托管运行时、覆盖原库，所以别把 `--runtime-root` 指向想保留的自管目录；查自管库只需 `--db` 指向它。
 
-**会不会下载**
-- 直接跑查询**不会**下载。`python3 runtime/oskm-cli.pyz --db runtime/knowledge.db arch overview` 正常返回，`runtime/knowledge.db` 与 `runtime/.oskm-runtime.json` 的 sha256 前后一致，状态文件里仍是 `date=20261116`。
-- 反证：把端点换成死端口 `http://127.0.0.1:9/dead` 后，`ask --list` / `arch overview` / `sql --sql …` 全部 exit=0、输出无差异；对 `oskm-cli.pyz` 内 45 个 `.py` 全量 grep 也没有 `urlopen`/`http.client`/`socket.`/`subprocess`。
-- 工具同时确认库已过期：`needs_refresh(runtime/knowledge.db)` → `True`（今天 `20261117` vs 状态 `20261116`），但过期只影响 `refresh` 的判定，查询路径不看它。`bootstrap.py arch overview` 直接 exit=2 —— 它只装不查。
+**产物**
+- 完整命令、关键输出片段与代码依据已写入 `answer.md`。
+- 会写盘的 `refresh`/`install` 演示都在 `scratch/` 的副本上做，夹具 `runtime/`、`unmanaged/`、`tool/` 保持原始状态（收尾快照逐字节一致），全程未触碰 `~/.oskm`。
+- 一个小提醒：非托管目录上 `refresh` 打印的是“运行时已是最新”，真实原因其实是“不参与刷新判定”，文案容易让人误以为检查过日期。
 
-**正确的更新动作**
-- `python3 tool/bootstrap.py --runtime-root <root> refresh`：在逐字节相同的副本上实测，输出 `==> 下载 INTERNAL_CI 运行时: 20261117` → `运行时安装完成`，状态文件三段日期全部变 `20261117`；再跑一次即 `运行时已是最新，无需刷新`（幂等，0 请求）。
-- 变体：`install`（无条件重装）、`--date YYYYMMDD`、`--skip-db/--skip-sdk`、`download-db`、`update-cli`、`validate-db`。刷新失败时（死端点）报 `下载失败…Connection refused` exit=1，旧库原封不动仍可查询。
-
-**自管库（无 `.oskm-runtime.json`）**
-- `refresh --runtime-root unmanaged` 是 no-op：打印“已是最新”、exit=0，目录里仍只有 `knowledge.db`，sha 不变，不写状态文件；`doctor` 明确报 `非托管（没有 .oskm-runtime.json），bootstrap.py refresh 不会碰它`。它照常可查（`--db unmanaged/knowledge.db sql --sql …` 正常）。
-- 只有显式 `install --runtime-root <该目录>` 才会接管覆盖 —— 在 `work/unmanaged-copy` 上验证：装出 `.oskm-runtime.json` / `oskm-cli.pyz` / `interface/`，此后 `refresh` 就认它是托管的。
-
-**边界与产物**
-- 夹具未被修改（`runtime/`、`unmanaged/` 哈希与文件清单原样，无残留 `.oskm-runtime-*` 临时目录），所有写盘动作都在 `work/` 副本上；未访问 `~/.oskm`（靠 `--runtime-root` / `OSKM_RUNTIME_ROOT` 让 `.env` 查找落在工作区）。
-- 端点总共只被显式 `refresh`/`install` 打到 2 次，查询 0 次。
-- 详见 `answer.md`（命令、输出片段、代码依据、请求计数表都在里面）。stderr:
-2026-11-17T07:44:57.642829Z ERROR codex_core::tools::router: error=exec_command failed: CreateProcess { message: "Rejected(\"`/bin/zsh -lc \\\"cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit && mkdir -p work && cd work && rm -rf pyz && mkdir pyz && cd pyz && unzip -q ../../runtime/oskm-cli.pyz && ls && echo '=== network / refresh references in CLI ===' && grep -rn \\\\\\\"urllib\\\\\\\\|requests\\\\\\\\|http://\\\\\\\\|https://\\\\\\\\|socket\\\\\\\\|needs_refresh\\\\\\\\|oskm_runtime\\\\\\\\|download\\\\\\\" --include='*.py' . | grep -v \\\\\\\"\\\"'^./_bootstrap\\\" | head -40'` rejected: rm -f style commands are not permitted. Use a safer approach\")" }
+需要我把 `scratch/` 清掉，只留 `answer.md` 吗？stderr:
+2026-11-17T08:33:49.956451Z ERROR codex_core::tools::router: error=exec_command failed: CreateProcess { message: "Rejected(\"`/bin/zsh -lc \\\"cd /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit && rm -rf scratch && mkdir -p scratch && cp -R runtime scratch/managed-copy && cp -R unmanaged scratch/unmanaged-copy && ls -la scratch/managed-copy && echo \\\\\\\"--- copy state date ---\\\\\\\" && grep '\\\\\\\"date\\\\\\\"' scratch/managed-copy/.oskm-runtime.json | head -3\\\"` rejected: rm -f style commands are not permitted. Use a safer approach\")" }
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit` · exit=0 · 560.1s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit` · exit=0 · 523.7s
 
 ## 夹具服务端请求（被测阶段）
 
@@ -565,7 +586,7 @@ cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p
 [
   {
     "seq": 2,
-    "ts": "2026-11-17T15:47:12.466+08:00",
+    "ts": "2026-11-17T16:34:06.788+08:00",
     "method": "GET",
     "path": "/internal/20261117",
     "user_agent": "Python-urllib/3.12",
@@ -574,7 +595,7 @@ cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p
   },
   {
     "seq": 3,
-    "ts": "2026-11-17T15:48:27.788+08:00",
+    "ts": "2026-11-17T16:34:38.990+08:00",
     "method": "GET",
     "path": "/internal/20261117",
     "user_agent": "Python-urllib/3.12",
@@ -592,8 +613,8 @@ cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p
 
 ## 被测前状态
 
-- 托管运行时 `/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit/runtime`：`date=20261116`（今天 20261117，已过期）
-- 自管库 `/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit/unmanaged/knowledge.db`：sha256=f561e39f648cfd6b391d6b2b0e1a5ec32e9ab5c8990dc9cbedf2f1685fcd1b44
+- 托管运行时 `/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit/runtime`：`date=20261116`（今天 20261117，已过期）
+- 自管库 `/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit/unmanaged/knowledge.db`：sha256=f561e39f648cfd6b391d6b2b0e1a5ec32e9ab5c8990dc9cbedf2f1685fcd1b44
 - 自管库没有 `.oskm-runtime.json`
 
 ## 断言结果
@@ -604,12 +625,12 @@ cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p
 |---:|---|---|---|---|
 | 1 | 工具的请求都是"按日期取归档"（没有凭空的 URL，也没有单独下 CLI） | auto | Pass | [{"method": "GET", "path": "/internal/20261117"}, {"method": "GET", "path": "/internal/20261117"}] |
 | 2 | 自管库保持原样：没有状态文件、内容未被改写 | auto | Pass | 状态文件存在=False；sha 未变=True |
-| 3 | 托管运行时仍然可用（没有被查询搞坏） | auto | Pass | /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e07-refresh-is-explicit/runtime/knowledge.db |
+| 3 | 托管运行时仍然可用（没有被查询搞坏） | auto | Pass | /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e07-refresh-is-explicit/runtime/knowledge.db |
 | 4 | 回答说明直接查询不会触发下载 | auto | Pass | 相关表述见转录的 agent 最终回答 |
 | 5 | 回答给出显式更新入口 refresh | auto | Pass | agent 回答中出现 refresh |
-| 6 | 自管库（无状态文件）是否被正确说明为不刷新/不覆盖 | manual | 人工 | 全部实测完成，结论已写入 `answer.md`。  **会不会下载** - 直接跑查询**不会**下载。`python3 runtime/oskm-cli.pyz --db runtime/knowledge.db arch overview` 正常返回，`runtime/knowledge.db` 与 `runtime/.oskm-runtime.json` 的 sha256 前后一致，状态文
+| 6 | 自管库（无状态文件）是否被正确说明为不刷新/不覆盖 | manual | 人工 | **结论** - 直接跑 `oskm-cli` 查询**不会下载**。`runtime/oskm-cli.pyz` 内 45 个模块对 `urllib.request\|urlopen\|socket\|subprocess` 的扫描命中 0 处；实跑 `arch overview` / `ask --list` 后 `runtime/` 与 `unmanaged/` 全部文件的 sha256 与
 … [输出截断，完整内容见工作区] …
-261116`），但过期只影响 `refresh` 的判定，查询路径不看它。`bootstrap.py arch overview` 直接 exit=2 —— 它只装不查。  **正确的更新动作**  |
+`.env`）。实测输出 `==> 下载 INTERNAL_CI 运行时: 20261117`，原子替换 DB+SDK+CLI 并写回状态；再跑一次即 `==> 运行时已是最新，无需刷新`，不再下载。 |
 | 7 | 执行过程未越界（没有去工作区外找文档/实现/评估器） | auto | Pass | 所有命令都落在工作区、夹具与临时 CODEX_HOME 内 |
 
 **结论：PASS**

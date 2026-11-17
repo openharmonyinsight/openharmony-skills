@@ -1,13 +1,13 @@
 # E0 live-smoke（live-smoke 臂）
 
-- 开始时间：2026-11-17T15:33:43+08:00
-- 结束时间：2026-11-17T15:33:55+08:00
+- 开始时间：2026-11-17T16:18:08+08:00
+- 结束时间：2026-11-17T16:18:18+08:00
 - 执行臂：`live-smoke`
-- skill：`/private/tmp/oskm-release-3.1.0/packages/oskm/skills/ohos-design-architecture-evidence-query`（name=ohos-design-architecture-evidence-query, version=3.1.0）
+- skill：`/private/tmp/oskm-release-3.1.0-full/packages/oskm/skills/ohos-design-architecture-evidence-query`（name=ohos-design-architecture-evidence-query, version=3.1.0）
 - Python：`/opt/homebrew/opt/python@3.12/bin/python3.12`
-- 工作区：`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda`
+- 工作区：`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6`
 - 夹具服务端：（未使用）
-- oskm 源码树（夹具来源）：`/private/tmp/oskm-release-3.1.0/packages/oskm`
+- oskm 源码树（夹具来源）：`/private/tmp/oskm-release-3.1.0-full/packages/oskm`
 
 ## 用户请求（来自 evals.json）
 
@@ -27,39 +27,39 @@
 ### 1. doctor
 
 ```console
-$ /opt/homebrew/opt/python@3.12/bin/python3.12 /private/tmp/oskm-release-3.1.0/packages/oskm/skills/ohos-design-architecture-evidence-query/bootstrap.py doctor
+$ /opt/homebrew/opt/python@3.12/bin/python3.12 /private/tmp/oskm-release-3.1.0-full/packages/oskm/skills/ohos-design-architecture-evidence-query/bootstrap.py doctor
 Python: 3.12.16 (OK, requires Python 3.10+)
 Source / Endpoint: OSKM_DOWNLOAD_SOURCE=OPENHARMONY_CI, OSKM_DOWNLOAD_ENDPOINT=已配置
-CLI: /private/tmp/oskm-release-3.1.0/packages/oskm (source, oskm-cli 1.0.0)
+CLI: /private/tmp/oskm-release-3.1.0-full/packages/oskm (source, oskm-cli 1.0.0)
 Modules: oskm_runtime (OK), oskm_cli (OK), oskm_schema (OK)
-Runtime root: /private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime
+Runtime root: /private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime
 Runtime state: 未安装（没有 knowledge.db）；执行 bootstrap.py install 安装
 提示: 运行时来自单个 knowledge.tar.gz——里面就是 knowledge.db + oskm-cli.pyz + 两套 SDK，install 一次装齐；不要求 Git。CLI 按三级候选解析（$OSKM_CLI → 源码树 → <runtime-root>/oskm-cli.pyz），全程不单独下载 CLI。
 提示: bootstrap.py 不跑查询。查询直接调 <runtime-root>/oskm-cli.pyz --db <runtime-root>/knowledge.db …
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda` · exit=0 · 0.07s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6` · exit=0 · 0.06s
 
 ### 2. install --source OPENHARMONY_CI --date 20261116
 
 ```console
-$ /opt/homebrew/opt/python@3.12/bin/python3.12 /private/tmp/oskm-release-3.1.0/packages/oskm/skills/ohos-design-architecture-evidence-query/bootstrap.py --runtime-root /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime install --source OPENHARMONY_CI --date 20261116
+$ /opt/homebrew/opt/python@3.12/bin/python3.12 /private/tmp/oskm-release-3.1.0-full/packages/oskm/skills/ohos-design-architecture-evidence-query/bootstrap.py --runtime-root /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime install --source OPENHARMONY_CI --date 20261116
 stderr:
 ==> 下载 OPENHARMONY_CI 运行时: 20261116
-==> 运行时安装完成: /private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime
+==> 运行时安装完成: /private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda` · exit=0 · 12.22s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6` · exit=0 · 9.8s
 
 ### 3. 状态文件
 
 ```console
-$ cat /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime/.oskm-runtime.json
+$ cat /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime/.oskm-runtime.json
 {
   "version": 3,
   "source": "OPENHARMONY_CI",
   "date": "20261116",
-  "updated_at": "2026-11-17T15:33:55+08:00",
+  "updated_at": "2026-11-17T16:18:18+08:00",
   "db": {
     "date": "20261116",
     "path": "knowledge.db",
@@ -81,34 +81,34 @@ $ cat /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z
 }
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda` · exit=0 · 0.01s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6` · exit=0 · 0.01s
 
 ### 4. 运行时体积
 
 ```console
-$ du -sh /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime && find /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime -maxdepth 2 -type d | sort
-339M	/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime
-/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime
-/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime/interface
-/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime/interface/sdk-js
-/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime/interface/sdk_c
+$ du -sh /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime && find /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime -maxdepth 2 -type d | sort
+339M	/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime
+/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime
+/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime/interface
+/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime/interface/sdk-js
+/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime/interface/sdk_c
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda` · exit=0 · 0.11s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6` · exit=0 · 0.11s
 
 ### 5. CLI 版本
 
 ```console
-$ /opt/homebrew/opt/python@3.12/bin/python3.12 /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime/oskm-cli.pyz --version
+$ /opt/homebrew/opt/python@3.12/bin/python3.12 /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime/oskm-cli.pyz --version
 oskm-cli 1.0.0
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda` · exit=0 · 0.1s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6` · exit=0 · 0.09s
 
 ### 6. ask get_scan_info
 
 ```console
-$ /opt/homebrew/opt/python@3.12/bin/python3.12 /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime/oskm-cli.pyz --db /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime/knowledge.db ask get_scan_info
+$ /opt/homebrew/opt/python@3.12/bin/python3.12 /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime/oskm-cli.pyz --db /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime/knowledge.db ask get_scan_info
 {
   "session_id": 1,
   "scan_id": 1,
@@ -196,12 +196,12 @@ $ /opt/homebrew/opt/python@3.12/bin/python3.12 /var/folders/2g/nr0w8xh97c3d722vd
 }
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda` · exit=0 · 0.08s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6` · exit=0 · 0.08s
 
 ### 7. arch overview
 
 ```console
-$ /opt/homebrew/opt/python@3.12/bin/python3.12 /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime/oskm-cli.pyz --db /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime/knowledge.db arch overview
+$ /opt/homebrew/opt/python@3.12/bin/python3.12 /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime/oskm-cli.pyz --db /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime/knowledge.db arch overview
 {
   "product": "wukong100",
   "scan_id": 1,
@@ -264,12 +264,12 @@ $ /opt/homebrew/opt/python@3.12/bin/python3.12 /var/folders/2g/nr0w8xh97c3d722vd
 }
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda` · exit=0 · 0.09s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6` · exit=0 · 0.08s
 
 ### 8. ask --list（统计工具数）
 
 ```console
-$ /opt/homebrew/opt/python@3.12/bin/python3.12 /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime/oskm-cli.pyz --db /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime/knowledge.db ask --list | tee /dev/stderr | grep -cE "^ {3,4}\*?[a-z_]+"
+$ /opt/homebrew/opt/python@3.12/bin/python3.12 /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime/oskm-cli.pyz --db /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime/knowledge.db ask --list | tee /dev/stderr | grep -cE "^ {3,4}\*?[a-z_]+"
 52
 stderr:
 arkts
@@ -342,26 +342,26 @@ session
 * = 会话类，CLI 里由 --db/--scan-id 或 `diff` 代替
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda` · exit=0 · 0.08s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6` · exit=0 · 0.08s
 
 ### 9. ask --list --markdown（生成工具索引）
 
 ```console
-$ /opt/homebrew/opt/python@3.12/bin/python3.12 /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime/oskm-cli.pyz --db /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime/knowledge.db ask --list --markdown > /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/tools-regen.md
+$ /opt/homebrew/opt/python@3.12/bin/python3.12 /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime/oskm-cli.pyz --db /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime/knowledge.db ask --list --markdown > /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/tools-regen.md
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda` · exit=0 · 0.08s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6` · exit=0 · 0.08s
 
 ### 10. 与 references/tools.md 逐行对比
 
 ```console
-$ diff <(grep "^| `" /private/tmp/oskm-release-3.1.0/packages/oskm/skills/ohos-design-architecture-evidence-query/references/tools.md) <(grep "^| `" /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/tools-regen.md) && echo IDENTICAL
+$ diff <(grep "^| `" /private/tmp/oskm-release-3.1.0-full/packages/oskm/skills/ohos-design-architecture-evidence-query/references/tools.md) <(grep "^| `" /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/tools-regen.md) && echo IDENTICAL
 IDENTICAL
 stderr:
 /bin/bash: command substitution: line 1: syntax error: unexpected end of file
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda` · exit=0 · 0.01s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6` · exit=0 · 0.01s
 
 ## 夹具服务端请求（被测阶段）
 
@@ -384,7 +384,7 @@ cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8
 - 端点：`https://dcp.openharmony.cn/api/daily_build/build/list/component`
 - 下载方式：`OPENHARMONY_CI`
 - 日期：`20261116`
-- 运行时根：`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8zda/live-runtime`（隔离 HOME，不碰开发者自己的 `~/.oskm`）
+- 运行时根：`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-u01qdgk6/live-runtime`（隔离 HOME，不碰开发者自己的 `~/.oskm`）
 
 ## 断言结果
 
@@ -392,7 +392,7 @@ cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-live-smoke-zk4z8
 
 | # | 断言 | 类型 | 结果 | 证据 |
 |---:|---|---|---|---|
-| 1 | 安装成功且状态文件记录 source/date | auto | Pass | {"version": 3, "source": "OPENHARMONY_CI", "date": "20261116", "updated_at": "2026-11-17T15:33:55+08:00", "db": {"date": "20261116", "path": "knowledge.db", "sha256": "110cbe5ad107ba54eacd5eaecccb9b94c9a2a91b4ce78ecc21957e22c54c18a1"}, "sdk": {"date": "20261116", "sdk-js": {"path": "interface/sdk-js |
+| 1 | 安装成功且状态文件记录 source/date | auto | Pass | {"version": 3, "source": "OPENHARMONY_CI", "date": "20261116", "updated_at": "2026-11-17T16:18:18+08:00", "db": {"date": "20261116", "path": "knowledge.db", "sha256": "110cbe5ad107ba54eacd5eaecccb9b94c9a2a91b4ce78ecc21957e22c54c18a1"}, "sdk": {"date": "20261116", "sdk-js": {"path": "interface/sdk-js |
 | 2 | CLI 能读出扫描元数据 | auto | Pass | product=wukong100 |
 | 3 | arch overview 返回真实计数 | auto | Pass | {"repos": 528, "components": 385, "install_modules": 5948, "install_targets": 7039, "elf_modules": 3697, "services": 171, "sas": 166, "hdis": 59, "gn_args": 3017, "arkts_modules": 1338, "arkts_kits": 51} |
 | 4 | references/tools.md 与 CLI 生成的索引逐行一致 | auto | Pass | IDENTICAL |

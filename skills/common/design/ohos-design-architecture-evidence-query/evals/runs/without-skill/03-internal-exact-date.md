@@ -1,13 +1,13 @@
 # E3 internal-exact-date（without-skill 臂）
 
-- 开始时间：2026-11-17T15:33:43+08:00
-- 结束时间：2026-11-17T15:37:03+08:00
+- 开始时间：2026-11-17T16:18:33+08:00
+- 结束时间：2026-11-17T16:21:31+08:00
 - 执行臂：`without-skill`
-- skill：`/private/tmp/oskm-release-3.1.0/packages/oskm/skills/ohos-design-architecture-evidence-query`（name=ohos-design-architecture-evidence-query, version=3.1.0）
+- skill：`/private/tmp/oskm-release-3.1.0-full/packages/oskm/skills/ohos-design-architecture-evidence-query`（name=ohos-design-architecture-evidence-query, version=3.1.0）
 - Python：`/opt/homebrew/opt/python@3.12/bin/python3.12`
-- 工作区：`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e03-internal-exact-date`
-- 夹具服务端：http://127.0.0.1:61143
-- oskm 源码树（夹具来源）：`/private/tmp/oskm-release-3.1.0/packages/oskm`
+- 工作区：`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e03-internal-exact-date`
+- 夹具服务端：http://127.0.0.1:61810
+- oskm 源码树（夹具来源）：`/private/tmp/oskm-release-3.1.0-full/packages/oskm`
 
 ## 用户请求（来自 evals.json）
 
@@ -27,283 +27,321 @@
 
 ## Agent 执行审计
 
-- 命令：`codex exec --skip-git-repo-check --sandbox danger-full-access -C /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e03-internal-exact-date --json -o agent-last-message.md -`（prompt 走 stdin，全文见 `PROMPT.md`）
-- 退出码：0；耗时：200.2 s
-- 事件计数：`{"thread.started": 1, "item.completed": 49, "item:error": 1, "turn.started": 1, "item:reasoning": 15, "item:agent_message": 12, "item.started": 21, "item:command_execution": 42, "turn.completed": 1}`
+- 命令：`codex exec --skip-git-repo-check --sandbox danger-full-access -C /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e03-internal-exact-date --json -o agent-last-message.md -`（prompt 走 stdin，全文见 `PROMPT.md`）
+- 退出码：0；耗时：178.0 s
+- 事件计数：`{"thread.started": 1, "item.completed": 46, "item:error": 1, "turn.started": 1, "item:reasoning": 14, "item:agent_message": 10, "item.started": 21, "item:command_execution": 42, "turn.completed": 1}`
 - 读到 skill 文档：否
 - 执行的命令数：21
-- token 用量：`{"input_tokens": 320495, "cached_input_tokens": 287872, "output_tokens": 5322, "reasoning_output_tokens": 1584}`
+- token 用量：`{"input_tokens": 281402, "cached_input_tokens": 259072, "output_tokens": 4884, "reasoning_output_tokens": 1369}`
 - 越界命令（工作区外找文档/实现/宿主进程）：0 条
 
 ### Agent 执行过的命令
 
 ```console
-$ /bin/zsh -lc 'ls -la; echo "---"; find tool -type f | head -50; echo "---"; ls -la runtime 2>/dev/null; echo "---"; ls -la fixtures 2>/dev/null'
-$ /bin/zsh -lc 'env | grep -i oskm'
-$ /bin/zsh -lc 'cd tool && wc -l bootstrap.py oskm_runtime/*.py && echo "=== bootstrap.py ===" && cat bootstrap.py'
-$ /bin/zsh -lc 'cd tool && echo "=== __main__.py ===" && cat oskm_runtime/__main__.py && echo "=== .env.example ===" && cat oskm_runtime/.env.example'
-$ /bin/zsh -lc 'cd tool && cat oskm_runtime/db_download.py'
-$ /bin/zsh -lc 'cd tool && cat oskm_runtime/environment.py'
-$ /bin/zsh -lc "cd tool && sed -n '150,290p' oskm_runtime/db_download.py"
-$ /bin/zsh -lc 'cd tool && cat oskm_runtime/bootstrap.py'
-$ /bin/zsh -lc "cd tool && sed -n '135,200p' oskm_runtime/bootstrap.py"
-$ /bin/zsh -lc '/opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py doctor; echo "exit=$?"'
-$ /bin/zsh -lc "cd tool && grep -n \"print\\|def \\|download_runtime_bundle\\|download_database\" oskm_runtime/install.py | head -60"
-$ /bin/zsh -lc '/opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py install --date 20261102; echo "exit=$?"'
-$ /bin/zsh -lc 'cd "$OSKM_RUNTIME_ROOT" && ls -la && echo "--- tree ---" && find . -maxdepth 3 | sort | head -40 && echo "--- state ---" && for f in *.json .*.json; do [ -f "$f" ] && echo "== $f" && cat "$f"; done 2>/dev/null'
-$ /bin/zsh -lc "cd tool && grep -n \"def \\|date\\|STATE\" oskm_runtime/state.py | head -40"
-$ /bin/zsh -lc 'cat "$OSKM_RUNTIME_ROOT/.oskm-runtime.json"; echo; echo "--- sdk ---"; find "$OSKM_RUNTIME_ROOT/interface" -maxdepth 2 | sort'
-$ /bin/zsh -lc 'curl -sS -D - -o /dev/null "http://127.0.0.1:61143/internal/20261102" | head -20'
-$ /bin/zsh -lc '/opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py doctor; echo "exit=$?"; echo "=== refresh (idempotent) ==="; /opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py refresh --date 20261102; echo "exit=$?"'
-$ /bin/zsh -lc 'cat "$OSKM_RUNTIME_ROOT/interface/sdk_c/evalmarker.h"; echo "=== cli ==="; /opt/homebrew/opt/python@3.12/bin/python3.12 "$OSKM_RUNTIME_ROOT/oskm-cli.pyz" --version 2>&1 | head -5; /opt/homebrew/opt/python@3.12/bin/python3.12 "$OSKM_RUNTIME_ROOT/oskm-cli.pyz" --db "$OSKM_RUNTIME_ROOT/knowledge.db" arch overview 2>&1 | head -20'
-$ /bin/zsh -lc "cd tool && grep -n \"url = f'{config.endpoint}/{date}'\\|archive = work_dir / 'knowledge.tar.gz'\\|def _download_archive\\|rstrip('/')\" oskm_runtime/db_download.py oskm_runtime/environment.py"
+$ /bin/zsh -lc 'ls -la && echo "---" && find tool -type f | head -50'
+$ /bin/zsh -lc 'cat tool/bootstrap.py 2>/dev/null | head -100'
+$ /bin/zsh -lc 'cat tool/oskm_runtime/.env.example; echo "=== bootstrap.py ==="; cat tool/oskm_runtime/bootstrap.py'
+$ /bin/zsh -lc 'echo "=== db_download.py ==="; cat tool/oskm_runtime/db_download.py; echo "=== environment.py ==="; cat tool/oskm_runtime/environment.py'
+$ /bin/zsh -lc "grep -n \"INTERNAL_CI\\|def download_database\\|internal\" tool/oskm_runtime/db_download.py | head -40"
+$ /bin/zsh -lc "sed -n '/_internal/,/"'^def /p'"' tool/oskm_runtime/db_download.py | head -60; echo \"=== download_database ===\"; awk '/"'^def download_database/,0'"' tool/oskm_runtime/db_download.py | head -70"
+$ /bin/zsh -lc "sed -n '190,250p' tool/oskm_runtime/db_download.py"
+$ /bin/zsh -lc "grep -n \"def install_runtime\\|def _do_install\\|download_runtime_bundle\\|RUNTIME_ROOT_ENV\\|ENDPOINT_ENV\\|SOURCE_ENV\" tool/oskm_runtime/install.py tool/oskm_runtime/environment.py | head -30"
+$ /bin/zsh -lc "sed -n '360,460p' tool/oskm_runtime/install.py"
+$ /bin/zsh -lc 'cat PROMPT.md; echo "=== env ==="; env | grep -i oskm'
+$ /bin/zsh -lc '/opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py doctor; echo "EXIT=$?"'
+$ /bin/zsh -lc '/opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py install --date 20261102 2>&1 | tee /tmp/install-20261102.log; echo "EXIT=${pipestatus[1]}"'
+$ /bin/zsh -lc 'ls -la runtime && echo "=== state ===" && cat runtime/.oskm-state.json 2>/dev/null || ls -a runtime'
+$ /bin/zsh -lc "curl -sS -o /tmp/probe.tar.gz -w \"HTTP=%{http_code} SIZE=%{size_download} TYPE=%{content_type}\\n\" \"http://127.0.0.1:61810/internal/20261102\"; tar tzf /tmp/probe.tar.gz 2>/dev/null | head"
+$ /bin/zsh -lc 'cat runtime/.oskm-runtime.json; echo; echo "=== doctor ==="; /opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py doctor 2>&1 | tail -12; echo "EXIT=$?"'
+$ /bin/zsh -lc '/opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py validate-db runtime/knowledge.db 2>&1 | tail -20; echo "EXIT=${pipestatus[1]}"'
+$ /bin/zsh -lc '/opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py refresh --date 20261102 2>&1; echo "EXIT=${pipestatus[1]}"'
+$ /bin/zsh -lc "cd tool && /opt/homebrew/opt/python@3.12/bin/python3.12 -c \"
+from oskm_runtime.environment import download_config
+c = download_config()
+print('source  =', c.source)
+print('endpoint=', c.endpoint)
+print('URL     =', f'{c.endpoint}/20261102')
+\""
+$ /bin/zsh -lc 'ls -R runtime/interface | head -20; echo "=== CLI version ==="; /opt/homebrew/opt/python@3.12/bin/python3.12 runtime/oskm-cli.pyz --version 2>&1 | head -3'
+$ /bin/zsh -lc "sed -n '205,215p' tool/oskm_runtime/db_download.py | cat -n; echo \"=== env endpoint lines ===\"; grep -n \"def _endpoint\" -A 8 tool/oskm_runtime/environment.py"
 $ /bin/zsh -lc "cat > answer.md <<'EOF'
-# INTERNAL_CI 下载 date=20261102 运行时
+# INTERNAL_CI 下载 date=20261102 的运行时
 
-## 直接回答
+## 直接回答（URL）
 
-- 使用的 URL："'`http://127.0.0.1:61143/internal/20261102`
-- 规则：`INTERNAL_CI` 走 **GET `<OSKM_DOWNLOAD_ENDPOINT>/<YYYYMMDD>`**，响应体就是运行时归档，落盘名固定为 `knowledge.tar.gz`。端点末尾的 `/` 会先被剥掉，再直接拼接日期段——没有查询参数、没有 POST body、不做二次跳转取 OBS 地址。
-- 拼接位置：`tool/oskm_runtime/db_download.py:210`（`url = f'"'{config.endpoint}/{date}'"'`），端点归一化在 `tool/oskm_runtime/environment.py:127`（`.rstrip('"'/')"'`）。
-- 对比：`OPENHARMONY_CI` 才是 POST 到端点（component 固定 `dayu600_7885_ai`，用 `startTime`/`endTime` 圈住当天），再从响应 `data.list.dataList[0].obsPath` 里 `urljoin` 出真正的归档地址。本次用的是 `INTERNAL_CI`，所以只有那一层 GET。
-- 执行结果：运行时已完整装到 `$OSKM_RUNTIME_ROOT`（date=20261102），包含 `knowledge.db`、`oskm-cli.pyz`、`interface/sdk-js`、`interface/sdk_c`。
+INTERNAL_CI 只有**一次 GET**，URL 就是把日期直接拼在 endpoint 后面：
 
-## 关键命令
+"'```
+http://127.0.0.1:61810/internal/20261102
+```
+
+规则来自 `tool/oskm_runtime/db_download.py:209`：
+
+```python
+if config.source == INTERNAL_CI:
+    url = f'"'{config.endpoint}/{date}'
+    archive = work_dir / 'knowledge.tar.gz'
+"'```
+
+- endpoint 先被 `environment._endpoint()`（`tool/oskm_runtime/environment.py:127`）`strip().rstrip('"'/')"'` 归一化，
+  所以 `.../internal` 和 `.../internal/` 都会拼成 `.../internal/20261102`，不会出现双斜杠。
+- 与 OPENHARMONY_CI 不同：后者要先 POST 组件查询接口拿 OBS 归档地址再下载；INTERNAL_CI 无 POST、无查询、无重定向，
+  URL 完全由 `OSKM_DOWNLOAD_ENDPOINT` + `YYYYMMDD` 决定。
+- 响应体一律落盘为 `knowledge.tar.gz`（文件名固定，不取 URL 的 basename），
+  里面是 `knowledge.db` + `oskm-cli.pyz` + `interface/sdk-js` + `interface/sdk_c`。
+
+## 执行过的关键命令
 
 ```bash
-PY=/opt/homebrew/opt/python@3.12/bin/python3.12
+# 0) 环境（已由夹具设好）
+env | grep -i oskm
+#   OSKM_DOWNLOAD_SOURCE=INTERNAL_CI
+#   OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:61810/internal
+#   OSKM_RUNTIME_ROOT=.../e03-internal-exact-date/runtime
 
-# 1) 装前自检：确认 source/endpoint/runtime-root 解析正确（此时 CLI 与 DB 都还没装）
-$PY tool/bootstrap.py doctor
+# 1) 安装前体检：运行时为空
+/opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py doctor      # EXIT=1（未安装）
 
-# 2) 下载并安装指定日期的运行时（--runtime-root 由 $OSKM_RUNTIME_ROOT 提供，无需重复写）
-$PY tool/bootstrap.py install --date 20261102
+# 2) 真正下载并安装指定日期
+/opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py install --date 20261102   # EXIT=0
 
-# 3) 复核 + 幂等性验证
-$PY tool/bootstrap.py doctor
-$PY tool/bootstrap.py refresh --date 20261102
+# 3) 独立验证该 URL 确实提供归档
+curl -sS -o /tmp/probe.tar.gz -w "HTTP=%{http_code} SIZE=%{size_download} TYPE=%{content_type}'"\\n\" \\
+  \"http://127.0.0.1:61810/internal/20261102\"
 
-# 4) 用装好的 CLI 验证运行时可用
-$PY "$OSKM_RUNTIME_ROOT/oskm-cli.pyz" --version
-$PY "$OSKM_RUNTIME_ROOT/oskm-cli.pyz" --db "$OSKM_RUNTIME_ROOT/knowledge.db" arch overview
+# 4) 安装后校验
+/opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py doctor            # EXIT=0
+/opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py validate-db runtime/knowledge.db
+/opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py refresh --date 20261102  # 幂等
+"'```
 
-# 5) 直接确认 URL（只读请求，不落盘）
-curl -sS -D - -o /dev/null "http://127.0.0.1:61143/internal/20261102"
-```
+## 关键输出片段
 
-说明：`install` 会先从 cwd 向上探测 OpenHarmony 源码根，找到本地构建就优先用本地；本工作区没有源码根，因此回退到下载分支（输出里的 `==> 下载 INTERNAL_CI 运行时`）。
-
-## 关键输出
-
-`doctor`（装前，节选）：
-
-```
-Source / Endpoint: OSKM_DOWNLOAD_SOURCE=INTERNAL_CI, OSKM_DOWNLOAD_ENDPOINT=已配置
-CLI: FAIL: 找不到可用的 oskm-cli 产物。…… 可行做法：· 跑 `bootstrap.py install` 从运行时归档里装（含 CLI）
-Runtime root: …/e03-internal-exact-date/runtime
-Runtime state: 未安装（没有 knowledge.db）；执行 bootstrap.py install 安装
-错误: 运行时依赖检查未通过。   (exit=1)
-```
-
-`install --date 20261102`：
+`install`：
 
 ```
 ==> 下载 INTERNAL_CI 运行时: 20261102
-==> 运行时安装完成: …/e03-internal-exact-date/runtime
-exit=0
+==> 运行时安装完成: .../e03-internal-exact-date/runtime
 ```
 
-`doctor`（装后，节选）：
+URL 探测（证明该地址就是归档来源）：
 
 ```
-CLI: …/runtime/oskm-cli.pyz (installed, oskm-cli 1.0.0)
-Modules: oskm_runtime (OK), oskm_cli (OK), oskm_schema (OK)
+HTTP=200 SIZE=94314 TYPE=application/gzip
+./
+interface/sdk-js/api/@internal/ohos.evalmarker.d.ts
+interface/sdk_c/evalmarker.h
+knowledge.db
+oskm-cli.pyz
+```
+
+代码里现算的 URL（与上面 curl 的地址一致）：
+
+```
+source  = INTERNAL_CI
+endpoint= http://127.0.0.1:61810/internal
+URL     = http://127.0.0.1:61810/internal/20261102
+```
+
+安装后 `doctor`：
+
+```
+Source / Endpoint: OSKM_DOWNLOAD_SOURCE=INTERNAL_CI, OSKM_DOWNLOAD_ENDPOINT=已配置
+CLI: .../runtime/oskm-cli.pyz (installed, oskm-cli 1.0.0)
 Runtime state: version 3, date 20261102, source INTERNAL_CI, db=✓, sdk=✓, cli=✓
 Runtime database: 可打开（廉价检查；完整 schema 契约用 bootstrap.py validate-db）
-exit=0
+```
+
+`validate-db`：
+
+```
+{"path": "runtime/knowledge.db", "ok": true}
 ```
 
 `refresh --date 20261102`（幂等，未重复下载）：
 
 ```
-==> 运行时已是最新，无需刷新: …/e03-internal-exact-date/runtime
-```
-
-URL 直接探测：
-
-```
-HTTP/1.1 200 OK
-Server: oskm-eval-fixture/1.0 Python/3.12.16
-Content-Type: application/gzip
-Content-Length: 93314
-```
-
-CLI 查询验证：
-
-```
-oskm-cli 1.0.0
-{ "product": "synthetic", "scan_id": 1, "subsystems": 2,
-  "counts": { "repos": 1, "components": 2, "install_modules": 3, ... } }
+==> 运行时已是最新，无需刷新: .../e03-internal-exact-date/runtime
 ```
 
 ## 落盘结果
 
-`$OSKM_RUNTIME_ROOT`（`…/e03-internal-exact-date/runtime`）：
+`runtime/.oskm-runtime.json`：
 
-```
-.oskm-runtime.json     # 状态：version 3 / source INTERNAL_CI / date 20261102
-knowledge.db           # 434176 B, sha256 f561e39f…1b44
-oskm-cli.pyz           #  83741 B, sha256 ad760c16…5eb49e
-interface/sdk-js/api
-interface/sdk_c/evalmarker.h
+```json
+{
+  "version": 3,
+  "source": "INTERNAL_CI",
+  "date": "20261102",
+  "db":  { "date": "20261102", "path": "knowledge.db",
+           "sha256": "f561e39f648cfd6b391d6b2b0e1a5ec32e9ab5c8990dc9cbedf2f1685fcd1b44" },
+  "sdk": { "date": "20261102",
+           "sdk-js": { "path": "interface/sdk-js" },
+           "sdk_c":  { "path": "interface/sdk_c" } },
+  "cli": { "path": "oskm-cli.pyz",
+           "sha256": "3e78cf73a94bcf9df24409db686092d7acb74b35ad3e891c6493b9b57cd171f5" }
+}
 ```
 
-`.oskm-runtime.json` 里 `db.date`、`sdk.date` 均为 `20261102`，与请求的日期一致。
+目录内容：`runtime/knowledge.db`(434176 B)、`runtime/oskm-cli.pyz`(84742 B)、
+`runtime/interface/sdk-js/api/@internal/ohos.evalmarker.d.ts`、`runtime/interface/sdk_c/evalmarker.h`。
 
 ## 备注
 
-- 未访问、未修改 `~/.oskm`；运行时根目录全程由 `$OSKM_RUNTIME_ROOT` 解析（`--runtime-root` 未显式传入也等价）。
-- 未修改 `fixtures`，未改动 `tool/` 下任何代码。
-- 归档内的 CLI 与 DB 一起发布，没有单独的 CLI 下载端点，所以一条 `install` 就装齐了四件套。
+- 全程只用任务给定的运行时根目录，没有读写 `~/.oskm`；fixtures 目录未改动。
+- 查询不归 `bootstrap.py` 管，装完后直接调 CLI：
+  `/opt/homebrew/opt/python@3.12/bin/python3.12 runtime/oskm-cli.pyz --db runtime/knowledge.db arch overview`
 EOF
-echo "written:"; wc -l answer.md'
-$ /bin/zsh -lc 'git status --porcelain 2>/dev/null | head; echo "---"; ls -la; echo "--- runtime sha check ---"; shasum -a 256 "$OSKM_RUNTIME_ROOT/knowledge.db" | cut -c1-16'
+wc -l answer.md'
 ```
 
 ### Agent 最终回答
 
 ```markdown
-已跑通并验证，结论写进 `answer.md`。
+**执行结果**
+- `install --date 20261102` 已真跑通（EXIT=0）：`==> 下载 INTERNAL_CI 运行时: 20261102` → `==> 运行时安装完成`。
+- 安装前 `doctor` EXIT=1（运行时为空），安装后 EXIT=0：`Runtime state: version 3, date 20261102, source INTERNAL_CI, db=✓, sdk=✓, cli=✓`。
+- `validate-db runtime/knowledge.db` → `{"path": "runtime/knowledge.db", "ok": true}`；`refresh --date 20261102` 幂等命中“已是最新”。
+- 落盘：`runtime/knowledge.db`、`runtime/oskm-cli.pyz`（oskm-cli 1.0.0）、`runtime/interface/sdk-js`、`runtime/interface/sdk_c`，状态见 `runtime/.oskm-runtime.json:1`。
 
-**URL**
-- 实际请求：`http://127.0.0.1:61143/internal/20261102`（GET，无查询参数、无 POST body）。
-- 规则：`INTERNAL_CI` = `GET <OSKM_DOWNLOAD_ENDPOINT>/<YYYYMMDD>`，端点末尾 `/` 先剥掉再拼日期；响应体即运行时归档，落盘名固定 `knowledge.tar.gz`。拼接在 `tool/oskm_runtime/db_download.py:210`，端点归一化在 `tool/oskm_runtime/environment.py:127`。
-- 对比：`OPENHARMONY_CI` 才需要 POST（component `dayu600_7885_ai` + 当天时间窗）再从 `obsPath` 二次取址；本次来源是 `INTERNAL_CI`，只有这一层 GET。
+**URL 说明**
+- 实际请求：`http://127.0.0.1:61810/internal/20261102`，`curl` 验证 `HTTP=200 SIZE=94314 TYPE=application/gzip`。
+- 拼接规则在 `tool/oskm_runtime/db_download.py:210`：INTERNAL_CI 就是 `f'{config.endpoint}/{date}'`，单次 GET，无 POST 查询、无 OBS 二段跳转（那是 OPENHARMONY_CI 的路径）。
+- endpoint 先经 `tool/oskm_runtime/environment.py:127` 的 `strip().rstrip('/')` 归一化，因此结尾带不带 `/` 都拼成同一个地址，不会出双斜杠。
+- 响应体固定存为 `knowledge.tar.gz`（不取 URL basename），归档内含 DB + CLI + 两套 SDK，由 `install` 一次装齐。
 
-**执行**
-- `python3.12 tool/bootstrap.py doctor` → 装前 `exit=1`，`source=INTERNAL_CI`、`endpoint=已配置`、`Runtime state: 未安装`，runtime root 正确解析到工作区 `runtime/`。
-- `python3.12 tool/bootstrap.py install --date 20261102` → `==> 下载 INTERNAL_CI 运行时: 20261102` / `==> 运行时安装完成`，`exit=0`。
-- `python3.12 tool/bootstrap.py refresh --date 20261102` → `运行时已是最新，无需刷新`（幂等）。
-- `curl -sS -D - -o /dev/null http://127.0.0.1:61143/internal/20261102` → `200 OK`、`application/gzip`、`93314` 字节，独立确认 URL。
-
-**结果**
-- `$OSKM_RUNTIME_ROOT` 下装齐四件套：`knowledge.db`（sha256 `f561e39f…`）、`oskm-cli.pyz`、`interface/sdk-js/api`、`interface/sdk_c/evalmarker.h`，外加 `.oskm-runtime.json`（`version 3, source INTERNAL_CI, date 20261102`，`db.date`/`sdk.date` 都是 `20261102`）。
-- 装后 `doctor` 全绿：`oskm_runtime/oskm_cli/oskm_schema (OK)`、`db=✓, sdk=✓, cli=✓`；`oskm-cli 1.0.0 arch overview` 正常返回 `scan_id 1, subsystems 2`。
-- 未碰 `~/.oskm`，未改 `tool/` 与夹具。
-
-需要我顺手跑一次 `bootstrap.py validate-db` 做完整 schema 契约校验吗？
+结论已写入 `answer.md:1`。全程未触碰 `~/.oskm`，也未修改 fixtures。要不要我顺手用装好的 CLI 跑一条查询（如 `arch overview`）验证数据库内容？
 ```
 
 ### Agent 写入的 answer.md
 
 ```markdown
-# INTERNAL_CI 下载 date=20261102 运行时
+# INTERNAL_CI 下载 date=20261102 的运行时
 
-## 直接回答
+## 直接回答（URL）
 
-- 使用的 URL：`http://127.0.0.1:61143/internal/20261102`
-- 规则：`INTERNAL_CI` 走 **GET `<OSKM_DOWNLOAD_ENDPOINT>/<YYYYMMDD>`**，响应体就是运行时归档，落盘名固定为 `knowledge.tar.gz`。端点末尾的 `/` 会先被剥掉，再直接拼接日期段——没有查询参数、没有 POST body、不做二次跳转取 OBS 地址。
-- 拼接位置：`tool/oskm_runtime/db_download.py:210`（`url = f'{config.endpoint}/{date}'`），端点归一化在 `tool/oskm_runtime/environment.py:127`（`.rstrip('/')`）。
-- 对比：`OPENHARMONY_CI` 才是 POST 到端点（component 固定 `dayu600_7885_ai`，用 `startTime`/`endTime` 圈住当天），再从响应 `data.list.dataList[0].obsPath` 里 `urljoin` 出真正的归档地址。本次用的是 `INTERNAL_CI`，所以只有那一层 GET。
-- 执行结果：运行时已完整装到 `$OSKM_RUNTIME_ROOT`（date=20261102），包含 `knowledge.db`、`oskm-cli.pyz`、`interface/sdk-js`、`interface/sdk_c`。
+INTERNAL_CI 只有**一次 GET**，URL 就是把日期直接拼在 endpoint 后面：
 
-## 关键命令
+```
+http://127.0.0.1:61810/internal/20261102
+```
+
+规则来自 `tool/oskm_runtime/db_download.py:209`：
+
+```python
+if config.source == INTERNAL_CI:
+    url = f'{config.endpoint}/{date}'
+    archive = work_dir / 'knowledge.tar.gz'
+```
+
+- endpoint 先被 `environment._endpoint()`（`tool/oskm_runtime/environment.py:127`）`strip().rstrip('/')` 归一化，
+  所以 `.../internal` 和 `.../internal/` 都会拼成 `.../internal/20261102`，不会出现双斜杠。
+- 与 OPENHARMONY_CI 不同：后者要先 POST 组件查询接口拿 OBS 归档地址再下载；INTERNAL_CI 无 POST、无查询、无重定向，
+  URL 完全由 `OSKM_DOWNLOAD_ENDPOINT` + `YYYYMMDD` 决定。
+- 响应体一律落盘为 `knowledge.tar.gz`（文件名固定，不取 URL 的 basename），
+  里面是 `knowledge.db` + `oskm-cli.pyz` + `interface/sdk-js` + `interface/sdk_c`。
+
+## 执行过的关键命令
 
 ```bash
-PY=/opt/homebrew/opt/python@3.12/bin/python3.12
+# 0) 环境（已由夹具设好）
+env | grep -i oskm
+#   OSKM_DOWNLOAD_SOURCE=INTERNAL_CI
+#   OSKM_DOWNLOAD_ENDPOINT=http://127.0.0.1:61810/internal
+#   OSKM_RUNTIME_ROOT=.../e03-internal-exact-date/runtime
 
-# 1) 装前自检：确认 source/endpoint/runtime-root 解析正确（此时 CLI 与 DB 都还没装）
-$PY tool/bootstrap.py doctor
+# 1) 安装前体检：运行时为空
+/opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py doctor      # EXIT=1（未安装）
 
-# 2) 下载并安装指定日期的运行时（--runtime-root 由 $OSKM_RUNTIME_ROOT 提供，无需重复写）
-$PY tool/bootstrap.py install --date 20261102
+# 2) 真正下载并安装指定日期
+/opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py install --date 20261102   # EXIT=0
 
-# 3) 复核 + 幂等性验证
-$PY tool/bootstrap.py doctor
-$PY tool/bootstrap.py refresh --date 20261102
+# 3) 独立验证该 URL 确实提供归档
+curl -sS -o /tmp/probe.tar.gz -w "HTTP=%{http_code} SIZE=%{size_download} TYPE=%{content_type}\n" \
+  "http://127.0.0.1:61810/internal/20261102"
 
-# 4) 用装好的 CLI 验证运行时可用
-$PY "$OSKM_RUNTIME_ROOT/oskm-cli.pyz" --version
-$PY "$OSKM_RUNTIME_ROOT/oskm-cli.pyz" --db "$OSKM_RUNTIME_ROOT/knowledge.db" arch overview
-
-# 5) 直接确认 URL（只读请求，不落盘）
-curl -sS -D - -o /dev/null "http://127.0.0.1:61143/internal/20261102"
+# 4) 安装后校验
+/opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py doctor            # EXIT=0
+/opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py validate-db runtime/knowledge.db
+/opt/homebrew/opt/python@3.12/bin/python3.12 tool/bootstrap.py refresh --date 20261102  # 幂等
 ```
 
-说明：`install` 会先从 cwd 向上探测 OpenHarmony 源码根，找到本地构建就优先用本地；本工作区没有源码根，因此回退到下载分支（输出里的 `==> 下载 INTERNAL_CI 运行时`）。
+## 关键输出片段
 
-## 关键输出
-
-`doctor`（装前，节选）：
-
-```
-Source / Endpoint: OSKM_DOWNLOAD_SOURCE=INTERNAL_CI, OSKM_DOWNLOAD_ENDPOINT=已配置
-CLI: FAIL: 找不到可用的 oskm-cli 产物。…… 可行做法：· 跑 `bootstrap.py install` 从运行时归档里装（含 CLI）
-Runtime root: …/e03-internal-exact-date/runtime
-Runtime state: 未安装（没有 knowledge.db）；执行 bootstrap.py install 安装
-错误: 运行时依赖检查未通过。   (exit=1)
-```
-
-`install --date 20261102`：
+`install`：
 
 ```
 ==> 下载 INTERNAL_CI 运行时: 20261102
-==> 运行时安装完成: …/e03-internal-exact-date/runtime
-exit=0
+==> 运行时安装完成: .../e03-internal-exact-date/runtime
 ```
 
-`doctor`（装后，节选）：
+URL 探测（证明该地址就是归档来源）：
 
 ```
-CLI: …/runtime/oskm-cli.pyz (installed, oskm-cli 1.0.0)
-Modules: oskm_runtime (OK), oskm_cli (OK), oskm_schema (OK)
+HTTP=200 SIZE=94314 TYPE=application/gzip
+./
+interface/sdk-js/api/@internal/ohos.evalmarker.d.ts
+interface/sdk_c/evalmarker.h
+knowledge.db
+oskm-cli.pyz
+```
+
+代码里现算的 URL（与上面 curl 的地址一致）：
+
+```
+source  = INTERNAL_CI
+endpoint= http://127.0.0.1:61810/internal
+URL     = http://127.0.0.1:61810/internal/20261102
+```
+
+安装后 `doctor`：
+
+```
+Source / Endpoint: OSKM_DOWNLOAD_SOURCE=INTERNAL_CI, OSKM_DOWNLOAD_ENDPOINT=已配置
+CLI: .../runtime/oskm-cli.pyz (installed, oskm-cli 1.0.0)
 Runtime state: version 3, date 20261102, source INTERNAL_CI, db=✓, sdk=✓, cli=✓
 Runtime database: 可打开（廉价检查；完整 schema 契约用 bootstrap.py validate-db）
-exit=0
+```
+
+`validate-db`：
+
+```
+{"path": "runtime/knowledge.db", "ok": true}
 ```
 
 `refresh --date 20261102`（幂等，未重复下载）：
 
 ```
-==> 运行时已是最新，无需刷新: …/e03-internal-exact-date/runtime
-```
-
-URL 直接探测：
-
-```
-HTTP/1.1 200 OK
-Server: oskm-eval-fixture/1.0 Python/3.12.16
-Content-Type: application/gzip
-Content-Length: 93314
-```
-
-CLI 查询验证：
-
-```
-oskm-cli 1.0.0
-{ "product": "synthetic", "scan_id": 1, "subsystems": 2,
-  "counts": { "repos": 1, "components": 2, "install_modules": 3, ... } }
+==> 运行时已是最新，无需刷新: .../e03-internal-exact-date/runtime
 ```
 
 ## 落盘结果
 
-`$OSKM_RUNTIME_ROOT`（`…/e03-internal-exact-date/runtime`）：
+`runtime/.oskm-runtime.json`：
 
-```
-.oskm-runtime.json     # 状态：version 3 / source INTERNAL_CI / date 20261102
-knowledge.db           # 434176 B, sha256 f561e39f…1b44
-oskm-cli.pyz           #  83741 B, sha256 ad760c16…5eb49e
-interface/sdk-js/api
-interface/sdk_c/evalmarker.h
+```json
+{
+  "version": 3,
+  "source": "INTERNAL_CI",
+  "date": "20261102",
+  "db":  { "date": "20261102", "path": "knowledge.db",
+           "sha256": "f561e39f648cfd6b391d6b2b0e1a5ec32e9ab5c8990dc9cbedf2f1685fcd1b44" },
+  "sdk": { "date": "20261102",
+           "sdk-js": { "path": "interface/sdk-js" },
+           "sdk_c":  { "path": "interface/sdk_c" } },
+  "cli": { "path": "oskm-cli.pyz",
+           "sha256": "3e78cf73a94bcf9df24409db686092d7acb74b35ad3e891c6493b9b57cd171f5" }
+}
 ```
 
-`.oskm-runtime.json` 里 `db.date`、`sdk.date` 均为 `20261102`，与请求的日期一致。
+目录内容：`runtime/knowledge.db`(434176 B)、`runtime/oskm-cli.pyz`(84742 B)、
+`runtime/interface/sdk-js/api/@internal/ohos.evalmarker.d.ts`、`runtime/interface/sdk_c/evalmarker.h`。
 
 ## 备注
 
-- 未访问、未修改 `~/.oskm`；运行时根目录全程由 `$OSKM_RUNTIME_ROOT` 解析（`--runtime-root` 未显式传入也等价）。
-- 未修改 `fixtures`，未改动 `tool/` 下任何代码。
-- 归档内的 CLI 与 DB 一起发布，没有单独的 CLI 下载端点，所以一条 `install` 就装齐了四件套。
+- 全程只用任务给定的运行时根目录，没有读写 `~/.oskm`；fixtures 目录未改动。
+- 查询不归 `bootstrap.py` 管，装完后直接调 CLI：
+  `/opt/homebrew/opt/python@3.12/bin/python3.12 runtime/oskm-cli.pyz --db runtime/knowledge.db arch overview`
 ```
 
 ## 执行记录
@@ -312,28 +350,23 @@ interface/sdk_c/evalmarker.h
 
 ```console
 $ /usr/local/bin/codex exec --skip-git-repo-check --sandbox danger-full-access -C … < PROMPT.md
-已跑通并验证，结论写进 `answer.md`。
+**执行结果**
+- `install --date 20261102` 已真跑通（EXIT=0）：`==> 下载 INTERNAL_CI 运行时: 20261102` → `==> 运行时安装完成`。
+- 安装前 `doctor` EXIT=1（运行时为空），安装后 EXIT=0：`Runtime state: version 3, date 20261102, source INTERNAL_CI, db=✓, sdk=✓, cli=✓`。
+- `validate-db runtime/knowledge.db` → `{"path": "runtime/knowledge.db", "ok": true}`；`refresh --date 20261102` 幂等命中“已是最新”。
+- 落盘：`runtime/knowledge.db`、`runtime/oskm-cli.pyz`（oskm-cli 1.0.0）、`runtime/interface/sdk-js`、`runtime/interface/sdk_c`，状态见 `runtime/.oskm-runtime.json:1`。
 
-**URL**
-- 实际请求：`http://127.0.0.1:61143/internal/20261102`（GET，无查询参数、无 POST body）。
-- 规则：`INTERNAL_CI` = `GET <OSKM_DOWNLOAD_ENDPOINT>/<YYYYMMDD>`，端点末尾 `/` 先剥掉再拼日期；响应体即运行时归档，落盘名固定 `knowledge.tar.gz`。拼接在 `tool/oskm_runtime/db_download.py:210`，端点归一化在 `tool/oskm_runtime/environment.py:127`。
-- 对比：`OPENHARMONY_CI` 才需要 POST（component `dayu600_7885_ai` + 当天时间窗）再从 `obsPath` 二次取址；本次来源是 `INTERNAL_CI`，只有这一层 GET。
+**URL 说明**
+- 实际请求：`http://127.0.0.1:61810/internal/20261102`，`curl` 验证 `HTTP=200 SIZE=94314 TYPE=application/gzip`。
+- 拼接规则在 `tool/oskm_runtime/db_download.py:210`：INTERNAL_CI 就是 `f'{config.endpoint}/{date}'`，单次 GET，无 POST 查询、无 OBS 二段跳转（那是 OPENHARMONY_CI 的路径）。
+- endpoint 先经 `tool/oskm_runtime/environment.py:127` 的 `strip().rstrip('/')` 归一化，因此结尾带不带 `/` 都拼成同一个地址，不会出双斜杠。
+- 响应体固定存为 `knowledge.tar.gz`（不取 URL basename），归档内含 DB + CLI + 两套 SDK，由 `install` 一次装齐。
 
-**执行**
-- `python3.12 tool/bootstrap.py doctor` → 装前 `exit=1`，`source=INTERNAL_CI`、`endpoint=已配置`、`Runtime state: 未安装`，runtime root 正确解析到工作区 `runtime/`。
-- `python3.12 tool/bootstrap.py install --date 20261102` → `==> 下载 INTERNAL_CI 运行时: 20261102` / `==> 运行时安装完成`，`exit=0`。
-- `python3.12 tool/bootstrap.py refresh --date 20261102` → `运行时已是最新，无需刷新`（幂等）。
-- `curl -sS -D - -o /dev/null http://127.0.0.1:61143/internal/20261102` → `200 OK`、`application/gzip`、`93314` 字节，独立确认 URL。
-
-**结果**
-- `$OSKM_RUNTIME_ROOT` 下装齐四件套：`knowledge.db`（sha256 `f561e39f…`）、`oskm-cli.pyz`、`interface/sdk-js/api`、`interface/sdk_c/evalmarker.h`，外加 `.oskm-runtime.json`（`version 3, source INTERNAL_CI, date 20261102`，`db.date`/`sdk.date` 都是 `20261102`）。
-- 装后 `doctor` 全绿：`oskm_runtime/oskm_cli/oskm_schema (OK)`、`db=✓, sdk=✓, cli=✓`；`oskm-cli 1.0.0 arch overview` 正常返回 `scan_id 1, subsystems 2`。
-- 未碰 `~/.oskm`，未改 `tool/` 与夹具。
-
-需要我顺手跑一次 `bootstrap.py validate-db` 做完整 schema 契约校验吗？
+结论已写入 `answer.md:1`。全程未触碰 `~/.oskm`，也未修改 fixtures。要不要我顺手用装好的 CLI 跑一条查询（如 `arch overview`）验证数据库内容？stderr:
+2026-11-17T08:18:33.532732Z ERROR codex_skills_extension::host_service: failed to install system skills: io error while remove existing system skills dir: Directory not empty (os error 66)
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p4lbp2p/without-skill/e03-internal-exact-date` · exit=0 · 200.2s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-1czwlgti/without-skill/e03-internal-exact-date` · exit=0 · 178.0s
 
 ## 夹具服务端请求（被测阶段）
 
@@ -345,7 +378,7 @@ cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p
 [
   {
     "seq": 1,
-    "ts": "2026-11-17T15:34:59.156+08:00",
+    "ts": "2026-11-17T16:19:42.634+08:00",
     "method": "GET",
     "path": "/internal/20261102",
     "user_agent": "Python-urllib/3.12",
@@ -361,7 +394,7 @@ cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-without-skill-8p
 [
   {
     "seq": 2,
-    "ts": "2026-11-17T15:35:19.595+08:00",
+    "ts": "2026-11-17T16:19:54.727+08:00",
     "method": "GET",
     "path": "/internal/20261102",
     "user_agent": "curl/8.7.1",

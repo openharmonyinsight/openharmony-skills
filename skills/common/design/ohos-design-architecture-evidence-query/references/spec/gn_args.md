@@ -82,3 +82,6 @@ GN 编译参数（`declare_args` 参数）的查找与搜索。
   "total": 1
 }
 ```
+
+`search_gn_args` 的 `total` 是当前 `limit` 页内返回的条数，不是全量匹配数，也没有
+`truncated` 字段。需要全量统计时用 `sql` 或 `list_entities`。

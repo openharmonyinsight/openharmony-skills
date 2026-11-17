@@ -93,3 +93,6 @@ HDI 设备的查找与搜索。HDI 是 OpenHarmony 的硬件驱动接口抽象�
   "total": 1
 }
 ```
+
+`search_hdis` 的 `total` 是当前 `limit` 页内返回的条数，不是全量匹配数，也没有
+`truncated` 字段。需要全量统计时用 `sql` 或 `list_entities`。

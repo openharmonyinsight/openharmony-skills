@@ -27,22 +27,32 @@
 
 ```json
 {
-  "id": 45,
+  "id": 52,
   "cfg": "system/etc/init/foundation.cfg",
   "name": "foundation",
-  "type": "default",
+  "type": "sa",
   "executable": "/system/bin/sa_main",
   "uid": "foundation",
-  "start_mode": "condition",
-  "ondemand": false,
-  "component": "samgr_standard",
-  "component_id": 180,
-  "install_module": "//foundation/systemabilitymgr/samgr:samgr",
-  "install_module_id": 420
+  "gid": ["system", "log"],
+  "args": ["/system/profile/foundation.json"],
+  "config": {"bootevents": ["..."], "permission": ["..."]},
+  "component": {
+    "name": "safwk",
+    "subsystem": "systemabilitymgr",
+    "manifest": "foundation/systemabilitymgr/safwk/bundle.json"
+  },
+  "label": "//foundation/systemabilitymgr/safwk/etc/profile:foundation_cfg"
 }
 ```
 
-`type` 取 `sa` / `hdf` / `default`。`component` 和 `install_module` 是 JOIN 解析的显示名（非 id）。`ondemand` 是 bool（原始 `INTEGER` 投影后转换）。
+实际返回是 `id` / `cfg` / `name` 加上服务发布记录。字段随 cfg 与采集器记录变化，
+不要把某个示例里的字段当成固定 schema。当前实现中：
+
+- `type` 取 `sa` / `hdf` / `default`。
+- `component` 是对象，不是字符串；未归属时可能不出现。
+- 关联安装模块以 `label` 显示，不是 `install_module` / `install_module_id`。
+- `start_mode`、`ondemand`、`component_id`、`install_module_id` 是数据库列，
+  但当前 `get_service` 的输出不直接展开这些列；需要时用 `sql` 查 `services` 表。
 
 **返回**（`name` 省略时，数组）
 
@@ -91,7 +101,8 @@
 }
 ```
 
----
+`search_services` 的 `total` 是当前 `limit` 页内返回的条数，不是全量匹配数，也没有
+`truncated` 字段。需要全量统计时用 `sql` 或 `list_entities`。
 
 ---
 
@@ -111,15 +122,36 @@
 ```json
 {
   "sas": [
-    {"id": 120, "sa_id": 1401, "libpath": "libdemo.z.so", "profile": "1401.json", "run_on_create": false}
+    {
+      "id": 120,
+      "scan_id": 1,
+      "sa_id": 1401,
+      "profile": "system/profile/1401.json",
+      "libpath": "libdemo.z.so",
+      "run_on_create": 1,
+      "distributed": 0,
+      "service_id": 45,
+      "install_module_id": 230,
+      "record": "{...}"
+    }
   ],
   "hdis": [
-    {"id": 78, "service_name": "sample", "module_name": "libsample.z.so", "node": "sample_service"}
+    {
+      "id": 78,
+      "scan_id": 1,
+      "service_name": "sample",
+      "module_name": "libsample.z.so",
+      "node": "sample_service",
+      "service_id": 45,
+      "record": "{...}"
+    }
   ]
 }
 ```
 
-`sas` 和 `hdis` 的键只在有记录时出现。无宿主记录时返回空对象 `{}`。
+`sas` 和 `hdis` 的键只在有记录时出现。无宿主记录时返回空对象 `{}`。当前实现返回
+对应表的原始行（`SELECT *`），不是字段摘要。`sas.libpath` 是 profile 声明值，
+可能是裸库名或绝对路径，不是可靠镜像 `dest`。
 
 **错误码**
 

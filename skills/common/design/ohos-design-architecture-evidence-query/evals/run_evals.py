@@ -660,7 +660,8 @@ def summarize_events(path: Path, *, allowed_roots=()) -> dict:
 #: 那是**结论文本**不是命令，审计前先把 heredoc 正文剥掉，否则会把自己写的
 #: 说明当成越界命令（实测误判过 3 个场景）。
 HEREDOC_RE = re.compile(
-    r"<<-?\s*\\?['\"]?([A-Za-z_][A-Za-z0-9_]*)['\"]?\n.*?\n\s*\1\b", re.S)
+    r"<<-?\s*[^A-Za-z0-9_\n]{0,8}([A-Za-z_][A-Za-z0-9_]*)"
+    r"[^A-Za-z0-9_\n]{0,8}\n.*?\n[ \t]*\1", re.S)
 
 
 def strip_heredocs(command: str) -> str:
@@ -669,7 +670,11 @@ def strip_heredocs(command: str) -> str:
 
 PATH_TOKEN = re.compile(
     r'/(?:Users|var|private|tmp|opt)[/A-Za-z0-9_.+\-]*')
-HOST_PROBE = re.compile(r'\b(?:ps\s+(?:aux|-ef|-A|-eo)|pgrep|lsof)\b')
+#: 只在"命令位"（行首或 `;`/`&&`/`|`/`$(` 之后）才算宿主进程探测：
+#: agent 在 answer.md 里写「没有用 ps/pgrep/lsof」是结论，不是动作。
+HOST_PROBE = re.compile(
+    r'(?:^|[;&|\n]|\$\(|`|\bthen\s|\bdo\s)\s*'
+    r'(?:ps\s+(?:aux|-ef|-A|-eo)|pgrep|lsof)\b')
 
 
 def find_outside_commands(commands, allowed_roots=()) -> list:
@@ -1948,6 +1953,25 @@ def main(argv=None) -> int:
         summaries = [execute(entry) for entry in selected]
 
     summaries.sort(key=lambda item: item['id'])
+    output_dir = Path(args.runs_dir) / args.arm
+    summary_path = output_dir / 'summary.json'
+    previous = {}
+    reruns = []
+    if args.only and summary_path.is_file():
+        # 单场景重跑：把新结果并回原来的 summary，别把它冲成"只跑了一个场景"。
+        try:
+            previous_doc = json.loads(summary_path.read_text(encoding='utf-8'))
+        except json.JSONDecodeError:
+            previous_doc = {}
+        previous = {item['id']: item
+                    for item in previous_doc.get('scenarios', [])}
+        reruns = list(previous_doc.get('partial_reruns', []))
+        for item in summaries:
+            reruns.append({'id': item['id'], 'at': item['finished'],
+                           'workdir': item['workspace']})
+        merged = dict(previous)
+        merged.update({item['id']: item for item in summaries})
+        summaries = [merged[key] for key in sorted(merged)]
     document = {
         'arm': args.arm,
         'skill': SKILL_NAME,
@@ -1961,10 +1985,10 @@ def main(argv=None) -> int:
         'scenarios': summaries,
         'passed': sum(1 for item in summaries if item['verdict'] == 'PASS'),
         'total': len(summaries),
+        'partial_reruns': reruns,
     }
-    output_dir = Path(args.runs_dir) / args.arm
     output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / 'summary.json').write_text(
+    summary_path.write_text(
         json.dumps(document, ensure_ascii=False, indent=2) + '\n',
         encoding='utf-8')
 

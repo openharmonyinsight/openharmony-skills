@@ -80,6 +80,9 @@
 }
 ```
 
+`list_repos` 的 `total` 是当前 `limit` 页内返回的条数，不是全量匹配数，也没有
+`truncated` 字段。需要全量统计时用 `sql` 或 `list_entities`。
+
 `head_commit` 截断为前 7 位（git short format），完整 SHA 用 `get_repo`。
 
 ---

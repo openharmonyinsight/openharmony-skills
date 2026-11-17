@@ -29,22 +29,25 @@
 {
   "id": 230,
   "ordinal": 42,
-  "label": "//foundation/ability/ability_runtime:ability_runtime",
-  "label_name": "ability_runtime",
-  "type": "lib",
-  "source": "foundation/ability/ability_runtime:ability_runtime",
+  "label": "//foundation/ability/ability_runtime/services/abilitymgr:abilityms",
+  "label_name": "abilityms",
+  "type": "lib64",
+  "source": "ability/ability_runtime/libabilityms.z.so",
   "install_enable": true,
   "component": "ability_runtime",
   "component_id": 5,
-  "source_url": "https://gitcode.com/openharmony/ability_ability_runtime/tree/abc123d/BUILD.gn",
+  "source_url": "https://gitcode.com/openharmony/ability_ability_runtime/tree/abc123d/services/abilitymgr/BUILD.gn",
   "targets": [
-    {"id": 501, "dest": "system/lib/libability_runtime.z.so", "partition": "system", "file_name": "libability_runtime.z.so", "directory": false, "size": 1234567}
+    {"dest": "system/lib64/platformsdk/libabilityms.z.so"}
   ],
-  "tags": ["chipsetsdk"]
+  "tags": ["platformsdk_indirect"]
 }
 ```
 
-`type` 取 `lib` / `etc` / `bin` / `sa_info` / `app` / `unknown`。`targets` 是该模块装出的全部镜像文件（`install_targets` 表）。`tags` 是 `innerapi_tags` 展开值列表。`size` 是 lstat 物理大小（不跟随链接）。
+`type` 是安装模块类型，实际值随采集器记录变化（例如 `lib64` / `etc` / `bin` /
+`sa_info` / `app` / `unknown`）。`targets` 是该模块装出的镜像落点列表；当前工具
+只投影 `dest`。需要 `partition`、`file_name`、`directory`、`size`、链接目标等
+`install_targets` 全字段时，用 `sql` 查询该表。`tags` 是 `innerapi_tags` 展开值列表。
 
 **错误码**
 
@@ -75,15 +78,23 @@
   "results": [
     {
       "id": 230,
-      "label": "//foundation/ability/ability_runtime:ability_runtime",
-      "label_name": "ability_runtime",
-      "type": "lib",
-      "component": "ability_runtime"
+      "label": "//foundation/ability/ability_runtime/services/abilitymgr:abilityms",
+      "label_name": "abilityms",
+      "type": "lib64",
+      "component_id": 5
     }
   ],
   "total": 1
 }
 ```
+
+`search_install_modules` 只按 `label` 和 `label_name` 模糊匹配，**不搜索**
+`source`、`targets.dest` 或产物文件名。要找 `libabilityms.z.so` 这类镜像文件名，
+用 `search_elf_modules --query libabilityms` 或 SQL 查 `install_targets`。
+
+返回项给的是 `component_id`，不是部件名；需要名字时再查 `get_component` 或 JOIN
+`components`。`total` 是当前 `limit` 页内返回的条数，不是全量匹配数，也没有
+`truncated` 字段。
 
 ---
 
@@ -113,12 +124,19 @@
 
 归属解析链：`dest` → `install_targets`（精确匹配或目录前缀匹配） → `install_modules` → `component_id` → `components`。如果 dest 是目录安装（`directory=1`），用前缀匹配。
 
+`owner_of` 只回答**唯一归属**。如果一个路径命中多个安装模块，工具不会任选第一个，
+而是返回 `AMBIGUOUS`，错误消息中列出候选模块。需要查看候选时使用：
+
+```bash
+ask installed_at --dest <dest>
+```
+
 **错误码**
 
 | code | 说明 |
 |------|------|
 | `NOT_FOUND` | 路径不在镜像中，或安装模块未归属到任何部件 |
-| `AMBIGUOUS` | 路径被多个模块安装（不同 label），无法唯一确定归属 |
+| `AMBIGUOUS` | 路径被多个模块安装，无法唯一确定归属；用 `installed_at` 查看候选 |
 
 ---
 
@@ -139,15 +157,17 @@
   "modules": [
     {
       "module_id": 230,
-      "label": "//foundation/ability/ability_runtime:ability_runtime",
-      "type": "lib",
+      "label": "//foundation/ability/ability_runtime/services/abilitymgr:abilityms",
+      "type": "lib64",
       "component": "ability_runtime",
       "component_id": 5,
-      "dest": "system/lib/libability_runtime.z.so",
-      "directory": false
+      "dest": "system/lib64/platformsdk/libabilityms.z.so",
+      "directory": null
     }
   ]
 }
 ```
 
-含目录安装前缀匹配的结果。`directory=true` 的模块在 `dest` 下安装了整个目录。
+含目录安装前缀匹配的结果。这里的 `directory` 来自安装模块发布记录，当前很多记录
+为 `null`；它不是 `install_targets.directory` 的可靠投影。需要判断某个 target 是否
+目录安装时，用 SQL 查询 `install_targets.directory`。

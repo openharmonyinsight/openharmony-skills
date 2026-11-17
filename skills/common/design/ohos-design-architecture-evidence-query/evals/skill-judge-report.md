@@ -12,12 +12,13 @@
 
 - **评估日期**: 2026-11-17
 - **评估对象**: 发布归档 `ohos-design-architecture-evidence-query-3.1.0.tar.gz`
-  （由 `scripts/build_skill.py` 从冻结快照 `/tmp/oskm-release-3.1.0` 构建；
-  快照 = KnowledgeBase `2b6b1eb` + 本次 3.1.0 改动）
-- **归档 SHA-256**: `dd4f8a94e5a81043b62fef1bd2c9b93d4d9df7e2eac5b66f9615b68dbd0766da`
-  （224,053 bytes，79 个 tar 条目 / 70 个文件 / 942,212 bytes 解压后）
+  （由 `scripts/build_skill.py` 从冻结快照 `/tmp/oskm-release-3.1.0-full` 构建；
+  快照 = 源码仓工作树全量，即 `2b6b1eb` + 本次 3.1.0 交付件 + 并行工作流的
+  CLI/references 改动，与三个评估臂、三套单元测试用的是同一份代码）
+- **归档 SHA-256**: `217105efaa115da8c7ffd86ced0c1a558890d91de2bef1b0ff11caed2bc5e66c`
+  （232,612 bytes，79 个 tar 条目 / 70 个文件 / 961,921 bytes 解压后）
 - **包内容摘要 digest**（排序后的路径+逐文件 sha256）:
-  `f5d5f181c405207fa524ba8b7490b025655cbe33f712b546308950c7a8c8a194`
+  `ab9aee3939397f0e0f80785f5bd9f8e32652ffa21b67dca750066d7da9154429`
 - **构建确定性**: 连续两次构建 SHA-256 相同（`dd4f8a94…`）
 - **评估方法**: 按 `skill-judge` 的五步协议执行（知识增量扫描 → 结构分析 →
   逐维度打分 → 汇总定级 → 出报告）。这是**基于准则的评估**，不是独立的自动打分器；
@@ -56,17 +57,18 @@ metadata                : author=openharmony, scope=common, stage=design,
 name 与目录名一致        : True
 description 长度         : 151 字符（含 WHAT / WHEN / 关键词 / 只读边界）
 SKILL.md 行数            : 185（frontmatter 11 + 正文 172）
-参考文件                 : references/ 17 份 2,852 行（usage.md 646、spec/session.md 352、
-                          spec/component.md 289、tools.md 55 自动生成）
+参考文件                 : references/ 17 份 2,987 行（usage.md 669、spec/session.md 352、
+                          spec/component.md 318、spec/install.md 173、spec/service.md 161、
+                          tools.md 55 自动生成）
 示例                     : examples/ 3 份 130 行
 运行时代码               : bootstrap.py 29 行 + oskm_runtime/ 10 文件 2,181 行
-评估材料                 : evals/ 36 文件 12,002 行（含 24 份真跑转录）
+评估材料                 : evals/ 36 文件 12,508 行（含 24 份真跑转录 + 3 份 summary.json）
 加载触发                 : §7 路由表按"当前问题 → 读这个"逐条给条件，并写明
                           "写复杂 SQL 前必须读完 query.md 与 schema.md"、
                           末尾一条 **Do NOT load** 未命中的规格
 孤儿参考文件             : 0（脚本核对：所有 .md 都在 SKILL.md 里登记）
-包体分布                 : evals/ 704,590B（75%）、references/ 112,428B（12%）、
-                          oskm_runtime/ 84,948B（9%）、SKILL.md 12,219B（1.3%）
+包体分布                 : evals/ 718,300B（74.7%）、references/ 118,427B（12.3%）、
+                          oskm_runtime/ 84,948B（8.8%）、SKILL.md 12,219B（1.3%）
 ```
 
 ## Dimension Scores
@@ -77,10 +79,10 @@ SKILL.md 行数            : 185（frontmatter 11 + 正文 172）
 | D2: Mindset + Procedures | 14 | 15 | §3 给出"前一步不成立就别往后"的固定顺序，§4 按 `arch`/`ask`/`diff`/`sql` 分支；这些顺序都不是通用常识。扣分点：分支之间的取舍理由写得比顺序本身简略。 |
 | D3: Anti-Pattern Quality | 14 | 15 | §5 七条硬约束每条都带后果（静默下载、`elf_modules=0`、`install_targets`≠`.img`、cfg≠运行态、裸名字猜路径、改库凑证据、加载维护者文档）；§4.5 六条误读判据。扣分点：少数反模式（如"不要改库"）后果描述偏原则化。 |
 | D4: Specification Compliance | 15 | 15 | frontmatter 合法且顶层只有 `name`/`description`/`metadata`；治理字段齐备并与目录位置一致（`common/design`）；description 同时给出 WHAT、WHEN、触发关键词与只读排除项；`quick_validate.py` 输出 `Skill is valid!`。 |
-| D5: Progressive Disclosure | 13 | 15 | 正文 172 行、路由表按问题分发、显式 Do NOT load；扣分点：`usage.md` 646 行、`session.md` 352 行、`component.md` 289 行，单份参考仍偏重；`evals/` 占包体 75%（Agent 不加载，但随包分发）。 |
+| D5: Progressive Disclosure | 13 | 15 | 正文 172 行、路由表按问题分发、显式 Do NOT load；扣分点：`usage.md` 669 行、`session.md` 352 行、`component.md` 318 行，单份参考仍偏重；`evals/` 占包体 74.7%（Agent 不加载，但随包分发）。 |
 | D6: Freedom Calibration | 14 | 15 | §4.5 明示"这是启发式"，§5 明示"这些是硬约束"，两类指令强度分得清；安装与证据判读用精确规则，查询构造留判断空间。扣分点：§4.3 的一段长句把多条约束挤在一起，强度层级不如 §5 清晰。 |
 | D7: Pattern Recognition | 8 | 10 | Navigation + Process 混合：短路由入口 + 分阶段流程。扣分点：安装与查询两块都有一定体量，不是单一范式。 |
-| D8: Practical Usability | 14 | 15 | 命令都实测可跑（`scripted` 臂 8/8、`with-skill` 臂 8/8）；退出码、七种止损情形、安装与查询排错都有回退路径；示例不冻结业务数据。扣分点：`--format` 是全局参数这类易错点只在 §4.3 一句带过（评估中 agent 实测踩过）。 |
+| D8: Practical Usability | 14 | 15 | 命令都实测可跑（`scripted` 臂 8/8、`with-skill` 臂 8/8）；退出码、七种止损情形、安装与查询排错都有回退路径；示例不冻结业务数据；本版还修掉了 `usage.md` 里"自动注入 scan_id 与 LIMIT"的旧描述（实际是复制当前 scan 的白名单表到私有内存快照后执行）。扣分点：`--format` 是全局参数这类易错点只在 §4.3 一句带过（评估中 agent 实测踩过）。 |
 
 **Total = 18+14+14+15+13+14+8+14 = 110/120 = 91.7% → Grade A**
 
@@ -93,7 +95,7 @@ SKILL.md 行数            : 185（frontmatter 11 + 正文 172）
 
 ## Top 3 Improvements
 
-1. **拆分 `references/usage.md`（646 行）。** 它同时承载安装、下载排错、CLI 用法、
+1. **拆分 `references/usage.md`（669 行）。** 它同时承载安装、下载排错、CLI 用法、
    查询故障与构建说明。拆成"运行时安装"与"CLI 查询"两份可以进一步降低按需加载成本。
 2. **压缩 `references/spec/session.md`（352 行）。** 其中大量工具在 CLI 里退化成
    `--db` / `--scan-id` / `diff` 参数，一张 CLI 等价表可以取代大部分生命周期描述。
@@ -109,16 +111,16 @@ SKILL.md 行数            : 185（frontmatter 11 + 正文 172）
 | frontmatter 解析 | PyYAML 解析 `SKILL.md` | 顶层键 `{name, description, metadata}`；`metadata` 七字段齐备 |
 | 目录名一致 | `name == 目录名` | True |
 | 归档内容 | `tar -tzf …-3.1.0.tar.gz` | 79 条目 / 70 文件；无 `.pyz`/`.db`/`.tar.gz`/`__pycache__`/`.env`/`tests`/`scripts`/`dist` |
-| 构建确定性 | 连续两次 `build_skill.py` | SHA-256 相同（`dd4f8a94…`） |
+| 构建确定性 | 连续两次 `build_skill.py` | SHA-256 相同 |
 | 入口可用 | `python3.12 <pkg>/bootstrap.py --help` | rc=0，19 行输出，并明确"查询直接调 CLI" |
 | 孤儿参考文件 | 脚本核对全部 `.md` 是否在 `SKILL.md` 登记 | 0 个孤儿 |
 | evals 规格 | PyYAML/JSON 解析 `evals/evals.json` | 8 场景、29 条断言（21 contains + 8 llm_judge）、3 个执行臂 |
-| scripted 臂 | `run_evals.py --arm scripted` | 8/8 场景、51/51 自动断言 |
-| with-skill 臂 | `run_evals.py --arm with-skill --jobs 3` | 8/8 场景、52/52 自动断言、4/4 人工断言、8/8 触发 skill |
-| without-skill 臂 | `run_evals.py --arm without-skill --jobs 3` | 7/8 场景、51/52 自动断言（E2 契约违约） |
+| scripted 臂 | `run_evals.py --arm scripted` | 8/8 场景、51/51 自动断言、工具请求 5 次 |
+| with-skill 臂 | `run_evals.py --arm with-skill --jobs 3` | 8/8 场景、52/52 自动断言、4/4 人工断言、8/8 触发 skill；2,210s / 168 命令 / 2,953,456 tokens |
+| without-skill 臂 | `run_evals.py --arm without-skill --jobs 3` | 8/8 场景、52/52 自动断言，但 3,022s / 219 命令 / 4,824,760 tokens（+63.3%）、24 次自发探测；上一轮同基线在 E2 契约违约（7/8） |
 | live smoke | `run_evals.py --live-smoke --live-date 20261116` | 4/4：真连 `OPENHARMONY_CI` 装出 339M 运行时、`product=wukong100`、`arch overview` 返回真实计数、`references/tools.md` 与 `ask --list --markdown` 逐行一致 |
 | skill 测试 | `python3.12 -m unittest discover -s skills/…/tests` | 215 passed |
-| CLI 测试 | `python3.12 -m unittest discover -s cli/tests` | 192 passed（70 skipped） |
+| CLI 测试 | `python3.12 -m unittest discover -s cli/tests` | 199 passed（70 skipped） |
 | oskm 测试 | `python3.12 -m unittest discover -s oskm/tests` | 301 passed（25 skipped） |
 | 环境 | – | macOS 27.2.1 (arm64)、Python 3.12.16、codex-cli 0.169.0、模型 `qwen3.8-max`(reasoning=high) |
 

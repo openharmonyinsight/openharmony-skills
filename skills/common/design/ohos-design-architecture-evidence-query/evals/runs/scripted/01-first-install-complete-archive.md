@@ -1,13 +1,13 @@
 # E1 first-install-complete-archive（scripted 臂）
 
-- 开始时间：2026-11-17T15:32:27+08:00
-- 结束时间：2026-11-17T15:32:28+08:00
+- 开始时间：2026-11-17T16:18:03+08:00
+- 结束时间：2026-11-17T16:18:03+08:00
 - 执行臂：`scripted`
-- skill：`/private/tmp/oskm-release-3.1.0/packages/oskm/skills/ohos-design-architecture-evidence-query`（name=ohos-design-architecture-evidence-query, version=3.1.0）
+- skill：`/private/tmp/oskm-release-3.1.0-full/packages/oskm/skills/ohos-design-architecture-evidence-query`（name=ohos-design-architecture-evidence-query, version=3.1.0）
 - Python：`/opt/homebrew/opt/python@3.12/bin/python3.12`
-- 工作区：`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive`
-- 夹具服务端：http://127.0.0.1:61120
-- oskm 源码树（夹具来源）：`/private/tmp/oskm-release-3.1.0/packages/oskm`
+- 工作区：`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive`
+- 夹具服务端：http://127.0.0.1:61789
+- oskm 源码树（夹具来源）：`/private/tmp/oskm-release-3.1.0-full/packages/oskm`
 
 ## 用户请求（来自 evals.json）
 
@@ -33,57 +33,57 @@
 
 ```console
 $ pwd
-/private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/agent-start
+/private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/agent-start
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/agent-start` · exit=0 · 0.0s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/agent-start` · exit=0 · 0.0s
 
 ### 2. 用绝对路径安装托管运行时（不 cd 到 skill 目录）
 
 ```console
-$ /opt/homebrew/opt/python@3.12/bin/python3.12 /private/tmp/oskm-release-3.1.0/packages/oskm/skills/ohos-design-architecture-evidence-query/bootstrap.py --runtime-root /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/runtime install --source INTERNAL_CI --date 20261117
+$ /opt/homebrew/opt/python@3.12/bin/python3.12 /private/tmp/oskm-release-3.1.0-full/packages/oskm/skills/ohos-design-architecture-evidence-query/bootstrap.py --runtime-root /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/runtime install --source INTERNAL_CI --date 20261117
 stderr:
 ==> 下载 INTERNAL_CI 运行时: 20261117
-==> 运行时安装完成: /private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/runtime
+==> 运行时安装完成: /private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/runtime
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/agent-start` · exit=0 · 0.09s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/agent-start` · exit=0 · 0.09s
 
 ### 3. 确认当前目录未变
 
 ```console
 $ pwd
-/private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/agent-start
+/private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/agent-start
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/agent-start` · exit=0 · 0.0s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/agent-start` · exit=0 · 0.0s
 
 ### 4. 运行时布局
 
 ```console
-$ find /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/runtime -maxdepth 3 | sort
-/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/runtime
-/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/runtime/.oskm-runtime.json
-/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/runtime/interface
-/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/runtime/interface/sdk-js
-/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/runtime/interface/sdk-js/api
-/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/runtime/interface/sdk_c
-/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/runtime/interface/sdk_c/evalmarker.h
-/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/runtime/knowledge.db
-/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/runtime/oskm-cli.pyz
+$ find /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/runtime -maxdepth 3 | sort
+/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/runtime
+/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/runtime/.oskm-runtime.json
+/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/runtime/interface
+/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/runtime/interface/sdk-js
+/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/runtime/interface/sdk-js/api
+/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/runtime/interface/sdk_c
+/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/runtime/interface/sdk_c/evalmarker.h
+/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/runtime/knowledge.db
+/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/runtime/oskm-cli.pyz
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive` · exit=0 · 0.01s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive` · exit=0 · 0.01s
 
 ### 5. 状态文件
 
 ```console
-$ cat /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/runtime/.oskm-runtime.json
+$ cat /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/runtime/.oskm-runtime.json
 {
   "version": 3,
   "source": "INTERNAL_CI",
   "date": "20261117",
-  "updated_at": "2026-11-17T15:32:27+08:00",
+  "updated_at": "2026-11-17T16:18:03+08:00",
   "db": {
     "date": "20261117",
     "path": "knowledge.db",
@@ -100,12 +100,12 @@ $ cat /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bx
   },
   "cli": {
     "path": "oskm-cli.pyz",
-    "sha256": "ad760c16b3a56a994f23f42530e47ea5e63568ab0f1469afc1efead5cd5eb49e"
+    "sha256": "3e78cf73a94bcf9df24409db686092d7acb74b35ad3e891c6493b9b57cd171f5"
   }
 }
 ```
 
-cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive` · exit=0 · 0.0s
+cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive` · exit=0 · 0.0s
 
 ## 夹具服务端请求（被测阶段）
 
@@ -117,7 +117,7 @@ cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxu
 [
   {
     "seq": 1,
-    "ts": "2026-11-17T15:32:27.880+08:00",
+    "ts": "2026-11-17T16:18:03.406+08:00",
     "method": "GET",
     "path": "/internal/20261117",
     "user_agent": "Python-urllib/3.12",
@@ -139,14 +139,14 @@ cwd=`/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxu
 
 | # | 断言 | 类型 | 结果 | 证据 |
 |---:|---|---|---|---|
-| 1 | knowledge.db 装到了运行时根目录 | auto | Pass | /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/runtime/knowledge.db |
-| 2 | oskm-cli.pyz 与 DB 并排（同一次安装装齐） | auto | Pass | /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/runtime/oskm-cli.pyz |
+| 1 | knowledge.db 装到了运行时根目录 | auto | Pass | /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/runtime/knowledge.db |
+| 2 | oskm-cli.pyz 与 DB 并排（同一次安装装齐） | auto | Pass | /var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/runtime/oskm-cli.pyz |
 | 3 | interface/sdk-js 非空 | auto | Pass | 1 个文件 |
 | 4 | interface/sdk_c 非空 | auto | Pass | 1 个文件 |
 | 5 | 状态文件同时记录 db / sdk / cli 三段 | auto | Pass | ["cli", "date", "db", "sdk", "source", "updated_at", "version"] |
 | 6 | 工具每次安装只发一条"按日期取归档"的请求（没有盲探端点，也没有单独的 CLI 下载端点） | auto | Pass | 请求数=1，其中按日期归档请求=1；oskm-cli.pyz 已随归档装好=True；[{"method": "GET", "path": "/internal/20261117"}] |
 | 7 | Agent 启动目录没有被安装产物污染 | auto | Pass | 启动目录内容: [] |
 | 8 | 运行时根目录没有残留安装临时目录 | auto | Pass | leftovers=[] |
-| 9 | 安装前后当前目录一致（未用 cd 污染 Agent 启动目录） | auto | Pass | pwd=['/private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/agent-start', '/private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-r7n6bxup/scripted/e01-first-install-complete-archive/agent-start'] |
+| 9 | 安装前后当前目录一致（未用 cd 污染 Agent 启动目录） | auto | Pass | pwd=['/private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/agent-start', '/private/var/folders/2g/nr0w8xh97c3d722vdm7skyf00000gn/T/oskm-eval-scripted-d88ey2af/scripted/e01-first-install-complete-archive/agent-start'] |
 
 **结论：PASS**
