@@ -6,10 +6,11 @@ this file. Source artifacts are synchronized from
 
 ## [0.15.0] - 2026-11-03
 
-Source: `main@68cae2a9860dc83fa986c203aa4c6d276720e5cd`.
+Source: `main@3e4971c029ee02ebc0c99c61fa283cc792c31eda`.
 
-This republish imports the durable workflow checkpoint and guarded document
-update series merged into the source `main` as `!224`, superseding the `886ce2a`
+This republish imports the execution-mode selection series (`!226`, issue
+#161) and the device-verification guide extraction with the runtime
+verification hardening series (`!225`, issue #162), superseding the `68cae2a`
 snapshot; the version stays 0.15.0 because that release PR has not been merged
 yet.
 
@@ -20,6 +21,16 @@ accepted as a compatibility layer.
 
 ### Added
 
+- Add execution-mode selection for the implementation phase (issue #161):
+  `odk-implement` confirms one of 多子agent检查 / 全自动 / 逐步实现 before the
+  first Task and records it in the new `## 执行模式` section of
+  `execution-plan.md` (template pre-filled, declared as a conditional section,
+  old plans without the section stay compatible); 全自动 advances on default
+  values until `odk-validate` completes, 逐步实现 skips the three-seat Task
+  Review with a per-Task marker, and the OpenSpec and Superpowers bridges
+  apply the confirmed mode. Full-auto never waives the product/device
+  confirmation boundaries of build-products and device-version. See
+  `contracts/skill-guides/delivery/execution-mode.md`.
 - Add a durable `.workflow.json` checkpoint per ODK change: phases, tasks,
   pre/post hooks, attempts, verification evidence and approvals are recorded
   step by step, so an interrupted session resumes from the last unfinished
@@ -96,6 +107,31 @@ accepted as a compatibility layer.
   proposal, file path and `since` marker; static APIs accept `.d.ets` + `static`
   or `.static.d.ets` + `staticonly`, and static declarations reject `any` and
   union types.
+
+### Changed
+
+- Extract the runtime verification execution details from `odk-implement` into
+  the shared guide
+  `contracts/skill-guides/delivery/device-verification.md` (issue #162): the
+  separation rules for 验证范围 / 验证产品 / 验证目标确认 versus 编译产品, the
+  Task command-shape decision, and device preparation sub-step b plus emulator
+  sub-step c; the skill keeps build (a), test (d) and the routing that selects
+  the runtime branch by validation scope.
+- Harden the execution-mode gate: mode parsing takes strict values and rejects
+  duplicate 所选模式 lines by falling back to the verdict gate (no
+  first-match-wins); skip markers are scoped to the unique verified task
+  records, so standalone markers and historical tables no longer satisfy the
+  gate; adjacent-Task marker cross-use is blocked, mode notes and the selection
+  time are validated with angle placeholders rejected, and plans without a mode
+  section keep the legacy behavior.
+- Apply the legacy validation scope preflight and shared runtime checks before
+  implementation commands in the base, Superpowers and OpenSpec flows: QEMU
+  starts only with checked boot-image provenance and lifecycle evidence,
+  confirmed emulator targets are re-recognized after restarts, device
+  verification is bound to the confirmed runtime target, verification changes
+  are written back to native / OpenSpec / Superpowers tasks, verification
+  evidence stays separate from review waivers, and the runtime Red ordering
+  reuses the verified target.
 
 ### Fixed
 

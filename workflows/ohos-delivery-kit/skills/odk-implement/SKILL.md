@@ -29,6 +29,13 @@ Read `contracts/skill-guides/router/delivery-levels.md` and obtain the effective
 contract before choosing artifacts, sections or phase prerequisites.
 <!-- /ODK:reference -->
 
+<!-- ODK:reference contracts/skill-guides/delivery/execution-mode.md -->
+Before the first Task, confirm the execution mode (多子agent检查/全自动/逐步实现)
+per `contracts/skill-guides/delivery/execution-mode.md` and record it in
+`execution-plan.md` `## 执行模式`. The mode governs every later choice through
+validate; switching requires explicit user confirmation and a recorded update.
+<!-- /ODK:reference -->
+
 ## Purpose
 
 Use after `execution-plan.md` has been approved. This is the **base layer** command — AI-assisted implementation guided by the plan, with zero plugin dependencies.
@@ -49,15 +56,29 @@ Route corrections to their owning artifacts, record findings in the existing
 plan, and set Verification Final Status from the current verification outcome.
 <!-- /ODK:reference -->
 
+For configuration-dependent steps, use the effective-configuration command defined in `using-odk`; do not merge installation files independently. Stop on config errors. Existing execution-plan commands remain authoritative until explicitly changed.
+
+<!-- ODK:reference contracts/skill-guides/delivery/build-products.md -->
+Read `contracts/skill-guides/delivery/build-products.md`. Apply its implementation
+scope preflight before selecting a branch or running any Task command. Resolve
+missing or invalid scopes in old plans and reconcile the command snapshot,
+including switches to or from a non-runtime scope. Repeat the preflight if the
+scope changes during a Task.
+For target work, reuse the actual `产品选择确认`. If the choice or environment
+table is missing, recover or ask for explicit confirmation, then resolve and
+record the commands before using them. A default or generated command alone
+does not confirm a product.
+<!-- /ODK:reference -->
+
 For a plan explicitly scoped `host-only`, verify that every Task's command is a
 repository-local host/document/configuration check with no target build, emulator,
 flashing or device dependency. Execute and record those commands directly; skip
 product selection, firmware preparation and final device integration. If any Task
 needs a target/device, update the plan and follow the existing product safeguards.
 
-For configuration-dependent steps, use the effective-configuration command defined in `using-odk`; do not merge installation files independently. Stop on config errors. Existing execution-plan commands remain authoritative until explicitly changed.
-
 0. Read `codespec/changes/<repo-name>/<proposal-id>/execution-plan.md` Task list and list all Tasks as an explicit inventory before starting implementation. All task types — code modification, test writing, configuration update, and verification — are equally mandatory. No task type may be skipped without explicit user consent.
+
+   **执行模式确认（三选一）**：按 `contracts/skill-guides/delivery/execution-mode.md` 的共享步骤确认并回填模式，之后再执行首个 Task。
 1. Read the active `codespec/changes/<repo-name>/<proposal-id>/spec.md` AC list and `execution-plan.md` 代码范围映射 (Task → file).
 2. Read `codespec/changes/<repo-name>/<proposal-id>/execution-plan.md` Task list, dependency graph, file scope, and each Task's「任务间接口」（Produces/Consumes）—align cross-task naming and signatures to it.
    Treat the `spec.md` ACs and the execution principles in `execution-plan.md` as authoritative, then proceed in Task order.
@@ -95,68 +116,31 @@ For configuration-dependent steps, use the effective-configuration command defin
      - Record confirmed facts as `// cross-repo: <repo>/<file>:<line> — <interface>: <confirmed behavior>` in the Task's Actual Result
      - If the confirmed behavior contradicts spec.md or design.md assumptions, stop and apply the feedback procedure before continuing implementation
      - This step is mandatory when the called interface's behavior is non-trivial (returns error codes, has threading constraints, modifies shared state, or involves IPC); for trivial getters/setters it may be skipped with a note
+   <!-- ODK:reference contracts/skill-guides/delivery/device-verification.md -->
+   For `device` or `emulator`, read `contracts/skill-guides/delivery/device-verification.md`
+   before the first runtime command. For runtime Red, use its baseline build,
+   preparation, deployment and binding sequence after writing the failing test.
+   After implementing the fix, follow its rebuild and target reuse rules.
+   <!-- /ODK:reference -->
    - **TDD 失败/通过循环（Red/Green，所有代码 Task 的默认方式；降级规则见下）：**
      1. **Red（失败）** — Write or update the failing test(s) covering this Task's ACs. **For Tasks whose ACs appear in `design.md` `### DFX 故障模式处置` `关联 AC` column, the Red step IS the fault-injection test** — write the fault-injection/exception-path test first (per the 验证方式/证据 column), confirm it fails for the right reason, and use that failure output as the Red evidence. Record the failure output as the first entry in `Actual Result` under a `[失败 Red]` label; do not erase it in later steps.
      2. **Green（通过）** — Implement the minimal code required to make the failing test(s) pass. Do not write more code than needed to pass the tests.
-     3. **Build & Verify（编译与验证）** — Read the resolved commands from `execution-plan.md` `## 构建与验证环境` table (populated by `odk-plan`; do not re-read config for a confirmed snapshot). If the section is absent, follow the product-selection guide below first; obtain or recover an explicit choice, then resolve `{product}` and append the environment table. Never fill and execute an old plan directly from the configured default.
-        <!-- ODK:reference contracts/skill-guides/delivery/build-products.md -->
-        Read `contracts/skill-guides/delivery/build-products.md`. Reuse the plan's `编译产品`, `可选编译产品` and actual `产品选择确认`. If confirmation is missing or the user requests a switch, show the configured menu and wait for an explicit choice; configuration, generic plan approval or a generated build command alone does not confirm a product. Reuse a real confirmed choice for subsequent Tasks. For old plans, recover actual prior confirmation or ask once before compiling.
-        <!-- /ODK:reference -->
-        Read `验证范围`, `验证产品` and `验证目标确认` separately from `编译产品`. A concrete or abstract build name does not select a runtime target. Recover missing old-plan confirmations or ask before runtime verification. On a build-name/target/scope switch, update the corresponding snapshot and re-resolve affected commands via `--resolve-product-commands`; never globally replace one product string with another. Clear the emulator command outside `emulator`. Recheck artifact compatibility after build changes; invalidate device preparation, deployment and runtime test evidence after validation-product or device-ID changes. Determine the Task command shape, then apply a–d only where the explicit validation scope requires them:
-        <!-- ODK:reference contracts/skill-guides/delivery/device-version.md -->
-        Read `contracts/skill-guides/delivery/device-version.md` and consume the recorded strategy. `host-only`/`build-only` never ask for daily; `emulator` uses its confirmed validation target without physical firmware preparation. Only `device` chooses daily/existing for the validation product. Reuse preparation only for the same confirmed product and actual device.
-        <!-- /ODK:reference -->
-        - **Test-only Task** (only a test runner): skip a and artifact pushing. In `device`, still select and prepare the device via b; in `emulator`, execute c, then d. A build-only plan may run host checks but must not contain device/emulator commands.
-        - **Build+test Task** (验证命令 contains `&&` separating a build and test command): execute all four sub-steps a → b → c → **d**.
-        - **Build-only Task** (验证命令 contains only a build command, no `&&` test step): execute a → b → c, then use `测试命令` from `## 构建与验证环境` as sub-step **d**.
-
-        Scope controls execution: `build-only` runs a and any recorded host check, skips b/c and skips d when its command is N/A; `device` uses b; `emulator` uses c. Never choose b/c by comparing the build name to arm64_virt or rk3568.
-
-        Before an applicable, explicitly confirmed flash invokes its configured skill, read `contracts/skill-guides/router/configured-skills.md`; install it from matching config comment links if missing in the current agent, verify availability, then resume. Pending installation blocks device preparation.
-
-        a. **编译**：run the build portion of the Task's `验证命令` field (single-module `--target <module>` or full build). Stop if the build fails.
-        b. **设备准备（仅验证范围=device）**：
-           - **刷机适用条件（所有入口共用）**：automatic daily flashing requires scope `device`, confirmed `验证产品=rk3568`, and non-empty `device_flash_skill`. The concrete or abstract build name is not part of this test. Keep the selected-device and explicit overwrite confirmation requirements. Other validation products need a confirmed supported manual preparation method. Reuse successful preparation only for the same validation product and actual device.
-           - **推送编译产物**：find the `.so` files produced by this Task's build that correspond to the Task's changed source files:
-             - **产物目录**：use explicit `device_so_dirs` when configured; otherwise start at `out/<plan 编译产品>/`, using the exact same concrete or abstract name as the build command. Locate actual libraries within that root using this Task's build log, output manifest or confirmed layout (e.g. lib/ or lib64/), matching component target and architecture/variant. Never replace the output product name with `验证产品`. Confirm artifact/device compatibility; ambiguous provenance or multiple candidates require confirmation before pushing. Record actual paths, build evidence and target binding in `Actual Result`. Test-only Tasks push no artifacts.
-             - **服务推断**：if `device_service_restart` is non-empty use that command (replace `{service}`); otherwise look up the component's init `.cfg` file or systemd unit filename for the service name. If the service name cannot be determined, fall back to `hdc shell reboot` and wait for the device to return — record "service inference failed, used full reboot" in `Actual Result`.
-             - **设备连接检测**：before pushing, run `hdc list targets` to detect connected devices. Filter out emulator entries (any device ID that appeared in sub-step c's emulator boot) — only consider physical board devices:
-             - **发现设备**：select the actual hdc device ID (ask if multiple), confirm its product identity matches the plan's validation product, then apply the recorded version strategy. A device ID is not a product name; unknown or mismatched identity blocks preparation/pushing until confirmed:
-               - `existing`: use the firmware already on the device and proceed to 推送步骤. Do not offer daily again or claim the firmware is today's daily.
-               - `daily`: if preparation has already succeeded for this device and is recorded in `Actual Result`, reuse it. Otherwise follow the plan's `设备版本准备方式`. For an automatic skill, recheck the rk3568/config conditions above, pass the selected device ID, and obtain explicit confirmation before overwriting device data. If the conditions fail, do not invoke the skill; confirm a supported manual preparation method and update the plan. For manual preparation, wait for the user to confirm completion. Do not silently fall back to existing firmware when preparation fails or is incomplete.
-               - After flashing, re-detect and confirm the target device before pushing. Record the preparation outcome and device ID for subsequent Tasks.
-             - **未发现设备**：if `hdc list targets` returns no physical devices or returns an error, prompt:
-               ```
-               未检测到 hdc 设备，请选择：
-               A) 输入设备 IP 地址（使用 hdc tconn <ip>:<port> 连接，默认端口 7777）
-               B) 跳过设备验证
-
-               设备 IP：
-               ```
-               If the user provides an IP, run `hdc tconn <ip>:7777` (or the port the user specifies), wait for the connection to succeed, then re-run `hdc list targets` to confirm and apply the same recorded version strategy under 发现设备 before pushing. If connection fails, report the error and offer to retry or skip. If the user picks B, skip the 推送步骤 below and proceed to sub-step d.
-           - **推送步骤**：`hdc -t <device-id> shell mount -o rw,remount /`, push each confirmed `.so` via `hdc -t <device-id> file send <local> /system/lib/<name>` (use `/system/lib64/` for 64-bit libs), then execute the restart command. Record the resolved paths, device-id, and service name in `Actual Result`.
-        c. **模拟器启动与 hdc 推包（仅验证范围=emulator）**：use the separately confirmed validation product, even when the build name is abstract:
-           1. Before starting the emulator, run `hdc list targets` once and record the **pre-boot baseline**. Existing entries are not the emulator being started now.
-           2. Run the `模拟器命令` row value from `## 构建与验证环境` to start qemu.
-           3. Poll `hdc list targets` every 10 seconds until one or more **new** devices appear that were not in the pre-boot baseline; abort and report failure if no new device appears after 3 minutes.
-           4. Confirm emulator identity — always ask, even for a single new device:
-              - List all newly appeared devices and prompt the user:
-                ```
-                模拟器启动后检测到以下新设备：
-                  1) <device-id-1>
-                  2) <device-id-2>  （如有）
-                请确认哪个是本次启动的模拟器？输入序号：
-                ```
-              - Wait for explicit user confirmation before proceeding. Never auto-select. This is required even when only one new device appeared, because a physical board plugged in during the wait is indistinguishable from the emulator by device ID alone.
-              - Use the user-confirmed device ID as `<emulator-id>` for all subsequent hdc commands.
-           4. Run `hdc -t <emulator-id> shell mount -o rw,remount /` first to make the filesystem writable.
-           5. For Tasks with build outputs, apply b's artifact provenance/path/architecture checks against this validation product, record actual paths and emulator ID, then push the confirmed files with `hdc -t <emulator-id> file send <local> /system/lib/<name>` (or `/system/lib64/`). Test-only Tasks skip pushing and service restarts.
-           6. Restart the relevant service: `hdc -t <emulator-id> shell <restart-command>`.
-           7. Do not run this step for `device` or `build-only`; the build product name never selects this branch.
-        d. **推包/测试**：run the test portion of the Task's `验证命令` field, or the `测试命令` row from `## 构建与验证环境` for build-only Tasks.
+     3. **Build & Verify（编译与验证）** — Use the confirmed commands in
+        `execution-plan.md` `## 构建与验证环境`. Reuse the snapshot until a change
+        is confirmed.
+        Determine the explicit validation scope and Task command shape before running
+        any command. `host-only` runs the recorded host checks; `build-only` runs
+        the build when present and any recorded host check. Both skip b/c. A
+        test-only Task skips compilation. Skip d when no test applies; if the
+        plan requires a test but has no runnable command, resolve it through feedback.
+        - a. **编译**：run the build portion of the Task's `验证命令` (single-module `--target <module>` or full build). Stop if the build fails.
+        - b. / c. execute only the runtime branch selected by the validation scope.
+          If runtime Red prepared the target, follow the guide's reuse rules.
+        - d. **测试**：run the applicable test portion of `验证命令`, or the recorded `测试命令` when the Task has only a build command. Follow the guide's target binding and unverified-result rules for runtime tests.
         Record the passing output as a `[验证 Verify]` entry in `Actual Result`, appending after the `[失败 Red]` entry — do not overwrite it.
      4. **Quality check & refactor** — Before completing a code Task, self-review its actual diff using the implementation-quality guide. This check is required; rewriting needs a concrete reason. Assess applicable readability, idiom, allocation/copy and complexity risks even when functional tests pass. Keep a suitable implementation, repair a demonstrated issue within scope and rerun affected tests, or record the specific evidence still needed. Append material choices and their basis to the existing `Actual Result`; route unresolved blocking findings through the feedback procedure before marking the Task Done. Task self-review does not replace the configured final review.
      5. **Task review gate** — After verification and the quality check, before marking the Task Done, invoke `odk-task-review`. It implements `contracts/skill-guides/delivery/task-review.md` with role-specific review, candidate validation and scoped fix re-review. Pass the Task's `风险等级`, full Task baseline/current diff (including untracked files), related ACs/decisions and verification paths:
+        - `执行模式=逐步实现`：不调用 `odk-task-review`，在该 Task 的 `Actual Result` 记录固定文案 `Task review: 不适用（逐步实现模式：免三席审查）`；风险升级（R1→R2）提示仍照常记录、Task 列表风险单元格照常更新，然后直接进入 Task 完成回填。该跳过只豁免三席 Task Review，`odk-review`/`odk-validate` 门禁不变。
         - `R0`: record `Task review: 不适用（R0：<理由>）` in `Actual Result` and skip reviewer dispatch. Code changes are never R0.
         - `R1`: one reviewer runs all five lenses and writes `evidence/reviews/task-<n>/verdict.md`.
         - `R2`: dispatch the fixed arch/scope/security seats and write `arch.md`, `scope.md`, `security.md`, `verdict.md`.

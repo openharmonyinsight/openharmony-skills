@@ -26,6 +26,11 @@ R2 触发项（命中任一即 R2）：
 - native ↔ ArkTS 边界（NAPI/CAPI/JSI）
 - 公共常量、错误码
 
+执行模式=逐步实现（见 `execution-mode.md`）时，R1/R2 的评审整体跳过：不派评审者、
+不写 `evidence/reviews/task-<n>/` 下任何证据，在该 Task 的 `Actual Result` 记录固定
+文案 `Task review: 不适用（逐步实现模式：免三席审查）`。R0 行为不变。该跳过只豁免
+Task 评审；整变更评审与归档校验按该留痕放行，其余门禁不变。
+
 ## 风险从哪来
 
 `odk-plan` 为每个 Task 写入初始 `风险等级` 与判断依据。执行阶段只允许升级：实际 diff
@@ -124,5 +129,8 @@ frontmatter 缺失、无法解析或缺少闭合 `---` 时按评审结论无效�
 ## 与整变更评审的关系
 
 Task verdict 是整变更评审的输入。`odk-review` 必须先核对每个 R1/R2 Task 的 verdict：
-缺失、非 PASS 或 `blocking_findings > 0` 时不得给出整变更 PASS。Task 评审不检查跨 Task
+缺失、非 PASS 或 `blocking_findings > 0` 时不得给出整变更 PASS。
+唯一例外：计划 `## 执行模式` 为逐步实现，且该 Task 的 `Actual Result` 含
+`Task review: 不适用（逐步实现模式：免三席审查）` 留痕时，缺失的 verdict 不判失败；
+跨 Task 接口一致性与最终集成仍由整变更评审承担。Task 评审不检查跨 Task
 接口一致性与最终集成，这些仍属于整变更评审。

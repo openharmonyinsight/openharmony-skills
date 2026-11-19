@@ -149,7 +149,8 @@ def normalize_cell(value: str) -> str:
     return value.replace("<br>", " ").replace("<br/>", " ").replace("<br />", " ").strip()
 
 
-def split_table_row(line: str) -> list[str]:
+def split_table_row(line: str, *, preserve_breaks: bool = False) -> list[str]:
+    clean_cell = str.strip if preserve_breaks else normalize_cell
     source = line.strip()
     cells: list[str] = []
     cell: list[str] = []
@@ -173,14 +174,14 @@ def split_table_row(line: str) -> list[str]:
             ended_with_delimiter = False
             continue
         if char == "|":
-            cells.append(normalize_cell("".join(cell)))
+            cells.append(clean_cell("".join(cell)))
             cell = []
             ended_with_delimiter = True
         else:
             cell.append(char)
             ended_with_delimiter = False
         index += 1
-    cells.append(normalize_cell("".join(cell)))
+    cells.append(clean_cell("".join(cell)))
     if source.startswith("|"):
         cells.pop(0)
     if ended_with_delimiter and cells:
@@ -192,7 +193,9 @@ def is_separator_row(cells: list[str]) -> bool:
     return bool(cells) and all(re.match(r"^:?-{3,}:?$", cell.strip()) for cell in cells)
 
 
-def parsed_markdown_tables(text: str) -> list[tuple[list[str], list[dict[str, str]]]]:
+def parsed_markdown_tables(
+    text: str, *, preserve_breaks: bool = False
+) -> list[tuple[list[str], list[dict[str, str]]]]:
     """Return Markdown pipe-table headers and row dictionaries.
 
     The parser supports the pipe-table shape used by ODK templates, including
@@ -217,7 +220,7 @@ def parsed_markdown_tables(text: str) -> list[tuple[list[str], list[dict[str, st
         idx += 2
         rows: list[dict[str, str]] = []
         while idx < len(lines) and "|" in lines[idx]:
-            cells = split_table_row(lines[idx])
+            cells = split_table_row(lines[idx], preserve_breaks=preserve_breaks)
             if len(cells) == len(header) and not is_separator_row(cells):
                 rows.append(dict(zip(header, cells)))
             idx += 1
@@ -239,19 +242,21 @@ def table_has_columns(text: str, required_columns: list[str]) -> bool:
     return False
 
 
-def tables_with_columns(text: str, required_columns: list[str]) -> list[list[dict[str, str]]]:
+def tables_with_columns(
+    text: str, required_columns: list[str], *, preserve_breaks: bool = False
+) -> list[list[dict[str, str]]]:
     matches: list[list[dict[str, str]]] = []
-    for header, rows in parsed_markdown_tables(text):
+    for header, rows in parsed_markdown_tables(text, preserve_breaks=preserve_breaks):
         if all(column in header for column in required_columns):
             matches.append(rows)
     return matches
 
 
 def require_unique_table_with_columns(
-    text: str, required_columns: list[str]
+    text: str, required_columns: list[str], *, preserve_breaks: bool = False
 ) -> list[dict[str, str]] | None:
     """Preserve absent/empty tables and reject multiple matching tables."""
-    tables = tables_with_columns(text, required_columns)
+    tables = tables_with_columns(text, required_columns, preserve_breaks=preserve_breaks)
     if len(tables) > 1:
         raise ValueError(
             f"duplicate tables matching required columns ({len(tables)}); "

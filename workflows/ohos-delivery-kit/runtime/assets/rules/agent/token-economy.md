@@ -14,7 +14,7 @@ R-TE-003: 摘要回传 ≤15 行 —— 跨阶段/子 Agent 回传主会话只�
 R-TE-004: 扇出上限 ≤4 —— 同一层级并行子 Agent 不超过 4 个；超出则分批或收敛任务粒度。
 R-TE-005: 固定三席例外 —— Task 级评审按 `contracts/skill-guides/delivery/task-review.md`
 使用固定 arch/scope/security 三席（R2）或单席五维（R1）时，视为 R-TE-004 的受控例外；
-不得据此扩大其他场景的扇出；无委派能力时按串行三次只读检查执行。
+不得据此扩大其他场景的扇出；无委派能力时按串行三次只读检查执行。执行模式=逐步实现（见 `contracts/skill-guides/delivery/execution-mode.md`）时不派席位，按该契约在 Actual Result 留痕跳过。
 
 ## 通过条件
 

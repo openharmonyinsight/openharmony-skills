@@ -64,6 +64,14 @@ Canonical phases and their normal continuation:
 | `metadata` | Verify local metadata → separate design-docs submission choice |
 | `submit_design_docs` | Verify document CR/MR/PR → finish remaining configured hooks and report completion |
 
+Execution mode (see `contracts/skill-guides/delivery/execution-mode.md`) qualifies the
+implement → validate chain recorded in the plan's `## 执行模式`: 全自动 advances each
+configured gate on default values without re-asking confirmed choices; 逐步实现 skips
+task-review dispatch with the recorded marker instead of verdict evidence. Neither mode
+waives the explicit confirmations required by build-products.md and
+device-version.md; 逐步实现 replaces only the task-review evidence requirement (marker
+instead of verdict), leaving every other gate unchanged.
+
 The effective delivery level, actual artifacts, pending findings, caller and
 user-authorized endpoint select the next applicable action. The table is not a
 mandatory checklist: skip inapplicable phases together with their hooks, and

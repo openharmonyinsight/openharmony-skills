@@ -194,6 +194,7 @@ Default to **interactive** mode. If the user asks to automate, use recommended o
 
 Self-check every updated/new artifact and run the packaged validator with the current `--phase define|specify|design|plan` after each artifact phase; future artifacts are outside that check. Fix issues in available artifacts before continuing. Stop for missing essential facts, conflicting requirements, failures that cannot be resolved, or a material scope expansion. Previously granted authorization stays effective; neither mode authorizes new publication destinations, merging, destructive operations or separate design-docs submission. Follow the shared delivery handoff for those steps and honor any source-PR submission already requested by the user.
 
+The implement phase additionally offers a fixed three-way execution mode (多子agent检查/全自动/逐步实现) confirmed at implementation start and recorded in `execution-plan.md` `## 执行模式`; see `contracts/skill-guides/delivery/execution-mode.md`. Within implement → validate, the mode recorded in the plan takes precedence over verbal mode triggers.
 
 ## Context Loading
 

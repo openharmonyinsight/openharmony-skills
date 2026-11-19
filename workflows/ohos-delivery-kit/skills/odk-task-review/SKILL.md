@@ -30,6 +30,11 @@ the entire applicable workflow is complete. The coordinator owns this flow.
 这不授予修改源码、执行设备操作、提交 PR 或扩展任务范围的权限。
 整变更与跨 Task 集成仍交给 `odk-review`。
 
+计划 `execution-plan.md` `## 执行模式` 为逐步实现时，协调者不进入本 skill：由
+`odk-implement` 直接在该 Task 的 `Actual Result` 记录
+`Task review: 不适用（逐步实现模式：免三席审查）` 后标记 Done。若本 skill 被调用时
+发现该模式与实际留痕冲突，按反馈程序报告而不是补派评审。
+
 协调者先加载 `using-odk`，复用已完成的资源检查；从同一安装定位契约、模板和执行目录。
 已加载则不重复启动路由。被委派的评审者直接复用 brief 的绝对资源路径，不启动阶段流程。
 

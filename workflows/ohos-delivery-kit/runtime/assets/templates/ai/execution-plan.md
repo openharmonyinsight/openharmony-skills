@@ -33,6 +33,12 @@ sessions: ""
 - **可交接执行（Agent 执行契约）：** 本计划须能被新 Agent 在无历史对话上下文下逐 Task 执行；执行契约由各 Task 结构承载——`只读上下文`/`Files`/`禁止修改文件`（上下文打包）、`Steps` 的 RED→GREEN（测试优先）、`Verification` 的 Expected/Actual（期望输出）、`Review Handoff`（评审交接）；每 Step 为含命令或代码方向的 2–5 分钟动作。
 <!-- /SYNC: execution-principles -->
 
+## 执行模式
+
+**所选模式：** 多子agent检查（默认）
+**选择时间：** [由 odk-implement 在实现开始时确认后填写]
+**模式说明：** [全自动：默认值取值清单；逐步实现：跳过三席审查的理由；多子agent检查可省略]
+
 ## 构建与验证环境
 
 <!-- 填写提示（不写入交付正文）：所有 Task 仅使用仓库内主机测试且不依赖目标编译/设备时，用「验证范围 = host-only」和实际「测试命令」替代下方产品表；不要保留旧产品、模拟器或固件配置。涉及目标编译/设备时仍完整填写下表。 -->
@@ -220,7 +226,7 @@ Expected: [说明通过条件]
 |------|------|-------------------|------------------|
 | Gate-1（按需） | API/数据模型 Task 完成后 | 命名一致性、权限/边界、状态 owner、错误码 | |
 | Gate-2（按需） | 共享路径/核心逻辑 Task 完成后 | AC 覆盖、异常路径、兼容性、回归测试 | |
-| Gate-Task（必选） | 每个 Task 验证通过后、标记 Done 前 | `evidence/reviews/task-<n>/verdict.md`，`verdict: PASS` 且 `blocking_findings: 0`；R2 另需 `arch.md`/`scope.md`/`security.md` | 该 Task 标记 Done 与下一个 Task |
+| Gate-Task（必选） | 每个 Task 验证通过后、标记 Done 前 | `evidence/reviews/task-<n>/verdict.md`，`verdict: PASS` 且 `blocking_findings: 0`；R2 另需 `arch.md`/`scope.md`/`security.md`；执行模式=逐步实现时改为 Actual Result 记 `Task review: 不适用（逐步实现模式：免三席审查）`（见 contracts/skill-guides/delivery/execution-mode.md） | 该 Task 标记 Done 与下一个 Task |
 | Gate-Final（必选） | 集成/最终验证后 | 端到端证据、「AC 到 Task 追溯」验证状态、「代码范围映射」实际文件、Actual Result 全部回填 | |
 
 Gate-Task 的分级、席位与证据格式见 `contracts/skill-guides/delivery/task-review.md`。

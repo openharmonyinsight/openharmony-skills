@@ -43,6 +43,14 @@ contract before choosing artifacts, sections or phase prerequisites.
 
 ## Steps
 
+<!-- ODK:reference contracts/skill-guides/delivery/execution-mode.md -->
+Read `contracts/skill-guides/delivery/execution-mode.md` and the plan's `## 执行模式`
+before asking anything. 全自动 mode: honor the recorded mode and default-value evidence;
+do not re-ask choices already confirmed there. 逐步实现 mode: the task-review gate
+validates the per-Task skip marker instead of verdict files. All other validation gates
+are unchanged.
+<!-- /ODK:reference -->
+
 <!-- ODK:reference contracts/skill-guides/delivery/feedback.md -->
 Read `contracts/skill-guides/delivery/feedback.md`. Record validation findings in
 the existing plan, identify affected owning artifacts and return corrections to
@@ -71,7 +79,7 @@ For configuration-dependent steps, use the effective-configuration command defin
    - implementation files and Task links are backfilled; each Verification row has meaningful Actual Result and explicit Final Status=Pass (retain historical Red failures)
    - the existing plan's 问题闭环 table, when present, has complete, unique finding IDs and valid AC/Task/artifact references; blocking items must be Resolved, nonblocking accepted risks must be Accepted with disposition and recheck evidence
    - optional evidence under `evidence/reviews/` and `evidence/gates/` is non-empty and supports any passing conclusion
-   - every R1/R2 Task has `evidence/reviews/task-<n>/verdict.md` with `verdict: PASS` and `blocking_findings: 0`; R2 also has the arch/scope/security reports (validator enforcement: Draft missing/non-PASS → WARN, Archive → FAIL)
+   - every R1/R2 Task has `evidence/reviews/task-<n>/verdict.md` with `verdict: PASS` and `blocking_findings: 0`; R2 also has the arch/scope/security reports (validator enforcement: Draft missing/non-PASS → WARN, Archive → FAIL)；执行模式=逐步实现时该要求改为对应 Task 的 Actual Result 固定留痕 `Task review: 不适用（逐步实现模式：免三席审查）`（validator 按留痕校验，R2 不要求三份报告）
    - `API/SDK=是` changes must archive the applicable metadata file(s) and language-specific declaration-diff evidence (validator enforcement: Draft missing → WARN, Archive missing → FAIL). When `arkts-api-spec.yaml` exists, require `evidence/task1-arkts-api-declaration-en.diff` and `evidence/task1-arkts-api-declaration-zh.diff`. When `c-api-spec.yaml` exists, require `evidence/task1-c-api-declaration-en.diff` and `evidence/task1-c-api-declaration-zh.diff`. A change involving both languages requires all four files. Each file must contain only the target API repository's paths. Declaration diffs must be checked against the matching metadata file: declarations must appear in continuous new-side hunks grouped under the target file, with the complete doc comment and declaration in one hunk; `@since`, `@syscap`, permission, platform, and application-model markers must match metadata. Duplicate signatures must be uniquely bound by API identity or source position. The validator also enforces documentation closure: every non-`N/A` / non-`不适用` API-level description element, parameter description, return description, and error-code description must be covered by the matching language's declaration comment. It rejects element-name labels such as `Scenario:` / `Notes:` and `notes` values that merely restate API availability already represented by `since` or error-code tables already represented by `returnType` / `errorCodes`. Coverage is normalized token matching, not a natural-language semantic proof. This remains a structural/delivery gate, not a compiler.
 5. Report PASS（通过）/WARN（警告）/FAIL（失败）by level. Warnings do not block draft review, but archive readiness requires explicit resolution or accepted risk. API signatures are opaque document text: check presence, placeholders and duplicates only, not C/ArkTS syntax, types or array bounds. Document PASS is not compilation success. Source review and target toolchain/CI own language correctness; report unrun checks as NOT VERIFIED. Do not require GCC for document validation.
 6. Resource constraints (`contracts/artifacts.yaml#resource_contract`): parse `资源开销审视`; `review-required` blocks archive; `required` needs meaningful, non-placeholder Spec/Design/Plan resource sections. Archive runs root `AGENTS.md` `odk_resource_gate` (missing/non-zero/timeout fails). ODK orchestrates the subsystem gate but does not recompute its measurements.

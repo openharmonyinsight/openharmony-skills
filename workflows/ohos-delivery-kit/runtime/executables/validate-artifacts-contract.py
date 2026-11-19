@@ -22,7 +22,7 @@ import sys
 import unicodedata
 import json
 from argparse import ArgumentParser
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -4227,6 +4227,174 @@ def validate_dfx_ad_library_basis(change_dir: Path, reporter: Reporter) -> None:
         reporter.pass_("AD rows all carry library-basis annotations")
 
 
+_SKIP_REVIEW_MARKER = "Task review: 不适用（逐步实现模式：免三席审查）"
+_STEPWISE_MODE = "逐步实现"
+
+
+def _section_text(body: str, heading: str) -> str | None:
+    """Return the text of the first H2 section, or None when absent."""
+    pattern = rf"^##\s+{re.escape(heading)}\s*$"
+    match = re.search(pattern, body, re.MULTILINE)
+    if not match:
+        return None
+    rest = body[match.end():]
+    nxt = re.search(r"^##\s+", rest, re.MULTILINE)
+    return rest[: nxt.start()] if nxt else rest
+
+
+def _mode_field_values(section: str, name: str, *, multiline: bool = False) -> list[str]:
+    visible = _visible_markdown(section)
+    matches = list(re.finditer(rf"^\*\*{re.escape(name)}：\*\*[ \t]*(.*)$", visible, re.MULTILINE))
+    values = []
+    for match in matches:
+        value = match[1]
+        if multiline:
+            rest = visible[match.end():]
+            next_field = re.search(r"^\*\*(?:所选模式|选择时间|模式说明)：\*\*", rest, re.MULTILINE)
+            value += rest[:next_field.start()] if next_field else rest
+        values.append(value.strip())
+    return values
+
+
+def _plan_execution_mode(body: str) -> str | None:
+    """Return the confirmed 执行模式 value, or None when absent/unknown/duplicate."""
+    try:
+        section = require_unique_section(body, "执行模式")
+    except ValueError:
+        return None
+    if section is None:
+        return None
+    matches = _mode_field_values(section, "所选模式")
+    # A single marker line is the contract; zero or several lines are ambiguous
+    # (a mode switch keeps its old line as an audit trail, and a copied template
+    # may leave the default line behind). Taking the first match could silently
+    # skip the three-seat review, so fail closed like the risk-cell prefixes.
+    if len(matches) != 1:
+        return None
+    raw_value = matches[0].strip()
+    mode_match = re.fullmatch(
+        r"(多子agent检查|全自动|逐步实现)(?:\s*[（(][^()（）]*[）)])?\s*", raw_value
+    )
+    return mode_match.group(1) if mode_match else None
+
+
+def _mode_record_errors(body: str, mode: str | None) -> list[str]:
+    """Check declared mode records, leaving legacy/ambiguous-mode fallback intact."""
+    if mode is None:
+        return []
+    section = require_unique_section(body, "执行模式") or ""
+    errors = []
+    times = _mode_field_values(section, "选择时间")
+    valid_time = False
+    if len(times) == 1:
+        value = times[0].strip()
+        try:
+            # Require a date and time, not an ISO date-only placeholder.
+            if len(value) > 10 and value[10] in {"T", "t", " "}:
+                datetime.fromisoformat(value.replace("Z", "+00:00").replace("z", "+00:00"))
+                valid_time = True
+        except ValueError:
+            pass
+    if not valid_time:
+        errors.append("选择时间 must contain one ISO 8601 date and time")
+    notes = _mode_field_values(section, "模式说明", multiline=True)
+    if len(notes) > 1 or (mode != "多子agent检查" and (len(notes) != 1 or not _mode_note_complete(notes[0]))):
+        errors.append("模式说明 must contain one meaningful default-value record or skip reason")
+    return errors
+
+
+def _mode_note_has_placeholder(entry: str) -> bool:
+    # A Markdown link label or URL is ordinary content, even if its label
+    # contains a word used in named template slots.
+    for match in BRACKET_PLACEHOLDER_RE.finditer(entry):
+        if not re.match(r"\([^)\n]+\)", entry[match.end():]):
+            return True
+    return any(
+        not re.fullmatch(r"<(?:https?://|mailto:)[^\s<>]+>", match[0], re.IGNORECASE)
+        for match in ANGLE_PLACEHOLDER_RE.finditer(entry)
+    )
+
+
+def _mode_note_complete(note: str) -> bool:
+    entries = 0
+    lines = note.splitlines()
+    for index, line in enumerate(lines):
+        list_marker = re.match(r"^\s*(?:[-*+]|[0-9]{1,9}[.)])\s+", line)
+        entry = (line[list_marker.end():] if list_marker else line).strip(" `*_\t")
+        entry = re.sub(r"^\[[ xX]\]\s+", "", entry).strip(" `*_\t")
+        if not entry or re.fullmatch(r"(?:[-*_]\s*){3,}", entry):
+            continue
+        # Check named template slots even when surrounded by otherwise filled text.
+        if _mode_note_has_placeholder(entry):
+            return False
+        value = re.split(r"[：:]", entry, maxsplit=1)[-1].strip(" `*_\t")
+        if not value and entry.endswith(("：", ":")):
+            following = next((candidate for candidate in lines[index + 1:]
+                              if candidate.strip() and not re.fullmatch(r"(?:[-*_]\s*){3,}", candidate.strip())), None)
+            if following is None:
+                return False
+            if list_marker:
+                indent = len(line.expandtabs(4)) - len(line.expandtabs(4).lstrip())
+                next_indent = len(following.expandtabs(4)) - len(following.expandtabs(4).lstrip())
+                if next_indent <= indent:
+                    return False  # An empty leaf cannot borrow the next sibling's value.
+            continue  # An introduction needs actual following content.
+        if not meaningful(entry) or not meaningful(value):
+            return False
+        entries += 1
+    return entries > 0
+
+
+def _task_detail_blocks(task_details: str) -> tuple[dict[str, list[str]], list[str]]:
+    """Share the archive Task-heading grammar and retain duplicate occurrences."""
+    details: dict[str, list[str]] = {}
+    unassigned: list[str] = []
+    current_task = None
+    for line in task_details.splitlines():
+        heading = atx_heading(line)
+        match = TASK_RE.match(heading[1]) if heading and heading[0] == 3 else None
+        if match:
+            current_task = match[0]
+            details.setdefault(current_task, []).append("")
+        elif current_task is not None:
+            # Keep custom headings in this Task until the next TASK heading.
+            details[current_task][-1] += line + "\n"
+        else:
+            unassigned.append(line)
+    return details, unassigned
+
+
+def _task_section(body: str, task: str) -> str | None:
+    """Return the Task 详情 subsection text for an exact TASK-<n> heading."""
+    try:
+        section = require_unique_section(body, "Task 详情")
+    except ValueError:
+        return None
+    if section is None:
+        return None
+    details, _ = _task_detail_blocks(_visible_markdown(section))
+    blocks = details.get(task, [])
+    return blocks[0] if len(blocks) == 1 else None
+
+
+def _verification_records(value: str) -> list[str]:
+    return [
+        entry.strip() for entry in re.split(r"<br\s*/?>|\n+", value, flags=re.IGNORECASE)
+    ]
+
+
+def _marker_in_actual_result(block: str, marker: str) -> bool:
+    """Require the marker in one complete, unambiguous Verification table."""
+    try:
+        rows = delivery_table(
+            block, ["Command / Evidence", "Expected Result", "Actual Result", "Final Status"],
+            preserve_breaks=True,
+        )
+    except ValueError:
+        return False
+    return any(marker in _verification_records(row["Actual Result"]) for row in rows)
+
+
 def _plan_risk_rows(plan: str) -> list[dict[str, str]] | None:
     """Return Task-list rows when the plan declares a 风险等级 column.
 
@@ -4253,7 +4421,16 @@ def validate_task_review_gate(
         return
     print("\nLevel B: Task Review Gate")
     try:
-        rows = _plan_risk_rows(read_text(plan_path))
+        plan_body = read_text(plan_path)
+        mode = _plan_execution_mode(plan_body)
+        mode_errors = _mode_record_errors(plan_body, mode)
+        for error in mode_errors:
+            message = f"execution-plan.md execution mode record: {error}"
+            if archive:
+                reporter.fail(message)
+            else:
+                reporter.warn(message)
+        rows = _plan_risk_rows(plan_body)
     except ValueError as error:
         reporter.fail(f"execution-plan.md task review gate: {error}")
         return
@@ -4265,7 +4442,10 @@ def validate_task_review_gate(
         return
 
     checked = 0
-    problems = 0
+    problems = len(mode_errors)
+    verdict_satisfied = 0
+    marker_satisfied = 0
+    stepwise = mode == _STEPWISE_MODE
     for row in rows:
         task = (row.get("TASK ID") or "").strip()
         task_match = re.fullmatch(r"TASK-(\d+)", task)
@@ -4321,35 +4501,67 @@ def validate_task_review_gate(
             continue
         checked += 1
 
-        if not verdict_path.is_file():
-            issue("missing task review verdict")
+        def _validate_verdict_file() -> None:
+            frontmatter = read_frontmatter(
+                verdict_path,
+                single_line_keys=("task_id", "risk", "independent", "verdict", "blocking_findings"),
+            )
+            if frontmatter.invalid_reason is not None:
+                issue(f"invalid frontmatter ({frontmatter.invalid_reason})")
+                return
+            if (frontmatter.get("task_id") or "").strip() != task:
+                issue(f"task_id must be {task}")
+            if (frontmatter.get("risk") or "").strip().upper() != risk:
+                issue(f"risk must match plan value {risk}")
+            if (frontmatter.get("independent") or "").strip().lower() not in {"true", "false"}:
+                issue("independent must be true or false")
+            verdict = (frontmatter.get("verdict") or "").strip().upper()
+            if verdict != "PASS":
+                issue(f"verdict must be PASS, found {verdict or 'missing'}")
+            blocking = (frontmatter.get("blocking_findings") or "").strip()
+            if not re.fullmatch(r"\d+", blocking) or int(blocking) != 0:
+                issue(f"blocking_findings must be 0, found {blocking or 'missing'}")
+            if risk == "R2":
+                for role in ("arch", "scope", "security"):
+                    if not (change_dir / rel / f"{role}.md").is_file():
+                        issue(f"R2 requires {rel}/{role}.md")
+
+        if verdict_path.is_file():
+            problems_before = problems
+            _validate_verdict_file()
+            if problems == problems_before:
+                verdict_satisfied += 1
             continue
-        frontmatter = read_frontmatter(
-            verdict_path,
-            single_line_keys=("task_id", "risk", "independent", "verdict", "blocking_findings"),
-        )
-        if frontmatter.invalid_reason is not None:
-            issue(f"invalid frontmatter ({frontmatter.invalid_reason})")
+
+        if stepwise:
+            section = _task_section(plan_body, task)
+            if section is None or not _marker_in_actual_result(section, _SKIP_REVIEW_MARKER):
+                problems += 1
+                message = (
+                    f"execution-plan.md: {task} missing 逐步实现 mode skip marker "
+                    f"in Task 详情 Verification Actual Result "
+                    f"(expected: {_SKIP_REVIEW_MARKER})"
+                )
+                if archive:
+                    reporter.fail(message)
+                else:
+                    reporter.warn(message)
+            else:
+                marker_satisfied += 1
             continue
-        if (frontmatter.get("task_id") or "").strip() != task:
-            issue(f"task_id must be {task}")
-        if (frontmatter.get("risk") or "").strip().upper() != risk:
-            issue(f"risk must match plan value {risk}")
-        if (frontmatter.get("independent") or "").strip().lower() not in {"true", "false"}:
-            issue("independent must be true or false")
-        verdict = (frontmatter.get("verdict") or "").strip().upper()
-        if verdict != "PASS":
-            issue(f"verdict must be PASS, found {verdict or 'missing'}")
-        blocking = (frontmatter.get("blocking_findings") or "").strip()
-        if not re.fullmatch(r"\d+", blocking) or int(blocking) != 0:
-            issue(f"blocking_findings must be 0, found {blocking or 'missing'}")
-        if risk == "R2":
-            for role in ("arch", "scope", "security"):
-                if not (change_dir / rel / f"{role}.md").is_file():
-                    issue(f"R2 requires {rel}/{role}.md")
+
+        issue("missing task review verdict")
 
     if checked and problems == 0:
-        reporter.pass_(f"{checked} R1/R2 task verdict(s) passed")
+        if marker_satisfied and verdict_satisfied:
+            reporter.pass_(
+                f"{verdict_satisfied} R1/R2 task verdict(s) passed and "
+                f"{marker_satisfied} skipped by 逐步实现 mode marker"
+            )
+        elif marker_satisfied:
+            reporter.pass_(f"{checked} R1/R2 task(s) skipped by 逐步实现 mode marker")
+        else:
+            reporter.pass_(f"{checked} R1/R2 task verdict(s) passed")
 
 
 def validate_optional_evidence(change_dir: Path, reporter: Reporter) -> None:
@@ -4479,9 +4691,11 @@ def validate_archive_spec_mapping(change_dir: Path, reporter: Reporter) -> None:
         reporter.pass_("execution-plan.md 代码范围映射 covers all traced Tasks with files")
 
 
-def delivery_table(text: str, columns: list[str]) -> list[dict[str, str]]:
+def delivery_table(
+    text: str, columns: list[str], *, preserve_breaks: bool = False
+) -> list[dict[str, str]]:
     """Read one unambiguous delivery table without silently dropping bad rows."""
-    rows = require_unique_table_with_columns(text, columns)
+    rows = require_unique_table_with_columns(text, columns, preserve_breaks=preserve_breaks)
     if rows is None:
         raise ValueError("missing table columns: " + ", ".join(columns))
     lines = _visible_markdown(text).splitlines()
@@ -4529,6 +4743,13 @@ def validate_archive_task_completion(change_dir: Path, reporter: Reporter) -> No
         reporter.fail("execution-plan.md unchecked Steps remain in Task 详情")
 
 
+def _has_archive_verification_result(value: str) -> bool:
+    records = _verification_records(value)
+    if _SKIP_REVIEW_MARKER in records:
+        return any(meaningful(record) for record in records if record != _SKIP_REVIEW_MARKER)
+    return meaningful(normalize_cell(value))
+
+
 def validate_archive_actual_results(change_dir: Path, reporter: Reporter) -> None:
     plan_path = change_dir / "execution-plan.md"
     if not plan_path.is_file():
@@ -4549,21 +4770,7 @@ def validate_archive_actual_results(change_dir: Path, reporter: Reporter) -> Non
     listed_tasks = {row["TASK ID"].strip() for row in tasks}
     # Keep every occurrence: set-based extraction and search() could hide a
     # second, failing detail block behind a first passing block.
-    details: dict[str, list[str]] = {}
-    unassigned: list[str] = []
-    current_task = None
-    for line in task_details.splitlines():
-        heading = atx_heading(line)
-        match = TASK_RE.match(heading[1]) if heading and heading[0] == 3 else None
-        if match:
-            current_task = match[0]
-            details.setdefault(current_task, []).append("")
-        elif current_task is not None:
-            # Custom headings stay in this Task until the next TASK heading;
-            # otherwise a later failing Verification table could disappear.
-            details[current_task][-1] += line + "\n"
-        else:
-            unassigned.append(line)
+    details, unassigned = _task_detail_blocks(task_details)
     missing_details = listed_tasks - details.keys()
     unknown_details = details.keys() - listed_tasks
     duplicate_details = {task for task, blocks in details.items() if len(blocks) != 1}
@@ -4582,14 +4789,17 @@ def validate_archive_actual_results(change_dir: Path, reporter: Reporter) -> Non
     for task_id, blocks in details.items():
         for detail in blocks:
             try:
-                rows = delivery_table(detail, ["Command / Evidence", "Expected Result", "Actual Result", "Final Status"])
+                rows = delivery_table(
+                    detail, ["Command / Evidence", "Expected Result", "Actual Result", "Final Status"],
+                    preserve_breaks=True,
+                )
             except ValueError as error:
                 reporter.fail(f"execution-plan.md {task_id} Verification Final Status: {error}")
                 invalid_tables = True
                 continue
-            if not rows or any(not meaningful(row.get("Actual Result", "")) for row in rows):
+            if not rows or any(not _has_archive_verification_result(row["Actual Result"]) for row in rows):
                 missing_actual.append(task_id)
-            if any(row["Final Status"].strip().lower() != "pass" for row in rows):
+            if any(normalize_cell(row["Final Status"]).lower() != "pass" for row in rows):
                 not_pass.append(task_id)
 
     if missing_actual:

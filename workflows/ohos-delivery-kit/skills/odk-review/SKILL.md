@@ -57,7 +57,7 @@ dispositions in the existing plan and invalidate/reverify affected results.
    `evidence/reviews/task-<n>/verdict.md`. A missing verdict, a non-`PASS` verdict
    or `blocking_findings > 0` makes the whole-change result non-PASS, regardless of
    other evidence. Task verdicts do not cover cross-Task contract consistency or
-   final integration; keep those checks in this review.
+   final integration; keep those checks in this review. Exception: when the plan's `## 执行模式` is 逐步实现, a per-Task `Actual Result` marker `Task review: 不适用（逐步实现模式：免三席审查）` replaces that Task's verdict requirement. Cross-Task consistency and final integration remain this review's responsibility and are never waived by the mode. The mode contract is `contracts/skill-guides/delivery/execution-mode.md`.
 
    <!-- ODK:reference contracts/skill-guides/delivery/implementation-quality.md -->
    Read `contracts/skill-guides/delivery/implementation-quality.md` and inspect
