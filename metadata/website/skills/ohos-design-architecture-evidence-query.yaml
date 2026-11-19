@@ -1,0 +1,85 @@
+schemaVersion: 1
+
+id: ohos-design-architecture-evidence-query
+title: OpenHarmony 架构证据查询
+summary: 安装 OpenHarmony 架构证据运行时，并用只读 CLI 按扫描快照查询产品顶层架构证据。
+
+category:
+  scope: common
+  namespace: design
+  stage: design
+  domain: architecture
+  capability: evidence-query
+
+status:
+  maturity: trial
+  version: 3.1.0
+  owner: openharmony
+
+tags:
+  - openharmony
+  - architecture
+  - knowledge-base
+  - evidence-query
+  - syscap
+  - gn-args
+
+audience:
+  - 产品架构与系统设计人员
+  - 需求影响面分析人员
+  - 测试设计与 CI 分析人员
+  - 需要按快照核对部件、接口与镜像归属的开发者
+
+useCases:
+  - title: 安装或更新架构证据运行时
+    description: 从 CI 归档一次装齐 knowledge.db、oskm-cli.pyz 与 interface/sdk-js、interface/sdk_c，并校验 schema 契约。
+  - title: 查询部件归属与依赖影响面
+    description: 按部件查正向依赖、反向依赖、SysCap、InnerAPI 与安装落点，并报告 total 与 truncated。
+  - title: 用镜像路径反查归属
+    description: 从镜像内文件路径反查安装模块与所属部件，路径根由 scans.cpu_arch 决定。
+  - title: 查询 SDK 模块与 Kit 成员
+    description: 查 ArkTS 模块的声明文件、实现 so 与 Kit 成员的两条来路（@kit 标签与入口 import）。
+  - title: 查询 GN 编译开关
+    description: 查编译参数当前值、声明文件与关联特性数量。
+
+whenToUse:
+  - 需要安装或更新 OpenHarmony 架构证据运行时（DB + 两套 SDK + oskm-cli）。
+  - 需要按一次扫描快照回答子系统、部件、代码仓、镜像文件归属问题。
+  - 需要评估改动的依赖影响面、SysCap、InnerAPI、SDK 接口或 GN 编译开关。
+
+whenNotToUse:
+  - 需要重新扫描源码、重建知识库或修改 DB 与 SDK 内容。
+  - 需要编译代码，或需要查询设备实时运行状态。
+  - 需要编码规范检视、测试用例生成等架构证据之外的能力。
+
+inputs:
+  required:
+    - 要回答的架构问题（部件、镜像路径、接口、编译开关等）。
+    - 下载端点配置（OSKM_DOWNLOAD_SOURCE 与 OSKM_DOWNLOAD_ENDPOINT），或一个完整的本地 OpenHarmony 源码根。
+  optional:
+    - 指定日期（YYYYMMDD）。
+    - 指定 scan_id，或用于对比的第二个快照。
+
+outputs:
+  - 带证据出处的架构回答（部件、代码仓、安装落点、接口、编译开关）。
+  - 依赖与影响面清单，含 total 与 truncated 等分页与截断标记。
+  - 运行时安装与校验结果（doctor、install、validate-db 输出）。
+
+quickStart:
+  steps:
+    - 复制 oskm_runtime/.env.example 为 .env，填写 OSKM_DOWNLOAD_ENDPOINT。
+    - 运行 bootstrap.py doctor 检查环境，再运行 bootstrap.py install --runtime-root ~/.oskm。
+    - 直接调用 oskm-cli.pyz 查询，例如 arch overview 或 ask get_component --name <部件名>。
+  examplePrompt: |
+    请先安装 OpenHarmony 架构证据运行时，然后告诉我某个部件被哪些 ELF 模块依赖、
+    声明了哪些 SysCap，并说明证据来自哪一次扫描快照。
+
+related:
+  skills: []
+  docs:
+    - title: 安装与 CLI 用法
+      path: references/usage.md
+    - title: 查询工具索引
+      path: references/tools.md
+    - title: 架构证据追踪示例
+      path: examples/architecture-trace.md
