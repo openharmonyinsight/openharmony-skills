@@ -1,5 +1,12 @@
 # Automatic post-implementation handoff
 
+Apply [phase-flow.md](../router/phase-flow.md) throughout this handoff. Complete
+implement_post_hook before Step 1; wrap review/validate, source_cr_mr_pr,
+applicable ci/online_test, metadata and submit_design_docs at their own
+boundaries. Every result, choice or blocked exit shows `下一步：` with the first
+unfinished action and configured hooks. The prompts below are minimum templates:
+append the actual configured hook/action chain. Empty hooks insert no step.
+
 Applies after all approved implementation Tasks are Done. Explicit user limits
 (for example implementation only or no publishing) take precedence. This is an
 agent orchestration policy, not a background daemon. Invoke skills by their

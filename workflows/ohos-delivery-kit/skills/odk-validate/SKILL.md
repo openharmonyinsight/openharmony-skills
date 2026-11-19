@@ -15,6 +15,15 @@ full frontmatter and body first; revise it in place and preserve confirmed
 content, stable IDs and evidence. Create a target only when it does not exist.
 <!-- /ODK:reference -->
 
+## Phase flow and next step
+
+<!-- ODK:reference contracts/skill-guides/router/phase-flow.md -->
+Before phase work, read `contracts/skill-guides/router/phase-flow.md` and apply
+its configured pre_hook/post_hook order. At every completion or pause, show
+the next pending action and configured hooks; omit the reminder only when
+the entire applicable workflow is complete. The coordinator owns this flow.
+<!-- /ODK:reference -->
+
 <!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
 Read `contracts/skill-guides/router/delivery-levels.md` and obtain the effective
 contract before choosing artifacts, sections or phase prerequisites.
@@ -34,6 +43,14 @@ contract before choosing artifacts, sections or phase prerequisites.
 
 ## Steps
 
+<!-- ODK:reference contracts/skill-guides/delivery/execution-mode.md -->
+Read `contracts/skill-guides/delivery/execution-mode.md` and the plan's `## 执行模式`
+before asking anything. 全自动 mode: honor the recorded mode and default-value evidence;
+do not re-ask choices already confirmed there. 逐步实现 mode: the task-review gate
+validates the per-Task skip marker instead of verdict files. All other validation gates
+are unchanged.
+<!-- /ODK:reference -->
+
 <!-- ODK:reference contracts/skill-guides/delivery/feedback.md -->
 Read `contracts/skill-guides/delivery/feedback.md`. Record validation findings in
 the existing plan, identify affected owning artifacts and return corrections to
@@ -46,6 +63,7 @@ For configuration-dependent steps, use the effective-configuration command defin
 1. Resolve the target change directory and load the artifact contract. Invoking this skill authorizes the agent to run the packaged document validator through the available shell/terminal tool and parse its stdout, stderr and exit code; do not merely print a command for the user to copy. Resolve the executable from the installation selected by the `using-odk` resource check, including symlinked host skills. Quote the absolute executable and change-directory paths. If no execution tool exists, report NOT RUN and the exact command; never report PASS from reading instructions alone. Archive validation may execute the repository's declared resource gate; preserve its existing authorization requirements.
 2. Check Level A/B: repository segment and directory name (formal leaf exactly matches `<proposal-id>`, or draft matches `draft-<yyyymmdd>-<slug>`), required files, required sections, and conditional-section warnings per `artifacts.yaml`. A standalone `<!-- 不涉及：章节名；理由：具体原因 -->` closes only the named optional condition; it cannot waive required sections or trigger-specific gates.
 3. Check Level C traceability:
+   - **API metadata contract**：`API/SDK=是` 时至少存在一个适用的 `arkts-api-spec.yaml` 或 `c-api-spec.yaml`，并校验 schemaVersion、language、API kind、id、parent、enum/member 闭合、类型专属必填字段和双语三要素/五要素。`spec.md` 只允许 API 概览，不得重新展开逐 API 规格；概览 API ID 必须与所有适用 metadata 文件的并集完全一致。默认 validate、archive 和 design-docs submission 都必须校验完整 API contract version chain：metadata、`spec.md`、`design.md`、`execution-plan.md` 全部存在且均为 `1.0.0`。任何缺失或不一致输出一个 actionable blocking finding，列出全部 Artifact / Declared / Required、禁止手改版本；可识别的 0.14 旧 Markdown 链路先建议 `{{CMD_PREFIX}}upgrade-api-chain`，无法闭环时要求从 proposal 重跑，并指向 `contracts/skill-guides/spec/api-metadata-migration.md`。旧 `api-spec.yaml`、旧混合语言声明 diff、缺失或不一致的契约版本均 FAIL。
    - AC definition IDs use `AC-<用户故事号>.<序号>`: ASCII digits or `DFX` for the story and ASCII digits for the sequence (e.g. `AC-1.1`, `AC-DFX.1`); both forms participate in verification/Task/DFX traceability; malformed IDs warn in Draft and fail Archive/design-docs submission
    - The format gate checks visible spec definitions, verification mapping AC cells and execution-plan traceability AC cells against `resource_contract.ac_id_pattern` in the installed artifact contract. The default uses ASCII digits and the DFX namespace; a missing pattern falls back to that default, while an invalid regex reports a Draft warning / Archive failure and then uses the default.
    - every `spec.md` AC appears in the verification mapping with a non-empty verification method
@@ -61,7 +79,8 @@ For configuration-dependent steps, use the effective-configuration command defin
    - implementation files and Task links are backfilled; each Verification row has meaningful Actual Result and explicit Final Status=Pass (retain historical Red failures)
    - the existing plan's 问题闭环 table, when present, has complete, unique finding IDs and valid AC/Task/artifact references; blocking items must be Resolved, nonblocking accepted risks must be Accepted with disposition and recheck evidence
    - optional evidence under `evidence/reviews/` and `evidence/gates/` is non-empty and supports any passing conclusion
-   - `API/SDK=是` changes must archive `evidence/task1-api-declaration-en.diff` and `evidence/task1-api-declaration-zh.diff` (validator enforcement: Draft missing → WARN, Archive missing → FAIL)
+   - every R1/R2 Task has `evidence/reviews/task-<n>/verdict.md` with `verdict: PASS` and `blocking_findings: 0`; R2 also has the arch/scope/security reports (validator enforcement: Draft missing/non-PASS → WARN, Archive → FAIL)；执行模式=逐步实现时该要求改为对应 Task 的 Actual Result 固定留痕 `Task review: 不适用（逐步实现模式：免三席审查）`（validator 按留痕校验，R2 不要求三份报告）
+   - `API/SDK=是` changes must archive the applicable metadata file(s) and language-specific declaration-diff evidence (validator enforcement: Draft missing → WARN, Archive missing → FAIL). When `arkts-api-spec.yaml` exists, require `evidence/task1-arkts-api-declaration-en.diff` and `evidence/task1-arkts-api-declaration-zh.diff`. When `c-api-spec.yaml` exists, require `evidence/task1-c-api-declaration-en.diff` and `evidence/task1-c-api-declaration-zh.diff`. A change involving both languages requires all four files. Each file must contain only the target API repository's paths. Declaration diffs must be checked against the matching metadata file: declarations must appear in continuous new-side hunks grouped under the target file, with the complete doc comment and declaration in one hunk; `@since`, `@syscap`, permission, platform, and application-model markers must match metadata. Duplicate signatures must be uniquely bound by API identity or source position. The validator also enforces documentation closure: every non-`N/A` / non-`不适用` API-level description element, parameter description, return description, and error-code description must be covered by the matching language's declaration comment. It rejects element-name labels such as `Scenario:` / `Notes:` and `notes` values that merely restate API availability already represented by `since` or error-code tables already represented by `returnType` / `errorCodes`. Coverage is normalized token matching, not a natural-language semantic proof. This remains a structural/delivery gate, not a compiler.
 5. Report PASS（通过）/WARN（警告）/FAIL（失败）by level. Warnings do not block draft review, but archive readiness requires explicit resolution or accepted risk. API signatures are opaque document text: check presence, placeholders and duplicates only, not C/ArkTS syntax, types or array bounds. Document PASS is not compilation success. Source review and target toolchain/CI own language correctness; report unrun checks as NOT VERIFIED. Do not require GCC for document validation.
 6. Resource constraints (`contracts/artifacts.yaml#resource_contract`): parse `资源开销审视`; `review-required` blocks archive; `required` needs meaningful, non-placeholder Spec/Design/Plan resource sections. Archive runs root `AGENTS.md` `odk_resource_gate` (missing/non-zero/timeout fails). ODK orchestrates the subsystem gate but does not recompute its measurements.
 7. Run `python3 runtime/executables/validate-artifacts-contract.py <change-dir>` for Draft validation, or add `--archive` before `<change-dir>` for the archive gate. Report the exact command and result.

@@ -23,7 +23,7 @@
 | [05-libc.md](05-libc.md) | libc / libc++ 故障模式 | Native C/C++ 代码、NDK 动态库 | C-01 ~ C-10 |
 | [06-memory-resource-leak.md](06-memory-resource-leak.md) | 内存与资源泄漏故障模式 | 缓存、长驻服务、Ashmem、RefBase 对象 | M-01 ~ M-05 |
 | [07-thread-concurrency.md](07-thread-concurrency.md) | 线程与并发故障模式 | 自建线程/线程池、锁与同步原语、Timer、事件循环 | T-01 ~ T-06 |
-| [08-napi-arkts.md](08-napi-arkts.md) | NAPI / ArkTS 边界故障模式 | NAPI 中间件、ArkTS 状态管理、XComponent | N-01 ~ N-10 |
+| [08-napi-arkts.md](08-napi-arkts.md) | NAPI / ArkTS 边界故障模式 | NAPI 中间件、ArkTS 状态管理、XComponent | N-01 ~ N-11 |
 | [09-appfreeze.md](09-appfreeze.md) | 主线程卡死 / AppFreeze 故障模式 | UI 进程、主线程同步等待、跨线程互锁 | A-01 ~ A-05 |
 | [10-cutils-parcel.md](10-cutils-parcel.md) | C-Utils / Parcel 组件使用陷阱 | 使用 c_utils 组件（SafeMap、Parcel、Timer 等）的 Native 模块 | U-01 ~ U-05 |
 | [11-high-risk-operations.md](11-high-risk-operations.md) | 高危操作故障模式 | **所有模块必扫**：进程自杀/杀进程/跨模块删数据/直操作他模块数据库/跨模块释放内存等非配对操作 | H-01 ~ H-08 |

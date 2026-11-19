@@ -15,6 +15,15 @@ full frontmatter and body first; revise it in place and preserve confirmed
 content, stable IDs and evidence. Create a target only when it does not exist.
 <!-- /ODK:reference -->
 
+## Phase flow and next step
+
+<!-- ODK:reference contracts/skill-guides/router/phase-flow.md -->
+Before phase work, read `contracts/skill-guides/router/phase-flow.md` and apply
+its configured pre_hook/post_hook order. At every completion or pause, show
+the next pending action and configured hooks; omit the reminder only when
+the entire applicable workflow is complete. The coordinator owns this flow.
+<!-- /ODK:reference -->
+
 <!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
 Read `contracts/skill-guides/router/delivery-levels.md` and obtain the effective
 contract before choosing artifacts, sections or phase prerequisites.
@@ -37,9 +46,43 @@ contract before choosing artifacts, sections or phase prerequisites.
 1. Read `proposal.md` summary (first 15 lines or user-provided summary)
 2. Read `spec.md` AC list and business rules (for architecture decisions to reference)
 
+## API hard-migration gate
+
+If `proposal.md` marks `API/SDK` as `是`:
+
+1. Before writing or revising `design.md`, read `spec.md` `## API 规格定义`.
+2. The section must reference the applicable `arkts-api-spec.yaml` and/or `c-api-spec.yaml` and state `API 契约版本 | 1.0.0`.
+3. Write `**API 契约版本：** 1.0.0` into `design.md` `## 需求基线摘要`; this is a read-only chain marker and must not be changed during design.
+4. The referenced language-specific metadata files must exist, parse, and satisfy the API metadata contract.
+5. If these conditions fail, stop before generating design. A recognizable 0.14 legacy API Markdown chain without current metadata may be routed to `{{CMD_PREFIX}}upgrade-api-chain`; if the assistant cannot resolve every fact, restart from `proposal`/`odk-spec`. Never use an old spec directly to generate a new design.
+6. For a blocking mismatch, report every affected artifact with its declared version, required version `1.0.0`, this reason, and the migration guide. Use this action text verbatim and do not suggest manually editing the version field:
+   ```text
+   Action:
+   Rerun from proposal, then rerun odk-spec before creating design.
+
+   Required flow:
+   proposal -> spec -> design
+
+   Migration guide:
+   contracts/skill-guides/spec/api-metadata-migration.md
+   ```
+
 ## Steps
 
--1. **Shared brainstorm gate:** Run the same interview as standalone `odk-brainstorm` inline before generating design. Trace affected callers/callees, state holders, lifecycle, thread/queue/lock boundaries, failure propagation and compatibility assumptions with file:line evidence. Focus decisions on ownership, invariants, ordering, recovery, migration and DFX consequences. Existing code constrains the options; it does not select the user's desired failure policy.
+<!-- ODK:reference contracts/skill-guides/spec/contract-boundary.md -->
+Read `contracts/skill-guides/spec/contract-boundary.md`. Own internal decisions
+here; do not refresh spec for a different implementation of the same contract.
+Only an agreed consumer-contract change/gap needs upstream spec backfill.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/research/codebase-understanding.md -->
+Before the interview or architecture choices, read
+`contracts/skill-guides/research/codebase-understanding.md`. Reuse and verify the
+spec/interview baseline against current source, extending it for design-relevant
+call chains, state ownership, configuration branches and analogous implementations.
+<!-- /ODK:reference -->
+
+-1. **Shared brainstorm gate:** Run the same interview as standalone `odk-brainstorm` inline before generating design. Use the researched implementation to check affected callers/callees, state holders, lifecycle, thread/queue/lock boundaries, failure propagation and compatibility assumptions with file:line evidence. Focus decisions on ownership, invariants, ordering, recovery, migration and DFX consequences. Existing code constrains the options; it does not select the user's desired failure policy.
 
 <!-- ODK:reference contracts/skill-guides/brainstorm/interview.md -->
 Read `contracts/skill-guides/brainstorm/interview.md` in full and apply its decision state, questioning, ODK coverage and completion gate before generating the design.
@@ -48,12 +91,13 @@ Read `contracts/skill-guides/brainstorm/interview.md` in full and apply its deci
    Carry the checked code baseline and confirmed decisions into design. Proceed to Step 0 only after completion or an explicit bypass; retain unresolved items as such in the draft.
 
 0. Check for subsystem profile: read and follow `contracts/skill-guides/router/profiles.md` — if a profile matches, apply its `template_overrides.design` (additional sections, fragments) and `agent_instructions.design`
-1. **Code fact baseline:** Consolidate the shared brainstorm's code findings into a structured baseline: file:line references for key data structures, entry-point signatures, call chain hops, concurrency boundaries, and failure paths. Use this baseline to populate `代码事实基线` in `design.md`. Skip only for pure greenfield modules, pure documentation changes, or config-only changes.
+1. **Code fact baseline:** Verify decisive source locations from the shared research, then consolidate key data structures, real entry/registration paths, call chain hops, configuration branches, state/concurrency boundaries and failure/cleanup paths with file:line references. Use this baseline to populate `代码事实基线`, `实现入口` and applicable `既有模式复用` in `design.md`; compare existing implementations before choosing a new abstraction. Explain the current behavior, proposed change and constraints that remain. New features with existing integration points and executable configuration changes are included; truly greenfield modules and wording-only changes use the guide's bounded checks.
+   - **Cross-repo interface fact check**: If the design calls interfaces from another OpenHarmony repo (identified from the module impact table or brainstorm's involved repos), locate the upstream repo and read the interface's actual implementation to confirm return value semantics, error conditions, threading constraints, lifecycle assumptions, and side effects. Record confirmed cross-repo facts in `代码事实基线` with `// cross-repo: <repo>/<file>:<line>` references. Do not assume interface behavior from header declarations alone; if the repo is not locally available, ask the developer for the path.
 2. Read template from `templates/ai/design.md`
-3. Generate `design.md` per the template. Conditionally include `代码事实基线`, `类图`, and `状态归属与不变量` when applicable — add `类图` (Mermaid `classDiagram`) when the change involves class/interface inheritance or implementation hierarchies (e.g. IPC interface→proxy→stub→impl) or cross-module composition. Reference specific `spec.md` AC numbers in design decisions.
+3. Generate `design.md` per the template. Conditionally include `代码事实基线`, `类图`, `既有模式复用`, and `状态归属与不变量` when applicable — add `类图` (Mermaid `classDiagram`) when the change involves class/interface inheritance or implementation hierarchies (e.g. IPC interface→proxy→stub→impl) or cross-module composition. Reference specific `spec.md` AC numbers in design decisions. When introducing a new scope/handle, `既有模式复用` must pin the ownership idiom (同层既有 RAII scope guard) and `状态归属与不变量` must record the single choke point for any cross-cutting side effect (queue drain/flush), per the template guidance.
    If any proposal `资源开销审视` dimension is `required`, expand `资源设计` (`contracts/artifacts.yaml#resource_contract`). Content detail is subsystem-owned; ODK requires the section and meaningful, non-placeholder content without imposing a subsystem design schema.
 4. If Step 1 produced code facts, populate `代码事实基线`; otherwise omit it.
-5. After design is generated, review spec's `错误码定义` and `接口变更分析` — resolve any `TBD` values, and update if design decisions introduce new error codes or change interface signatures.
+5. After design is generated, compare its consumer-visible behavior with spec's `错误码定义` and `接口变更分析`. Resolve genuinely unknown contract values or agreed contract changes in the affected spec clauses; keep private errors/helper signatures in design. Preserve spec, including its session mirror, when only internal decisions changed. Record affected implementation/test verification in the plan, not spec.
 6. **DFX 设计 [必填章节]**:
    - **必填性**：DFX 是必填章节（非条件触发）。即便所涉仓库都没有 DFX 知识（`fmea.yaml` 不存在或不可达），章节仍必填（填"不涉及"并说明理由）。主表有命中行或存在 AD 推导条目时，`### DFX 故障模式处置` 子节同样必填（见下第 4 步）。
    - **子章节**：`### DFX 故障模式分析`，列出仓知识库中触发条件与本变更业务流程匹配的故障模式。分析执行委托内置 `odk-fmea` skill（AIAG-VDA 七步法 + 仓级 FMEA 知识库 + DFX 表兼容模式），本 skill 负责准备输入并按第 3 步落盘契约回填；design.md 主表的知识来源仍以仓知识库（`fmea.yaml`）为权威。遍历所有仓都获取不到 FMEA 知识时，故障模式分析填"不涉及"并注明具体理由（如仓不可达、仓无 DFX 知识等），以便归档审查区分原因。
@@ -83,7 +127,7 @@ Read `contracts/skill-guides/brainstorm/interview.md` in full and apply its deci
           - 控制措施**改变对外可观测行为**（超时返回明确错误码、故障后恢复到约定状态等）→ `新增 AC`（回填 spec US-DFX）或既有 AC 足够覆盖时 `复用 AC`；
           - 控制措施是**内部实现约束**（锁顺序、对象所有权、生命周期不变量等，为满足既有行为服务）→ `纳入设计约束`（写入 design 关键设计决策/状态归属与不变量等约束段，关联 Task 与单元测试/故障注入证据；不为通过 FM 门禁把内部机制写成新验收标准）；
           - 命中条目恢复措施已在代码中存在 → `现有控制覆盖`；该模式触发条件不在本次改动面 → `本变更不触及`。
-        - **新增 AC 时回填 spec.md**：在 `## 用户故事或场景` 末尾追加 `### US-DFX: 故障模式响应` 子节，新 DFX AC 按分组序号顺延为 `- **AC-DFX.N:** Given [故障注入条件] When [异常/边界动作] Then [可观测的恢复行为：错误码/恢复/关键日志/打点]`；既有数字 AC 保持原编号。同步补 `异常与边界规则`、`验证映射`、`测试设计提示` 的关联行。回填后明确告知用户 spec.md 已变更；按 `using-odk` 的交互模式重新确认或在自主授权范围内自检后继续，超出原授权范围则停下确认，并提示 `{{CMD_PREFIX}}plan` 将为这些 AC 生成故障注入/异常路径 Task（不得列入「可后置」）。
+        - **新增 AC 时回填 spec.md**：在 `## 用户故事或场景` 末尾追加 `### US-DFX: 故障模式响应` 子节，新 DFX AC 按分组序号顺延为 `- **AC-DFX.N:** Given [故障注入条件] When [异常/边界动作] Then [可观测的恢复行为：错误码/恢复/关键日志/打点]`；既有数字 AC 保持原编号。同步补 `异常与边界规则`、`验证映射`、`测试设计提示` 的关联行。回填后明确告知用户 spec.md 已变更；按 `using-odk` 的交互模式重新确认或在自主授权范围内自检后继续，超出原授权范围则停下确认，并提示 `{{CMD_PREFIX}}plan` 将为这些 AC 生成故障注入/异常路径 Task（不得列入「可后置」）。**实际修改 spec.md 时（追加 `### US-DFX` 或补关联行），必须同步为 `spec.md` 调用 `update-sessions-sidecar.py`（参数 `<变更目录>` `spec.md` `<当前session ID>` `odk-design` `<action>`），并将 `---MIRROR---` 段的 `sessions` 字段与 `## 会话记录` 表格写回 `spec.md`（frontmatter + body 开头），与 `## Session ID 追踪` 节的契约一致；未修改 spec.md 时不追加 sidecar 调用。**
         - **证据要求**：`现有控制覆盖` 给 文件:行 或既有测试引用；`本变更不触及` 给理由；`新增 AC`/`复用 AC` 给故障注入或异常路径验证方式。证据列空白的处置行会在校验 FAIL。
         - `不涉及` 分支（主表无命中且无 AD 条目）不填处置表，校验门静默。
 
@@ -134,7 +178,7 @@ Read `contracts/skill-guides/brainstorm/interview.md` in full and apply its deci
 
 3. 从脚本输出的 `---MIRROR---` 段提取 `sessions` 字段和 `## 会话记录` 表格，写入交付件 frontmatter + body 开头（frontmatter 之后、正文 `#` 标题之前）。
 
-**关键**：sidecar `.sessions.json` 是权威源。即使 `design.md` 的 frontmatter 或表格在 body 重生成时丢失，下一个 skill 从 sidecar 读取，数据不丢。脚本保证 sidecar 的原子追加。
+**关键**：sidecar `.sessions.json` 只保存会话调用历史；镜像缺失时可据此恢复会话记录，但它不备份交付件正文，也不证明阶段完成。阶段与 hook 的成功结果、证据和恢复位置必须按 `contracts/skill-guides/router/workflow-state.md` 写入 `.workflow.json`。
 
 ## Output
 

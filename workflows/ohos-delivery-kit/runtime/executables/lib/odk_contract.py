@@ -12,12 +12,12 @@ from pathlib import Path
 
 if __package__:
     from .odk_yaml import parse_contract_artifacts, parse_resource_contract, contract_version, _unquote
-    from .odk_document import section_text, meaningful, table_with_columns
-    from .odk_involvement import DIMENSIONS, involvement_rows, involvement_value, canonical_dimension, parse_eight_dim_involvement
+    from .odk_document import require_unique_section, require_unique_table_with_columns, meaningful
+    from .odk_involvement import DIMENSIONS, involvement_rows, involvement_value, canonical_dimension
 else:
     from odk_yaml import parse_contract_artifacts, parse_resource_contract, contract_version, _unquote
-    from odk_document import section_text, meaningful, table_with_columns
-    from odk_involvement import DIMENSIONS, involvement_rows, involvement_value, canonical_dimension, parse_eight_dim_involvement
+    from odk_document import require_unique_section, require_unique_table_with_columns, meaningful
+    from odk_involvement import DIMENSIONS, involvement_rows, involvement_value, canonical_dimension
 
 RISK_DIMENSIONS = {"API/SDK", "安全/权限", "IPC/跨进程", "数据迁移", "性能"}
 LEVELS = {"lite", "standard", "critical"}
@@ -152,6 +152,17 @@ def validate_dependencies(artifacts: dict) -> None:
         visit(name)
 
 
+def _require_artifact(artifacts: dict, name: str) -> dict:
+    """Return the named artifact node or raise a ValueError naming it.
+
+    The CLI's ``--effective-contract`` path catches ``ValueError`` and exits 1,
+    so callers must avoid bare ``KeyError`` for missing required nodes.
+    """
+    if name not in artifacts:
+        raise ValueError(f"contract is missing required artifact: {name}")
+    return artifacts[name]
+
+
 def frontmatter_level(text: str) -> str:
     if not text.startswith("---\n"):
         return "standard"
@@ -183,10 +194,13 @@ def compile_contract(change_dir: Path, contract_path: Path, *, phase: str | None
     profiles = sorted((read_profile(contract_path.parent.parent / "profiles" / (p + ".yaml"))
                        for p in ids), key=lambda p: (p["priority"], p["id"]))
     if level == "lite":
-        artifacts["design"]["required"] = "false"
-        artifacts["execution-plan"]["requires"].remove("design")
+        _require_artifact(artifacts, "design")["required"] = "false"
+        execution_plan = _require_artifact(artifacts, "execution-plan")
+        requires = execution_plan.setdefault("requires", [])
+        if "design" in requires:
+            requires.remove("design")
         for name, sections in LITE_SECTIONS.items():
-            artifacts[name]["required_sections"] = list(sections)
+            _require_artifact(artifacts, name)["required_sections"] = list(sections)
 
     for name, artifact in artifacts.items():
         artifact.update(dimensions=[], dimension_policy="explicit-assessment-with-reason",
@@ -219,11 +233,18 @@ def compile_contract(change_dir: Path, contract_path: Path, *, phase: str | None
              if involvement_value(row.get("是否涉及", "")) != "否" and row["维度"] in RISK_DIMENSIONS}
     resource_contract = parse_resource_contract(str(contract_path))
     active_states = set(resource_contract.get("active_when_states", ["required"]))
-    resource_active = any(row.get("状态", "").strip() in active_states for row in table_with_columns(
-        section_text(proposal, "资源开销审视"), ["维度", "状态"]))
+    # Cache the section/table parse results once; the lite branch and signal
+    # computation reuse them instead of re-scanning the proposal (P1).
+    resource_section = require_unique_section(proposal, "资源开销审视")
+    resource_active = any(row.get("状态", "").strip() in active_states for row in (
+        require_unique_table_with_columns(resource_section or "", ["维度", "状态"]) or []))
     signals = {"resource-active": resource_active}
     for trigger, label in (("security", "安全/权限"), ("i18n", "国际化")):
-        signals[trigger] = parse_eight_dim_involvement(proposal, label) == "是"
+        # Look up directly from the already-parsed, canonicalized involvement
+        # rows instead of re-calling parse_eight_dim_involvement (P1).
+        signals[trigger] = next(
+            (involvement_value(row.get("是否涉及", "")) for row in involvement
+             if row.get("维度") == label), None) == "是"
     for artifact in artifacts.values():
         for title, condition in artifact.get("conditions", {}).items():
             trigger = condition.get("trigger")
@@ -242,13 +263,15 @@ def compile_contract(change_dir: Path, contract_path: Path, *, phase: str | None
         if (risks or RISK_DIMENSIONS - declared or len(risk_rows) != len(RISK_DIMENSIONS)
                 or any(not meaningful(row.get("依据", "")) for row in risk_rows)):
             raise ValueError("lite requires explicit 否 for API/SDK, 安全/权限, IPC/跨进程, 数据迁移 and 性能; use standard/critical")
-        resources = section_text(proposal, "资源开销审视")
+        resources = resource_section or ""
         if re.search(r"\|\s*(required|review-required)\s*\|", resources):
             raise ValueError("lite cannot waive active resource review; use standard/critical")
-        if any((r.get("子系统", "") != "不涉及") for r in table_with_columns(
-                section_text(proposal, "外部依赖"), ["子系统", "仓库", "模块/路径", "依赖类型"])):
+        external_deps = require_unique_section(proposal, "外部依赖") or ""
+        if any((r.get("子系统", "") != "不涉及") for r in (
+                require_unique_table_with_columns(
+                    external_deps, ["子系统", "仓库", "模块/路径", "依赖类型"]) or [])):
             raise ValueError("lite requires no cross-repository dependencies; use standard/critical")
-        if not meaningful(section_text(proposal, "外部依赖")):
+        if not meaningful(external_deps):
             raise ValueError("lite must declare external dependencies not applicable with a reason")
         design = change_dir / "design.md"
         if design.is_file():
@@ -256,14 +279,14 @@ def compile_contract(change_dir: Path, contract_path: Path, *, phase: str | None
             if re.search(r"^### (?:DFX 故障模式处置|AD-)", text, re.M):
                 raise ValueError("lite cannot drop existing FMEA dispositions; use standard/critical")
     if level == "critical":
-        artifacts["design"]["required_sections"].append("状态归属与不变量")
-        artifacts["spec-for-validation"]["required"] = "true"
+        _require_artifact(artifacts, "design")["required_sections"].append("状态归属与不变量")
+        _require_artifact(artifacts, "spec-for-validation")["required"] = "true"
         if "安全/权限" in risks:
-            artifacts["threat-model"]["required"] = "true"
+            _require_artifact(artifacts, "threat-model")["required"] = "true"
     if submission:
         # External design-docs contract always requires all five base files.
-        artifacts["design"]["required"] = "true"
-        artifacts["metadata-tracking"]["required"] = "true"
+        _require_artifact(artifacts, "design")["required"] = "true"
+        _require_artifact(artifacts, "metadata-tracking")["required"] = "true"
     if phase:
         if phase not in PHASES:
             raise ValueError(f"unknown phase: {phase}")

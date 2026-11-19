@@ -32,14 +32,14 @@
 - [ ] `execution-plan.md` 每个 Task 有完成判据和代码范围
 - [ ] 如存在可选 review/verification 证据，应包含 spec-compliance + code-quality + verification
 - [ ] 如存在可选 verification 证据，应有明确的「代码与规格一致性结论」
-- [ ] 追溯链完整 (AC → Task → code → commit → review)
+- [ ] 追溯链完整 (proposal → spec AC → execution-plan Task → code → commit → review)；commit 与 PR 的实际关联由 `metadata_tracking.yaml` 的 `pull_requests.commit` 校验负责，Python 校验器不按本行自动生成检查
 - [ ] 实现的 commit message 包含关联的 `proposal-id`
 - [ ] 准备向 GitCode 提交代码时，已提醒用户将 `codespec/` 文档单独提交到 `codespec/profile.yaml` 的 `design_docs_repository`；地址缺失时明确标记“待开发者填写”，不得猜测或自动跨仓推送
 - [ ] 实际提交 design-docs 前已生成或刷新 `metadata_tracking.yaml`，并用 `--design-docs-submit` 验证 `proposal.md`、`spec.md`、`design.md`、`execution-plan.md` 与该文件组成的五件套；业务代码 PR 未创建时 `pull_requests: []` 合法
 - [ ] **API 设计校验**：
-  - 校验 `proposal.md` 的 `## API 设计属性` 与 `spec.md` 的 `## API 规格定义` 已填写（`API/SDK` = 否时按 `不涉及：<具体理由>` 填写）。API 仓库路径/commit、既有声明格式参考为过程信息，不要求体现在 spec.md 中。
-  - 如 `API/SDK` = 是，校验以下子节已填写：
-    - `### 公共规格属性` 表（是否新增声明文件、API 类型、编程语言、@syscap、@since、权限、跨平台/元服务/卡片、FA/Stage 模型）
-    - 每个 `#### API: <完整签名>` 子节包含：规格表（入参、返回值、错误码等）、API 描述（接口定义三要素 + 接口使用五要素）、设备行为差异（支持设备表始终必填；无差异时差异明细表填"所有支持设备行为一致"）
-    - API 描述内容无占位符，错误码有精确数值和触发条件
-  - 如 `API/SDK` = 是，校验英文声明注释 diff 与中文声明注释 diff 均已归档（`validate-artifacts-contract.py` 自动检查：Draft 缺失 WARN / Archive 缺失 FAIL；文件名固定为 `evidence/task1-api-declaration-en.diff` 与 `evidence/task1-api-declaration-zh.diff`；两者签名、代码与标记完全一致，仅注释描述语言不同；中文版仅作为归档证据，不写回 API 仓。声明文件 PR 由开发者自行管理）。
+  - `API/SDK=否` 时：`spec.md` 的 `## API 规格定义` 填写 `不涉及：<具体理由>`，且不得存在 `arkts-api-spec.yaml`、`c-api-spec.yaml`。
+  - `API/SDK=是` 时：适用 metadata 文件必须存在并通过结构校验；`spec.md` 仅保留 API 概览和确认指引，不得重新展开逐 API 规格。
+  - 适用 metadata 文件必须包含 API kind、ID、父级、声明、参数、返回值、错误码、权限、`@syscap`、`@since`、平台支持、FA/Stage 模型、设备支持与差异，以及双语三要素/五要素。
+  - API 文档三要素/五要素必须由 `odk-spec` 内的隔离 subagent 生成；subagent 不可用属于 spec 阶段失败，不允许主会话内联降级。
+  - `API/SDK=是` 时必须归档适用 metadata 文件和按语言拆分的声明 diff：ArkTS 为 `task1-arkts-api-declaration-en/zh.diff`，C 为 `task1-c-api-declaration-en/zh.diff`；声明 diff 须与对应 metadata 的 API 声明一致，且不得混合不同 API 声明仓库。每个 API 的完整声明注释块与声明必须位于同一个连续 hunk；同签名 API 必须提供 API ID / qualifiedName 或唯一源位置，防止复用声明证据。
+  - 声明注释须逐项体现 metadata 的 API 级 8 个描述字段、参数描述、返回值描述和错误码描述；仅显式 `N/A` / `不适用` 字段必须省略，且声明注释中不得输出 `N/A` / `不适用` 占位文本；非 `N/A` 内容不得合并、截断或丢失。描述字段值直接成行，不得输出 `Scenario:` / `Notes:` 等要素类型标签，也不得复述 `@since`、`@syscap`、权限、平台、错误码等结构化属性。声明注释排版须与声明对齐，`*/` 与声明之间不得有空行；API 级描述与参数/返回值描述不得重复同一行为子句。

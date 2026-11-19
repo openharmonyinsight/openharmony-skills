@@ -15,6 +15,15 @@ full frontmatter and body first; revise it in place and preserve confirmed
 content, stable IDs and evidence. Create a target only when it does not exist.
 <!-- /ODK:reference -->
 
+## Phase flow and next step
+
+<!-- ODK:reference contracts/skill-guides/router/phase-flow.md -->
+Before phase work, read `contracts/skill-guides/router/phase-flow.md` and apply
+its configured pre_hook/post_hook order. At every completion or pause, show
+the next pending action and configured hooks; omit the reminder only when
+the entire applicable workflow is complete. The coordinator owns this flow.
+<!-- /ODK:reference -->
+
 <!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
 Read `contracts/skill-guides/router/delivery-levels.md` and use the effective
 contract. It takes precedence over standard-only artifact lists below; native
@@ -145,7 +154,7 @@ OpenSpec schemas remain standard/critical and lite uses the base flow.
 
 3. 从脚本输出的 `---MIRROR---` 段提取 `sessions` 字段和 `## 会话记录` 表格，写入交付件 frontmatter + body 开头（frontmatter 之后、正文 `#` 标题之前）。
 
-**关键**：sidecar `.sessions.json` 是权威源。即使 `threat-model.md` 的 frontmatter 或表格在 body 重生成时丢失，下一个 skill 从 sidecar 读取，数据不丢。脚本保证 sidecar 的原子追加。
+**关键**：sidecar `.sessions.json` 只保存会话调用历史；镜像缺失时可据此恢复会话记录，但它不备份交付件正文，也不证明阶段完成。阶段与 hook 的成功结果、证据和恢复位置必须按 `contracts/skill-guides/router/workflow-state.md` 写入 `.workflow.json`。
 
 ## Output
 

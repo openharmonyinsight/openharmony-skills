@@ -15,6 +15,15 @@ full frontmatter and body first; revise it in place and preserve confirmed
 content, stable IDs and evidence. Create a target only when it does not exist.
 <!-- /ODK:reference -->
 
+## Phase flow and next step
+
+<!-- ODK:reference contracts/skill-guides/router/phase-flow.md -->
+Before phase work, read `contracts/skill-guides/router/phase-flow.md` and apply
+its configured pre_hook/post_hook order. At every completion or pause, show
+the next pending action and configured hooks; omit the reminder only when
+the entire applicable workflow is complete. The coordinator owns this flow.
+<!-- /ODK:reference -->
+
 <!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
 Read `contracts/skill-guides/router/delivery-levels.md` and obtain the effective
 contract before choosing artifacts, sections or phase prerequisites.
@@ -44,7 +53,7 @@ Read the change context from the user's request. If the user describes a require
 - **Always fill `资源开销审视`** (性能 / 内存(RAM) / 存储(ROM)): `required` | `review-required` | `not-applicable` | `waived`. Prefer subsystem/profile knowledge. Signals by dimension: **性能** — 热路径 / 每帧或每事件开销 / 唤醒频率 / 每场景指令数或负载 / 持锁时长 / IPC 往返；**内存(RAM)** — 常驻占用 / 运行时峰值 / 大块 buffer / 应用使用时增量；**存储(ROM)** — 镜像产物（native `.so`、ArkTS `.abc`、资源、预置应用包、配置/预置数据）+ data 分区大体量持久化（音视频/大缓存/db；小体量常规落盘不构成关注点）。能耗风险写在「性能」信号列（勿新增功耗维度）。Unknown risk → `review-required` (never silent `not-applicable`). `not-applicable` / `waived` require `确认人=<owner>; 理由=<why>; 范围=<scope>`. Archive gate is business-repo `odk_resource_gate` in root `AGENTS.md` (ODK does not ship measurement).
 - **Always fill `1+8 设备差异规格`**: evaluate phone, tablet, pc/2in1, wearable, tv, car, `default（其他设备）`, and non-category functional differences. Every row must state `是` or `否` with a concrete explanation; do not silently assume all devices share behavior. Keep business-level capability/constraint differences here and move executable interaction sequences to `spec.md`.
 - **Always fill `外部依赖`**: record each dependent subsystem/repository/module or external service and its dependency type. If none, add one explicit `不涉及` row with the reason. This table describes delivery dependencies; `Agent Scope Guard` remains the authority for whether new dependencies or network access may be introduced.
-- **国际化维度判断**: 国际化(i18n) means designing and developing an application without assuming a specific user language/region, using universal design that adapts to different languages and cultural habits at developmemt time. When a requirement involves data **表达、展示、解析或交互**, use globalization APIs (e.g., `I18n*`/`Intl*`). When evaluating **国际化** in the **8-dimension non-involvement confirmation**, **MUST** rigorous reference `reference/i18n-scope-criteria.md` and apply its 快速判断流程 (7 checkpoints) and 场景分类 (10 categories) to determine involvement. Mark 「是」 if any criterion matches; for 「否」, confirm none of the 实现反推线索 apply.
+- **国际化维度判断**: 国际化(i18n) means designing and developing an application without assuming a specific user language/region, using universal design that adapts to different languages and cultural habits at developmemt time. When a requirement involves data **表达、展示、解析或交互**, use globalization APIs (e.g., `I18n*`/`Intl*`). When evaluating **国际化** in the **8-dimension non-involvement confirmation**, **MUST** rigorous reference [i18n-scope-criteria.md](reference/i18n-scope-criteria.md) and apply its 快速判断流程 (7 checkpoints) and 场景分类 (10 categories) to determine involvement. Mark 「是」 if any criterion matches; for 「否」, confirm none of the 实现反推线索 apply.
 
 ## Steps
 
@@ -92,7 +101,7 @@ Read `contracts/skill-guides/brainstorm/interview.md` in full and apply its deci
        5. 如果是 ArkTS API，是否需要支持 ArkTS 静态类型？
        ```
      - 根据需要可选填写 `## API 使用场景探索`（开发者场景和用户画像）
-     - **注**：跨平台支持、元服务支持、卡片支持等多设备属性在 spec.md `## API 规格定义` 中填写
+     - **注**：跨平台支持、元服务支持、卡片支持等多设备属性在适用语言 metadata 文件的逐 API 元数据中填写
    - **Success criteria**: 成功标准写**系统级能力达成**（可观察、可量化），禁内部实现 + 禁接口细节（属 spec AC）。
 3. Preserve all YAML frontmatter fields and existing body content. Read the full existing proposal before editing; amend only changed requirements and missing contract sections. Retain confirmed decisions, custom sections and stable goal IDs. Use the template as a structural reference, never as a replacement for an existing proposal.
 
@@ -110,7 +119,7 @@ Read `contracts/skill-guides/brainstorm/interview.md` in full and apply its deci
 
 3. 从脚本输出的 `---MIRROR---` 段提取 `sessions` 字段和 `## 会话记录` 表格，写入交付件 frontmatter + body 开头（frontmatter 之后、正文 `#` 标题之前）。
 
-**关键**：sidecar `.sessions.json` 是权威源。即使 `proposal.md` 的 frontmatter 或表格在 body 重生成时丢失，下一个 skill 从 sidecar 读取，数据不丢。脚本保证 sidecar 的原子追加。
+**关键**：sidecar `.sessions.json` 只保存会话调用历史；镜像缺失时可据此恢复会话记录，但它不备份交付件正文，也不证明阶段完成。阶段与 hook 的成功结果、证据和恢复位置必须按 `contracts/skill-guides/router/workflow-state.md` 写入 `.workflow.json`。
 
 ## Output
 

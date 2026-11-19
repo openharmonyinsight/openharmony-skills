@@ -15,6 +15,15 @@ full frontmatter and body first; revise it in place and preserve confirmed
 content, stable IDs and evidence. Create a target only when it does not exist.
 <!-- /ODK:reference -->
 
+## Phase flow and next step
+
+<!-- ODK:reference contracts/skill-guides/router/phase-flow.md -->
+Before phase work, read `contracts/skill-guides/router/phase-flow.md` and apply
+its configured pre_hook/post_hook order. At every completion or pause, show
+the next pending action and configured hooks; omit the reminder only when
+the entire applicable workflow is complete. The coordinator owns this flow.
+<!-- /ODK:reference -->
+
 <!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
 Read `contracts/skill-guides/router/delivery-levels.md` and obtain the effective
 contract before choosing artifacts, sections or phase prerequisites.
@@ -35,6 +44,23 @@ contract before choosing artifacts, sections or phase prerequisites.
 - 或在调用桥接命令时声明 "使用融合模式"
 
 桥接命令读取此设置后决定输出处理方式。
+
+<!-- ODK:reference contracts/skill-guides/spec/contract-boundary.md -->
+Read `contracts/skill-guides/spec/contract-boundary.md` before native delegation
+or ODK projection. Split contract/design/execution content by meaning rather
+than a native "spec" filename. Preserve native workspace and passthrough output
+ownership, and leave an unaffected ODK spec unwritten during internal updates.
+<!-- /ODK:reference -->
+
+<!-- ODK:reference contracts/skill-guides/research/codebase-understanding.md -->
+When producing or revising spec/design, read
+`contracts/skill-guides/research/codebase-understanding.md` before native
+generation or delegation. Pass the inspected baseline and unresolved code
+questions into the native workflow, then verify the decisive source behind its
+conclusions. Preserve native workspace and passthrough content ownership; keep
+supporting research separate when that output must remain unchanged. Other
+phases reuse this evidence without starting a duplicate investigation.
+<!-- /ODK:reference -->
 
 <!-- SYNC: phase-mapping -->
 ## Phase-Artifact Mapping

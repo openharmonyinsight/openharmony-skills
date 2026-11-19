@@ -58,6 +58,13 @@ scalars. Use `""` for empty values. Malformed quotes, duplicate keys, nulls,
 nested mappings and arrays fail with the file and line; stop config-dependent
 work rather than silently executing defaults. Quoted `#` characters are literal.
 
+Each phase also accepts `<phase>_pre_hook` and `<phase>_post_hook`, ordered
+space-separated skill names. Missing/empty fields insert no workflow step.
+Use `--phase-hooks <phase-or-odk-command>` to inspect their merged order, and
+follow [phase-flow.md](phase-flow.md) for boundaries, bridge aliases, resumable
+failures and mandatory next-step reminders. Installation hints work with each
+exact hook key. User overrides can disable a shipped hook with `""`.
+
 ```yaml
 build_products: arm64_virt rk3568 custom_board
 build_product: rk3568

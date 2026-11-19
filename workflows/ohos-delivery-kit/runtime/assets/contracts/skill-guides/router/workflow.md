@@ -1,5 +1,11 @@
 ## Archive Structure
 
+Every phase and handoff follows [phase-flow.md](phase-flow.md): run configured
+pre_hook/post_hook skills at the applicable boundaries and show the next
+unfinished action whenever completing or pausing. Include actual configured
+hook names in the reminder; missing/empty hooks insert no step. Only a fully
+completed applicable workflow may omit the reminder.
+
 All delivery artifacts are archived under:
 
 ```
@@ -12,13 +18,14 @@ Resolve `<repo-name>` from the Git `origin` URL basename without `.git`; if `ori
 Each change directory is **populated or revised by phase** — `odk-init` reads and reuses an existing proposal, or seeds a missing `proposal.md` as a frontmatter stub; the other main docs appear when their phase first runs (a missing main doc before its phase is expected, not an error):
 - `proposal.md` — (`odk-init` stub → `odk-propose` fills) requirements proposal with triage, 1+8 device variation, external dependencies, success criteria, and impact scope (YAML frontmatter with `target_release`)
 - `spec.md` — (`odk-spec`) functional specification with WHEN/THEN AC, error codes, and verification mapping
+- `arkts-api-spec.yaml` / `c-api-spec.yaml` — (`odk-spec`, conditional `API/SDK=是`) machine-readable API contract and bilingual API documentation; `spec.md` keeps only an API overview
 - `design.md` — (`odk-design`) architecture design with Mermaid diagrams and decision comparison (references spec ACs)
 - `execution-plan.md` — (`odk-plan`) implementation plan with AC-Task traceability and task details
 - `spec-for-validation.md` — optional validation specification with integration/system scenarios derived from spec.md (parallel bypass, does not block main flow)
 - `threat-model.md` — optional deep threat analysis (bypass; high-risk security/privacy/compliance changes; produced by `odk-security-threat-model`)
 - `metadata_tracking.yaml` — prepared locally from the confirmed source PR, then refreshed by `odk-submit-design-docs` before the five-base-file bundle plus required evidence is submitted; explicit standalone no-PR document submission may use `pull_requests: []`
 
-The effective delivery contract determines the required phases. Standard/critical use **Propose → Specify → Design → Plan → Implement**; lite may skip the separate design artifact and proceed from Specify to Plan. See [delivery levels](delivery-levels.md). Spec defines WHAT (behavior, ACs, business rules); Design defines HOW (architecture, error code values, interface signatures). Design references specific AC numbers from Spec, strengthening the traceability chain. After design, review and update spec's error codes and interfaces if design decisions changed them.
+The effective delivery contract determines the required phases. Standard/critical use **Propose → Specify → Design → Plan → Implement**; lite may skip the separate design artifact and proceed from Specify to Plan. See [delivery levels](delivery-levels.md). Spec owns the agreed consumer contract, including boundary interfaces/errors, behavior, ACs and business rules; Design owns internal architecture, interfaces and mechanisms; Plan owns execution and verification evidence. Follow [the specification boundary](../spec/contract-boundary.md): internal improvements with the same contract do not refresh spec. Design references stable spec AC IDs; only a real contract change or gap requires a spec revision and affected downstream updates.
 
 After all implementation Tasks are complete, review and archive-readiness validation
 run automatically. After they pass the agent reminds the user of source PR submission
@@ -55,8 +62,12 @@ Honour an explicitly user-named command over this default. Stay consistent withi
 
 ### Base Commands (standalone, no plugin required)
 
-Invoke via Skill tool: `odk-init` / `odk-propose` / `odk-spec` / `odk-design` / `odk-plan` / `odk-implement` / `odk-review` / `odk-validate` / `odk-submit-design-docs` / `odk-spec-for-validation` / `odk-security-threat-model` / `odk-link-proposal`.
+Invoke via Skill tool: `odk-init` / `odk-propose` / `odk-spec` / `odk-design` / `odk-plan` / `odk-implement` / `odk-task-review` / `odk-review` / `odk-validate` / `odk-submit-design-docs` / `odk-spec-for-validation` / `odk-security-threat-model` / `odk-link-proposal`.
 Each skill loads its own full context. Base commands are template-driven with zero plugin dependencies.
+
+`odk-task-review` runs the risk-tiered gate for one implemented Task before Done,
+using fixed arch/scope/security seats for R2. It also handles scoped fix re-review;
+`odk-review` still owns the whole change and cross-Task integration.
 
 ### Bridge Commands (plugin-specific)
 
@@ -67,3 +78,5 @@ Each skill loads its own full context. Base commands are template-driven with ze
 | MatrixSpec (`ms`) | `odk-ms-proposal` / `odk-ms-delta-spec` / `odk-ms-delta-design` / `odk-ms-tasks` / `odk-ms-validation` |
 
 Bridge commands load `using-odk-bridge` automatically for output redirection and mode selection. They fall back to base commands when the plugin is unavailable.
+
+Bridge mode does not weaken the conditional API contract. When `API/SDK=是`, any spec-producing bridge command must also produce the applicable valid metadata file(s); plan bridges must put declaration generation in Task-1; implementation bridges must consume the applicable metadata file(s) rather than Markdown API specifications.

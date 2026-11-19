@@ -16,16 +16,26 @@ else:
     )
 
 SECTION = "构建与验证环境"
-EMULATOR = "模拟器命令（仅 arm64_virt）"
+EMULATOR = "模拟器命令"
+LEGACY_EMULATOR = "模拟器命令（仅 arm64_virt）"
 EXISTING_PREPARATION = "使用设备现有版本，不获取 daily、不刷机"
+PRODUCT_PLACEHOLDERS = re.compile(r"\{(?:product|build_product|validation_product)\}", re.IGNORECASE)
 TARGET_COMMAND_RE = re.compile(
     r"\bhdc(?:\.exe)?\b|\bqemu-system-[A-Za-z0-9_-]+\b|--product-name\b|(?<![\w.-])build\.sh\b",
     re.IGNORECASE,
 )
+RUNTIME_COMMAND_RE = re.compile(r"\bhdc(?:\.exe)?\b|\bqemu-system-[A-Za-z0-9_-]+\b", re.IGNORECASE)
 SHELLS = {"bash", "sh", "zsh", "dash"}
 
 
-def _target_invocation(words: list[str]) -> bool:
+def _inapplicable(value: str) -> bool:
+    """Recognize absence markers, including their explanatory suffixes."""
+    value = value.strip()
+    return (not value or value.startswith("不适用")
+            or bool(re.match(r"N/A(?:$|[\s（(])", value, re.IGNORECASE)))
+
+
+def _target_invocation(words: list[str], *, runtime_only: bool = False) -> bool:
     while words and (re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", words[0])
                      or words[0] in {"if", "then", "elif", "while", "until", "do", "!"}):
         words = words[1:]
@@ -42,7 +52,7 @@ def _target_invocation(words: list[str]) -> bool:
                 return False  # Tool lookup does not invoke the named tool.
             if option in {"-u", "-g", "-C", "--unset", "--chdir", "--user", "--group"} and args:
                 args.pop(0)
-        return _target_invocation(args)
+        return _target_invocation(args, runtime_only=runtime_only)
     if executable in SHELLS:
         noexec = interactive = False
         while args and args[0].startswith(("-", "+")):
@@ -57,15 +67,19 @@ def _target_invocation(words: list[str]) -> bool:
             if "i" in short:
                 interactive = not option.startswith("+")
             if "c" in short:
-                return bool(args) and not (noexec and not interactive) and command_uses_target(args[0])
+                return bool(args) and not (noexec and not interactive) and command_uses_target(args[0], runtime_only=runtime_only)
             if option in {"-o", "+o", "-O", "+O", "--rcfile", "--init-file"} and args:
                 value = args.pop(0)
                 if option in {"-o", "+o"} and value == "noexec":
                     noexec = option == "-o"
         if noexec and not interactive:
             return False  # bash -n reads syntax without executing the script.
-        return _target_invocation(args)
-    if executable in {"build.sh", "hdc", "hdc.exe"} or executable.startswith("qemu-system-"):
+        return _target_invocation(args, runtime_only=runtime_only)
+    if executable in {"hdc", "hdc.exe"} or executable.startswith("qemu-system-"):
+        return True
+    if runtime_only:
+        return False
+    if executable == "build.sh":
         return True
     # Product flags on a wrapper command still declare a target dependency.
     if "--" in args:
@@ -182,7 +196,7 @@ def _executed_substitutions(command: str) -> list[str]:
     return substitutions
 
 
-def command_uses_target(command: str) -> bool:
+def command_uses_target(command: str, *, runtime_only: bool = False) -> bool:
     """Recognize executable tools, wrappers and substitutions, not file arguments."""
     command = command.strip()
     # Remove an enclosing Markdown code span, retaining shell backticks inside it.
@@ -190,12 +204,13 @@ def command_uses_target(command: str) -> bool:
     if span and command.endswith(span[0]) and len(command) > 2 * len(span[0]):
         command = command[len(span[0]):-len(span[0])].strip()
     try:
-        return any(_target_invocation(shlex.split(part))
+        return any(_target_invocation(shlex.split(part), runtime_only=runtime_only)
                    for executable in [command, *_executed_substitutions(command)]
                    for part in command_parts(executable))
     except ValueError:
         # Ambiguous quoting cannot hide an otherwise explicit target command.
-        return bool(TARGET_COMMAND_RE.search(command))
+        pattern = RUNTIME_COMMAND_RE if runtime_only else TARGET_COMMAND_RE
+        return bool(pattern.search(command))
 
 
 def task_verification_commands(plan: str) -> list[tuple[str, str]]:
@@ -241,6 +256,8 @@ def environment_errors(plan: str, template: str, *, host_only_required: bool = F
     values: dict[str, str] = {}
     for row in table:
         key = row["配置项"].strip().strip("`").strip()
+        if key == LEGACY_EMULATOR:
+            key = EMULATOR
         if key in values:
             errors.append(f"{SECTION} 配置项重复：{key}")
         values[key] = row["值"].strip().strip("`").strip()
@@ -251,11 +268,12 @@ def environment_errors(plan: str, template: str, *, host_only_required: bool = F
     if host_only:
         command = values.get("测试命令", "")
         if (not meaningful(command) or BRACKET_PLACEHOLDER_RE.search(command)
-                or re.search(r"\b(?:TBD|TODO)\b|待填写|\{product\}", command, re.I)):
+                or re.search(r"\b(?:TBD|TODO)\b|待填写", command, re.I)
+                or PRODUCT_PLACEHOLDERS.search(command)):
             errors.append(f"{SECTION} host-only 必须填写实际测试命令")
         for key in ("编译产品", "可选编译产品", "编译命令（全量）", EMULATOR,
-                    "设备版本策略", "设备版本准备方式"):
-            if values.get(key, "") not in {"", "N/A", "不适用"}:
+                    "设备版本策略", "设备版本准备方式", "验证产品", "验证目标确认"):
+            if not _inapplicable(values.get(key, "")):
                 errors.append(f"{SECTION} host-only 不得携带目标产品/设备配置：{key}")
         if command_uses_target(command):
             errors.append(f"{SECTION} host-only 命令包含目标编译或设备依赖")
@@ -264,28 +282,54 @@ def environment_errors(plan: str, template: str, *, host_only_required: bool = F
         return errors
 
     product = values.get("编译产品", "")
+    scope = values.get("验证范围", "").casefold()
+    if scope not in {"build-only", "emulator", "device"}:
+        errors.append(f"{SECTION} 必须明确验证范围：build-only / emulator / device；旧计划先补齐验证目标")
     for row in schema:
         key = row["配置项"]
+        if key == LEGACY_EMULATOR:
+            key = EMULATOR
         value = values.get(key, "")
-        # Physical products may omit this field or mark it inapplicable, but
-        # a supplied command must still have all placeholders resolved.
-        if (key == EMULATOR and product != "arm64_virt"
-                and value in {"", "N/A", "不适用", "不适用（物理板）"}):
+        if key == EMULATOR and scope != "emulator" and _inapplicable(value):
+            continue
+        if (scope == "build-only" and key in {"验证产品", "验证目标确认", "设备版本策略", "设备版本准备方式", "测试命令"}
+                and _inapplicable(value)):
             continue
         if (not meaningful(value) or BRACKET_PLACEHOLDER_RE.search(value)
-                or re.search(r"\b(?:TBD|TODO)\b|待填写|待确认|待补充|\{product\}", value, re.I)):
+                or re.search(r"\b(?:TBD|TODO)\b|待填写|待确认|待补充", value, re.I)
+                or PRODUCT_PLACEHOLDERS.search(value)):
             errors.append(f"{SECTION} 配置项缺失或未解析：{key}")
 
     options = values.get("可选编译产品", "").split()
     if not product or len(product.split()) != 1 or product not in options:
         errors.append(f"{SECTION} 编译产品必须是候选列表中的单个产品")
-    if product == "arm64_virt":
+    if scope in {"device", "emulator"}:
+        target = values.get("验证产品", "")
+        if len(target.split()) != 1 or _inapplicable(target):
+            errors.append(f"{SECTION} 验证产品必须是明确的单个目标，不得从编译产品推断")
+        if _inapplicable(values.get("验证目标确认", "")):
+            errors.append(f"{SECTION} 缺少验证目标确认")
+    if scope != "emulator" and not _inapplicable(values.get(EMULATOR, "")):
+        errors.append(f"{SECTION} 非模拟器验证不得携带模拟器命令")
+    if scope == "build-only":
+        for key in ("验证产品", "验证目标确认", "设备版本策略", "设备版本准备方式"):
+            if not _inapplicable(values.get(key, "")):
+                errors.append(f"{SECTION} build-only 不得携带设备配置：{key}")
+        if command_uses_target(values.get("测试命令", "")):
+            errors.append(f"{SECTION} build-only 测试命令不得包含设备或目标编译依赖")
+        try:
+            for context, command in task_verification_commands(plan):
+                if command_uses_target(command, runtime_only=True):
+                    errors.append(f"build-only {context} 包含设备或模拟器依赖")
+        except ValueError as error:
+            errors.append(f"build-only Task 命令无法明确解析：{error}")
+    elif scope == "emulator":
         for key in ("设备版本策略", "设备版本准备方式"):
-            if values.get(key) != "不适用（QEMU）":
-                errors.append(f"{SECTION} QEMU 的{key}必须为「不适用（QEMU）」")
-        if values.get(EMULATOR, "").startswith(("不适用", "N/A")):
-            errors.append(f"{SECTION} QEMU 必须填写模拟器命令")
-    else:
+            if values.get(key) not in {"不适用（QEMU）", "不适用（模拟器）"}:
+                errors.append(f"{SECTION} 模拟器的{key}必须为「不适用（模拟器）」或「不适用（QEMU）」")
+        if _inapplicable(values.get(EMULATOR, "")):
+            errors.append(f"{SECTION} 模拟器验证必须填写模拟器命令")
+    elif scope == "device":
         policy = values.get("设备版本策略", "")
         preparation = values.get("设备版本准备方式", "")
         if policy not in {"daily", "existing"}:

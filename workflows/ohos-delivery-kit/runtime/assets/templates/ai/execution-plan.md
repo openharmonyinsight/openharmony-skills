@@ -17,37 +17,47 @@ sessions: ""
 | Proposal | proposal.md | Approved |
 | Spec | spec.md | Approved |
 | Design | design.md | Approved |
-<!-- lite 未生成独立设计时删除 Design 行；保留既有设计的决策。 -->
+| API Contract Version | 1.0.0 | Must match spec.md and applicable API metadata |
+<!-- lite 未生成独立设计时删除 Design 行；API/SDK=否时删除 API Contract Version 行。保留既有设计的决策。 -->
 
 ## 执行原则
 
 <!-- SYNC: execution-principles -->
-- **Spec 权威：** 实现违反已确认 AC 时修代码，不得降低 AC；发现规格缺失或设计变更时，先按根因回填受影响交付件，再继续实现。
+- **Spec 权威：** 实现违反已确认 AC 时修代码，不得降低 AC；按根因回填受影响交付件。契约未变的实现/测试重构不改 spec，内部方案变更仅回填受影响 design/plan 并复验。
 - **测试/证据先行：** 每个 Task 先写失败测试；无法单测的集成行为必须先写明可复现证据缺口。
-- **任务小型化：** 一个 Task 只覆盖一个独立闭环。跨 API、事件链、状态缓存、渲染链、生命周期的需求必须拆成多个 Task。
+- **任务小型化：** 每个 Task 只承担一项可以独立实现和验证的工作。跨 API、事件链、状态缓存、渲染链、生命周期的需求必须拆成多个 Task。
 - **文件边界：** Task 只能修改 `Files` 表列出的文件；若构建暴露额外声明或 fixture 需求，先更新本计划。
 - **状态所有权唯一：** 新增状态必须明确 owner、key/index、创建时机、清理触发和只读消费者。
 - **证据回填：** Task 完成后回填 AC 验证状态、代码范围映射、per-task Actual Result 与 Final Status；review/测试/validate 问题回写原交付件并在「问题闭环」记录复验，输入改变即作废受影响旧结论。
-- **反伪完成：** 只补声明、只写存储结构、只覆盖 happy path、只跑非相关测试，都不能替代 AC 闭环。
+- **反伪完成：** 只补声明、只写存储结构、只覆盖正常流程或只运行无关测试，都不能证明关联的 AC 已全部满足。
 - **可交接执行（Agent 执行契约）：** 本计划须能被新 Agent 在无历史对话上下文下逐 Task 执行；执行契约由各 Task 结构承载——`只读上下文`/`Files`/`禁止修改文件`（上下文打包）、`Steps` 的 RED→GREEN（测试优先）、`Verification` 的 Expected/Actual（期望输出）、`Review Handoff`（评审交接）；每 Step 为含命令或代码方向的 2–5 分钟动作。
 <!-- /SYNC: execution-principles -->
 
+## 执行模式
+
+**所选模式：** 多子agent检查（默认）
+**选择时间：** [由 odk-implement 在实现开始时确认后填写]
+**模式说明：** [全自动：默认值取值清单；逐步实现：跳过三席审查的理由；多子agent检查可省略]
+
 ## 构建与验证环境
 
-> 所有 Task 仅使用仓库内主机测试且不依赖目标编译/设备时，用「验证范围 = host-only」和实际「测试命令」替代下方产品表；不要保留旧产品、模拟器或固件配置。涉及目标编译/设备时仍完整填写下表。
+<!-- 填写提示（不写入交付正文）：所有 Task 仅使用仓库内主机测试且不依赖目标编译/设备时，用「验证范围 = host-only」和实际「测试命令」替代下方产品表；不要保留旧产品、模拟器或固件配置。涉及目标编译/设备时仍完整填写下表。 -->
 
 <!-- 由 odk-plan 在生成计划时从 config 读取并解析，写入具体命令。实现阶段直接读本节，不再查 config。 -->
 
 | 配置项 | 值 |
 |--------|----|
+| 验证范围 | [build-only / emulator / device；主机检查使用上方 host-only 简表] |
 | 可选编译产品 | [build_products 去重后的完整列表，空格分隔] |
-| 编译产品 | [用户从列表中确认的单个产品] |
+| 编译产品 | [编译命令与 out/ 产物目录共用的具体或抽象产品名，用户从列表中确认] |
 | 产品选择确认 | [用户针对本次产品选择的实际答复摘要；配置默认值不算确认] |
-| 设备版本策略 | [arm64_virt 填「不适用（QEMU）」；其他产品经用户确认填 daily 或 existing] |
-| 设备版本准备方式 | [QEMU 填「不适用（QEMU）」；daily 填支持当前产品的具体 skill 或经确认的手动准备步骤；existing 填「使用设备现有版本，不获取 daily、不刷机」] |
+| 验证产品 | [device/emulator：单独确认的具体目标；build-only：N/A] |
+| 验证目标确认 | [用户实际确认的验证目标摘要；build-only：N/A] |
+| 设备版本策略 | [build-only：N/A；emulator：不适用（模拟器）；device：经确认的 daily 或 existing] |
+| 设备版本准备方式 | [build-only：N/A；emulator：不适用（模拟器）；daily：支持验证产品的 skill 或确认的手动准备方法；existing：使用设备现有版本，不获取 daily、不刷机] |
 | 编译命令（全量） | [build_command with {product} resolved] |
-| 模拟器命令（仅 arm64_virt） | [emulator_command with {product} resolved, 仅编译产品为 arm64_virt 时填写] |
-| 测试命令 | [test_command with {product} resolved, 或「见各 Task 验证命令」] |
+| 模拟器命令 | [仅 emulator：out/ 路径使用编译产品名，运行目标参数使用验证产品；其他范围省略或 N/A] |
+| 测试命令 | [产物路径使用编译产品名，运行目标用显式验证产品，或「见各 Task 验证命令」；build-only 可为 N/A 或主机检查] |
 
 <!-- 每个 Task 的验证命令字段写带 --target 的窄编译命令（单模块）或引用全量编译命令（跨模块）。 -->
 
@@ -62,13 +72,13 @@ sessions: ""
 
 **可后置：** [可延至下一迭代的项]
 
-**不建议延后：** [延后会导致主链不闭合的项]
+**不建议延后：** [延后会导致主要功能流程无法完成的项]
 
 ## 禁止项
 
 - 每个 AC 必须有明确的验证方式。
 - design.md `### DFX 故障模式处置` 关联的 AC（故障模式拦截项）不得列入「实现边界 → 可后置」，且其 Task 验证必须走故障注入或异常路径。
-- Agent 不得自行寻找未列出的上下文文件作为修改依据；需要新增上下文时先更新 Task。
+- 影响范围发现可在授权仓库内进行只读检索；新发现文件成为修改依据前，先补入 Task 的只读上下文。需要修改时先按既有范围规则更新 Files，不得直接扩大修改范围。
 - 不得修改 Task 列出范围外的文件。
 - 不得在未通过验证时标记 Task 完成。
 - 不得使用 `TBD`、`TODO`、`适当处理`、`补充测试`、`参考上文` 等不可执行占位描述。
@@ -93,28 +103,32 @@ graph TD
 
 ## Task 列表
 
-> AC 映射填写 `AC-1.1` 等编号。纯文档/基础设施 Task 不直接关闭 AC 时，填写 `N/A（仅更新使用说明，不直接关闭 AC）` 这类带简短理由的值；不得留空、只填 `N/A` 或使用 `—`。每条 AC 仍必须在「AC 到 Task 追溯」中映射到有验证方式的 Task。
+<!-- 填写提示（不写入交付正文）：AC 映射填写 `AC-1.1` 等编号。纯文档/基础设施 Task 不直接关闭 AC 时，填写 `N/A（仅更新使用说明，不直接关闭 AC）` 这类带简短理由的值；不得留空、只填 `N/A` 或使用 `—`。每条 AC 仍必须在「AC 到 Task 追溯」中映射到有验证方式的 Task。 -->
 
 <!--
-条件约束：若 proposal.md 标记 API/SDK = 是，必须将所有 API 声明文件修改任务排在 Task-1。
+条件约束：若 proposal.md 标记 API/SDK = 是，必须先确认适用 metadata 文件存在且有效，再将所有 API 声明文件生成任务排在 Task-1。
 后续功能实现任务以 Task-2 开始。
 -->
 
-| TASK ID | 目标 | 文件范围 | AC 映射 | 前置依赖 | 完成判据 | 验证命令 | 状态 |
-|---------|------|----------|---------|----------|----------|----------|------|
+<!-- 填写提示（不写入交付正文）：`风险等级` 只能是 `R0` / `R1` / `R2`，依据见 `contracts/skill-guides/delivery/task-review.md`；规划阶段写入初始等级，执行阶段只允许升级、记录触发文件并同步更新本列。 -->
+
+| TASK ID | 目标 | 文件范围 | AC 映射 | 前置依赖 | 完成判据 | 验证命令 | 风险等级 | 状态 |
+|---------|------|----------|---------|----------|----------|----------|----------|------|
 
 ## Task 详情
 
 <!--
-若 API/SDK = 是，TASK-1 固定为：根据 spec.md API 规格定义修改声明文件。
-包含：修改/新增声明文件 → 如环境可用则运行 oh-api-definition（可选、不阻塞）→ 生成英文/中文声明注释双份 diff（evidence/task1-api-declaration-en.diff 与 -zh.diff）。
+若 API/SDK = 是，TASK-1 固定为：根据适用 metadata 文件生成 API 声明文件。
+包含：修改/新增声明文件 → 如环境可用则运行 oh-api-definition（可选、不阻塞）→ 按 API 声明仓库生成英文/中文声明注释 diff：ArkTS 使用 evidence/task1-arkts-api-declaration-en.diff 与 -zh.diff；C 使用 evidence/task1-c-api-declaration-en.diff 与 -zh.diff；仅生成适用语言对应文件，且不同 API 声明仓库不得混入同一份 diff。每个 API 的完整声明注释块与声明必须位于同一个连续 hunk；同签名 API 必须提供 API ID / qualifiedName 或唯一源位置。
 -->
 
 ### TASK-1: [名称]
 
-**目标：** [本 Task 必须交付的最小能力闭环]
+**目标：** [本 Task 必须实现且能够独立验证的能力]
 
 **AC 映射：** [AC-1.1, AC-1.2；无直接 AC 时填 N/A（简短理由）]
+
+**风险等级：** [R0/R1/R2；判断依据（命中的触发项或“仅文档/单模块代码”）]
 
 **前置依赖：** [依赖的 Task/规则/上下文]
 
@@ -134,8 +148,8 @@ graph TD
 | 操作 | 文件 | 说明 |
 |------|------|------|
 <!--
-注：如果本变更涉及 API/SDK（proposal.md 标记 API/SDK = 是），任务列表的第一条必须包含 API 声明文件修改任务。
-声明文件修改依据 spec.md `## API 规格定义`，签名须与规格表中的定义完全一致。
+注：如果本变更涉及 API/SDK（proposal.md 标记 API/SDK = 是），任务列表的第一条必须包含 API 声明文件生成任务。
+声明文件生成唯一依据适用 metadata 文件；不得从 `spec.md` 概览或既有声明文件反推契约。签名、参数、返回值、错误码和标记须与元数据完全一致。
 -->
 
 **禁止修改文件**
@@ -144,6 +158,8 @@ graph TD
 |-----------|------|
 
 **Steps**
+
+<!-- 填写提示（不写入交付正文）：将 spec 的验收场景落实为具体测试文件/函数、输入断言、Red 原因和验证命令，在本计划记录实际 Red/Green 与证据；不要回写 spec 来绑定当前测试实现。 -->
 
 - [ ] Step 1: 写失败测试或定义可复现证据缺口。
 
@@ -179,13 +195,16 @@ Expected: [说明通过条件]
 
 **Anti-Fake Completion**
 
-简单文档、配置或单文件变更仍填写 AC 和范围证据；不适用的状态生命周期项写 `N/A`。
+<!-- 填写提示（不写入交付正文）：简单文档、配置或单文件变更仍填写 AC 和范围证据；不适用的状态生命周期项写 `N/A`。 -->
 
 | Check | Required Evidence |
 |-------|-------------------|
 | AC closed | [证明关联 AC 的正向、异常和兼容路径均覆盖] |
 | Scope respected | [证明只修改 Files 表范围，或计划已更新] |
 | State lifecycle complete | [涉及状态时证明创建、读取、更新、清理均覆盖] |
+
+<!-- 代码 Task 按 change-impact 指南将相关入口/实现/配置路径及处置记入现有上下文、Steps 或 Actual Result；
+记录实际可用的 LSP/AST、查询/搜索范围和局限，无工具时使用替代流程。不要求新增独立报告或修改未变化的 spec。 -->
 
 **Verification**
 
@@ -199,7 +218,7 @@ Expected: [说明通过条件]
 | Reviewer | Input |
 |----------|-------|
 | Spec Compliance | [AC 覆盖、文件范围、验证证据、是否存在额外行为] |
-| Code Quality | [变更摘要、风险点、测试结果、Base/Head SHA 或文件 diff 范围] |
+| Code Quality | [变更摘要、风险点、影响路径及处置、LSP/AST 或替代检查证据与局限、测试结果、完整 diff 范围及未验证项] |
 
 ## Review Gates
 
@@ -207,7 +226,10 @@ Expected: [说明通过条件]
 |------|------|-------------------|------------------|
 | Gate-1（按需） | API/数据模型 Task 完成后 | 命名一致性、权限/边界、状态 owner、错误码 | |
 | Gate-2（按需） | 共享路径/核心逻辑 Task 完成后 | AC 覆盖、异常路径、兼容性、回归测试 | |
+| Gate-Task（必选） | 每个 Task 验证通过后、标记 Done 前 | `evidence/reviews/task-<n>/verdict.md`，`verdict: PASS` 且 `blocking_findings: 0`；R2 另需 `arch.md`/`scope.md`/`security.md`；执行模式=逐步实现时改为 Actual Result 记 `Task review: 不适用（逐步实现模式：免三席审查）`（见 contracts/skill-guides/delivery/execution-mode.md） | 该 Task 标记 Done 与下一个 Task |
 | Gate-Final（必选） | 集成/最终验证后 | 端到端证据、「AC 到 Task 追溯」验证状态、「代码范围映射」实际文件、Actual Result 全部回填 | |
+
+Gate-Task 的分级、席位与证据格式见 `contracts/skill-guides/delivery/task-review.md`。
 
 ## 代码范围映射
 

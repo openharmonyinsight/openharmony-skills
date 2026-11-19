@@ -17,10 +17,16 @@ Required templates:
 - `../../../templates/ai/execution-plan.md`
 - `../../../templates/ai/spec-for-validation.md`
 - `../../../templates/ai/threat-model.md`
+- `../../../templates/review/task-arch.md`
+- `../../../templates/review/task-scope.md`
+- `../../../templates/review/task-security.md`
+- `../../../templates/review/task-verdict.md`
 
 Required contracts:
 
 - `workflow.md`
+- `phase-flow.md`
+- `workflow-state.md`
 - `profiles.md`
 - `../delivery/handoff.md`
 - `../delivery/metadata.md`
@@ -59,3 +65,5 @@ RESOURCE_ROOT/../scripts; choose the directory containing validate-artifacts-con
 The last candidate is for source checkouts. Use that directory for the validator
 and lib/odk_repository.py commands instead of the business repository's relative
 runtime path. If no candidate exists, report the missing executable and stop.
+Also require `lib/odk_workflow.py` in that directory. A missing checkpoint helper
+blocks phase execution; do not silently fall back to conversation-only progress.

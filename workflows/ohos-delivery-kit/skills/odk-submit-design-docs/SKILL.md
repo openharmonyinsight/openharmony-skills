@@ -15,6 +15,15 @@ full frontmatter and body first; revise it in place and preserve confirmed
 content, stable IDs and evidence. Create a target only when it does not exist.
 <!-- /ODK:reference -->
 
+## Phase flow and next step
+
+<!-- ODK:reference contracts/skill-guides/router/phase-flow.md -->
+Before phase work, read `contracts/skill-guides/router/phase-flow.md` and apply
+its configured pre_hook/post_hook order. At every completion or pause, show
+the next pending action and configured hooks; omit the reminder only when
+the entire applicable workflow is complete. The coordinator owns this flow.
+<!-- /ODK:reference -->
+
 <!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
 Read `contracts/skill-guides/router/delivery-levels.md` and use the effective
 contract. It takes precedence over standard-only artifact lists below; native
@@ -64,8 +73,11 @@ The design-docs submission bundle always includes these five base files:
 - `execution-plan.md`
 - `metadata_tracking.yaml`
 
-For `API/SDK=是`, also include `evidence/task1-api-declaration-en.diff` and
-`evidence/task1-api-declaration-zh.diff`. Both must contain nonempty text unified
+For `API/SDK=是`, additionally include the applicable `arkts-api-spec.yaml` and/or `c-api-spec.yaml`,
+`evidence/task1-arkts-api-declaration-en.diff` and
+`evidence/task1-arkts-api-declaration-zh.diff` when ArkTS is involved, plus
+`evidence/task1-c-api-declaration-en.diff` and
+`evidence/task1-c-api-declaration-zh.diff` when C is involved. Each diff file must contain nonempty text unified
 diffs with complete hunks and actual added/deleted lines, not blank files or labels.
 Preserve their relative paths. No implicit no-change exemption exists: if genuine
 evidence is unavailable, stop and report the missing evidence rather than fabricate it.
@@ -123,7 +135,7 @@ requests retain their narrower scope.
 
 3. 从脚本输出的 `---MIRROR---` 段提取 `sessions` 列表，写入 `metadata_tracking.yaml` 的 `sessions` 字段（YAML 数组）。`metadata_tracking.yaml` 为纯 YAML 文件（无 body 表格），不追加 `## 会话记录` 表格。
 
-**关键**：sidecar `.sessions.json` 是权威源。即使 `metadata_tracking.yaml` 的 `sessions` 字段在重生成时丢失，下一个 skill 从 sidecar 读取，数据不丢。脚本保证 sidecar 的原子追加。
+**关键**：sidecar `.sessions.json` 是会话追踪的权威源，只保存调用历史；它不备份交付件正文，也不证明阶段完成。增量修订 metadata 并用 `.workflow.json` 记录执行结果，遵循 `contracts/skill-guides/router/workflow-state.md`。
 
 ## Output
 

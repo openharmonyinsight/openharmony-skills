@@ -19,11 +19,17 @@ their effects, file/section references and a reproducible check or evidence gap.
 
 ## Route each finding by root cause
 
+First read [the specification boundary](../spec/contract-boundary.md) and decide
+whether the agreed contract changed. Updating an implementation or invalidating
+its test evidence does not itself require a spec edit or full document refresh.
+
 | Root cause | Update before claiming closure |
 | --- | --- |
 | Implementation violates an agreed AC | Fix code and a relevant regression test; update plan results. Preserve the AC rather than weakening it to fit the implementation. |
 | Requirement/AC missing or inconsistent | Revise spec and verification mapping, then affected design/Tasks. Revise proposal only when goals, scope, success criteria or risk decisions change. |
-| Design decision changed or proved incorrect | Revise design decisions/constraints and affected spec interfaces/errors/compatibility, then plan and code. A note only in a review report does not update the baseline. |
+| Implementation/test refactor; contract and design unchanged | Update code/tests and affected plan verification/results. Leave spec and design unwritten; preserve spec IDs, content and session mirror. |
+| Internal design changed; contract unchanged | Revise affected design decisions/constraints, plan and code; reverify. Leave spec unwritten. A report-only explanation does not update a changed design. |
+| Design reveals an agreed contract change or a missing contract | Revise affected spec interfaces/errors/compatibility/ACs and downstream design/Tasks. Obtain a decision only for a material contract change not already authorized. |
 | Task scope, verification method or environment incorrect | Correct plan, commands and affected validation scenarios; rerun the checks that depended on that assumption. |
 
 Update existing spec-for-validation/threat-model and other dependent artifacts

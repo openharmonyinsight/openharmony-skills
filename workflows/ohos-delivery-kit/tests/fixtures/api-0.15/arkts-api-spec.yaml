@@ -1,0 +1,56 @@
+schemaVersion: "1.0.0"
+apiContractVersion: "1.0.0"
+language: arkts
+source:
+  repository: interface_sdk-js
+  branch: master
+  commit: 1234567890abcdef
+  path: api/sample.d.ts
+file:
+  path: interface_sdk-js/api/sample.d.ts
+apis:
+  - kind: method
+    id: sample.run
+    parentId: null
+    name: run
+    qualifiedName: sample.run
+    declaration: "run(): void"
+    filePath: api/sample.d.ts
+    startLine: 1
+    endLine: 1
+    since: "1.0.0"
+    syscap: SystemCapability.ArkUI.ArkUI.Full
+    permissions: []
+    platform:
+      crossplatform:
+        enabled: false
+      atomicservice:
+        enabled: false
+      form:
+        enabled: false
+    applicationModel: fa-and-stage
+    description:
+      en:
+        function: Runs.
+        scenario: When running.
+        effect: Completed.
+        similarAPIs: N/A
+        defaultBehavior: N/A
+        constraints: N/A
+        activation: N/A
+        notes: N/A
+      zh:
+        function: 运行。
+        scenario: 需要运行时。
+        effect: 完成。
+        similarAPIs: 不适用
+        defaultBehavior: 不适用
+        constraints: 不适用
+        activation: 不适用
+        notes: 不适用
+    parameters: []
+    returnType:
+      text: void
+      description:
+        en: No value is returned.
+        zh: 无返回值。

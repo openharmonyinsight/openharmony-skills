@@ -15,6 +15,15 @@ full frontmatter and body first; revise it in place and preserve confirmed
 content, stable IDs and evidence. Create a target only when it does not exist.
 <!-- /ODK:reference -->
 
+## Phase flow and next step
+
+<!-- ODK:reference contracts/skill-guides/router/phase-flow.md -->
+Before phase work, read `contracts/skill-guides/router/phase-flow.md` and apply
+its configured pre_hook/post_hook order. At every completion or pause, show
+the next pending action and configured hooks; omit the reminder only when
+the entire applicable workflow is complete. The coordinator owns this flow.
+<!-- /ODK:reference -->
+
 <!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
 Read `contracts/skill-guides/router/delivery-levels.md` and use the effective
 contract. It takes precedence over standard-only artifact lists below; native
@@ -42,6 +51,18 @@ validation report alone does not close an ODK baseline deviation.
 <!-- /ODK:reference -->
 
 For configuration-dependent steps, use the effective-configuration command defined in `using-odk`; do not merge installation files independently. Stop on config errors. Existing execution-plan commands remain authoritative until explicitly changed.
+
+<!-- ODK:reference contracts/skill-guides/delivery/implementation-quality.md -->
+When validation covers implementation code, read
+`contracts/skill-guides/delivery/implementation-quality.md` and apply its criteria
+to the actual diff and native validation brief. Check material choices and their
+evidence in every mode; preserve the mode's native output ownership and record
+findings through the existing feedback procedure. Reuse the native reviewer
+where present, disclose self-review where necessary, and return separate
+spec-compliance and code-quality conclusions to the coordinator without rewriting
+passthrough output or adding another review seat. Fixes require affected checks
+and scoped re-review before blocking findings can close.
+<!-- /ODK:reference -->
 
 1. Invoke MatrixSpec `/matspec.validation` for 6-dimension validation execution.
 2. When MatrixSpec tries to write to `matspec/changes/`, apply `using-odk-bridge` Output Redirection Rules instead.

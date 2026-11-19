@@ -16,7 +16,9 @@
 |------|------|-----------|
 | `proposal.md` | 需求提案 | 13 必需章节（含 1+8 设备差异、外部依赖、资源开销审视、API 设计属性）+ 1 条件章节 |
 | `design.md` | 架构设计 | 12 必需章节（含 DFX 设计）+ 6 条件章节（含资源设计等） |
-| `spec.md` | 功能规格 | 10 必需章节（含 API 规格定义）+ 1 条件章节（资源验收契约） |
+| `spec.md` | 功能规格 | 10 必需章节（含 API 规格概览）+ 1 条件章节（资源验收契约） |
+| `api/arkts-api-spec.yaml` | ArkTS API 元数据契约 | API/SDK=是 且涉及 ArkTS 时生成，归档为 `arkts-api-spec.yaml` |
+| `api/c-api-spec.yaml` | C API 元数据契约 | API/SDK=是 且涉及 C 时生成，归档为 `c-api-spec.yaml` |
 | `execution-plan.md` | 执行计划 | 10 必需章节 + 1 条件章节（资源验证矩阵）+ per-Task 详情 + Review Gates + 代码范围映射 |
 | `spec-for-validation.md` | 验证规格（旁路） | 7 章节（从 spec/design 派生，不参与主流程） |
 
@@ -27,6 +29,10 @@
 | `review-spec-compliance.md` | 规格符合性审查 | AC 覆盖 + 额外实现 + 偏差 + 结论 |
 | `review-code-quality.md` | 代码质量审查 | Strengths + Issues + Recommendations + Assessment |
 | `review-verification.md` | 最终验证 | 验证记录 + 一致性结论 |
+| `task-arch.md` | Task 评审：重复造轮子 + 性能 | 对象 + 两维检查 + 发现 + 结论 |
+| `task-scope.md` | Task 评审：漏改 + 外部接口影响 | 对象 + 两维检查 + 发现 + 结论 |
+| `task-security.md` | Task 评审：安全与攻击面 | 攻击面 + 检查清单 + 发现 + 结论 |
+| `task-verdict.md` | Task 评审汇总 | frontmatter + 五维结论 + 门禁结论 |
 
 ## 定制方式
 

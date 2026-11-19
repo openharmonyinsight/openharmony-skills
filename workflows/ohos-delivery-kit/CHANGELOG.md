@@ -4,6 +4,336 @@ All notable changes to the published `ohos-delivery-kit` workflow are documented
 this file. Source artifacts are synchronized from
 `oshunter/ohos-delivery-kit` `main` through the marketplace publisher.
 
+## [0.15.0] - 2026-11-03
+
+Source: `main@3e4971c029ee02ebc0c99c61fa283cc792c31eda`.
+
+This republish imports the execution-mode selection series (`!226`, issue
+#161) and the device-verification guide extraction with the runtime
+verification hardening series (`!225`, issue #162), superseding the `68cae2a`
+snapshot; the version stays 0.15.0 because that release PR has not been merged
+yet.
+
+This import publishes the language-specific API metadata contract and its
+breaking migration. Existing 0.14 API changes must be moved with
+`odk-upgrade-api-chain` or restarted from proposal; the legacy chain is not
+accepted as a compatibility layer.
+
+### Added
+
+- Add execution-mode selection for the implementation phase (issue #161):
+  `odk-implement` confirms one of 多子agent检查 / 全自动 / 逐步实现 before the
+  first Task and records it in the new `## 执行模式` section of
+  `execution-plan.md` (template pre-filled, declared as a conditional section,
+  old plans without the section stay compatible); 全自动 advances on default
+  values until `odk-validate` completes, 逐步实现 skips the three-seat Task
+  Review with a per-Task marker, and the OpenSpec and Superpowers bridges
+  apply the confirmed mode. Full-auto never waives the product/device
+  confirmation boundaries of build-products and device-version. See
+  `contracts/skill-guides/delivery/execution-mode.md`.
+- Add a durable `.workflow.json` checkpoint per ODK change: phases, tasks,
+  pre/post hooks, attempts, verification evidence and approvals are recorded
+  step by step, so an interrupted session resumes from the last unfinished
+  step; changed inputs, evidence, configuration or upstream results invalidate
+  stale results, and an interrupted operation re-verifies the actual outcome
+  before retrying.
+- Hand off shared artifacts explicitly with evidence: a partial body write, a
+  failed post-check or a later review repair can keep the original planning
+  approval while entering a local re-verification generation; consecutive
+  recoveries always inherit the original upstream baseline of unaccepted work,
+  and new artifacts are only accepted for other consumers after verification
+  succeeds.
+- Track native Markdown tasks through explicit `--native-task` declarations,
+  including task files outside the change directory; only checklist state
+  changes are hand-off-able, while task names, content, order and other bytes
+  still participate in the definition check, and plain source files cannot use
+  that exception.
+- Reconcile a completed OpenSpec archive with `finalize-native-archive`: the
+  final `all_done` capture, archive result, archived files and snapshot summary
+  are verified, then native task reads are bound to the immutable snapshot so
+  delivery continues with the original invocation definitions, generations,
+  dependencies and planning approval; external selected stores are supported,
+  while unaccepted task content, tampered evidence or a reappearing original
+  workspace still block.
+- Require a successful `finish` to carry a pre-verification snapshot bound to
+  the actual files, generation and attempt; content changes during or after
+  verification are rejected, and invalid planning evidence, backfill evidence
+  or recovery evidence blocks the affected work.
+- Cache per-query dependency results in the status path: a 20-task graph drops
+  from 17,710 configuration reads to 20 (about 0.017s locally); the cache never
+  crosses queries.
+- Make `arkts-api-spec.yaml` / `c-api-spec.yaml` the API SDD contract source:
+  `odk-spec` generates machine-readable API metadata and delegates the
+  human-facing three/five elements to an isolated subagent; `spec.md` keeps only
+  the API overview; plan and implement consume only the applicable metadata;
+  validate checks metadata structure, overview union consistency, declaration
+  diffs, documentation closure and exact paths. Legacy `api-spec.yaml`,
+  mixed-language declaration diffs and per-API Markdown specifications are no
+  longer accepted directly.
+- Add `odk-upgrade-api-chain` for 0.14 / `ohos-sdd/v1` chains: dry-run extracts
+  facts from the proposal, API repository knowledge and legacy spec, missing or
+  conflicting facts require developer confirmation, then the assistant writes
+  language metadata atomically and saves a migration report. Mixed-language
+  chains run once per language and accumulate the overview.
+- Add the proposal coverage matrix to `spec.md`: goals, non-goals, assumptions
+  and open questions must map to AC, BR, EB, language-specific API metadata, a
+  justified `N/A` or `Open-N`; the `lite` delivery level keeps its lean sections.
+- Split API declaration diff evidence by declaration repository and language
+  (`task1-arkts-api-declaration-<lang>.diff` and
+  `task1-c-api-declaration-<lang>.diff`); only applicable language files are
+  generated and the mixed-repository `task1-api-declaration-<lang>.diff` is no
+  longer compatible.
+- Add declaration-comment description closure: the eight API-level fields that
+  are not `N/A`, plus parameter, return and error-code descriptions, must appear
+  in the language diff; descriptions are plain text without element labels and
+  do not restate `since`, `syscap` or error-code attributes. Comment layout must
+  align with the declaration and leave no blank line after `*/`, and API-level
+  descriptions must not repeat the same behavior clause as parameter or return
+  descriptions.
+- Add the `check-api-documentation-context.py` process gate: before merging
+  documentation subagent output it verifies API ID closure, bilingual field
+  completeness and confirmed-value coverage, so units, ranges and defaults from
+  the bounded context are not lost.
+- Apply the OpenHarmony Chinese documentation rules to the API documentation
+  contract: a single `forbidden-terms.yaml` source and the
+  `chineseEnglishSpacing` switch (off by default) are shared by the process gate,
+  the example check and the final archive validation; the duplicate
+  documentation threshold is configurable with Draft WARN and Archive FAIL, and
+  both rule files carry `rulesetVersion` and `sourceOfTruth`.
+- Let API repository knowledge indexes declare prerequisites; `odk-spec` loads
+  them in declared order and stops when a prerequisite is unavailable.
+- Support the optional ArkTS `apiMode`: omitting it means dynamic only, static
+  and dynamic-plus-static modes must be declared and cross-checked with the
+  proposal, file path and `since` marker; static APIs accept `.d.ets` + `static`
+  or `.static.d.ets` + `staticonly`, and static declarations reject `any` and
+  union types.
+
+### Changed
+
+- Extract the runtime verification execution details from `odk-implement` into
+  the shared guide
+  `contracts/skill-guides/delivery/device-verification.md` (issue #162): the
+  separation rules for 验证范围 / 验证产品 / 验证目标确认 versus 编译产品, the
+  Task command-shape decision, and device preparation sub-step b plus emulator
+  sub-step c; the skill keeps build (a), test (d) and the routing that selects
+  the runtime branch by validation scope.
+- Harden the execution-mode gate: mode parsing takes strict values and rejects
+  duplicate 所选模式 lines by falling back to the verdict gate (no
+  first-match-wins); skip markers are scoped to the unique verified task
+  records, so standalone markers and historical tables no longer satisfy the
+  gate; adjacent-Task marker cross-use is blocked, mode notes and the selection
+  time are validated with angle placeholders rejected, and plans without a mode
+  section keep the legacy behavior.
+- Apply the legacy validation scope preflight and shared runtime checks before
+  implementation commands in the base, Superpowers and OpenSpec flows: QEMU
+  starts only with checked boot-image provenance and lifecycle evidence,
+  confirmed emulator targets are re-recognized after restarts, device
+  verification is bound to the confirmed runtime target, verification changes
+  are written back to native / OpenSpec / Superpowers tasks, verification
+  evidence stays separate from review waivers, and the runtime Red ordering
+  reuses the verified target.
+
+### Fixed
+
+- Read checkpoint state, incremental patches, verification snapshots and native
+  archive evidence as UTF-8, and emit CLI JSON results and diagnostics through
+  UTF-8 reconfigured standard streams; a host whose default encoding is ASCII
+  can read, verify and restore Chinese records, and a command can no longer
+  report failure after its state was already persisted.
+- Reject native archive finalization when a declared native task inside the
+  archived change was not captured by the final snapshot (partial or unmatched
+  declarations, including late declarations on the idempotent path); such
+  checkpoints previously stayed silently unbound and could never recover.
+- Preserve manual document content through SHA-256 checks and localized
+  replacement: stale writes, whole-file replacement, symlink targets and
+  overwriting existing files are refused, shared by base and bridge commands,
+  and `.sessions.json` stays a call log only.
+- Preserve C pointer return types and qualifiers; parse inline-formatted legacy
+  error codes without removing pointer operators inside code spans.
+- Preserve confirmed ArkTS API modes in both legacy formats. Reject explicit
+  null, false, empty or otherwise invalid modes before writing; only a missing
+  mode field permits 0.14 defaults or inference from the file path.
+- Reuse the final validator's mode/path/since/declaration checks before migration
+  writes, including generic declarations. Conflicts keep all original files.
+- Accept confirmed numeric range endpoints and Chinese-adjacent decimal,
+  negative and unit values, while rejecting different signs, precision,
+  exponent fragments and Unicode unit continuations.
+- Use installer-relocatable runtime paths in API skill commands, and make the
+  release gate reject legacy runtime paths wrapped in variables; shared guides
+  reuse the path exposed by the loaded skill. The gate also verifies that quoted
+  executable paths exist and were relocated, with and without braces.
+- Check the full number, sign and precision boundary for Chinese unit and range
+  confirmed values, so `10.5ms` or `-0.5ms` is not accepted as `0.5ms`.
+- Extract the real function name from a C pointer-return declaration in API chain
+  upgrades, keeping the return-type asterisk; a missing or invalid permission
+  fact blocks the write, while an explicit no-permission fact and per-API
+  confirmation still migrate.
+- Run `odk-upgrade-api-chain` in a standalone `upgrade_api_chain` phase with
+  configurable before/after hooks, so a phase parsing failure no longer blocks
+  the entry and spec hooks are not mixed in.
+- Ship the API hard-migration guide as a shared resource in both the native and
+  the neutral package; skills reference it through relocatable paths and
+  validator errors point at the file that is actually installed.
+- Keep an explicit file scope for the supported legacy-chain import in the
+  external workflow boundary check while still rejecting ordinary phases and
+  other workflow coupling, and sync the extracted content snapshot.
+- Apply the hardened NAPI/ArkTS and RAII/symbol-export guidance from the
+  AI-draft versus release diff to `odk-fmea` and the implementation-quality
+  guide.
+
+## [0.14.7] - 2026-11-13
+
+Source: `main@85673017d17fcd84aad724d37b60603d04558f66`.
+
+This republish imports the review and release-gate fixes merged into the source
+`main` after the first 0.14.7 import (`0989ab3`); the version stays 0.14.7 because
+that release PR has not been merged yet.
+
+This import also publishes changes that the source still listed as Unreleased at
+this commit: the `odk-task-review` five-dimension Task review guide wired into the
+base, Superpowers and OpenSpec entries, and the delivery-body boundary rule with
+its prompt-residue checker (source issue #157).
+
+### Fixed
+
+- Reject corrupt Task review verdicts instead of silently degrading them: top-level
+  non-mapping syntax, duplicate fields, and indented content before the first field
+  are invalid. Draft warns and archive fails, while comments, blank lines and nested
+  metadata under a top-level field stay supported.
+- Check the raw command projection list before the installer de-duplicates it, then
+  verify the effective command set and the generated OpenCode command wrappers, so
+  duplicate declarations or registering only `components.skills` while omitting
+  `commandProjection.commands` fail the neutral release gate.
+- Use the same concrete or abstract product name for build commands and `out/`
+  artifacts, and confirm the device validation target separately through an
+  explicit `{validation_product}`. Plans record the validation scope and target,
+  and artifacts are located from the recorded directory or the build manifest
+  under `out/<build product>`; the old product list and configuration templates
+  stay readable, and older plans proceed after adding the target (source PR #158).
+- Stop treating "not applicable (emulator/QEMU)" as a launcher or validation
+  target, and detect product placeholders in mixed-case variants; the parser and
+  plan validator reject unexpanded placeholders.
+
+## [0.14.6] - 2026-11-12
+
+### Added
+
+- Add a Task-level review gate: after each Task's verification and before marking
+  it Done, run a five-dimension review (duplicate work, performance, missed
+  changes, external interface impact, security and attack surface) according to
+  its `R0` / `R1` / `R2` risk level. `R2` uses the fixed arch/scope/security
+  seats and writes evidence to `evidence/reviews/task-<n>/`.
+- Add the host delegation capability probe `scripts/lib/odk_host_capabilities.py`:
+  without delegation support or when the probe fails, run three read-only checks
+  serially and write `independent: false` in the verdict instead of passing by
+  default.
+
+### Changed
+
+- `execution-plan.md` gains a risk-level column, a Task-detail risk field and the
+  mandatory `Gate-Task` gate; `odk-plan` records the initial level and rationale
+  during planning.
+- `odk-implement` and the `odk-sp-implement` bridge run the same gate before
+  Done; an open `Critical` / `High` finding marks the Task `❌ Blocked` and blocks
+  later Tasks, and risk escalation updates the plan's risk cell.
+- `odk-review` checks every R1/R2 Task verdict before an overall PASS, and
+  `odk-validate --archive` fails on missing, non-PASS or still-blocking verdicts
+  and fixes nested evidence-directory counting.
+
+### Fixed
+
+- Read risk levels only from the single Task-list section, so earlier risk-summary
+  tables cannot shadow the real task table; duplicate sections or duplicate risk
+  tables inside a section fail validation.
+- Treat an empty or non-`R0`/`R1`/`R2` risk level as a Draft warning and an
+  Archive failure instead of silently skipping the review check.
+- Treat broken `verdict.md` frontmatter (for example an unclosed `---`) as a Draft
+  warning and an Archive failure instead of ignoring the parse error.
+- Reject uncommented YAML continuation lines in the five required verdict fields,
+  so a real `PASS FAIL` or `0 2` is not truncated to `PASS` or `0` and wrongly
+  accepted; comments, blank lines and extra metadata stay supported.
+- Accept only one unambiguous `R0` / `R1` / `R2` risk cell (an annotation such as
+  `R2（公共接口）` is allowed); ambiguous values such as `R1→R2`, `R0/R2` or `R0.5`
+  no longer degrade by prefix or skip review as R0, becoming a Draft warning and
+  an Archive failure.
+- Treat non-exact Task IDs such as `TASK-1（回调）`, `TASK-1, TASK-2` or an empty
+  value as a Draft warning and an Archive failure instead of silently skipping
+  the review check.
+- Run the Task review gate only when the effective contract includes
+  `execution-plan`, so `--phase define/specify/design` no longer fails on future
+  plan errors.
+- Distinguish the OpenCode 2.x `subagent` dispatch protocol from 1.x `task`
+  (required `subagent_type`, background tasks need
+  `OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS=true`); the capability probe does
+  not claim background support when the version is unknown and degrades serially
+  when tools or parameters are unavailable.
+- Move teaching-example Tasks that hit callback, lifecycle and public `.d.ts`
+  triggers to `R2`, add the arch/scope/security reports and verdicts, and fix the
+  construct rows displaced by the new risk column.
+
+## [0.14.5] - 2026-11-06
+
+### Added
+
+- Add a change-impact scope check: probe the LSP, semantic index or AST available
+  to the current agent and project, and query references, call relations and other
+  implementations according to tool capability; when unavailable, use entry and
+  file lists, call-site search, TDD and full diff review to check for missed
+  changes.
+
+### Changed
+
+- Wire impact paths, handling and verification limits into planning,
+  implementation and review in the base and bridge flows; read-only discovery in
+  authorized repositories must update Task context and file scope before it is
+  used as a basis for changes.
+
+## [0.14.4] - 2026-11-06
+
+### Added
+
+- Add a shared Chinese writing guide, 19 positive and negative example pairs and a
+  pre-output self-check that require applicable conditions, actions and results,
+  while preserving technical identifiers, values, exceptions and pending states.
+
+### Changed
+
+- Define content boundaries for spec, design and plan: keep the spec when external
+  requirements do not change, and update only the affected design and plan with
+  re-verification when the internal approach changes. Templates and examples keep
+  stable acceptance scenarios, while concrete test implementation and execution
+  records live in the plan and evidence.
+- Adjust colloquial and mixed-English wording in the design and execution-plan
+  templates; remove personal repository links, source commit IDs and
+  business-specific evidence paths from writing examples, and replace personal
+  absolute paths in the demonstration plan with relative paths.
+
+### Fixed
+
+- Extend the Codex uninstaller's manifest path scope to `.codex/runtime/`, clean
+  old runtime files still recorded in the manifest on upgrade, and remove runtime
+  libraries and assets on uninstall; unlisted user tools, skills and configuration
+  are preserved, with install/upgrade/uninstall regressions (source issue #151).
+- Preflight the Codex manifest and delete owned files without following directory
+  links; keep the manifest and stop the upgrade on unsafe paths. User extension
+  configuration is not deleted even if it was wrongly listed, and the missing
+  manifest hint plus Codex installation notes are completed.
+- Share resource and path rules across Codex first install, upgrade and uninstall,
+  reject directory links before writing and backing up configuration, and make
+  unknown or illegal manifest entries fail while keeping the manifest. Errors
+  report the concrete path and errno, and the whole installation package is
+  checked against the manifest.
+- Unify review, test, validate and bridge findings back into the affected
+  artifacts and record handling and re-verification in the existing execution
+  plan; invalidate affected old conclusions after input changes. Archiving
+  requires all AC and verification results to pass, all Tasks to be Done, blocking
+  issues to be closed, historical Red evidence to be retained and a Verification
+  Final Status.
+- Sync post-PR repairs to the original source PR and re-verify its actual head;
+  add a read-only source publication check that blocks uncommitted or unpushed
+  repairs. Unfinished Steps now recognise ordered and unordered lists, and a clean
+  closure section is no longer warned about when omitted.
+
 ## [0.14.3] - 2026-10-31
 
 Source: `main@67f904394df4743913a42f56dae7f6b89732eb08`.

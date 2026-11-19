@@ -19,6 +19,15 @@ full frontmatter and body first; revise it in place and preserve confirmed
 content, stable IDs and evidence. Create a target only when it does not exist.
 <!-- /ODK:reference -->
 
+## Phase flow and next step
+
+<!-- ODK:reference contracts/skill-guides/router/phase-flow.md -->
+Before phase work, read `contracts/skill-guides/router/phase-flow.md` and apply
+its configured pre_hook/post_hook order. At every completion or pause, show
+the next pending action and configured hooks; omit the reminder only when
+the entire applicable workflow is complete. The coordinator owns this flow.
+<!-- /ODK:reference -->
+
 <!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
 Read `contracts/skill-guides/router/delivery-levels.md` and use the effective
 contract. It takes precedence over standard-only artifact lists below; native
@@ -27,7 +36,8 @@ OpenSpec schemas remain standard/critical and lite uses the base flow.
 
 ## Entry and scope
 
-- Load `using-odk` first and follow its interaction mode and authorized endpoint.
+- Reuse `using-odk` if it is already loaded in the current session; do not reload it. Loading `using-odk` from brainstorm only supplements shared context (interaction mode, authorized endpoint, delivery-level contract); it does not re-enter brainstorm. The shared interview protocol runs once; after its completion gate, return to the original calling phase (brainstorm or the phase that invoked it) and continue.
+- Follow `using-odk`'s interaction mode and authorized endpoint.
 - Use the active change context when available. An `odk-init` frontmatter stub is
   not evidence that the interview has already happened. Exploration may start
   before initialization; initialize the archive before the next artifact phase.

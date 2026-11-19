@@ -1,0 +1,11 @@
+schemaVersion: "1.0.0"
+rulesetVersion: "1.0.0"
+sourceOfTruth: "oshunter/ohos-delivery-kit"
+# false: do not insert spaces between Chinese and ASCII text.
+# true: require spaces between Chinese and ASCII text.
+chineseEnglishSpacing: false
+duplication:
+  enabled: true
+  minTokens:
+    en: 8
+    zh: 12

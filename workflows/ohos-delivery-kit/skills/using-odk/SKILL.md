@@ -17,15 +17,24 @@ full frontmatter and body first; revise it in place and preserve confirmed
 content, stable IDs and evidence. Create a target only when it does not exist.
 <!-- /ODK:reference -->
 
+## Phase flow and next step
+
+<!-- ODK:reference contracts/skill-guides/router/phase-flow.md -->
+Before phase work, read `contracts/skill-guides/router/phase-flow.md` and apply
+its configured pre_hook/post_hook order. At every completion or pause, show
+the next pending action and configured hooks; omit the reminder only when
+the entire applicable workflow is complete. The coordinator owns this flow.
+<!-- /ODK:reference -->
+
 ## Activation
 
 ### Bridge Mode (session-scoped)
 
 Once the user invokes any `{{CMD_PREFIX}}*` command in the current session, ODK bridge activates for the remainder of the session: Output Redirection Rules (see Phase-Artifact Mapping below) apply to stateless document output paths; OpenSpec retains its native workspace and publishes an ODK projection. Ends when the session ends.
 
-ODK also activates when the user explicitly mentions ODK, ohos-delivery-kit, `codespec`, or ODK artifact names/actions (proposal, spec, design, execution-plan, spec-for-validation, threat-model, metadata_tracking, review, validate, submit design docs).
+ODK also activates when the user explicitly mentions ODK, ohos-delivery-kit, `codespec`, or ODK artifact names/actions (proposal, spec, api-spec, design, execution-plan, spec-for-validation, threat-model, metadata_tracking, review, validate, submit design docs).
 
-When the user is describing or discussing a requirement, feature idea, or non-trivial change, load `odk-brainstorm` before drafting new artifact decisions; no special trigger phrase is required. Standalone brainstorm and the propose/spec/design inline gates share one interview protocol. An existing `proposal.md`, an initialization stub, or a later phase is not proof that its decisions were explored: reuse confirmed decisions and investigate only new or unresolved branches. **Check escapes first:** ordinary coding, debugging, refactoring or reverts without new feature scope, and self-contained bug fixes with a clear root cause, do not start an artifact interview. Honor explicit requests to skip the interview or go directly to a draft by carrying unresolved choices as assumptions/open questions; do not fabricate confirmations. A fully specified request can close the shared gate from explicit evidence without redundant questions.
+When the user is describing or discussing a requirement, feature idea, or non-trivial change, load `odk-brainstorm` before drafting new artifact decisions; no special trigger phrase is required. Standalone brainstorm and the propose/spec/design inline gates share one interview protocol. An existing `proposal.md`, an initialization stub, or a later phase is not proof that its decisions were explored: reuse confirmed decisions and investigate only new or unresolved branches. **Check escapes first:** ordinary coding, debugging, refactoring or reverts without new feature scope, and self-contained bug fixes with a clear root cause, do not start an artifact interview. Honor explicit requests to skip the interview or go directly to a draft by carrying unresolved choices as assumptions/open questions; do not fabricate confirmations. A fully specified request can close the shared gate from explicit evidence without redundant questions. **Avoid circular loading:** if `odk-brainstorm` is already loaded in this session, reuse it; when brainstorm loads `using-odk`, it only supplements shared context (interaction mode, authorized endpoint, delivery-level contract) and does not re-enter brainstorm. The shared protocol runs once, then returns to the original calling phase.
 
 ### Deactivation
 
@@ -95,7 +104,7 @@ Read `contracts/skill-guides/router/configuration.md` for same-directory user ov
 - **target_release** is the single source of truth for version, stored in `proposal.md` YAML frontmatter
 - Traceability chain: `proposal → spec AC → execution-plan Task → code → commit → review`. Any broken link fails validation.
 - **Post-implementation**: completed Tasks automatically enter review and validation through the implementation skill's shared handoff. Source PR submission waits for an explicit user trigger after a reminder; confirmed PR results drive local metadata, followed by separate design-docs confirmation. Do not auto-merge or recursively restart the handoff from review/validate.
-- **GitCode submission reminder**: when implementation is complete and the user is about to commit, push, or open a GitCode PR, remind them that documents under `codespec/` must be submitted to the separate design-docs repository. Resolve its address using priority order: `codespec/profile.yaml` if present → `odk_config_ext.yaml` → `odk_config.yaml`. Do not warn if `codespec/profile.yaml` is absent. If no address can be resolved, show “待开发者填写” and ask the developer to provide it; never guess a repository or automatically push across repositories. This reminder does not by itself block the business-code submission. When the user explicitly requests design-document submission, invoke `odk-submit-design-docs`: generate `metadata_tracking.yaml`, validate the five-base-file bundle plus required conditional evidence, and submit `proposal.md`, `spec.md`, `design.md`, `execution-plan.md`, and `metadata_tracking.yaml` together.
+- **GitCode submission reminder**: when implementation is complete and the user is about to commit, push, or open a GitCode PR, remind them that documents under `codespec/` must be submitted to the separate design-docs repository. Resolve its address using priority order: `codespec/profile.yaml` if present → `odk_config_ext.yaml` → `odk_config.yaml`. Do not warn if `codespec/profile.yaml` is absent. If no address can be resolved, show “待开发者填写” and ask the developer to provide it; never guess a repository or automatically push across repositories. This reminder does not by itself block the business-code submission. When the user explicitly requests design-document submission, invoke `odk-submit-design-docs`: generate `metadata_tracking.yaml`, validate the five-base-file bundle plus required conditional evidence (including the applicable language-specific API metadata files and declaration diffs when `API/SDK=是`), and submit `proposal.md`, `spec.md`, `design.md`, `execution-plan.md`, `metadata_tracking.yaml`, and applicable API evidence together.
 - **Phase Gate**: Use the interaction mode below. In interactive mode, artifact approval approves only that document: suggest the next command and wait. Implementation requires an approved execution plan and a user request to implement (natural language or an implement command). In autonomous mode, an explicit end-to-end request authorizes sequential phases within its stated scope: generate and self-check each artifact, summarize decisions, then continue to the authorized next phase. Never infer implementation authorization solely from document approval. TDD remains the default for implementation; untestable Tasks must declare degradation.
 - **Session ID 追踪**: 每个生成交付件的 skill（odk-init / odk-propose / odk-spec / odk-design / odk-plan / odk-security-threat-model / odk-spec-for-validation / odk-submit-design-docs）在写入交付件时，必须通过调用 `update-sessions-sidecar.py` 脚本将当前会话 session ID 增量追加到变更目录下的 `.sessions.json` sidecar 文件（权威源），并镜像到交付件的 frontmatter `sessions` 字段和 body `## 会话记录` 表格。判定基准为 session ID 本身：不同 session 调用同一 skill 也必须追加。详见各 skill 的 `## Session ID 追踪` 小节。
 
@@ -165,12 +174,12 @@ sidecar 格式（session ID 跨平台格式见下文「Session ID 获取」）�
 
 ### 追加时序
 
-skill 从模板重新生成 body **之后**、写入交付件**之前**执行：
+skill 准备好新增内容或增量补丁**之后**、通过受保护命令写入交付件**之前**执行：
 - 调用 `update-sessions-sidecar.py` 脚本更新 sidecar（脚本内部完成 read-append-write）
 - 从脚本输出提取 `---MIRROR---` 段，将 `sessions` 字段和 `## 会话记录` 表格写入交付件
 - 写入交付件
 
-**关键**：即使交付件的 frontmatter 或表格在 body 重生成时丢失，下一个 skill 从 sidecar 读取，数据不会丢失。这正是 sidecar 方案解决的核心问题。**脚本对 read-modify-write 加排他锁并原子发布，不会丢失已有 log 条目，不会因并发覆写丢数据。**
+**关键**：sidecar `.sessions.json` 只保存会话调用历史；镜像缺失时可据此恢复会话记录，但它不备份交付件正文，也不证明阶段完成。阶段与 hook 的成功结果、证据和恢复位置必须按 `contracts/skill-guides/router/workflow-state.md` 写入 `.workflow.json`。
 
 ## Effective contract and delivery level
 
@@ -185,6 +194,7 @@ Default to **interactive** mode. If the user asks to automate, use recommended o
 
 Self-check every updated/new artifact and run the packaged validator with the current `--phase define|specify|design|plan` after each artifact phase; future artifacts are outside that check. Fix issues in available artifacts before continuing. Stop for missing essential facts, conflicting requirements, failures that cannot be resolved, or a material scope expansion. Previously granted authorization stays effective; neither mode authorizes new publication destinations, merging, destructive operations or separate design-docs submission. Follow the shared delivery handoff for those steps and honor any source-PR submission already requested by the user.
 
+The implement phase additionally offers a fixed three-way execution mode (多子agent检查/全自动/逐步实现) confirmed at implementation start and recorded in `execution-plan.md` `## 执行模式`; see `contracts/skill-guides/delivery/execution-mode.md`. Within implement → validate, the mode recorded in the plan takes precedence over verbal mode triggers.
 
 ## Context Loading
 
@@ -201,6 +211,7 @@ For actual design-document submission, `odk-submit-design-docs` resolves and con
 - When spawning subagents (e.g. via bridge commands), run them in isolated contexts — never fork the main session history; the main session only dispatches tasks and receives summaries
 - Pass evidence by file path, not by content — artifacts land on disk once (`evidence/`, `pr-diff.txt`, `findings.json`); later references pass the path, not the full text
 - Cap parallel fan-out at ≤4 subagents per layer; batch or narrow task scope if more are needed
+- The fixed three-seat Task review in `contracts/skill-guides/delivery/task-review.md`, executed by `odk-task-review` (arch/scope/security), is the only sanctioned exception; do not treat it as permission to widen fan-out elsewhere, and reviewers never dispatch further reviewers
 - Template files are located at `templates/` (installed with the plugin)
 
 <!-- ODK:reference contracts/skill-guides/router/profiles.md -->
@@ -225,4 +236,5 @@ When using bridge commands, `using-odk-bridge` is loaded automatically and provi
 
 - AI artifact templates: `templates/ai/` (proposal, spec, design, execution-plan, spec-for-validation, threat-model)
 - Review templates: `templates/review/` (spec-compliance, code-quality, verification)
+- API metadata templates: `templates/api/arkts-api-spec.yaml`, `templates/api/c-api-spec.yaml`
 - Design-docs submission metadata: `templates/metadata_tracking.yaml`

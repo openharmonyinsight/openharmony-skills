@@ -60,6 +60,12 @@ Before archiving a native change, capture its final
 state, reconcile ODK and retain the immutable snapshot. Do not delete native
 delta specs merely because an ODK spec.md was produced. ODK design-docs
 publication remains separate and does not publish the native workspace.
+After successful archive, preserve the CLI JSON result and call the checkpoint
+helper's `finalize-native-archive` as defined in [workflow-state.md](workflow-state.md).
+It verifies archive/final-capture evidence and switches declared native task
+inputs to their immutable snapshots without resetting planning approval. Do not
+leave successful checkpoints watching the removed live task path, edit state
+by hand or treat an ordinary missing task file as proof of archive.
 
 The adapter depends on CLI JSON capabilities (status plus apply instructions,
 contextFiles and state); an unsupported response stops capture explicitly.

@@ -8,7 +8,9 @@ for this protocol. Follow `using-odk` for interaction mode and authorization.
 
 Investigate facts before asking the user to supply them. Trace the affected entry
 points, callers/callees, API signatures, state owners, lifecycle, thread/queue/lock
-boundaries and error handling. Cite file:line for consequential findings. For a
+boundaries, error handling, the ownership idiom (RAII scope guard vs manual
+open/close) and any single choke point for cross-cutting side effects (queue
+drain/flush/commit). Cite file:line for consequential findings. For a
 greenfield change, state the missing baseline and investigate available integration
 contracts instead of inventing existing behavior.
 
@@ -84,6 +86,9 @@ candidate verdicts for confirmation rather than restarting a classification form
 
 - **API/SDK:** explicitly confirm whether `.d.ts` / `.h` declarations are added,
   modified or deprecated. Code inspection alone cannot supply this confirmation.
+  For native public headers, also confirm the symbol-export/visibility surface
+  (`.map` / `.symdef` / visibility attribute) — a missed export breaks downstream
+  linking, not just documentation.
 - **Security/trust:** confirm IPC/Binder/socket/shared-memory boundaries, security
   levels and sensitive data; any applicable boundary or sensitive operation means 是.
 - **1+8:** confirm phone, tablet, pc/2in1, wearable, tv, car, default（其他设备）

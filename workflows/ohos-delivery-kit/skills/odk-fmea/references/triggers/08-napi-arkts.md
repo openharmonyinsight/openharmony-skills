@@ -14,3 +14,4 @@
 | N-08 | Promise / async 异常未捕获 | Promise rejection 链路无末端 catch；async 内异常未处理；定时器/异步回调不判对象存活 |
 | N-09 | ArkTS 状态管理装饰器误用 | @Consume 无匹配 @Provide；@Link 数据源非状态变量或类型不一致；@Provide 重写未加 allowOverride |
 | N-10 | XComponent / Native 资源生命周期 | OH_NativeXComponent_RegisterCallback 回调对象以裸指针保存可被提前释放；XComponent 销毁后仍调用其接口 |
+| N-11 | 作用域对象 / 微任务排空生命周期失配 | 新增 NAPI 作用域/句柄未用 RAII 封装而手动 open/close；嵌套 open 未拒绝或 stale 句柄二次 close；微任务 drain 的 gate 分散在多个调用点未收敛到单一 choke point |

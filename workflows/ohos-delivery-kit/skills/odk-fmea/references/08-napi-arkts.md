@@ -69,3 +69,10 @@
 - 故障注入：onSurfaceDestroy 后调用相关接口。
 - 日志/Trace：cppcrash 栈含 XComponentPattern::OnSurfaceDestroyed，#00 帧 pc 为异常地址。
 - 消减建议：回调对象保活到 onSurfaceDestroy 执行完；销毁后置空并禁止再调用。
+
+### N-11 作用域对象 / 微任务排空生命周期失配
+- 典型原因：NAPI 作用域/句柄未用 RAII 封装，手动 open/close 在条件分支提前 return 时漏关；嵌套 open 未显式拒绝（或拒绝后未返回 `napi_invalid_arg`）；stale 句柄二次 close；微任务（microtask）排空的 gate 分散在多个调用点（resolve/reject/函数返回），未收敛到单一队列源头（choke point，如 `MicroJobQueue::ExecutePendingJob`），某条路径漏 gate 或重复 drain 导致排空时机错乱。
+- 典型影响：微任务未按时排空（Promise 状态滞留 pending、回调不触发）或重复排空（未捕获 rejection、崩溃）；作用域泄漏致 VM 状态残留，后续 open/close 语义错乱。
+- 故障注入：构造嵌套 open / 失配 close / stale 句柄二次 close；作用域内 resolve/reject 后断言微任务被抑制、作用域关闭后被排空一次；模块求值末尾 drain 路径单独覆盖。
+- 日志/Trace：`... nested open is not allowed` / `... without matching open` 等 ERROR/DEBUG 日志；promise 状态观测。
+- 消减建议：作用域用 RAII 封装（ctor open / dtor close + drain，析构排空队列一次）；嵌套/失配返回 `napi_invalid_arg` 并补日志；drain 抑制 gate 收敛到单一 choke point；scope 对象生命周期与 VM 绑定。

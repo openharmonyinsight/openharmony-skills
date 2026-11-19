@@ -15,6 +15,15 @@ full frontmatter and body first; revise it in place and preserve confirmed
 content, stable IDs and evidence. Create a target only when it does not exist.
 <!-- /ODK:reference -->
 
+## Phase flow and next step
+
+<!-- ODK:reference contracts/skill-guides/router/phase-flow.md -->
+Before phase work, read `contracts/skill-guides/router/phase-flow.md` and apply
+its configured pre_hook/post_hook order. At every completion or pause, show
+the next pending action and configured hooks; omit the reminder only when
+the entire applicable workflow is complete. The coordinator owns this flow.
+<!-- /ODK:reference -->
+
 <!-- ODK:reference contracts/skill-guides/router/delivery-levels.md -->
 Read `contracts/skill-guides/router/delivery-levels.md` and use the effective
 contract. It takes precedence over standard-only artifact lists below; native
@@ -40,9 +49,11 @@ Invoke MatrixSpec `/matspec.proposal` for requirement clarification. Redirect ou
    - strict: Transform to ODK proposal template at `templates/ai/proposal.md` format. Ensure ODK-required fields: target_release frontmatter, non-goals, `1+8 设备差异规格`, `外部依赖`, 8-dimension N/A table, success criteria.
    - passthrough: Copy to `codespec/changes/<repo-name>/<proposal-id>/proposal.md` unchanged.
    - merge: Use MatrixSpec format, append ODK `1+8 设备差异规格`, `外部依赖`, 8-dimension N/A table, and target_release.
-4. Confirm with user.
+4. Preserve the `API/SDK` row in the ODK 8-dimension table. If MatrixSpec output cannot determine whether APIs/SDKs are involved, stop and ask the developer; do not default to `否`.
+5. Confirm with user.
 
 ## Output
 
 - Written to `codespec/changes/<repo-name>/<proposal-id>/proposal.md`
 - Report any fields needing human approval
+- Report the confirmed `API/SDK` trigger so the next phase knows which language-specific API metadata files are required

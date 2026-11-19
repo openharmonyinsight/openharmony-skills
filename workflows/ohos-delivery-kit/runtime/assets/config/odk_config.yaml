@@ -22,12 +22,17 @@ design_docs_repository: https://gitcode.com/OpenHarmonyAI/design-docs
 
 # Build and test defaults.
 #
-# build_products: space-separated product names offered during planning.
+# build_products: space-separated concrete or abstract names accepted by the
+#   build command and the product directory under out/. Both use the same
+#   selected name unchanged. It does not identify a hardware device; runtime
+#   validation targets are confirmed separately in the plan.
 #   The override replaces the entire list; keep order and remove duplicates.
 #   Select one product per plan, not a build matrix. This is a scalar, not a YAML array.
 #   Legacy configs without this key use build_product as the sole option.
 #
-# build_product: menu default within build_products, never an approved selection.
+# build_product: default concrete/abstract build and out/ product name in the
+#   menu, never an approved selection. Keep the same selected name for compilation
+#   and out/<product>; do not replace it with the validation product.
 #   Ask and wait for an explicit product choice before planning, even in autonomous
 #   mode. If the default is absent from the list, ask without a
 #   default; never silently add it or select the first entry.
@@ -37,20 +42,29 @@ design_docs_repository: https://gitcode.com/OpenHarmonyAI/design-docs
 #   for single-module Tasks; cross-module Tasks use this full command as-is.
 #
 # emulator_command: start the qemu virtual machine for arm64_virt verification.
-#   Only used when build_product=arm64_virt. Set to empty string for physical
-#   board products (rk3568 etc.) where a hardware device is used instead.
-#   {product} is replaced with the confirmed product name.
+#   Used only for validation scope emulator, independent of the build name.
+#   Kernel/ramdisk paths use out/{product}, with the same product name as the
+#   build command (concrete or abstract). {validation_product} is only for an
+#   explicit runtime-target argument, not for changing the output directory.
+#   The shipped QEMU command/layout supports arm64_virt; other emulators need
+#   their actual confirmed startup command, not an inferred build-name mapping.
 #
 # test_command: run tests independently of build — push package and execute
 #   test cases. Runs after build (and emulator when applicable) succeeds.
-#   {product} is replaced with the confirmed product name.
+#   {product} and {build_product} always mean the selected build/output name.
+#   {validation_product} explicitly identifies the runtime test target.
+#   Arguments requiring a concrete device product must use {validation_product};
+#   never pass an abstract build name as that device product.
+#   Build-only skips configured runtime runners;
+#   any optional host checks are recorded separately in the plan.
+#   {build_product} always refers to the compile command's concrete/abstract name.
 #   Leave empty ("") to have odk-plan infer the test command from each Task's
 #   file scope and testing framework, or to use each Task's own 验证命令 field.
 #   Override in odk_config_ext.yaml for hdc-based or board-specific test runners.
 #   Common patterns:
 #     hdc shell aa test -b com.example.myapp -s unittest OpenHarmonyTestRunner
-#     python3 -m pytest test/ --product {product}
-#     ./xts/run_xts.sh --product {product} --suite acts
+#     python3 -m pytest test/ --product {validation_product}
+#     ./xts/run_xts.sh --product {validation_product} --suite acts
 
 build_products: arm64_virt rk3568
 build_product: arm64_virt
@@ -167,12 +181,14 @@ ci_trigger: comment:start build
 online_test_trigger: none
 
 # Physical device daily-build and so-push workflow.
-# Only applies when build_product is a physical board (not arm64_virt).
+# Device preparation applies only to validation scope device. The independently
+# confirmed validation product, not the concrete/abstract build name, selects
+# firmware support; the runtime hdc ID selects the actual device.
 #
 # device_flash_skill: skill to invoke when the developer wants to flash today's
 #   daily build to a USB-connected rk3568 device before verification. The skill
 #   handles downloading the daily image and flashing via hdc updater mode.
-#   Only effective when build_product=rk3568; ignored for arm64_virt and other
+#   Only effective when validation_product=rk3568; ignored for other
 #   products (those use qemu or have no daily-flash support).
 #   Default: "" (skip — developer flashes manually). Set to the skill name to
 #   enable automatic flashing, e.g.:
@@ -180,10 +196,14 @@ online_test_trigger: none
 #   Reference: https://gitcode.com/openharmonyinsight/openharmony-skills/tree/main/skills/ohos-dev-distributed-device-image-flashing
 #
 # device_so_dirs: space-separated list of local paths where compiled .so files
-#   are placed after build. When empty (""), the agent infers the output paths
-#   from the build_product and the Task's changed source files (e.g.
-#   out/{product}/lib/, out/{product}/lib64/).
-#   Override in odk_config_ext.yaml only when the inferred path is wrong.
+#   are placed after build. When empty (""), start from out/<selected product>,
+#   using the SAME concrete/abstract name passed to the build command. Locate
+#   the Task's actual libraries via its build log, output manifest or confirmed
+#   layout (such as lib/ or lib64/), and verify architecture/variant compatibility.
+#   Do not substitute the validation product as the out/ directory name. Record
+#   actual source paths and target binding in Actual Result; ambiguous output
+#   provenance blocks pushing until confirmed.
+#   Override in odk_config_ext.yaml when the project has known explicit paths.
 #
 # device_service_restart: hdc shell command to restart the service under test
 #   after so files are pushed. {service} is replaced with the service name
@@ -217,3 +237,77 @@ device_service_restart: ""
 #   post_cr_mr_pr_hooks: my-compliance-check my-notify-slack
 
 post_cr_mr_pr_hooks: ""
+
+# Per-phase pre_hook and post_hook (ordered skill names, NOT shell commands).
+#
+# Keys are <phase>_pre_hook / <phase>_post_hook. The phase names below also
+# cover bypasses, Task verification and the delivery handoff. Base and bridge
+# commands share the corresponding phase keys. Multi-phase bridge commands
+# apply hooks around EACH constituent phase. Missing/empty values insert no
+# hook step and never appear as empty slots in next-step reminders.
+#
+# Order: phase_pre_hook skills -> phase action -> phase_post_hook skills.
+# A failed/pending hook stops dependent work; resume the first unfinished step.
+# Skipped/inapplicable phases do not run hooks. Hooks preserve existing approval
+# and submission gates. post_hook runs on success, before phase completion.
+# Every completion or pause names the actual next action and configured hooks,
+# unless the entire applicable workflow (including its last post_hook) is done.
+#
+# Customize only the sibling odk_config_ext.yaml; keys override independently.
+# Example:
+#   # skill-install: check-spec <install-url>
+#   spec_pre_hook: check-input
+#   spec_post_hook: check-spec check-api
+#   design_pre_hook: check-architecture-input
+#   source_cr_mr_pr_pre_hook: check-branch
+#   submit_design_docs_post_hook: verify-docs-pr
+# Replace <install-url> with the skill's actual installation URL in the override.
+# Use --phase-hooks <phase-or-odk-command> to inspect the ordered steps.
+# Missing skills use the same parameter-comment installation hints as reviews.
+
+init_pre_hook: ""
+init_post_hook: ""
+brainstorm_pre_hook: ""
+brainstorm_post_hook: ""
+link_proposal_pre_hook: ""
+link_proposal_post_hook: ""
+propose_pre_hook: ""
+propose_post_hook: ""
+spec_pre_hook: ""
+spec_post_hook: ""
+upgrade_api_chain_pre_hook: ""
+upgrade_api_chain_post_hook: ""
+spec_for_validation_pre_hook: ""
+spec_for_validation_post_hook: ""
+design_pre_hook: ""
+design_post_hook: ""
+fmea_pre_hook: ""
+fmea_post_hook: ""
+security_threat_model_pre_hook: ""
+security_threat_model_post_hook: ""
+plan_pre_hook: ""
+plan_post_hook: ""
+implement_pre_hook: ""
+implement_post_hook: ""
+device_prepare_pre_hook: ""
+device_prepare_post_hook: ""
+build_pre_hook: ""
+build_post_hook: ""
+test_pre_hook: ""
+test_post_hook: ""
+task_review_pre_hook: ""
+task_review_post_hook: ""
+review_pre_hook: ""
+review_post_hook: ""
+validate_pre_hook: ""
+validate_post_hook: ""
+source_cr_mr_pr_pre_hook: ""
+source_cr_mr_pr_post_hook: ""
+ci_pre_hook: ""
+ci_post_hook: ""
+online_test_pre_hook: ""
+online_test_post_hook: ""
+metadata_pre_hook: ""
+metadata_post_hook: ""
+submit_design_docs_pre_hook: ""
+submit_design_docs_post_hook: ""

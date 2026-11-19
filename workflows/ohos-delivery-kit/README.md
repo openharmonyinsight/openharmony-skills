@@ -3,7 +3,43 @@
 Neutral-source plugin providing OpenHarmony delivery artifact specification skills,
 session routing, validator executables, and runtime assets.
 
-## 0.14.3 current release
+## 0.15.0 language-specific API metadata contract
+
+Replaces the mixed-language API Markdown chain with `arkts-api-spec.yaml` and
+`c-api-spec.yaml` metadata plus an API overview in `spec.md`, and validates the
+metadata structure, overview closure, declaration diffs, documentation closure
+and exact paths. Adds the `odk-upgrade-api-chain` assistant for upgrading a
+fact-complete 0.14 / `ohos-sdd/v1` chain, per-language declaration diff
+evidence, the `check-api-documentation-context.py` process gate, OpenHarmony
+Chinese documentation rules (forbidden terms and Chinese/English spacing), the
+optional ArkTS `apiMode` closure, an API repository knowledge index with
+prerequisites, and the proposal coverage matrix in `spec.md`. This is a breaking
+contract migration: legacy `api-spec.yaml`, mixed-language declaration diffs and
+per-API Markdown specifications are no longer accepted directly.
+
+This republish includes the merged API review fixes: upgrades preserve pointer
+return types and confirmed modes, reject invalid or conflicting modes before
+writing, accept inline-formatted error codes, run in a standalone
+`upgrade_api_chain` phase with configurable hooks, and block on missing or
+invalid permission facts. The hard-migration guide ships as a shared resource
+referenced through relocatable paths. Documentation checks accept numeric range
+endpoints and Chinese-adjacent values while retaining Unicode unit boundaries
+and full number, sign and precision boundaries. API skill commands use
+installer-relocatable runtime paths, and the NAPI/ArkTS and RAII/symbol-export
+guidance is hardened for `odk-fmea` and implementation quality.
+
+## 0.14.7 build products and Task review gate
+
+Aligns build commands and `out/` artifact directories on one product name and
+confirms the device validation target explicitly, so emulator plans no longer
+treat "not applicable" as a launcher or validation command. Adds the Task-level
+five-dimension review gate across the base, Superpowers and OpenSpec flows, a
+change-impact scope check, the Codex installer/uninstaller resource and path
+rules, and the shared Chinese writing guide. This import also publishes the
+source's Unreleased `odk-task-review` guide and delivery-body boundary rule at
+the imported commit.
+
+## 0.14.3 effective delivery contract and delivery levels
 
 Adds one effective delivery contract shared by generation and validation,
 `lite` / `standard` / `critical` delivery levels, and a native-first OpenSpec
@@ -176,10 +212,11 @@ repository-scoped layout.
 
 Synced from `oshunter/ohos-delivery-kit` branch `main` via
 `ohos-marketplace/scripts/publish-plugins.sh --target openharmony-skills --plugin ohos-delivery-kit`.
-Current source: `main@67f904394df4743913a42f56dae7f6b89732eb08`.
-The current publisher needs the default config, archive-migration and
-session-sidecar entrypoints and all Python runtime libraries supplemented; the
-source release gate verifies the final package against this pinned revision.
+Current source: `main@3e4971c029ee02ebc0c99c61fa283cc792c31eda`.
+The current publisher needs the default config, archive-migration,
+session-sidecar, API documentation check and API chain upgrade entrypoints plus
+all Python runtime libraries supplemented; the source release gate verifies the
+final package against this pinned revision.
 
 ## Structure
 
@@ -187,9 +224,9 @@ source release gate verifies the final package against this pinned revision.
 - `provenance.yaml` — source tracking (auto-updated by publish script)
 - `hooks/session-router.yaml` — declarative session-start hook
 - `prompts/session-router.md` — router prompt
-- `skills/` — 27 ODK skills (synced from `core/skills/`)
+- `skills/` — 29 ODK skills (synced from `core/skills/`)
 - `runtime/assets/` — templates, profiles, contracts (including skill-guides), rules, adapters
-- `runtime/executables/` — artifact and archive-migration validators
+- `runtime/executables/` — artifact and archive-migration validators, API documentation check and API chain upgrade assistant
 
 ## Shared runtime assets
 
@@ -211,7 +248,7 @@ must be installed alongside the rendered `SKILL.md`, preserving relative links.
 
 To check real V1 and V2 installation artifacts without registering plugins in
 your agents, provide a local installer source or unpacked npm package.
-Installation was verified with the official npm package oh-skillhub 0.1.43:
+Installation was verified with the official npm package oh-skillhub 0.1.44:
 the workflow regression suite passes, including V1 and V2 installation for
 Claude Code, Codex and OpenCode. Skill-local auxiliary files, including all 44
 FMEA reference files, are copied alongside SKILL.md; the default configuration
